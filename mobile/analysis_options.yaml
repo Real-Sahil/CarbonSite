@@ -1,0 +1,20 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_print
+    - avoid_unnecessary_containers
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_final_fields
+    - use_key_in_widget_constructors
+    - sized_box_for_whitespace
+
+analyzer:
+  errors:
+    missing_required_param: error
+    missing_return: error
+  exclude:
+    - lib/**/*.g.dart
+    - lib/**/*.freezed.dart
