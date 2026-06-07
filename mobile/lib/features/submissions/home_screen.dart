@@ -276,7 +276,8 @@ class _ProjectCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => context.push('/capture?periodId=${project.id}'),
+                onPressed: () =>
+                    context.push('/capture?periodId=${project.id}'),
                 icon: const Icon(Icons.camera_alt_outlined, size: 18),
                 label: const Text('Submit document'),
                 style: OutlinedButton.styleFrom(
@@ -310,8 +311,18 @@ class _ProjectCard extends StatelessWidget {
     try {
       final dt = DateTime.parse(raw);
       const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
     } catch (_) {

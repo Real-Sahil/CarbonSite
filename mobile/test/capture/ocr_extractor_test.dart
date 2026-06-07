@@ -4,7 +4,8 @@ import 'package:carbonsite_mobile/features/capture/ocr_extractor.dart';
 void main() {
   group('OcrExtractor — waste ticket', () {
     test('extracts weight in tonnes', () {
-      const text = 'Waste Transfer Note\nWeight: 2.5 tonnes\nDate: 15/06/2026\nVehicle: AB12 CDE';
+      const text =
+          'Waste Transfer Note\nWeight: 2.5 tonnes\nDate: 15/06/2026\nVehicle: AB12 CDE';
       final result = OcrExtractor.extract(text, DocumentType.wasteTicket);
       expect(result.weight, '2.5');
       expect(result.weightUnit, 'tonnes');

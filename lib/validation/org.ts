@@ -208,6 +208,7 @@ export const createFieldSubmissionSchema = z.object({
   ),
   deviceSubmittedAt: z.string().datetime().optional(),
   idempotencyKey: z.string().min(8).max(120).optional(),
+  evidenceIds: z.array(z.string().min(1)).max(10).default([]),
 });
 
 export const reviewFieldSubmissionSchema = z.object({

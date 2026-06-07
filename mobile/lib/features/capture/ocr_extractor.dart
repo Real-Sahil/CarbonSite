@@ -72,13 +72,16 @@ class OcrExtractor {
     final vrMatch = _vrPattern.firstMatch(text);
     final volumeMatch = _volumePattern.firstMatch(text);
 
+    final weightUnit = weightMatch?.group(2)?.toLowerCase();
+
     return ExtractedFields(
       documentType: type,
       weight: weightMatch?.group(1),
-      weightUnit: weightMatch?.group(2)?.toLowerCase(),
+      weightUnit: weightUnit == 'tonne' ? 'tonnes' : weightUnit,
       ewcCode: ewcMatch?.group(1)?.replaceAll(RegExp(r'[\s.]'), ' ').trim(),
       date: dateMatch?.group(0),
-      vehicleReg: vrMatch?.group(0)?.toUpperCase().replaceAll(RegExp(r'\s+'), ''),
+      vehicleReg:
+          vrMatch?.group(0)?.toUpperCase().replaceAll(RegExp(r'\s+'), ''),
       volume: volumeMatch?.group(1),
       volumeUnit: volumeMatch?.group(2)?.toLowerCase(),
     );

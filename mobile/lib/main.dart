@@ -17,7 +17,8 @@ class CarbonSiteApp extends ConsumerWidget {
       title: 'CarbonSite',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF166534), // green-800 — sustainability green
+        colorSchemeSeed:
+            const Color(0xFF166534), // green-800 — sustainability green
         useMaterial3: true,
       ),
       routerConfig: router,

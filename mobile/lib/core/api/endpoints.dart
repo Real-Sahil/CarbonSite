@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'client.dart';
 
@@ -61,10 +65,13 @@ class Project {
     return Project(
       id: json['id'] as String? ?? '',
       label: json['label'] as String? ?? json['name'] as String? ?? '',
-      startDate: json['startDate'] as String? ?? json['start_date'] as String? ?? '',
+      startDate:
+          json['startDate'] as String? ?? json['start_date'] as String? ?? '',
       endDate: json['endDate'] as String? ?? json['end_date'] as String? ?? '',
       status: json['status'] as String? ?? 'draft',
-      orgId: json['organizationId'] as String? ?? json['organization_id'] as String? ?? '',
+      orgId: json['organizationId'] as String? ??
+          json['organization_id'] as String? ??
+          '',
       orgName: orgName,
     );
   }
@@ -90,7 +97,8 @@ class FieldSubmission {
           json['document_type'] as String? ??
           'other',
       status: json['status'] as String? ?? 'pending',
-      createdAt: json['createdAt'] as String? ?? json['created_at'] as String? ?? '',
+      createdAt:
+          json['createdAt'] as String? ?? json['created_at'] as String? ?? '',
     );
   }
 }
@@ -166,11 +174,30 @@ Future<List<FieldSubmission>> getMySubmissions(String orgId) async {
       .toList();
 }
 
+class EvidenceUpload {
+  final String id;
+  final String filename;
+
+  const EvidenceUpload({
+    required this.id,
+    required this.filename,
+  });
+
+  factory EvidenceUpload.fromJson(Map<String, dynamic> json) {
+    final evidence = json['evidence'] as Map<String, dynamic>? ?? {};
+    return EvidenceUpload(
+      id: evidence['id'] as String? ?? '',
+      filename: evidence['filename'] as String? ?? '',
+    );
+  }
+}
+
 Future<FieldSubmission> submitFieldSubmission({
   required String orgId,
   required String reportingPeriodId,
   required String documentType,
   required Map<String, dynamic> formData,
+  List<String> evidenceIds = const [],
   Map<String, dynamic>? ocrExtractedData,
   String? emissionCategoryId,
   String? facilityId,
@@ -196,10 +223,52 @@ Future<FieldSubmission> submitFieldSubmission({
         'pickupPostcode': pickupPostcode,
       if (deliveryPostcode != null && deliveryPostcode.isNotEmpty)
         'deliveryPostcode': deliveryPostcode,
+      if (evidenceIds.isNotEmpty) 'evidenceIds': evidenceIds,
       'deviceSubmittedAt': DateTime.now().toUtc().toIso8601String(),
       'idempotencyKey':
           '$reportingPeriodId-${DateTime.now().microsecondsSinceEpoch}',
     },
   );
   return FieldSubmission.fromJson(response.data as Map<String, dynamic>);
+}
+
+Future<EvidenceUpload> uploadEvidenceFile({
+  required String orgId,
+  required String filename,
+  required String contentType,
+  required Uint8List bytes,
+}) async {
+  final client = await getClient();
+  final checksum = sha256.convert(bytes).toString();
+  final presignResponse = await client.post(
+    '/api/orgs/$orgId/evidence',
+    data: {
+      'filename': filename,
+      'contentType': contentType,
+      'byteSize': bytes.length,
+      'checksum': checksum,
+    },
+  );
+  final upload = EvidenceUpload.fromJson(
+    presignResponse.data as Map<String, dynamic>,
+  );
+  final uploadUrl =
+      (presignResponse.data as Map<String, dynamic>)['uploadUrl'] as String;
+
+  final storageClient = Dio();
+  final targetUrl = uploadUrl.startsWith('/')
+      ? '${client.options.baseUrl}$uploadUrl'
+      : uploadUrl;
+  await storageClient.put(
+    targetUrl,
+    data: bytes,
+    options: Options(
+      headers: {
+        'Content-Type': contentType,
+        'Content-Length': bytes.length,
+      },
+    ),
+  );
+
+  return upload;
 }

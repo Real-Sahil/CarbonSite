@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
 import '../../core/api/endpoints.dart';
 
 class CaptureScreen extends StatefulWidget {
@@ -21,7 +23,9 @@ class _CaptureScreenState extends State<CaptureScreen> {
   final _supplierController = TextEditingController();
   final _pickupController = TextEditingController();
   final _deliveryController = TextEditingController();
+  final _picker = ImagePicker();
   String _documentType = 'waste_ticket';
+  XFile? _evidenceImage;
   bool _submitting = false;
   String? _error;
   String? _success;
@@ -35,6 +39,15 @@ class _CaptureScreenState extends State<CaptureScreen> {
     _pickupController.dispose();
     _deliveryController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickEvidenceImage() async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
+    if (!mounted || picked == null) return;
+    setState(() => _evidenceImage = picked);
   }
 
   Future<void> _submit() async {
@@ -58,10 +71,26 @@ class _CaptureScreenState extends State<CaptureScreen> {
         position = null;
       }
 
+      final evidenceIds = <String>[];
+      final image = _evidenceImage;
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        final upload = await uploadEvidenceFile(
+          orgId: orgId,
+          filename: p.basename(image.path),
+          contentType: image.mimeType ?? _contentTypeForPath(image.path),
+          bytes: bytes,
+        );
+        if (upload.id.isNotEmpty) {
+          evidenceIds.add(upload.id);
+        }
+      }
+
       await submitFieldSubmission(
         orgId: orgId,
         reportingPeriodId: widget.reportingPeriodId,
         documentType: _documentType,
+        evidenceIds: evidenceIds,
         pickupPostcode: _pickupController.text.trim(),
         deliveryPostcode: _deliveryController.text.trim(),
         gpsLat: position?.latitude,
@@ -84,6 +113,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
         _supplierController.clear();
         _pickupController.clear();
         _deliveryController.clear();
+        _evidenceImage = null;
       });
     } catch (e) {
       if (!mounted) return;
@@ -95,6 +125,13 @@ class _CaptureScreenState extends State<CaptureScreen> {
         setState(() => _submitting = false);
       }
     }
+  }
+
+  String _contentTypeForPath(String path) {
+    final extension = p.extension(path).toLowerCase();
+    if (extension == '.png') return 'image/png';
+    if (extension == '.webp') return 'image/webp';
+    return 'image/jpeg';
   }
 
   @override
@@ -119,54 +156,78 @@ class _CaptureScreenState extends State<CaptureScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _documentType,
+                  initialValue: _documentType,
                   decoration: const InputDecoration(labelText: 'Document type'),
                   items: const [
-                    DropdownMenuItem(value: 'waste_ticket', child: Text('Waste ticket')),
-                    DropdownMenuItem(value: 'delivery_note', child: Text('Delivery note')),
-                    DropdownMenuItem(value: 'fuel_receipt', child: Text('Fuel receipt')),
-                    DropdownMenuItem(value: 'other', child: Text('Other evidence')),
+                    DropdownMenuItem(
+                        value: 'waste_ticket', child: Text('Waste ticket')),
+                    DropdownMenuItem(
+                        value: 'delivery_note', child: Text('Delivery note')),
+                    DropdownMenuItem(
+                        value: 'fuel_receipt', child: Text('Fuel receipt')),
+                    DropdownMenuItem(
+                        value: 'other', child: Text('Other evidence')),
                   ],
-                  onChanged: (value) => setState(() => _documentType = value ?? 'other'),
+                  onChanged: (value) =>
+                      setState(() => _documentType = value ?? 'other'),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _submitting ? null : _pickEvidenceImage,
+                  icon: const Icon(Icons.photo_camera_outlined),
+                  label: Text(
+                    _evidenceImage == null
+                        ? 'Capture evidence photo'
+                        : 'Evidence: ${p.basename(_evidenceImage!.path)}',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _sourceController,
-                  decoration: const InputDecoration(labelText: 'Source description'),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Enter a source description' : null,
+                  decoration:
+                      const InputDecoration(labelText: 'Source description'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Enter a source description'
+                      : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _amountController,
                   decoration: const InputDecoration(labelText: 'Amount'),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   validator: (value) {
                     final amount = double.tryParse(value ?? '');
-                    return amount == null || amount <= 0 ? 'Enter a positive amount' : null;
+                    return amount == null || amount <= 0
+                        ? 'Enter a positive amount'
+                        : null;
                   },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _unitController,
                   decoration: const InputDecoration(labelText: 'Unit'),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Enter a unit' : null,
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Enter a unit'
+                      : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _supplierController,
-                  decoration: const InputDecoration(labelText: 'Supplier or haulier'),
+                  decoration:
+                      const InputDecoration(labelText: 'Supplier or haulier'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _pickupController,
-                  decoration: const InputDecoration(labelText: 'Pickup postcode'),
+                  decoration:
+                      const InputDecoration(labelText: 'Pickup postcode'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _deliveryController,
-                  decoration: const InputDecoration(labelText: 'Delivery postcode'),
+                  decoration:
+                      const InputDecoration(labelText: 'Delivery postcode'),
                 ),
                 const SizedBox(height: 20),
                 if (_error != null)
@@ -179,7 +240,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
                   child: FilledButton.icon(
                     onPressed: _submitting ? null : _submit,
                     icon: const Icon(Icons.cloud_upload_outlined),
-                    label: Text(_submitting ? 'Submitting...' : 'Submit for review'),
+                    label: Text(
+                        _submitting ? 'Submitting...' : 'Submit for review'),
                   ),
                 ),
               ],

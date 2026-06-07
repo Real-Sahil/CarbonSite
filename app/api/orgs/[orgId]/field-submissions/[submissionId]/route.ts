@@ -16,13 +16,18 @@ export async function PATCH(
 
     const submission = await prisma.fieldSubmission.findFirst({
       where: { id: submissionId, organizationId: orgId },
+      include: {
+        files: { select: { evidenceFileId: true } },
+      },
     });
     if (!submission) {
       return apiError("NOT_FOUND", "Field submission was not found.", 404);
     }
 
+    const evidenceFileIds = submission.files.map((file) => file.evidenceFileId);
     let activityRecordId = submission.activityRecordId;
-    if (body.status === "approved" && !activityRecordId) {
+
+    if (body.status === "approved") {
       if (!submission.emissionCategoryId) {
         return apiError("MISSING_CATEGORY", "Assign an emission category before approving this submission.", 422);
       }
@@ -32,45 +37,66 @@ export async function PATCH(
       if (!Number.isFinite(amount) || amount <= 0 || !unit) {
         return apiError("INVALID_FORM_DATA", "Submission form data must include a positive amount and unit.", 422);
       }
-
-      const record = await prisma.activityRecord.create({
-        data: {
-          organizationId: orgId,
-          reportingPeriodId: submission.reportingPeriodId,
-          emissionCategoryId: submission.emissionCategoryId,
-          facilityId: submission.facilityId,
-          fieldSubmissionId: submission.id,
-          createdByUserId: session.user.id,
-          sourceDescription: String(formData.sourceDescription ?? submission.documentType),
-          supplierName: formData.supplierName ? String(formData.supplierName) : undefined,
-          amount,
-          unit,
-          activityDate: formData.activityDate ? new Date(String(formData.activityDate)) : undefined,
-          reviewStatus: "approved",
-          evidenceStatus: "missing",
-          pickupPostcode: submission.pickupPostcode,
-          deliveryPostcode: submission.deliveryPostcode,
-          pickupLat: submission.pickupLat,
-          pickupLng: submission.pickupLng,
-          deliveryLat: submission.deliveryLat,
-          deliveryLng: submission.deliveryLng,
-          distanceAmount: submission.calculatedDistanceKm,
-          distanceUnit: submission.calculatedDistanceKm ? "km" : undefined,
-          routeDistanceSource: submission.distanceSource,
-        },
-      });
-      activityRecordId = record.id;
     }
 
-    const updated = await prisma.fieldSubmission.update({
-      where: { id: submission.id },
-      data: {
-        status: body.status,
-        reviewNote: body.reviewNote,
-        reviewedByUserId: session.user.id,
-        reviewedAt: new Date(),
-        activityRecordId,
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      if (body.status === "approved" && !activityRecordId) {
+        const formData = submission.formData as Record<string, unknown>;
+        const record = await tx.activityRecord.create({
+          data: {
+            organizationId: orgId,
+            reportingPeriodId: submission.reportingPeriodId,
+            emissionCategoryId: submission.emissionCategoryId!,
+            facilityId: submission.facilityId,
+            fieldSubmissionId: submission.id,
+            createdByUserId: session.user.id,
+            sourceDescription: String(formData.sourceDescription ?? submission.documentType),
+            supplierName: formData.supplierName ? String(formData.supplierName) : undefined,
+            amount: Number(formData.amount),
+            unit: String(formData.unit),
+            activityDate: formData.activityDate ? new Date(String(formData.activityDate)) : undefined,
+            reviewStatus: "approved",
+            evidenceStatus: evidenceFileIds.length > 0 ? "complete" : "missing",
+            pickupPostcode: submission.pickupPostcode,
+            deliveryPostcode: submission.deliveryPostcode,
+            pickupLat: submission.pickupLat,
+            pickupLng: submission.pickupLng,
+            deliveryLat: submission.deliveryLat,
+            deliveryLng: submission.deliveryLng,
+            distanceAmount: submission.calculatedDistanceKm,
+            distanceUnit: submission.calculatedDistanceKm ? "km" : undefined,
+            routeDistanceSource: submission.distanceSource,
+          },
+        });
+        activityRecordId = record.id;
+      }
+
+      if (body.status === "approved" && activityRecordId && evidenceFileIds.length > 0) {
+        await tx.activityRecordEvidence.createMany({
+          data: evidenceFileIds.map((evidenceFileId) => ({
+            organizationId: orgId,
+            activityRecordId: activityRecordId!,
+            evidenceFileId,
+          })),
+          skipDuplicates: true,
+        });
+
+        await tx.activityRecord.update({
+          where: { id: activityRecordId },
+          data: { evidenceStatus: "complete" },
+        });
+      }
+
+      return tx.fieldSubmission.update({
+        where: { id: submission.id },
+        data: {
+          status: body.status,
+          reviewNote: body.reviewNote,
+          reviewedByUserId: session.user.id,
+          reviewedAt: new Date(),
+          activityRecordId,
+        },
+      });
     });
 
     await writeAuditLog({
@@ -82,6 +108,7 @@ export async function PATCH(
       metadata: {
         status: updated.status,
         activityRecordId: updated.activityRecordId,
+        evidenceCount: evidenceFileIds.length,
       },
     });
 

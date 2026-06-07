@@ -39,7 +39,8 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = 'Could not load submissions. Check the connection and try again.';
+        _error =
+            'Could not load submissions. Check the connection and try again.';
       });
     }
   }
@@ -69,7 +70,8 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
       return ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          Text(_error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error)),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: _load,

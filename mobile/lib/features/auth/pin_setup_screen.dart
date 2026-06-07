@@ -238,7 +238,7 @@ class _PinDots extends StatelessWidget {
             shape: BoxShape.circle,
             color: filled ? activeColor : Colors.transparent,
             border: Border.all(
-              color: filled ? activeColor : activeColor.withOpacity(0.4),
+              color: filled ? activeColor : activeColor.withValues(alpha: 0.4),
               width: 2,
             ),
           ),
@@ -301,7 +301,7 @@ class _DigitButton extends StatelessWidget {
         shape: const CircleBorder(),
         padding: EdgeInsets.zero,
         foregroundColor: colorScheme.onSurface,
-        overlayColor: colorScheme.primary.withOpacity(0.12),
+        overlayColor: colorScheme.primary.withValues(alpha: 0.12),
       ),
       child: Text(
         digit,

@@ -19,6 +19,7 @@ import {
 import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SubmissionReviewActions } from "./review-actions";
+import { SubmissionEvidenceDownloads } from "./evidence-download-actions";
 
 interface SubmissionsPageProps {
   params: Promise<{ orgId: string }>;
@@ -82,6 +83,11 @@ export default async function SubmissionsPage({
       submittedBy: { select: { name: true, email: true } },
       reportingPeriod: { select: { label: true } },
       facility: { select: { name: true } },
+      files: {
+        include: {
+          evidenceFile: { select: { id: true, filename: true } },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: 50,
@@ -140,6 +146,8 @@ export default async function SubmissionsPage({
                   <TableHead>Reporting period</TableHead>
                   <TableHead>Facility</TableHead>
                   <TableHead>Route</TableHead>
+                  <TableHead>Evidence</TableHead>
+                  <TableHead>Record</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -176,6 +184,24 @@ export default async function SubmissionsPage({
                       {s.pickupPostcode && s.deliveryPostcode
                         ? `${s.pickupPostcode} to ${s.deliveryPostcode}`
                         : "No route"}
+                    </TableCell>
+                    <TableCell>
+                      <SubmissionEvidenceDownloads
+                        orgId={orgId}
+                        files={s.files.map((file) => ({
+                          id: file.evidenceFile.id,
+                          filename: file.evidenceFile.filename,
+                        }))}
+                      />
+                    </TableCell>
+                    <TableCell className="text-slate-600">
+                      {s.activityRecordId ? (
+                        <span className="font-mono text-xs">
+                          {s.activityRecordId.slice(0, 8)}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 italic">Not created</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-slate-500 text-sm">
                       {s.createdAt.toLocaleDateString("en-GB", {

@@ -60,7 +60,7 @@ export async function POST(
     );
     const body = createFieldSubmissionSchema.parse(await req.json());
 
-    const [period, category, facility] = await Promise.all([
+    const [period, category, facility, evidenceFiles] = await Promise.all([
       prisma.reportingPeriod.findFirst({
         where: { id: body.reportingPeriodId, organizationId: orgId },
         select: { id: true },
@@ -77,6 +77,15 @@ export async function POST(
             select: { id: true },
           })
         : Promise.resolve(null),
+      body.evidenceIds.length > 0
+        ? prisma.evidenceFile.findMany({
+            where: {
+              id: { in: body.evidenceIds },
+              organizationId: orgId,
+            },
+            select: { id: true },
+          })
+        : Promise.resolve([]),
     ]);
 
     if (!period) {
@@ -88,6 +97,9 @@ export async function POST(
     if (body.facilityId && !facility) {
       return apiError("INVALID_FACILITY", "Facility does not belong to this organisation.", 422);
     }
+    if (evidenceFiles.length !== new Set(body.evidenceIds).size) {
+      return apiError("INVALID_EVIDENCE", "One or more evidence files do not belong to this organisation.", 422);
+    }
 
     const routeDistance =
       body.pickupPostcode && body.deliveryPostcode
@@ -98,6 +110,7 @@ export async function POST(
           })
         : null;
 
+    const evidenceIds = [...new Set(body.evidenceIds)];
     const submission = await prisma.fieldSubmission.create({
       data: {
         organizationId: orgId,
@@ -127,6 +140,17 @@ export async function POST(
         deviceSubmittedAt: body.deviceSubmittedAt
           ? new Date(body.deviceSubmittedAt)
           : undefined,
+        ...(evidenceIds.length > 0
+          ? {
+              files: {
+                createMany: {
+                  data: evidenceIds.map((evidenceFileId) => ({
+                    evidenceFileId,
+                  })),
+                },
+              },
+            }
+          : {}),
       },
     });
 
@@ -139,6 +163,7 @@ export async function POST(
       metadata: {
         documentType: submission.documentType,
         status: submission.status,
+        evidenceCount: evidenceIds.length,
       },
     });
 
