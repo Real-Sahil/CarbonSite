@@ -1,4 +1,4 @@
-name: CI
+name: CarbonSite CI
 
 on:
   push:
@@ -7,43 +7,44 @@ on:
 
 jobs:
   web:
-    name: Web — lint / typecheck / test / build
+    name: Web checks
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
+      STORAGE_DRIVER: local
+      STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
+      STORAGE_ACCESS_KEY_ID: ci
+      STORAGE_SECRET_ACCESS_KEY: ci
+      STORAGE_BUCKET: carbonsite
+      BETTER_AUTH_SECRET: ci-secret-ci-secret-ci-secret-ci-secret
+      BETTER_AUTH_URL: http://localhost:3000
+      EMAIL_DRIVER: console
+      TRUSTED_ORIGINS: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 11.5.2
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
-        env:
-          DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
-          STORAGE_DRIVER: local
-          STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
-          STORAGE_ACCESS_KEY_ID: placeholder
-          STORAGE_SECRET_ACCESS_KEY: placeholder
-          STORAGE_BUCKET: carbonsite
-          BETTER_AUTH_SECRET: placeholder-secret-32-chars-minimum!!
-          BETTER_AUTH_URL: http://localhost:3000
-          EMAIL_DRIVER: console
-          TRUSTED_ORIGINS: http://localhost:3000
+      - run: pnpm run build
 
-  flutter:
-    name: Flutter — analyze / test / build
+  mobile:
+    name: Flutter checks
     runs-on: ubuntu-latest
-    if: hashFiles('mobile/pubspec.yaml') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.x"
+          flutter-version: "3.24.5"
           channel: stable
           cache: true
       - working-directory: mobile

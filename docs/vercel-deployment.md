@@ -41,6 +41,10 @@ Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactio
 5. Deploy or restart the worker runtime with the same database, storage, email, and Firebase secrets.
 6. Confirm sign-in, organisation access, imports, submissions, reports, and targets against real organisation-scoped records.
 
+## Vercel Build Command
+
+The repository `vercel.json` sets `buildCommand` to `pnpm run build`. If Vercel still reports a command such as `pmpn run build`, clear any dashboard-level Build Command override and redeploy from `main`.
+
 ## Worker Runtime
 
 The worker entrypoint is `workers/index.ts` and the package script is `pnpm worker`. Host it on a long-running service such as Fly.io, Render, Railway, a VM, or a container platform. It must share the same `DATABASE_URL` and storage/email secrets as the Vercel app.

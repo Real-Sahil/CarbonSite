@@ -83,8 +83,10 @@ export const updateMemberRoleSchema = z.object({
 // ─── Presign upload ──────────────────────────────────────────────────────────
 
 export const presignUploadSchema = z.object({
-  key: z.string().min(1),
-  contentType: z.string().min(1),
+  filename: z.string().min(1).max(180),
+  contentType: z.string().min(1).max(120),
+  byteSize: z.coerce.number().int().positive().max(25 * 1024 * 1024),
+  checksum: z.string().min(16).max(128),
 });
 
 const optionalIsoDateSchema = z.preprocess(
@@ -173,6 +175,12 @@ export const createReportSchema = z.object({
   reportingPeriodId: z.string().min(1),
   snapshotId: z.string().min(1),
   type: z.enum(["inventory", "monthly_snapshot", "audit_package"]),
+});
+
+export const createCalculationRunSchema = z.object({
+  reportingPeriodId: z.string().min(1),
+  methodologyVersionId: z.string().min(1),
+  factorLibraryId: z.string().min(1),
 });
 
 export const createFieldSubmissionSchema = z.object({

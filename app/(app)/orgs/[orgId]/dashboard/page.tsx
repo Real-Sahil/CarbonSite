@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { CalculationControls } from "./calculation-controls";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -53,6 +54,10 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     readyReportCount,
     targetCount,
     initiativeCount,
+    reportingPeriods,
+    methodologies,
+    factorLibraries,
+    calculationRuns,
   ] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
@@ -87,6 +92,28 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
     prisma.reductionTarget.count({ where: { organizationId: orgId } }),
     prisma.reductionInitiative.count({ where: { organizationId: orgId } }),
+    prisma.reportingPeriod.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, label: true },
+      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+    }),
+    prisma.methodologyVersion.findMany({
+      select: { id: true, name: true, gwpVersion: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.factorLibrary.findMany({
+      select: { id: true, name: true, version: true },
+      orderBy: { publishedAt: "desc" },
+    }),
+    prisma.calculationRun.findMany({
+      where: { organizationId: orgId },
+      include: {
+        reportingPeriod: { select: { label: true } },
+        factorLibrary: { select: { name: true, version: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    }),
   ]);
 
   const scopeRows = [1, 2, 3].map((scope) => {
@@ -214,6 +241,58 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base">Calculations and snapshots</CardTitle>
+          <CardDescription>
+            Run calculations from approved records, then publish a snapshot for reports.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <CalculationControls
+            orgId={orgId}
+            periods={reportingPeriods}
+            methodologies={methodologies.map((item) => ({
+              id: item.id,
+              label: `${item.name} (${item.gwpVersion})`,
+            }))}
+            factorLibraries={factorLibraries.map((item) => ({
+              id: item.id,
+              label: `${item.name} ${item.version}`,
+            }))}
+            succeededRuns={calculationRuns
+              .filter((run) => run.status === "succeeded")
+              .map((run) => ({
+                id: run.id,
+                status: run.status,
+                label: `${run.reportingPeriod.label} - ${run.factorLibrary.name} ${run.factorLibrary.version}`,
+              }))}
+          />
+          {calculationRuns.length > 0 && (
+            <div className="grid gap-2">
+              {calculationRuns.map((run) => (
+                <div
+                  key={run.id}
+                  className="flex flex-col gap-2 rounded-lg border border-slate-200 p-3 md:flex-row md:items-center md:justify-between"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">
+                      {run.reportingPeriod.label}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {run.factorLibrary.name} {run.factorLibrary.version}
+                    </p>
+                  </div>
+                  <Badge variant={run.status === "succeeded" ? "default" : run.status === "failed" ? "destructive" : "outline"}>
+                    {run.status.replaceAll("_", " ")}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 mt-6 md:grid-cols-2 xl:grid-cols-4">
         <ActionCard title="Records" description="Review committed activity data and evidence status." href={`/orgs/${orgId}/records`} />
