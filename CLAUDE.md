@@ -237,6 +237,45 @@ Use deterministic fixture factor libraries. Do not use real customer evidence fi
 - Stream large exports; never load an entire org dataset into memory.
 - Required indexes on `ActivityRecord`: `(organization_id, reporting_period_id, category_id, facility_id, review_status, created_at)`.
 
+## Optional Self-Hosted Services
+
+Run via `docker compose -f services/docker-compose.services.yml up`.
+
+### DocuSeal (`services/docker-compose.services.yml` → port 3001)
+Open-source document signing (https://github.com/docusealco/docuseal). Use for:
+- **Subcontractor agreements** — sign before receiving a field worker invite link
+- **Scope 3 supplier declarations** — supplier signs off on submitted activity data
+- **Audit package sign-off** — auditor digitally signs the final carbon report
+- Webhook: DocuSeal posts to `/api/orgs/[orgId]/webhooks/docuseal` on completion
+
+### MarkItDown (`services/markitdown/` → port 8001)
+Microsoft's file-to-Markdown converter (https://github.com/microsoft/markitdown). Use for:
+- Convert uploaded PDFs, Word docs, Excel files to text before field extraction in the import pipeline
+- Called from BullMQ `imports` worker: `POST http://markitdown:8001/convert`
+- Supplements Flutter ML Kit OCR for server-side document re-processing
+- Handles: `.pdf`, `.docx`, `.doc`, `.xlsx`, `.xls`, `.csv`, `.png`, `.jpg`
+
+### Android SMS Gateway (manual setup required)
+Install the Android APK on a physical device (https://github.com/capcom6/android-sms-gateway). Use for:
+- Free SMS notifications to field workers who lack corporate email
+- Invite links sent as SMS deep links
+- Submission status alerts: "Your waste ticket has been approved"
+- The app exposes a local HTTP API; configure `ANDROID_SMS_GATEWAY_URL` in `.env`
+
+## Claude Code Skills
+
+Skills live in `.claude/skills/` and can be invoked as slash commands.
+
+| Skill | Invoke | Purpose |
+|---|---|---|
+| `taste-skill` | `/taste-skill` | Anti-slop UI checklist, design dials, hard bans (no em-dashes, etc.) |
+| `emil-design-eng` | `/emil-design-eng` | Animation decision framework, component micro-interactions |
+| `karpathy-principles` | `/karpathy-principles` | Think before coding, simplicity, surgical changes |
+| `ui-ux-pro-max` | `/ui-ux-pro-max` | 10-priority design system generator for web + Flutter |
+| `impeccable` | Install via `npx impeccable install` | 23-command design audit (https://github.com/pbakaus/impeccable) |
+
+`motion` (https://github.com/motiondivision/motion) is an npm dependency, not a skill. Add as `motion` to `package.json` — it is the animation library for the web app.
+
 ## Open Decisions (Resolve Before Production)
 
 1. **Emission factor dataset licensing** — confirm DEFRA/EPA redistribution terms for production.
