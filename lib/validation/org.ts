@@ -166,6 +166,12 @@ export const createActivityRecordSchema = z.object({
   assumptionNotes: z.string().max(2000).optional(),
 });
 
+export const updateActivityRecordStatusSchema = z.object({
+  reviewStatus: z.enum(["draft", "in_review", "approved", "rejected"]),
+  evidenceStatus: z.enum(["missing", "partial", "complete"]).optional(),
+  assumptionNotes: z.string().max(2000).optional(),
+});
+
 export const routeDistanceSchema = z.object({
   pickupPostcode: z.string().min(5).max(12),
   deliveryPostcode: z.string().min(5).max(12),

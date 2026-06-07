@@ -18,7 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { FileText } from "lucide-react";
+import type { OrgRole } from "@prisma/client";
 import { CreateRecordForm } from "./record-form";
+import { RecordActions } from "./record-actions";
 
 interface RecordsPageProps {
   params: Promise<{ orgId: string }>;
@@ -34,8 +36,10 @@ const REVIEW_LABELS: Record<string, string> = {
 export default async function RecordsPage({ params }: RecordsPageProps) {
   const { orgId } = await params;
 
+  let role: OrgRole;
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    role = result.membership.role;
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
@@ -44,6 +48,8 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
     throw err;
   }
 
+  const canCreateRecords = role === "admin" || role === "editor";
+  const canManageRecords = canCreateRecords || role === "reviewer";
   const [records, periods, categories, facilities, businessUnits] = await Promise.all([
     prisma.activityRecord.findMany({
       where: { organizationId: orgId },
@@ -53,6 +59,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
         facility: { select: { name: true } },
         businessUnit: { select: { name: true } },
         evidence: { select: { id: true } },
+        _count: { select: { calculations: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -97,25 +104,27 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className={records.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          <div className="px-6 pb-5">
-            <CreateRecordForm
-              orgId={orgId}
-              periods={periods}
-              categories={categories.map((category) => ({
-                id: category.id,
-                scope: category.scope,
-                label: category.name,
-              }))}
-              facilities={facilities.map((facility) => ({
-                id: facility.id,
-                label: facility.name,
-              }))}
-              businessUnits={businessUnits.map((businessUnit) => ({
-                id: businessUnit.id,
-                label: businessUnit.name,
-              }))}
-            />
-          </div>
+          {canCreateRecords && (
+            <div className="px-6 pb-5">
+              <CreateRecordForm
+                orgId={orgId}
+                periods={periods}
+                categories={categories.map((category) => ({
+                  id: category.id,
+                  scope: category.scope,
+                  label: category.name,
+                }))}
+                facilities={facilities.map((facility) => ({
+                  id: facility.id,
+                  label: facility.name,
+                }))}
+                businessUnits={businessUnits.map((businessUnit) => ({
+                  id: businessUnit.id,
+                  label: businessUnit.name,
+                }))}
+              />
+            </div>
+          )}
           {records.length === 0 ? (
             <EmptyState
               icon={FileText}
@@ -135,6 +144,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                   <TableHead>Distance</TableHead>
                   <TableHead>Evidence</TableHead>
                   <TableHead>Status</TableHead>
+                  {canManageRecords && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -173,13 +183,30 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                         : "Not set"}
                     </TableCell>
                     <TableCell className="text-slate-600">
-                      {record.evidence.length} file{record.evidence.length === 1 ? "" : "s"}
+                      <div>
+                        {record.evidence.length} file{record.evidence.length === 1 ? "" : "s"}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {record.evidenceStatus.replaceAll("_", " ")}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={record.reviewStatus === "approved" ? "default" : "outline"}>
                         {REVIEW_LABELS[record.reviewStatus] ?? record.reviewStatus}
                       </Badge>
                     </TableCell>
+                    {canManageRecords && (
+                      <TableCell>
+                        <RecordActions
+                          orgId={orgId}
+                          recordId={record.id}
+                          label={record.sourceDescription ?? record.supplierName ?? record.id}
+                          reviewStatus={record.reviewStatus}
+                          evidenceStatus={record.evidenceStatus}
+                          canDelete={record._count.calculations === 0}
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
