@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Upload } from "lucide-react";
 import { CreateImportForm } from "./import-form";
+import { CommitImportButton } from "./import-actions";
 
 interface ImportsPageProps {
   params: Promise<{ orgId: string }>;
@@ -113,6 +114,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                   <TableHead>Issues</TableHead>
                   <TableHead>Created by</TableHead>
                   <TableHead>State</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -144,6 +146,13 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                       >
                         {STATE_LABELS[batch.state] ?? batch.state}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <CommitImportButton
+                        orgId={orgId}
+                        importId={batch.id}
+                        disabled={batch.state !== "ready_to_commit"}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

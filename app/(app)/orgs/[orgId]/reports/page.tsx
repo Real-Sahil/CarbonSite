@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { BarChart2 } from "lucide-react";
 import { CreateReportForm } from "./report-form";
+import { ReportDownloadActions } from "./report-download-actions";
 
 interface ReportsPageProps {
   params: Promise<{ orgId: string }>;
@@ -111,6 +112,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                   <TableHead>Artefacts</TableHead>
                   <TableHead>Created by</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Downloads</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -141,6 +143,15 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                       >
                         {STATUS_LABELS[report.status] ?? report.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <ReportDownloadActions
+                        orgId={orgId}
+                        reportId={report.id}
+                        ready={report.status === "ready"}
+                        hasPdf={Boolean(report.pdfStorageKey)}
+                        hasCsv={Boolean(report.csvStorageKey)}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
