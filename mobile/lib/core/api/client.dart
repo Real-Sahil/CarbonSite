@@ -2,34 +2,27 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 const _storage = FlutterSecureStorage();
-const _tokenKey = 'access_token';
-const _refreshKey = 'refresh_token';
 
 Dio createApiClient(String baseUrl) {
   final dio = Dio(BaseOptions(
     baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 30),
+    headers: {'Content-Type': 'application/json'},
   ));
 
-  // Auth interceptor — attaches JWT and auto-refreshes on 401
   dio.interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) async {
-      final token = await _storage.read(key: _tokenKey);
+      final token = await _storage.read(key: 'session_token');
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
       }
       handler.next(options);
     },
     onError: (error, handler) async {
+      // 401: clear stale token and rethrow — caller (router) redirects to /pin-setup
       if (error.response?.statusCode == 401) {
-        final refreshed = await _tryRefresh(dio);
-        if (refreshed) {
-          final token = await _storage.read(key: _tokenKey);
-          error.requestOptions.headers['Authorization'] = 'Bearer $token';
-          final retry = await dio.fetch(error.requestOptions);
-          return handler.resolve(retry);
-        }
+        await _storage.delete(key: 'session_token');
       }
       handler.next(error);
     },
@@ -38,23 +31,19 @@ Dio createApiClient(String baseUrl) {
   return dio;
 }
 
-Future<bool> _tryRefresh(Dio dio) async {
-  try {
-    final refresh = await _storage.read(key: _refreshKey);
-    if (refresh == null) return false;
-    final res = await dio.post('/api/auth/refresh', data: {'refreshToken': refresh});
-    await _storage.write(key: _tokenKey, value: res.data['accessToken'] as String);
-    return true;
-  } catch (_) {
-    return false;
-  }
+// Singleton client — recreated whenever the base URL changes.
+Dio? _client;
+
+Future<Dio> getClient() async {
+  if (_client != null) return _client!;
+  final baseUrl =
+      await _storage.read(key: 'api_base_url') ?? 'http://localhost:3000';
+  _client = createApiClient(baseUrl);
+  return _client!;
 }
 
-Future<void> saveTokens({required String access, required String refresh}) async {
-  await _storage.write(key: _tokenKey, value: access);
-  await _storage.write(key: _refreshKey, value: refresh);
-}
-
-Future<void> clearTokens() async {
-  await _storage.deleteAll();
+/// Call this after a logout or when the base URL changes so the next
+/// [getClient] call creates a fresh instance.
+void invalidateClient() {
+  _client = null;
 }
