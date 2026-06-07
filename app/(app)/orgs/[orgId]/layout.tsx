@@ -54,7 +54,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-50 md:flex-row">
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} />
       <main className="flex-1 min-w-0 overflow-auto">{children}</main>
     </div>

@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { BarChart2, ArrowRight } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  ClipboardCheck,
+  FileText,
+  Inbox,
+  Target,
+  Upload,
+} from "lucide-react";
+import { requireOrgMember } from "@/lib/auth/session";
+import { prisma } from "@/lib/db";
 import {
   Card,
   CardContent,
@@ -8,90 +18,301 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
 }
 
+function formatKgCo2e(value: unknown): string {
+  const numeric = Number(value ?? 0);
+  if (!Number.isFinite(numeric) || numeric === 0) return "0 kgCO2e";
+  if (numeric >= 1000) return `${(numeric / 1000).toFixed(2)} tCO2e`;
+  return `${numeric.toFixed(1)} kgCO2e`;
+}
+
+function formatPercent(complete: number, total: number): string {
+  if (total === 0) return "0%";
+  return `${Math.round((complete / total) * 100)}%`;
+}
+
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const { orgId } = await params;
+  await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+
+  const [
+    organization,
+    currentPeriod,
+    scopeAggregates,
+    recordCount,
+    approvedRecordCount,
+    pendingSubmissionCount,
+    importCount,
+    failedImportCount,
+    reportCount,
+    readyReportCount,
+    targetCount,
+    initiativeCount,
+  ] = await Promise.all([
+    prisma.organization.findUniqueOrThrow({
+      where: { id: orgId },
+      select: { name: true },
+    }),
+    prisma.reportingPeriod.findFirst({
+      where: { organizationId: orgId },
+      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      select: { id: true, label: true, status: true },
+    }),
+    prisma.dashboardAggregate.groupBy({
+      by: ["scope"],
+      where: { organizationId: orgId },
+      _sum: { totalCo2e: true, recordCount: true },
+      orderBy: { scope: "asc" },
+    }),
+    prisma.activityRecord.count({ where: { organizationId: orgId } }),
+    prisma.activityRecord.count({
+      where: { organizationId: orgId, reviewStatus: "approved" },
+    }),
+    prisma.fieldSubmission.count({
+      where: {
+        organizationId: orgId,
+        status: { in: ["pending", "submitted", "under_review", "needs_info"] },
+      },
+    }),
+    prisma.importBatch.count({ where: { organizationId: orgId } }),
+    prisma.importBatch.count({
+      where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
+    }),
+    prisma.report.count({ where: { organizationId: orgId } }),
+    prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
+    prisma.reductionTarget.count({ where: { organizationId: orgId } }),
+    prisma.reductionInitiative.count({ where: { organizationId: orgId } }),
+  ]);
+
+  const scopeRows = [1, 2, 3].map((scope) => {
+    const aggregate = scopeAggregates.find((row) => row.scope === scope);
+    return {
+      scope,
+      total: aggregate?._sum.totalCo2e ?? 0,
+      records: aggregate?._sum.recordCount ?? 0,
+    };
+  });
+
+  const hasAggregates = scopeRows.some((row) => Number(row.total) > 0 || Number(row.records) > 0);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-500 mt-1">
-          Your organisation&apos;s GHG emissions overview.
-        </p>
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-slate-500 mt-1">
+            Live emissions operations for {organization.name}.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">
+            {currentPeriod ? currentPeriod.label : "No reporting period"}
+          </Badge>
+          {currentPeriod && <Badge variant="secondary">{currentPeriod.status}</Badge>}
+        </div>
       </div>
 
-      <Card className="border-green-100 bg-green-50/40">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-              <BarChart2 className="h-5 w-5 text-green-700" />
-            </div>
-            <CardTitle className="text-lg">Coming in Milestone 3</CardTitle>
-          </div>
-          <CardDescription className="text-slate-600 text-sm leading-relaxed">
-            Calculation results and aggregates will appear here once you have
-            imported activity records and run a calculation. You will see
-            real-time Scope 1, 2, and 3 breakdowns, period comparisons, and
-            progress toward your reduction targets.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            {["Scope 1", "Scope 2", "Scope 3"].map((scope) => (
-              <div
-                key={scope}
-                className="rounded-lg border border-green-200 bg-white p-4"
-              >
-                <p className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-1">
-                  {scope}
-                </p>
-                <div className="h-7 w-24 rounded bg-slate-100 animate-pulse" />
-                <p className="text-xs text-slate-400 mt-1">tCO2e</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <Button asChild variant="default" size="sm">
-              <Link href={`/orgs/${orgId}/submissions`}>
-                Review field submissions
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/orgs/${orgId}/imports`}>Import activity data</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          icon={Activity}
+          label="Activity records"
+          value={recordCount.toLocaleString("en-GB")}
+          detail={`${formatPercent(approvedRecordCount, recordCount)} approved`}
+        />
+        <MetricCard
+          icon={Inbox}
+          label="Open field submissions"
+          value={pendingSubmissionCount.toLocaleString("en-GB")}
+          detail="Awaiting triage or reviewer action"
+        />
+        <MetricCard
+          icon={Upload}
+          label="Import batches"
+          value={importCount.toLocaleString("en-GB")}
+          detail={failedImportCount > 0 ? `${failedImportCount} need attention` : "No failed imports"}
+        />
+        <MetricCard
+          icon={FileText}
+          label="Reports"
+          value={readyReportCount.toLocaleString("en-GB")}
+          detail={`${reportCount.toLocaleString("en-GB")} total requested`}
+        />
+      </div>
 
-      <div className="grid grid-cols-2 gap-6 mt-6">
-        {[
-          {
-            title: "Activity Records",
-            description: "Committed emissions data awaiting calculation.",
-            href: `/orgs/${orgId}/records`,
-          },
-          {
-            title: "Reports",
-            description: "Published snapshots and audit-ready PDF reports.",
-            href: `/orgs/${orgId}/reports`,
-          },
-        ].map((item) => (
-          <Link key={item.href} href={item.href} className="group block">
-            <Card className="h-full transition-shadow group-hover:shadow-md">
-              <CardHeader>
-                <CardTitle className="text-base">{item.title}</CardTitle>
-                <CardDescription>{item.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-        ))}
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Emissions by scope</CardTitle>
+            <CardDescription>
+              Aggregates rebuilt from immutable calculation runs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {hasAggregates ? (
+              <div className="grid gap-3 md:grid-cols-3">
+                {scopeRows.map((row) => (
+                  <div key={row.scope} className="rounded-lg border border-slate-200 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Scope {row.scope}
+                    </p>
+                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                      {formatKgCo2e(row.total)}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {Number(row.records).toLocaleString("en-GB")} calculated records
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyPanel
+                title="No calculated aggregates yet"
+                description="Import or approve activity data, then run a calculation to populate scope totals."
+                href={`/orgs/${orgId}/imports`}
+                action="Start an import"
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Production readiness</CardTitle>
+            <CardDescription>
+              Operational signals that must stay real in production.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <ReadinessRow
+              icon={ClipboardCheck}
+              label="Approved record coverage"
+              value={formatPercent(approvedRecordCount, recordCount)}
+            />
+            <ReadinessRow
+              icon={Target}
+              label="Targets and initiatives"
+              value={`${targetCount + initiativeCount}`}
+            />
+            <ReadinessRow
+              icon={Inbox}
+              label="Open submissions"
+              value={`${pendingSubmissionCount}`}
+            />
+            <div className="pt-3">
+              <Button asChild size="sm">
+                <Link href={`/orgs/${orgId}/submissions`}>
+                  Review submissions
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 mt-6 md:grid-cols-2 xl:grid-cols-4">
+        <ActionCard title="Records" description="Review committed activity data and evidence status." href={`/orgs/${orgId}/records`} />
+        <ActionCard title="Imports" description="Upload, validate, and commit activity data batches." href={`/orgs/${orgId}/imports`} />
+        <ActionCard title="Reports" description="Track report requests and signed output artefacts." href={`/orgs/${orgId}/reports`} />
+        <ActionCard title="Targets" description="Manage reduction targets and operational initiatives." href={`/orgs/${orgId}/targets`} />
       </div>
     </div>
+  );
+}
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-slate-500">{label}</p>
+            <p className="mt-2 text-3xl font-bold text-slate-950">{value}</p>
+            <p className="mt-1 text-xs text-slate-500">{detail}</p>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-700">
+            <Icon className="h-5 w-5" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReadinessRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-3">
+      <div className="flex items-center gap-3">
+        <Icon className="h-4 w-4 text-slate-400" />
+        <span className="text-sm text-slate-600">{label}</span>
+      </div>
+      <span className="text-sm font-semibold text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+function EmptyPanel({
+  title,
+  description,
+  href,
+  action,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  action: string;
+}) {
+  return (
+    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6">
+      <p className="font-medium text-slate-800">{title}</p>
+      <p className="mt-1 max-w-xl text-sm text-slate-500">{description}</p>
+      <Button asChild size="sm" className="mt-4">
+        <Link href={href}>{action}</Link>
+      </Button>
+    </div>
+  );
+}
+
+function ActionCard({
+  title,
+  description,
+  href,
+}: {
+  title: string;
+  description: string;
+  href: string;
+}) {
+  return (
+    <Link href={href} className="group block">
+      <Card className="h-full transition-shadow group-hover:shadow-md">
+        <CardHeader>
+          <CardTitle className="text-base">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+      </Card>
+    </Link>
   );
 }

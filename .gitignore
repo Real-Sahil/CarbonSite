@@ -10,6 +10,9 @@ out/
 # Build outputs
 dist/
 build/
+.vinext/
+.wrangler/
+.pnpm-store/
 
 # Environment files
 .env

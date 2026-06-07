@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  // Methodology version — GHG Protocol 2026, GWP AR6
+  // Methodology version - GHG Protocol 2026, GWP AR6
   await prisma.methodologyVersion.upsert({
     where: { name: "ghg-protocol-v2026-01" },
     update: {},
@@ -14,7 +14,7 @@ async function main() {
     },
   });
 
-  // Emission categories (MVP scope — seeded globally, no per-org custom categories)
+  // Emission categories (MVP scope - seeded globally, no per-org custom categories)
   const categories = [
     { scope: 1, code: "s1-stationary", name: "Stationary Combustion", activityType: "stationary_combustion" },
     { scope: 1, code: "s1-mobile", name: "Mobile Combustion", activityType: "mobile_combustion" },
@@ -35,9 +35,8 @@ async function main() {
     });
   }
 
-  // Seed a placeholder factor library record.
-  // Actual factors are loaded via the admin factor import mechanism.
-  // For development/test, add sample factors below this block.
+  // Register approved factor libraries. Factor rows are loaded through the
+  // governed admin import workflow rather than bundled as production data.
   await prisma.factorLibrary.upsert({
     where: { name_version: { name: "DEFRA", version: "2025.1" } },
     update: {},

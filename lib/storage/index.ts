@@ -9,7 +9,7 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { mkdir, writeFile, unlink } from "fs/promises";
+import { mkdir, readFile, writeFile, unlink } from "fs/promises";
 import path from "path";
 
 const DRIVER = process.env.STORAGE_DRIVER ?? "r2";
@@ -34,8 +34,8 @@ const BUCKET = process.env.STORAGE_BUCKET ?? "carbonsite";
 export const keys = {
   evidence: (orgId: string, evidenceId: string, filename: string) =>
     `org/${orgId}/evidence/${evidenceId}/${filename}`,
-  importSource: (orgId: string, importId: string) =>
-    `org/${orgId}/imports/${importId}/source.csv`,
+  importSource: (orgId: string, importId: string, extension = "csv") =>
+    `org/${orgId}/imports/${importId}/source.${extension}`,
   importErrors: (orgId: string, importId: string) =>
     `org/${orgId}/imports/${importId}/errors.csv`,
   reportPdf: (orgId: string, reportId: string) =>
@@ -81,6 +81,20 @@ export async function putObject(key: string, body: Buffer, contentType: string):
   await s3!.send(
     new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: body, ContentType: contentType }),
   );
+}
+
+export async function getObjectBuffer(key: string): Promise<Buffer> {
+  if (DRIVER === "local") {
+    const localPath = path.join(process.cwd(), "uploads", key);
+    return readFile(localPath);
+  }
+
+  const result = await s3!.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  const chunks: Buffer[] = [];
+  for await (const chunk of result.Body as AsyncIterable<Uint8Array>) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
 }
 
 // ── Delete ────────────────────────────────────────────────────────────────────

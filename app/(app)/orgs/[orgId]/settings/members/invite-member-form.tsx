@@ -75,7 +75,6 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
           <Input
             id="invite-email"
             type="email"
-            placeholder="colleague@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
