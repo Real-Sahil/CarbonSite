@@ -13,10 +13,12 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const { orgId } = await params;
 
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
+  let role: Awaited<ReturnType<typeof requireOrgMember>>["membership"]["role"];
 
   try {
     const result = await requireOrgMember(orgId);
     session = result.session;
+    role = result.membership.role;
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) {
@@ -55,7 +57,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 md:flex-row">
-      <OrgSidebar orgId={orgId} orgName={org.name} user={user} />
+      <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={role} />
       <main className="flex-1 min-w-0 overflow-auto">{children}</main>
     </div>
   );

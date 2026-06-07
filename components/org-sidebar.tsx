@@ -10,6 +10,7 @@ import {
   Target,
   Settings,
   Users,
+  Building2,
   Inbox,
   LogOut,
   ChevronDown,
@@ -25,11 +26,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import type { OrgRole } from "@prisma/client";
 
 interface NavItem {
   label: string;
   href: string;
   icon: ElementType;
+  roles: OrgRole[];
 }
 
 interface OrgSidebarProps {
@@ -39,6 +42,7 @@ interface OrgSidebarProps {
     name?: string | null;
     email: string;
   };
+  role: OrgRole;
 }
 
 function getInitials(name?: string | null, email?: string): string {
@@ -52,47 +56,61 @@ function getInitials(name?: string | null, email?: string): string {
   return (email ?? "?").slice(0, 2).toUpperCase();
 }
 
-export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
+export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const navItems: NavItem[] = [
+  const navItems = [
     {
       label: "Dashboard",
       href: `/orgs/${orgId}/dashboard`,
       icon: LayoutDashboard,
+      roles: ["admin", "editor", "reviewer", "viewer", "auditor"],
     },
     {
       label: "Submissions",
       href: `/orgs/${orgId}/submissions`,
       icon: Inbox,
+      roles: ["admin", "editor", "reviewer"],
     },
     {
       label: "Records",
       href: `/orgs/${orgId}/records`,
       icon: FileText,
+      roles: ["admin", "editor", "reviewer", "viewer", "auditor"],
     },
     {
       label: "Imports",
       href: `/orgs/${orgId}/imports`,
       icon: Upload,
+      roles: ["admin", "editor", "reviewer", "viewer", "auditor"],
     },
     {
       label: "Reports",
       href: `/orgs/${orgId}/reports`,
       icon: BarChart2,
+      roles: ["admin", "editor", "reviewer", "viewer", "auditor"],
     },
     {
       label: "Targets",
       href: `/orgs/${orgId}/targets`,
       icon: Target,
+      roles: ["admin", "editor", "reviewer", "viewer", "auditor"],
+    },
+    {
+      label: "Setup",
+      href: `/orgs/${orgId}/settings/operations`,
+      icon: Building2,
+      roles: ["admin", "editor"],
     },
     {
       label: "Settings",
       href: `/orgs/${orgId}/settings/members`,
       icon: Settings,
+      roles: ["admin"],
     },
-  ];
+  ] satisfies NavItem[];
+  const visibleNavItems = navItems.filter((item) => canAccess(item.roles, role));
 
   async function handleSignOut() {
     await authClient.signOut();
@@ -111,10 +129,10 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
               {orgName}
             </span>
           </div>
-          <UserMenu user={user} orgId={orgId} onSignOut={handleSignOut} compact />
+          <UserMenu user={user} orgId={orgId} role={role} onSignOut={handleSignOut} compact />
         </div>
         <nav className="flex gap-1 overflow-x-auto px-3 pb-3">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
@@ -156,7 +174,7 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
         </div>
 
         <nav className="flex flex-1 flex-col gap-0.5 px-3 py-4">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
@@ -184,21 +202,27 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
         </nav>
 
         <div className="border-t border-slate-100 px-3 py-4">
-          <UserMenu user={user} orgId={orgId} onSignOut={handleSignOut} />
+          <UserMenu user={user} orgId={orgId} role={role} onSignOut={handleSignOut} />
         </div>
       </aside>
     </>
   );
 }
 
+function canAccess(roles: readonly OrgRole[], role: OrgRole) {
+  return roles.includes(role);
+}
+
 function UserMenu({
   user,
   orgId,
+  role,
   onSignOut,
   compact = false,
 }: {
   user: OrgSidebarProps["user"];
   orgId: string;
+  role: OrgRole;
   onSignOut: () => void;
   compact?: boolean;
 }) {
@@ -229,13 +253,23 @@ function UserMenu({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side={compact ? "bottom" : "top"} className="w-52">
-        <DropdownMenuItem asChild>
-          <Link href={`/orgs/${orgId}/settings/members`}>
-            <Users className="mr-2 h-4 w-4" />
-            Members &amp; Settings
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        {(role === "admin" || role === "editor") && (
+          <DropdownMenuItem asChild>
+            <Link href={`/orgs/${orgId}/settings/operations`}>
+              <Building2 className="mr-2 h-4 w-4" />
+              Operations setup
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {role === "admin" && (
+          <DropdownMenuItem asChild>
+            <Link href={`/orgs/${orgId}/settings/members`}>
+              <Users className="mr-2 h-4 w-4" />
+              Members &amp; Settings
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {(role === "admin" || role === "editor") && <DropdownMenuSeparator />}
         <DropdownMenuItem
           className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700"
           onClick={onSignOut}
