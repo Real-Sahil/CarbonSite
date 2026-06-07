@@ -1,14 +1,191 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../core/api/endpoints.dart';
 
-class CaptureScreen extends StatelessWidget {
-  const CaptureScreen({super.key});
+class CaptureScreen extends StatefulWidget {
+  final String reportingPeriodId;
+
+  const CaptureScreen({super.key, required this.reportingPeriodId});
+
+  @override
+  State<CaptureScreen> createState() => _CaptureScreenState();
+}
+
+class _CaptureScreenState extends State<CaptureScreen> {
+  static const _storage = FlutterSecureStorage();
+  final _formKey = GlobalKey<FormState>();
+  final _sourceController = TextEditingController();
+  final _amountController = TextEditingController();
+  final _unitController = TextEditingController(text: 'kg');
+  final _supplierController = TextEditingController();
+  final _pickupController = TextEditingController();
+  final _deliveryController = TextEditingController();
+  String _documentType = 'waste_ticket';
+  bool _submitting = false;
+  String? _error;
+  String? _success;
+
+  @override
+  void dispose() {
+    _sourceController.dispose();
+    _amountController.dispose();
+    _unitController.dispose();
+    _supplierController.dispose();
+    _pickupController.dispose();
+    _deliveryController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _submitting = true;
+      _error = null;
+      _success = null;
+    });
+
+    try {
+      final orgId = await _storage.read(key: 'org_id') ?? '';
+      Position? position;
+      try {
+        final permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.always ||
+            permission == LocationPermission.whileInUse) {
+          position = await Geolocator.getCurrentPosition();
+        }
+      } catch (_) {
+        position = null;
+      }
+
+      await submitFieldSubmission(
+        orgId: orgId,
+        reportingPeriodId: widget.reportingPeriodId,
+        documentType: _documentType,
+        pickupPostcode: _pickupController.text.trim(),
+        deliveryPostcode: _deliveryController.text.trim(),
+        gpsLat: position?.latitude,
+        gpsLng: position?.longitude,
+        formData: {
+          'sourceDescription': _sourceController.text.trim(),
+          'amount': double.parse(_amountController.text.trim()),
+          'unit': _unitController.text.trim(),
+          'supplierName': _supplierController.text.trim(),
+          'pickupPostcode': _pickupController.text.trim(),
+          'deliveryPostcode': _deliveryController.text.trim(),
+        },
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _success = 'Submission sent for review.';
+        _sourceController.clear();
+        _amountController.clear();
+        _supplierController.clear();
+        _pickupController.clear();
+        _deliveryController.clear();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Could not submit document. Check the connection and values.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Capture Document')),
-      body: const Center(
-        child: Text('Camera + OCR — TODO: Milestone 2'),
+      appBar: AppBar(title: const Text('Submit evidence')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Field document',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _documentType,
+                  decoration: const InputDecoration(labelText: 'Document type'),
+                  items: const [
+                    DropdownMenuItem(value: 'waste_ticket', child: Text('Waste ticket')),
+                    DropdownMenuItem(value: 'delivery_note', child: Text('Delivery note')),
+                    DropdownMenuItem(value: 'fuel_receipt', child: Text('Fuel receipt')),
+                    DropdownMenuItem(value: 'other', child: Text('Other evidence')),
+                  ],
+                  onChanged: (value) => setState(() => _documentType = value ?? 'other'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _sourceController,
+                  decoration: const InputDecoration(labelText: 'Source description'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty ? 'Enter a source description' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _amountController,
+                  decoration: const InputDecoration(labelText: 'Amount'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  validator: (value) {
+                    final amount = double.tryParse(value ?? '');
+                    return amount == null || amount <= 0 ? 'Enter a positive amount' : null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _unitController,
+                  decoration: const InputDecoration(labelText: 'Unit'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty ? 'Enter a unit' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _supplierController,
+                  decoration: const InputDecoration(labelText: 'Supplier or haulier'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _pickupController,
+                  decoration: const InputDecoration(labelText: 'Pickup postcode'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _deliveryController,
+                  decoration: const InputDecoration(labelText: 'Delivery postcode'),
+                ),
+                const SizedBox(height: 20),
+                if (_error != null)
+                  Text(_error!, style: TextStyle(color: colorScheme.error)),
+                if (_success != null)
+                  Text(_success!, style: TextStyle(color: colorScheme.primary)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _submitting ? null : _submit,
+                    icon: const Icon(Icons.cloud_upload_outlined),
+                    label: Text(_submitting ? 'Submitting...' : 'Submit for review'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

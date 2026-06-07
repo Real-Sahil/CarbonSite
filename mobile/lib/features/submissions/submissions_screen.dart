@@ -1,20 +1,160 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/api/endpoints.dart';
 
-class SubmissionsScreen extends StatelessWidget {
+class SubmissionsScreen extends StatefulWidget {
   const SubmissionsScreen({super.key});
+
+  @override
+  State<SubmissionsScreen> createState() => _SubmissionsScreenState();
+}
+
+class _SubmissionsScreenState extends State<SubmissionsScreen> {
+  static const _storage = FlutterSecureStorage();
+  bool _loading = true;
+  String? _error;
+  List<FieldSubmission> _submissions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final orgId = await _storage.read(key: 'org_id') ?? '';
+      final submissions = await getMySubmissions(orgId);
+      if (!mounted) return;
+      setState(() {
+        _submissions = submissions;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'Could not load submissions. Check the connection and try again.';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Submissions')),
-      body: const Center(
-        child: Text('Submissions list — TODO: Milestone 2'),
+      appBar: AppBar(title: const Text('My submissions')),
+      body: RefreshIndicator(
+        onRefresh: _load,
+        child: _buildBody(context),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/capture'),
-        icon: const Icon(Icons.camera_alt),
-        label: const Text('Capture'),
+        onPressed: () => context.push('/home'),
+        icon: const Icon(Icons.add),
+        label: const Text('Choose project'),
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _load,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
+          ),
+        ],
+      );
+    }
+
+    if (_submissions.isEmpty) {
+      return ListView(
+        padding: const EdgeInsets.all(24),
+        children: const [
+          Icon(Icons.inbox_outlined, size: 48),
+          SizedBox(height: 16),
+          Text('No submissions yet'),
+          SizedBox(height: 8),
+          Text('Choose a project and submit field evidence for review.'),
+        ],
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemBuilder: (context, index) {
+        final submission = _submissions[index];
+        return ListTile(
+          leading: const Icon(Icons.description_outlined),
+          title: Text(_documentLabel(submission.documentType)),
+          subtitle: Text(_formatDate(submission.createdAt)),
+          trailing: _StatusPill(status: submission.status),
+        );
+      },
+      separatorBuilder: (_, __) => const Divider(),
+      itemCount: _submissions.length,
+    );
+  }
+
+  String _documentLabel(String value) {
+    switch (value) {
+      case 'waste_ticket':
+        return 'Waste ticket';
+      case 'delivery_note':
+        return 'Delivery note';
+      case 'fuel_receipt':
+        return 'Fuel receipt';
+      default:
+        return 'Other evidence';
+    }
+  }
+
+  String _formatDate(String raw) {
+    if (raw.isEmpty) return 'Date unavailable';
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) return raw;
+    return '${parsed.day}/${parsed.month}/${parsed.year}';
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  final String status;
+
+  const _StatusPill({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isApproved = status == 'approved';
+    final isRejected = status == 'rejected';
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isApproved
+            ? colorScheme.primaryContainer
+            : isRejected
+                ? colorScheme.errorContainer
+                : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: Text(
+          status.replaceAll('_', ' '),
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
       ),
     );
   }

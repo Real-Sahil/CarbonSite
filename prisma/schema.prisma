@@ -106,6 +106,7 @@ model Organization {
   calculationRuns  CalculationRun[]
   snapshots        PublishedSnapshot[]
   aggregates       DashboardAggregate[]
+  routeDistances   RouteDistance[]
   reports          Report[]
   reviewTasks      ReviewTask[]
   comments         Comment[]
@@ -385,6 +386,15 @@ model ActivityRecord {
   spendCurrency      String?        @map("spend_currency")
   distanceAmount     Decimal?       @map("distance_amount") @db.Decimal(18, 4)
   distanceUnit       String?        @map("distance_unit")
+  pickupPostcode     String?        @map("pickup_postcode")
+  deliveryPostcode   String?        @map("delivery_postcode")
+  pickupLat          Decimal?       @map("pickup_lat") @db.Decimal(10, 7)
+  pickupLng          Decimal?       @map("pickup_lng") @db.Decimal(10, 7)
+  deliveryLat        Decimal?       @map("delivery_lat") @db.Decimal(10, 7)
+  deliveryLng        Decimal?       @map("delivery_lng") @db.Decimal(10, 7)
+  routeDistanceId    String?        @map("route_distance_id")
+  routeDistanceSource String?       @map("route_distance_source")
+  distanceOverrideReason String?    @map("distance_override_reason")
   transportMode      String?        @map("transport_mode")
   fuelType           String?        @map("fuel_type")
   refrigerantType    String?        @map("refrigerant_type")
@@ -404,12 +414,57 @@ model ActivityRecord {
   facility         Facility?             @relation(fields: [facilityId], references: [id])
   businessUnit     BusinessUnit?         @relation(fields: [businessUnitId], references: [id])
   importBatch      ImportBatch?          @relation(fields: [importBatchId], references: [id])
+  routeDistance    RouteDistance?        @relation(fields: [routeDistanceId], references: [id])
   createdBy        User                  @relation("CreatedByUser", fields: [createdByUserId], references: [id])
   calculations EmissionCalculation[]
   evidence     ActivityRecordEvidence[]
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
+  @@index([organizationId, routeDistanceId])
   @@map("activity_records")
+}
+
+model PostcodeGeocode {
+  id                  String   @id @default(cuid())
+  normalizedPostcode  String   @unique @map("normalized_postcode")
+  displayPostcode     String   @map("display_postcode")
+  latitude            Decimal  @db.Decimal(10, 7)
+  longitude           Decimal  @db.Decimal(10, 7)
+  provider            String
+  providerPlaceId     String?  @map("provider_place_id")
+  quality             Json     @default("{}")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  pickupRoutes   RouteDistance[] @relation("PickupGeocode")
+  deliveryRoutes RouteDistance[] @relation("DeliveryGeocode")
+
+  @@map("postcode_geocodes")
+}
+
+model RouteDistance {
+  id                  String   @id @default(cuid())
+  organizationId      String   @map("organization_id")
+  pickupPostcode      String   @map("pickup_postcode")
+  deliveryPostcode    String   @map("delivery_postcode")
+  pickupGeocodeId     String   @map("pickup_geocode_id")
+  deliveryGeocodeId   String   @map("delivery_geocode_id")
+  distanceKm          Decimal  @map("distance_km") @db.Decimal(18, 4)
+  durationSeconds     Int?     @map("duration_seconds")
+  provider            String
+  providerRouteId     String?  @map("provider_route_id")
+  routeHash           String   @unique @map("route_hash")
+  calculationMethod   String   @map("calculation_method")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  pickupGeocode   PostcodeGeocode @relation("PickupGeocode", fields: [pickupGeocodeId], references: [id])
+  deliveryGeocode PostcodeGeocode @relation("DeliveryGeocode", fields: [deliveryGeocodeId], references: [id])
+  activityRecords ActivityRecord[]
+
+  @@index([organizationId, pickupPostcode, deliveryPostcode])
+  @@map("route_distances")
 }
 
 model EvidenceFile {
@@ -496,6 +551,14 @@ model FieldSubmission {
   formData           Json                  @map("form_data")
   gpsLat             Decimal?              @map("gps_lat") @db.Decimal(10, 7)
   gpsLng             Decimal?              @map("gps_lng") @db.Decimal(10, 7)
+  pickupPostcode     String?               @map("pickup_postcode")
+  deliveryPostcode   String?               @map("delivery_postcode")
+  pickupLat          Decimal?              @map("pickup_lat") @db.Decimal(10, 7)
+  pickupLng          Decimal?              @map("pickup_lng") @db.Decimal(10, 7)
+  deliveryLat        Decimal?              @map("delivery_lat") @db.Decimal(10, 7)
+  deliveryLng        Decimal?              @map("delivery_lng") @db.Decimal(10, 7)
+  calculatedDistanceKm Decimal?            @map("calculated_distance_km") @db.Decimal(18, 4)
+  distanceSource     String?               @map("distance_source")
   reviewNote         String?               @map("review_note")
   reviewedByUserId   String?               @map("reviewed_by_user_id")
   reviewedAt         DateTime?             @map("reviewed_at")

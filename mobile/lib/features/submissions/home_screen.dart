@@ -276,7 +276,7 @@ class _ProjectCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => context.push('/capture'),
+                onPressed: () => context.push('/capture?periodId=${project.id}'),
                 icon: const Icon(Icons.camera_alt_outlined, size: 18),
                 label: const Text('Submit document'),
                 style: OutlinedButton.styleFrom(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { getOrCreateRouteDistance } from "@/lib/geo/route-distance";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createActivityRecordSchema } from "@/lib/validation/org";
 
@@ -75,6 +76,26 @@ export async function POST(
     if (body.businessUnitId && !businessUnit) {
       return apiError("INVALID_BUSINESS_UNIT", "Business unit does not belong to this organisation.", 422);
     }
+    if (
+      body.distanceAmount &&
+      !body.distanceOverrideReason &&
+      (!body.pickupPostcode || !body.deliveryPostcode)
+    ) {
+      return apiError(
+        "DISTANCE_OVERRIDE_REASON_REQUIRED",
+        "Manual distance entries require an override reason unless pickup and delivery postcodes are supplied.",
+        422,
+      );
+    }
+
+    const routeDistance =
+      body.pickupPostcode && body.deliveryPostcode
+        ? await getOrCreateRouteDistance({
+            organizationId: orgId,
+            pickupPostcode: body.pickupPostcode,
+            deliveryPostcode: body.deliveryPostcode,
+          })
+        : null;
 
     const record = await prisma.activityRecord.create({
       data: {
@@ -89,6 +110,19 @@ export async function POST(
         businessUnitId: body.businessUnitId,
         supplierName: body.supplierName,
         country: body.country,
+        distanceAmount: routeDistance?.distanceKm ?? body.distanceAmount,
+        distanceUnit: routeDistance ? "km" : body.distanceUnit,
+        pickupPostcode: routeDistance?.pickupPostcode ?? body.pickupPostcode,
+        deliveryPostcode: routeDistance?.deliveryPostcode ?? body.deliveryPostcode,
+        pickupLat: routeDistance?.pickupLat,
+        pickupLng: routeDistance?.pickupLng,
+        deliveryLat: routeDistance?.deliveryLat,
+        deliveryLng: routeDistance?.deliveryLng,
+        routeDistanceId: routeDistance?.id,
+        routeDistanceSource: routeDistance?.provider ?? (body.distanceAmount ? "manual" : undefined),
+        distanceOverrideReason: body.distanceOverrideReason,
+        transportMode: body.transportMode,
+        fuelType: body.fuelType,
         reviewStatus: body.reviewStatus,
         evidenceStatus: body.evidenceStatus,
         assumptionNotes: body.assumptionNotes,
@@ -106,6 +140,8 @@ export async function POST(
         amount: record.amount.toString(),
         unit: record.unit,
         reviewStatus: record.reviewStatus,
+        distanceAmount: record.distanceAmount?.toString(),
+        distanceSource: record.routeDistanceSource,
       },
     });
 

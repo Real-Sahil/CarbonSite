@@ -131,6 +131,8 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                   <TableHead>Amount</TableHead>
                   <TableHead>Period</TableHead>
                   <TableHead>Location</TableHead>
+                  <TableHead>Route</TableHead>
+                  <TableHead>Distance</TableHead>
                   <TableHead>Evidence</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
@@ -157,6 +159,18 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {record.facility?.name ?? record.businessUnit?.name ?? record.country ?? "Not assigned"}
+                    </TableCell>
+                    <TableCell className="text-slate-600">
+                      {record.pickupPostcode && record.deliveryPostcode
+                        ? `${record.pickupPostcode} to ${record.deliveryPostcode}`
+                        : "No route"}
+                    </TableCell>
+                    <TableCell className="text-slate-600">
+                      {record.distanceAmount
+                        ? `${Number(record.distanceAmount).toLocaleString("en-GB", {
+                            maximumFractionDigits: 2,
+                          })} ${record.distanceUnit ?? "km"}`
+                        : "Not set"}
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {record.evidence.length} file{record.evidence.length === 1 ? "" : "s"}

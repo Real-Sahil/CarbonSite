@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SubmissionReviewActions } from "./review-actions";
 
 interface SubmissionsPageProps {
   params: Promise<{ orgId: string }>;
@@ -138,7 +139,9 @@ export default async function SubmissionsPage({
                   <TableHead>Submitted by</TableHead>
                   <TableHead>Reporting period</TableHead>
                   <TableHead>Facility</TableHead>
+                  <TableHead>Route</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -169,12 +172,24 @@ export default async function SubmissionsPage({
                         <span className="text-slate-400 italic">None</span>
                       )}
                     </TableCell>
+                    <TableCell className="text-slate-600">
+                      {s.pickupPostcode && s.deliveryPostcode
+                        ? `${s.pickupPostcode} to ${s.deliveryPostcode}`
+                        : "No route"}
+                    </TableCell>
                     <TableCell className="text-slate-500 text-sm">
                       {s.createdAt.toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
                       })}
+                    </TableCell>
+                    <TableCell>
+                      <SubmissionReviewActions
+                        orgId={orgId}
+                        submissionId={s.id}
+                        disabled={s.status === "approved" || s.status === "rejected"}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

@@ -2,9 +2,37 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CarbonSite | GHG Emissions Tracking",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite.app"),
+  title: {
+    default: "CarbonSite | Construction Carbon Reporting",
+    template: "%s | CarbonSite",
+  },
   description:
-    "Multi-tenant GHG emissions tracking platform for small-to-mid-market companies. Import activity data, run calculations, and generate audit-ready reports.",
+    "Audit-ready carbon reporting for UK construction materials, waste collections, and haulage routes.",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/favicon.svg" }],
+  },
+  openGraph: {
+    title: "CarbonSite",
+    description:
+      "Materials, waste and haulage evidence in one audit-ready construction carbon workspace.",
+    url: "/",
+    siteName: "CarbonSite",
+    images: [{ url: "/carbonsite-site-operations.svg", width: 960, height: 620 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CarbonSite",
+    description:
+      "Audit-ready carbon reporting for UK construction materials, waste and haulage.",
+    images: ["/carbonsite-site-operations.svg"],
+  },
 };
 
 export default function RootLayout({

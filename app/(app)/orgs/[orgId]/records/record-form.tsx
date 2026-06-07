@@ -66,6 +66,13 @@ export function CreateRecordForm({
           facilityId: form.get("facilityId"),
           businessUnitId: form.get("businessUnitId"),
           country: form.get("country"),
+          pickupPostcode: form.get("pickupPostcode"),
+          deliveryPostcode: form.get("deliveryPostcode"),
+          distanceAmount: form.get("distanceAmount"),
+          distanceUnit: form.get("distanceUnit"),
+          distanceOverrideReason: form.get("distanceOverrideReason"),
+          transportMode: form.get("transportMode"),
+          fuelType: form.get("fuelType"),
           reviewStatus: form.get("reviewStatus"),
           evidenceStatus: form.get("evidenceStatus"),
           assumptionNotes: form.get("assumptionNotes"),
@@ -136,6 +143,28 @@ export function CreateRecordForm({
       <Field label="Country">
         <Input name="country" maxLength={80} disabled={!canCreate} />
       </Field>
+      <Field label="Transport mode">
+        <Input name="transportMode" maxLength={80} disabled={!canCreate} />
+      </Field>
+      <Field label="Fuel type">
+        <Input name="fuelType" maxLength={80} disabled={!canCreate} />
+      </Field>
+      <Field label="Pickup postcode">
+        <Input name="pickupPostcode" maxLength={12} disabled={!canCreate} />
+      </Field>
+      <Field label="Delivery postcode">
+        <Input name="deliveryPostcode" maxLength={12} disabled={!canCreate} />
+      </Field>
+      <Field label="Manual distance">
+        <Input name="distanceAmount" type="number" min="0" step="0.0001" disabled={!canCreate} />
+      </Field>
+      <Field label="Distance unit">
+        <Select name="distanceUnit" disabled={!canCreate}>
+          <option value="">Use route result</option>
+          <option value="km">km</option>
+          <option value="mile">mile</option>
+        </Select>
+      </Field>
       <Field label="Review">
         <Select name="reviewStatus" disabled={!canCreate}>
           <option value="draft">Draft</option>
@@ -152,6 +181,9 @@ export function CreateRecordForm({
       </Field>
       <Field label="Assumptions" className="xl:col-span-5">
         <Input name="assumptionNotes" maxLength={2000} disabled={!canCreate} />
+      </Field>
+      <Field label="Distance override reason" className="xl:col-span-5">
+        <Input name="distanceOverrideReason" maxLength={500} disabled={!canCreate} />
       </Field>
       <div className="flex items-end">
         <Button type="submit" disabled={!canCreate || isPending} className="w-full">

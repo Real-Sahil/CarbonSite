@@ -142,6 +142,19 @@ export const createActivityRecordSchema = z.object({
   ),
   supplierName: z.string().max(160).optional(),
   country: z.string().max(80).optional(),
+  distanceAmount: optionalMoneySchema,
+  distanceUnit: z.string().max(16).optional(),
+  pickupPostcode: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(5).max(12).optional(),
+  ),
+  deliveryPostcode: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(5).max(12).optional(),
+  ),
+  distanceOverrideReason: z.string().max(500).optional(),
+  transportMode: z.string().max(80).optional(),
+  fuelType: z.string().max(80).optional(),
   reviewStatus: z
     .enum(["draft", "in_review", "approved", "rejected"])
     .default("draft"),
@@ -151,8 +164,45 @@ export const createActivityRecordSchema = z.object({
   assumptionNotes: z.string().max(2000).optional(),
 });
 
+export const routeDistanceSchema = z.object({
+  pickupPostcode: z.string().min(5).max(12),
+  deliveryPostcode: z.string().min(5).max(12),
+});
+
 export const createReportSchema = z.object({
   reportingPeriodId: z.string().min(1),
   snapshotId: z.string().min(1),
   type: z.enum(["inventory", "monthly_snapshot", "audit_package"]),
+});
+
+export const createFieldSubmissionSchema = z.object({
+  reportingPeriodId: z.string().min(1),
+  emissionCategoryId: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  facilityId: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "other"]),
+  ocrExtractedData: z.record(z.unknown()).optional(),
+  formData: z.record(z.unknown()),
+  gpsLat: z.coerce.number().optional(),
+  gpsLng: z.coerce.number().optional(),
+  pickupPostcode: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(5).max(12).optional(),
+  ),
+  deliveryPostcode: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(5).max(12).optional(),
+  ),
+  deviceSubmittedAt: z.string().datetime().optional(),
+  idempotencyKey: z.string().min(8).max(120).optional(),
+});
+
+export const reviewFieldSubmissionSchema = z.object({
+  status: z.enum(["approved", "rejected", "needs_info", "under_review"]),
+  reviewNote: z.string().max(1000).optional(),
 });

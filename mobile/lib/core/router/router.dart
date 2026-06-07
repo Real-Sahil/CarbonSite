@@ -72,7 +72,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/capture',
-        builder: (context, state) => const CaptureScreen(),
+        builder: (context, state) => CaptureScreen(
+          reportingPeriodId: state.uri.queryParameters['periodId'] ?? '',
+        ),
       ),
     ],
   );

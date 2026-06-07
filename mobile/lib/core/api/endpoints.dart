@@ -165,3 +165,41 @@ Future<List<FieldSubmission>> getMySubmissions(String orgId) async {
       .map((e) => FieldSubmission.fromJson(e as Map<String, dynamic>))
       .toList();
 }
+
+Future<FieldSubmission> submitFieldSubmission({
+  required String orgId,
+  required String reportingPeriodId,
+  required String documentType,
+  required Map<String, dynamic> formData,
+  Map<String, dynamic>? ocrExtractedData,
+  String? emissionCategoryId,
+  String? facilityId,
+  double? gpsLat,
+  double? gpsLng,
+  String? pickupPostcode,
+  String? deliveryPostcode,
+}) async {
+  final client = await getClient();
+  final response = await client.post(
+    '/api/orgs/$orgId/field-submissions',
+    data: {
+      'reportingPeriodId': reportingPeriodId,
+      'documentType': documentType,
+      'formData': formData,
+      if (ocrExtractedData != null) 'ocrExtractedData': ocrExtractedData,
+      if (emissionCategoryId != null && emissionCategoryId.isNotEmpty)
+        'emissionCategoryId': emissionCategoryId,
+      if (facilityId != null && facilityId.isNotEmpty) 'facilityId': facilityId,
+      if (gpsLat != null) 'gpsLat': gpsLat,
+      if (gpsLng != null) 'gpsLng': gpsLng,
+      if (pickupPostcode != null && pickupPostcode.isNotEmpty)
+        'pickupPostcode': pickupPostcode,
+      if (deliveryPostcode != null && deliveryPostcode.isNotEmpty)
+        'deliveryPostcode': deliveryPostcode,
+      'deviceSubmittedAt': DateTime.now().toUtc().toIso8601String(),
+      'idempotencyKey':
+          '$reportingPeriodId-${DateTime.now().microsecondsSinceEpoch}',
+    },
+  );
+  return FieldSubmission.fromJson(response.data as Map<String, dynamic>);
+}
