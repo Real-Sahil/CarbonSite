@@ -2,7 +2,7 @@
 
 ## Summary
 
-CarbonSite is a multi-tenant GHG emissions platform for small-to-mid-market organisations, with construction and field-capture workflows as the first vertical wedge. The production architecture is Next.js on Vercel, Better Auth, Postgres via Prisma, Cloudflare R2-compatible object storage, pg-boss workers, and a Flutter mobile app for field submissions.
+CarbonSite is a multi-tenant GHG emissions platform for small-to-mid-market organisations, with construction and field-capture workflows as the first vertical wedge. The production architecture is Next.js on Vercel, Better Auth, Postgres via Prisma, Cloudflare R2-compatible object storage, inline job processing with optional pg-boss workers, and a Flutter mobile app for field submissions.
 
 The production bar is simple: no static business data, no fake metrics, no placeholder workflows, and no UI that looks generated. Every visible operational state must come from authenticated sessions, organisation-scoped database records, storage objects, job state, calculation runs, published snapshots, reports, or audit logs.
 
@@ -10,7 +10,7 @@ The production bar is simple: no static business data, no fake metrics, no place
 
 - Treat `origin/main` as the canonical branch and keep the Vercel/Next/Prisma architecture intact.
 - Enforce organisation scoping on every tenant-owned query and API route.
-- Keep long-running work out of request handlers; enqueue imports, calculations, reports, parsing, and notifications through pg-boss.
+- Keep job processing explicit. Vercel-only deployments process imports, calculations, and reports inline; larger deployments can switch `JOB_PROCESSING_MODE=worker` and run `pnpm worker`.
 - Store evidence, import files, error exports, and reports through the storage abstraction with signed URLs only.
 - Make calculations traceable, deterministic, immutable, and tied to methodology and factor library versions.
 - Use dashboard aggregates and published snapshots for reporting surfaces; do not calculate dashboard totals from raw rows at request time.
@@ -77,7 +77,7 @@ The production bar is simple: no static business data, no fake metrics, no place
 ### Phase 7: Production Hardening
 
 - Deploy the web app from GitHub to Vercel.
-- Run the pg-boss worker as a separate production process using the same Postgres instance.
+- Keep Vercel on inline job processing until a separate worker is deployed and monitored; then switch `JOB_PROCESSING_MODE=worker`.
 - Configure managed Postgres, object storage, email, and push notification credentials.
 - Add job retry handling, failed-job visibility, import/report failure surfaces, and operational runbooks.
 - Add file size limits, MIME allowlists, route rate limits, signed URL expiry, and storage key validation.

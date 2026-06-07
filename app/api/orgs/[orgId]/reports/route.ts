@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { enqueueReport } from "@/lib/jobs/queues";
+import { dispatchReport } from "@/lib/jobs/dispatch";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createReportSchema } from "@/lib/validation/org";
 
@@ -76,9 +76,12 @@ export async function POST(
       },
     });
 
-    if (report.status === "queued") {
-      await enqueueReport({ orgId, reportId: report.id, snapshotId: body.snapshotId });
-    }
+    const processingMode =
+      report.status === "queued"
+        ? await dispatchReport({ orgId, reportId: report.id, snapshotId: body.snapshotId })
+        : "existing";
+    const currentReport =
+      (await prisma.report.findUnique({ where: { id: report.id } })) ?? report;
 
     await writeAuditLog({
       organizationId: orgId,
@@ -86,10 +89,10 @@ export async function POST(
       action: "report.generation_triggered",
       resourceType: "report",
       resourceId: report.id,
-      metadata: { type: report.type, snapshotId: report.snapshotId },
+      metadata: { type: report.type, snapshotId: report.snapshotId, processingMode },
     });
 
-    return NextResponse.json(report, { status: 201 });
+    return NextResponse.json(currentReport, { status: 201 });
   } catch (err) {
     return handleRouteError(err);
   }

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { enqueueImport } from "@/lib/jobs/queues";
+import { dispatchImport } from "@/lib/jobs/dispatch";
 import { keys, putObject } from "@/lib/storage";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
@@ -105,7 +105,9 @@ export async function POST(
       },
     });
 
-    await enqueueImport({ orgId, importBatchId: batch.id });
+    const processingMode = await dispatchImport({ orgId, importBatchId: batch.id });
+    const currentBatch =
+      (await prisma.importBatch.findUnique({ where: { id: batch.id } })) ?? batch;
 
     await writeAuditLog({
       organizationId: orgId,
@@ -117,10 +119,11 @@ export async function POST(
         sourceFilename: batch.sourceFilename,
         sourceChecksum: batch.sourceChecksum,
         templateKey: batch.templateKey,
+        processingMode,
       },
     });
 
-    return NextResponse.json(batch, { status: 201 });
+    return NextResponse.json(currentBatch, { status: 201 });
   } catch (err) {
     return handleRouteError(err);
   }

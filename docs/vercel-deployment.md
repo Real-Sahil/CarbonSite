@@ -1,6 +1,6 @@
 # Vercel Production Deployment
 
-CarbonSite is deployed as a Vercel Next.js application backed by managed Postgres, object storage, email, and a separate worker runtime for long-running jobs.
+CarbonSite is deployed as a Vercel Next.js application backed by managed Postgres, object storage, email, and optional pg-boss workers. The default Vercel mode processes imports, calculations, and report generation inline so user workflows do not get stranded when no separate worker is running.
 
 ## Required Services
 
@@ -9,7 +9,7 @@ CarbonSite is deployed as a Vercel Next.js application backed by managed Postgre
 - S3-compatible object storage, preferably Cloudflare R2, for evidence files and report artefacts.
 - Resend or equivalent transactional email provider.
 - Firebase Cloud Messaging credentials for the Flutter capture app.
-- A separately hosted worker process for `pnpm worker`; do not run pg-boss workers inside Vercel request handlers.
+- Optional separately hosted worker process for `pnpm worker` when throughput requires background processing.
 
 ## Vercel Environment
 
@@ -29,8 +29,9 @@ Set these variables for Production, Preview, and Development as appropriate:
 - `RESEND_API_KEY`
 - `EMAIL_FROM`
 - `FIREBASE_SERVICE_ACCOUNT_JSON`
+- `JOB_PROCESSING_MODE`
 
-Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactional email is configured.
+Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactional email is configured. Use `JOB_PROCESSING_MODE=inline` for a Vercel-only deployment. Use `JOB_PROCESSING_MODE=worker` only after a separate `pnpm worker` process is deployed with the same database and storage secrets.
 
 ## Release Runbook
 
@@ -38,8 +39,9 @@ Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactio
 2. Run `pnpm prisma generate`.
 3. Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build`.
 4. Deploy the Next.js app through Vercel.
-5. Deploy or restart the worker runtime with the same database, storage, email, and Firebase secrets.
-6. Confirm sign-in, organisation access, imports, submissions, reports, and targets against real organisation-scoped records.
+5. Keep `JOB_PROCESSING_MODE=inline` unless a worker runtime is already deployed.
+6. If using worker mode, deploy or restart the worker runtime with the same database, storage, email, and Firebase secrets.
+7. Confirm sign-in, organisation access, imports, submissions, reports, and targets against real organisation-scoped records.
 
 ## Vercel Build Command
 
@@ -47,4 +49,4 @@ The repository `vercel.json` sets `buildCommand` to `pnpm run build`. If Vercel 
 
 ## Worker Runtime
 
-The worker entrypoint is `workers/index.ts` and the package script is `pnpm worker`. Host it on a long-running service such as Fly.io, Render, Railway, a VM, or a container platform. It must share the same `DATABASE_URL` and storage/email secrets as the Vercel app.
+The worker entrypoint is `workers/index.ts` and the package script is `pnpm worker`. Host it on a long-running service such as Fly.io, Render, Railway, a VM, or a container platform. It must share the same `DATABASE_URL` and storage/email secrets as the Vercel app. Set `JOB_PROCESSING_MODE=worker` on the Vercel app only when that worker is healthy; otherwise leave inline mode enabled.

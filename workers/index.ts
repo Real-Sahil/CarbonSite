@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import { pathToFileURL } from "url";
 import { PgBoss } from "pg-boss";
 import type { Job } from "pg-boss";
 import * as XLSX from "xlsx";
@@ -67,7 +68,7 @@ async function start() {
   console.log("pg-boss workers started");
 }
 
-async function processImport(data: ImportJobData) {
+export async function processImport(data: ImportJobData) {
   const batch = await prisma.importBatch.findFirst({
     where: { id: data.importBatchId, organizationId: data.orgId },
   });
@@ -129,7 +130,7 @@ async function processImport(data: ImportJobData) {
   }
 }
 
-async function processCalculation(data: CalculationJobData) {
+export async function processCalculation(data: CalculationJobData) {
   const run = await prisma.calculationRun.findFirst({
     where: { id: data.calculationRunId, organizationId: data.orgId },
     include: {
@@ -261,7 +262,7 @@ async function processCalculation(data: CalculationJobData) {
   }
 }
 
-async function processReport(data: ReportJobData) {
+export async function processReport(data: ReportJobData) {
   const report = await prisma.report.findFirst({
     where: { id: data.reportId, organizationId: data.orgId },
     include: {
@@ -457,7 +458,9 @@ function pdfEscape(value: string) {
   return value.replaceAll("\\", "\\\\").replaceAll("(", "\\(").replaceAll(")", "\\)");
 }
 
-start().catch((err) => {
-  console.error("Worker failed to start:", err);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  start().catch((err) => {
+    console.error("Worker failed to start:", err);
+    process.exit(1);
+  });
+}

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { enqueueCalculation } from "@/lib/jobs/queues";
+import { dispatchCalculation } from "@/lib/jobs/dispatch";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createCalculationRunSchema } from "@/lib/validation/org";
 
@@ -91,9 +91,12 @@ export async function POST(
       },
     });
 
-    if (run.status === "queued") {
-      await enqueueCalculation({ orgId, calculationRunId: run.id });
-    }
+    const processingMode =
+      run.status === "queued"
+        ? await dispatchCalculation({ orgId, calculationRunId: run.id })
+        : "existing";
+    const currentRun =
+      (await prisma.calculationRun.findUnique({ where: { id: run.id } })) ?? run;
 
     await writeAuditLog({
       organizationId: orgId,
@@ -105,10 +108,11 @@ export async function POST(
         reportingPeriodId: run.reportingPeriodId,
         methodologyVersionId: run.methodologyVersionId,
         factorLibraryId: run.factorLibraryId,
+        processingMode,
       },
     });
 
-    return NextResponse.json(run, { status: 201 });
+    return NextResponse.json(currentRun, { status: 201 });
   } catch (err) {
     return handleRouteError(err);
   }
