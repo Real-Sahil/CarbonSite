@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,7 @@ interface InviteMemberFormProps {
 }
 
 export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<string>("viewer");
   const [loading, setLoading] = useState(false);
@@ -56,9 +58,10 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         return;
       }
 
-      setSuccess(`Invitation sent to ${email.trim()}.`);
+      setSuccess(`${email.trim()} was added to this organisation.`);
       setEmail("");
       setRole("viewer");
+      router.refresh();
       onSuccess?.();
     } catch {
       setError("An unexpected error occurred.");

@@ -20,6 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { InviteMemberForm } from "./invite-member-form";
 import { InviteLinkGenerator } from "./invite-link-generator";
+import { MemberActions } from "./member-actions";
 
 interface MembersPageProps {
   params: Promise<{ orgId: string }>;
@@ -51,7 +52,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
 
   let currentUserId: string;
   try {
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, "admin");
     currentUserId = session.user.id;
   } catch (err) {
     if (err instanceof AuthError) {
@@ -59,7 +60,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
       return (
         <div className="p-8">
           <p className="text-red-600">
-            You do not have permission to manage members.
+          You do not have permission to manage members.
           </p>
         </div>
       );
@@ -87,7 +88,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
   ]);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto flex flex-col gap-8">
+    <div className="p-8 max-w-6xl mx-auto flex flex-col gap-8">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
           Members &amp; Access
@@ -113,6 +114,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -133,6 +135,15 @@ export default async function MembersPage({ params }: MembersPageProps) {
                     <Badge variant={ROLE_VARIANT[m.role] ?? "outline"}>
                       {ROLE_LABELS[m.role] ?? m.role}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <MemberActions
+                      orgId={orgId}
+                      memberId={m.id}
+                      memberName={m.user.name ?? m.user.email}
+                      currentRole={m.role}
+                      isCurrentUser={m.user.id === currentUserId}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
