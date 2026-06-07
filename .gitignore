@@ -33,6 +33,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Local storage uploads (STORAGE_DRIVER=local dev mode)
+uploads/
+
 # Logs
 *.log
 npm-debug.log*

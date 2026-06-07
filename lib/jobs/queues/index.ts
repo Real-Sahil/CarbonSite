@@ -1,19 +1,34 @@
-import { Queue, type ConnectionOptions } from "bullmq";
+// Job queue using pg-boss — no Redis required, uses the existing Postgres instance.
+// The web process calls these enqueue functions. The worker process (workers/index.ts) processes them.
 
-// Pass URL string — avoids ioredis version conflicts between direct dep and BullMQ's bundled dep
-const connection: ConnectionOptions = { url: process.env.REDIS_URL! };
+import { boss } from "../boss";
 
-const defaultJobOptions = {
-  attempts: 3,
-  backoff: { type: "exponential" as const, delay: 2000 },
+const retry = { retryLimit: 3, retryDelay: 2, retryBackoff: true } as const;
+const retryAggressive = { retryLimit: 5, retryDelay: 1, retryBackoff: true } as const;
+
+export type ImportJobData = { importBatchId: string; orgId: string };
+export type CalculationJobData = { calculationRunId: string; orgId: string };
+export type ReportJobData = { reportId: string; orgId: string; snapshotId: string };
+export type NotificationJobData = {
+  type: "task_assigned" | "import_failed" | "report_ready" | "submission_reviewed";
+  recipientUserId: string;
+  orgId: string;
+  resourceId: string;
+  metadata?: Record<string, unknown>;
 };
 
-export { connection as redisConnection };
+export async function enqueueImport(data: ImportJobData) {
+  await boss.send("imports", data, retry);
+}
 
-export const importsQueue = new Queue("imports", { connection, defaultJobOptions });
-export const calculationsQueue = new Queue("calculations", { connection, defaultJobOptions });
-export const reportsQueue = new Queue("reports", { connection, defaultJobOptions });
-export const notificationsQueue = new Queue("notifications", {
-  connection,
-  defaultJobOptions: { attempts: 5, backoff: { type: "exponential" as const, delay: 1000 } },
-});
+export async function enqueueCalculation(data: CalculationJobData) {
+  await boss.send("calculations", data, retry);
+}
+
+export async function enqueueReport(data: ReportJobData) {
+  await boss.send("reports", data, retry);
+}
+
+export async function enqueueNotification(data: NotificationJobData) {
+  await boss.send("notifications", data, retryAggressive);
+}

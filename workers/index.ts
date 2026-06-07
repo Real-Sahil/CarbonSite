@@ -1,40 +1,83 @@
-// BullMQ worker entry point — run as a separate process: pnpm worker
+// pg-boss worker entry point — run as a separate process: pnpm worker
+// Uses the same Postgres instance as the web app. No Redis required.
 // This process never handles HTTP requests.
 
-import { Worker, type ConnectionOptions } from "bullmq";
+import { PgBoss } from "pg-boss";
+import type { Job } from "pg-boss";
+import type {
+  ImportJobData,
+  CalculationJobData,
+  ReportJobData,
+  NotificationJobData,
+} from "@/lib/jobs/queues/index";
 
-const connection: ConnectionOptions = { url: process.env.REDIS_URL! };
-
-async function processImport(job: { data: unknown }) {
-  console.log("[imports] Processing job:", job.data);
-  // TODO: parse → validate → stage → produce error CSV
-}
-
-async function processCalculation(job: { data: unknown }) {
-  console.log("[calculations] Processing job:", job.data);
-  // TODO: normalize units → select factor → compute → persist EmissionCalculation → rebuild DashboardAggregate
-}
-
-async function processReport(job: { data: unknown }) {
-  console.log("[reports] Processing job:", job.data);
-  // TODO: Puppeteer PDF from published snapshot → upload to R2 with checksum
-}
-
-async function processNotification(job: { data: unknown }) {
-  console.log("[notifications] Processing job:", job.data);
-  // TODO: email fan-out via SMTP
-}
-
-const workers = [
-  new Worker("imports", processImport, { connection, concurrency: 2 }),
-  new Worker("calculations", processCalculation, { connection, concurrency: 4 }),
-  new Worker("reports", processReport, { connection, concurrency: 1 }),
-  new Worker("notifications", processNotification, { connection, concurrency: 5 }),
-];
-
-workers.forEach((w) => {
-  w.on("failed", (job, err) => console.error(`[${w.name}] job ${job?.id} failed:`, err.message));
-  w.on("completed", (job) => console.log(`[${w.name}] job ${job.id} completed`));
+const boss = new PgBoss({
+  connectionString: process.env.DATABASE_URL!,
+  max: 10,
 });
 
-console.log("Workers started:", workers.map((w) => w.name).join(", "));
+boss.on("error", (err: Error) => console.error("[pg-boss]", err));
+
+async function start() {
+  await boss.start();
+
+  // ── Imports ──────────────────────────────────────────────────────────────
+  await boss.work<ImportJobData>(
+    "imports",
+    { localConcurrency: 2 },
+    async (jobs: Job<ImportJobData>[]) => {
+      for (const job of jobs) {
+        console.log("[imports] processing:", job.data);
+        // TODO: parse file from R2 → validate rows → create StagedActivityRecord rows
+        // → update ImportBatch.state → produce error CSV
+      }
+    },
+  );
+
+  // ── Calculations ──────────────────────────────────────────────────────────
+  await boss.work<CalculationJobData>(
+    "calculations",
+    { localConcurrency: 4 },
+    async (jobs: Job<CalculationJobData>[]) => {
+      for (const job of jobs) {
+        console.log("[calculations] processing:", job.data);
+        // TODO: normalizeUnit() → selectFactor() → computeCo2e()
+        // → persist immutable EmissionCalculation rows
+        // → rebuild DashboardAggregate
+      }
+    },
+  );
+
+  // ── Reports ───────────────────────────────────────────────────────────────
+  await boss.work<ReportJobData>(
+    "reports",
+    { localConcurrency: 1 },
+    async (jobs: Job<ReportJobData>[]) => {
+      for (const job of jobs) {
+        console.log("[reports] processing:", job.data);
+        // TODO: read PublishedSnapshot → Puppeteer PDF + CSV
+        // → upload to R2 with checksum → update Report.status = 'ready'
+      }
+    },
+  );
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+  await boss.work<NotificationJobData>(
+    "notifications",
+    { localConcurrency: 5 },
+    async (jobs: Job<NotificationJobData>[]) => {
+      for (const job of jobs) {
+        console.log("[notifications] processing:", job.data);
+        // TODO: look up recipient email → send via Resend
+        // → send FCM push notification if device token exists
+      }
+    },
+  );
+
+  console.log("pg-boss workers started (imports, calculations, reports, notifications)");
+}
+
+start().catch((err) => {
+  console.error("Worker failed to start:", err);
+  process.exit(1);
+});

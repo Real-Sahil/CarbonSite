@@ -24,15 +24,16 @@ jobs:
       - run: pnpm test
       - run: pnpm build
         env:
-          # Provide dummy env vars for build-time validation
           DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
-          REDIS_URL: redis://localhost:6379
+          STORAGE_DRIVER: local
           STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
           STORAGE_ACCESS_KEY_ID: placeholder
           STORAGE_SECRET_ACCESS_KEY: placeholder
           STORAGE_BUCKET: carbonsite
           BETTER_AUTH_SECRET: placeholder-secret-32-chars-minimum!!
           BETTER_AUTH_URL: http://localhost:3000
+          EMAIL_DRIVER: console
+          TRUSTED_ORIGINS: http://localhost:3000
 
   flutter:
     name: Flutter — analyze / test / build

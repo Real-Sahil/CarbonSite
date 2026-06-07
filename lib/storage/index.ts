@@ -1,50 +1,94 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+// Storage abstraction — supports two drivers:
+//   STORAGE_DRIVER=r2    (default, production) — Cloudflare R2 via S3 API
+//   STORAGE_DRIVER=local (development) — local filesystem under ./uploads/
+
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { mkdir, writeFile, unlink } from "fs/promises";
+import path from "path";
 
-// Cloudflare R2 is S3-compatible. Swap endpoint for MinIO/Garage in self-hosted environments.
-const s3 = new S3Client({
-  region: "auto",
-  endpoint: process.env.STORAGE_ENDPOINT!, // e.g. https://<account>.r2.cloudflarestorage.com
-  credentials: {
-    accessKeyId: process.env.STORAGE_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY!,
-  },
-});
-
-const BUCKET = process.env.STORAGE_BUCKET!;
+const DRIVER = process.env.STORAGE_DRIVER ?? "r2";
 const PRESIGN_TTL = 60 * 15; // 15 minutes
 
-// Key convention: org/{orgId}/{resource-type}/{resourceId}/{filename}
-export function evidenceKey(orgId: string, evidenceId: string, filename: string) {
-  return `org/${orgId}/evidence/${evidenceId}/${filename}`;
-}
+// ── R2 client (only initialised when driver = r2) ────────────────────────────
+const s3 =
+  DRIVER === "r2"
+    ? new S3Client({
+        region: "auto",
+        endpoint: process.env.STORAGE_ENDPOINT!,
+        credentials: {
+          accessKeyId: process.env.STORAGE_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY!,
+        },
+      })
+    : null;
 
-export function importSourceKey(orgId: string, importId: string) {
-  return `org/${orgId}/imports/${importId}/source.csv`;
-}
+const BUCKET = process.env.STORAGE_BUCKET ?? "carbonsite";
 
-export function importErrorKey(orgId: string, importId: string) {
-  return `org/${orgId}/imports/${importId}/errors.csv`;
-}
+// ── Key conventions ───────────────────────────────────────────────────────────
+export const keys = {
+  evidence: (orgId: string, evidenceId: string, filename: string) =>
+    `org/${orgId}/evidence/${evidenceId}/${filename}`,
+  importSource: (orgId: string, importId: string) =>
+    `org/${orgId}/imports/${importId}/source.csv`,
+  importErrors: (orgId: string, importId: string) =>
+    `org/${orgId}/imports/${importId}/errors.csv`,
+  reportPdf: (orgId: string, reportId: string) =>
+    `org/${orgId}/reports/${reportId}/report.pdf`,
+  reportCsv: (orgId: string, reportId: string) =>
+    `org/${orgId}/reports/${reportId}/report.csv`,
+};
 
-export function reportPdfKey(orgId: string, reportId: string) {
-  return `org/${orgId}/reports/${reportId}/report.pdf`;
-}
+// Legacy exports for backward compat
+export const evidenceKey = keys.evidence;
+export const importSourceKey = keys.importSource;
+export const importErrorKey = keys.importErrors;
+export const reportPdfKey = keys.reportPdf;
+export const reportCsvKey = keys.reportCsv;
 
-export function reportCsvKey(orgId: string, reportId: string) {
-  return `org/${orgId}/reports/${reportId}/report.csv`;
-}
-
-export async function presignUpload(key: string, contentType: string) {
+// ── Upload ────────────────────────────────────────────────────────────────────
+export async function presignUpload(key: string, contentType: string): Promise<string> {
+  if (DRIVER === "local") {
+    // Local dev: return a special internal upload route
+    return `/api/dev/storage/upload?key=${encodeURIComponent(key)}&contentType=${encodeURIComponent(contentType)}`;
+  }
   const cmd = new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType });
-  return getSignedUrl(s3, cmd, { expiresIn: PRESIGN_TTL });
+  return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
 
-export async function presignDownload(key: string) {
+// ── Download ──────────────────────────────────────────────────────────────────
+export async function presignDownload(key: string): Promise<string> {
+  if (DRIVER === "local") {
+    return `/api/dev/storage/serve?key=${encodeURIComponent(key)}`;
+  }
   const cmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
-  return getSignedUrl(s3, cmd, { expiresIn: PRESIGN_TTL });
+  return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
 
-export async function deleteObject(key: string) {
-  await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
+// ── Direct write (used by workers, not by HTTP clients) ───────────────────────
+export async function putObject(key: string, body: Buffer, contentType: string): Promise<void> {
+  if (DRIVER === "local") {
+    const localPath = path.join(process.cwd(), "uploads", key);
+    await mkdir(path.dirname(localPath), { recursive: true });
+    await writeFile(localPath, body);
+    return;
+  }
+  await s3!.send(
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: body, ContentType: contentType }),
+  );
+}
+
+// ── Delete ────────────────────────────────────────────────────────────────────
+export async function deleteObject(key: string): Promise<void> {
+  if (DRIVER === "local") {
+    const localPath = path.join(process.cwd(), "uploads", key);
+    await unlink(localPath).catch(() => {}); // ignore if already gone
+    return;
+  }
+  await s3!.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
 }
