@@ -12,14 +12,20 @@ CarbonSite is a multi-tenant GHG emissions tracking platform for small-to-mid-ma
 **Stack:**
 - **Frontend/Backend:** Next.js 16 (App Router) + React 19 + TypeScript
 - **Auth:** Better Auth (Postgres sessions for web; JWT for Flutter mobile)
-- **Database:** PostgreSQL via Prisma ORM
-- **Queue/Workers:** BullMQ + Redis (`workers/index.ts` — separate process)
-- **Object Storage:** Cloudflare R2 (S3-compatible, free tier — 10 GB/month, zero egress). Self-hosted alternative: Garage or RustFS.
+- **Database:** PostgreSQL via Prisma ORM. Dev: local Postgres. Prod: Neon free tier (no credit card).
+- **Queue/Workers:** `pg-boss` — PostgreSQL-based job queue. No Redis, no Docker. Uses the same Postgres instance.
+- **Object Storage:** Cloudflare R2 (S3-compatible, free tier — 10 GB/month, zero egress, no credit card). Dev: local filesystem adapter.
+- **Email:** Resend (3k/month free, 100/day). Dev: log to console.
+- **Push Notifications:** Firebase Cloud Messaging (FCM) — free, Google account only.
+- **Document Parsing:** `xlsx` (CSV + Excel), `pdf-parse` (PDFs), `mammoth` (DOCX) — all npm, no Python, no Docker.
 - **Emission Factors:** DEFRA 2025 + EPA GHG Hub 2025 + SustainMetrics CSV — seeded into PostgreSQL, zero paid API
 - **PDF generation:** Puppeteer (headless Chromium) in the reports worker
 - **Validation:** Zod at all API boundaries
-- **UI:** shadcn/ui + Tailwind CSS 4
+- **UI:** shadcn/ui + Tailwind CSS 4 + `motion` (animations)
 - **Flutter state:** Riverpod; routing: go_router; HTTP: Dio; offline: drift/SQLite; OCR: google_mlkit_text_recognition (on-device, free, offline)
+
+**No Docker. No Redis. No Python services. No paid subscriptions.**
+External accounts required: Neon (Postgres) + Cloudflare (R2) + Resend (email) + Google (FCM).
 
 ## Commands
 
@@ -31,7 +37,7 @@ pnpm lint              # ESLint
 pnpm typecheck         # tsc --noEmit
 pnpm test              # Vitest run
 pnpm test:watch        # Vitest watch mode
-pnpm worker            # Start BullMQ worker process (separate from Next.js)
+pnpm worker            # Start pg-boss worker process (separate from Next.js, uses same Postgres)
 
 # Database
 pnpm prisma migrate dev          # Apply migrations in development
@@ -143,8 +149,10 @@ Enforce server-side on every org-scoped request via `requireOrgMember(orgId, ...
 - **Flutter mobile:** JWT access tokens stored in `flutter_secure_storage`. Better Auth `/api/auth/token` endpoint. Auto-refresh on 401 via Dio interceptor.
 - **Field worker onboarding:** Admin generates an `InviteLink` (signed token, expires). Field worker opens deep link → Flutter app → sets PIN → immediately in submission mode. No email/password required.
 
-### Background Jobs (BullMQ)
-Four queues: `imports`, `calculations`, `reports`, `notifications`. Connection: URL string to avoid ioredis version conflicts.
+### Background Jobs (pg-boss)
+Uses `pg-boss` — a PostgreSQL-backed job queue. No Redis, no Docker, no extra infrastructure. The same Postgres instance used for app data handles the job queue via `SELECT FOR UPDATE SKIP LOCKED`.
+
+Four queues: `imports`, `calculations`, `reports`, `notifications`.
 
 All jobs must be idempotent and retryable (3 attempts, exponential backoff). Store job status in DB (`ImportBatch.state`, `CalculationRun.status`, `Report.status`). Web process only enqueues — never performs long-running work inline.
 
@@ -152,6 +160,13 @@ Import state machine:
 ```
 uploaded → parsing → validating → needs_attention | ready_to_commit → committed | failed
 ```
+
+**Document parsing (npm, no Python):**
+- `xlsx` — CSV and Excel (.xlsx/.xls) import templates
+- `pdf-parse` — PDF utility bills and delivery notes
+- `mammoth` — DOCX documents to plain text
+
+Called from the `imports` worker, not a separate service.
 
 ### Calculation Engine (`lib/calculation/`)
 Pipeline for each `CalculationRun`:
@@ -237,30 +252,34 @@ Use deterministic fixture factor libraries. Do not use real customer evidence fi
 - Stream large exports; never load an entire org dataset into memory.
 - Required indexes on `ActivityRecord`: `(organization_id, reporting_period_id, category_id, facility_id, review_status, created_at)`.
 
-## Optional Self-Hosted Services
+## External Services (Free Accounts, No Docker)
 
-Run via `docker compose -f services/docker-compose.services.yml up`.
+All services are free tier, no credit card required except Cloudflare R2.
 
-### DocuSeal (`services/docker-compose.services.yml` → port 3001)
-Open-source document signing (https://github.com/docusealco/docuseal). Use for:
-- **Subcontractor agreements** — sign before receiving a field worker invite link
-- **Scope 3 supplier declarations** — supplier signs off on submitted activity data
-- **Audit package sign-off** — auditor digitally signs the final carbon report
-- Webhook: DocuSeal posts to `/api/orgs/[orgId]/webhooks/docuseal` on completion
+### Neon Postgres (production database)
+- Sign up at neon.tech — free tier: 0.5 GB storage, 100 compute-hours/month
+- No local Docker needed in prod; for local dev just install Postgres natively
+- Set `DATABASE_URL` in `.env`
 
-### MarkItDown (`services/markitdown/` → port 8001)
-Microsoft's file-to-Markdown converter (https://github.com/microsoft/markitdown). Use for:
-- Convert uploaded PDFs, Word docs, Excel files to text before field extraction in the import pipeline
-- Called from BullMQ `imports` worker: `POST http://markitdown:8001/convert`
-- Supplements Flutter ML Kit OCR for server-side document re-processing
-- Handles: `.pdf`, `.docx`, `.doc`, `.xlsx`, `.xls`, `.csv`, `.png`, `.jpg`
+### Cloudflare R2 (object storage)
+- Free tier: 10 GB/month, zero egress fees, S3-compatible API
+- Keys: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT`
+- For local dev, `STORAGE_DRIVER=local` writes to `./uploads/` instead
 
-### Android SMS Gateway (manual setup required)
-Install the Android APK on a physical device (https://github.com/capcom6/android-sms-gateway). Use for:
-- Free SMS notifications to field workers who lack corporate email
-- Invite links sent as SMS deep links
-- Submission status alerts: "Your waste ticket has been approved"
-- The app exposes a local HTTP API; configure `ANDROID_SMS_GATEWAY_URL` in `.env`
+### Resend (transactional email)
+- Sign up at resend.com — free tier: 3,000 emails/month, 100/day
+- Used for: org invites, task assignments, import failure alerts, report ready notifications
+- For local dev, set `EMAIL_DRIVER=console` to log emails instead of sending
+- Set `RESEND_API_KEY` in `.env`
+
+### Firebase Cloud Messaging (push notifications — Flutter)
+- Free, requires a Google account + Firebase project
+- Flutter: `firebase_messaging` package handles FCM token registration
+- Server: `firebase-admin` npm package sends push from the notifications worker
+- Set `FIREBASE_SERVICE_ACCOUNT_JSON` in `.env`
+
+### DocuSeal (optional, post-MVP)
+For digital signing of supplier declarations and audit reports. Can be added later — for MVP, a consent checkbox replaces document signing. See https://github.com/docusealco/docuseal when ready.
 
 ## Claude Code Skills
 
