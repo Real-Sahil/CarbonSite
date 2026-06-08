@@ -29,9 +29,20 @@ export async function POST(req: NextRequest) {
       return apiError("INVITE_ALREADY_USED", "This invite link has already been used.", 400);
     }
 
-    // 2. Determine the email for this field worker
+    const requestedEmail = body.email?.trim().toLowerCase();
+    if (invite.email && requestedEmail !== invite.email.toLowerCase()) {
+      return apiError(
+        "INVITE_EMAIL_MISMATCH",
+        "This invite must be accepted with the invited email address.",
+        400,
+      );
+    }
+
+    // 2. Determine the email for this invite acceptance
     const email =
-      body.email ?? `fw-${randomUUID().substring(0, 8)}@field.carbonsite.app`;
+      invite.email?.toLowerCase() ??
+      requestedEmail ??
+      `fw-${randomUUID().substring(0, 8)}@field.carbonsite.app`;
 
     // 3. Find or create the user
     let user = await prisma.user.findUnique({ where: { email } });

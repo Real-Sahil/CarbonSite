@@ -18,6 +18,8 @@ export async function GET(
     const links = await prisma.inviteLink.findMany({
       where: {
         organizationId: orgId,
+        email: null,
+        role: "field_worker",
         expiresAt: { gt: now },
         usedAt: null,
       },

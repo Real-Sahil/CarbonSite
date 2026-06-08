@@ -58,7 +58,7 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         return;
       }
 
-      setSuccess(`${email.trim()} was added to this organisation.`);
+      setSuccess(`Invite sent to ${email.trim()}.`);
       setEmail("");
       setRole("viewer");
       router.refresh();

@@ -151,6 +151,7 @@ model InviteLink {
   id             String    @id @default(cuid())
   organizationId String    @map("organization_id")
   role           OrgRole   @default(field_worker)
+  email          String?
   token          String    @unique @default(cuid())
   expiresAt      DateTime  @map("expires_at")
   usedAt         DateTime? @map("used_at")
@@ -160,6 +161,7 @@ model InviteLink {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
+  @@index([organizationId, email])
   @@map("invite_links")
 }
 

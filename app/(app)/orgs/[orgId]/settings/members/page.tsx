@@ -68,7 +68,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
     throw err;
   }
 
-  const [members, inviteLinks] = await Promise.all([
+  const [members, pendingTeamInvites, inviteLinks] = await Promise.all([
     prisma.organizationMembership.findMany({
       where: { organizationId: orgId },
       include: {
@@ -79,6 +79,18 @@ export default async function MembersPage({ params }: MembersPageProps) {
     prisma.inviteLink.findMany({
       where: {
         organizationId: orgId,
+        email: { not: null },
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    prisma.inviteLink.findMany({
+      where: {
+        organizationId: orgId,
+        email: null,
+        role: "field_worker",
         usedAt: null,
         expiresAt: { gt: new Date() },
       },
@@ -163,6 +175,36 @@ export default async function MembersPage({ params }: MembersPageProps) {
         </CardHeader>
         <CardContent>
           <InviteMemberForm orgId={orgId} />
+          {pendingTeamInvites.length > 0 && (
+            <div className="mt-5 rounded-lg border border-slate-200">
+              <div className="border-b border-slate-100 px-4 py-3">
+                <p className="text-sm font-medium text-slate-800">Pending email invites</p>
+              </div>
+              <div className="divide-y divide-slate-100">
+                {pendingTeamInvites.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{invite.email}</p>
+                      <p className="text-xs text-slate-500">
+                        {ROLE_LABELS[invite.role] ?? invite.role}
+                      </p>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      Expires{" "}
+                      {invite.expiresAt.toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
