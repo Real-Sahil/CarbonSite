@@ -11,10 +11,7 @@ export const metadata: Metadata = {
     "Audit-ready carbon reporting for UK construction materials, waste collections, and haulage routes.",
   manifest: "/site.webmanifest",
   icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/favicon.svg" }],
   },
   openGraph: {
