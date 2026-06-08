@@ -255,3 +255,7 @@ flutter test
 ```
 
 CI runs the same web and mobile checks on `main` and pull requests.
+
+## 14. Operations Runbook
+
+For production incident response, failed job recovery, backup and restore, rollback, and post-release smoke testing, use [CarbonSite Operations Runbook](./operations-runbook.md).

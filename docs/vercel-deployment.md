@@ -49,6 +49,8 @@ Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactio
 9. If using worker mode, deploy or restart the worker runtime with the same database, storage, email, and Firebase secrets.
 10. Confirm sign-in, organisation access, imports, submissions, reports, and targets against real organisation-scoped records.
 
+Use [CarbonSite Operations Runbook](./operations-runbook.md) for incident response, failed job recovery, backup and restore, and rollback procedures.
+
 ## Production Health Check
 
 `GET /api/health` is safe to call from release automation after deployment. It does not return secret values. It confirms that the runtime has all required CarbonSite environment variables for the selected storage, email, routing, and job modes, then verifies database connectivity with a lightweight `SELECT 1`.
