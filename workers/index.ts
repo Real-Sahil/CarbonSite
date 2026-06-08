@@ -330,7 +330,16 @@ export async function processReport(data: ReportJobData) {
     include: {
       organization: true,
       reportingPeriod: true,
-      snapshot: true,
+      snapshot: {
+        include: {
+          calculationRun: {
+            include: {
+              methodologyVersion: true,
+              factorLibrary: true,
+            },
+          },
+        },
+      },
     },
   });
   if (!report) return;
@@ -351,7 +360,48 @@ export async function processReport(data: ReportJobData) {
       orderBy: [{ scope: "asc" }, { createdAt: "asc" }],
     });
 
+    const calculations = await prisma.emissionCalculation.findMany({
+      where: {
+        organizationId: data.orgId,
+        calculationRunId: report.snapshot.calculationRunId,
+      },
+      include: {
+        activityRecord: {
+          include: {
+            emissionCategory: true,
+            facility: true,
+            businessUnit: true,
+            evidence: { select: { id: true } },
+          },
+        },
+        emissionFactor: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const evidenceSummary = summarizeEvidenceStatus(calculations);
+    const assumptionRows = calculations.filter(
+      (calculation) => calculation.activityRecord.assumptionNotes,
+    );
+    const totalCo2e = aggregates.reduce((sum, row) => sum + Number(row.totalCo2e), 0);
+    const generatedAt = new Date().toISOString();
+    const methodology = report.snapshot.calculationRun.methodologyVersion;
+    const factorLibrary = report.snapshot.calculationRun.factorLibrary;
+
     const csv = [
+      ["report_metadata"].join(","),
+      ["organization", csvEscape(report.organization.name)].join(","),
+      ["reporting_period", csvEscape(report.reportingPeriod.label)].join(","),
+      ["report_type", report.type].join(","),
+      ["snapshot_version", report.snapshot.version].join(","),
+      ["generated_at", generatedAt].join(","),
+      ["methodology", csvEscape(methodology.name)].join(","),
+      ["gwp_version", csvEscape(methodology.gwpVersion)].join(","),
+      ["factor_library", csvEscape(`${factorLibrary.name} ${factorLibrary.version}`)].join(","),
+      ["factor_library_license", csvEscape(factorLibrary.license)].join(","),
+      ["total_kgco2e", totalCo2e.toFixed(8)].join(","),
+      "",
+      ["aggregate_summary"].join(","),
       ["scope", "category", "facility", "business_unit", "record_count", "total_kgco2e"].join(","),
       ...aggregates.map((row) =>
         [
@@ -363,6 +413,58 @@ export async function processReport(data: ReportJobData) {
           row.totalCo2e.toString(),
         ].join(","),
       ),
+      "",
+      ["data_quality"].join(","),
+      ["evidence_status", "record_count"].join(","),
+      ...Object.entries(evidenceSummary).map(([status, count]) => [status, count].join(",")),
+      "",
+      ["assumptions"].join(","),
+      ["record_id", "source_description", "assumption_notes"].join(","),
+      ...assumptionRows.map((calculation) =>
+        [
+          calculation.activityRecord.id,
+          csvEscape(calculation.activityRecord.sourceDescription ?? ""),
+          csvEscape(calculation.activityRecord.assumptionNotes ?? ""),
+        ].join(","),
+      ),
+      "",
+      ["calculation_appendix"].join(","),
+      [
+        "record_id",
+        "source_description",
+        "scope",
+        "category",
+        "facility",
+        "business_unit",
+        "activity_amount",
+        "activity_unit",
+        "factor_id",
+        "factor_input_unit",
+        "factor_co2e",
+        "formula",
+        "evidence_status",
+        "evidence_count",
+        "total_kgco2e",
+      ].join(","),
+      ...calculations.map((calculation) =>
+        [
+          calculation.activityRecord.id,
+          csvEscape(calculation.activityRecord.sourceDescription ?? ""),
+          calculation.activityRecord.emissionCategory.scope,
+          csvEscape(calculation.activityRecord.emissionCategory.name),
+          csvEscape(calculation.activityRecord.facility?.name ?? ""),
+          csvEscape(calculation.activityRecord.businessUnit?.name ?? ""),
+          calculation.originalAmount.toString(),
+          calculation.originalUnit,
+          calculation.emissionFactorId,
+          calculation.emissionFactor.inputUnit,
+          calculation.emissionFactor.co2e?.toString() ?? "",
+          csvEscape(calculation.formula),
+          calculation.activityRecord.evidenceStatus,
+          calculation.activityRecord.evidence.length,
+          calculation.totalCo2e.toString(),
+        ].join(","),
+      ),
     ].join("\n");
 
     const pdf = createMinimalPdf([
@@ -371,11 +473,39 @@ export async function processReport(data: ReportJobData) {
       report.reportingPeriod.label,
       `Report type: ${report.type}`,
       `Snapshot version: ${report.snapshot.version}`,
-      `Generated at: ${new Date().toISOString()}`,
+      `Generated at: ${generatedAt}`,
+      `Total kgCO2e: ${totalCo2e.toFixed(2)}`,
+      "",
+      "Methodology",
+      `${methodology.name} (${methodology.gwpVersion})`,
+      methodology.notes ? `Notes: ${methodology.notes}` : "Notes: not supplied",
+      `Factor library: ${factorLibrary.name} ${factorLibrary.version}`,
+      `Factor source: ${factorLibrary.sourceUrl ?? "not supplied"}`,
+      `Factor licence: ${factorLibrary.license}`,
+      "",
+      "Aggregate summary",
+      ...aggregates.slice(0, 12).map((row) =>
+        `Scope ${row.scope} ${row.emissionCategory?.name ?? "Uncategorised"}: ${Number(row.totalCo2e).toFixed(2)} kgCO2e (${row.recordCount} records)`,
+      ),
+      aggregates.length > 12 ? `Additional aggregate rows: ${aggregates.length - 12}` : "",
+      "",
+      "Data quality",
+      `Complete evidence: ${evidenceSummary.complete}`,
+      `Partial evidence: ${evidenceSummary.partial}`,
+      `Missing evidence: ${evidenceSummary.missing}`,
+      `Assumption notes: ${assumptionRows.length}`,
+      "",
+      "Calculation appendix preview",
+      ...calculations.slice(0, 12).map((calculation) =>
+        `${calculation.activityRecord.sourceDescription ?? calculation.activityRecord.id}: ${Number(calculation.totalCo2e).toFixed(2)} kgCO2e using ${calculation.emissionFactor.inputUnit}`,
+      ),
+      calculations.length > 12 ? `Full appendix rows in CSV: ${calculations.length}` : "",
     ]);
 
     const csvBuffer = Buffer.from(csv, "utf8");
     const pdfBuffer = Buffer.from(pdf, "utf8");
+    const csvChecksum = createHash("sha256").update(csvBuffer).digest("hex");
+    const pdfChecksum = createHash("sha256").update(pdfBuffer).digest("hex");
     const csvStorageKey = keys.reportCsv(data.orgId, report.id);
     const pdfStorageKey = keys.reportPdf(data.orgId, report.id);
 
@@ -390,8 +520,8 @@ export async function processReport(data: ReportJobData) {
         status: "ready",
         csvStorageKey,
         pdfStorageKey,
-        csvChecksum: createHash("sha256").update(csvBuffer).digest("hex"),
-        pdfChecksum: createHash("sha256").update(pdfBuffer).digest("hex"),
+        csvChecksum,
+        pdfChecksum,
         publishedAt: new Date(),
       },
     });
@@ -405,8 +535,9 @@ export async function processReport(data: ReportJobData) {
         metadata: {
           snapshotId: report.snapshotId,
           aggregateCount: aggregates.length,
-          csvChecksum: createHash("sha256").update(csvBuffer).digest("hex"),
-          pdfChecksum: createHash("sha256").update(pdfBuffer).digest("hex"),
+          calculationCount: calculations.length,
+          csvChecksum,
+          pdfChecksum,
         },
       },
     });
@@ -521,8 +652,26 @@ function createImportErrorCsv(
   ].join("\n");
 }
 
+function summarizeEvidenceStatus(
+  calculations: Array<{
+    activityRecord: { evidenceStatus: string };
+  }>,
+) {
+  return calculations.reduce(
+    (summary, calculation) => {
+      const status = calculation.activityRecord.evidenceStatus;
+      if (status === "complete") summary.complete += 1;
+      else if (status === "partial") summary.partial += 1;
+      else summary.missing += 1;
+      return summary;
+    },
+    { complete: 0, partial: 0, missing: 0 },
+  );
+}
+
 function createMinimalPdf(lines: string[]) {
-  const text = lines
+  const printableLines = lines.filter((line) => line.trim() !== "").slice(0, 42);
+  const text = printableLines
     .map((line, index) => `BT /F1 12 Tf 72 ${760 - index * 18} Td (${pdfEscape(line)}) Tj ET`)
     .join("\n");
   const objects = [
