@@ -28,7 +28,7 @@ export default async function OperationsSettingsPage({
     throw err;
   }
 
-  const [periods, facilities, businessUnits] = await Promise.all([
+  const [periods, facilities, businessUnits, factorLibraries] = await Promise.all([
     prisma.reportingPeriod.findMany({
       where: { organizationId: orgId },
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
@@ -40,6 +40,10 @@ export default async function OperationsSettingsPage({
     prisma.businessUnit.findMany({
       where: { organizationId: orgId },
       orderBy: { name: "asc" },
+    }),
+    prisma.factorLibrary.findMany({
+      include: { _count: { select: { factors: true } } },
+      orderBy: [{ name: "asc" }, { version: "desc" }],
     }),
   ]);
 
@@ -75,6 +79,12 @@ export default async function OperationsSettingsPage({
         businessUnits={businessUnits.map((businessUnit) => ({
           id: businessUnit.id,
           name: businessUnit.name,
+        }))}
+        factorLibraries={factorLibraries.map((library) => ({
+          id: library.id,
+          name: library.name,
+          version: library.version,
+          factorCount: library._count.factors,
         }))}
       />
     </div>

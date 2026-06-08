@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Save, Trash2 } from "lucide-react";
+import { Plus, Save, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,13 @@ type Facility = {
 type BusinessUnit = {
   id: string;
   name: string;
+};
+
+type FactorLibrary = {
+  factorCount: number;
+  id: string;
+  name: string;
+  version: string;
 };
 
 const PERIOD_TYPES = ["month", "quarter", "year", "custom"] as const;
@@ -53,11 +60,13 @@ export function OperationsSetup({
   periods,
   facilities,
   businessUnits,
+  factorLibraries,
 }: {
   orgId: string;
   periods: ReportingPeriod[];
   facilities: Facility[];
   businessUnits: BusinessUnit[];
+  factorLibraries: FactorLibrary[];
 }) {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
@@ -66,6 +75,99 @@ export function OperationsSetup({
       </section>
       <FacilitiesPanel orgId={orgId} facilities={facilities} />
       <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
+      <section className="xl:col-span-2">
+        <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} />
+      </section>
+    </div>
+  );
+}
+
+function FactorImportPanel({
+  orgId,
+  factorLibraries,
+}: {
+  orgId: string;
+  factorLibraries: FactorLibrary[];
+}) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const canImport = factorLibraries.length > 0;
+
+  function importFactors(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+    const form = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/orgs/${orgId}/factors/import`, {
+          method: "POST",
+          body: form,
+        });
+        const body = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(body?.message ?? "Factor import failed");
+        }
+        event.currentTarget.reset();
+        setSuccess(`${body.importedRows} factor rows imported.`);
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Factor import failed");
+      }
+    });
+  }
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white">
+      <PanelHeader
+        title="Emission factor import"
+        description="Load governed factor rows into an approved library for deterministic calculation runs."
+      />
+      <form onSubmit={importFactors} className="grid gap-3 border-t border-slate-100 p-4 lg:grid-cols-[1fr_1fr_auto]">
+        <Field label="Factor library">
+          <select
+            name="factorLibraryId"
+            required
+            disabled={!canImport || isPending}
+            className={selectClass}
+          >
+            {factorLibraries.map((library) => (
+              <option key={library.id} value={library.id}>
+                {library.name} {library.version} ({library.factorCount} rows)
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Factor file">
+          <input
+            name="file"
+            type="file"
+            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            required
+            disabled={!canImport || isPending}
+            className="h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </Field>
+        <div className="flex items-end">
+          <Button type="submit" disabled={!canImport || isPending} className="w-full">
+            <Upload className="h-4 w-4" />
+            Import factors
+          </Button>
+        </div>
+        {!canImport && (
+          <p className="text-sm text-slate-500 lg:col-span-3">
+            Seed methodology and approved factor libraries before importing factor rows.
+          </p>
+        )}
+        <p className="text-xs leading-5 text-slate-500 lg:col-span-3">
+          Required columns: scope, input_unit, and at least one of co2e, co2, ch4, or n2o. Optional columns include external_id, emission_category_code, activity_type, geography_country, geography_region, effective_start_date, effective_end_date, uncertainty_rating, and usage_notes.
+        </p>
+        {success && <p className="text-sm text-green-700 lg:col-span-3">{success}</p>}
+        {error && <p className="whitespace-pre-line text-sm text-red-600 lg:col-span-3">{error}</p>}
+      </form>
     </div>
   );
 }
