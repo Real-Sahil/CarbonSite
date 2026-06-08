@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   ArrowRight,
   BadgeCheck,
@@ -13,23 +12,9 @@ import {
   Truck,
   UploadCloud,
 } from "lucide-react";
-import { getSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 
-export default async function RootPage() {
-  const session = await getSession();
-
-  if (session) {
-    const membership = await prisma.organizationMembership.findFirst({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "asc" },
-      select: { organizationId: true },
-    });
-
-    redirect(membership ? `/orgs/${membership.organizationId}/dashboard` : "/orgs/new");
-  }
-
+export default function RootPage() {
   return (
     <main className="min-h-[100dvh] bg-[#f7f9f4] text-slate-950">
       <header className="border-b border-slate-200 bg-[#f7f9f4]/95">

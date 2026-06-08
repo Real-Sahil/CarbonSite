@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify:env": "node scripts/verify-env.mjs",
+    "verify:env": "tsx scripts/verify-env.ts",
     "worker": "tsx workers/index.ts",
     "prisma": "prisma"
   },
