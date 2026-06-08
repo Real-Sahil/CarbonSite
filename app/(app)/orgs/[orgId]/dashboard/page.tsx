@@ -1,8 +1,10 @@
 import Link from "next/link";
 import {
   Activity,
+  AlertTriangle,
   ArrowRight,
   ClipboardCheck,
+  Clock,
   FileText,
   Inbox,
   Target,
@@ -62,6 +64,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     failedImportCount,
     reportCount,
     readyReportCount,
+    failedReportCount,
+    failedCalculationCount,
+    recentAuditLogs,
     targetCount,
     initiativeCount,
     reportingPeriods,
@@ -97,6 +102,14 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     }),
     prisma.report.count({ where: { organizationId: orgId } }),
     prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
+    prisma.report.count({ where: { organizationId: orgId, status: "failed" } }),
+    prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }),
+    prisma.auditLog.findMany({
+      where: { organizationId: orgId },
+      include: { actor: { select: { name: true, email: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    }),
     prisma.reductionTarget.count({ where: { organizationId: orgId } }),
     prisma.reductionInitiative.count({ where: { organizationId: orgId } }),
     prisma.reportingPeriod.findMany({
@@ -251,6 +264,66 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
       <Card className="mt-6">
         <CardHeader>
+          <CardTitle className="text-base">Operations health</CardTitle>
+          <CardDescription>
+            Failed workflow signals and recent audit events from live system state.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <HealthSignal
+              href={`/orgs/${orgId}/imports`}
+              label="Imports needing attention"
+              value={failedImportCount}
+            />
+            <HealthSignal
+              href={`/orgs/${orgId}/reports`}
+              label="Failed reports"
+              value={failedReportCount}
+            />
+            <HealthSignal
+              href={`/orgs/${orgId}/dashboard`}
+              label="Failed calculations"
+              value={failedCalculationCount}
+            />
+          </div>
+          <div className="rounded-lg border border-slate-200">
+            {recentAuditLogs.length === 0 ? (
+              <div className="flex min-h-32 flex-col items-center justify-center p-6 text-center">
+                <Clock className="h-6 w-6 text-slate-400" />
+                <p className="mt-2 text-sm font-medium text-slate-700">No audit events yet</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Operational events appear here after users create, review, calculate, or publish data.
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {recentAuditLogs.map((log) => (
+                  <div key={log.id} className="flex items-start justify-between gap-4 p-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-800">
+                        {log.action.replaceAll("_", " ")}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {log.resourceType} - {log.actor?.name ?? log.actor?.email ?? "System"}
+                      </p>
+                    </div>
+                    <time className="shrink-0 text-xs text-slate-400">
+                      {log.createdAt.toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </time>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
           <CardTitle className="text-base">Calculations and snapshots</CardTitle>
           <CardDescription>
             Run calculations from approved records, then publish a snapshot for reports.
@@ -308,6 +381,35 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         <ActionCard title="Targets" description="Manage reduction targets and operational initiatives." href={`/orgs/${orgId}/targets`} />
       </div>
     </div>
+  );
+}
+
+function HealthSignal({
+  href,
+  label,
+  value,
+}: {
+  href: string;
+  label: string;
+  value: number;
+}) {
+  const hasIssue = value > 0;
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between rounded-lg border border-slate-200 p-4 transition-colors hover:bg-slate-50"
+    >
+      <div>
+        <p className="text-sm font-medium text-slate-700">{label}</p>
+        <p className="mt-1 text-xs text-slate-500">
+          {hasIssue ? "Open the workflow to resolve" : "No failures recorded"}
+        </p>
+      </div>
+      <Badge variant={hasIssue ? "destructive" : "outline"} className="gap-1">
+        {hasIssue && <AlertTriangle className="h-3 w-3" />}
+        {value}
+      </Badge>
+    </Link>
   );
 }
 
