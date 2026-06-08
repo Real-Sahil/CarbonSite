@@ -52,7 +52,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(
+    const { session, membership } = await requireOrgMember(
       orgId,
       "admin",
       "editor",
@@ -82,6 +82,9 @@ export async function POST(
             where: {
               id: { in: body.evidenceIds },
               organizationId: orgId,
+              ...(membership.role === "field_worker"
+                ? { uploadedByUserId: session.user.id }
+                : {}),
             },
             select: { id: true },
           })
@@ -98,7 +101,13 @@ export async function POST(
       return apiError("INVALID_FACILITY", "Facility does not belong to this organisation.", 422);
     }
     if (evidenceFiles.length !== new Set(body.evidenceIds).size) {
-      return apiError("INVALID_EVIDENCE", "One or more evidence files do not belong to this organisation.", 422);
+      return apiError(
+        "INVALID_EVIDENCE",
+        membership.role === "field_worker"
+          ? "One or more evidence files were not uploaded by this field user."
+          : "One or more evidence files do not belong to this organisation.",
+        422,
+      );
     }
 
     if (body.idempotencyKey) {
