@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     await writeAuditLog({
       organizationId: org.id,
       actorUserId: session.user.id,
-      action: "record.created",
+      action: "org.created",
       resourceType: "organization",
       resourceId: org.id,
       metadata: { name: org.name },

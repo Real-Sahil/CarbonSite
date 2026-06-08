@@ -42,7 +42,7 @@ export async function PATCH(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.updated",
+      action: "facility.updated",
       resourceType: "facility",
       resourceId: facilityId,
       metadata: { changes: body },
@@ -84,7 +84,7 @@ export async function DELETE(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.deleted",
+      action: "facility.deleted",
       resourceType: "facility",
       resourceId: facilityId,
       metadata: { name: facility.name },
