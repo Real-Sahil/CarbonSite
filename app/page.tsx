@@ -49,10 +49,10 @@ export default function RootPage() {
         <div className="mx-auto max-w-7xl px-5 py-12">
           <div className="max-w-2xl">
             <h1 className="text-2xl font-bold text-slate-950 md:text-3xl">
-              The public site now maps to real product areas.
+              One workspace for evidence, review, calculation, and reporting.
             </h1>
             <p className="mt-3 text-base leading-7 text-slate-600">
-              Each page explains a concrete workflow in the production system: field intake, distance provenance, review tasks, factor imports, reports, and tenant controls.
+              CarbonSite follows the operational trail from field documents and supplier files through review, calculation snapshots, and downloadable reporting packs.
             </p>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -83,10 +83,10 @@ export default function RootPage() {
       <section className="mx-auto max-w-7xl px-5 py-14">
         <div className="max-w-2xl">
           <h1 className="text-2xl font-bold text-slate-950 md:text-3xl">
-            Read the pages behind the product.
+            Explore the core workflows.
           </h1>
           <p className="mt-3 text-base leading-7 text-slate-600">
-            No empty brochure routes. These pages are populated with the workflows, controls, media, and implementation choices CarbonSite is built around.
+            Each area is written for the teams who collect, check, approve, and report construction carbon data.
           </p>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -103,7 +103,7 @@ export default function RootPage() {
           <LinkedPanel
             href="/security"
             title="Security"
-            text="Multi-tenant access control, audit trail, storage policy, job processing, and health checks."
+            text="Tenant access, protected evidence, audit history, review controls, and operational assurance."
           />
           <LinkedPanel
             href="/resources"
