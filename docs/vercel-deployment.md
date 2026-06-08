@@ -29,6 +29,9 @@ Set these variables for Production, Preview, and Development as appropriate:
 - `RESEND_API_KEY`
 - `EMAIL_FROM`
 - `FIREBASE_SERVICE_ACCOUNT_JSON`
+- `ROUTING_PROVIDER`
+- `POSTCODES_BASE_URL`
+- `OSRM_BASE_URL`
 - `JOB_PROCESSING_MODE`
 
 Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactional email is configured. Use `JOB_PROCESSING_MODE=inline` for a Vercel-only deployment. Use `JOB_PROCESSING_MODE=worker` only after a separate `pnpm worker` process is deployed with the same database and storage secrets.
@@ -37,12 +40,13 @@ Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactio
 
 1. Apply Prisma migrations against the production database.
 2. Run `pnpm prisma generate`.
-3. Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build`.
-4. Leave the Vercel Install Command unset. The repository pins Node and pnpm in `package.json`, and Vercel should infer pnpm from `pnpm-lock.yaml`.
-5. Deploy the Next.js app through Vercel.
-6. Keep `JOB_PROCESSING_MODE=inline` unless a worker runtime is already deployed.
-7. If using worker mode, deploy or restart the worker runtime with the same database, storage, email, and Firebase secrets.
-7. Confirm sign-in, organisation access, imports, submissions, reports, and targets against real organisation-scoped records.
+3. Run `pnpm verify:env` with the same environment variables that will be used by Vercel.
+4. Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build`.
+5. Leave the Vercel Install Command unset. The repository pins Node and pnpm in `package.json`, and Vercel should infer pnpm from `pnpm-lock.yaml`.
+6. Deploy the Next.js app through Vercel.
+7. Keep `JOB_PROCESSING_MODE=inline` unless a worker runtime is already deployed.
+8. If using worker mode, deploy or restart the worker runtime with the same database, storage, email, and Firebase secrets.
+9. Confirm sign-in, organisation access, imports, submissions, reports, and targets against real organisation-scoped records.
 
 ## Vercel Build Command
 
