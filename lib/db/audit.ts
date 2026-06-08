@@ -13,6 +13,7 @@ type AuditAction =
   | "facility.deleted"
   | "facility.updated"
   | "org.created"
+  | "org.member.invite_accepted"
   | "org.member.invite"
   | "org.member.role_change"
   | "org.member.remove"

@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
     await writeAuditLog({
       organizationId: invite.organizationId,
       actorUserId: user.id,
-      action: "org.member.invite",
+      action: "org.member.invite_accepted",
       resourceType: "invite_link",
       resourceId: invite.id,
       metadata: {
