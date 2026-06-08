@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  EVIDENCE_MAX_BYTES,
+  isAllowedEvidenceMimeType,
+  normalizeMimeType,
+} from "@/lib/evidence/upload-policy";
 
 // ─── OrgRole enum (mirrors Prisma) ──────────────────────────────────────────
 
@@ -84,8 +89,13 @@ export const updateMemberRoleSchema = z.object({
 
 export const presignUploadSchema = z.object({
   filename: z.string().min(1).max(180),
-  contentType: z.string().min(1).max(120),
-  byteSize: z.coerce.number().int().positive().max(25 * 1024 * 1024),
+  contentType: z
+    .string()
+    .min(1)
+    .max(120)
+    .transform(normalizeMimeType)
+    .refine(isAllowedEvidenceMimeType, "Unsupported evidence file type"),
+  byteSize: z.coerce.number().int().positive().max(EVIDENCE_MAX_BYTES),
   checksum: z.string().min(16).max(128),
 });
 

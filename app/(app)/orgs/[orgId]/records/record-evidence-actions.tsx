@@ -4,6 +4,7 @@ import { ChangeEvent, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EVIDENCE_ACCEPT_ATTRIBUTE, EVIDENCE_MAX_BYTES } from "@/lib/evidence/upload-policy";
 
 type EvidenceFile = {
   id: string;
@@ -47,6 +48,14 @@ export function RecordEvidenceActions({
     if (!file) return;
 
     setError(null);
+    if (!EVIDENCE_ACCEPT_ATTRIBUTE.split(",").includes(file.type)) {
+      setError("Choose a PDF, image, CSV or XLSX evidence file.");
+      return;
+    }
+    if (file.size > EVIDENCE_MAX_BYTES) {
+      setError("Evidence files must be 25 MB or smaller.");
+      return;
+    }
     startTransition(async () => {
       try {
         const bytes = await file.arrayBuffer();
@@ -126,6 +135,7 @@ export function RecordEvidenceActions({
             <input
               ref={fileRef}
               type="file"
+              accept={EVIDENCE_ACCEPT_ATTRIBUTE}
               className="hidden"
               onChange={upload}
             />
