@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Upload } from "lucide-react";
 import { CreateImportForm } from "./import-form";
-import { CommitImportButton } from "./import-actions";
+import { ImportBatchActions } from "./import-actions";
 
 interface ImportsPageProps {
   params: Promise<{ orgId: string }>;
@@ -129,7 +129,14 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                       {(batch.rowCount ?? batch._count.stagedRecords).toLocaleString("en-GB")}
                     </TableCell>
                     <TableCell className="text-slate-600">
-                      {batch.errorCount} errors, {batch.warningCount} warnings
+                      <div>
+                        {batch.errorCount} errors, {batch.warningCount} warnings
+                      </div>
+                      {batch.errorCsvStorageKey && (
+                        <div className="text-xs text-slate-500">
+                          Error export ready
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {batch.createdBy.name ?? batch.createdBy.email}
@@ -148,10 +155,11 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <CommitImportButton
+                      <ImportBatchActions
                         orgId={orgId}
                         importId={batch.id}
-                        disabled={batch.state !== "ready_to_commit"}
+                        canCommit={batch.state === "ready_to_commit"}
+                        hasErrorExport={Boolean(batch.errorCsvStorageKey)}
                       />
                     </TableCell>
                   </TableRow>

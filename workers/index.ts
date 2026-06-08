@@ -95,6 +95,20 @@ export async function processImport(data: ImportJobData) {
       } as const;
     });
     const errorCount = stagedRows.filter((row) => row.validationErrors.length > 0).length;
+    const errorCsvStorageKey = errorCount > 0 ? keys.importErrors(data.orgId, batch.id) : null;
+
+    if (errorCsvStorageKey) {
+      const errorCsv = createImportErrorCsv(
+        stagedRows
+          .filter((row) => row.validationErrors.length > 0)
+          .map((row) => ({
+            rowNumber: row.rowNumber,
+            errors: [...row.validationErrors],
+            data: row.data,
+          })),
+      );
+      await putObject(errorCsvStorageKey, Buffer.from(errorCsv, "utf8"), "text/csv");
+    }
 
     await prisma.$transaction([
       prisma.stagedActivityRecord.deleteMany({
@@ -114,15 +128,46 @@ export async function processImport(data: ImportJobData) {
           rowCount: stagedRows.length,
           errorCount,
           warningCount: 0,
+          errorCsvStorageKey,
         },
       }),
     ]);
   } catch (err) {
+    const errorCsvStorageKey = keys.importErrors(data.orgId, batch.id);
+    await putObject(
+      errorCsvStorageKey,
+      Buffer.from(
+        createImportErrorCsv([
+          {
+            rowNumber: 0,
+            errors: [err instanceof Error ? err.message : "Import processing failed"],
+            data: { sourceFilename: batch.sourceFilename },
+          },
+        ]),
+        "utf8",
+      ),
+      "text/csv",
+    ).catch(() => undefined);
+
     await prisma.importBatch.update({
       where: { id: batch.id },
       data: {
         state: "failed",
         errorCount: 1,
+        errorCsvStorageKey,
+      },
+    });
+    await prisma.auditLog.create({
+      data: {
+        organizationId: data.orgId,
+        action: "import.failed",
+        resourceType: "import_batch",
+        resourceId: batch.id,
+        metadata: {
+          sourceFilename: batch.sourceFilename,
+          error: err instanceof Error ? err.message : "Import processing failed",
+          errorCsvStorageKey,
+        },
       },
     });
     console.error("[imports] failed", data, err);
@@ -442,6 +487,21 @@ function validateImportRow(row: Record<string, string>) {
 function csvEscape(value: string) {
   if (!/[",\n\r]/.test(value)) return value;
   return `"${value.replaceAll('"', '""')}"`;
+}
+
+function createImportErrorCsv(
+  rows: Array<{ rowNumber: number; errors: string[]; data: Record<string, unknown> }>,
+) {
+  return [
+    ["row_number", "errors", "row_data"].join(","),
+    ...rows.map((row) =>
+      [
+        row.rowNumber,
+        csvEscape(row.errors.join("; ")),
+        csvEscape(JSON.stringify(row.data)),
+      ].join(","),
+    ),
+  ].join("\n");
 }
 
 function createMinimalPdf(lines: string[]) {
