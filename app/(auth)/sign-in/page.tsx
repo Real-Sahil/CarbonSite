@@ -32,7 +32,7 @@ export default function SignInPage() {
       { email, password },
       {
         onSuccess: () => {
-          router.push("/");
+          router.push("/app");
         },
         onError: (ctx) => {
           setError(

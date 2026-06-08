@@ -39,7 +39,7 @@ export default function SignUpPage() {
       { name, email, password },
       {
         onSuccess: () => {
-          router.push("/");
+          router.push("/app");
         },
         onError: (ctx) => {
           setError(
