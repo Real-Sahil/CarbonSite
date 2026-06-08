@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Upload } from "lucide-react";
 import { CreateImportForm } from "./import-form";
-import { ImportBatchActions } from "./import-actions";
+import { ImportBatchActions, ImportBatchEvidenceActions } from "./import-actions";
 
 interface ImportsPageProps {
   params: Promise<{ orgId: string }>;
@@ -53,6 +53,11 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
     where: { organizationId: orgId },
     include: {
       createdBy: { select: { name: true, email: true } },
+      evidence: {
+        include: {
+          evidenceFile: { select: { id: true, filename: true } },
+        },
+      },
       _count: { select: { stagedRecords: true, activityRecords: true, evidence: true } },
     },
     orderBy: { createdAt: "desc" },
@@ -112,6 +117,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                   <TableHead>Period</TableHead>
                   <TableHead>Rows</TableHead>
                   <TableHead>Issues</TableHead>
+                  <TableHead>Evidence</TableHead>
                   <TableHead>Created by</TableHead>
                   <TableHead>State</TableHead>
                   <TableHead>Actions</TableHead>
@@ -137,6 +143,16 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                           Error export ready
                         </div>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <ImportBatchEvidenceActions
+                        orgId={orgId}
+                        importId={batch.id}
+                        files={batch.evidence.map((item) => ({
+                          id: item.evidenceFile.id,
+                          filename: item.evidenceFile.filename,
+                        }))}
+                      />
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {batch.createdBy.name ?? batch.createdBy.email}

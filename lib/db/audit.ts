@@ -9,6 +9,7 @@ type AuditAction =
   | "org.member.remove"
   | "import.created"
   | "import.committed"
+  | "import.evidence_attached"
   | "import.failed"
   | "record.created"
   | "record.updated"
