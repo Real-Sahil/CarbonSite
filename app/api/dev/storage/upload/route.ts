@@ -9,7 +9,7 @@ import { apiError, handleRouteError } from "@/lib/validation/api";
 
 export async function PUT(req: NextRequest) {
   try {
-    if (process.env.STORAGE_DRIVER !== "local") {
+    if (process.env.NODE_ENV === "production" || process.env.STORAGE_DRIVER !== "local") {
       return apiError("NOT_FOUND", "Local storage route is disabled.", 404);
     }
 

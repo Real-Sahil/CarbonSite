@@ -82,6 +82,7 @@ JOB_PROCESSING_MODE=inline
 ```
 
 Use `JOB_PROCESSING_MODE=worker` only after a separate worker runtime is deployed and healthy.
+When `NODE_ENV=production`, `pnpm verify:env` rejects development-only local storage, console email, non-HTTPS app origins, and short auth secrets before release.
 
 ## 4. Database
 

@@ -33,6 +33,7 @@ export function verifyEnvironmentConfiguration(
   const storageDriver = env.STORAGE_DRIVER ?? "";
   const emailDriver = env.EMAIL_DRIVER ?? "";
   const jobProcessingMode = env.JOB_PROCESSING_MODE ?? "";
+  const nodeEnv = env.NODE_ENV ?? "";
   const routeProvider = env.ROUTING_PROVIDER ?? "osrm";
   const errors: string[] = [];
 
@@ -71,6 +72,30 @@ export function verifyEnvironmentConfiguration(
     );
   }
 
+  if (nodeEnv === "production") {
+    if (storageDriver === "local") {
+      errors.push('STORAGE_DRIVER must be "r2" when NODE_ENV=production.');
+    }
+    if (emailDriver === "console") {
+      errors.push('EMAIL_DRIVER must be "resend" when NODE_ENV=production.');
+    }
+    if (!isHttpsUrl(env.BETTER_AUTH_URL)) {
+      errors.push("BETTER_AUTH_URL must be an HTTPS URL when NODE_ENV=production.");
+    }
+    if (!isHttpsUrl(env.NEXT_PUBLIC_APP_URL)) {
+      errors.push("NEXT_PUBLIC_APP_URL must be an HTTPS URL when NODE_ENV=production.");
+    }
+    if (!hasMinimumSecretEntropy(env.BETTER_AUTH_SECRET)) {
+      errors.push("BETTER_AUTH_SECRET must be at least 32 characters when NODE_ENV=production.");
+    }
+    for (const origin of parseOrigins(env.TRUSTED_ORIGINS)) {
+      if (!isHttpsUrl(origin)) {
+        errors.push("TRUSTED_ORIGINS must contain only HTTPS origins when NODE_ENV=production.");
+        break;
+      }
+    }
+  }
+
   const missing = required.filter((key) => !hasValue(env[key]));
 
   return {
@@ -89,4 +114,28 @@ export function verifyEnvironmentConfiguration(
 
 function hasValue(value: string | undefined) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function hasMinimumSecretEntropy(value: string | undefined) {
+  const trimmed = value?.trim() ?? "";
+  return trimmed.length >= 32;
+}
+
+function isHttpsUrl(value: string | undefined) {
+  const trimmed = value?.trim() ?? "";
+  if (!trimmed) return false;
+  try {
+    return new URL(trimmed).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function parseOrigins(value: string | undefined) {
+  const trimmed = value?.trim() ?? "";
+  if (!trimmed) return [];
+  return trimmed
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 }

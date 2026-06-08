@@ -63,4 +63,44 @@ describe("verifyEnvironmentConfiguration", () => {
       'EMAIL_DRIVER must be "console" or "resend"; received "smtp".',
     ]);
   });
+
+  test("rejects development-only services in production", () => {
+    const result = verifyEnvironmentConfiguration({
+      ...baseEnv,
+      NODE_ENV: "production",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.errors).toEqual([
+      'STORAGE_DRIVER must be "r2" when NODE_ENV=production.',
+      'EMAIL_DRIVER must be "resend" when NODE_ENV=production.',
+      "BETTER_AUTH_SECRET must be at least 32 characters when NODE_ENV=production.",
+    ]);
+  });
+
+  test("rejects non-HTTPS production app origins", () => {
+    const result = verifyEnvironmentConfiguration({
+      ...baseEnv,
+      BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef",
+      BETTER_AUTH_URL: "http://app.carbonsite.example",
+      EMAIL_DRIVER: "resend",
+      EMAIL_FROM: "noreply@carbonsite.example",
+      NEXT_PUBLIC_APP_URL: "http://app.carbonsite.example",
+      NODE_ENV: "production",
+      RESEND_API_KEY: "re_123",
+      STORAGE_ACCESS_KEY_ID: "access",
+      STORAGE_BUCKET: "carbonsite",
+      STORAGE_DRIVER: "r2",
+      STORAGE_ENDPOINT: "https://example.r2.cloudflarestorage.com",
+      STORAGE_SECRET_ACCESS_KEY: "secret",
+      TRUSTED_ORIGINS: "https://app.carbonsite.example,http://preview.carbonsite.example",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.errors).toEqual([
+      "BETTER_AUTH_URL must be an HTTPS URL when NODE_ENV=production.",
+      "NEXT_PUBLIC_APP_URL must be an HTTPS URL when NODE_ENV=production.",
+      "TRUSTED_ORIGINS must contain only HTTPS origins when NODE_ENV=production.",
+    ]);
+  });
 });
