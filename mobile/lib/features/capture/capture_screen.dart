@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import '../../core/offline/offline_submission_queue.dart';
+import 'ocr_extractor.dart';
 
 class CaptureScreen extends StatefulWidget {
   final String reportingPeriodId;
@@ -27,8 +29,11 @@ class _CaptureScreenState extends State<CaptureScreen> {
   String _documentType = 'waste_ticket';
   XFile? _evidenceImage;
   bool _submitting = false;
+  bool _readingEvidence = false;
   String? _error;
   String? _success;
+  String? _ocrStatus;
+  Map<String, dynamic>? _ocrExtractedData;
 
   @override
   void dispose() {
@@ -47,7 +52,27 @@ class _CaptureScreenState extends State<CaptureScreen> {
       imageQuality: 85,
     );
     if (!mounted || picked == null) return;
-    setState(() => _evidenceImage = picked);
+    setState(() {
+      _evidenceImage = picked;
+      _readingEvidence = true;
+      _ocrStatus = 'Reading evidence text...';
+      _ocrExtractedData = null;
+    });
+
+    try {
+      final extracted = await _readEvidenceText(picked.path);
+      if (!mounted) return;
+      _applyExtractedFields(extracted);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _ocrStatus = 'Evidence captured. Text could not be read automatically.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _readingEvidence = false);
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -85,6 +110,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
         evidenceContentType: image == null
             ? null
             : image.mimeType ?? _contentTypeForPath(image.path),
+        ocrExtractedData: _ocrExtractedData,
         formData: {
           'sourceDescription': _sourceController.text.trim(),
           'amount': double.parse(_amountController.text.trim()),
@@ -109,6 +135,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
         _pickupController.clear();
         _deliveryController.clear();
         _evidenceImage = null;
+        _ocrExtractedData = null;
+        _ocrStatus = null;
       });
     } catch (e) {
       if (!mounted) return;
@@ -128,6 +156,69 @@ class _CaptureScreenState extends State<CaptureScreen> {
     if (extension == '.png') return 'image/png';
     if (extension == '.webp') return 'image/webp';
     return 'image/jpeg';
+  }
+
+  Future<ExtractedFields> _readEvidenceText(String path) async {
+    final recognizer = TextRecognizer(script: TextRecognitionScript.latin);
+    try {
+      final recognized = await recognizer.processImage(
+        InputImage.fromFilePath(path),
+      );
+      return OcrExtractor.extract(recognized.text, _documentTypeForOcr());
+    } finally {
+      await recognizer.close();
+    }
+  }
+
+  DocumentType _documentTypeForOcr() {
+    switch (_documentType) {
+      case 'waste_ticket':
+        return DocumentType.wasteTicket;
+      case 'delivery_note':
+        return DocumentType.deliveryNote;
+      case 'fuel_receipt':
+        return DocumentType.fuelReceipt;
+      default:
+        return DocumentType.other;
+    }
+  }
+
+  void _applyExtractedFields(ExtractedFields extracted) {
+    final data = _extractedData(extracted);
+    final unitText = _unitController.text.trim().toLowerCase();
+    final canReplaceUnit = unitText.isEmpty || unitText == 'kg';
+    if (extracted.weight != null && _amountController.text.trim().isEmpty) {
+      _amountController.text = extracted.weight!;
+    }
+    if (extracted.weightUnit != null && canReplaceUnit) {
+      _unitController.text = extracted.weightUnit!;
+    }
+    if (extracted.volume != null && _amountController.text.trim().isEmpty) {
+      _amountController.text = extracted.volume!;
+    }
+    if (extracted.volumeUnit != null && canReplaceUnit) {
+      _unitController.text = extracted.volumeUnit!;
+    }
+
+    setState(() {
+      _ocrExtractedData = data.isEmpty ? null : data;
+      _ocrStatus = data.isEmpty
+          ? 'Evidence captured. No structured fields were detected.'
+          : 'Evidence text read and structured fields were captured.';
+    });
+  }
+
+  Map<String, dynamic> _extractedData(ExtractedFields extracted) {
+    return {
+      'documentType': extracted.documentType.name,
+      if (extracted.weight != null) 'weight': extracted.weight,
+      if (extracted.weightUnit != null) 'weightUnit': extracted.weightUnit,
+      if (extracted.ewcCode != null) 'ewcCode': extracted.ewcCode,
+      if (extracted.date != null) 'date': extracted.date,
+      if (extracted.vehicleReg != null) 'vehicleReg': extracted.vehicleReg,
+      if (extracted.volume != null) 'volume': extracted.volume,
+      if (extracted.volumeUnit != null) 'volumeUnit': extracted.volumeUnit,
+    };
   }
 
   @override
@@ -169,14 +260,31 @@ class _CaptureScreenState extends State<CaptureScreen> {
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
-                  onPressed: _submitting ? null : _pickEvidenceImage,
-                  icon: const Icon(Icons.photo_camera_outlined),
+                  onPressed: _submitting || _readingEvidence
+                      ? null
+                      : _pickEvidenceImage,
+                  icon: _readingEvidence
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.photo_camera_outlined),
                   label: Text(
                     _evidenceImage == null
                         ? 'Capture evidence photo'
                         : 'Evidence: ${p.basename(_evidenceImage!.path)}',
                   ),
                 ),
+                if (_ocrStatus != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    _ocrStatus!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _sourceController,

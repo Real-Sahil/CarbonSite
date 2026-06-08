@@ -23,6 +23,12 @@ void main() {
         deliveryPostcode: 'M1 1AE',
         gpsLat: 51.501,
         gpsLng: -0.141,
+        ocrExtractedData: {
+          'documentType': 'wasteTicket',
+          'weight': '2.5',
+          'weightUnit': 'tonnes',
+          'ewcCode': '17 09 04',
+        },
       );
 
       final restored = QueuedSubmission.fromJson(submission.toJson());
@@ -39,6 +45,8 @@ void main() {
       expect(restored.deliveryPostcode, submission.deliveryPostcode);
       expect(restored.gpsLat, submission.gpsLat);
       expect(restored.gpsLng, submission.gpsLng);
+      expect(restored.ocrExtractedData?['weightUnit'], 'tonnes');
+      expect(restored.ocrExtractedData?['ewcCode'], '17 09 04');
     });
   });
 }

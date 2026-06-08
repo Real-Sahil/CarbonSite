@@ -21,6 +21,7 @@ class QueuedSubmission {
   final String? deliveryPostcode;
   final double? gpsLat;
   final double? gpsLng;
+  final Map<String, dynamic>? ocrExtractedData;
 
   const QueuedSubmission({
     required this.id,
@@ -37,6 +38,7 @@ class QueuedSubmission {
     this.deliveryPostcode,
     this.gpsLat,
     this.gpsLng,
+    this.ocrExtractedData,
   });
 
   factory QueuedSubmission.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,9 @@ class QueuedSubmission {
       deliveryPostcode: json['deliveryPostcode'] as String?,
       gpsLat: (json['gpsLat'] as num?)?.toDouble(),
       gpsLng: (json['gpsLng'] as num?)?.toDouble(),
+      ocrExtractedData: json['ocrExtractedData'] == null
+          ? null
+          : Map<String, dynamic>.from(json['ocrExtractedData'] as Map),
     );
   }
 
@@ -75,6 +80,7 @@ class QueuedSubmission {
       if (deliveryPostcode != null) 'deliveryPostcode': deliveryPostcode,
       if (gpsLat != null) 'gpsLat': gpsLat,
       if (gpsLng != null) 'gpsLng': gpsLng,
+      if (ocrExtractedData != null) 'ocrExtractedData': ocrExtractedData,
     };
   }
 }
@@ -106,6 +112,7 @@ class OfflineSubmissionQueue {
     String? deliveryPostcode,
     double? gpsLat,
     double? gpsLng,
+    Map<String, dynamic>? ocrExtractedData,
   }) async {
     final now = DateTime.now().toUtc();
     final id = '$reportingPeriodId-${now.microsecondsSinceEpoch}';
@@ -134,6 +141,7 @@ class OfflineSubmissionQueue {
       deliveryPostcode: deliveryPostcode,
       gpsLat: gpsLat,
       gpsLng: gpsLng,
+      ocrExtractedData: ocrExtractedData,
     );
   }
 
@@ -214,6 +222,7 @@ class OfflineSubmissionQueue {
       deliveryPostcode: submission.deliveryPostcode,
       gpsLat: submission.gpsLat,
       gpsLng: submission.gpsLng,
+      ocrExtractedData: submission.ocrExtractedData,
     );
   }
 
