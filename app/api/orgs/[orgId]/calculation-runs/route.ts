@@ -67,13 +67,54 @@ export async function POST(
       return apiError("INVALID_FACTOR_LIBRARY", "Factor library does not exist.", 422);
     }
 
+    const approvedRecords = await prisma.activityRecord.findMany({
+      where: {
+        organizationId: orgId,
+        reportingPeriodId: body.reportingPeriodId,
+        reviewStatus: "approved",
+      },
+      select: {
+        id: true,
+        updatedAt: true,
+        amount: true,
+        unit: true,
+        emissionCategoryId: true,
+        facilityId: true,
+        businessUnitId: true,
+        country: true,
+        distanceAmount: true,
+        distanceUnit: true,
+        routeDistanceId: true,
+      },
+      orderBy: { id: "asc" },
+    });
+    const approvedRecordFingerprint = createHash("sha256")
+      .update(
+        JSON.stringify(
+          approvedRecords.map((record) => ({
+            id: record.id,
+            updatedAt: record.updatedAt.toISOString(),
+            amount: record.amount.toString(),
+            unit: record.unit,
+            emissionCategoryId: record.emissionCategoryId,
+            facilityId: record.facilityId,
+            businessUnitId: record.businessUnitId,
+            country: record.country,
+            distanceAmount: record.distanceAmount?.toString() ?? null,
+            distanceUnit: record.distanceUnit,
+            routeDistanceId: record.routeDistanceId,
+          })),
+        ),
+      )
+      .digest("hex");
+
     const triggerHash = createHash("sha256")
       .update([
         orgId,
         body.reportingPeriodId,
         body.methodologyVersionId,
         body.factorLibraryId,
-        "approved-records",
+        approvedRecordFingerprint,
       ].join(":"))
       .digest("hex");
 
@@ -109,6 +150,8 @@ export async function POST(
         methodologyVersionId: run.methodologyVersionId,
         factorLibraryId: run.factorLibraryId,
         processingMode,
+        approvedRecordCount: approvedRecords.length,
+        approvedRecordFingerprint,
       },
     });
 
