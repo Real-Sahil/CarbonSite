@@ -41,9 +41,19 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const { orgId } = await params;
   await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
+  const [organization, currentPeriod] = await Promise.all([
+    prisma.organization.findUniqueOrThrow({
+      where: { id: orgId },
+      select: { name: true },
+    }),
+    prisma.reportingPeriod.findFirst({
+      where: { organizationId: orgId },
+      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      select: { id: true, label: true, status: true },
+    }),
+  ]);
+
   const [
-    organization,
-    currentPeriod,
     scopeAggregates,
     recordCount,
     approvedRecordCount,
@@ -59,21 +69,18 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     factorLibraries,
     calculationRuns,
   ] = await Promise.all([
-    prisma.organization.findUniqueOrThrow({
-      where: { id: orgId },
-      select: { name: true },
-    }),
-    prisma.reportingPeriod.findFirst({
-      where: { organizationId: orgId },
-      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-      select: { id: true, label: true, status: true },
-    }),
-    prisma.dashboardAggregate.groupBy({
-      by: ["scope"],
-      where: { organizationId: orgId },
-      _sum: { totalCo2e: true, recordCount: true },
-      orderBy: { scope: "asc" },
-    }),
+    currentPeriod
+      ? prisma.dashboardAggregate.groupBy({
+          by: ["scope"],
+          where: {
+            organizationId: orgId,
+            reportingPeriodId: currentPeriod.id,
+            snapshotId: null,
+          },
+          _sum: { totalCo2e: true, recordCount: true },
+          orderBy: { scope: "asc" },
+        })
+      : Promise.resolve([]),
     prisma.activityRecord.count({ where: { organizationId: orgId } }),
     prisma.activityRecord.count({
       where: { organizationId: orgId, reviewStatus: "approved" },

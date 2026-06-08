@@ -283,7 +283,7 @@ export async function processReport(data: ReportJobData) {
       where: {
         organizationId: data.orgId,
         reportingPeriodId: report.reportingPeriodId,
-        OR: [{ snapshotId: report.snapshotId }, { snapshotId: null }],
+        snapshotId: report.snapshotId,
       },
       include: { emissionCategory: true, facility: true, businessUnit: true },
       orderBy: [{ scope: "asc" }, { createdAt: "asc" }],
@@ -331,6 +331,21 @@ export async function processReport(data: ReportJobData) {
         csvChecksum: createHash("sha256").update(csvBuffer).digest("hex"),
         pdfChecksum: createHash("sha256").update(pdfBuffer).digest("hex"),
         publishedAt: new Date(),
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        organizationId: data.orgId,
+        action: "report.published",
+        resourceType: "report",
+        resourceId: report.id,
+        metadata: {
+          snapshotId: report.snapshotId,
+          aggregateCount: aggregates.length,
+          csvChecksum: createHash("sha256").update(csvBuffer).digest("hex"),
+          pdfChecksum: createHash("sha256").update(pdfBuffer).digest("hex"),
+        },
       },
     });
   } catch (err) {
