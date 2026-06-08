@@ -22,6 +22,16 @@ export type RouteDistanceResult = {
   calculationMethod: string;
 };
 
+export class RouteDistanceError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+    public readonly status = 422,
+  ) {
+    super(message);
+  }
+}
+
 export function normalizeUkPostcode(postcode: string): string {
   return postcode.replace(/\s+/g, "").toUpperCase();
 }
@@ -45,7 +55,11 @@ export async function getOrCreateRouteDistance(params: {
   const deliveryPostcode = normalizeUkPostcode(params.deliveryPostcode);
 
   if (!isLikelyUkPostcode(pickupPostcode) || !isLikelyUkPostcode(deliveryPostcode)) {
-    throw new Error("Pickup and delivery postcodes must be valid UK postcode formats.");
+    throw new RouteDistanceError(
+      "INVALID_POSTCODE_FORMAT",
+      "Pickup and delivery postcodes must be valid UK postcode formats.",
+      422,
+    );
   }
 
   const routeHash = hashRoute(params.organizationId, pickupPostcode, deliveryPostcode);
@@ -122,7 +136,11 @@ async function getOrCreatePostcodeGeocode(normalizedPostcode: string) {
     `${POSTCODES_BASE_URL}/postcodes/${encodeURIComponent(normalizedPostcode)}`,
   );
   if (!response.ok) {
-    throw new Error(`Could not geocode postcode ${displayUkPostcode(normalizedPostcode)}.`);
+    throw new RouteDistanceError(
+      "POSTCODE_NOT_FOUND",
+      `Could not geocode postcode ${displayUkPostcode(normalizedPostcode)}.`,
+      422,
+    );
   }
 
   const body = (await response.json()) as {
@@ -137,7 +155,11 @@ async function getOrCreatePostcodeGeocode(normalizedPostcode: string) {
   };
   const result = body.result;
   if (!result?.latitude || !result.longitude) {
-    throw new Error(`No geocode returned for ${displayUkPostcode(normalizedPostcode)}.`);
+    throw new RouteDistanceError(
+      "POSTCODE_NOT_FOUND",
+      `No geocode returned for ${displayUkPostcode(normalizedPostcode)}.`,
+      422,
+    );
   }
 
   return prisma.postcodeGeocode.create({
@@ -164,7 +186,11 @@ async function calculateRoadRoute(params: {
   deliveryLng: number;
 }) {
   if (ROUTING_PROVIDER !== "osrm") {
-    throw new Error(`Unsupported ROUTING_PROVIDER: ${ROUTING_PROVIDER}`);
+    throw new RouteDistanceError(
+      "UNSUPPORTED_ROUTING_PROVIDER",
+      `Unsupported ROUTING_PROVIDER: ${ROUTING_PROVIDER}`,
+      500,
+    );
   }
 
   const url =
@@ -173,7 +199,11 @@ async function calculateRoadRoute(params: {
     "?overview=false&alternatives=false&steps=false";
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error("Could not calculate road distance for the postcode pair.");
+    throw new RouteDistanceError(
+      "ROUTE_DISTANCE_UNAVAILABLE",
+      "Could not calculate road distance for the postcode pair.",
+      502,
+    );
   }
 
   const body = (await response.json()) as {
@@ -181,7 +211,11 @@ async function calculateRoadRoute(params: {
   };
   const route = body.routes?.[0];
   if (!route?.distance) {
-    throw new Error("Routing provider did not return a road distance.");
+    throw new RouteDistanceError(
+      "ROUTE_DISTANCE_UNAVAILABLE",
+      "Routing provider did not return a road distance.",
+      502,
+    );
   }
 
   return {

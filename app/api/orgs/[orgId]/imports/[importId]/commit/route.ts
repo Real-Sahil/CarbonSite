@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { getOrCreateRouteDistance } from "@/lib/geo/route-distance";
+import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 type StagedRowData = Record<string, unknown>;
@@ -82,14 +82,25 @@ export async function POST(
 
       const pickupPostcode = stringValue(data, "pickupPostcode", "pickup_postcode");
       const deliveryPostcode = stringValue(data, "deliveryPostcode", "delivery_postcode");
-      const route =
-        pickupPostcode && deliveryPostcode
-          ? await getOrCreateRouteDistance({
-              organizationId: orgId,
-              pickupPostcode,
-              deliveryPostcode,
-            })
-          : null;
+      let route = null;
+      if (pickupPostcode && deliveryPostcode) {
+        try {
+          route = await getOrCreateRouteDistance({
+            organizationId: orgId,
+            pickupPostcode,
+            deliveryPostcode,
+          });
+        } catch (err) {
+          if (err instanceof RouteDistanceError) {
+            rowErrors.push({
+              rowNumber: row.rowNumber,
+              error: err.message,
+            });
+            continue;
+          }
+          throw err;
+        }
+      }
 
       records.push({
         organizationId: orgId,
