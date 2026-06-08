@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "CarbonSite documentation and static landing page.",
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@8.15.9",
   "scripts": {
     "build": "node scripts/build-static-site.mjs",
     "start": "pnpm run build && node scripts/serve-static-site.mjs",
