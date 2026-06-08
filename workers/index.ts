@@ -296,6 +296,23 @@ export async function processCalculation(data: CalculationJobData) {
         where: { id: run.id },
         data: { status: "succeeded", finishedAt: new Date() },
       });
+      await tx.auditLog.create({
+        data: {
+          organizationId: data.orgId,
+          action: "calculation.run_completed",
+          resourceType: "calculation_run",
+          resourceId: run.id,
+          metadata: {
+            reportingPeriodId: run.reportingPeriodId,
+            factorLibraryId: run.factorLibraryId,
+            factorLibraryVersion: run.factorLibrary.version,
+            methodologyVersionId: run.methodologyVersionId,
+            methodologyVersionName: run.methodologyVersion.name,
+            approvedRecordCount: records.length,
+            calculationCount: calculations.length,
+          },
+        },
+      });
     });
   } catch (err) {
     await prisma.calculationRun.update({

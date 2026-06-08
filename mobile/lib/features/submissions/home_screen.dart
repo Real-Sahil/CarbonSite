@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/endpoints.dart';
+import '../../core/offline/offline_submission_queue.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -58,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
+      await OfflineSubmissionQueue.syncPending();
       final projects = await getProjects(orgId);
       if (!mounted) return;
       setState(() {

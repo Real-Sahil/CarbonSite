@@ -197,6 +197,7 @@ Future<FieldSubmission> submitFieldSubmission({
   required String reportingPeriodId,
   required String documentType,
   required Map<String, dynamic> formData,
+  String? idempotencyKey,
   List<String> evidenceIds = const [],
   Map<String, dynamic>? ocrExtractedData,
   String? emissionCategoryId,
@@ -225,7 +226,7 @@ Future<FieldSubmission> submitFieldSubmission({
         'deliveryPostcode': deliveryPostcode,
       if (evidenceIds.isNotEmpty) 'evidenceIds': evidenceIds,
       'deviceSubmittedAt': DateTime.now().toUtc().toIso8601String(),
-      'idempotencyKey':
+      'idempotencyKey': idempotencyKey ??
           '$reportingPeriodId-${DateTime.now().microsecondsSinceEpoch}',
     },
   );

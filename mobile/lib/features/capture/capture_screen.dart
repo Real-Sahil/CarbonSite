@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
-import '../../core/api/endpoints.dart';
+import '../../core/offline/offline_submission_queue.dart';
 
 class CaptureScreen extends StatefulWidget {
   final String reportingPeriodId;
@@ -71,30 +71,20 @@ class _CaptureScreenState extends State<CaptureScreen> {
         position = null;
       }
 
-      final evidenceIds = <String>[];
       final image = _evidenceImage;
-      if (image != null) {
-        final bytes = await image.readAsBytes();
-        final upload = await uploadEvidenceFile(
-          orgId: orgId,
-          filename: p.basename(image.path),
-          contentType: image.mimeType ?? _contentTypeForPath(image.path),
-          bytes: bytes,
-        );
-        if (upload.id.isNotEmpty) {
-          evidenceIds.add(upload.id);
-        }
-      }
-
-      await submitFieldSubmission(
+      final draft = await OfflineSubmissionQueue.createDraft(
         orgId: orgId,
         reportingPeriodId: widget.reportingPeriodId,
         documentType: _documentType,
-        evidenceIds: evidenceIds,
         pickupPostcode: _pickupController.text.trim(),
         deliveryPostcode: _deliveryController.text.trim(),
         gpsLat: position?.latitude,
         gpsLng: position?.longitude,
+        sourceEvidencePath: image?.path,
+        evidenceFilename: image == null ? null : p.basename(image.path),
+        evidenceContentType: image == null
+            ? null
+            : image.mimeType ?? _contentTypeForPath(image.path),
         formData: {
           'sourceDescription': _sourceController.text.trim(),
           'amount': double.parse(_amountController.text.trim()),
@@ -104,10 +94,15 @@ class _CaptureScreenState extends State<CaptureScreen> {
           'deliveryPostcode': _deliveryController.text.trim(),
         },
       );
+      await OfflineSubmissionQueue.enqueue(draft);
+      final syncResult = await OfflineSubmissionQueue.syncPending();
+      final isQueued = syncResult.failed > 0;
 
       if (!mounted) return;
       setState(() {
-        _success = 'Submission sent for review.';
+        _success = isQueued
+            ? 'Submission saved offline and will sync when online.'
+            : 'Submission sent for review.';
         _sourceController.clear();
         _amountController.clear();
         _supplierController.clear();
@@ -118,7 +113,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Could not submit document. Check the connection and values.';
+        _error =
+            'Could not save this document. Check the values and try again.';
       });
     } finally {
       if (mounted) {

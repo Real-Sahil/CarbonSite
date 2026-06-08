@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/endpoints.dart';
+import '../../core/offline/offline_submission_queue.dart';
 
 class SubmissionsScreen extends StatefulWidget {
   const SubmissionsScreen({super.key});
@@ -15,6 +16,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
   bool _loading = true;
   String? _error;
   List<FieldSubmission> _submissions = [];
+  List<QueuedSubmission> _queuedSubmissions = [];
 
   @override
   void initState() {
@@ -29,15 +31,20 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     });
     try {
       final orgId = await _storage.read(key: 'org_id') ?? '';
+      await OfflineSubmissionQueue.syncPending();
+      final queuedSubmissions = await OfflineSubmissionQueue.pending();
       final submissions = await getMySubmissions(orgId);
       if (!mounted) return;
       setState(() {
         _submissions = submissions;
+        _queuedSubmissions = queuedSubmissions;
         _loading = false;
       });
     } catch (_) {
+      final queuedSubmissions = await OfflineSubmissionQueue.pending();
       if (!mounted) return;
       setState(() {
+        _queuedSubmissions = queuedSubmissions;
         _loading = false;
         _error =
             'Could not load submissions. Check the connection and try again.';
@@ -82,7 +89,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
       );
     }
 
-    if (_submissions.isEmpty) {
+    if (_submissions.isEmpty && _queuedSubmissions.isEmpty) {
       return ListView(
         padding: const EdgeInsets.all(24),
         children: const [
@@ -95,10 +102,21 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
       );
     }
 
+    final itemCount = _queuedSubmissions.length + _submissions.length;
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemBuilder: (context, index) {
-        final submission = _submissions[index];
+        if (index < _queuedSubmissions.length) {
+          final queued = _queuedSubmissions[index];
+          return ListTile(
+            leading: const Icon(Icons.cloud_off_outlined),
+            title: Text(_documentLabel(queued.documentType)),
+            subtitle: Text('Queued locally ${_formatDate(queued.createdAt)}'),
+            trailing: const _StatusPill(status: 'queued'),
+          );
+        }
+        final remoteIndex = index - _queuedSubmissions.length;
+        final submission = _submissions[remoteIndex];
         return ListTile(
           leading: const Icon(Icons.description_outlined),
           title: Text(_documentLabel(submission.documentType)),
@@ -107,7 +125,7 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
         );
       },
       separatorBuilder: (_, __) => const Divider(),
-      itemCount: _submissions.length,
+      itemCount: itemCount,
     );
   }
 
