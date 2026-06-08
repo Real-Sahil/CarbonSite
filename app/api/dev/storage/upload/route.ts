@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { putObject } from "@/lib/storage";
+import { isValidStorageKey, putObject } from "@/lib/storage";
 import {
   isAllowedEvidenceMimeType,
   isAllowedEvidenceSize,
@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest) {
         "application/octet-stream",
     );
 
-    if (!isSafeLocalStorageKey(key)) {
+    if (!isValidStorageKey(key)) {
       return apiError("INVALID_STORAGE_KEY", "Storage key is invalid.", 422);
     }
     if (!isAllowedEvidenceMimeType(contentType)) {
@@ -37,8 +37,4 @@ export async function PUT(req: NextRequest) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
-
-function isSafeLocalStorageKey(key: string) {
-  return key.startsWith("org/") && !key.includes("..") && !key.startsWith("/");
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getObjectBuffer } from "@/lib/storage";
+import { getObjectBuffer, isValidStorageKey } from "@/lib/storage";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 export async function GET(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     }
 
     const key = req.nextUrl.searchParams.get("key") ?? "";
-    if (!isSafeLocalStorageKey(key)) {
+    if (!isValidStorageKey(key)) {
       return apiError("INVALID_STORAGE_KEY", "Storage key is invalid.", 422);
     }
 
@@ -18,8 +18,4 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
-
-function isSafeLocalStorageKey(key: string) {
-  return key.startsWith("org/") && !key.includes("..") && !key.startsWith("/");
 }

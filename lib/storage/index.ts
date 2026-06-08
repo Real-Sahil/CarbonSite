@@ -29,6 +29,7 @@ const s3 =
     : null;
 
 const BUCKET = process.env.STORAGE_BUCKET ?? "carbonsite";
+const SAFE_SEGMENT_RE = /^[A-Za-z0-9][A-Za-z0-9._ -]*$/;
 
 // ── Key conventions ───────────────────────────────────────────────────────────
 export const keys = {
@@ -51,8 +52,39 @@ export const importErrorKey = keys.importErrors;
 export const reportPdfKey = keys.reportPdf;
 export const reportCsvKey = keys.reportCsv;
 
+export function sanitizeStorageFilename(filename: string) {
+  let sanitized = filename.replace(/[^\w.\- ]+/g, "_").trim();
+  if (!sanitized || sanitized === "." || sanitized === "..") return "upload";
+  if (!/^[A-Za-z0-9]/.test(sanitized)) sanitized = `upload_${sanitized.replace(/^[._ -]+/, "")}`;
+  if (!sanitized || sanitized === "upload_") return "upload";
+  return sanitized.slice(0, 180);
+}
+
+export function isValidStorageKey(key: string) {
+  if (key.length === 0 || key.length > 1024) return false;
+  if (!key.startsWith("org/")) return false;
+  if (key.startsWith("/") || key.includes("\\") || key.includes("//")) return false;
+
+  const segments = key.split("/");
+  if (segments.length < 4) return false;
+  if (segments[0] !== "org") return false;
+  if (!["evidence", "imports", "reports"].includes(segments[2])) return false;
+
+  return segments.every((segment) => {
+    if (!segment || segment === "." || segment === "..") return false;
+    return SAFE_SEGMENT_RE.test(segment);
+  });
+}
+
+export function assertStorageKey(key: string) {
+  if (!isValidStorageKey(key)) {
+    throw new Error(`Invalid storage key: ${key}`);
+  }
+}
+
 // ── Upload ────────────────────────────────────────────────────────────────────
 export async function presignUpload(key: string, contentType: string): Promise<string> {
+  assertStorageKey(key);
   if (DRIVER === "local") {
     // Local dev: return a special internal upload route
     return `/api/dev/storage/upload?key=${encodeURIComponent(key)}&contentType=${encodeURIComponent(contentType)}`;
@@ -63,6 +95,7 @@ export async function presignUpload(key: string, contentType: string): Promise<s
 
 // ── Download ──────────────────────────────────────────────────────────────────
 export async function presignDownload(key: string): Promise<string> {
+  assertStorageKey(key);
   if (DRIVER === "local") {
     return `/api/dev/storage/serve?key=${encodeURIComponent(key)}`;
   }
@@ -72,8 +105,9 @@ export async function presignDownload(key: string): Promise<string> {
 
 // ── Direct write (used by workers, not by HTTP clients) ───────────────────────
 export async function putObject(key: string, body: Buffer, contentType: string): Promise<void> {
+  assertStorageKey(key);
   if (DRIVER === "local") {
-    const localPath = path.join(process.cwd(), "uploads", key);
+    const localPath = localStoragePath(key);
     await mkdir(path.dirname(localPath), { recursive: true });
     await writeFile(localPath, body);
     return;
@@ -84,8 +118,9 @@ export async function putObject(key: string, body: Buffer, contentType: string):
 }
 
 export async function getObjectBuffer(key: string): Promise<Buffer> {
+  assertStorageKey(key);
   if (DRIVER === "local") {
-    const localPath = path.join(process.cwd(), "uploads", key);
+    const localPath = localStoragePath(key);
     return readFile(localPath);
   }
 
@@ -99,10 +134,20 @@ export async function getObjectBuffer(key: string): Promise<Buffer> {
 
 // ── Delete ────────────────────────────────────────────────────────────────────
 export async function deleteObject(key: string): Promise<void> {
+  assertStorageKey(key);
   if (DRIVER === "local") {
-    const localPath = path.join(process.cwd(), "uploads", key);
+    const localPath = localStoragePath(key);
     await unlink(localPath).catch(() => {}); // ignore if already gone
     return;
   }
   await s3!.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
+}
+
+function localStoragePath(key: string) {
+  const root = path.resolve(process.cwd(), "uploads");
+  const resolved = path.resolve(root, key);
+  if (resolved !== root && !resolved.startsWith(`${root}${path.sep}`)) {
+    throw new Error(`Invalid local storage path: ${key}`);
+  }
+  return resolved;
 }
