@@ -198,7 +198,7 @@ The mobile app accepts field-worker invites, stores bearer sessions securely, ca
 
 ## 11. GitHub Actions Mobile Builds
 
-Use **Actions > Mobile release builds > Run workflow** to produce mobile artifacts from the repository.
+Use **Actions > Mobile release builds > Run workflow** or push a `v*` / `mobile-v*` tag to produce mobile artifacts from the repository.
 
 Inputs:
 
@@ -206,14 +206,14 @@ Inputs:
 - `build_android`: produces release APK and AAB artifacts.
 - `build_ios`: produces an unsigned iOS app artifact on a macOS runner.
 
-The iOS workflow intentionally uses `--no-codesign`; App Store or TestFlight delivery still needs an Apple signing lane with certificate and provisioning profile secrets.
-
-For signed Android release artifacts, add these repository secrets before running the workflow:
+Android release artifacts require these repository secrets before the workflow runs:
 
 - `CARBONSITE_ANDROID_KEYSTORE_BASE64`
 - `CARBONSITE_ANDROID_KEYSTORE_PASSWORD`
 - `CARBONSITE_ANDROID_KEY_ALIAS`
 - `CARBONSITE_ANDROID_KEY_PASSWORD`
+
+The iOS workflow intentionally uses `--no-codesign`; App Store or TestFlight delivery still needs an Apple signing lane with certificate and provisioning profile secrets.
 
 ## 12. Production Smoke Test
 

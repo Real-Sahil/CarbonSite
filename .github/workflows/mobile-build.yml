@@ -1,6 +1,10 @@
 name: Mobile release builds
 
 on:
+  push:
+    tags:
+      - "v*"
+      - "mobile-v*"
   workflow_dispatch:
     inputs:
       api_base_url:
@@ -18,10 +22,13 @@ on:
         required: true
         default: true
 
+env:
+  CARBONSITE_API_BASE_URL: ${{ inputs.api_base_url || vars.CARBONSITE_API_BASE_URL || 'https://carbonsite.app' }}
+
 jobs:
   android:
     name: Android release artifacts
-    if: ${{ inputs.build_android }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_android }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,6 +43,21 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      - name: Require Android release signing secrets
+        env:
+          CARBONSITE_ANDROID_KEYSTORE_BASE64: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_BASE64 }}
+          CARBONSITE_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_PASSWORD }}
+          CARBONSITE_ANDROID_KEY_ALIAS: ${{ secrets.CARBONSITE_ANDROID_KEY_ALIAS }}
+          CARBONSITE_ANDROID_KEY_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEY_PASSWORD }}
+        run: |
+          missing=0
+          for name in CARBONSITE_ANDROID_KEYSTORE_BASE64 CARBONSITE_ANDROID_KEYSTORE_PASSWORD CARBONSITE_ANDROID_KEY_ALIAS CARBONSITE_ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required for Android release builds"
+              missing=1
+            fi
+          done
+          exit "$missing"
       - name: Configure Android release signing
         env:
           CARBONSITE_ANDROID_KEYSTORE_BASE64: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_BASE64 }}
@@ -43,17 +65,15 @@ jobs:
           CARBONSITE_ANDROID_KEY_ALIAS: ${{ secrets.CARBONSITE_ANDROID_KEY_ALIAS }}
           CARBONSITE_ANDROID_KEY_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEY_PASSWORD }}
         run: |
-          if [ -n "$CARBONSITE_ANDROID_KEYSTORE_BASE64" ]; then
-            echo "$CARBONSITE_ANDROID_KEYSTORE_BASE64" | base64 --decode > android/carbonsite-release.keystore
-            {
-              echo "storeFile=carbonsite-release.keystore"
-              echo "storePassword=$CARBONSITE_ANDROID_KEYSTORE_PASSWORD"
-              echo "keyAlias=$CARBONSITE_ANDROID_KEY_ALIAS"
-              echo "keyPassword=$CARBONSITE_ANDROID_KEY_PASSWORD"
-            } > android/key.properties
-          fi
-      - run: flutter build apk --release --dart-define=CARBONSITE_API_BASE_URL=${{ inputs.api_base_url }}
-      - run: flutter build appbundle --release --dart-define=CARBONSITE_API_BASE_URL=${{ inputs.api_base_url }}
+          echo "$CARBONSITE_ANDROID_KEYSTORE_BASE64" | base64 --decode > android/carbonsite-release.keystore
+          {
+            echo "storeFile=carbonsite-release.keystore"
+            echo "storePassword=$CARBONSITE_ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$CARBONSITE_ANDROID_KEY_ALIAS"
+            echo "keyPassword=$CARBONSITE_ANDROID_KEY_PASSWORD"
+          } > android/key.properties
+      - run: flutter build apk --release --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
+      - run: flutter build appbundle --release --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
       - uses: actions/upload-artifact@v4
         with:
           name: carbonsite-android-release
@@ -64,7 +84,7 @@ jobs:
 
   ios:
     name: iOS unsigned release artifact
-    if: ${{ inputs.build_ios }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_ios }}
     runs-on: macos-14
     defaults:
       run:
@@ -79,7 +99,7 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
-      - run: flutter build ios --release --no-codesign --dart-define=CARBONSITE_API_BASE_URL=${{ inputs.api_base_url }}
+      - run: flutter build ios --release --no-codesign --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
       - name: Package unsigned iOS app
         run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/iphoneos/carbonsite-ios-unsigned.zip
       - uses: actions/upload-artifact@v4
