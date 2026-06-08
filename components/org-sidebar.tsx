@@ -14,6 +14,7 @@ import {
   Inbox,
   LogOut,
   ChevronDown,
+  ScrollText,
 } from "lucide-react";
 import type { ElementType } from "react";
 import { authClient } from "@/lib/auth/client";
@@ -95,6 +96,12 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       label: "Targets",
       href: `/orgs/${orgId}/targets`,
       icon: Target,
+      roles: ["admin", "editor", "reviewer", "viewer", "auditor"],
+    },
+    {
+      label: "Audit",
+      href: `/orgs/${orgId}/audit`,
+      icon: ScrollText,
       roles: ["admin", "editor", "reviewer", "viewer", "auditor"],
     },
     {
