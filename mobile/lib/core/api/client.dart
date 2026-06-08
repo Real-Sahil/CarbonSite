@@ -58,7 +58,8 @@ String normalizeBaseUrl(String value) {
     throw ArgumentError('CarbonSite API base URL must be an absolute URL.');
   }
   if (uri.scheme != 'https' && uri.host != 'localhost') {
-    throw ArgumentError('CarbonSite API base URL must use HTTPS outside localhost.');
+    throw ArgumentError(
+        'CarbonSite API base URL must use HTTPS outside localhost.');
   }
   return uri.replace(path: trimTrailingSlash(uri.path)).toString();
 }

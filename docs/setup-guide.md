@@ -196,7 +196,26 @@ flutter build ios --dart-define=CARBONSITE_API_BASE_URL=https://<your-vercel-dom
 
 The mobile app accepts field-worker invites, stores bearer sessions securely, captures OCR/GPS/evidence, queues submissions offline, uploads evidence through signed URLs, and submits to the org-scoped field submission APIs.
 
-## 11. Production Smoke Test
+## 11. GitHub Actions Mobile Builds
+
+Use **Actions > Mobile release builds > Run workflow** to produce mobile artifacts from the repository.
+
+Inputs:
+
+- `api_base_url`: the deployed CarbonSite web URL used by the mobile app.
+- `build_android`: produces release APK and AAB artifacts.
+- `build_ios`: produces an unsigned iOS app artifact on a macOS runner.
+
+The iOS workflow intentionally uses `--no-codesign`; App Store or TestFlight delivery still needs an Apple signing lane with certificate and provisioning profile secrets.
+
+For signed Android release artifacts, add these repository secrets before running the workflow:
+
+- `CARBONSITE_ANDROID_KEYSTORE_BASE64`
+- `CARBONSITE_ANDROID_KEYSTORE_PASSWORD`
+- `CARBONSITE_ANDROID_KEY_ALIAS`
+- `CARBONSITE_ANDROID_KEY_PASSWORD`
+
+## 12. Production Smoke Test
 
 After deploy:
 
@@ -215,7 +234,7 @@ After deploy:
 13. Request a report and download PDF and CSV artefacts.
 14. Open the Audit Trail and confirm the actions are recorded.
 
-## 12. Verification Commands
+## 13. Verification Commands
 
 Run before pushing production changes:
 

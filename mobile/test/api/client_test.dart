@@ -11,7 +11,8 @@ void main() {
     });
 
     test('accepts localhost for development', () {
-      expect(normalizeBaseUrl('http://localhost:3000'), 'http://localhost:3000');
+      expect(
+          normalizeBaseUrl('http://localhost:3000'), 'http://localhost:3000');
     });
 
     test('rejects non-HTTPS remote URLs', () {

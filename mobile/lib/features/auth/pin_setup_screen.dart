@@ -93,109 +93,117 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Column(
-            children: [
-              const SizedBox(height: 56),
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                children: [
+                  const SizedBox(height: 56),
 
-              // Icon
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.lock_outline,
-                  color: colorScheme.primary,
-                  size: 32,
-                ),
-              ),
+                  // Icon
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.lock_outline,
+                      color: colorScheme.primary,
+                      size: 32,
+                    ),
+                  ),
 
-              const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-              // Heading
-              Text(
-                _step == _PinStep.entry ? 'Set Your PIN' : 'Confirm Your PIN',
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
+                  // Heading
+                  Text(
+                    _step == _PinStep.entry
+                        ? 'Set Your PIN'
+                        : 'Confirm Your PIN',
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
 
-              const SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
-              Text(
-                _step == _PinStep.entry
-                    ? 'This PIN protects your device access to CarbonSite'
-                    : 'Re-enter your PIN to confirm',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
+                  Text(
+                    _step == _PinStep.entry
+                        ? 'This PIN protects your device access to CarbonSite'
+                        : 'Re-enter your PIN to confirm',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
 
-              const SizedBox(height: 40),
+                  const SizedBox(height: 40),
 
-              // PIN dots
-              _PinDots(
-                pinLength: _pinLength,
-                currentLength: _currentInput.length,
-                hasError: _errorMessage != null,
-                primaryColor: colorScheme.primary,
-                errorColor: colorScheme.error,
-              ),
+                  // PIN dots
+                  _PinDots(
+                    pinLength: _pinLength,
+                    currentLength: _currentInput.length,
+                    hasError: _errorMessage != null,
+                    primaryColor: colorScheme.primary,
+                    errorColor: colorScheme.error,
+                  ),
 
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-              // Error message
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: _errorMessage != null
-                    ? Container(
-                        key: ValueKey(_errorMessage),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.error_outline,
-                                size: 16, color: colorScheme.onErrorContainer),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                _errorMessage!,
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onErrorContainer,
-                                ),
-                              ),
+                  // Error message
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: _errorMessage != null
+                        ? Container(
+                            key: ValueKey(_errorMessage),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          ],
-                        ),
-                      )
-                    : const SizedBox(key: ValueKey('no-error'), height: 36),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.error_outline,
+                                    size: 16,
+                                    color: colorScheme.onErrorContainer),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onErrorContainer,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox(key: ValueKey('no-error'), height: 36),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Keypad
+                  if (_saving)
+                    const CircularProgressIndicator()
+                  else
+                    _NumPad(
+                      onDigit: _onDigitTap,
+                      onDelete: _onDelete,
+                    ),
+
+                  const SizedBox(height: 32),
+                ],
               ),
-
-              const Spacer(),
-
-              // Keypad
-              if (_saving)
-                const CircularProgressIndicator()
-              else
-                _NumPad(
-                  onDigit: _onDigitTap,
-                  onDelete: _onDelete,
-                ),
-
-              const SizedBox(height: 32),
-            ],
+            ),
           ),
         ),
       ),
