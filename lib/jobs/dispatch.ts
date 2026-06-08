@@ -1,14 +1,17 @@
 import {
   enqueueCalculation,
   enqueueImport,
+  enqueueNotification,
   enqueueReport,
   type CalculationJobData,
   type ImportJobData,
+  type NotificationJobData,
   type ReportJobData,
 } from "./queues";
 import {
   processCalculation,
   processImport,
+  processNotification,
   processReport,
 } from "@/workers/index";
 
@@ -41,5 +44,15 @@ export async function dispatchReport(data: ReportJobData) {
   }
 
   await processReport(data);
+  return "processed" as const;
+}
+
+export async function dispatchNotification(data: NotificationJobData) {
+  if (mode === "worker") {
+    await enqueueNotification(data);
+    return "queued" as const;
+  }
+
+  await processNotification(data);
   return "processed" as const;
 }

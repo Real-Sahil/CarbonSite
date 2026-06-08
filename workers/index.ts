@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db";
 import { computeCo2e } from "@/lib/calculation/engine";
 import { selectFactor } from "@/lib/calculation/factor-selector";
 import { getObjectBuffer, keys, putObject } from "@/lib/storage";
+import { sendTransactionalEmail } from "@/lib/notifications/email";
+import { buildNotificationEmailMessage } from "@/lib/notifications/messages";
 import type {
   ImportJobData,
   CalculationJobData,
@@ -169,6 +171,19 @@ export async function processImport(data: ImportJobData) {
           errorCsvStorageKey,
         },
       },
+    });
+    await processNotification({
+      type: "import_failed",
+      recipientUserId: batch.createdByUserId,
+      orgId: data.orgId,
+      resourceId: batch.id,
+      metadata: {
+        orgId: data.orgId,
+        sourceFilename: batch.sourceFilename,
+        error: err instanceof Error ? err.message : "Import processing failed",
+      },
+    }).catch((notificationErr) => {
+      console.error("[notifications] import failure email failed", notificationErr);
     });
     console.error("[imports] failed", data, err);
     throw err;
@@ -541,6 +556,20 @@ export async function processReport(data: ReportJobData) {
         },
       },
     });
+    await processNotification({
+      type: "report_ready",
+      recipientUserId: report.createdByUserId,
+      orgId: data.orgId,
+      resourceId: report.id,
+      metadata: {
+        orgId: data.orgId,
+        reportId: report.id,
+        reportType: report.type,
+        reportingPeriodLabel: report.reportingPeriod.label,
+      },
+    }).catch((notificationErr) => {
+      console.error("[notifications] report ready email failed", notificationErr);
+    });
   } catch (err) {
     await prisma.report.update({
       where: { id: report.id },
@@ -551,7 +580,35 @@ export async function processReport(data: ReportJobData) {
   }
 }
 
-async function processNotification(data: NotificationJobData) {
+export async function processNotification(data: NotificationJobData) {
+  const [recipient, organization] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: data.recipientUserId },
+      select: { email: true, name: true },
+    }),
+    prisma.organization.findUnique({
+      where: { id: data.orgId },
+      select: { name: true },
+    }),
+  ]);
+
+  if (!recipient || !organization) {
+    throw new Error("Notification recipient or organisation was not found");
+  }
+
+  const message = buildNotificationEmailMessage({
+    type: data.type,
+    resourceId: data.resourceId,
+    metadata: { ...data.metadata, orgId: data.orgId },
+    appUrl: process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+    orgName: organization.name,
+  });
+  const delivery = await sendTransactionalEmail({
+    to: recipient.email,
+    subject: message.subject,
+    text: message.text,
+  });
+
   await prisma.auditLog.create({
     data: {
       organizationId: data.orgId,
@@ -560,6 +617,9 @@ async function processNotification(data: NotificationJobData) {
       resourceId: data.resourceId,
       metadata: {
         recipientUserId: data.recipientUserId,
+        recipientEmail: recipient.email,
+        provider: delivery.provider,
+        messageId: delivery.messageId,
         ...data.metadata,
       },
     },

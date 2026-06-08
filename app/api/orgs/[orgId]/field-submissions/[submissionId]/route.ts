@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { dispatchNotification } from "@/lib/jobs/dispatch";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { reviewFieldSubmissionSchema } from "@/lib/validation/org";
 
@@ -139,6 +140,19 @@ export async function PATCH(
         facilityId: updated.facilityId,
         evidenceCount: evidenceFileIds.length,
       },
+    });
+    await dispatchNotification({
+      type: "submission_reviewed",
+      recipientUserId: updated.submittedByUserId,
+      orgId,
+      resourceId: updated.id,
+      metadata: {
+        orgId,
+        status: updated.status,
+        activityRecordId: updated.activityRecordId,
+      },
+    }).catch((notificationErr) => {
+      console.error("[notifications] submission review email failed", notificationErr);
     });
 
     return NextResponse.json(updated);
