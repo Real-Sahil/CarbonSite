@@ -564,6 +564,7 @@ model FieldSubmission {
   reviewedAt         DateTime?             @map("reviewed_at")
   activityRecordId   String?               @map("activity_record_id")
   deviceSubmittedAt  DateTime?             @map("device_submitted_at")
+  idempotencyKey      String?               @map("idempotency_key")
   createdAt          DateTime              @default(now()) @map("created_at")
   updatedAt          DateTime              @updatedAt @map("updated_at")
 
@@ -576,6 +577,7 @@ model FieldSubmission {
 
   @@index([organizationId, status, createdAt])
   @@index([organizationId, submittedByUserId])
+  @@unique([organizationId, submittedByUserId, idempotencyKey], map: "field_submission_idempotency_key")
   @@map("field_submissions")
 }
 

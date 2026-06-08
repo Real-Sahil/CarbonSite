@@ -101,6 +101,19 @@ export async function POST(
       return apiError("INVALID_EVIDENCE", "One or more evidence files do not belong to this organisation.", 422);
     }
 
+    if (body.idempotencyKey) {
+      const existingSubmission = await prisma.fieldSubmission.findFirst({
+        where: {
+          organizationId: orgId,
+          submittedByUserId: session.user.id,
+          idempotencyKey: body.idempotencyKey,
+        },
+      });
+      if (existingSubmission) {
+        return NextResponse.json(existingSubmission);
+      }
+    }
+
     const routeDistance =
       body.pickupPostcode && body.deliveryPostcode
         ? await getOrCreateRouteDistance({
@@ -127,6 +140,7 @@ export async function POST(
           ...body.formData,
           idempotencyKey: body.idempotencyKey,
         } as Prisma.InputJsonObject,
+        idempotencyKey: body.idempotencyKey,
         gpsLat: body.gpsLat,
         gpsLng: body.gpsLng,
         pickupPostcode: routeDistance?.pickupPostcode ?? body.pickupPostcode,
