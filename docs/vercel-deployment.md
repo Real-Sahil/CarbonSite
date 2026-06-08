@@ -62,3 +62,14 @@ The repository `vercel.json` sets `buildCommand` to `pnpm run build` and deliber
 ## Worker Runtime
 
 The worker entrypoint is `workers/index.ts` and the package script is `pnpm worker`. Host it on a long-running service such as Fly.io, Render, Railway, a VM, or a container platform. It must share the same `DATABASE_URL` and storage/email secrets as the Vercel app. Set `JOB_PROCESSING_MODE=worker` on the Vercel app only when that worker is healthy; otherwise leave inline mode enabled.
+
+## Flutter Backend Configuration
+
+Build the field-capture app with the deployed Vercel URL so mobile workers do not fall back to local development:
+
+```bash
+flutter build apk --dart-define=CARBONSITE_API_BASE_URL=https://<your-vercel-domain>
+flutter build ios --dart-define=CARBONSITE_API_BASE_URL=https://<your-vercel-domain>
+```
+
+The mobile API client rejects non-HTTPS remote base URLs. `http://localhost:3000` remains available only for local development.
