@@ -108,7 +108,7 @@ export default function RootPage() {
           <LinkedPanel
             href="/resources"
             title="Resources"
-            text="Implementation guides for Vercel deployment, mobile setup, factor imports, and reporting."
+            text="Pilot planning, field evidence standards, factor governance, and reporting guidance."
           />
         </div>
       </section>

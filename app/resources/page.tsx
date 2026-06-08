@@ -1,20 +1,20 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, FileSpreadsheet, ServerCog, Smartphone } from "lucide-react";
+import { ArrowRight, BookOpen, ClipboardCheck, FileSpreadsheet, HardHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FeatureCard, PageHero, PublicShell } from "@/components/public-site";
 
 const resources = [
   {
-    href: "/resources#deployment",
-    icon: ServerCog,
-    title: "Vercel deployment",
-    text: "Required env vars, health checks, inline job mode, and worker runtime notes.",
+    href: "/resources#pilot",
+    icon: HardHat,
+    title: "Pilot readiness",
+    text: "How to choose a first project, reporting period, site team, and evidence scope.",
   },
   {
-    href: "/resources#mobile",
-    icon: Smartphone,
-    title: "Flutter field app",
-    text: "Invite onboarding, production API base URL, offline queue, OCR, GPS, and evidence upload.",
+    href: "/resources#field-evidence",
+    icon: ClipboardCheck,
+    title: "Field evidence",
+    text: "What site teams should capture for waste tickets, deliveries, fuel receipts, and haulage trips.",
   },
   {
     href: "/resources#factors",
@@ -29,8 +29,8 @@ export default function ResourcesPage() {
     <PublicShell>
       <PageHero
         eyebrow="Resources"
-        title="Implementation notes for teams preparing a production pilot."
-        text="Use these pages to understand the deployment, mobile capture, factor import, and reporting workflows already wired into CarbonSite."
+        title="Practical resources for construction carbon operations."
+        text="Use these guides to plan the first project, align evidence standards, prepare supplier files, and understand what reviewers need before reports are issued."
         image="/carbonsite-audit-pack.svg"
         imageAlt="CarbonSite report artefact and audit package media"
       >
@@ -56,17 +56,17 @@ export default function ResourcesPage() {
 
       <section className="mx-auto max-w-7xl px-5 py-14">
         <div className="grid gap-5">
-          <ResourceBlock id="deployment" title="Deployment readiness" icon={ServerCog}>
-            CarbonSite deploys to Vercel with managed Postgres, object storage, Better Auth, transactional email, route distance providers, and inline job mode unless a separate worker is running. The `/api/health` route checks environment configuration and database reachability after deployment.
+          <ResourceBlock id="pilot" title="Pilot readiness" icon={HardHat}>
+            Start with one live project, one reporting period, named reviewers, and a clear evidence scope. The strongest pilots include supplier files, field-captured tickets, haulage postcodes, and a defined approval process.
           </ResourceBlock>
-          <ResourceBlock id="mobile" title="Field capture app" icon={Smartphone}>
-            The Flutter app accepts field-worker invites, stores session tokens securely, uploads evidence through signed URLs, queues submissions offline, and posts reviewed form data, OCR fields, GPS, pickup postcode, and delivery postcode to the backend.
+          <ResourceBlock id="field-evidence" title="Field evidence" icon={ClipboardCheck}>
+            Field teams should capture the document image, supplier or carrier name, activity date, quantity, unit, project location, pickup postcode, delivery postcode, and any notes needed by the reviewer.
           </ResourceBlock>
           <ResourceBlock id="factors" title="Emission factor import" icon={FileSpreadsheet}>
-            Admins and editors can import factor rows into approved libraries from CSV or XLSX files. Required columns are scope and input_unit, plus at least one factor value from co2e, co2, ch4, or n2o.
+            Keep factor libraries governed and versioned. Before running calculations, confirm the selected methodology, activity categories, units, geography, and factor source are approved for the reporting period.
           </ResourceBlock>
           <ResourceBlock id="reporting" title="Reports and audit packages" icon={BookOpen}>
-            Published snapshots generate PDF and CSV artefacts with report metadata, aggregate totals, data quality, assumptions, and calculation appendices. Downloads use signed links and are audited.
+            Report packs should include totals, data quality, assumptions, evidence status, methodology, factor library version, and a calculation appendix that reviewers can trace back to source records.
           </ResourceBlock>
         </div>
       </section>

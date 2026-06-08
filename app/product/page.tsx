@@ -39,7 +39,7 @@ export default function ProductPage() {
           <div className="max-w-2xl">
             <h1 className="text-2xl font-bold text-slate-950 md:text-3xl">Capture routes into the same record model.</h1>
             <p className="mt-3 text-base leading-7 text-slate-600">
-              The product accepts manual activity records, CSV or XLSX imports, evidence attachments, and Flutter field submissions. Reviewers can approve mobile submissions into committed activity records.
+              The product accepts manual activity records, CSV or XLSX imports, evidence attachments, and mobile field submissions. Reviewers can approve field submissions into committed activity records.
             </p>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
