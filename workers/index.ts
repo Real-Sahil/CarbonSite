@@ -5,7 +5,7 @@ import type { Job } from "pg-boss";
 import * as XLSX from "xlsx";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { computeCo2e } from "@/lib/calculation/engine";
+import { computeRecordEmission } from "@/lib/calculation/record";
 import { selectFactor } from "@/lib/calculation/factor-selector";
 import { getObjectBuffer, keys, putObject } from "@/lib/storage";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
@@ -229,7 +229,7 @@ export async function processCalculation(data: CalculationJobData) {
         throw new Error(`No emission factor found for record ${record.id}`);
       }
 
-      const result = computeCo2e(
+      const calculation = computeRecordEmission(
         Number(record.amount),
         record.unit,
         {
@@ -241,6 +241,7 @@ export async function processCalculation(data: CalculationJobData) {
         factorSelection.factor.inputUnit,
         [factorSelection.selectionReason],
       );
+      const result = calculation.result;
 
       calculations.push({
         organizationId: data.orgId,
@@ -250,10 +251,10 @@ export async function processCalculation(data: CalculationJobData) {
         factorLibraryId: run.factorLibraryId,
         factorLibraryVersion: run.factorLibrary.version,
         methodologyVersionName: run.methodologyVersion.name,
-        originalAmount: record.amount,
-        originalUnit: record.unit,
-        normalizedAmount: record.amount,
-        normalizedUnit: record.unit,
+        originalAmount: calculation.originalAmount,
+        originalUnit: calculation.originalUnit,
+        normalizedAmount: calculation.normalizedAmount,
+        normalizedUnit: calculation.normalizedUnit,
         co2: result.co2,
         ch4: result.ch4,
         n2o: result.n2o,
