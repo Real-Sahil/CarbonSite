@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
+import { writeAuditLog } from "@/lib/db/audit";
 import { presignDownload } from "@/lib/storage";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
@@ -10,7 +11,14 @@ export async function GET(
 ) {
   try {
     const { orgId, evidenceId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const { session } = await requireOrgMember(
+      orgId,
+      "admin",
+      "editor",
+      "reviewer",
+      "viewer",
+      "auditor",
+    );
 
     const evidence = await prisma.evidenceFile.findFirst({
       where: { id: evidenceId, organizationId: orgId },
@@ -21,6 +29,19 @@ export async function GET(
     }
 
     const downloadUrl = await presignDownload(evidence.storageKey);
+
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: session.user.id,
+      action: "evidence.downloaded",
+      resourceType: "evidence_file",
+      resourceId: evidence.id,
+      metadata: {
+        filename: evidence.filename,
+        mimeType: evidence.mimeType,
+      },
+    });
+
     return NextResponse.json({ evidence, downloadUrl });
   } catch (err) {
     return handleRouteError(err);

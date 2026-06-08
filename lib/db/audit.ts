@@ -7,6 +7,8 @@ type AuditAction =
   | "business_unit.created"
   | "business_unit.deleted"
   | "business_unit.updated"
+  | "evidence.downloaded"
+  | "evidence.uploaded"
   | "facility.created"
   | "facility.deleted"
   | "facility.updated"

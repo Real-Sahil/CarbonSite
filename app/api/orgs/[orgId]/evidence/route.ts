@@ -65,7 +65,7 @@ export async function POST(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.updated",
+      action: "evidence.uploaded",
       resourceType: "evidence_file",
       resourceId: evidence.id,
       metadata: {
