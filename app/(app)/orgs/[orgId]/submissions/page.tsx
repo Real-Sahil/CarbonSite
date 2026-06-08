@@ -219,9 +219,16 @@ export default async function SubmissionsPage({
                       )}
                     </TableCell>
                     <TableCell className="text-slate-600">
-                      {s.pickupPostcode && s.deliveryPostcode
-                        ? `${s.pickupPostcode} to ${s.deliveryPostcode}`
-                        : "No route"}
+                      <RouteProvenance
+                        pickupPostcode={s.pickupPostcode}
+                        deliveryPostcode={s.deliveryPostcode}
+                        pickupLat={s.pickupLat}
+                        pickupLng={s.pickupLng}
+                        deliveryLat={s.deliveryLat}
+                        deliveryLng={s.deliveryLng}
+                        distanceKm={s.calculatedDistanceKm}
+                        source={s.distanceSource}
+                      />
                     </TableCell>
                     <TableCell>
                       <SubmissionEvidenceDownloads
@@ -286,4 +293,56 @@ export default async function SubmissionsPage({
       </Card>
     </div>
   );
+}
+
+function RouteProvenance({
+  pickupPostcode,
+  deliveryPostcode,
+  pickupLat,
+  pickupLng,
+  deliveryLat,
+  deliveryLng,
+  distanceKm,
+  source,
+}: {
+  pickupPostcode?: string | null;
+  deliveryPostcode?: string | null;
+  pickupLat?: unknown;
+  pickupLng?: unknown;
+  deliveryLat?: unknown;
+  deliveryLng?: unknown;
+  distanceKm?: unknown;
+  source?: string | null;
+}) {
+  if (!pickupPostcode || !deliveryPostcode) return <>No route</>;
+
+  return (
+    <div className="min-w-44 space-y-1">
+      <p className="font-medium text-slate-700">
+        {pickupPostcode} to {deliveryPostcode}
+      </p>
+      {distanceKm != null && (
+        <p className="text-xs text-slate-500">
+          {formatNumber(distanceKm, 2)} km{source ? ` via ${source}` : ""}
+        </p>
+      )}
+      {pickupLat != null && pickupLng != null && deliveryLat != null && deliveryLng != null && (
+        <p className="text-xs text-slate-400">
+          {formatCoordinate(pickupLat)}, {formatCoordinate(pickupLng)} to{" "}
+          {formatCoordinate(deliveryLat)}, {formatCoordinate(deliveryLng)}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function formatNumber(value: unknown, maximumFractionDigits: number) {
+  return Number(value).toLocaleString("en-GB", { maximumFractionDigits });
+}
+
+function formatCoordinate(value: unknown) {
+  return Number(value).toLocaleString("en-GB", {
+    maximumFractionDigits: 5,
+    minimumFractionDigits: 5,
+  });
 }
