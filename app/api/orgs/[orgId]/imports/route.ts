@@ -5,6 +5,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { dispatchImport } from "@/lib/jobs/dispatch";
 import { keys, putObject } from "@/lib/storage";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 const MAX_IMPORT_BYTES = 10 * 1024 * 1024;
@@ -41,6 +42,12 @@ export async function POST(
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const limited = rateLimit(req, {
+      key: rateLimitKey(orgId, "imports", session.user.id),
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
     const form = await req.formData();
     const file = form.get("file");
     const reportingPeriodId = String(form.get("reportingPeriodId") ?? "");

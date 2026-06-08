@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { reviewFieldSubmissionSchema } from "@/lib/validation/org";
 
@@ -13,6 +14,12 @@ export async function PATCH(
   try {
     const { orgId, submissionId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const limited = rateLimit(req, {
+      key: rateLimitKey(orgId, "submission_review", session.user.id),
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
     const body = reviewFieldSubmissionSchema.parse(await req.json());
 
     const submission = await prisma.fieldSubmission.findFirst({
