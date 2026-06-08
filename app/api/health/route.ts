@@ -35,10 +35,12 @@ async function checkDatabase() {
   } catch (error) {
     return {
       ok: false,
-      reason:
-        error instanceof Error
-          ? error.message
-          : "Database health check failed.",
+      reason: "database_unreachable",
+      detail: process.env.NODE_ENV === "production" ? undefined : formatError(error),
     };
   }
+}
+
+function formatError(error: unknown) {
+  return error instanceof Error ? error.message : "Database health check failed.";
 }
