@@ -334,6 +334,20 @@ export async function processCalculation(data: CalculationJobData) {
       where: { id: run.id },
       data: { status: "failed", finishedAt: new Date() },
     });
+    await prisma.auditLog.create({
+      data: {
+        organizationId: data.orgId,
+        action: "calculation.run_failed",
+        resourceType: "calculation_run",
+        resourceId: run.id,
+        metadata: {
+          reportingPeriodId: run.reportingPeriodId,
+          factorLibraryId: run.factorLibraryId,
+          methodologyVersionId: run.methodologyVersionId,
+          error: err instanceof Error ? err.message : "Calculation run failed",
+        },
+      },
+    });
     console.error("[calculations] failed", data, err);
     throw err;
   }
@@ -574,6 +588,19 @@ export async function processReport(data: ReportJobData) {
     await prisma.report.update({
       where: { id: report.id },
       data: { status: "failed" },
+    });
+    await prisma.auditLog.create({
+      data: {
+        organizationId: data.orgId,
+        action: "report.failed",
+        resourceType: "report",
+        resourceId: report.id,
+        metadata: {
+          snapshotId: report.snapshotId,
+          reportType: report.type,
+          error: err instanceof Error ? err.message : "Report generation failed",
+        },
+      },
     });
     console.error("[reports] failed", data, err);
     throw err;
