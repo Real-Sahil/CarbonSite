@@ -37,4 +37,25 @@ describe("notification email messages", () => {
     expect(message.text).toContain("waste.csv");
     expect(message.text).toContain("amount must be numeric");
   });
+
+  test("builds task assignment emails with target context", () => {
+    const message = buildNotificationEmailMessage({
+      type: "task_assigned",
+      resourceId: "task-1",
+      orgName: "Northbank",
+      appUrl: "https://app.carbonsite.test",
+      metadata: {
+        orgId: "org-1",
+        targetType: "activity_record",
+        targetLabel: "Concrete delivery",
+        targetDetail: "Scope 3 purchased goods - in review",
+        targetHref: "/orgs/org-1/records",
+      },
+    });
+
+    expect(message.subject).toContain("task assigned");
+    expect(message.text).toContain("activity record review task");
+    expect(message.text).toContain("Concrete delivery");
+    expect(message.text).toContain("https://app.carbonsite.test/orgs/org-1/records");
+  });
 });

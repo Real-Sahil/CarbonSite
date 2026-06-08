@@ -22,6 +22,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CalculationControls } from "./calculation-controls";
+import { ReviewTaskPanel, type ReviewTaskPanelCandidate } from "./review-task-panel";
+import { resolveReviewTarget } from "@/lib/review-tasks/targets";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -41,7 +43,14 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const { orgId } = await params;
-  await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+  const { session } = await requireOrgMember(
+    orgId,
+    "admin",
+    "editor",
+    "reviewer",
+    "viewer",
+    "auditor",
+  );
 
   const [organization, currentPeriod] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
@@ -66,6 +75,12 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     readyReportCount,
     failedReportCount,
     failedCalculationCount,
+    openReviewTaskCount,
+    myReviewTasks,
+    reviewImports,
+    reviewRecords,
+    reviewReports,
+    reviewAssignees,
     recentAuditLogs,
     targetCount,
     initiativeCount,
@@ -104,6 +119,54 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
     prisma.report.count({ where: { organizationId: orgId, status: "failed" } }),
     prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }),
+    prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }),
+    prisma.reviewTask.findMany({
+      where: {
+        organizationId: orgId,
+        assigneeUserId: session.user.id,
+        status: "open",
+      },
+      include: {
+        assignee: { select: { name: true, email: true } },
+        createdBy: { select: { name: true, email: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    }),
+    prisma.importBatch.findMany({
+      where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
+      select: {
+        id: true,
+        sourceFilename: true,
+        state: true,
+        errorCount: true,
+        warningCount: true,
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 4,
+    }),
+    prisma.activityRecord.findMany({
+      where: { organizationId: orgId, reviewStatus: { in: ["in_review", "rejected"] } },
+      include: {
+        emissionCategory: { select: { scope: true, name: true } },
+        reportingPeriod: { select: { label: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 4,
+    }),
+    prisma.report.findMany({
+      where: { organizationId: orgId, status: "failed" },
+      include: {
+        reportingPeriod: { select: { label: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 4,
+    }),
+    prisma.organizationMembership.findMany({
+      where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
+      include: { user: { select: { id: true, name: true, email: true } } },
+      orderBy: { createdAt: "asc" },
+    }),
     prisma.auditLog.findMany({
       where: { organizationId: orgId },
       include: { actor: { select: { name: true, email: true } } },
@@ -146,6 +209,67 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   });
 
   const hasAggregates = scopeRows.some((row) => Number(row.total) > 0 || Number(row.records) > 0);
+  const reviewTaskTargets = await Promise.all(
+    myReviewTasks.map((task) =>
+      resolveReviewTarget({
+        organizationId: orgId,
+        type: task.type,
+        targetId: task.targetId,
+      }),
+    ),
+  );
+  const reviewTasks = myReviewTasks.flatMap((task, index) => {
+    const target = reviewTaskTargets[index];
+    if (!target) return [];
+    return {
+      id: task.id,
+      type: task.type,
+      status: task.status,
+      label: target.label,
+      detail: target.detail,
+      href: target.href,
+      assigneeLabel: task.assignee.name ?? task.assignee.email,
+      createdByLabel: task.createdBy.name ?? task.createdBy.email,
+      createdAt: task.createdAt.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+      }),
+    };
+  });
+  const reviewCandidates: ReviewTaskPanelCandidate[] = [
+    ...reviewImports.map((batch) => ({
+      key: `import_batch:${batch.id}`,
+      type: "import_batch" as const,
+      targetId: batch.id,
+      label: batch.sourceFilename,
+      detail: `${batch.state.replaceAll("_", " ")} - ${batch.errorCount} errors, ${batch.warningCount} warnings`,
+      href: `/orgs/${orgId}/imports`,
+    })),
+    ...reviewRecords.map((record) => ({
+      key: `activity_record:${record.id}`,
+      type: "activity_record" as const,
+      targetId: record.id,
+      label: record.sourceDescription ?? record.supplierName ?? "Activity record",
+      detail: `Scope ${record.emissionCategory.scope} ${record.emissionCategory.name} - ${record.reviewStatus.replaceAll("_", " ")} - ${record.reportingPeriod.label}`,
+      href: `/orgs/${orgId}/records`,
+    })),
+    ...reviewReports.map((report) => ({
+      key: `report:${report.id}`,
+      type: "report" as const,
+      targetId: report.id,
+      label: `${report.type.replaceAll("_", " ")} report`,
+      detail: `${report.status.replaceAll("_", " ")} - ${report.reportingPeriod.label}`,
+      href: `/orgs/${orgId}/reports`,
+    })),
+  ].slice(0, 8);
+  const reviewAssigneeOptions = reviewAssignees.map((assignee) => ({
+    id: assignee.user.id,
+    label: assignee.user.name ?? assignee.user.email,
+  }));
+  const defaultAssigneeId =
+    reviewAssigneeOptions.find((assignee) => assignee.id === session.user.id)?.id ??
+    reviewAssigneeOptions[0]?.id ??
+    session.user.id;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -250,6 +374,11 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               label="Open submissions"
               value={`${pendingSubmissionCount}`}
             />
+            <ReadinessRow
+              icon={ClipboardCheck}
+              label="Open review tasks"
+              value={`${openReviewTaskCount}`}
+            />
             <div className="pt-3">
               <Button asChild size="sm">
                 <Link href={`/orgs/${orgId}/submissions`}>
@@ -319,6 +448,24 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               </div>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base">Review task queue</CardTitle>
+          <CardDescription>
+            Assign operational exceptions and close review work with an audit trail.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ReviewTaskPanel
+            orgId={orgId}
+            tasks={reviewTasks}
+            candidates={reviewCandidates}
+            assignees={reviewAssigneeOptions}
+            defaultAssigneeId={defaultAssigneeId}
+          />
         </CardContent>
       </Card>
 

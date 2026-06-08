@@ -65,14 +65,23 @@ export function buildNotificationEmailMessage({
     };
   }
 
-  const url = appUrl;
+  const orgId = stringValue(metadata.orgId);
+  const targetType = stringValue(metadata.targetType) ?? "resource";
+  const targetLabel = stringValue(metadata.targetLabel) ?? resourceId;
+  const targetDetail = stringValue(metadata.targetDetail);
+  const targetHref = stringValue(metadata.targetHref);
+  const url = targetHref ? `${appUrl}${targetHref}` : orgId ? `${appUrl}/orgs/${orgId}/dashboard` : appUrl;
   return {
     subject: `${orgPrefix}: task assigned`,
     text: [
-      "A CarbonSite task has been assigned to you.",
-      `Resource ID: ${resourceId}`,
-      `Open CarbonSite: ${url}`,
-    ].join("\n"),
+      `A CarbonSite ${targetType.replaceAll("_", " ")} review task has been assigned to you.`,
+      `Target: ${targetLabel}`,
+      targetDetail ? `Detail: ${targetDetail}` : undefined,
+      `Task ID: ${resourceId}`,
+      `Open task: ${url}`,
+    ]
+      .filter(Boolean)
+      .join("\n"),
   };
 }
 

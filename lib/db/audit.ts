@@ -19,6 +19,8 @@ type AuditAction =
   | "calculation.run_triggered"
   | "calculation.run_completed"
   | "comment.created"
+  | "review_task.assigned"
+  | "review_task.status_changed"
   | "snapshot.published"
   | "report.generation_triggered"
   | "report.published"

@@ -249,3 +249,19 @@ export const createCommentSchema = z.object({
   targetId: z.string().min(1),
   body: z.string().trim().min(1).max(2000),
 });
+
+export const reviewTaskTypeSchema = z.enum([
+  "import_batch",
+  "activity_record",
+  "report",
+]);
+
+export const createReviewTaskSchema = z.object({
+  type: reviewTaskTypeSchema,
+  targetId: z.string().min(1),
+  assigneeUserId: z.string().min(1),
+});
+
+export const updateReviewTaskSchema = z.object({
+  status: z.enum(["open", "completed", "blocked"]),
+});
