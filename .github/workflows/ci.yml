@@ -24,6 +24,7 @@ jobs:
       ROUTING_PROVIDER: osrm
       POSTCODES_BASE_URL: https://api.postcodes.io
       OSRM_BASE_URL: https://router.project-osrm.org
+      JOB_PROCESSING_MODE: inline
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
