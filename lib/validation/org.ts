@@ -237,3 +237,15 @@ export const reviewFieldSubmissionSchema = z.object({
   facilityId: z.string().min(1).nullable().optional(),
   reviewNote: z.string().max(1000).optional(),
 });
+
+export const createCommentSchema = z.object({
+  targetType: z.enum([
+    "import_batch",
+    "activity_record",
+    "report",
+    "initiative",
+    "field_submission",
+  ]),
+  targetId: z.string().min(1),
+  body: z.string().trim().min(1).max(2000),
+});

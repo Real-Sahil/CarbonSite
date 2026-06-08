@@ -18,6 +18,7 @@ type AuditAction =
   | "factor.library_imported"
   | "calculation.run_triggered"
   | "calculation.run_completed"
+  | "comment.created"
   | "snapshot.published"
   | "report.generation_triggered"
   | "report.published"

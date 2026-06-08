@@ -20,6 +20,7 @@ import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SubmissionReviewActions } from "./review-actions";
 import { SubmissionEvidenceDownloads } from "./evidence-download-actions";
+import { SubmissionCommentActions } from "./comment-actions";
 
 interface SubmissionsPageProps {
   params: Promise<{ orgId: string }>;
@@ -93,6 +94,7 @@ export default async function SubmissionsPage({
     orderBy: { createdAt: "desc" },
     take: 50,
   });
+  const submissionIds = submissions.map((submission) => submission.id);
   const [emissionCategories, facilities] = await Promise.all([
     prisma.emissionCategory.findMany({
       select: { id: true, scope: true, name: true },
@@ -104,6 +106,24 @@ export default async function SubmissionsPage({
       orderBy: { name: "asc" },
     }),
   ]);
+  const comments = submissionIds.length
+    ? await prisma.comment.findMany({
+        where: {
+          organizationId: orgId,
+          targetType: "field_submission",
+          targetId: { in: submissionIds },
+        },
+        include: { author: { select: { name: true, email: true } } },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
+  const commentsBySubmissionId = new Map<string, typeof comments>();
+  for (const comment of comments) {
+    commentsBySubmissionId.set(comment.targetId, [
+      ...(commentsBySubmissionId.get(comment.targetId) ?? []),
+      comment,
+    ]);
+  }
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -160,6 +180,7 @@ export default async function SubmissionsPage({
                   <TableHead>Route</TableHead>
                   <TableHead>Evidence</TableHead>
                   <TableHead>Record</TableHead>
+                  <TableHead>Comments</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -219,6 +240,24 @@ export default async function SubmissionsPage({
                       ) : (
                         <span className="text-slate-400 italic">Not created</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <SubmissionCommentActions
+                        orgId={orgId}
+                        submissionId={s.id}
+                        comments={(commentsBySubmissionId.get(s.id) ?? []).map(
+                          (comment) => ({
+                            id: comment.id,
+                            body: comment.body,
+                            createdAt: comment.createdAt.toLocaleDateString("en-GB", {
+                              day: "numeric",
+                              month: "short",
+                            }),
+                            authorName:
+                              comment.author.name ?? comment.author.email,
+                          }),
+                        )}
+                      />
                     </TableCell>
                     <TableCell className="text-slate-500 text-sm">
                       {s.createdAt.toLocaleDateString("en-GB", {
