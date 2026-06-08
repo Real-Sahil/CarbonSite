@@ -172,6 +172,10 @@ export const updateActivityRecordStatusSchema = z.object({
   assumptionNotes: z.string().max(2000).optional(),
 });
 
+export const attachActivityRecordEvidenceSchema = z.object({
+  evidenceId: z.string().min(1),
+});
+
 export const routeDistanceSchema = z.object({
   pickupPostcode: z.string().min(5).max(12),
   deliveryPostcode: z.string().min(5).max(12),

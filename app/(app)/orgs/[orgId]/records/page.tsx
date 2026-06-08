@@ -21,6 +21,7 @@ import { FileText } from "lucide-react";
 import type { OrgRole } from "@prisma/client";
 import { CreateRecordForm } from "./record-form";
 import { RecordActions } from "./record-actions";
+import { RecordEvidenceActions } from "./record-evidence-actions";
 
 interface RecordsPageProps {
   params: Promise<{ orgId: string }>;
@@ -58,7 +59,11 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
         emissionCategory: { select: { scope: true, name: true, code: true } },
         facility: { select: { name: true } },
         businessUnit: { select: { name: true } },
-        evidence: { select: { id: true } },
+        evidence: {
+          include: {
+            evidenceFile: { select: { id: true, filename: true } },
+          },
+        },
         _count: { select: { calculations: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -183,9 +188,15 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                         : "Not set"}
                     </TableCell>
                     <TableCell className="text-slate-600">
-                      <div>
-                        {record.evidence.length} file{record.evidence.length === 1 ? "" : "s"}
-                      </div>
+                      <RecordEvidenceActions
+                        orgId={orgId}
+                        recordId={record.id}
+                        files={record.evidence.map((item) => ({
+                          id: item.evidenceFile.id,
+                          filename: item.evidenceFile.filename,
+                        }))}
+                        canManage={canManageRecords}
+                      />
                       <div className="text-xs text-slate-500">
                         {record.evidenceStatus.replaceAll("_", " ")}
                       </div>
