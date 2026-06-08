@@ -38,14 +38,15 @@ Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactio
 1. Apply Prisma migrations against the production database.
 2. Run `pnpm prisma generate`.
 3. Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build`.
-4. Deploy the Next.js app through Vercel.
-5. Keep `JOB_PROCESSING_MODE=inline` unless a worker runtime is already deployed.
-6. If using worker mode, deploy or restart the worker runtime with the same database, storage, email, and Firebase secrets.
+4. Leave the Vercel Install Command unset. The repository pins Node and pnpm in `package.json`, and Vercel should infer pnpm from `pnpm-lock.yaml`.
+5. Deploy the Next.js app through Vercel.
+6. Keep `JOB_PROCESSING_MODE=inline` unless a worker runtime is already deployed.
+7. If using worker mode, deploy or restart the worker runtime with the same database, storage, email, and Firebase secrets.
 7. Confirm sign-in, organisation access, imports, submissions, reports, and targets against real organisation-scoped records.
 
 ## Vercel Build Command
 
-The repository `vercel.json` sets `buildCommand` to `pnpm run build`. If Vercel still reports a command such as `pmpn run build`, clear any dashboard-level Build Command override and redeploy from `main`.
+The repository `vercel.json` sets `buildCommand` to `pnpm run build` and deliberately does not override the install command. Vercel's package-manager detection should use the committed `pnpm-lock.yaml` and the `packageManager` pin in `package.json`. If Vercel still reports a command such as `pmpn run build`, clear any dashboard-level Build Command override and redeploy from `main`.
 
 ## Worker Runtime
 
