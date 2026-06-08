@@ -223,5 +223,7 @@ export const createFieldSubmissionSchema = z.object({
 
 export const reviewFieldSubmissionSchema = z.object({
   status: z.enum(["approved", "rejected", "needs_info", "under_review"]),
+  emissionCategoryId: z.string().min(1).optional(),
+  facilityId: z.string().min(1).nullable().optional(),
   reviewNote: z.string().max(1000).optional(),
 });

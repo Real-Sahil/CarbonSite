@@ -24,11 +24,36 @@ export async function PATCH(
       return apiError("NOT_FOUND", "Field submission was not found.", 404);
     }
 
+    const [category, facility] = await Promise.all([
+      body.emissionCategoryId
+        ? prisma.emissionCategory.findUnique({
+            where: { id: body.emissionCategoryId },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
+      body.facilityId
+        ? prisma.facility.findFirst({
+            where: { id: body.facilityId, organizationId: orgId },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
+    ]);
+
+    if (body.emissionCategoryId && !category) {
+      return apiError("INVALID_EMISSION_CATEGORY", "Emission category does not exist.", 422);
+    }
+    if (body.facilityId && !facility) {
+      return apiError("INVALID_FACILITY", "Facility does not belong to this organisation.", 422);
+    }
+
     const evidenceFileIds = submission.files.map((file) => file.evidenceFileId);
     let activityRecordId = submission.activityRecordId;
+    const assignedEmissionCategoryId = body.emissionCategoryId ?? submission.emissionCategoryId;
+    const assignedFacilityId =
+      body.facilityId === null ? null : body.facilityId ?? submission.facilityId;
 
     if (body.status === "approved") {
-      if (!submission.emissionCategoryId) {
+      if (!assignedEmissionCategoryId) {
         return apiError("MISSING_CATEGORY", "Assign an emission category before approving this submission.", 422);
       }
       const formData = submission.formData as Record<string, unknown>;
@@ -46,8 +71,8 @@ export async function PATCH(
           data: {
             organizationId: orgId,
             reportingPeriodId: submission.reportingPeriodId,
-            emissionCategoryId: submission.emissionCategoryId!,
-            facilityId: submission.facilityId,
+            emissionCategoryId: assignedEmissionCategoryId!,
+            facilityId: assignedFacilityId,
             fieldSubmissionId: submission.id,
             createdByUserId: session.user.id,
             sourceDescription: String(formData.sourceDescription ?? submission.documentType),
@@ -91,6 +116,8 @@ export async function PATCH(
         where: { id: submission.id },
         data: {
           status: body.status,
+          emissionCategoryId: assignedEmissionCategoryId,
+          facilityId: assignedFacilityId,
           reviewNote: body.reviewNote,
           reviewedByUserId: session.user.id,
           reviewedAt: new Date(),
@@ -108,6 +135,8 @@ export async function PATCH(
       metadata: {
         status: updated.status,
         activityRecordId: updated.activityRecordId,
+        emissionCategoryId: updated.emissionCategoryId,
+        facilityId: updated.facilityId,
         evidenceCount: evidenceFileIds.length,
       },
     });

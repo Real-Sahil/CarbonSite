@@ -82,6 +82,7 @@ export default async function SubmissionsPage({
     include: {
       submittedBy: { select: { name: true, email: true } },
       reportingPeriod: { select: { label: true } },
+      emissionCategory: { select: { id: true, scope: true, name: true } },
       facility: { select: { name: true } },
       files: {
         include: {
@@ -92,6 +93,17 @@ export default async function SubmissionsPage({
     orderBy: { createdAt: "desc" },
     take: 50,
   });
+  const [emissionCategories, facilities] = await Promise.all([
+    prisma.emissionCategory.findMany({
+      select: { id: true, scope: true, name: true },
+      orderBy: [{ scope: "asc" }, { name: "asc" }],
+    }),
+    prisma.facility.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -179,6 +191,11 @@ export default async function SubmissionsPage({
                       {s.facility?.name ?? (
                         <span className="text-slate-400 italic">None</span>
                       )}
+                      {s.emissionCategory && (
+                        <p className="mt-1 text-xs text-slate-500">
+                          Scope {s.emissionCategory.scope}: {s.emissionCategory.name}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {s.pickupPostcode && s.deliveryPostcode
@@ -214,6 +231,10 @@ export default async function SubmissionsPage({
                       <SubmissionReviewActions
                         orgId={orgId}
                         submissionId={s.id}
+                        currentEmissionCategoryId={s.emissionCategoryId}
+                        currentFacilityId={s.facilityId}
+                        emissionCategories={emissionCategories}
+                        facilities={facilities}
                         disabled={s.status === "approved" || s.status === "rejected"}
                       />
                     </TableCell>
