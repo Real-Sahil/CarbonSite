@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="CarbonSite helps teams plan carbon accounting workflows with product and technical requirements documentation."
+    />
+    <title>CarbonSite</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f6f8f4;
+        --fg: #172116;
+        --muted: #526051;
+        --card: #ffffff;
+        --accent: #237847;
+        --accent-dark: #155d35;
+        --border: #dbe5d8;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #101610;
+          --fg: #edf5ea;
+          --muted: #b7c6b4;
+          --card: #182218;
+          --accent: #74d99a;
+          --accent-dark: #a4edbb;
+          --border: #314230;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        color: var(--fg);
+        background:
+          radial-gradient(circle at top left, rgb(35 120 71 / 18%), transparent 32rem),
+          var(--bg);
+      }
+
+      main {
+        width: min(1100px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 4rem 0;
+      }
+
+      .hero {
+        display: grid;
+        gap: 2rem;
+        align-items: center;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .eyebrow {
+        color: var(--accent-dark);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0.5rem 0 1rem;
+        font-size: clamp(2.5rem, 7vw, 5.5rem);
+        line-height: 0.95;
+      }
+
+      p {
+        color: var(--muted);
+        font-size: 1.1rem;
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3rem;
+        padding: 0 1.2rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .button.primary {
+        color: white;
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 1.5rem;
+        background: color-mix(in srgb, var(--card) 92%, transparent);
+        padding: 1.5rem;
+        box-shadow: 0 24px 60px rgb(23 33 22 / 10%);
+      }
+
+      .metrics {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 2rem;
+      }
+
+      .metric {
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1rem;
+      }
+
+      .metric strong {
+        display: block;
+        color: var(--accent-dark);
+        font-size: 2rem;
+      }
+
+      .section {
+        margin-top: 4rem;
+      }
+
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div>
+          <div class="eyebrow">Carbon accounting blueprint</div>
+          <h1 id="hero-title">Plan, measure, and report emissions with confidence.</h1>
+          <p>
+            CarbonSite defines the product and technical foundation for a web
+            platform that helps organizations collect activity data, calculate
+            CO2e, track reduction initiatives, and publish audit-ready reports.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="/docs/PRD.md">Read the PRD</a>
+            <a class="button" href="/docs/TRD.md">Read the TRD</a>
+          </div>
+        </div>
+        <aside class="card" aria-label="CarbonSite highlights">
+          <h2>What CarbonSite covers</h2>
+          <div class="metrics">
+            <div class="metric"><strong>3</strong>GHG scopes</div>
+            <div class="metric"><strong>5</strong>MVP milestones</div>
+            <div class="metric"><strong>RBAC</strong>Tenant-safe access</div>
+            <div class="metric"><strong>CO2e</strong>Traceable calculations</div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" aria-labelledby="docs-title">
+        <h2 id="docs-title">Documentation included</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>Product Requirements</h3>
+            <p>
+              Goals, personas, user journeys, functional requirements, release
+              scope, metrics, risks, and open product questions.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Technical Requirements</h3>
+            <p>
+              Architecture, domain model, APIs, import pipeline, calculation
+              engine, reporting, security, testing, and deployment guidance.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
