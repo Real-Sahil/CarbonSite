@@ -235,7 +235,13 @@ After deploy:
 13. Request a report and download PDF and CSV artefacts.
 14. Open the Audit Trail and confirm the actions are recorded.
 
-## 13. Verification Commands
+## 13. User Access Control And RBAC
+
+CarbonSite stores users separately from organisation memberships. Account creation happens through sign-up or invite acceptance; organisation access is controlled by `OrganizationMembership` rows with `admin`, `editor`, `reviewer`, `viewer`, `auditor`, and `field_worker` roles.
+
+Admins can add an existing CarbonSite user directly by email from Members & Access. If the email does not belong to an existing user, the system sends an invite link; accepting it creates the user account, membership, and session. Role changes, direct adds, invite creation, invite acceptance, and removals are written to the audit trail. The database records `created_at` and `updated_at` on memberships so RBAC changes are traceable through schema state and audit logs.
+
+## 14. Verification Commands
 
 Run before pushing production changes:
 
@@ -257,6 +263,6 @@ flutter test
 
 CI runs the same web and mobile checks on `main` and pull requests.
 
-## 14. Operations Runbook
+## 15. Operations Runbook
 
 For production incident response, failed job recovery, backup and restore, rollback, and post-release smoke testing, use [CarbonSite Operations Runbook](./operations-runbook.md).

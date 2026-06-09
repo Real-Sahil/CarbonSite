@@ -58,7 +58,14 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         return;
       }
 
-      setSuccess(`Invite sent to ${email.trim()}.`);
+      const data = await res.json().catch(() => null);
+      setSuccess(
+        data?.action === "member_added"
+          ? data.emailDelivery === "email_failed"
+            ? `${email.trim()} already has an account and was added. Notification email needs follow-up.`
+            : `${email.trim()} already has an account and was added to this organisation.`
+          : `Invite sent to ${email.trim()}.`,
+      );
       setEmail("");
       setRole("viewer");
       router.refresh();

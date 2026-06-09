@@ -60,7 +60,7 @@ export async function POST(
       }),
       prisma.user.findUnique({
         where: { email },
-        select: { id: true },
+        select: { id: true, email: true, name: true },
       }),
     ]);
 
@@ -73,6 +73,56 @@ export async function POST(
       if (existing) {
         return apiError("ALREADY_MEMBER", "User is already a member of this organization.", 409);
       }
+
+      const membership = await prisma.organizationMembership.create({
+        data: {
+          organizationId: orgId,
+          userId: user.id,
+          role: body.role,
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      let delivery = "email";
+      await sendTransactionalEmail({
+        to: email,
+        subject: `[CarbonSite] ${organization.name}: access granted`,
+        text: [
+          `${session.user.name ?? session.user.email} added you to ${organization.name} on CarbonSite.`,
+          `Role: ${membership.role.replaceAll("_", " ")}`,
+          `Open workspace: ${appUrl}/orgs/${orgId}/dashboard`,
+        ].join("\n"),
+      }).catch((emailErr) => {
+        delivery = "email_failed";
+        console.error("[members] direct add notification failed", emailErr);
+      });
+
+      await writeAuditLog({
+        organizationId: orgId,
+        actorUserId: session.user.id,
+        action: "org.member.added",
+        resourceType: "membership",
+        resourceId: membership.id,
+        metadata: {
+          targetUserId: user.id,
+          email,
+          role: membership.role,
+          accountState: "existing_user",
+          delivery,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          action: "member_added",
+          emailDelivery: delivery,
+          membership,
+        },
+        { status: 201 },
+      );
     }
 
     const now = new Date();

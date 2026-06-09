@@ -36,4 +36,27 @@ describe("writeAuditLog", () => {
       }),
     });
   });
+
+  test("accepts direct member add audit actions", async () => {
+    await writeAuditLog({
+      organizationId: "org-1",
+      actorUserId: "admin-1",
+      action: "org.member.added",
+      resourceType: "membership",
+      resourceId: "membership-1",
+      metadata: {
+        targetUserId: "user-1",
+        role: "reviewer",
+      },
+    });
+
+    expect(mocks.auditLogCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "org.member.added",
+        organizationId: "org-1",
+        resourceId: "membership-1",
+        resourceType: "membership",
+      }),
+    });
+  });
 });
