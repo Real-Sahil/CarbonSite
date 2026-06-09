@@ -4,17 +4,24 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 type StagedRowData = Record<string, unknown>;
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string; importId: string }> },
 ) {
   try {
     const { orgId, importId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const limited = rateLimit(req, {
+      key: rateLimitKey(orgId, "import-commit", session.user.id),
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const batch = await prisma.importBatch.findFirst({
       where: { id: importId, organizationId: orgId },

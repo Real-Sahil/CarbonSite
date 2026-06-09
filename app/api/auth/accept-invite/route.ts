@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimit } from "@/lib/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { acceptInviteSchema } from "@/lib/validation/org";
 
 export async function POST(req: NextRequest) {
   try {
     const body = acceptInviteSchema.parse(await req.json());
+    const limited = rateLimit(req, {
+      key: `invite_accept:${body.token}`,
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     // 1. Look up and validate the invite link
     const invite = await prisma.inviteLink.findUnique({

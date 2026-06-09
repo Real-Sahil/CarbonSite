@@ -2,15 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string; runId: string }> },
 ) {
   try {
     const { orgId, runId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const limited = rateLimit(req, {
+      key: rateLimitKey(orgId, "snapshot-publish", session.user.id),
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const run = await prisma.calculationRun.findFirst({
       where: { id: runId, organizationId: orgId },
