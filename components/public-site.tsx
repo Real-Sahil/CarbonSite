@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 export const publicNav = [
   { href: "/product", label: "Product" },
   { href: "/solutions/construction", label: "Construction" },
+  { href: "/solutions/waste-haulage", label: "Waste and haulage" },
+  { href: "/field-app", label: "Field app" },
   { href: "/security", label: "Security" },
   { href: "/resources", label: "Resources" },
   { href: "/contact", label: "Contact" },
@@ -63,13 +65,21 @@ export function PublicFooter() {
           </p>
         </div>
         <div className="grid gap-6 sm:grid-cols-3">
-          <FooterGroup title="Platform" links={publicNav.slice(0, 3)} />
+          <FooterGroup
+            title="Platform"
+            links={[
+              { href: "/product", label: "Product" },
+              { href: "/field-app", label: "Field app" },
+              { href: "/security", label: "Security" },
+            ]}
+          />
           <FooterGroup
             title="Workflows"
             links={[
+              { href: "/solutions/construction", label: "Construction" },
+              { href: "/solutions/waste-haulage", label: "Waste and haulage" },
               { href: "/product#field-capture", label: "Field capture" },
               { href: "/product#route-distance", label: "Route distance" },
-              { href: "/product#reporting", label: "Reporting" },
             ]}
           />
           <FooterGroup

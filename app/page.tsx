@@ -89,7 +89,7 @@ export default function RootPage() {
             Each area is written for the teams who collect, check, approve, and report construction carbon data.
           </p>
         </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <LinkedPanel
             href="/product"
             title="Product"
@@ -99,6 +99,16 @@ export default function RootPage() {
             href="/solutions/construction"
             title="Construction"
             text="Materials, waste collections, tipper haulage, supplier evidence, and site teams."
+          />
+          <LinkedPanel
+            href="/solutions/waste-haulage"
+            title="Waste and haulage"
+            text="Waste tickets, transfer notes, carrier movements, route distance, and review evidence."
+          />
+          <LinkedPanel
+            href="/field-app"
+            title="Field app"
+            text="Mobile capture for site teams with offline queueing, OCR extraction, postcodes, and evidence upload."
           />
           <LinkedPanel
             href="/security"

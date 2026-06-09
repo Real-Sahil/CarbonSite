@@ -70,7 +70,7 @@ export default function ProductPage() {
             {[
               ["Calculation runs", "Approved records are calculated against selected methodology and factor library versions."],
               ["Published snapshots", "Successful runs can be published into immutable snapshot versions for reporting."],
-              ["PDF and CSV artefacts", "Reports are generated, checksummed, stored, and served through signed download links."],
+              ["PDF and CSV artefacts", "Reports are generated, checked, retained, and shared through controlled downloads."],
             ].map(([title, text]) => (
               <div key={title} className="rounded-lg border border-slate-200 bg-[#fbfcf8] p-5">
                 <h2 className="text-base font-semibold text-slate-950">{title}</h2>
