@@ -8,25 +8,25 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 71% 45%;
+    --primary: 166 76% 27%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 160 35% 94%;
+    --secondary-foreground: 166 84% 12%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 142 71% 94%;
-    --accent-foreground: 142 71% 20%;
+    --accent: 158 64% 92%;
+    --accent-foreground: 166 76% 20%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 142 71% 45%;
-    --radius: 0.5rem;
+    --ring: 166 76% 27%;
+    --radius: 0.625rem;
   }
 }
 
 @theme inline {
-  --font-sans: Arial, Helvetica, sans-serif;
+  --font-sans: "InterVariable", "Inter", "Aptos", "Segoe UI", Arial, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
@@ -35,9 +35,41 @@
     @apply box-border;
     border-color: hsl(214.3 31.8% 91.4%);
   }
+
   body {
-    background: hsl(0 0% 100%);
+    background: #f4f7f1;
     color: hsl(222.2 84% 4.9%);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "InterVariable", "Inter", "Aptos", "Segoe UI", Arial, sans-serif;
+    text-rendering: geometricPrecision;
+  }
+
+  ::selection {
+    background: rgb(19 78 74 / 0.18);
+    color: #0f172a;
+  }
+}
+
+@layer utilities {
+  .pressable {
+    transition:
+      transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+      border-color 180ms ease,
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .pressable:active {
+    transform: scale(0.985);
+  }
+
+  .surface-grid {
+    background-image:
+      linear-gradient(rgb(15 23 42 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(15 23 42 / 0.04) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }

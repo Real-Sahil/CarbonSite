@@ -3,11 +3,18 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
+  BarChart3,
   ClipboardCheck,
   Clock,
   FileText,
+  Handshake,
   Inbox,
+  LineChart,
+  PieChart,
+  Route,
+  Scale,
   Target,
+  TrendingUp,
   Upload,
 } from "lucide-react";
 import { requireOrgMember } from "@/lib/auth/session";
@@ -34,6 +41,22 @@ function formatKgCo2e(value: unknown): string {
   if (!Number.isFinite(numeric) || numeric === 0) return "0 kgCO2e";
   if (numeric >= 1000) return `${(numeric / 1000).toFixed(2)} tCO2e`;
   return `${numeric.toFixed(1)} kgCO2e`;
+}
+
+function formatNumber(value: unknown, maximumFractionDigits = 0): string {
+  const numeric = Number(value ?? 0);
+  if (!Number.isFinite(numeric)) return "0";
+  return new Intl.NumberFormat("en-GB", { maximumFractionDigits }).format(numeric);
+}
+
+function formatCurrency(value: unknown, currency = "GBP"): string {
+  const numeric = Number(value ?? 0);
+  if (!Number.isFinite(numeric) || numeric === 0) return "£0";
+  return new Intl.NumberFormat("en-GB", {
+    currency,
+    maximumFractionDigits: 0,
+    style: "currency",
+  }).format(numeric);
 }
 
 function formatPercent(complete: number, total: number): string {
@@ -88,6 +111,14 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     methodologies,
     factorLibraries,
     calculationRuns,
+    evidenceFileCount,
+    routeDistanceStats,
+    submissionStatusRows,
+    submissionDocumentRows,
+    initiativeStatusRows,
+    targetReductionStats,
+    topCategoryAggregates,
+    reportStatusRows,
   ] = await Promise.all([
     currentPeriod
       ? prisma.dashboardAggregate.groupBy({
@@ -197,6 +228,56 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       orderBy: { createdAt: "desc" },
       take: 6,
     }),
+    prisma.evidenceFile.count({ where: { organizationId: orgId } }),
+    prisma.routeDistance.aggregate({
+      where: { organizationId: orgId },
+      _count: { _all: true },
+      _sum: { distanceKm: true },
+    }),
+    prisma.fieldSubmission.groupBy({
+      by: ["status"],
+      where: { organizationId: orgId },
+      _count: { _all: true },
+      orderBy: { status: "asc" },
+    }),
+    prisma.fieldSubmission.groupBy({
+      by: ["documentType"],
+      where: { organizationId: orgId },
+      _count: { _all: true },
+      orderBy: { documentType: "asc" },
+    }),
+    prisma.reductionInitiative.groupBy({
+      by: ["status"],
+      where: { organizationId: orgId },
+      _count: { _all: true },
+      _sum: { costAmount: true, expectedImpactCo2e: true },
+      orderBy: { status: "asc" },
+    }),
+    prisma.reductionTarget.aggregate({
+      where: { organizationId: orgId },
+      _sum: { reductionAmount: true },
+    }),
+    currentPeriod
+      ? prisma.dashboardAggregate.findMany({
+          where: {
+            organizationId: orgId,
+            reportingPeriodId: currentPeriod.id,
+            snapshotId: null,
+            emissionCategoryId: { not: null },
+          },
+          include: {
+            emissionCategory: { select: { name: true, scope: true } },
+          },
+          orderBy: { totalCo2e: "desc" },
+          take: 5,
+        })
+      : Promise.resolve([]),
+    prisma.report.groupBy({
+      by: ["status"],
+      where: { organizationId: orgId },
+      _count: { _all: true },
+      orderBy: { status: "asc" },
+    }),
   ]);
 
   const scopeRows = [1, 2, 3].map((scope) => {
@@ -209,6 +290,40 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   });
 
   const hasAggregates = scopeRows.some((row) => Number(row.total) > 0 || Number(row.records) > 0);
+  const currentFootprint = scopeRows.reduce((total, row) => total + Number(row.total), 0);
+  const currentCalculatedRecords = scopeRows.reduce(
+    (total, row) => total + Number(row.records),
+    0,
+  );
+  const maxCategoryTotal = Math.max(
+    ...topCategoryAggregates.map((aggregate) => Number(aggregate.totalCo2e)),
+    0,
+  );
+  const submissionTotal = submissionStatusRows.reduce(
+    (total, row) => total + row._count._all,
+    0,
+  );
+  const documentTotal = submissionDocumentRows.reduce(
+    (total, row) => total + row._count._all,
+    0,
+  );
+  const initiativeTotalImpact = initiativeStatusRows.reduce(
+    (total, row) => total + Number(row._sum.expectedImpactCo2e ?? 0),
+    0,
+  );
+  const initiativeTotalCost = initiativeStatusRows.reduce(
+    (total, row) => total + Number(row._sum.costAmount ?? 0),
+    0,
+  );
+  const targetReductionTotal = Number(targetReductionStats._sum.reductionAmount ?? 0);
+  const routeDistanceKm = Number(routeDistanceStats._sum.distanceKm ?? 0);
+  const routeDistanceCount = routeDistanceStats._count._all;
+  const routeAverageKm =
+    routeDistanceCount > 0 ? routeDistanceKm / routeDistanceCount : 0;
+  const reportStatusTotal = reportStatusRows.reduce(
+    (total, row) => total + row._count._all,
+    0,
+  );
   const reviewTaskTargets = await Promise.all(
     myReviewTasks.map((task) =>
       resolveReviewTarget({
@@ -391,6 +506,281 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         </Card>
       </div>
 
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-slate-100 bg-slate-950 text-white">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
+                <CardDescription className="text-slate-300">
+                  Category concentration and scope movement for the active reporting period.
+                </CardDescription>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-emerald-200">
+                <LineChart className="h-5 w-5" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)]">
+            <div>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Top emission categories</p>
+                  <p className="text-xs text-slate-500">
+                    Ranked from current calculation aggregates.
+                  </p>
+                </div>
+                <Badge variant="outline">{currentPeriod?.label ?? "No period"}</Badge>
+              </div>
+              <div className="mt-4 space-y-3">
+                {topCategoryAggregates.length > 0 ? (
+                  topCategoryAggregates.map((aggregate) => (
+                    <ProgressRow
+                      key={aggregate.id}
+                      label={aggregate.emissionCategory?.name ?? "Uncategorised"}
+                      meta={`Scope ${aggregate.emissionCategory?.scope ?? aggregate.scope} - ${aggregate.recordCount.toLocaleString("en-GB")} records`}
+                      value={formatKgCo2e(aggregate.totalCo2e)}
+                      percent={
+                        maxCategoryTotal > 0
+                          ? (Number(aggregate.totalCo2e) / maxCategoryTotal) * 100
+                          : 0
+                      }
+                    />
+                  ))
+                ) : (
+                  <EmptyPanel
+                    title="No category analytics yet"
+                    description="Run a calculation after records are approved to rank materials, waste, haulage, fuel, and other categories."
+                    href={`/orgs/${orgId}/dashboard`}
+                    action="Run calculation"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="grid gap-3">
+              <InsightCard
+                icon={Scale}
+                label="Calculated records"
+                value={currentCalculatedRecords.toLocaleString("en-GB")}
+                detail="Records included in current scope totals"
+              />
+              <InsightCard
+                icon={BarChart3}
+                label="Current footprint"
+                value={formatKgCo2e(currentFootprint)}
+                detail="Scope 1, 2, and 3 combined"
+              />
+              <InsightCard
+                icon={PieChart}
+                label="Scope coverage"
+                value={`${scopeRows.filter((row) => Number(row.records) > 0).length}/3`}
+                detail="Scopes with calculated activity"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-base">Reporting pipeline</CardTitle>
+                <CardDescription>
+                  Board-pack output status across requested inventory, snapshot, and audit reports.
+                </CardDescription>
+              </div>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/orgs/${orgId}/reports`}>
+                  Reports
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {reportStatusRows.length > 0 ? (
+              reportStatusRows.map((row) => (
+                <PipelineRow
+                  key={row.status}
+                  label={row.status.replaceAll("_", " ")}
+                  count={row._count._all}
+                  total={reportStatusTotal}
+                />
+              ))
+            ) : (
+              <EmptyPanel
+                title="No report requests yet"
+                description="Publish a calculation snapshot, then request inventory, monthly snapshot, or audit pack outputs."
+                href={`/orgs/${orgId}/reports`}
+                action="Open reports"
+              />
+            )}
+            <div className="grid gap-3 pt-2 sm:grid-cols-2">
+              <InsightCard
+                icon={FileText}
+                label="Ready outputs"
+                value={readyReportCount.toLocaleString("en-GB")}
+                detail="Downloadable report artefacts"
+              />
+              <InsightCard
+                icon={AlertTriangle}
+                label="Failed outputs"
+                value={failedReportCount.toLocaleString("en-GB")}
+                detail="Require rerun or investigation"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-base">Social value tools</CardTitle>
+                <CardDescription>
+                  Track decarbonisation work, route-efficiency signals, and target ambition from live records.
+                </CardDescription>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
+                <Handshake className="h-5 w-5" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <InsightCard
+                icon={Target}
+                label="Target ambition"
+                value={formatKgCo2e(targetReductionTotal)}
+                detail={`${targetCount.toLocaleString("en-GB")} active target records`}
+              />
+              <InsightCard
+                icon={TrendingUp}
+                label="Expected initiative impact"
+                value={formatKgCo2e(initiativeTotalImpact)}
+                detail={`${initiativeCount.toLocaleString("en-GB")} initiatives tracked`}
+              />
+              <InsightCard
+                icon={Scale}
+                label="Planned investment"
+                value={formatCurrency(initiativeTotalCost)}
+                detail="Cost recorded against initiatives"
+              />
+              <InsightCard
+                icon={Route}
+                label="Average route distance"
+                value={`${formatNumber(routeAverageKm, 1)} km`}
+                detail={`${routeDistanceCount.toLocaleString("en-GB")} postcode routes cached`}
+              />
+            </div>
+            <div className="rounded-lg border border-slate-200">
+              {initiativeStatusRows.length > 0 ? (
+                <div className="divide-y divide-slate-100">
+                  {initiativeStatusRows.map((row) => (
+                    <div key={row.status} className="flex items-center justify-between gap-4 p-3">
+                      <div>
+                        <p className="text-sm font-medium capitalize text-slate-800">
+                          {row.status.replaceAll("_", " ")}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {formatKgCo2e(row._sum.expectedImpactCo2e)} expected impact
+                        </p>
+                      </div>
+                      <Badge variant="outline">{row._count._all}</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyPanel
+                  title="No social value initiatives yet"
+                  description="Create initiatives for reuse, route optimisation, supplier change, waste diversion, or low-carbon materials."
+                  href={`/orgs/${orgId}/targets`}
+                  action="Create initiative"
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-base">Evidence and field capture</CardTitle>
+                <CardDescription>
+                  Submission quality, document mix, and uploaded evidence volume from mobile and web workflows.
+                </CardDescription>
+              </div>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/orgs/${orgId}/submissions`}>
+                  Submissions
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-5 lg:grid-cols-2">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Capture status</p>
+              <div className="mt-3 space-y-3">
+                {submissionStatusRows.length > 0 ? (
+                  submissionStatusRows.map((row) => (
+                    <PipelineRow
+                      key={row.status}
+                      label={row.status.replaceAll("_", " ")}
+                      count={row._count._all}
+                      total={submissionTotal}
+                    />
+                  ))
+                ) : (
+                  <EmptyPanel
+                    title="No field submissions yet"
+                    description="Use the field app or API to submit delivery notes, waste tickets, and fuel evidence."
+                    href={`/orgs/${orgId}/submissions`}
+                    action="Open submissions"
+                  />
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Document mix</p>
+              <div className="mt-3 space-y-3">
+                {submissionDocumentRows.length > 0 ? (
+                  submissionDocumentRows.map((row) => (
+                    <PipelineRow
+                      key={row.documentType}
+                      label={row.documentType.replaceAll("_", " ")}
+                      count={row._count._all}
+                      total={documentTotal}
+                    />
+                  ))
+                ) : (
+                  <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
+                    Document type analytics appear when field submissions are received.
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <InsightCard
+                  icon={Upload}
+                  label="Evidence files"
+                  value={evidenceFileCount.toLocaleString("en-GB")}
+                  detail="Stored and linked documents"
+                />
+                <InsightCard
+                  icon={Route}
+                  label="Route km captured"
+                  value={`${formatNumber(routeDistanceKm, 1)} km`}
+                  detail="Pickup to delivery distance"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="text-base">Operations health</CardTitle>
@@ -526,6 +916,85 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         <ActionCard title="Imports" description="Upload, validate, and commit activity data batches." href={`/orgs/${orgId}/imports`} />
         <ActionCard title="Reports" description="Track report requests and signed output artefacts." href={`/orgs/${orgId}/reports`} />
         <ActionCard title="Targets" description="Manage reduction targets and operational initiatives." href={`/orgs/${orgId}/targets`} />
+      </div>
+    </div>
+  );
+}
+
+function InsightCard({
+  icon: Icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+          <p className="mt-2 text-xl font-semibold text-slate-950">{value}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+        </div>
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProgressRow({
+  label,
+  meta,
+  value,
+  percent,
+}: {
+  label: string;
+  meta: string;
+  value: string;
+  percent: number;
+}) {
+  const width = `${Math.max(2, Math.min(100, percent))}%`;
+  return (
+    <div className="rounded-lg border border-slate-200 p-3">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-slate-900">{label}</p>
+          <p className="mt-0.5 text-xs text-slate-500">{meta}</p>
+        </div>
+        <p className="shrink-0 text-sm font-semibold text-slate-900">{value}</p>
+      </div>
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+        <div className="h-full rounded-full bg-emerald-700" style={{ width }} />
+      </div>
+    </div>
+  );
+}
+
+function PipelineRow({
+  label,
+  count,
+  total,
+}: {
+  label: string;
+  count: number;
+  total: number;
+}) {
+  const percent = total > 0 ? (count / total) * 100 : 0;
+  const width = `${Math.max(2, Math.min(100, percent))}%`;
+  return (
+    <div className="rounded-lg border border-slate-200 p-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm font-medium capitalize text-slate-800">{label}</span>
+        <span className="text-sm font-semibold text-slate-950">{count.toLocaleString("en-GB")}</span>
+      </div>
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+        <div className="h-full rounded-full bg-slate-900" style={{ width }} />
       </div>
     </div>
   );
