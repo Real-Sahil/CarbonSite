@@ -7,11 +7,13 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const environment = verifyEnvironmentConfiguration();
   const database = await checkDatabase();
-  const ok = environment.ok && database.ok;
+  const authSchema = database.ok ? await checkAuthSchema() : { ok: false, missingColumns: [] };
+  const ok = environment.ok && database.ok && authSchema.ok;
 
   return NextResponse.json(
     {
       checks: {
+        authSchema,
         database,
         environment: {
           errors: environment.errors,
@@ -37,6 +39,43 @@ async function checkDatabase() {
       ok: false,
       reason: "database_unreachable",
       detail: process.env.NODE_ENV === "production" ? undefined : formatError(error),
+    };
+  }
+}
+
+async function checkAuthSchema() {
+  const requiredColumns = [
+    "users.email_verified",
+    "users.image",
+    "sessions.ip_address",
+    "sessions.user_agent",
+  ];
+
+  try {
+    const columns = await prisma.$queryRaw<Array<{ table_name: string; column_name: string }>>`
+      SELECT table_name, column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND (
+          (table_name = 'users' AND column_name IN ('email_verified', 'image'))
+          OR (table_name = 'sessions' AND column_name IN ('ip_address', 'user_agent'))
+        )
+    `;
+    const present = new Set(
+      columns.map((column) => `${column.table_name}.${column.column_name}`),
+    );
+    const missingColumns = requiredColumns.filter((column) => !present.has(column));
+
+    return {
+      missingColumns,
+      ok: missingColumns.length === 0,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: "auth_schema_check_failed",
+      detail: process.env.NODE_ENV === "production" ? undefined : formatError(error),
+      missingColumns: requiredColumns,
     };
   }
 }
