@@ -67,6 +67,8 @@ export async function POST(req: NextRequest) {
         data: {
           id: userId,
           email,
+          emailVerified: Boolean(invite.email),
+          emailVerifiedAt: invite.email ? now : null,
           name: body.name,
         },
       });

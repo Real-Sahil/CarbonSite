@@ -19,6 +19,7 @@ Set these variables for Production, Preview, and Development as appropriate:
 - `BETTER_AUTH_SECRET`
 - `BETTER_AUTH_URL`
 - `TRUSTED_ORIGINS`
+- `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION`
 - `NEXT_PUBLIC_APP_URL`
 - `STORAGE_DRIVER`
 - `STORAGE_ENDPOINT`
@@ -34,11 +35,11 @@ Set these variables for Production, Preview, and Development as appropriate:
 - `OSRM_BASE_URL`
 - `JOB_PROCESSING_MODE`
 
-Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactional email is configured. Use `JOB_PROCESSING_MODE=inline` for a Vercel-only deployment. Use `JOB_PROCESSING_MODE=worker` only after a separate `pnpm worker` process is deployed with the same database and storage secrets.
+Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactional email is configured. Use `JOB_PROCESSING_MODE=inline` for a Vercel-only deployment. Use `JOB_PROCESSING_MODE=worker` only after a separate `pnpm worker` process is deployed with the same database and storage secrets. Set `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false` unless you are ready for email-verification-gated sign-in; when set to `true`, verification links are sent through the configured transactional email driver.
 
 ## Release Runbook
 
-1. Apply Prisma migrations against the production database.
+1. Apply Prisma migrations against the production database, including `20260610103000_align_better_auth_schema`.
 2. Run `pnpm prisma generate`.
 3. Run `pnpm verify:env` with the same environment variables that will be used by Vercel.
 4. Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build`.

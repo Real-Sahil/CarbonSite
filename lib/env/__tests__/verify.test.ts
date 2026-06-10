@@ -51,6 +51,7 @@ describe("verifyEnvironmentConfiguration", () => {
   test("reports unsupported production modes", () => {
     const result = verifyEnvironmentConfiguration({
       ...baseEnv,
+      BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION: "sometimes",
       EMAIL_DRIVER: "smtp",
       JOB_PROCESSING_MODE: "queue",
       STORAGE_DRIVER: "disk",
@@ -61,6 +62,7 @@ describe("verifyEnvironmentConfiguration", () => {
       'JOB_PROCESSING_MODE must be "inline" or "worker"; received "queue".',
       'STORAGE_DRIVER must be "local" or "r2"; received "disk".',
       'EMAIL_DRIVER must be "console" or "resend"; received "smtp".',
+      'BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION must be "true" or "false"; received "sometimes".',
     ]);
   });
 

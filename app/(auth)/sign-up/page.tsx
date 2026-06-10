@@ -34,21 +34,27 @@ export default function SignUpPage() {
     }
 
     setLoading(true);
-
-    await authClient.signUp.email(
-      { name, email, password },
-      {
-        onSuccess: () => {
-          router.push("/app");
-        },
-        onError: (ctx) => {
-          setError(
-            ctx.error.message ?? "Could not create account. Please try again."
-          );
-          setLoading(false);
-        },
+    try {
+      const result = await authClient.signUp.email({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Could not create account. Please try again.");
+        return;
       }
-    );
+      if (result.data?.token === null) {
+        setError("Check your email to verify your CarbonSite account before signing in.");
+        return;
+      }
+      router.push("/app");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create account. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

@@ -35,6 +35,7 @@ export function verifyEnvironmentConfiguration(
   const jobProcessingMode = env.JOB_PROCESSING_MODE ?? "";
   const nodeEnv = env.NODE_ENV ?? "";
   const routeProvider = env.ROUTING_PROVIDER ?? "osrm";
+  const requireEmailVerification = env.BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION?.trim();
   const errors: string[] = [];
 
   if (storageDriver === "r2") {
@@ -69,6 +70,15 @@ export function verifyEnvironmentConfiguration(
   if (!["console", "resend"].includes(emailDriver)) {
     errors.push(
       `EMAIL_DRIVER must be "console" or "resend"; received "${emailDriver || "unset"}".`,
+    );
+  }
+
+  if (
+    requireEmailVerification &&
+    !["true", "false"].includes(requireEmailVerification)
+  ) {
+    errors.push(
+      `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION must be "true" or "false"; received "${requireEmailVerification}".`,
     );
   }
 

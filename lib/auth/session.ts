@@ -29,9 +29,9 @@ export async function getSession() {
     user: {
       createdAt: session.user.createdAt,
       email: session.user.email,
-      emailVerified: Boolean(session.user.emailVerifiedAt),
+      emailVerified: session.user.emailVerified || Boolean(session.user.emailVerifiedAt),
       id: session.user.id,
-      image: null,
+      image: session.user.image,
       name: session.user.name ?? "",
       updatedAt: session.user.updatedAt,
     },

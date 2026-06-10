@@ -32,6 +32,7 @@ EMAIL_DRIVER=console
 JOB_PROCESSING_MODE=inline
 BETTER_AUTH_URL=http://localhost:3000
 TRUSTED_ORIGINS=http://localhost:3000
+BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 POSTCODES_BASE_URL=https://api.postcodes.io
 OSRM_BASE_URL=https://router.project-osrm.org
@@ -57,6 +58,7 @@ Set these in Vercel Production, Preview, and Development environments as needed:
 - `BETTER_AUTH_SECRET`
 - `BETTER_AUTH_URL`
 - `TRUSTED_ORIGINS`
+- `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION`
 - `NEXT_PUBLIC_APP_URL`
 - `STORAGE_DRIVER`
 - `STORAGE_ENDPOINT`
@@ -79,10 +81,12 @@ STORAGE_DRIVER=r2
 EMAIL_DRIVER=resend
 ROUTING_PROVIDER=osrm
 JOB_PROCESSING_MODE=inline
+BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false
 ```
 
 Use `JOB_PROCESSING_MODE=worker` only after a separate worker runtime is deployed and healthy.
 When `NODE_ENV=production`, `pnpm verify:env` rejects development-only local storage, console email, non-HTTPS app origins, and short auth secrets before release.
+Keep `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false` for immediate self-serve account setup. When it is set to `true`, CarbonSite sends Better Auth verification links through the configured transactional email driver and users must verify before signing in.
 
 ## 4. Database
 
@@ -96,7 +100,7 @@ pnpm prisma generate
 pnpm prisma db seed
 ```
 
-The seed loads global methodology, emission category, and approved factor library records. It does not create demo tenants or fake activity records.
+The auth migration `20260610103000_align_better_auth_schema` must be present in production before users can create accounts; it adds the Better Auth `email_verified`, `image`, `ip_address`, and `user_agent` columns used during sign-up and session creation. The seed loads global methodology, emission category, and approved factor library records. It does not create demo tenants or fake activity records.
 
 ## 5. Object Storage
 
