@@ -12,7 +12,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(
+    const { session, membership } = await requireOrgMember(
       orgId,
       "admin",
       "editor",
@@ -23,7 +23,16 @@ export async function GET(
     );
 
     const periods = await prisma.reportingPeriod.findMany({
-      where: { organizationId: orgId },
+      where: {
+        organizationId: orgId,
+        ...(membership.role === "field_worker"
+          ? {
+              fieldWorkerAssignments: {
+                some: { userId: session.user.id, organizationId: orgId },
+              },
+            }
+          : {}),
+      },
       orderBy: { startDate: "desc" },
     });
 

@@ -85,6 +85,15 @@ export const updateMemberRoleSchema = z.object({
   role: orgRoleSchema,
 });
 
+export const createFieldWorkerAssignmentSchema = z.object({
+  userId: z.string().min(1),
+  reportingPeriodId: z.string().min(1),
+  facilityId: z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+});
+
 // ─── Presign upload ──────────────────────────────────────────────────────────
 
 export const presignUploadSchema = z.object({

@@ -38,6 +38,8 @@ model User {
   ownedInitiatives     ReductionInitiative[] @relation("InitiativeOwner")
   createdInitiatives   ReductionInitiative[] @relation("InitiativeCreator")
   fieldSubmissions     FieldSubmission[]
+  fieldWorkerAssignments FieldWorkerAssignment[] @relation("AssignedFieldWorker")
+  createdFieldWorkerAssignments FieldWorkerAssignment[] @relation("FieldWorkerAssignmentCreator")
 
   // Better Auth session tables
   sessions Session[]
@@ -120,6 +122,7 @@ model Organization {
   evidenceFiles    EvidenceFile[]
   fieldSubmissions FieldSubmission[]
   inviteLinks      InviteLink[]
+  fieldWorkerAssignments FieldWorkerAssignment[]
 
   @@map("organizations")
 }
@@ -172,6 +175,28 @@ model InviteLink {
 
 // ─── Reporting Structure ──────────────────────────────────────────────────────
 
+model FieldWorkerAssignment {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  userId            String   @map("user_id")
+  reportingPeriodId String   @map("reporting_period_id")
+  facilityId        String?  @map("facility_id")
+  assignedByUserId  String   @map("assigned_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user            User            @relation("AssignedFieldWorker", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy      User            @relation("FieldWorkerAssignmentCreator", fields: [assignedByUserId], references: [id])
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id], onDelete: Cascade)
+  facility        Facility?       @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, userId, reportingPeriodId])
+  @@index([organizationId, userId])
+  @@index([organizationId, reportingPeriodId])
+  @@map("field_worker_assignments")
+}
+
 model Facility {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
@@ -185,6 +210,7 @@ model Facility {
   activityRecords ActivityRecord[]
   aggregates      DashboardAggregate[]
   submissions     FieldSubmission[]
+  fieldWorkerAssignments FieldWorkerAssignment[]
 
   @@index([organizationId])
   @@map("facilities")
@@ -242,6 +268,7 @@ model ReportingPeriod {
   targets         ReductionTarget[]    @relation("BaselinePeriod")
   targetPeriods   ReductionTarget[]    @relation("TargetPeriod")
   submissions     FieldSubmission[]
+  fieldWorkerAssignments FieldWorkerAssignment[]
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")

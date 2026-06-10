@@ -44,7 +44,9 @@ type AuditAction =
   | "target.created"
   | "initiative.created"
   | "field_submission.submitted"
-  | "field_submission.reviewed";
+  | "field_submission.reviewed"
+  | "field_worker.assignment_created"
+  | "field_worker.assignment_deleted";
 
 export async function writeAuditLog(params: {
   organizationId: string;

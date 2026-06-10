@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { InviteMemberForm } from "./invite-member-form";
 import { InviteLinkGenerator } from "./invite-link-generator";
 import { MemberActions } from "./member-actions";
+import { FieldWorkerAssignments } from "./field-worker-assignments";
 
 interface MembersPageProps {
   params: Promise<{ orgId: string }>;
@@ -68,7 +69,8 @@ export default async function MembersPage({ params }: MembersPageProps) {
     throw err;
   }
 
-  const [members, pendingTeamInvites, inviteLinks] = await Promise.all([
+  const [members, pendingTeamInvites, inviteLinks, periods, facilities, assignments] =
+    await Promise.all([
     prisma.organizationMembership.findMany({
       where: { organizationId: orgId },
       include: {
@@ -97,7 +99,28 @@ export default async function MembersPage({ params }: MembersPageProps) {
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
+    prisma.reportingPeriod.findMany({
+      where: { organizationId: orgId },
+      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      select: { id: true, label: true, status: true, startDate: true, endDate: true },
+    }),
+    prisma.facility.findMany({
+      where: { organizationId: orgId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+    prisma.fieldWorkerAssignment.findMany({
+      where: { organizationId: orgId },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        reportingPeriod: { select: { id: true, label: true } },
+        facility: { select: { name: true } },
+        assignedBy: { select: { name: true, email: true } },
+      },
+      orderBy: [{ createdAt: "desc" }],
+    }),
   ]);
+  const fieldWorkers = members.filter((member) => member.role === "field_worker");
 
   return (
     <div className="p-8 max-w-6xl mx-auto flex flex-col gap-8">
@@ -169,8 +192,8 @@ export default async function MembersPage({ params }: MembersPageProps) {
         <CardHeader>
           <CardTitle className="text-base">Invite a team member</CardTitle>
           <CardDescription>
-            Send an email invitation to add a sustainability manager, auditor, or
-            other team member.
+            Send a named invitation to add admins, reviewers, auditors, or
+            mobile Field Worker users.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -208,6 +231,49 @@ export default async function MembersPage({ params }: MembersPageProps) {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Mobile worker assignments</CardTitle>
+          <CardDescription>
+            Assign Field Worker users to the reporting periods and sites they can
+            submit delivery notes, waste tickets, fuel receipts, and haulage evidence for.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldWorkerAssignments
+            orgId={orgId}
+            workers={fieldWorkers.map((member) => ({
+              id: member.user.id,
+              label: member.user.name ?? "Field worker",
+              email: member.user.email,
+            }))}
+            periods={periods.map((period) => ({
+              id: period.id,
+              label: period.label,
+              status: period.status,
+              startDate: period.startDate.toISOString(),
+              endDate: period.endDate.toISOString(),
+            }))}
+            facilities={facilities.map((facility) => ({
+              id: facility.id,
+              name: facility.name,
+            }))}
+            assignments={assignments.map((assignment) => ({
+              id: assignment.id,
+              userId: assignment.user.id,
+              workerLabel: assignment.user.name ?? "Field worker",
+              workerEmail: assignment.user.email,
+              reportingPeriodId: assignment.reportingPeriod.id,
+              reportingPeriodLabel: assignment.reportingPeriod.label,
+              facilityName: assignment.facility?.name ?? null,
+              assignedByLabel:
+                assignment.assignedBy.name ?? assignment.assignedBy.email,
+              createdAt: assignment.createdAt.toISOString(),
+            }))}
+          />
+        </CardContent>
+      </Card>
+
       <Separator />
 
       {/* Field worker invite links */}
@@ -219,7 +285,8 @@ export default async function MembersPage({ params }: MembersPageProps) {
           <CardDescription>
             Generate a one-time link for subcontractors or field workers. They
             will be onboarded directly via the CarbonSite mobile app without
-            needing an email and password.
+            needing an email and password, then can be assigned to projects here
+            after accepting.
           </CardDescription>
         </CardHeader>
         <CardContent>

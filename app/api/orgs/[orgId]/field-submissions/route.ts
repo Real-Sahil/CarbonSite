@@ -101,6 +101,37 @@ export async function POST(
     if (!period) {
       return apiError("INVALID_REPORTING_PERIOD", "Reporting period does not belong to this organisation.", 422);
     }
+    const fieldWorkerAssignment =
+      membership.role === "field_worker"
+        ? await prisma.fieldWorkerAssignment.findUnique({
+            where: {
+              organizationId_userId_reportingPeriodId: {
+                organizationId: orgId,
+                userId: session.user.id,
+                reportingPeriodId: body.reportingPeriodId,
+              },
+            },
+            select: { facilityId: true },
+          })
+        : null;
+    if (membership.role === "field_worker" && !fieldWorkerAssignment) {
+      return apiError(
+        "PROJECT_NOT_ASSIGNED",
+        "You are not assigned to this project. Ask your administrator to assign it before submitting tickets.",
+        403,
+      );
+    }
+    if (
+      membership.role === "field_worker" &&
+      fieldWorkerAssignment?.facilityId &&
+      body.facilityId !== fieldWorkerAssignment.facilityId
+    ) {
+      return apiError(
+        "FACILITY_NOT_ASSIGNED",
+        "You are not assigned to this site for the selected project.",
+        403,
+      );
+    }
     if (body.emissionCategoryId && !category) {
       return apiError("INVALID_EMISSION_CATEGORY", "Emission category does not exist.", 422);
     }

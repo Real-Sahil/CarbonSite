@@ -19,6 +19,7 @@ const ROLES = [
   { value: "reviewer", label: "Reviewer" },
   { value: "viewer", label: "Viewer" },
   { value: "auditor", label: "Auditor" },
+  { value: "field_worker", label: "Field Worker" },
 ] as const;
 
 interface InviteMemberFormProps {
@@ -64,7 +65,9 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
           ? data.emailDelivery === "email_failed"
             ? `${email.trim()} already has an account and was added. Notification email needs follow-up.`
             : `${email.trim()} already has an account and was added to this organisation.`
-          : `Invite sent to ${email.trim()}.`,
+          : role === "field_worker"
+            ? `Mobile field worker invite sent to ${email.trim()}. Assign their project after they accept.`
+            : `Invite sent to ${email.trim()}.`,
       );
       setEmail("");
       setRole("viewer");
