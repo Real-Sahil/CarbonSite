@@ -1,0 +1,37 @@
+name: Production database setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_seed:
+        description: Seed global methodology, category, and factor library records after migrations.
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  migrate:
+    name: Apply Prisma migrations
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Check DATABASE_URL secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Add the Neon pooled Postgres connection string as a GitHub Actions secret named DATABASE_URL."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - run: pnpm prisma migrate deploy
+      - if: ${{ inputs.run_seed }}
+        run: pnpm prisma db seed
