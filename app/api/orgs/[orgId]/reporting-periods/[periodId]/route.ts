@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { updateReportingPeriodSchema } from "@/lib/validation/org";
 
@@ -49,6 +50,12 @@ export async function PATCH(
   try {
     const { orgId, periodId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const limited = rateLimit(req, {
+      key: rateLimitKey(orgId, "reporting-period-update", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const period = await resolvePeriod(orgId, periodId);
     if (!period) {

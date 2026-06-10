@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createReductionInitiativeSchema } from "@/lib/validation/org";
 
@@ -35,6 +36,12 @@ export async function POST(
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const limited = rateLimit(req, {
+      key: rateLimitKey(orgId, "initiatives", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
     const body = createReductionInitiativeSchema.parse(await req.json());
 
     if (body.ownerUserId) {

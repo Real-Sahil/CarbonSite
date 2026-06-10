@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimit } from "@/lib/rate-limit";
 import { handleRouteError } from "@/lib/validation/api";
 import { createOrgSchema } from "@/lib/validation/org";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await requireSession();
+    const limited = rateLimit(req, {
+      key: `org-create:${session.user.id}`,
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
     const body = createOrgSchema.parse(await req.json());
 
     const org = await prisma.$transaction(async (tx) => {
