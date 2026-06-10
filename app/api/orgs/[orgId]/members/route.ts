@@ -130,6 +130,7 @@ export async function POST(
       where: {
         organizationId: orgId,
         email,
+        role: body.role,
         usedAt: null,
         expiresAt: { gt: now },
       },
