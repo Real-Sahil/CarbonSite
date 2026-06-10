@@ -64,7 +64,7 @@ export const updateReportingPeriodSchema = createReportingPeriodSchema
 // ─── InviteLink ──────────────────────────────────────────────────────────────
 
 export const createInviteLinkSchema = z.object({
-  role: orgRoleSchema.default("field_worker"),
+  role: z.literal("field_worker").default("field_worker"),
   expiresInDays: z.number().int().min(1).max(30).default(7),
 });
 

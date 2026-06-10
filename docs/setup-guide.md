@@ -241,6 +241,8 @@ CarbonSite stores users separately from organisation memberships. Account creati
 
 Admins can add an existing CarbonSite user directly by email from Members & Access. If the email does not belong to an existing user, the system sends an invite link; accepting it creates the user account, membership, and session. Role changes, direct adds, invite creation, invite acceptance, and removals are written to the audit trail. The database records `created_at` and `updated_at` on memberships so RBAC changes are traceable through schema state and audit logs.
 
+One-time public invite links are restricted to `field_worker` onboarding. Privileged roles such as admin, editor, reviewer, viewer, and auditor must be granted through email-bound member management so the account, invite, membership, and audit trail stay tied to a known identity.
+
 ## 14. Verification Commands
 
 Run before pushing production changes:

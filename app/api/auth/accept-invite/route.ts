@@ -35,6 +35,13 @@ export async function POST(req: NextRequest) {
     if (invite.usedAt !== null) {
       return apiError("INVITE_ALREADY_USED", "This invite link has already been used.", 400);
     }
+    if (!invite.email && invite.role !== "field_worker") {
+      return apiError(
+        "INVITE_REQUIRES_EMAIL",
+        "Privileged organisation roles must be accepted through an email-bound invite.",
+        400,
+      );
+    }
 
     const requestedEmail = body.email?.trim().toLowerCase();
     if (invite.email && requestedEmail !== invite.email.toLowerCase()) {
