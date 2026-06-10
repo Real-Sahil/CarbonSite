@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { presignDownload } from "@/lib/storage";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string; evidenceId: string }> },
 ) {
   try {
@@ -19,6 +20,12 @@ export async function GET(
       "viewer",
       "auditor",
     );
+    const limited = rateLimit(req, {
+      key: rateLimitKey(orgId, "evidence-download", session.user.id),
+      limit: 120,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const evidence = await prisma.evidenceFile.findFirst({
       where: { id: evidenceId, organizationId: orgId },

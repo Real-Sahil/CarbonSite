@@ -23,6 +23,7 @@ type AuditAction =
   | "import.created"
   | "import.committed"
   | "import.evidence_attached"
+  | "import.error_export_downloaded"
   | "import.failed"
   | "record.created"
   | "record.updated"

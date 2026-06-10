@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { presignDownload } from "@/lib/storage";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
@@ -19,6 +20,12 @@ export async function GET(
       "viewer",
       "auditor",
     );
+    const limited = rateLimit(req, {
+      key: rateLimitKey(orgId, "report-download", session.user.id),
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
     const artifact = req.nextUrl.searchParams.get("artifact") ?? "pdf";
 
     if (artifact !== "pdf" && artifact !== "csv") {

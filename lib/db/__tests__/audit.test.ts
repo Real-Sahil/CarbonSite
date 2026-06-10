@@ -59,4 +59,26 @@ describe("writeAuditLog", () => {
       }),
     });
   });
+
+  test("accepts import error export download audit actions", async () => {
+    await writeAuditLog({
+      organizationId: "org-1",
+      actorUserId: "reviewer-1",
+      action: "import.error_export_downloaded",
+      resourceType: "import_batch",
+      resourceId: "import-1",
+      metadata: {
+        errorCount: 3,
+      },
+    });
+
+    expect(mocks.auditLogCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "import.error_export_downloaded",
+        organizationId: "org-1",
+        resourceId: "import-1",
+        resourceType: "import_batch",
+      }),
+    });
+  });
 });
