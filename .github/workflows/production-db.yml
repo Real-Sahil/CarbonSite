@@ -37,6 +37,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma generate
       - name: Show Prisma migration status
+        continue-on-error: true
         run: pnpm prisma migrate status
       - name: Apply Prisma migrations
         run: pnpm prisma migrate deploy
