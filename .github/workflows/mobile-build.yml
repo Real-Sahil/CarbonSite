@@ -37,13 +37,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.x"
+          flutter-version: "3.44.0"
           channel: stable
           cache: true
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
-      - name: Require Android release signing secrets
+      - name: Check Android release signing secrets
         env:
           CARBONSITE_ANDROID_KEYSTORE_BASE64: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_BASE64 }}
           CARBONSITE_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_PASSWORD }}
@@ -53,12 +53,15 @@ jobs:
           missing=0
           for name in CARBONSITE_ANDROID_KEYSTORE_BASE64 CARBONSITE_ANDROID_KEYSTORE_PASSWORD CARBONSITE_ANDROID_KEY_ALIAS CARBONSITE_ANDROID_KEY_PASSWORD; do
             if [ -z "${!name}" ]; then
-              echo "::error::$name is required for Android release builds"
+              echo "::warning::$name is not set; Android artifacts will use the debug signing fallback and are not Play Store ready."
               missing=1
             fi
           done
-          exit "$missing"
+          if [ "$missing" -eq 0 ]; then
+            echo "CARBONSITE_ANDROID_SIGNING_READY=true" >> "$GITHUB_ENV"
+          fi
       - name: Configure Android release signing
+        if: env.CARBONSITE_ANDROID_SIGNING_READY == 'true'
         env:
           CARBONSITE_ANDROID_KEYSTORE_BASE64: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_BASE64 }}
           CARBONSITE_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_PASSWORD }}
@@ -93,7 +96,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.x"
+          flutter-version: "3.44.0"
           channel: stable
           cache: true
       - run: flutter pub get

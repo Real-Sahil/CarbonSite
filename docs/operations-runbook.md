@@ -144,7 +144,7 @@ For suspected tenant data exposure:
 
 Android:
 
-- Add the required Android signing secrets before running the mobile release workflow.
+- Add Android signing secrets before producing Play Store-ready release artifacts. Without them, the workflow still builds Android artifacts with the debug signing fallback for CI verification.
 - Use **Actions > Mobile release builds** or push a `v*` / `mobile-v*` tag.
 - Download the APK and AAB artifacts from the workflow run.
 

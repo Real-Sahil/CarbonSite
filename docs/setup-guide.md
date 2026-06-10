@@ -211,7 +211,7 @@ Inputs:
 - `build_android`: produces release APK and AAB artifacts.
 - `build_ios`: produces an unsigned iOS app artifact on a macOS runner.
 
-Android release artifacts require these repository secrets before the workflow runs:
+Android artifacts can build without signing secrets by using the debug signing fallback. Those artifacts are suitable for CI verification and internal smoke testing only. Add these repository secrets before producing Play Store-ready release artifacts:
 
 - `CARBONSITE_ANDROID_KEYSTORE_BASE64`
 - `CARBONSITE_ANDROID_KEYSTORE_PASSWORD`
