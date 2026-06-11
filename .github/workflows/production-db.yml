@@ -1,0 +1,45 @@
+name: Production database setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_seed:
+        description: Seed global methodology, category, and factor library records after migrations.
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  migrate:
+    name: Apply Prisma migrations
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NO_COLOR: "1"
+    steps:
+      - name: Check DATABASE_URL secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Add the Neon Postgres connection string as a GitHub Actions secret named DATABASE_URL."
+            exit 1
+          fi
+      - name: Show safe database target
+        run: |
+          node -e "const value=process.env.DATABASE_URL||''; let url; try { url=new URL(value); } catch { console.error('::error::DATABASE_URL is not a valid URL. It must look like postgresql://user:password@host/database?sslmode=require'); process.exit(1); } if (!['postgresql:','postgres:'].includes(url.protocol)) { console.error('::error::DATABASE_URL must start with postgresql:// or postgres://'); process.exit(1); } console.log('Database protocol: '+url.protocol); console.log('Database host: '+url.hostname); console.log('Database name: '+(url.pathname.replace(/^\\//,'') || '(missing)')); console.log('SSL mode: '+(url.searchParams.get('sslmode') || '(not set)'));"
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - name: Show Prisma migration status
+        continue-on-error: true
+        run: pnpm prisma migrate status
+      - name: Apply Prisma migrations
+        run: pnpm prisma migrate deploy
+      - if: ${{ inputs.run_seed }}
+        run: pnpm prisma db seed

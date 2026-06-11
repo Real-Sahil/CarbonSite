@@ -1,0 +1,59 @@
+name: carbonsite_mobile
+description: CarbonSite field capture app for subcontractors, suppliers, and tipper hires.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^14.6.2
+
+  # HTTP + auth
+  dio: ^5.7.0
+  flutter_secure_storage: ^9.2.2
+
+  # Offline storage
+  drift: ^2.20.3
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # Connectivity
+  connectivity_plus: ^6.1.2
+
+  # Document capture
+  camera: ^0.11.0
+  image_picker: ^1.1.2
+  image_cropper: ^8.0.1
+  google_mlkit_text_recognition: ^0.15.0
+  mobile_scanner: ^5.2.3
+  geolocator: ^13.0.2
+
+  # UI
+  fl_chart: ^0.70.2
+  share_plus: ^10.1.3
+
+  # Utilities
+  crypto: ^3.0.6
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.6.2
+  drift_dev: ^2.20.2

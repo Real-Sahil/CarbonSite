@@ -1,0 +1,981 @@
+// CarbonSite Prisma Schema — MVP
+// Methodology: GHG Protocol v2026-01, GWP AR6
+// All tenant-owned tables include organization_id. No query may omit it.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Identity & Tenancy ──────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  emailVerified   Boolean   @default(false) @map("email_verified")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  image           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  memberships      OrganizationMembership[]
+  createdRecords   ActivityRecord[]         @relation("CreatedByUser")
+  createdImports   ImportBatch[]
+  reviewTasks      ReviewTask[]             @relation("AssignedTo")
+  createdTasks     ReviewTask[]             @relation("CreatedBy")
+  comments         Comment[]
+  uploadedEvidence EvidenceFile[]
+  auditLogs        AuditLog[]
+  calculationRuns  CalculationRun[]
+  reports          Report[]
+  snapshots        PublishedSnapshot[]
+  targets              ReductionTarget[]
+  ownedInitiatives     ReductionInitiative[] @relation("InitiativeOwner")
+  createdInitiatives   ReductionInitiative[] @relation("InitiativeCreator")
+  fieldSubmissions     FieldSubmission[]
+  fieldWorkerAssignments FieldWorkerAssignment[] @relation("AssignedFieldWorker")
+  createdFieldWorkerAssignments FieldWorkerAssignment[] @relation("FieldWorkerAssignmentCreator")
+
+  // Better Auth session tables
+  sessions Session[]
+  accounts Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime @map("expires_at")
+  token     String   @unique
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String    @map("user_id")
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  idToken               String?   @map("id_token")
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("verifications")
+}
+
+model Organization {
+  id                String   @id @default(cuid())
+  name              String
+  industry          String?
+  hqCountry         String?  @map("hq_country")
+  reportingCurrency String   @default("GBP") @map("reporting_currency")
+  defaultUnits      Json?    @map("default_units")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  memberships      OrganizationMembership[]
+  facilities       Facility[]
+  businessUnits    BusinessUnit[]
+  reportingPeriods ReportingPeriod[]
+  activityRecords  ActivityRecord[]
+  importBatches    ImportBatch[]
+  calculationRuns  CalculationRun[]
+  snapshots        PublishedSnapshot[]
+  aggregates       DashboardAggregate[]
+  routeDistances   RouteDistance[]
+  reports          Report[]
+  reviewTasks      ReviewTask[]
+  comments         Comment[]
+  auditLogs        AuditLog[]
+  targets          ReductionTarget[]
+  initiatives      ReductionInitiative[]
+  evidenceFiles    EvidenceFile[]
+  fieldSubmissions FieldSubmission[]
+  inviteLinks      InviteLink[]
+  fieldWorkerAssignments FieldWorkerAssignment[]
+
+  @@map("organizations")
+}
+
+enum OrgRole {
+  admin
+  editor
+  reviewer
+  viewer
+  auditor
+  field_worker
+
+  @@map("org_role")
+}
+
+model OrganizationMembership {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  role           OrgRole
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@map("organization_memberships")
+}
+
+// Invite links for field workers (external parties, no email/password)
+model InviteLink {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  role           OrgRole   @default(field_worker)
+  email          String?
+  token          String    @unique @default(cuid())
+  expiresAt      DateTime  @map("expires_at")
+  usedAt         DateTime? @map("used_at")
+  usedByUserId   String?   @map("used_by_user_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([organizationId, email])
+  @@map("invite_links")
+}
+
+// ─── Reporting Structure ──────────────────────────────────────────────────────
+
+model FieldWorkerAssignment {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  userId            String   @map("user_id")
+  reportingPeriodId String   @map("reporting_period_id")
+  facilityId        String?  @map("facility_id")
+  assignedByUserId  String   @map("assigned_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user            User            @relation("AssignedFieldWorker", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy      User            @relation("FieldWorkerAssignmentCreator", fields: [assignedByUserId], references: [id])
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id], onDelete: Cascade)
+  facility        Facility?       @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, userId, reportingPeriodId])
+  @@index([organizationId, userId])
+  @@index([organizationId, reportingPeriodId])
+  @@map("field_worker_assignments")
+}
+
+model Facility {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  country        String?
+  region         String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecords ActivityRecord[]
+  aggregates      DashboardAggregate[]
+  submissions     FieldSubmission[]
+  fieldWorkerAssignments FieldWorkerAssignment[]
+
+  @@index([organizationId])
+  @@map("facilities")
+}
+
+model BusinessUnit {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecords ActivityRecord[]
+  aggregates      DashboardAggregate[]
+
+  @@index([organizationId])
+  @@map("business_units")
+}
+
+enum ReportingPeriodType {
+  month
+  quarter
+  year
+  custom
+
+  @@map("reporting_period_type")
+}
+
+enum ReportingPeriodStatus {
+  draft
+  published
+  locked
+
+  @@map("reporting_period_status")
+}
+
+model ReportingPeriod {
+  id             String                @id @default(cuid())
+  organizationId String                @map("organization_id")
+  type           ReportingPeriodType
+  startDate      DateTime              @map("start_date") @db.Date
+  endDate        DateTime              @map("end_date") @db.Date
+  label          String
+  status         ReportingPeriodStatus @default(draft)
+  createdAt      DateTime              @default(now()) @map("created_at")
+  updatedAt      DateTime              @updatedAt @map("updated_at")
+
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecords ActivityRecord[]
+  calculationRuns CalculationRun[]
+  snapshots       PublishedSnapshot[]
+  aggregates      DashboardAggregate[]
+  reports         Report[]
+  targets         ReductionTarget[]    @relation("BaselinePeriod")
+  targetPeriods   ReductionTarget[]    @relation("TargetPeriod")
+  submissions     FieldSubmission[]
+  fieldWorkerAssignments FieldWorkerAssignment[]
+
+  @@index([organizationId, startDate, endDate])
+  @@map("reporting_periods")
+}
+
+// ─── Taxonomy & Methodology ───────────────────────────────────────────────────
+
+model EmissionCategory {
+  id           String  @id @default(cuid())
+  scope        Int
+  code         String  @unique
+  name         String
+  activityType String? @map("activity_type")
+
+  activityRecords ActivityRecord[]
+  emissionFactors EmissionFactor[]
+  aggregates      DashboardAggregate[]
+  submissions     FieldSubmission[]
+
+  @@map("emission_categories")
+}
+
+model MethodologyVersion {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  gwpVersion String   @map("gwp_version")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  calculationRuns  CalculationRun[]
+  calculations     EmissionCalculation[]
+
+  @@map("methodology_versions")
+}
+
+// ─── Imports & Staging ───────────────────────────────────────────────────────
+
+enum ImportState {
+  uploaded
+  parsing
+  mapped
+  validating
+  needs_attention
+  ready_to_commit
+  committed
+  failed
+
+  @@map("import_state")
+}
+
+model ImportBatch {
+  id                  String      @id @default(cuid())
+  organizationId      String      @map("organization_id")
+  reportingPeriodId   String      @map("reporting_period_id")
+  templateKey         String      @map("template_key")
+  state               ImportState @default(uploaded)
+  sourceFilename      String      @map("source_filename")
+  sourceStorageKey    String      @map("source_storage_key")
+  sourceChecksum      String      @map("source_checksum")
+  mapping             Json?
+  rowCount            Int?        @map("row_count")
+  errorCount          Int         @default(0) @map("error_count")
+  warningCount        Int         @default(0) @map("warning_count")
+  errorCsvStorageKey  String?     @map("error_csv_storage_key")
+  idempotencyKey      String?     @unique @map("idempotency_key")
+  createdByUserId     String      @map("created_by_user_id")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  organization    Organization         @relation(fields: [organizationId], references: [id])
+  createdBy       User                 @relation(fields: [createdByUserId], references: [id])
+  stagedRecords   StagedActivityRecord[]
+  activityRecords ActivityRecord[]
+  evidence        ImportBatchEvidence[]
+
+  @@index([organizationId, reportingPeriodId, state])
+  @@index([organizationId, sourceChecksum])
+  @@map("import_batches")
+}
+
+enum StagedRecordStatus {
+  staged
+  excluded
+  ready
+
+  @@map("staged_record_status")
+}
+
+model StagedActivityRecord {
+  id                 String             @id @default(cuid())
+  organizationId     String             @map("organization_id")
+  importBatchId      String             @map("import_batch_id")
+  rowNumber          Int                @map("row_number")
+  data               Json
+  validationErrors   Json               @default("[]") @map("validation_errors")
+  validationWarnings Json               @default("[]") @map("validation_warnings")
+  status             StagedRecordStatus @default(staged)
+  createdAt          DateTime           @default(now()) @map("created_at")
+
+  importBatch ImportBatch @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+
+  @@index([importBatchId, status])
+  @@map("staged_activity_records")
+}
+
+// ─── Activity Records & Evidence ─────────────────────────────────────────────
+
+enum ReviewStatus {
+  draft
+  in_review
+  approved
+  rejected
+
+  @@map("review_status")
+}
+
+enum EvidenceStatus {
+  missing
+  partial
+  complete
+
+  @@map("evidence_status")
+}
+
+enum Scope2Method {
+  location_based
+  market_based
+
+  @@map("scope2_method")
+}
+
+model ActivityRecord {
+  id                 String         @id @default(cuid())
+  organizationId     String         @map("organization_id")
+  reportingPeriodId  String         @map("reporting_period_id")
+  emissionCategoryId String         @map("emission_category_id")
+  activityDate       DateTime?      @map("activity_date") @db.Date
+  startDate          DateTime?      @map("start_date") @db.Date
+  endDate            DateTime?      @map("end_date") @db.Date
+  amount             Decimal        @db.Decimal(18, 6)
+  unit               String
+  sourceDescription  String?        @map("source_description")
+  facilityId         String?        @map("facility_id")
+  businessUnitId     String?        @map("business_unit_id")
+  supplierName       String?        @map("supplier_name")
+  country            String?
+  region             String?
+  spendAmount        Decimal?       @map("spend_amount") @db.Decimal(18, 2)
+  spendCurrency      String?        @map("spend_currency")
+  distanceAmount     Decimal?       @map("distance_amount") @db.Decimal(18, 4)
+  distanceUnit       String?        @map("distance_unit")
+  pickupPostcode     String?        @map("pickup_postcode")
+  deliveryPostcode   String?        @map("delivery_postcode")
+  pickupLat          Decimal?       @map("pickup_lat") @db.Decimal(10, 7)
+  pickupLng          Decimal?       @map("pickup_lng") @db.Decimal(10, 7)
+  deliveryLat        Decimal?       @map("delivery_lat") @db.Decimal(10, 7)
+  deliveryLng        Decimal?       @map("delivery_lng") @db.Decimal(10, 7)
+  routeDistanceId    String?        @map("route_distance_id")
+  routeDistanceSource String?       @map("route_distance_source")
+  distanceOverrideReason String?    @map("distance_override_reason")
+  transportMode      String?        @map("transport_mode")
+  fuelType           String?        @map("fuel_type")
+  refrigerantType    String?        @map("refrigerant_type")
+  scope2Method       Scope2Method?  @map("scope2_method")
+  reviewStatus       ReviewStatus   @default(draft) @map("review_status")
+  evidenceStatus     EvidenceStatus @default(missing) @map("evidence_status")
+  assumptionNotes    String?        @map("assumption_notes")
+  importBatchId      String?        @map("import_batch_id")
+  fieldSubmissionId  String?        @map("field_submission_id")
+  createdByUserId    String         @map("created_by_user_id")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  organization     Organization          @relation(fields: [organizationId], references: [id])
+  reportingPeriod  ReportingPeriod       @relation(fields: [reportingPeriodId], references: [id])
+  emissionCategory EmissionCategory      @relation(fields: [emissionCategoryId], references: [id])
+  facility         Facility?             @relation(fields: [facilityId], references: [id])
+  businessUnit     BusinessUnit?         @relation(fields: [businessUnitId], references: [id])
+  importBatch      ImportBatch?          @relation(fields: [importBatchId], references: [id])
+  routeDistance    RouteDistance?        @relation(fields: [routeDistanceId], references: [id])
+  createdBy        User                  @relation("CreatedByUser", fields: [createdByUserId], references: [id])
+  calculations EmissionCalculation[]
+  evidence     ActivityRecordEvidence[]
+
+  @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
+  @@index([organizationId, routeDistanceId])
+  @@map("activity_records")
+}
+
+model PostcodeGeocode {
+  id                  String   @id @default(cuid())
+  normalizedPostcode  String   @unique @map("normalized_postcode")
+  displayPostcode     String   @map("display_postcode")
+  latitude            Decimal  @db.Decimal(10, 7)
+  longitude           Decimal  @db.Decimal(10, 7)
+  provider            String
+  providerPlaceId     String?  @map("provider_place_id")
+  quality             Json     @default("{}")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  pickupRoutes   RouteDistance[] @relation("PickupGeocode")
+  deliveryRoutes RouteDistance[] @relation("DeliveryGeocode")
+
+  @@map("postcode_geocodes")
+}
+
+model RouteDistance {
+  id                  String   @id @default(cuid())
+  organizationId      String   @map("organization_id")
+  pickupPostcode      String   @map("pickup_postcode")
+  deliveryPostcode    String   @map("delivery_postcode")
+  pickupGeocodeId     String   @map("pickup_geocode_id")
+  deliveryGeocodeId   String   @map("delivery_geocode_id")
+  distanceKm          Decimal  @map("distance_km") @db.Decimal(18, 4)
+  durationSeconds     Int?     @map("duration_seconds")
+  provider            String
+  providerRouteId     String?  @map("provider_route_id")
+  routeHash           String   @unique @map("route_hash")
+  calculationMethod   String   @map("calculation_method")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  pickupGeocode   PostcodeGeocode @relation("PickupGeocode", fields: [pickupGeocodeId], references: [id])
+  deliveryGeocode PostcodeGeocode @relation("DeliveryGeocode", fields: [deliveryGeocodeId], references: [id])
+  activityRecords ActivityRecord[]
+
+  @@index([organizationId, pickupPostcode, deliveryPostcode])
+  @@map("route_distances")
+}
+
+model EvidenceFile {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  filename         String
+  mimeType         String   @map("mime_type")
+  byteSize         Int      @map("byte_size")
+  storageKey       String   @map("storage_key")
+  checksum         String
+  uploadedByUserId String   @map("uploaded_by_user_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  organization    Organization             @relation(fields: [organizationId], references: [id])
+  uploadedBy      User                     @relation(fields: [uploadedByUserId], references: [id])
+  recordEvidence  ActivityRecordEvidence[]
+  batchEvidence   ImportBatchEvidence[]
+  submissionFiles FieldSubmissionFile[]
+
+  @@index([organizationId])
+  @@map("evidence_files")
+}
+
+model ActivityRecordEvidence {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  activityRecordId String   @map("activity_record_id")
+  evidenceFileId   String   @map("evidence_file_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  activityRecord ActivityRecord @relation(fields: [activityRecordId], references: [id], onDelete: Cascade)
+  evidenceFile   EvidenceFile   @relation(fields: [evidenceFileId], references: [id])
+
+  @@unique([activityRecordId, evidenceFileId])
+  @@map("activity_record_evidence")
+}
+
+model ImportBatchEvidence {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  importBatchId  String   @map("import_batch_id")
+  evidenceFileId String   @map("evidence_file_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  importBatch  ImportBatch  @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+  evidenceFile EvidenceFile @relation(fields: [evidenceFileId], references: [id])
+
+  @@unique([importBatchId, evidenceFileId])
+  @@map("import_batch_evidence")
+}
+
+// ─── Field Submissions (Flutter field workers) ────────────────────────────────
+
+enum FieldSubmissionStatus {
+  pending
+  submitted
+  under_review
+  approved
+  rejected
+  needs_info
+
+  @@map("field_submission_status")
+}
+
+enum FieldDocumentType {
+  waste_ticket
+  delivery_note
+  fuel_receipt
+  other
+
+  @@map("field_document_type")
+}
+
+model FieldSubmission {
+  id                 String                @id @default(cuid())
+  organizationId     String                @map("organization_id")
+  reportingPeriodId  String                @map("reporting_period_id")
+  emissionCategoryId String?               @map("emission_category_id")
+  facilityId         String?               @map("facility_id")
+  submittedByUserId  String                @map("submitted_by_user_id")
+  documentType       FieldDocumentType     @map("document_type")
+  status             FieldSubmissionStatus @default(pending)
+  ocrExtractedData   Json?                 @map("ocr_extracted_data")
+  formData           Json                  @map("form_data")
+  gpsLat             Decimal?              @map("gps_lat") @db.Decimal(10, 7)
+  gpsLng             Decimal?              @map("gps_lng") @db.Decimal(10, 7)
+  pickupPostcode     String?               @map("pickup_postcode")
+  deliveryPostcode   String?               @map("delivery_postcode")
+  pickupLat          Decimal?              @map("pickup_lat") @db.Decimal(10, 7)
+  pickupLng          Decimal?              @map("pickup_lng") @db.Decimal(10, 7)
+  deliveryLat        Decimal?              @map("delivery_lat") @db.Decimal(10, 7)
+  deliveryLng        Decimal?              @map("delivery_lng") @db.Decimal(10, 7)
+  calculatedDistanceKm Decimal?            @map("calculated_distance_km") @db.Decimal(18, 4)
+  distanceSource     String?               @map("distance_source")
+  reviewNote         String?               @map("review_note")
+  reviewedByUserId   String?               @map("reviewed_by_user_id")
+  reviewedAt         DateTime?             @map("reviewed_at")
+  activityRecordId   String?               @map("activity_record_id")
+  deviceSubmittedAt  DateTime?             @map("device_submitted_at")
+  idempotencyKey      String?               @map("idempotency_key")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+
+  organization     Organization       @relation(fields: [organizationId], references: [id])
+  reportingPeriod  ReportingPeriod    @relation(fields: [reportingPeriodId], references: [id])
+  emissionCategory EmissionCategory?  @relation(fields: [emissionCategoryId], references: [id])
+  facility         Facility?          @relation(fields: [facilityId], references: [id])
+  submittedBy      User               @relation(fields: [submittedByUserId], references: [id])
+  files            FieldSubmissionFile[]
+
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, submittedByUserId])
+  @@unique([organizationId, submittedByUserId, idempotencyKey], map: "field_submission_idempotency_key")
+  @@map("field_submissions")
+}
+
+model FieldSubmissionFile {
+  id                String   @id @default(cuid())
+  fieldSubmissionId String   @map("field_submission_id")
+  evidenceFileId    String   @map("evidence_file_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  fieldSubmission FieldSubmission @relation(fields: [fieldSubmissionId], references: [id], onDelete: Cascade)
+  evidenceFile    EvidenceFile    @relation(fields: [evidenceFileId], references: [id])
+
+  @@unique([fieldSubmissionId, evidenceFileId])
+  @@map("field_submission_files")
+}
+
+// ─── Emission Factors ─────────────────────────────────────────────────────────
+
+model FactorLibrary {
+  id          String   @id @default(cuid())
+  name        String
+  version     String
+  license     String
+  sourceUrl   String?  @map("source_url")
+  publishedAt DateTime @map("published_at") @db.Date
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  factors         EmissionFactor[]
+  calculationRuns CalculationRun[]
+
+  @@unique([name, version])
+  @@map("factor_libraries")
+}
+
+model EmissionFactor {
+  id                 String    @id @default(cuid())
+  factorLibraryId    String    @map("factor_library_id")
+  externalId         String?   @map("external_id")
+  scope              Int
+  emissionCategoryId String?   @map("emission_category_id")
+  activityType       String?   @map("activity_type")
+  geographyCountry   String?   @map("geography_country")
+  geographyRegion    String?   @map("geography_region")
+  effectiveStartDate DateTime? @map("effective_start_date") @db.Date
+  effectiveEndDate   DateTime? @map("effective_end_date") @db.Date
+  inputUnit          String    @map("input_unit")
+  co2                Decimal?  @db.Decimal(18, 8)
+  ch4                Decimal?  @db.Decimal(18, 8)
+  n2o                Decimal?  @db.Decimal(18, 8)
+  co2e               Decimal?  @db.Decimal(18, 8)
+  uncertaintyRating  String?   @map("uncertainty_rating")
+  usageNotes         String?   @map("usage_notes")
+
+  factorLibrary  FactorLibrary         @relation(fields: [factorLibraryId], references: [id])
+  emissionCategory EmissionCategory?   @relation(fields: [emissionCategoryId], references: [id])
+  calculations   EmissionCalculation[]
+
+  @@index([scope, emissionCategoryId, geographyCountry, effectiveStartDate, effectiveEndDate])
+  @@map("emission_factors")
+}
+
+// ─── Calculations & Snapshots ─────────────────────────────────────────────────
+
+enum CalculationRunStatus {
+  queued
+  running
+  succeeded
+  failed
+
+  @@map("calculation_run_status")
+}
+
+model CalculationRun {
+  id                   String               @id @default(cuid())
+  organizationId       String               @map("organization_id")
+  reportingPeriodId    String               @map("reporting_period_id")
+  methodologyVersionId String               @map("methodology_version_id")
+  factorLibraryId      String               @map("factor_library_id")
+  triggeredByUserId    String               @map("triggered_by_user_id")
+  status               CalculationRunStatus @default(queued)
+  triggerHash          String?              @unique @map("trigger_hash")
+  startedAt            DateTime?            @map("started_at")
+  finishedAt           DateTime?            @map("finished_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+
+  organization       Organization          @relation(fields: [organizationId], references: [id])
+  reportingPeriod    ReportingPeriod       @relation(fields: [reportingPeriodId], references: [id])
+  methodologyVersion MethodologyVersion    @relation(fields: [methodologyVersionId], references: [id])
+  factorLibrary      FactorLibrary         @relation(fields: [factorLibraryId], references: [id])
+  triggeredBy        User                  @relation(fields: [triggeredByUserId], references: [id])
+  calculations       EmissionCalculation[]
+  snapshots          PublishedSnapshot[]
+
+  @@index([organizationId, reportingPeriodId, status])
+  @@map("calculation_runs")
+}
+
+// Immutable — never update rows in this table
+model EmissionCalculation {
+  id                     String   @id @default(cuid())
+  organizationId         String   @map("organization_id")
+  activityRecordId       String   @map("activity_record_id")
+  calculationRunId       String   @map("calculation_run_id")
+  emissionFactorId       String   @map("emission_factor_id")
+  factorLibraryId        String   @map("factor_library_id")
+  factorLibraryVersion   String   @map("factor_library_version")
+  methodologyVersionName String   @map("methodology_version_name")
+  originalAmount         Decimal  @map("original_amount") @db.Decimal(18, 6)
+  originalUnit           String   @map("original_unit")
+  normalizedAmount       Decimal  @map("normalized_amount") @db.Decimal(18, 6)
+  normalizedUnit         String   @map("normalized_unit")
+  co2                    Decimal? @db.Decimal(18, 8)
+  ch4                    Decimal? @db.Decimal(18, 8)
+  n2o                    Decimal? @db.Decimal(18, 8)
+  totalCo2e              Decimal  @map("total_co2e") @db.Decimal(18, 8)
+  formula                String
+  warnings               Json     @default("[]")
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  activityRecord  ActivityRecord     @relation(fields: [activityRecordId], references: [id])
+  calculationRun  CalculationRun     @relation(fields: [calculationRunId], references: [id])
+  emissionFactor  EmissionFactor     @relation(fields: [emissionFactorId], references: [id])
+  methodologyVersion MethodologyVersion @relation(fields: [methodologyVersionName], references: [name])
+
+  @@index([calculationRunId])
+  @@index([activityRecordId])
+  @@map("emission_calculations")
+}
+
+model PublishedSnapshot {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  reportingPeriodId String   @map("reporting_period_id")
+  calculationRunId  String   @map("calculation_run_id")
+  publishedByUserId String   @map("published_by_user_id")
+  publishedAt       DateTime @default(now()) @map("published_at")
+  version           Int      @default(1)
+
+  organization    Organization         @relation(fields: [organizationId], references: [id])
+  reportingPeriod ReportingPeriod      @relation(fields: [reportingPeriodId], references: [id])
+  calculationRun  CalculationRun       @relation(fields: [calculationRunId], references: [id])
+  publishedBy     User                 @relation(fields: [publishedByUserId], references: [id])
+  aggregates      DashboardAggregate[]
+  reports         Report[]
+
+  @@index([organizationId, reportingPeriodId])
+  @@map("published_snapshots")
+}
+
+// ─── Dashboard Aggregates ─────────────────────────────────────────────────────
+
+// Rebuilt after each calculation run — never query EmissionCalculation for dashboards
+model DashboardAggregate {
+  id                 String   @id @default(cuid())
+  organizationId     String   @map("organization_id")
+  reportingPeriodId  String   @map("reporting_period_id")
+  snapshotId         String?  @map("snapshot_id")
+  scope              Int
+  emissionCategoryId String?  @map("emission_category_id")
+  facilityId         String?  @map("facility_id")
+  businessUnitId     String?  @map("business_unit_id")
+  totalCo2e          Decimal  @map("total_co2e") @db.Decimal(18, 8)
+  recordCount        Int      @map("record_count")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  reportingPeriod  ReportingPeriod   @relation(fields: [reportingPeriodId], references: [id])
+  snapshot         PublishedSnapshot? @relation(fields: [snapshotId], references: [id])
+  emissionCategory EmissionCategory? @relation(fields: [emissionCategoryId], references: [id])
+  facility         Facility?         @relation(fields: [facilityId], references: [id])
+  businessUnit     BusinessUnit?     @relation(fields: [businessUnitId], references: [id])
+
+  @@index([organizationId, reportingPeriodId, snapshotId])
+  @@map("dashboard_aggregates")
+}
+
+// ─── Targets & Initiatives ────────────────────────────────────────────────────
+
+enum TargetType {
+  absolute
+  intensity
+
+  @@map("target_type")
+}
+
+model ReductionTarget {
+  id               String     @id @default(cuid())
+  organizationId   String     @map("organization_id")
+  baselinePeriodId String     @map("baseline_period_id")
+  targetPeriodId   String     @map("target_period_id")
+  targetType       TargetType @default(absolute) @map("target_type")
+  reductionAmount  Decimal    @map("reduction_amount") @db.Decimal(18, 4)
+  createdByUserId  String     @map("created_by_user_id")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  baselinePeriod ReportingPeriod @relation("BaselinePeriod", fields: [baselinePeriodId], references: [id])
+  targetPeriod   ReportingPeriod @relation("TargetPeriod", fields: [targetPeriodId], references: [id])
+  createdBy      User            @relation(fields: [createdByUserId], references: [id])
+
+  @@index([organizationId])
+  @@map("reduction_targets")
+}
+
+enum InitiativeStatus {
+  planned
+  in_progress
+  complete
+  canceled
+
+  @@map("initiative_status")
+}
+
+model ReductionInitiative {
+  id                  String           @id @default(cuid())
+  organizationId      String           @map("organization_id")
+  name                String
+  ownerUserId         String?          @map("owner_user_id")
+  status              InitiativeStatus @default(planned)
+  costAmount          Decimal?         @map("cost_amount") @db.Decimal(18, 2)
+  costCurrency        String?          @map("cost_currency")
+  expectedImpactCo2e  Decimal?         @map("expected_impact_co2e") @db.Decimal(18, 4)
+  expectedStartDate   DateTime?        @map("expected_start_date") @db.Date
+  notes               String?
+  createdByUserId     String           @map("created_by_user_id")
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  owner        User?        @relation("InitiativeOwner", fields: [ownerUserId], references: [id])
+  createdBy    User         @relation("InitiativeCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, status])
+  @@map("reduction_initiatives")
+}
+
+// ─── Reports ──────────────────────────────────────────────────────────────────
+
+enum ReportType {
+  inventory
+  monthly_snapshot
+  audit_package
+
+  @@map("report_type")
+}
+
+enum ReportStatus {
+  queued
+  generating
+  ready
+  failed
+
+  @@map("report_status")
+}
+
+model Report {
+  id                String       @id @default(cuid())
+  organizationId    String       @map("organization_id")
+  reportingPeriodId String       @map("reporting_period_id")
+  snapshotId        String       @map("snapshot_id")
+  type              ReportType
+  status            ReportStatus @default(queued)
+  version           Int          @default(1)
+  pdfStorageKey     String?      @map("pdf_storage_key")
+  csvStorageKey     String?      @map("csv_storage_key")
+  pdfChecksum       String?      @map("pdf_checksum")
+  csvChecksum       String?      @map("csv_checksum")
+  options           Json         @default("{}")
+  requestHash       String?      @unique @map("request_hash")
+  createdByUserId   String       @map("created_by_user_id")
+  publishedAt       DateTime?    @map("published_at")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  reportingPeriod ReportingPeriod  @relation(fields: [reportingPeriodId], references: [id])
+  snapshot        PublishedSnapshot @relation(fields: [snapshotId], references: [id])
+  createdBy       User             @relation(fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, reportingPeriodId, status])
+  @@map("reports")
+}
+
+// ─── Collaboration & Audit ────────────────────────────────────────────────────
+
+enum ReviewTaskType {
+  import_batch
+  activity_record
+  report
+
+  @@map("review_task_type")
+}
+
+enum ReviewTaskStatus {
+  open
+  completed
+  blocked
+
+  @@map("review_task_status")
+}
+
+// type + targetId form a polymorphic reference (no FK — resolved in application code)
+model ReviewTask {
+  id              String           @id @default(cuid())
+  organizationId  String           @map("organization_id")
+  type            ReviewTaskType
+  targetId        String           @map("target_id")
+  assigneeUserId  String           @map("assignee_user_id")
+  createdByUserId String           @map("created_by_user_id")
+  status          ReviewTaskStatus @default(open)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  assignee     User         @relation("AssignedTo", fields: [assigneeUserId], references: [id])
+  createdBy    User         @relation("CreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, assigneeUserId, status])
+  @@map("review_tasks")
+}
+
+enum CommentTargetType {
+  import_batch
+  activity_record
+  report
+  initiative
+  field_submission
+
+  @@map("comment_target_type")
+}
+
+// targetType + targetId form a polymorphic reference (no FK — resolved in application code)
+model Comment {
+  id             String            @id @default(cuid())
+  organizationId String            @map("organization_id")
+  targetType     CommentTargetType @map("target_type")
+  targetId       String            @map("target_id")
+  authorUserId   String            @map("author_user_id")
+  body           String
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  author       User         @relation(fields: [authorUserId], references: [id])
+
+  @@index([organizationId, targetType, targetId])
+  @@map("comments")
+}
+
+// Append-only — never update or delete rows
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  actorUserId    String?  @map("actor_user_id")
+  action         String
+  resourceType   String   @map("resource_type")
+  resourceId     String   @map("resource_id")
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  actor        User?        @relation(fields: [actorUserId], references: [id])
+
+  @@index([organizationId, resourceType, resourceId])
+  @@index([organizationId, createdAt])
+  @@map("audit_logs")
+}

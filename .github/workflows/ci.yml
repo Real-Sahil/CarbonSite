@@ -1,0 +1,60 @@
+name: CarbonSite CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    name: Web checks
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
+      STORAGE_DRIVER: local
+      STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
+      STORAGE_ACCESS_KEY_ID: ci
+      STORAGE_SECRET_ACCESS_KEY: ci
+      STORAGE_BUCKET: carbonsite
+      BETTER_AUTH_SECRET: ci-secret-ci-secret-ci-secret-ci-secret
+      BETTER_AUTH_URL: http://localhost:3000
+      EMAIL_DRIVER: console
+      TRUSTED_ORIGINS: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      ROUTING_PROVIDER: osrm
+      POSTCODES_BASE_URL: https://api.postcodes.io
+      OSRM_BASE_URL: https://router.project-osrm.org
+      JOB_PROCESSING_MODE: inline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - run: pnpm verify:env
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm run build
+
+  mobile:
+    name: Flutter checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.0"
+          channel: stable
+          cache: true
+      - working-directory: mobile
+        run: flutter pub get
+      - working-directory: mobile
+        run: flutter analyze
+      - working-directory: mobile
+        run: flutter test

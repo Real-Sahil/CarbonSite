@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" role="img" aria-label="CarbonSite">
+  <rect width="48" height="48" rx="10" fill="#15803d"/>
+  <path d="M16 31.5 24 12l8 19.5H16Z" fill="#fff"/>
+  <path d="M15 35h18v4H15z" fill="#bbf7d0"/>
+  <text x="62" y="31" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">CarbonSite</text>
+</svg>

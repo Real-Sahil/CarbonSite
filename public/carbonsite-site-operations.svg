@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-label="Construction site emissions reporting dashboard">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ecfdf5"/>
+      <stop offset="1" stop-color="#e0f2fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="620" rx="24" fill="url(#sky)"/>
+  <rect x="62" y="80" width="560" height="420" rx="18" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="94" y="120" width="178" height="86" rx="10" fill="#f8fafc" stroke="#dbe3ea"/>
+  <rect x="292" y="120" width="178" height="86" rx="10" fill="#f8fafc" stroke="#dbe3ea"/>
+  <rect x="94" y="232" width="470" height="38" rx="8" fill="#dcfce7"/>
+  <rect x="94" y="292" width="470" height="38" rx="8" fill="#f1f5f9"/>
+  <rect x="94" y="352" width="470" height="38" rx="8" fill="#f1f5f9"/>
+  <rect x="94" y="412" width="280" height="38" rx="8" fill="#f1f5f9"/>
+  <circle cx="520" cy="162" r="34" fill="#15803d"/>
+  <path d="M504 164h32M520 148v32" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+  <rect x="650" y="292" width="230" height="126" rx="14" fill="#334155"/>
+  <circle cx="704" cy="438" r="35" fill="#0f172a"/>
+  <circle cx="824" cy="438" r="35" fill="#0f172a"/>
+  <rect x="686" y="240" width="104" height="54" rx="8" fill="#f59e0b"/>
+  <path d="M782 292h98l-38-58h-60z" fill="#475569"/>
+  <path d="M650 292h230v36H650z" fill="#64748b"/>
+  <path d="M656 252 760 134l34 30-100 112z" fill="#f59e0b"/>
+  <path d="M746 142h86v32h-86z" fill="#0f172a"/>
+  <path d="M666 512h244" stroke="#94a3b8" stroke-width="10" stroke-linecap="round"/>
+  <path d="M40 540h880" stroke="#cbd5e1" stroke-width="14" stroke-linecap="round"/>
+</svg>
