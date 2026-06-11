@@ -37,6 +37,14 @@ Set these variables for Production, Preview, and Development as appropriate:
 
 Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactional email is configured. Use `JOB_PROCESSING_MODE=inline` for a Vercel-only deployment. Use `JOB_PROCESSING_MODE=worker` only after a separate `pnpm worker` process is deployed with the same database and storage secrets. Set `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false` unless you are ready for email-verification-gated sign-in; when set to `true`, verification links are sent through the configured transactional email driver.
 
+For the current Vercel domain, `Import.env` is prepared for `https://carbonsite-rosy.vercel.app`. Replace every `__REPLACE__` value with real Resend and R2 credentials before importing. If you have a Vercel API token and project id, you can apply the file without using the dashboard:
+
+```bash
+VERCEL_TOKEN=<vercel-token> VERCEL_PROJECT_ID=<project-id> pnpm vercel:env Import.env production
+```
+
+If the project belongs to a team, also set `VERCEL_TEAM_ID` or `VERCEL_ORG_ID`. The script refuses to push placeholder values.
+
 ## Release Runbook
 
 1. Apply Prisma migrations against the production database, including `20260610103000_align_better_auth_schema`.
