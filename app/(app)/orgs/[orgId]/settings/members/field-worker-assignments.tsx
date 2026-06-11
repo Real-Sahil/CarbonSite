@@ -40,6 +40,7 @@ interface AssignmentRow {
 
 interface FieldWorkerAssignmentsProps {
   orgId: string;
+  assignmentsAvailable: boolean;
   workers: WorkerOption[];
   periods: PeriodOption[];
   facilities: FacilityOption[];
@@ -48,6 +49,7 @@ interface FieldWorkerAssignmentsProps {
 
 export function FieldWorkerAssignments({
   orgId,
+  assignmentsAvailable,
   workers,
   periods,
   facilities,
@@ -70,6 +72,7 @@ export function FieldWorkerAssignments({
     [assignments, workerId],
   );
   const hasSetup = workers.length > 0 && periods.length > 0;
+  const canAssign = assignmentsAvailable && hasSetup;
 
   function assignWorker(event: React.FormEvent) {
     event.preventDefault();
@@ -150,7 +153,7 @@ export function FieldWorkerAssignments({
                 id="field-worker-user"
                 value={workerId}
                 onChange={(event) => setWorkerId(event.target.value)}
-                disabled={isPending || workers.length === 0}
+            disabled={isPending || !assignmentsAvailable || workers.length === 0}
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
               >
                 {workers.length === 0 ? (
@@ -171,7 +174,7 @@ export function FieldWorkerAssignments({
                 id="field-worker-period"
                 value={periodId}
                 onChange={(event) => setPeriodId(event.target.value)}
-                disabled={isPending || periods.length === 0}
+                disabled={isPending || !assignmentsAvailable || periods.length === 0}
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
               >
                 {periods.length === 0 ? (
@@ -193,7 +196,7 @@ export function FieldWorkerAssignments({
                 id="field-worker-facility"
                 value={facilityId}
                 onChange={(event) => setFacilityId(event.target.value)}
-                disabled={isPending}
+                disabled={isPending || !assignmentsAvailable}
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
               >
                 <option value="">All sites in this reporting period</option>
@@ -205,10 +208,16 @@ export function FieldWorkerAssignments({
               </select>
             </div>
 
-            <Button type="submit" disabled={isPending || !hasSetup}>
+            <Button type="submit" disabled={isPending || !canAssign}>
               {isPending ? "Saving..." : "Save assignment"}
             </Button>
           </div>
+          {!assignmentsAvailable && (
+            <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              Mobile assignment storage is not ready yet. Apply the latest Prisma
+              migration, then refresh this page.
+            </p>
+          )}
           {!hasSetup && (
             <p className="mt-3 text-sm text-slate-500">
               Invite a Field Worker and create a reporting period before assigning mobile access.

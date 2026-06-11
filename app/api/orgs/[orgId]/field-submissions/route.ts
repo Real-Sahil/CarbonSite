@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { getOrCreateRouteDistance } from "@/lib/geo/route-distance";
@@ -103,17 +104,31 @@ export async function POST(
     }
     const fieldWorkerAssignment =
       membership.role === "field_worker"
-        ? await prisma.fieldWorkerAssignment.findUnique({
-            where: {
-              organizationId_userId_reportingPeriodId: {
-                organizationId: orgId,
-                userId: session.user.id,
-                reportingPeriodId: body.reportingPeriodId,
+        ? await prisma.fieldWorkerAssignment
+            .findUnique({
+              where: {
+                organizationId_userId_reportingPeriodId: {
+                  organizationId: orgId,
+                  userId: session.user.id,
+                  reportingPeriodId: body.reportingPeriodId,
+                },
               },
-            },
-            select: { facilityId: true },
-          })
+              select: { facilityId: true },
+            })
+            .catch((err) => {
+              if (isMissingDatabaseObjectError(err)) {
+                return "migration_pending" as const;
+              }
+              throw err;
+            })
         : null;
+    if (fieldWorkerAssignment === "migration_pending") {
+      return apiError(
+        "ASSIGNMENTS_MIGRATION_PENDING",
+        "Mobile worker assignments are not ready yet. Ask your administrator to apply the latest database migration.",
+        503,
+      );
+    }
     if (membership.role === "field_worker" && !fieldWorkerAssignment) {
       return apiError(
         "PROJECT_NOT_ASSIGNED",

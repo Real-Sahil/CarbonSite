@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
@@ -22,19 +23,27 @@ export async function GET(
       "field_worker",
     );
 
-    const periods = await prisma.reportingPeriod.findMany({
-      where: {
-        organizationId: orgId,
-        ...(membership.role === "field_worker"
-          ? {
-              fieldWorkerAssignments: {
-                some: { userId: session.user.id, organizationId: orgId },
-              },
-            }
-          : {}),
-      },
-      orderBy: { startDate: "desc" },
-    });
+    let periods;
+    try {
+      periods = await prisma.reportingPeriod.findMany({
+        where: {
+          organizationId: orgId,
+          ...(membership.role === "field_worker"
+            ? {
+                fieldWorkerAssignments: {
+                  some: { userId: session.user.id, organizationId: orgId },
+                },
+              }
+            : {}),
+        },
+        orderBy: { startDate: "desc" },
+      });
+    } catch (err) {
+      if (membership.role === "field_worker" && isMissingDatabaseObjectError(err)) {
+        return NextResponse.json([]);
+      }
+      throw err;
+    }
 
     return NextResponse.json(periods);
   } catch (err) {

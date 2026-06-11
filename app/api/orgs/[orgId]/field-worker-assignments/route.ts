@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
@@ -27,6 +28,13 @@ export async function GET(
 
     return NextResponse.json(assignments);
   } catch (err) {
+    if (isMissingDatabaseObjectError(err)) {
+      return apiError(
+        "ASSIGNMENTS_MIGRATION_PENDING",
+        "Mobile worker assignments are not ready yet. Apply the latest Prisma migration.",
+        503,
+      );
+    }
     return handleRouteError(err);
   }
 }
@@ -127,6 +135,13 @@ export async function POST(
 
     return NextResponse.json(assignment, { status: 201 });
   } catch (err) {
+    if (isMissingDatabaseObjectError(err)) {
+      return apiError(
+        "ASSIGNMENTS_MIGRATION_PENDING",
+        "Mobile worker assignments are not ready yet. Apply the latest Prisma migration.",
+        503,
+      );
+    }
     return handleRouteError(err);
   }
 }

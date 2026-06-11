@@ -1,5 +1,6 @@
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { redirect } from "next/navigation";
 import {
   Card,
@@ -69,7 +70,26 @@ export default async function MembersPage({ params }: MembersPageProps) {
     throw err;
   }
 
-  const [members, pendingTeamInvites, inviteLinks, periods, facilities, assignments] =
+  const assignmentQuery = prisma.fieldWorkerAssignment
+    .findMany({
+      where: { organizationId: orgId },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        reportingPeriod: { select: { id: true, label: true } },
+        facility: { select: { name: true } },
+        assignedBy: { select: { name: true, email: true } },
+      },
+      orderBy: [{ createdAt: "desc" }],
+    })
+    .then((assignments) => ({ assignments, available: true }))
+    .catch((err) => {
+      if (isMissingDatabaseObjectError(err)) {
+        return { assignments: [], available: false };
+      }
+      throw err;
+    });
+
+  const [members, pendingTeamInvites, inviteLinks, periods, facilities, assignmentState] =
     await Promise.all([
     prisma.organizationMembership.findMany({
       where: { organizationId: orgId },
@@ -109,18 +129,10 @@ export default async function MembersPage({ params }: MembersPageProps) {
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
-    prisma.fieldWorkerAssignment.findMany({
-      where: { organizationId: orgId },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        reportingPeriod: { select: { id: true, label: true } },
-        facility: { select: { name: true } },
-        assignedBy: { select: { name: true, email: true } },
-      },
-      orderBy: [{ createdAt: "desc" }],
-    }),
+    assignmentQuery,
   ]);
   const fieldWorkers = members.filter((member) => member.role === "field_worker");
+  const assignments = assignmentState.assignments;
 
   return (
     <div className="p-8 max-w-6xl mx-auto flex flex-col gap-8">
@@ -242,6 +254,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
         <CardContent>
           <FieldWorkerAssignments
             orgId={orgId}
+            assignmentsAvailable={assignmentState.available}
             workers={fieldWorkers.map((member) => ({
               id: member.user.id,
               label: member.user.name ?? "Field worker",

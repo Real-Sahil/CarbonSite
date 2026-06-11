@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,11 +35,15 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [inviteUrl, setInviteUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setInviteUrl("");
+    setCopied(false);
 
     if (!email.trim()) {
       setError("Email is required.");
@@ -60,6 +65,7 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
       }
 
       const data = await res.json().catch(() => null);
+      setInviteUrl(data?.inviteUrl ?? "");
       setSuccess(
         data?.action === "member_added"
           ? data.emailDelivery === "email_failed"
@@ -78,6 +84,13 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function copyInviteUrl() {
+    if (!inviteUrl) return;
+    await navigator.clipboard.writeText(inviteUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   }
 
   return (
@@ -122,6 +135,26 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         <p className="text-sm text-green-700" role="status">
           {success}
         </p>
+      )}
+      {inviteUrl && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <Label htmlFor="latest-invite-url">Invite link</Label>
+          <div className="mt-2 flex gap-2">
+            <Input
+              id="latest-invite-url"
+              readOnly
+              value={inviteUrl}
+              className="font-mono text-xs"
+              onFocus={(event) => event.target.select()}
+            />
+            <Button type="button" variant="outline" size="icon" onClick={copyInviteUrl}>
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            Share this link with the mobile user if the email invite is delayed.
+          </p>
+        </div>
       )}
     </form>
   );

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
@@ -35,6 +36,13 @@ export async function DELETE(
 
     return new NextResponse(null, { status: 204 });
   } catch (err) {
+    if (isMissingDatabaseObjectError(err)) {
+      return apiError(
+        "ASSIGNMENTS_MIGRATION_PENDING",
+        "Mobile worker assignments are not ready yet. Apply the latest Prisma migration.",
+        503,
+      );
+    }
     return handleRouteError(err);
   }
 }

@@ -199,6 +199,22 @@ class _CaptureScreenState extends State<CaptureScreen> {
     if (extracted.volumeUnit != null && canReplaceUnit) {
       _unitController.text = extracted.volumeUnit!;
     }
+    if (extracted.supplierName != null &&
+        _supplierController.text.trim().isEmpty) {
+      _supplierController.text = extracted.supplierName!;
+    }
+    if (extracted.materialType != null &&
+        _sourceController.text.trim().isEmpty) {
+      _sourceController.text = extracted.materialType!;
+    }
+    if (extracted.pickupPostcode != null &&
+        _pickupController.text.trim().isEmpty) {
+      _pickupController.text = extracted.pickupPostcode!;
+    }
+    if (extracted.deliveryPostcode != null &&
+        _deliveryController.text.trim().isEmpty) {
+      _deliveryController.text = extracted.deliveryPostcode!;
+    }
 
     setState(() {
       _ocrExtractedData = data.isEmpty ? null : data;
@@ -216,8 +232,20 @@ class _CaptureScreenState extends State<CaptureScreen> {
       if (extracted.ewcCode != null) 'ewcCode': extracted.ewcCode,
       if (extracted.date != null) 'date': extracted.date,
       if (extracted.vehicleReg != null) 'vehicleReg': extracted.vehicleReg,
+      if (extracted.supplierName != null) 'supplierName': extracted.supplierName,
+      if (extracted.materialType != null) 'materialType': extracted.materialType,
+      if (extracted.quantity != null) 'quantity': extracted.quantity,
+      if (extracted.quantityUnit != null) 'quantityUnit': extracted.quantityUnit,
+      if (extracted.fuelType != null) 'fuelType': extracted.fuelType,
       if (extracted.volume != null) 'volume': extracted.volume,
       if (extracted.volumeUnit != null) 'volumeUnit': extracted.volumeUnit,
+      if (extracted.ticketReference != null)
+        'ticketReference': extracted.ticketReference,
+      if (extracted.pickupPostcode != null)
+        'pickupPostcode': extracted.pickupPostcode,
+      if (extracted.deliveryPostcode != null)
+        'deliveryPostcode': extracted.deliveryPostcode,
+      'confidence': extracted.confidence,
     };
   }
 
