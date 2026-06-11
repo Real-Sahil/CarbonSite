@@ -11,6 +11,11 @@ export async function sendTransactionalEmail({ to, subject, text }: SendEmailPar
   const from = process.env.EMAIL_FROM ?? "noreply@carbonsite.app";
 
   if (driver === "console") {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "Transactional email is not configured. Set EMAIL_DRIVER=resend in production.",
+      );
+    }
     console.log("[email:console]", { to, from, subject, text });
     return { provider: "console", messageId: null };
   }
