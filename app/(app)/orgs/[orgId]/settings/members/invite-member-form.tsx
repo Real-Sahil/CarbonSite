@@ -72,8 +72,12 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
             ? `${email.trim()} already has an account and was added. Notification email needs follow-up.`
             : `${email.trim()} already has an account and was added to this organisation.`
           : role === "field_worker"
-            ? `Mobile field worker invite sent to ${email.trim()}. Assign their project after they accept.`
-            : `Invite sent to ${email.trim()}.`,
+            ? data?.emailDelivery === "email_failed"
+              ? `Mobile field worker invite created for ${email.trim()}. Copy the link below because email delivery failed.`
+              : `Mobile field worker invite sent to ${email.trim()}. Assign their project after they accept.`
+            : data?.emailDelivery === "email_failed"
+              ? `Invite created for ${email.trim()}. Copy the link below because email delivery failed.`
+              : `Invite sent to ${email.trim()}.`,
       );
       setEmail("");
       setRole("viewer");

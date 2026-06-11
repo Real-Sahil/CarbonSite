@@ -51,6 +51,7 @@ Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactio
 10. Confirm sign-in, organisation access, imports, submissions, reports, and targets against real organisation-scoped records.
 
 Use [CarbonSite Operations Runbook](./operations-runbook.md) for incident response, failed job recovery, backup and restore, and rollback procedures.
+Use [Vercel Email Invites](./vercel-email-invites.md) for the Resend setup that powers member and field-worker invite delivery.
 
 ## Production Health Check
 

@@ -44,9 +44,16 @@ export async function POST(req: NextRequest) {
     }
 
     const requestedEmail = body.email?.trim().toLowerCase();
-    if (invite.email && requestedEmail !== invite.email.toLowerCase()) {
+    if (invite.email && requestedEmail && requestedEmail !== invite.email.toLowerCase()) {
       return apiError(
         "INVITE_EMAIL_MISMATCH",
+        "This invite must be accepted with the invited email address.",
+        400,
+      );
+    }
+    if (invite.email && !requestedEmail && invite.role !== "field_worker") {
+      return apiError(
+        "INVITE_EMAIL_REQUIRED",
         "This invite must be accepted with the invited email address.",
         400,
       );

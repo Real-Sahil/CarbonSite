@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, CircleAlert } from "lucide-react";
+import { CheckCircle2, CircleAlert, Copy, Smartphone } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,10 +39,17 @@ export function InviteAcceptanceForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState(invitedEmail ?? "");
   const [password, setPassword] = useState("");
+  const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const isTeamInvite = role !== "field_worker";
   const expires = new Date(expiresAt);
+
+  async function copyToken() {
+    await navigator.clipboard.writeText(token);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1600);
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -104,6 +111,53 @@ export function InviteAcceptanceForm({
             This invite has {state === "used" ? "already been used" : "expired"}.
           </CardDescription>
         </CardHeader>
+      </Card>
+    );
+  }
+
+  if (!isTeamInvite) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Smartphone className="h-4 w-4 text-green-700" />
+              Open in the mobile app
+            </CardTitle>
+            <Badge variant="outline">field worker</Badge>
+          </div>
+          <CardDescription>
+            Field worker invites create a mobile profile, device PIN, and assigned
+            project access. Use this token in the CarbonSite mobile app.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="invite-token">Invite token</Label>
+            <div className="flex gap-2">
+              <Input
+                id="invite-token"
+                value={token}
+                readOnly
+                className="min-w-0 flex-1 font-mono text-xs"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="shrink-0"
+                onClick={copyToken}
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </div>
+          </div>
+          <p className="flex items-start gap-2 text-xs text-slate-500">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-700" />
+            Open CarbonSite mobile, paste the invite link or token, enter the
+            worker name, then set the device PIN.
+          </p>
+        </CardContent>
       </Card>
     );
   }

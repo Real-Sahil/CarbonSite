@@ -15,11 +15,35 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   static const _storage = FlutterSecureStorage();
   static const int _pinLength = 4;
 
+  final _inviteController = TextEditingController();
   _PinStep _step = _PinStep.entry;
   String _firstPin = '';
   String _currentInput = '';
   String? _errorMessage;
+  bool _checkingSession = true;
+  bool _hasSession = false;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessionState();
+  }
+
+  @override
+  void dispose() {
+    _inviteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadSessionState() async {
+    final token = await _storage.read(key: 'session_token');
+    if (!mounted) return;
+    setState(() {
+      _hasSession = token != null && token.isNotEmpty;
+      _checkingSession = false;
+    });
+  }
 
   void _onDigitTap(String digit) {
     if (_currentInput.length >= _pinLength) return;
@@ -85,10 +109,44 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     context.go('/home');
   }
 
+  void _continueWithInvite() {
+    final token = _extractInviteToken(_inviteController.text);
+    if (token == null) {
+      setState(() {
+        _errorMessage = 'Paste the invite link or token from your administrator.';
+      });
+      return;
+    }
+    context.go('/invite/$token');
+  }
+
+  String? _extractInviteToken(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    final uri = Uri.tryParse(trimmed);
+    if (uri != null && uri.pathSegments.isNotEmpty) {
+      final inviteIndex = uri.pathSegments.indexOf('invite');
+      if (inviteIndex >= 0 && uri.pathSegments.length > inviteIndex + 1) {
+        return uri.pathSegments[inviteIndex + 1];
+      }
+    }
+    return trimmed.contains('/') ? null : trimmed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    if (_checkingSession) {
+      return const Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      );
+    }
+
+    if (!_hasSession) {
+      return _buildInviteEntry(context, colorScheme, textTheme);
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -204,6 +262,91 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInviteEntry(
+    BuildContext context,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 56),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.assignment_ind_outlined,
+                  color: colorScheme.primary,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Join your CarbonSite project',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Paste the invite link or token from your administrator to create your mobile field profile.',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              TextField(
+                controller: _inviteController,
+                textInputAction: TextInputAction.done,
+                autocorrect: false,
+                onSubmitted: (_) => _continueWithInvite(),
+                decoration: const InputDecoration(
+                  labelText: 'Invite link or token',
+                  hintText: 'https://.../invite/...',
+                  prefixIcon: Icon(Icons.link_outlined),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                ),
+              ],
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: _continueWithInvite,
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Continue'),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'After your invite is accepted, you will set a device PIN and see only the projects assigned to you.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),

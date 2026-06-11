@@ -179,7 +179,7 @@ class _InviteScreenState extends State<InviteScreen> {
                       _loading ? null : _joinOrganisation(),
                   decoration: const InputDecoration(
                     labelText: 'Email address',
-                    hintText: 'Optional — used for your account',
+                    hintText: 'Optional unless your invite names an email',
                     prefixIcon: Icon(Icons.email_outlined),
                     border: OutlineInputBorder(),
                   ),

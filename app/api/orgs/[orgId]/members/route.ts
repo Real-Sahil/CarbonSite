@@ -150,6 +150,7 @@ export async function POST(
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const inviteUrl = `${appUrl}/invite/${invite.token}`;
+    let delivery = "email";
     await sendTransactionalEmail({
       to: email,
       subject: `[CarbonSite] ${organization.name}: you have been invited`,
@@ -159,6 +160,9 @@ export async function POST(
         `Accept invite: ${inviteUrl}`,
         `This invite expires on ${invite.expiresAt.toLocaleDateString("en-GB")}.`,
       ].join("\n"),
+    }).catch((emailErr) => {
+      delivery = "email_failed";
+      console.error("[members] invite email failed", emailErr);
     });
 
     await writeAuditLog({
@@ -170,7 +174,7 @@ export async function POST(
       metadata: {
         email,
         role: invite.role,
-        delivery: "email",
+        delivery,
         reusedExistingInvite: Boolean(existingInvite),
       },
     });
@@ -182,6 +186,7 @@ export async function POST(
         role: invite.role,
         expiresAt: invite.expiresAt,
         inviteUrl,
+        emailDelivery: delivery,
       },
       { status: existingInvite ? 200 : 201 },
     );

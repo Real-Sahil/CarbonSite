@@ -113,7 +113,8 @@ class OcrExtractor {
     final vrMatch = _vrPattern.firstMatch(text);
     final volumeMatch = _volumePattern.firstMatch(text);
     final quantityMatch = _quantityPattern.firstMatch(text);
-    final referenceMatch = _ticketReferencePattern.firstMatch(text);
+    final ticketReference =
+        _lineReference(lines) ?? _ticketReferencePattern.firstMatch(text)?.group(1);
     final postcodes = _postcodePattern
         .allMatches(text)
         .map((match) => _normalizePostcode(match.group(1)!))
@@ -145,7 +146,7 @@ class OcrExtractor {
       vrMatch?.group(0),
       volumeMatch?.group(1),
       quantityMatch?.group(1),
-      referenceMatch?.group(1),
+      ticketReference,
       supplierName,
       materialType,
       fuelType,
@@ -168,7 +169,7 @@ class OcrExtractor {
       fuelType: fuelType,
       volume: volumeMatch?.group(1),
       volumeUnit: volumeUnit,
-      ticketReference: referenceMatch?.group(1)?.toUpperCase(),
+      ticketReference: ticketReference?.toUpperCase(),
       pickupPostcode: postcodes.isNotEmpty ? postcodes.first : null,
       deliveryPostcode: postcodes.length > 1 ? postcodes[1] : null,
       confidence: confidence,
@@ -186,6 +187,18 @@ class OcrExtractor {
         final value = match?.group(1)?.trim();
         if (value != null && value.length >= 2) return value;
       }
+    }
+    return null;
+  }
+
+  static String? _lineReference(List<String> lines) {
+    for (final line in lines) {
+      final match = RegExp(
+        r'^(?:ticket|note|document|doc|ref|reference|wtn|docket)\s*(?:no|number|#|ref)?\s*[:#-]?\s*([A-Z0-9][A-Z0-9\/-]{3,})\s*$',
+        caseSensitive: false,
+      ).firstMatch(line);
+      final value = match?.group(1)?.trim();
+      if (value != null && value.toLowerCase() != 'ticket') return value;
     }
     return null;
   }
