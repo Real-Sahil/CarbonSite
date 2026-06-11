@@ -21,23 +21,29 @@ final routerProvider = Provider<GoRouter>((ref) {
     // for simplicity here we read storage directly in the redirect callback.
     redirect: (context, state) async {
       final token = await _storage.read(key: 'session_token');
+      final pin = await _storage.read(key: 'pin');
       final path = state.uri.path;
 
       // Always allow invite deep links through regardless of auth state.
       if (path.startsWith('/invite')) return null;
 
       final hasSession = token != null && token.isNotEmpty;
+      final hasPin = pin != null && pin.isNotEmpty;
 
       if (!hasSession && path != '/pin-setup') {
         return '/pin-setup';
       }
 
-      if (hasSession && path == '/pin-setup') {
+      if (hasSession && !hasPin && path != '/pin-setup') {
+        return '/pin-setup';
+      }
+
+      if (hasSession && hasPin && path == '/pin-setup') {
         return '/home';
       }
 
       if (path == '/') {
-        return hasSession ? '/home' : '/pin-setup';
+        return hasSession && hasPin ? '/home' : '/pin-setup';
       }
 
       return null; // no redirect
@@ -47,8 +53,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/',
         redirect: (_, __) async {
           final token = await _storage.read(key: 'session_token');
+          final pin = await _storage.read(key: 'pin');
           final hasSession = token != null && token.isNotEmpty;
-          return hasSession ? '/home' : '/pin-setup';
+          final hasPin = pin != null && pin.isNotEmpty;
+          return hasSession && hasPin ? '/home' : '/pin-setup';
         },
       ),
       GoRoute(
