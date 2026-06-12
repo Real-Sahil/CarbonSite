@@ -34,17 +34,17 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_CLASSES: Record<string, string> = {
   pending:
-    "border-yellow-200 bg-yellow-50 text-yellow-800",
+    "border-[#e5e7eb] bg-[#e1f4df] text-[#0f3e17]",
   submitted:
-    "border-blue-200 bg-blue-50 text-blue-800",
+    "border-[#b6ced5] bg-[#b6ced5]/30 text-[#0f3e17]",
   under_review:
-    "border-purple-200 bg-purple-50 text-purple-800",
+    "border-[#b6ced5] bg-[#b6ced5]/50 text-[#0f3e17]",
   approved:
-    "border-green-200 bg-green-50 text-green-800",
+    "border-[#b1dbb8] bg-[#cfe7d3] text-[#0f3e17]",
   rejected:
-    "border-red-200 bg-red-50 text-red-800",
+    "border-[#e5e7eb] bg-[#e5e7eb] text-[#333333]",
   needs_info:
-    "border-orange-200 bg-orange-50 text-orange-800",
+    "border-[#b6ced5] bg-[#b6ced5]/20 text-[#0f3e17]",
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -87,12 +87,18 @@ export default async function SubmissionsPage({
   });
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">
+    <div className="p-[42px] max-w-[1200px] mx-auto">
+      <div className="mb-[42px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+          Review
+        </p>
+        <h1
+          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+        >
           Field submissions
         </h1>
-        <p className="text-slate-500 mt-1">
+        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
           Review incoming submissions from field workers before approving them
           as activity records.
         </p>
@@ -102,7 +108,7 @@ export default async function SubmissionsPage({
         <CardHeader>
           <CardTitle className="text-base">
             Submissions
-            <span className="ml-2 text-sm font-normal text-slate-500">
+            <span className="ml-2 text-sm font-normal text-[#333333]">
               ({submissions.length})
             </span>
           </CardTitle>
@@ -115,14 +121,14 @@ export default async function SubmissionsPage({
         <CardContent className={submissions.length === 0 ? "pb-8" : "p-0 pb-2"}>
           {submissions.length === 0 ? (
             <div className="flex flex-col items-center gap-4 py-12 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
-                <Inbox className="h-7 w-7 text-slate-400" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
+                <Inbox aria-hidden="true" className="h-7 w-7 text-[#0f3e17]" />
               </div>
               <div>
-                <p className="font-medium text-slate-700">
+                <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">
                   No field submissions yet
                 </p>
-                <p className="text-sm text-slate-500 mt-1 max-w-sm">
+                <p className="text-sm text-[#222222] tracking-[-0.42px] mt-[7px] max-w-sm">
                   Share an invite link with your field workers to get started.
                   Field workers photograph waste tickets, delivery notes, and
                   fuel receipts directly from the mobile app.
@@ -150,26 +156,26 @@ export default async function SubmissionsPage({
                     <TableCell>
                       <span
                         className={cn(
-                          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+                          "inline-flex items-center rounded-full border px-[14px] py-[7px] text-xs font-normal tracking-[-0.36px]",
                           STATUS_CLASSES[s.status] ??
-                            "border-slate-200 bg-slate-50 text-slate-700"
+                            "border-[#e5e7eb] bg-[#e1f4df] text-[#333333]"
                         )}
                       >
                         {STATUS_LABELS[s.status] ?? s.status}
                       </span>
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {s.submittedBy.name ?? s.submittedBy.email}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {s.reportingPeriod.label}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {s.facility?.name ?? (
-                        <span className="text-slate-400 italic">None</span>
+                        <span className="text-[#333333] italic">None</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-slate-500 text-sm">
+                    <TableCell className="text-[#333333] text-sm tracking-[-0.36px]">
                       {s.createdAt.toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",

@@ -112,11 +112,11 @@ export default function SignUpPage() {
         </form>
       </CardContent>
       <CardFooter className="justify-center">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px]">
           Already have an account?{" "}
           <Link
             href="/sign-in"
-            className="font-medium text-green-700 hover:underline"
+            className="font-normal text-[#0f3e17] hover:underline"
           >
             Sign in
           </Link>
