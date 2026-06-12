@@ -12,6 +12,7 @@ import type {
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
+import { processNotification } from "@/lib/notifications/worker";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -70,9 +71,8 @@ async function start() {
     { localConcurrency: 5 },
     async (jobs: Job<NotificationJobData>[]) => {
       for (const job of jobs) {
-        console.log("[notifications] processing:", job.data);
-        // TODO: look up recipient email → send via Resend
-        // → send FCM push notification if device token exists
+        console.log(`[notifications] processing ${job.data.type} for user ${job.data.recipientUserId}`);
+        await processNotification(job.data);
       }
     },
   );

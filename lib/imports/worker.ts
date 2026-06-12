@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { getObject, putObject, keys } from "@/lib/storage";
 import { parseSpreadsheet } from "./parser";
 import { mapColumns, validateRow, buildErrorCsv } from "./validator";
+import { enqueueNotification } from "@/lib/jobs/queues/index";
 
 export async function processImportBatch(importBatchId: string, orgId: string): Promise<void> {
   // Mark as parsing
@@ -133,7 +134,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
       }
     }
 
-    await prisma.importBatch.update({
+    const updatedBatch = await prisma.importBatch.update({
       where: { id: importBatchId },
       data: {
         state: newState,
@@ -142,7 +143,18 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
         warningCount: totalWarnings,
         ...(errorCsvStorageKey ? { errorCsvStorageKey } : {}),
       },
+      select: { createdByUserId: true },
     });
+
+    // Notify the uploader if the batch needs attention or failed
+    if (newState === "needs_attention" || newState === "failed") {
+      enqueueNotification({
+        type: "import_failed",
+        recipientUserId: updatedBatch.createdByUserId,
+        orgId,
+        resourceId: importBatchId,
+      }).catch((err) => console.error("[imports] Failed to enqueue notification:", err));
+    }
   } catch (err) {
     console.error(`[imports] Error processing batch ${importBatchId}:`, err);
     await prisma.importBatch.update({

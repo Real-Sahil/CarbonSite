@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createReviewTaskSchema } from "@/lib/validation/records";
+import { enqueueNotification } from "@/lib/jobs/queues/index";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -65,6 +66,15 @@ export async function POST(req: NextRequest, { params }: Params) {
         createdBy: { select: { name: true, email: true } },
       },
     });
+
+    // Notify assignee (fire-and-forget — don't fail the request if enqueue fails)
+    enqueueNotification({
+      type: "task_assigned",
+      recipientUserId: body.assigneeUserId,
+      orgId,
+      resourceId: task.id,
+      metadata: { targetLabel: body.targetId },
+    }).catch((err) => console.error("[review-tasks] Failed to enqueue notification:", err));
 
     return NextResponse.json(task, { status: 201 });
   } catch (err) {
