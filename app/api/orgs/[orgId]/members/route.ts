@@ -95,7 +95,7 @@ export async function POST(
           `Role: ${membership.role.replaceAll("_", " ")}`,
           `Open workspace: ${appUrl}/orgs/${orgId}/dashboard`,
         ].join("\n"),
-      }).catch((emailErr) => {
+      }).catch((emailErr: unknown) => {
         delivery = "email_failed";
         console.error("[members] direct add notification failed", emailErr);
       });

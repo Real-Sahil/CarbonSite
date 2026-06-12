@@ -31,6 +31,9 @@ import { Badge } from "@/components/ui/badge";
 import { CalculationControls } from "./calculation-controls";
 import { ReviewTaskPanel, type ReviewTaskPanelCandidate } from "./review-task-panel";
 import { resolveReviewTarget } from "@/lib/review-tasks/targets";
+import { ScopeDonut } from "@/components/charts/scope-donut";
+import { CategoryBar } from "@/components/charts/category-bar";
+import { TrendLine, type TrendLineDatum } from "@/components/charts/trend-line";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -87,6 +90,183 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     }),
   ]);
 
+  // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
+  const [batchA, batchB, trendAggregates] = await Promise.all([
+    Promise.all([
+      currentPeriod
+        ? prisma.dashboardAggregate.groupBy({
+            by: ["scope"],
+            where: {
+              organizationId: orgId,
+              reportingPeriodId: currentPeriod.id,
+              snapshotId: null,
+            },
+            _sum: { totalCo2e: true, recordCount: true },
+            orderBy: { scope: "asc" },
+          })
+        : Promise.resolve([] as { scope: number; _sum: { totalCo2e: string | null; recordCount: number | null } }[]),
+      prisma.activityRecord.count({ where: { organizationId: orgId } }),
+      prisma.activityRecord.count({
+        where: { organizationId: orgId, reviewStatus: "approved" },
+      }),
+      prisma.fieldSubmission.count({
+        where: {
+          organizationId: orgId,
+          status: { in: ["pending", "submitted", "under_review", "needs_info"] },
+        },
+      }),
+      prisma.importBatch.count({ where: { organizationId: orgId } }),
+      prisma.importBatch.count({
+        where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
+      }),
+      prisma.report.count({ where: { organizationId: orgId } }),
+      prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
+      prisma.report.count({ where: { organizationId: orgId, status: "failed" } }),
+      prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }),
+      prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }),
+      prisma.reviewTask.findMany({
+        where: {
+          organizationId: orgId,
+          assigneeUserId: session.user.id,
+          status: "open",
+        },
+        include: {
+          assignee: { select: { name: true, email: true } },
+          createdBy: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+      prisma.importBatch.findMany({
+        where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
+        select: {
+          id: true,
+          sourceFilename: true,
+          state: true,
+          errorCount: true,
+          warningCount: true,
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 4,
+      }),
+      prisma.activityRecord.findMany({
+        where: { organizationId: orgId, reviewStatus: { in: ["in_review", "rejected"] } },
+        include: {
+          emissionCategory: { select: { scope: true, name: true } },
+          reportingPeriod: { select: { label: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 4,
+      }),
+      prisma.report.findMany({
+        where: { organizationId: orgId, status: "failed" },
+        include: {
+          reportingPeriod: { select: { label: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 4,
+      }),
+    ] as const),
+    Promise.all([
+      prisma.organizationMembership.findMany({
+        where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
+        include: { user: { select: { id: true, name: true, email: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.auditLog.findMany({
+        where: { organizationId: orgId },
+        include: { actor: { select: { name: true, email: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+      prisma.reductionTarget.count({ where: { organizationId: orgId } }),
+      prisma.reductionInitiative.count({ where: { organizationId: orgId } }),
+      prisma.reportingPeriod.findMany({
+        where: { organizationId: orgId },
+        select: { id: true, label: true },
+        orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      }),
+      prisma.methodologyVersion.findMany({
+        select: { id: true, name: true, gwpVersion: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.factorLibrary.findMany({
+        select: { id: true, name: true, version: true },
+        orderBy: { publishedAt: "desc" },
+      }),
+      prisma.calculationRun.findMany({
+        where: { organizationId: orgId },
+        include: {
+          reportingPeriod: { select: { label: true } },
+          factorLibrary: { select: { name: true, version: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+      prisma.evidenceFile.count({ where: { organizationId: orgId } }),
+      prisma.fieldSubmission.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: { _all: true },
+        orderBy: { status: "asc" },
+      }),
+      prisma.fieldSubmission.groupBy({
+        by: ["documentType"],
+        where: { organizationId: orgId },
+        _count: { _all: true },
+        orderBy: { documentType: "asc" },
+      }),
+      prisma.reductionInitiative.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: { _all: true },
+        _sum: { costAmount: true, expectedImpactCo2e: true },
+        orderBy: { status: "asc" },
+      }),
+      prisma.reductionTarget.aggregate({
+        where: { organizationId: orgId },
+        _sum: { reductionAmount: true },
+      }),
+      currentPeriod
+        ? prisma.dashboardAggregate.findMany({
+            where: {
+              organizationId: orgId,
+              reportingPeriodId: currentPeriod.id,
+              snapshotId: null,
+              emissionCategoryId: { not: null },
+            },
+            include: {
+              emissionCategory: { select: { name: true, scope: true } },
+            },
+            orderBy: { totalCo2e: "desc" },
+            take: 5,
+          })
+        : Promise.resolve([] as { id: string; scope: number; totalCo2e: string; recordCount: number; emissionCategory: { name: string; scope: number } | null }[]),
+      prisma.report.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: { _all: true },
+        orderBy: { status: "asc" },
+      }),
+    ] as const),
+    // Period trend: live scope-level aggregates across all reporting periods.
+    // Reads DashboardAggregate only — never raw EmissionCalculation rows.
+    prisma.dashboardAggregate.findMany({
+      where: {
+        organizationId: orgId,
+        snapshotId: null,
+        emissionCategoryId: null,
+        facilityId: null,
+        businessUnitId: null,
+      },
+      select: {
+        scope: true,
+        totalCo2e: true,
+        reportingPeriod: { select: { id: true, label: true, startDate: true } },
+      },
+    }),
+  ]);
+
   const [
     scopeAggregates,
     recordCount,
@@ -103,6 +283,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     reviewImports,
     reviewRecords,
     reviewReports,
+  ] = batchA;
+
+  const [
     reviewAssignees,
     recentAuditLogs,
     targetCount,
@@ -112,173 +295,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     factorLibraries,
     calculationRuns,
     evidenceFileCount,
-    routeDistanceStats,
     submissionStatusRows,
     submissionDocumentRows,
     initiativeStatusRows,
     targetReductionStats,
     topCategoryAggregates,
     reportStatusRows,
-  ] = await Promise.all([
-    currentPeriod
-      ? prisma.dashboardAggregate.groupBy({
-          by: ["scope"],
-          where: {
-            organizationId: orgId,
-            reportingPeriodId: currentPeriod.id,
-            snapshotId: null,
-          },
-          _sum: { totalCo2e: true, recordCount: true },
-          orderBy: { scope: "asc" },
-        })
-      : Promise.resolve([]),
-    prisma.activityRecord.count({ where: { organizationId: orgId } }),
-    prisma.activityRecord.count({
-      where: { organizationId: orgId, reviewStatus: "approved" },
-    }),
-    prisma.fieldSubmission.count({
-      where: {
-        organizationId: orgId,
-        status: { in: ["pending", "submitted", "under_review", "needs_info"] },
-      },
-    }),
-    prisma.importBatch.count({ where: { organizationId: orgId } }),
-    prisma.importBatch.count({
-      where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
-    }),
-    prisma.report.count({ where: { organizationId: orgId } }),
-    prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
-    prisma.report.count({ where: { organizationId: orgId, status: "failed" } }),
-    prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }),
-    prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }),
-    prisma.reviewTask.findMany({
-      where: {
-        organizationId: orgId,
-        assigneeUserId: session.user.id,
-        status: "open",
-      },
-      include: {
-        assignee: { select: { name: true, email: true } },
-        createdBy: { select: { name: true, email: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-    prisma.importBatch.findMany({
-      where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
-      select: {
-        id: true,
-        sourceFilename: true,
-        state: true,
-        errorCount: true,
-        warningCount: true,
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 4,
-    }),
-    prisma.activityRecord.findMany({
-      where: { organizationId: orgId, reviewStatus: { in: ["in_review", "rejected"] } },
-      include: {
-        emissionCategory: { select: { scope: true, name: true } },
-        reportingPeriod: { select: { label: true } },
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 4,
-    }),
-    prisma.report.findMany({
-      where: { organizationId: orgId, status: "failed" },
-      include: {
-        reportingPeriod: { select: { label: true } },
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 4,
-    }),
-    prisma.organizationMembership.findMany({
-      where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
-      include: { user: { select: { id: true, name: true, email: true } } },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.auditLog.findMany({
-      where: { organizationId: orgId },
-      include: { actor: { select: { name: true, email: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-    prisma.reductionTarget.count({ where: { organizationId: orgId } }),
-    prisma.reductionInitiative.count({ where: { organizationId: orgId } }),
-    prisma.reportingPeriod.findMany({
-      where: { organizationId: orgId },
-      select: { id: true, label: true },
-      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-    }),
-    prisma.methodologyVersion.findMany({
-      select: { id: true, name: true, gwpVersion: true },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.factorLibrary.findMany({
-      select: { id: true, name: true, version: true },
-      orderBy: { publishedAt: "desc" },
-    }),
-    prisma.calculationRun.findMany({
-      where: { organizationId: orgId },
-      include: {
-        reportingPeriod: { select: { label: true } },
-        factorLibrary: { select: { name: true, version: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-    prisma.evidenceFile.count({ where: { organizationId: orgId } }),
-    prisma.routeDistance.aggregate({
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      _sum: { distanceKm: true },
-    }),
-    prisma.fieldSubmission.groupBy({
-      by: ["status"],
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      orderBy: { status: "asc" },
-    }),
-    prisma.fieldSubmission.groupBy({
-      by: ["documentType"],
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      orderBy: { documentType: "asc" },
-    }),
-    prisma.reductionInitiative.groupBy({
-      by: ["status"],
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      _sum: { costAmount: true, expectedImpactCo2e: true },
-      orderBy: { status: "asc" },
-    }),
-    prisma.reductionTarget.aggregate({
-      where: { organizationId: orgId },
-      _sum: { reductionAmount: true },
-    }),
-    currentPeriod
-      ? prisma.dashboardAggregate.findMany({
-          where: {
-            organizationId: orgId,
-            reportingPeriodId: currentPeriod.id,
-            snapshotId: null,
-            emissionCategoryId: { not: null },
-          },
-          include: {
-            emissionCategory: { select: { name: true, scope: true } },
-          },
-          orderBy: { totalCo2e: "desc" },
-          take: 5,
-        })
-      : Promise.resolve([]),
-    prisma.report.groupBy({
-      by: ["status"],
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      orderBy: { status: "asc" },
-    }),
-  ]);
+  ] = batchB;
 
   const scopeRows = [1, 2, 3].map((scope) => {
     const aggregate = scopeAggregates.find((row) => row.scope === scope);
@@ -299,6 +322,40 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     ...topCategoryAggregates.map((aggregate) => Number(aggregate.totalCo2e)),
     0,
   );
+
+  // Chart data — Prisma Decimals converted to numbers server-side (values are kgCO2e).
+  const scopeDonutData = scopeRows.map((row) => ({
+    scope: row.scope,
+    label: `Scope ${row.scope}`,
+    value: Number(row.total),
+  }));
+  const categoryBarData = topCategoryAggregates.map((aggregate) => ({
+    name: aggregate.emissionCategory?.name ?? "Uncategorised",
+    scope: aggregate.emissionCategory?.scope ?? aggregate.scope,
+    value: Number(aggregate.totalCo2e),
+  }));
+  const trendByPeriod = new Map<
+    string,
+    { startDate: Date; datum: TrendLineDatum }
+  >();
+  for (const aggregate of trendAggregates) {
+    const period = aggregate.reportingPeriod;
+    let entry = trendByPeriod.get(period.id);
+    if (!entry) {
+      entry = {
+        startDate: period.startDate,
+        datum: { label: period.label, scope1: 0, scope2: 0, scope3: 0 },
+      };
+      trendByPeriod.set(period.id, entry);
+    }
+    if (aggregate.scope === 1) entry.datum.scope1 += Number(aggregate.totalCo2e);
+    if (aggregate.scope === 2) entry.datum.scope2 += Number(aggregate.totalCo2e);
+    if (aggregate.scope === 3) entry.datum.scope3 += Number(aggregate.totalCo2e);
+  }
+  const trendData = [...trendByPeriod.values()]
+    .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+    .map((entry) => entry.datum);
+  const showTrend = trendData.length >= 2;
   const submissionTotal = submissionStatusRows.reduce(
     (total, row) => total + row._count._all,
     0,
@@ -316,10 +373,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     0,
   );
   const targetReductionTotal = Number(targetReductionStats._sum.reductionAmount ?? 0);
-  const routeDistanceKm = Number(routeDistanceStats._sum.distanceKm ?? 0);
-  const routeDistanceCount = routeDistanceStats._count._all;
-  const routeAverageKm =
-    routeDistanceCount > 0 ? routeDistanceKm / routeDistanceCount : 0;
   const reportStatusTotal = reportStatusRows.reduce(
     (total, row) => total + row._count._all,
     0,
@@ -437,6 +490,51 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           detail={`${reportCount.toLocaleString("en-GB")} total requested`}
         />
       </div>
+
+      {hasAggregates && (
+        <div
+          className={`mt-6 grid gap-6 lg:grid-cols-2 ${showTrend ? "xl:grid-cols-3" : ""}`}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Scope breakdown</CardTitle>
+              <CardDescription>
+                {currentPeriod ? currentPeriod.label : "Current period"} totals by GHG Protocol scope.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScopeDonut data={scopeDonutData} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Top categories</CardTitle>
+              <CardDescription>
+                Largest emission categories from current calculation aggregates.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CategoryBar
+                data={categoryBarData}
+                ariaLabel="Top emission categories bar chart"
+              />
+            </CardContent>
+          </Card>
+          {showTrend && (
+            <Card className="lg:col-span-2 xl:col-span-1">
+              <CardHeader>
+                <CardTitle className="text-base">Period trend</CardTitle>
+                <CardDescription>
+                  Scope totals across reporting periods with calculated aggregates.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TrendLine data={trendData} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
         <Card>
@@ -678,9 +776,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               />
               <InsightCard
                 icon={Route}
-                label="Average route distance"
-                value={`${formatNumber(routeAverageKm, 1)} km`}
-                detail={`${routeDistanceCount.toLocaleString("en-GB")} postcode routes cached`}
+                label="Pending submissions"
+                value={pendingSubmissionCount.toLocaleString("en-GB")}
+                detail="Awaiting review from field workers"
               />
             </div>
             <div className="rounded-[14px] border border-[#e5e7eb]">
@@ -779,9 +877,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                 />
                 <InsightCard
                   icon={Route}
-                  label="Route km captured"
-                  value={`${formatNumber(routeDistanceKm, 1)} km`}
-                  detail="Pickup to delivery distance"
+                  label="Field submissions"
+                  value={pendingSubmissionCount.toLocaleString("en-GB")}
+                  detail="Pending review"
                 />
               </div>
             </div>
@@ -875,6 +973,20 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
+          {calculationRuns.some((run) => run.status === "queued" || run.status === "running") && (
+            <div className="flex items-center gap-3 rounded-[14px] border border-[#b6ced5] bg-[#b6ced5]/20 px-4 py-3">
+              <div className="h-2 w-2 rounded-full bg-[#0f3e17] animate-pulse" />
+              <div>
+                <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+                  Calculation in progress
+                </p>
+                <p className="text-xs text-[#333333] tracking-[-0.36px]">
+                  {calculationRuns.filter((run) => run.status === "queued" || run.status === "running").length} run
+                  {calculationRuns.filter((run) => run.status === "queued" || run.status === "running").length !== 1 ? "s" : ""} queued or running — refresh to check for results.
+                </p>
+              </div>
+            </div>
+          )}
           <CalculationControls
             orgId={orgId}
             periods={reportingPeriods}
@@ -909,9 +1021,14 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                       {run.factorLibrary.name} {run.factorLibrary.version}
                     </p>
                   </div>
-                  <Badge variant={run.status === "succeeded" ? "default" : run.status === "failed" ? "destructive" : "outline"}>
-                    {run.status.replaceAll("_", " ")}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {(run.status === "queued" || run.status === "running") && (
+                      <div className="h-1.5 w-1.5 rounded-full bg-[#0f3e17] animate-pulse" />
+                    )}
+                    <Badge variant={run.status === "succeeded" ? "default" : run.status === "failed" ? "destructive" : "outline"}>
+                      {run.status.replaceAll("_", " ")}
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>

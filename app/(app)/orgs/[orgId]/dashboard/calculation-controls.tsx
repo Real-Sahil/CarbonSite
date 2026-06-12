@@ -1,155 +1,123 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { Calculator, UploadCloud } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Play } from "lucide-react";
 
-type Option = {
-  id: string;
-  label: string;
-};
-
-type RunOption = Option & {
-  status: string;
-};
+interface CalculationControlsProps {
+  orgId: string;
+  periods: { id: string; label: string }[];
+  methodologies: { id: string; label: string }[];
+  factorLibraries: { id: string; label: string }[];
+  succeededRuns: { id: string; status: string; label: string }[];
+}
 
 export function CalculationControls({
   orgId,
   periods,
   methodologies,
   factorLibraries,
-  succeededRuns,
-}: {
-  orgId: string;
-  periods: Option[];
-  methodologies: Option[];
-  factorLibraries: Option[];
-  succeededRuns: RunOption[];
-}) {
-  const router = useRouter();
+}: CalculationControlsProps) {
+  const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
+  const [methodologyId, setMethodologyId] = useState(methodologies[0]?.id ?? "");
+  const [factorLibraryId, setFactorLibraryId] = useState(factorLibraries[0]?.id ?? "");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const canRun = periods.length > 0 && methodologies.length > 0 && factorLibraries.length > 0;
-  const canPublish = succeededRuns.length > 0;
+  const [success, setSuccess] = useState(false);
 
-  function handleCalculation(formData: FormData) {
+  async function handleRun() {
+    if (!periodId || !methodologyId || !factorLibraryId) {
+      setError("Select a period, methodology, and factor library to run a calculation.");
+      return;
+    }
+    setLoading(true);
     setError(null);
-    startTransition(async () => {
+    setSuccess(false);
+    try {
       const res = await fetch(`/api/orgs/${orgId}/calculation-runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reportingPeriodId: formData.get("reportingPeriodId"),
-          methodologyVersionId: formData.get("methodologyVersionId"),
-          factorLibraryId: formData.get("factorLibraryId"),
-        }),
+        body: JSON.stringify({ reportingPeriodId: periodId, methodologyVersionId: methodologyId, factorLibraryId }),
       });
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not start calculation run");
-        return;
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed to enqueue calculation run.");
+      } else {
+        setSuccess(true);
       }
-      router.refresh();
-    });
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handlePublish(formData: FormData) {
-    setError(null);
-    const runId = String(formData.get("runId") ?? "");
-    startTransition(async () => {
-      const res = await fetch(
-        `/api/orgs/${orgId}/calculation-runs/${runId}/publish-snapshot`,
-        { method: "POST" },
-      );
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not publish snapshot");
-        return;
-      }
-      router.refresh();
-    });
+  if (periods.length === 0 || methodologies.length === 0 || factorLibraries.length === 0) {
+    return (
+      <p className="text-sm text-[#333333] tracking-[-0.42px]">
+        A reporting period, methodology version, and factor library are required before running a calculation.
+      </p>
+    );
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <form action={handleCalculation} className="rounded-lg border border-slate-200 p-4">
-        <div className="grid gap-3 md:grid-cols-3">
-          <Field label="Period">
-            <Select name="reportingPeriodId" disabled={!canRun}>
-              {periods.map((period) => (
-                <option key={period.id} value={period.id}>
-                  {period.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Methodology">
-            <Select name="methodologyVersionId" disabled={!canRun}>
-              {methodologies.map((methodology) => (
-                <option key={methodology.id} value={methodology.id}>
-                  {methodology.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Factor library">
-            <Select name="factorLibraryId" disabled={!canRun}>
-              {factorLibraries.map((library) => (
-                <option key={library.id} value={library.id}>
-                  {library.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
-        <Button type="submit" disabled={!canRun || isPending} className="mt-4">
-          <Calculator className="h-4 w-4" />
-          Run calculation
-        </Button>
-      </form>
-
-      <form action={handlePublish} className="rounded-lg border border-slate-200 p-4">
-        <Field label="Succeeded calculation run">
-          <Select name="runId" disabled={!canPublish}>
-            {succeededRuns.map((run) => (
-              <option key={run.id} value={run.id}>
-                {run.label}
-              </option>
+    <div className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Reporting period</label>
+        <Select value={periodId} onValueChange={setPeriodId}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            {periods.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
             ))}
-          </Select>
-        </Field>
-        <Button type="submit" disabled={!canPublish || isPending} className="mt-4">
-          <UploadCloud className="h-4 w-4" />
-          Publish snapshot
-        </Button>
-      </form>
-      {error && <p className="text-sm text-red-600 lg:col-span-2">{error}</p>}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Methodology</label>
+        <Select value={methodologyId} onValueChange={setMethodologyId}>
+          <SelectTrigger className="w-56">
+            <SelectValue placeholder="Select methodology" />
+          </SelectTrigger>
+          <SelectContent>
+            {methodologies.map((m) => (
+              <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Factor library</label>
+        <Select value={factorLibraryId} onValueChange={setFactorLibraryId}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Select library" />
+          </SelectTrigger>
+          <SelectContent>
+            {factorLibraries.map((f) => (
+              <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <Button onClick={handleRun} disabled={loading} size="sm" className="gap-1.5">
+        <Play aria-hidden="true" className="h-3.5 w-3.5" />
+        {loading ? "Enqueueing…" : "Run calculation"}
+      </Button>
+      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+      {success && (
+        <p className="w-full text-sm text-[#0f3e17] tracking-[-0.42px]">
+          Calculation run enqueued. Refresh in a moment to see status.
+        </p>
+      )}
     </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <Label className="mb-1.5 block text-xs font-medium text-slate-600">{label}</Label>
-      {children}
-    </div>
-  );
-}
-
-function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-    />
   );
 }

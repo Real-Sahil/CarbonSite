@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { createReductionInitiativeSchema } from "@/lib/validation/org";
+import { createInitiativeSchema } from "@/lib/validation/records";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+type Params = { params: Promise<{ orgId: string }> };
+
+export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
@@ -17,49 +15,34 @@ export async function GET(
     const initiatives = await prisma.reductionInitiative.findMany({
       where: { organizationId: orgId },
       include: {
-        owner: { select: { id: true, name: true, email: true } },
-        createdBy: { select: { id: true, name: true, email: true } },
+        owner: { select: { name: true, email: true } },
+        createdBy: { select: { name: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
+      take: 100,
     });
 
-    return NextResponse.json(initiatives);
+    return NextResponse.json({ data: initiatives });
   } catch (err) {
     return handleRouteError(err);
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
-    const limited = rateLimit(req, {
-      key: rateLimitKey(orgId, "initiatives", session.user.id),
-      limit: 30,
-      windowMs: 60_000,
-    });
-    if (limited) return limited;
-    const body = createReductionInitiativeSchema.parse(await req.json());
 
+    const body = createInitiativeSchema.parse(await req.json());
+
+    // Verify owner is a member of this org if specified
     if (body.ownerUserId) {
-      const owner = await prisma.organizationMembership.findUnique({
-        where: {
-          organizationId_userId: {
-            organizationId: orgId,
-            userId: body.ownerUserId,
-          },
-        },
+      const membership = await prisma.organizationMembership.findUnique({
+        where: { organizationId_userId: { organizationId: orgId, userId: body.ownerUserId } },
+        select: { id: true },
       });
-
-      if (!owner) {
-        return apiError(
-          "INVALID_OWNER",
-          "The initiative owner must be a member of this organisation.",
-          422,
-        );
+      if (!membership) {
+        return apiError("NOT_FOUND", "Owner is not a member of this organisation.", 404);
       }
     }
 
@@ -67,16 +50,17 @@ export async function POST(
       data: {
         organizationId: orgId,
         name: body.name,
-        ownerUserId: body.ownerUserId,
         status: body.status,
+        ownerUserId: body.ownerUserId,
         costAmount: body.costAmount,
-        costCurrency: body.costAmount ? body.costCurrency : undefined,
+        costCurrency: body.costCurrency,
         expectedImpactCo2e: body.expectedImpactCo2e,
-        expectedStartDate: body.expectedStartDate
-          ? new Date(body.expectedStartDate)
-          : undefined,
+        expectedStartDate: body.expectedStartDate ? new Date(body.expectedStartDate) : undefined,
         notes: body.notes,
         createdByUserId: session.user.id,
+      },
+      include: {
+        owner: { select: { name: true, email: true } },
       },
     });
 
@@ -86,10 +70,7 @@ export async function POST(
       action: "initiative.created",
       resourceType: "reduction_initiative",
       resourceId: initiative.id,
-      metadata: {
-        name: initiative.name,
-        status: initiative.status,
-      },
+      metadata: { name: initiative.name, status: initiative.status },
     });
 
     return NextResponse.json(initiative, { status: 201 });

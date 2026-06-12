@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { Check, HelpCircle, X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -11,12 +10,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CheckCircle2, XCircle } from "lucide-react";
 
-type SelectOption = {
-  id: string;
-  name: string;
-  scope?: number;
-};
+interface SubmissionReviewActionsProps {
+  orgId: string;
+  submissionId: string;
+  currentEmissionCategoryId: string | null;
+  currentFacilityId: string | null;
+  emissionCategories: { id: string; scope: number; name: string }[];
+  facilities: { id: string; name: string }[];
+  disabled?: boolean;
+}
 
 export function SubmissionReviewActions({
   orgId,
@@ -26,131 +30,111 @@ export function SubmissionReviewActions({
   emissionCategories,
   facilities,
   disabled,
-}: {
-  orgId: string;
-  submissionId: string;
-  currentEmissionCategoryId?: string | null;
-  currentFacilityId?: string | null;
-  emissionCategories: SelectOption[];
-  facilities: SelectOption[];
-  disabled: boolean;
-}) {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [emissionCategoryId, setEmissionCategoryId] = useState(
-    currentEmissionCategoryId ?? "",
-  );
+}: SubmissionReviewActionsProps) {
+  const [emissionCategoryId, setEmissionCategoryId] = useState(currentEmissionCategoryId ?? "");
   const [facilityId, setFacilityId] = useState(currentFacilityId ?? "");
   const [reviewNote, setReviewNote] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  function review(status: "approved" | "rejected" | "needs_info") {
-    setError(null);
-    if (status === "approved" && !emissionCategoryId) {
-      setError("Choose an emission category before approving.");
+  async function handleAction(action: "approved" | "rejected") {
+    if (action === "approved" && !emissionCategoryId) {
+      setError("Assign an emission category before approving.");
       return;
     }
-    startTransition(async () => {
-      const res = await fetch(
-        `/api/orgs/${orgId}/field-submissions/${submissionId}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            status,
-            emissionCategoryId: emissionCategoryId || undefined,
-            facilityId: facilityId || null,
-            reviewNote: reviewNote.trim() || undefined,
-          }),
-        },
-      );
+    setLoading(action);
+    setError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/field-submissions/${submissionId}/review`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action,
+          emissionCategoryId: emissionCategoryId || undefined,
+          facilityId: facilityId || undefined,
+          reviewNote: reviewNote || undefined,
+        }),
+      });
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Review action failed");
-        return;
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Review failed.");
+      } else {
+        window.location.reload();
       }
-      router.refresh();
-    });
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(null);
+    }
   }
 
   return (
-    <div className="flex min-w-64 flex-col gap-2">
-      <Select
-        value={emissionCategoryId || "__none"}
-        disabled={disabled || isPending}
-        onValueChange={(value) =>
-          setEmissionCategoryId(value === "__none" ? "" : value)
-        }
-      >
-        <SelectTrigger className="h-8">
-          <SelectValue placeholder="Emission category" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__none">Choose category</SelectItem>
-          {emissionCategories.map((category) => (
-            <SelectItem key={category.id} value={category.id}>
-              Scope {category.scope}: {category.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Select
-        value={facilityId || "__none"}
-        disabled={disabled || isPending}
-        onValueChange={(value) => setFacilityId(value === "__none" ? "" : value)}
-      >
-        <SelectTrigger className="h-8">
-          <SelectValue placeholder="Facility" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__none">No facility</SelectItem>
-          {facilities.map((facility) => (
-            <SelectItem key={facility.id} value={facility.id}>
-              {facility.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <textarea
-        value={reviewNote}
-        disabled={disabled || isPending}
-        onChange={(event) => setReviewNote(event.target.value)}
-        placeholder="Review note"
-        className="min-h-16 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-      />
-      <div className="flex items-center gap-1">
+    <div className="flex flex-col gap-4">
+      {emissionCategories.length > 0 && (
+        <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-[#333333] tracking-[-0.36px]">Emission category</label>
+            <Select value={emissionCategoryId} onValueChange={setEmissionCategoryId} disabled={disabled}>
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {emissionCategories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>Scope {c.scope}: {c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {facilities.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[#333333] tracking-[-0.36px]">Facility (optional)</label>
+              <Select value={facilityId} onValueChange={setFacilityId} disabled={disabled}>
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder="Optional" />
+                </SelectTrigger>
+                <SelectContent>
+                  {facilities.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+      )}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Review note (optional)</label>
+        <Textarea
+          value={reviewNote}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReviewNote(e.target.value)}
+          placeholder="Add a note for the field worker or audit trail…"
+          disabled={disabled}
+          rows={3}
+          className="resize-none text-sm"
+        />
+      </div>
+      <div className="flex gap-3">
         <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          disabled={disabled || isPending}
-          title="Approve"
-          onClick={() => review("approved")}
+          onClick={() => handleAction("approved")}
+          disabled={disabled || loading === "approved"}
+          size="sm"
+          className="gap-1.5"
         >
-          <Check className="h-4 w-4" />
+          <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+          {loading === "approved" ? "Approving…" : "Approve"}
         </Button>
         <Button
-          type="button"
-          size="icon"
           variant="outline"
-          disabled={disabled || isPending}
-          title="Needs info"
-          onClick={() => review("needs_info")}
+          onClick={() => handleAction("rejected")}
+          disabled={disabled || loading === "rejected"}
+          size="sm"
+          className="gap-1.5"
         >
-          <HelpCircle className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          disabled={disabled || isPending}
-          title="Reject"
-          onClick={() => review("rejected")}
-        >
-          <X className="h-4 w-4" />
+          <XCircle aria-hidden="true" className="h-4 w-4" />
+          {loading === "rejected" ? "Rejecting…" : "Reject"}
         </Button>
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
     </div>
   );
 }

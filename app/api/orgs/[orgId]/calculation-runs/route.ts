@@ -1,17 +1,14 @@
-import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { dispatchCalculation } from "@/lib/jobs/dispatch";
-import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { createCalculationRunSchema } from "@/lib/validation/org";
+import { createCalculationRunSchema } from "@/lib/validation/records";
+import { createHash } from "crypto";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+type Params = { params: Promise<{ orgId: string }> };
+
+export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
@@ -19,132 +16,84 @@ export async function GET(
     const runs = await prisma.calculationRun.findMany({
       where: { organizationId: orgId },
       include: {
-        reportingPeriod: { select: { id: true, label: true } },
-        methodologyVersion: { select: { id: true, name: true, gwpVersion: true } },
-        factorLibrary: { select: { id: true, name: true, version: true } },
-        triggeredBy: { select: { id: true, name: true, email: true } },
+        reportingPeriod: { select: { label: true } },
+        factorLibrary: { select: { name: true, version: true } },
+        methodologyVersion: { select: { name: true, gwpVersion: true } },
+        triggeredBy: { select: { name: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: 20,
     });
 
-    return NextResponse.json(runs);
+    return NextResponse.json({ data: runs });
   } catch (err) {
     return handleRouteError(err);
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
-    const limited = rateLimit(req, {
-      key: rateLimitKey(orgId, "calculation-runs", session.user.id),
-      limit: 10,
-      windowMs: 60_000,
-    });
-    if (limited) return limited;
+
     const body = createCalculationRunSchema.parse(await req.json());
 
-    const [period, methodology, factorLibrary] = await Promise.all([
-      prisma.reportingPeriod.findFirst({
-        where: { id: body.reportingPeriodId, organizationId: orgId },
-        select: { id: true },
-      }),
-      prisma.methodologyVersion.findUnique({
-        where: { id: body.methodologyVersionId },
-        select: { id: true, name: true },
-      }),
-      prisma.factorLibrary.findUnique({
-        where: { id: body.factorLibraryId },
-        select: { id: true, name: true, version: true },
-      }),
-    ]);
-
-    if (!period) {
-      return apiError("INVALID_REPORTING_PERIOD", "Reporting period does not belong to this organisation.", 422);
-    }
-    if (!methodology) {
-      return apiError("INVALID_METHODOLOGY", "Methodology version does not exist.", 422);
-    }
-    if (!factorLibrary) {
-      return apiError("INVALID_FACTOR_LIBRARY", "Factor library does not exist.", 422);
-    }
-
-    const approvedRecords = await prisma.activityRecord.findMany({
-      where: {
-        organizationId: orgId,
-        reportingPeriodId: body.reportingPeriodId,
-        reviewStatus: "approved",
-      },
-      select: {
-        id: true,
-        updatedAt: true,
-        amount: true,
-        unit: true,
-        emissionCategoryId: true,
-        facilityId: true,
-        businessUnitId: true,
-        country: true,
-        distanceAmount: true,
-        distanceUnit: true,
-        routeDistanceId: true,
-      },
-      orderBy: { id: "asc" },
+    // Verify period belongs to this org
+    const period = await prisma.reportingPeriod.findUnique({
+      where: { id: body.reportingPeriodId },
+      select: { organizationId: true, status: true },
     });
-    const approvedRecordFingerprint = createHash("sha256")
-      .update(
-        JSON.stringify(
-          approvedRecords.map((record) => ({
-            id: record.id,
-            updatedAt: record.updatedAt.toISOString(),
-            amount: record.amount.toString(),
-            unit: record.unit,
-            emissionCategoryId: record.emissionCategoryId,
-            facilityId: record.facilityId,
-            businessUnitId: record.businessUnitId,
-            country: record.country,
-            distanceAmount: record.distanceAmount?.toString() ?? null,
-            distanceUnit: record.distanceUnit,
-            routeDistanceId: record.routeDistanceId,
-          })),
-        ),
-      )
-      .digest("hex");
+    if (!period || period.organizationId !== orgId) {
+      return apiError("NOT_FOUND", "Reporting period not found.", 404);
+    }
 
+    // Verify methodology version exists
+    const methodology = await prisma.methodologyVersion.findUnique({
+      where: { id: body.methodologyVersionId },
+      select: { id: true },
+    });
+    if (!methodology) {
+      return apiError("NOT_FOUND", "Methodology version not found.", 404);
+    }
+
+    // Verify factor library exists
+    const factorLibrary = await prisma.factorLibrary.findUnique({
+      where: { id: body.factorLibraryId },
+      select: { id: true },
+    });
+    if (!factorLibrary) {
+      return apiError("NOT_FOUND", "Factor library not found.", 404);
+    }
+
+    // Idempotency — same org + period + methodology + library = same run
     const triggerHash = createHash("sha256")
-      .update([
-        orgId,
-        body.reportingPeriodId,
-        body.methodologyVersionId,
-        body.factorLibraryId,
-        approvedRecordFingerprint,
-      ].join(":"))
+      .update(`${orgId}:${body.reportingPeriodId}:${body.methodologyVersionId}:${body.factorLibraryId}`)
       .digest("hex");
 
-    const run = await prisma.calculationRun.upsert({
+    const existing = await prisma.calculationRun.findUnique({
       where: { triggerHash },
-      update: {},
-      create: {
+      select: { id: true, status: true },
+    });
+    if (existing && (existing.status === "queued" || existing.status === "running")) {
+      return NextResponse.json(existing, { status: 200 });
+    }
+
+    const run = await prisma.calculationRun.create({
+      data: {
         organizationId: orgId,
         reportingPeriodId: body.reportingPeriodId,
         methodologyVersionId: body.methodologyVersionId,
         factorLibraryId: body.factorLibraryId,
         triggeredByUserId: session.user.id,
-        status: "queued",
         triggerHash,
+        status: "queued",
       },
     });
 
-    const processingMode =
-      run.status === "queued"
-        ? await dispatchCalculation({ orgId, calculationRunId: run.id })
-        : "existing";
-    const currentRun =
-      (await prisma.calculationRun.findUnique({ where: { id: run.id } })) ?? run;
+    // Enqueue the background job
+    const { getBoss } = await import("@/lib/jobs/boss");
+    const boss = await getBoss();
+    await boss.send("calculations", { calculationRunId: run.id, orgId });
 
     await writeAuditLog({
       organizationId: orgId,
@@ -152,17 +101,10 @@ export async function POST(
       action: "calculation.run_triggered",
       resourceType: "calculation_run",
       resourceId: run.id,
-      metadata: {
-        reportingPeriodId: run.reportingPeriodId,
-        methodologyVersionId: run.methodologyVersionId,
-        factorLibraryId: run.factorLibraryId,
-        processingMode,
-        approvedRecordCount: approvedRecords.length,
-        approvedRecordFingerprint,
-      },
+      metadata: { reportingPeriodId: body.reportingPeriodId },
     });
 
-    return NextResponse.json(currentRun, { status: 201 });
+    return NextResponse.json(run, { status: 202 });
   } catch (err) {
     return handleRouteError(err);
   }

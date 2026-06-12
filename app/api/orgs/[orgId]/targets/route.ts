@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { createReductionTargetSchema } from "@/lib/validation/org";
+import { createTargetSchema } from "@/lib/validation/records";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+type Params = { params: Promise<{ orgId: string }> };
+
+export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
@@ -17,47 +15,43 @@ export async function GET(
     const targets = await prisma.reductionTarget.findMany({
       where: { organizationId: orgId },
       include: {
-        baselinePeriod: { select: { id: true, label: true } },
-        targetPeriod: { select: { id: true, label: true } },
-        createdBy: { select: { id: true, name: true, email: true } },
+        baselinePeriod: { select: { label: true } },
+        targetPeriod: { select: { label: true } },
+        createdBy: { select: { name: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(targets);
+    return NextResponse.json({ data: targets });
   } catch (err) {
     return handleRouteError(err);
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
-    const limited = rateLimit(req, {
-      key: rateLimitKey(orgId, "targets", session.user.id),
-      limit: 30,
-      windowMs: 60_000,
-    });
-    if (limited) return limited;
-    const body = createReductionTargetSchema.parse(await req.json());
 
-    const periodCount = await prisma.reportingPeriod.count({
-      where: {
-        organizationId: orgId,
-        id: { in: [body.baselinePeriodId, body.targetPeriodId] },
-      },
-    });
+    const body = createTargetSchema.parse(await req.json());
 
-    if (periodCount !== 2) {
-      return apiError(
-        "INVALID_REPORTING_PERIOD",
-        "Both reporting periods must belong to this organisation.",
-        422,
-      );
+    // Verify both periods belong to this org
+    const [baseline, targetPeriod] = await Promise.all([
+      prisma.reportingPeriod.findUnique({
+        where: { id: body.baselinePeriodId },
+        select: { organizationId: true },
+      }),
+      prisma.reportingPeriod.findUnique({
+        where: { id: body.targetPeriodId },
+        select: { organizationId: true },
+      }),
+    ]);
+
+    if (!baseline || baseline.organizationId !== orgId) {
+      return apiError("NOT_FOUND", "Baseline period not found.", 404);
+    }
+    if (!targetPeriod || targetPeriod.organizationId !== orgId) {
+      return apiError("NOT_FOUND", "Target period not found.", 404);
     }
 
     const target = await prisma.reductionTarget.create({
@@ -69,6 +63,10 @@ export async function POST(
         reductionAmount: body.reductionAmount,
         createdByUserId: session.user.id,
       },
+      include: {
+        baselinePeriod: { select: { label: true } },
+        targetPeriod: { select: { label: true } },
+      },
     });
 
     await writeAuditLog({
@@ -77,10 +75,7 @@ export async function POST(
       action: "target.created",
       resourceType: "reduction_target",
       resourceId: target.id,
-      metadata: {
-        targetType: target.targetType,
-        reductionAmount: target.reductionAmount.toString(),
-      },
+      metadata: { targetType: target.targetType },
     });
 
     return NextResponse.json(target, { status: 201 });

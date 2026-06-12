@@ -213,9 +213,9 @@ export function FieldWorkerAssignments({
             </Button>
           </div>
           {!assignmentsAvailable && (
-            <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              Mobile assignment storage is not ready yet. Apply the latest Prisma
-              migration, then refresh this page.
+            <p className="mt-3 rounded-[7px] border border-[#e5e7eb] bg-[#e1f4df] px-3 py-2 text-sm text-[#0f3e17] tracking-[-0.42px]">
+              Mobile assignment setup is incomplete. Contact your administrator
+              to apply the latest database update, then refresh this page.
             </p>
           )}
           {!hasSetup && (

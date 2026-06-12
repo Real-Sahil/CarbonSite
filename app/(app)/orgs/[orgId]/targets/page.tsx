@@ -1,6 +1,7 @@
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import type { OrgRole } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -19,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Target } from "lucide-react";
+import { DeleteInitiativeButton, DeleteTargetButton } from "./target-actions";
 
 interface TargetsPageProps {
   params: Promise<{ orgId: string }>;
@@ -27,15 +29,19 @@ interface TargetsPageProps {
 export default async function TargetsPage({ params }: TargetsPageProps) {
   const { orgId } = await params;
 
+  let role: OrgRole;
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    role = result.membership.role;
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
-      return <AccessDenied label="targets" />;
+      return <AccessDenied />;
     }
     throw err;
   }
+
+  const canEdit = role === "admin" || role === "editor";
 
   const [targets, initiatives, periods, memberships] = await Promise.all([
     prisma.reductionTarget.findMany({
@@ -74,10 +80,18 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
   }));
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Targets</h1>
-        <p className="text-slate-500 mt-1">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+          Strategy
+        </p>
+        <h1
+          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+        >
+          Targets
+        </h1>
+        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
           Reduction targets and initiatives connected to reporting periods.
         </p>
       </div>
@@ -85,19 +99,21 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            Reduction targets <span className="text-sm font-normal text-slate-500">({targets.length})</span>
+            Reduction targets{" "}
+            <span className="text-sm font-normal text-[#333333]">({targets.length})</span>
           </CardTitle>
           <CardDescription>
             Targets compare a baseline period with a target period.
           </CardDescription>
         </CardHeader>
         <CardContent className={targets.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          <div className="px-6 pb-5">
-            <CreateTargetForm orgId={orgId} periods={periods} />
-          </div>
+          {canEdit && (
+            <div className="px-6 pb-5">
+              <CreateTargetForm orgId={orgId} periods={periods} />
+            </div>
+          )}
           {targets.length === 0 ? (
             <EmptyState
-              icon={Target}
               title="No reduction targets yet"
               description="Create targets after reporting periods and calculation snapshots are available."
             />
@@ -110,20 +126,32 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                   <TableHead>Target period</TableHead>
                   <TableHead>Reduction</TableHead>
                   <TableHead>Created by</TableHead>
+                  {canEdit && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {targets.map((target) => (
                   <TableRow key={target.id}>
-                    <TableCell className="font-medium">{target.targetType}</TableCell>
-                    <TableCell className="text-slate-600">{target.baselinePeriod.label}</TableCell>
-                    <TableCell className="text-slate-600">{target.targetPeriod.label}</TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="font-normal text-[#000000] capitalize">
+                      {target.targetType}
+                    </TableCell>
+                    <TableCell className="text-[#222222]">{target.baselinePeriod.label}</TableCell>
+                    <TableCell className="text-[#222222]">{target.targetPeriod.label}</TableCell>
+                    <TableCell className="text-[#222222]">
                       {Number(target.reductionAmount).toLocaleString("en-GB")} kgCO2e
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {target.createdBy.name ?? target.createdBy.email}
                     </TableCell>
+                    {canEdit && (
+                      <TableCell>
+                        <DeleteTargetButton
+                          orgId={orgId}
+                          targetId={target.id}
+                          label={`${target.targetType} — ${target.baselinePeriod.label} to ${target.targetPeriod.label}`}
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -135,19 +163,21 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            Reduction initiatives <span className="text-sm font-normal text-slate-500">({initiatives.length})</span>
+            Reduction initiatives{" "}
+            <span className="text-sm font-normal text-[#333333]">({initiatives.length})</span>
           </CardTitle>
           <CardDescription>
             Operational actions planned or underway to reduce emissions.
           </CardDescription>
         </CardHeader>
         <CardContent className={initiatives.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          <div className="px-6 pb-5">
-            <CreateInitiativeForm orgId={orgId} members={memberOptions} />
-          </div>
+          {canEdit && (
+            <div className="px-6 pb-5">
+              <CreateInitiativeForm orgId={orgId} members={memberOptions} />
+            </div>
+          )}
           {initiatives.length === 0 ? (
             <EmptyState
-              icon={Target}
               title="No initiatives yet"
               description="Add initiatives once owners, costs, expected dates, and estimated impact are known."
             />
@@ -160,30 +190,40 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                   <TableHead>Owner</TableHead>
                   <TableHead>Expected impact</TableHead>
                   <TableHead>Cost</TableHead>
+                  {canEdit && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {initiatives.map((initiative) => (
                   <TableRow key={initiative.id}>
-                    <TableCell className="font-medium">{initiative.name}</TableCell>
+                    <TableCell className="font-normal text-[#000000]">{initiative.name}</TableCell>
                     <TableCell>
                       <Badge variant={initiative.status === "complete" ? "default" : "outline"}>
                         {initiative.status.replaceAll("_", " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {initiative.owner?.name ?? initiative.owner?.email ?? "Unassigned"}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {initiative.expectedImpactCo2e
                         ? `${Number(initiative.expectedImpactCo2e).toLocaleString("en-GB")} kgCO2e`
                         : "Not estimated"}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {initiative.costAmount
                         ? `${initiative.costCurrency ?? "GBP"} ${Number(initiative.costAmount).toLocaleString("en-GB")}`
                         : "Not set"}
                     </TableCell>
+                    {canEdit && (
+                      <TableCell>
+                        <DeleteInitiativeButton
+                          orgId={orgId}
+                          initiativeId={initiative.id}
+                          label={initiative.name}
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -195,31 +235,25 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
   );
 }
 
-function AccessDenied({ label }: { label: string }) {
+function AccessDenied() {
   return (
-    <div className="p-8">
-      <p className="text-red-600">You do not have permission to view {label}.</p>
+    <div className="p-[42px]">
+      <p className="text-sm text-[#222222] tracking-[-0.42px]">
+        You do not have permission to view targets.
+      </p>
     </div>
   );
 }
 
-function EmptyState({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-}) {
+function EmptyState({ title, description }: { title: string; description: string }) {
   return (
     <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
-        <Icon className="h-7 w-7 text-slate-400" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
+        <Target className="h-7 w-7 text-[#0f3e17]" />
       </div>
       <div>
-        <p className="font-medium text-slate-700">{title}</p>
-        <p className="text-sm text-slate-500 mt-1 max-w-sm">{description}</p>
+        <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">{title}</p>
+        <p className="text-sm text-[#222222] tracking-[-0.42px] mt-[7px] max-w-sm">{description}</p>
       </div>
     </div>
   );

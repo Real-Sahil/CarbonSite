@@ -1,40 +1,46 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { ArrowRight, Check, CircleAlert, UserPlus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CheckCircle2, Plus } from "lucide-react";
 
-type ReviewTaskStatus = "open" | "completed" | "blocked";
-type ReviewTaskType = "import_batch" | "activity_record" | "report";
+export interface ReviewTaskPanelCandidate {
+  key: string;
+  type: string;
+  targetId: string;
+  label: string;
+  detail: string;
+  href: string;
+}
 
-export type ReviewTaskPanelTask = {
+interface ReviewTask {
   id: string;
-  type: ReviewTaskType;
-  status: ReviewTaskStatus;
+  type: string;
+  status: string;
   label: string;
   detail: string;
   href: string;
   assigneeLabel: string;
   createdByLabel: string;
   createdAt: string;
-};
+}
 
-export type ReviewTaskPanelCandidate = {
-  key: string;
-  type: ReviewTaskType;
-  targetId: string;
-  label: string;
-  detail: string;
-  href: string;
-};
-
-export type ReviewTaskPanelAssignee = {
-  id: string;
-  label: string;
-};
+interface ReviewTaskPanelProps {
+  orgId: string;
+  tasks: ReviewTask[];
+  candidates: ReviewTaskPanelCandidate[];
+  assignees: { id: string; label: string }[];
+  defaultAssigneeId: string;
+}
 
 export function ReviewTaskPanel({
   orgId,
@@ -42,196 +48,152 @@ export function ReviewTaskPanel({
   candidates,
   assignees,
   defaultAssigneeId,
-}: {
-  orgId: string;
-  tasks: ReviewTaskPanelTask[];
-  candidates: ReviewTaskPanelCandidate[];
-  assignees: ReviewTaskPanelAssignee[];
-  defaultAssigneeId: string;
-}) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
+}: ReviewTaskPanelProps) {
+  const [assigneeId, setAssigneeId] = useState(defaultAssigneeId);
+  const [selectedCandidate, setSelectedCandidate] = useState<string>("");
+  const [loading, setLoading] = useState<string | null>(null);
+  const [closedIds, setClosedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  const [assigneeByTarget, setAssigneeByTarget] = useState<Record<string, string>>({});
 
-  const assignTask = (candidate: ReviewTaskPanelCandidate) => {
-    const assigneeUserId = assigneeByTarget[candidate.key] ?? defaultAssigneeId;
-    setPendingKey(candidate.key);
+  async function handleClose(taskId: string) {
+    setLoading(taskId);
     setError(null);
-    startTransition(async () => {
-      const response = await fetch(`/api/orgs/${orgId}/review-tasks`, {
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/review-tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "closed" }),
+      });
+      if (res.ok) {
+        setClosedIds((prev) => new Set([...prev, taskId]));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed to close task.");
+      }
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function handleAssign() {
+    if (!selectedCandidate || !assigneeId) return;
+    const candidate = candidates.find((c) => c.key === selectedCandidate);
+    if (!candidate) return;
+    setLoading("new");
+    setError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/review-tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: candidate.type,
           targetId: candidate.targetId,
-          assigneeUserId,
+          assigneeUserId: assigneeId,
         }),
       });
-      if (!response.ok) {
-        const body = await response.json().catch(() => null);
-        setError(body?.message ?? "Could not assign review task");
-        setPendingKey(null);
-        return;
+      if (res.ok) {
+        setSelectedCandidate("");
+        window.location.reload();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed to create task.");
       }
-      router.refresh();
-      setPendingKey(null);
-    });
-  };
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(null);
+    }
+  }
 
-  const updateTask = (taskId: string, status: ReviewTaskStatus) => {
-    setPendingKey(taskId);
-    setError(null);
-    startTransition(async () => {
-      const response = await fetch(`/api/orgs/${orgId}/review-tasks/${taskId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) {
-        const body = await response.json().catch(() => null);
-        setError(body?.message ?? "Could not update review task");
-        setPendingKey(null);
-        return;
-      }
-      router.refresh();
-      setPendingKey(null);
-    });
-  };
+  const visibleTasks = tasks.filter((t) => !closedIds.has(t.id));
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <div className="space-y-3">
-        <div>
-          <h3 className="text-sm font-semibold text-slate-900">My review tasks</h3>
-          <p className="mt-1 text-xs text-slate-500">
-            Assigned tenant work that needs a recorded outcome.
-          </p>
+    <div className="space-y-4">
+      {candidates.length > 0 && assignees.length > 0 && (
+        <div className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#e5e7eb] p-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-[#333333] tracking-[-0.36px]">Assign item</label>
+            <Select value={selectedCandidate} onValueChange={setSelectedCandidate}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Select item to assign" />
+              </SelectTrigger>
+              <SelectContent>
+                {candidates.map((c) => (
+                  <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-[#333333] tracking-[-0.36px]">Assignee</label>
+            <Select value={assigneeId} onValueChange={setAssigneeId}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Select assignee" />
+              </SelectTrigger>
+              <SelectContent>
+                {assignees.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={handleAssign}
+            disabled={!selectedCandidate || loading === "new"}
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+          >
+            <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+            {loading === "new" ? "Assigning…" : "Assign task"}
+          </Button>
         </div>
-        {tasks.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5">
-            <p className="text-sm font-medium text-slate-800">No open tasks assigned to you</p>
-            <p className="mt-1 text-xs text-slate-500">
-              New import, record, and report reviews appear here when assigned.
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
-            {tasks.map((task) => (
-              <div key={task.id} className="space-y-3 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-slate-900">{task.label}</p>
-                      <Badge variant="outline">{task.type.replaceAll("_", " ")}</Badge>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500">{task.detail}</p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Assigned by {task.createdByLabel} on {task.createdAt}
-                    </p>
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={task.href} title="Open source workflow">
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => updateTask(task.id, "completed")}
-                    disabled={isPending && pendingKey === task.id}
-                  >
-                    <Check className="h-4 w-4" />
-                    Complete
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateTask(task.id, "blocked")}
-                    disabled={isPending && pendingKey === task.id}
-                  >
-                    <CircleAlert className="h-4 w-4" />
-                    Block
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
-      <div className="space-y-3">
-        <div>
-          <h3 className="text-sm font-semibold text-slate-900">Assign operational reviews</h3>
-          <p className="mt-1 text-xs text-slate-500">
-            Live exceptions from imports, records, and reports.
+      {error && <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+
+      {visibleTasks.length === 0 ? (
+        <div className="rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px]">
+          <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">No open review tasks</p>
+          <p className="mt-1 text-sm text-[#222222] tracking-[-0.42px]">
+            Assign items above to create tasks for reviewers.
           </p>
         </div>
-        {candidates.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5">
-            <p className="text-sm font-medium text-slate-800">No review candidates</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Failed reports, import issues, and records in review will be assignable here.
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
-            {candidates.map((candidate) => (
-              <div key={candidate.key} className="space-y-3 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-slate-900">{candidate.label}</p>
-                      <Badge variant="outline">{candidate.type.replaceAll("_", " ")}</Badge>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500">{candidate.detail}</p>
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={candidate.href} title="Open source workflow">
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <select
-                    aria-label="Assignee"
-                    className="h-9 min-w-0 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 sm:flex-1"
-                    value={assigneeByTarget[candidate.key] ?? defaultAssigneeId}
-                    onChange={(event) =>
-                      setAssigneeByTarget((current) => ({
-                        ...current,
-                        [candidate.key]: event.target.value,
-                      }))
-                    }
-                  >
-                    {assignees.map((assignee) => (
-                      <option key={assignee.id} value={assignee.id}>
-                        {assignee.label}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    size="sm"
-                    onClick={() => assignTask(candidate)}
-                    disabled={assignees.length === 0 || (isPending && pendingKey === candidate.key)}
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    Assign
-                  </Button>
-                </div>
+      ) : (
+        <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#e5e7eb]">
+          {visibleTasks.map((task) => (
+            <div key={task.id} className="flex items-start justify-between gap-4 p-4">
+              <div className="min-w-0">
+                <Link
+                  href={task.href}
+                  className="text-sm font-normal text-[#0f3e17] hover:underline underline-offset-2 tracking-[-0.42px]"
+                >
+                  {task.label}
+                </Link>
+                <p className="mt-0.5 text-xs text-[#333333] tracking-[-0.36px]">{task.detail}</p>
+                <p className="mt-0.5 text-xs text-[#333333] tracking-[-0.36px]">
+                  Assigned to {task.assigneeLabel} · {task.createdAt}
+                </p>
               </div>
-            ))}
-          </div>
-        )}
-        {error && (
-          <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-            <p>{error}</p>
-          </div>
-        )}
-      </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <Badge variant="outline">{task.status}</Badge>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleClose(task.id)}
+                  disabled={loading === task.id}
+                  className="h-7 w-7 p-0"
+                  title="Close task"
+                >
+                  <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

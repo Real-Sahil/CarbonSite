@@ -8,12 +8,10 @@ import {
   type NotificationJobData,
   type ReportJobData,
 } from "./queues";
-import {
-  processCalculation,
-  processImport,
-  processNotification,
-  processReport,
-} from "@/workers/index";
+import { processImportBatch } from "@/lib/imports/worker";
+import { processCalculationRun } from "@/lib/calculation/run-worker";
+import { processNotification } from "@/lib/notifications/worker";
+import { processReport } from "@/lib/reports/worker";
 
 const mode = process.env.JOB_PROCESSING_MODE ?? "inline";
 
@@ -23,7 +21,7 @@ export async function dispatchImport(data: ImportJobData) {
     return "queued" as const;
   }
 
-  await processImport(data);
+  await processImportBatch(data.importBatchId, data.orgId);
   return "processed" as const;
 }
 
@@ -33,7 +31,7 @@ export async function dispatchCalculation(data: CalculationJobData) {
     return "queued" as const;
   }
 
-  await processCalculation(data);
+  await processCalculationRun(data.calculationRunId, data.orgId);
   return "processed" as const;
 }
 
@@ -43,7 +41,7 @@ export async function dispatchReport(data: ReportJobData) {
     return "queued" as const;
   }
 
-  await processReport(data);
+  await processReport(data.reportId, data.orgId);
   return "processed" as const;
 }
 

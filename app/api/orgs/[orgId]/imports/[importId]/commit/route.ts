@@ -1,193 +1,101 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
-import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
-type StagedRowData = Record<string, unknown>;
+type Params = { params: Promise<{ orgId: string; importId: string }> };
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ orgId: string; importId: string }> },
-) {
+export async function POST(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, importId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
-    const limited = rateLimit(req, {
-      key: rateLimitKey(orgId, "import-commit", session.user.id),
-      limit: 10,
-      windowMs: 60_000,
-    });
-    if (limited) return limited;
 
-    const batch = await prisma.importBatch.findFirst({
-      where: { id: importId, organizationId: orgId },
+    const batch = await prisma.importBatch.findUnique({
+      where: { id: importId },
+      select: {
+        id: true,
+        organizationId: true,
+        reportingPeriodId: true,
+        state: true,
+        templateKey: true,
+      },
     });
-    if (!batch) {
-      return apiError("NOT_FOUND", "Import batch was not found.", 404);
+
+    if (!batch || batch.organizationId !== orgId) {
+      return apiError("NOT_FOUND", "Import batch not found.", 404);
     }
     if (batch.state !== "ready_to_commit") {
       return apiError(
-        "IMPORT_NOT_READY",
-        "Only imports with no validation errors can be committed.",
-        422,
+        "CONFLICT",
+        `Batch cannot be committed in state '${batch.state}'. It must be 'ready_to_commit'.`,
+        409,
       );
     }
 
-    const stagedRows = await prisma.stagedActivityRecord.findMany({
-      where: {
-        organizationId: orgId,
-        importBatchId: importId,
-        status: "ready",
-      },
-      orderBy: { rowNumber: "asc" },
+    const stagedRecords = await prisma.stagedActivityRecord.findMany({
+      where: { importBatchId: importId, status: "ready" },
+      select: { id: true, data: true },
     });
 
-    if (stagedRows.length === 0) {
-      return apiError("NO_READY_ROWS", "This import has no ready rows to commit.", 422);
+    if (stagedRecords.length === 0) {
+      return apiError("CONFLICT", "No ready staged records to commit.", 409);
     }
 
-    const period = await prisma.reportingPeriod.findFirst({
-      where: { id: batch.reportingPeriodId, organizationId: orgId },
-      select: { id: true },
-    });
-    if (!period) {
-      return apiError("INVALID_REPORTING_PERIOD", "Import reporting period no longer exists.", 422);
-    }
-
-    const records: Prisma.ActivityRecordCreateManyInput[] = [];
-    const rowErrors: Array<{ rowNumber: number; error: string }> = [];
-
-    for (const row of stagedRows) {
-      const data = row.data as StagedRowData;
-      const categoryId = stringValue(data, "emissionCategoryId", "emission_category_id");
-      const amount = numberValue(data, "amount");
-      const unit = stringValue(data, "unit");
-
-      if (!categoryId || amount == null || !unit) {
-        rowErrors.push({
-          rowNumber: row.rowNumber,
-          error: "Rows must include emissionCategoryId, amount and unit.",
-        });
-        continue;
-      }
-
-      const category = await prisma.emissionCategory.findUnique({
-        where: { id: categoryId },
-        select: { id: true },
-      });
-      if (!category) {
-        rowErrors.push({
-          rowNumber: row.rowNumber,
-          error: `Emission category ${categoryId} does not exist.`,
-        });
-        continue;
-      }
-
-      const pickupPostcode = stringValue(data, "pickupPostcode", "pickup_postcode");
-      const deliveryPostcode = stringValue(data, "deliveryPostcode", "delivery_postcode");
-      let route = null;
-      if (pickupPostcode && deliveryPostcode) {
-        try {
-          route = await getOrCreateRouteDistance({
-            organizationId: orgId,
-            pickupPostcode,
-            deliveryPostcode,
+    // Commit in a transaction — create ActivityRecords then mark batch committed
+    const committed = await prisma.$transaction(async (tx) => {
+      const records = await Promise.all(
+        stagedRecords.map((sr) => {
+          const d = sr.data as Record<string, unknown>;
+          return tx.activityRecord.create({
+            data: {
+              organizationId: orgId,
+              reportingPeriodId: batch.reportingPeriodId,
+              emissionCategoryId: d.emissionCategoryId as string,
+              amount: d.amount as number,
+              unit: d.unit as string,
+              activityDate: d.activityDate ? new Date(d.activityDate as string) : undefined,
+              startDate: d.startDate ? new Date(d.startDate as string) : undefined,
+              endDate: d.endDate ? new Date(d.endDate as string) : undefined,
+              sourceDescription: (d.sourceDescription as string | undefined) ?? undefined,
+              facilityId: (d.facilityId as string | undefined) ?? undefined,
+              businessUnitId: (d.businessUnitId as string | undefined) ?? undefined,
+              supplierName: (d.supplierName as string | undefined) ?? undefined,
+              country: (d.country as string | undefined) ?? undefined,
+              region: (d.region as string | undefined) ?? undefined,
+              fuelType: (d.fuelType as string | undefined) ?? undefined,
+              refrigerantType: (d.refrigerantType as string | undefined) ?? undefined,
+              transportMode: (d.transportMode as string | undefined) ?? undefined,
+              assumptionNotes: (d.assumptionNotes as string | undefined) ?? undefined,
+              importBatchId: importId,
+              reviewStatus: "draft",
+              evidenceStatus: "missing",
+              createdByUserId: session.user.id,
+            },
+            select: { id: true },
           });
-        } catch (err) {
-          if (err instanceof RouteDistanceError) {
-            rowErrors.push({
-              rowNumber: row.rowNumber,
-              error: err.message,
-            });
-            continue;
-          }
-          throw err;
-        }
-      }
+        }),
+      );
 
-      records.push({
-        organizationId: orgId,
-        reportingPeriodId: batch.reportingPeriodId,
-        emissionCategoryId: categoryId,
-        importBatchId: batch.id,
-        createdByUserId: session.user.id,
-        activityDate: dateValue(data, "activityDate", "activity_date"),
-        amount,
-        unit,
-        sourceDescription:
-          stringValue(data, "sourceDescription", "source_description") ??
-          batch.sourceFilename,
-        supplierName: stringValue(data, "supplierName", "supplier_name"),
-        country: stringValue(data, "country"),
-        distanceAmount: route?.distanceKm ?? numberValue(data, "distanceAmount", "distance_amount"),
-        distanceUnit: route ? "km" : stringValue(data, "distanceUnit", "distance_unit"),
-        pickupPostcode: route?.pickupPostcode ?? pickupPostcode,
-        deliveryPostcode: route?.deliveryPostcode ?? deliveryPostcode,
-        pickupLat: route?.pickupLat,
-        pickupLng: route?.pickupLng,
-        deliveryLat: route?.deliveryLat,
-        deliveryLng: route?.deliveryLng,
-        routeDistanceId: route?.id,
-        routeDistanceSource: route?.provider,
-        transportMode: stringValue(data, "transportMode", "transport_mode"),
-        fuelType: stringValue(data, "fuelType", "fuel_type"),
-        reviewStatus: "draft",
-        evidenceStatus: "missing",
+      await tx.importBatch.update({
+        where: { id: importId },
+        data: { state: "committed" },
       });
-    }
 
-    if (rowErrors.length > 0) {
-      return apiError("COMMIT_VALIDATION_FAILED", "One or more staged rows are invalid.", 422, rowErrors);
-    }
-
-    await prisma.$transaction([
-      prisma.activityRecord.createMany({ data: records }),
-      prisma.importBatch.update({
-        where: { id: batch.id },
-        data: { state: "committed", rowCount: records.length },
-      }),
-    ]);
+      return records;
+    });
 
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
       action: "import.committed",
       resourceType: "import_batch",
-      resourceId: batch.id,
-      metadata: {
-        recordCount: records.length,
-        templateKey: batch.templateKey,
-      },
+      resourceId: importId,
+      metadata: { committedCount: committed.length },
     });
 
-    return NextResponse.json({ committedRecords: records.length });
+    return NextResponse.json({ committedCount: committed.length });
   } catch (err) {
     return handleRouteError(err);
   }
-}
-
-function stringValue(data: StagedRowData, ...keys: string[]) {
-  for (const key of keys) {
-    const value = data[key];
-    if (value != null && String(value).trim() !== "") return String(value).trim();
-  }
-  return undefined;
-}
-
-function numberValue(data: StagedRowData, ...keys: string[]) {
-  const value = stringValue(data, ...keys);
-  if (!value) return undefined;
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : undefined;
-}
-
-function dateValue(data: StagedRowData, ...keys: string[]) {
-  const value = stringValue(data, ...keys);
-  if (!value) return undefined;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? undefined : date;
 }

@@ -1,223 +1,246 @@
 "use client";
 
-import { FormEvent, useState, useTransition } from "react";
-import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus } from "lucide-react";
 
-type PeriodOption = {
-  id: string;
-  label: string;
-};
+const TARGET_TYPES = [
+  { value: "absolute", label: "Absolute reduction" },
+  { value: "intensity", label: "Intensity reduction" },
+  { value: "science_based", label: "Science-based" },
+];
 
-type MemberOption = {
-  userId: string;
-  label: string;
-};
-
-async function postJson(url: string, payload: Record<string, unknown>) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    throw new Error(body?.message ?? "Request failed");
-  }
+interface CreateTargetFormProps {
+  orgId: string;
+  periods: { id: string; label: string }[];
 }
 
-export function CreateTargetForm({
-  orgId,
-  periods,
-}: {
-  orgId: string;
-  periods: PeriodOption[];
-}) {
-  const router = useRouter();
+export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
+  const [open, setOpen] = useState(false);
+  const [targetType, setTargetType] = useState(TARGET_TYPES[0].value);
+  const [baselinePeriodId, setBaselinePeriodId] = useState(periods[0]?.id ?? "");
+  const [targetPeriodId, setTargetPeriodId] = useState(periods[1]?.id ?? periods[0]?.id ?? "");
+  const [reductionAmount, setReductionAmount] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const canCreate = periods.length >= 2;
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!baselinePeriodId || !targetPeriodId || !reductionAmount) {
+      setError("All fields are required.");
+      return;
+    }
+    setLoading(true);
     setError(null);
-    const form = new FormData(event.currentTarget);
-
-    startTransition(async () => {
-      try {
-        await postJson(`/api/orgs/${orgId}/targets`, {
-          baselinePeriodId: form.get("baselinePeriodId"),
-          targetPeriodId: form.get("targetPeriodId"),
-          targetType: form.get("targetType"),
-          reductionAmount: form.get("reductionAmount"),
-        });
-        event.currentTarget.reset();
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not create target");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/targets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetType,
+          baselinePeriodId,
+          targetPeriodId,
+          reductionAmount: parseFloat(reductionAmount),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed to create target.");
+      } else {
+        window.location.reload();
       }
-    });
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)} className="gap-1.5">
+        <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+        Add target
+      </Button>
+    );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border border-slate-200 p-4 lg:grid-cols-5">
-      <Field label="Baseline">
-        <select
-          name="baselinePeriodId"
-          required
-          disabled={!canCreate}
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
-        >
-          {periods.map((period) => (
-            <option key={period.id} value={period.id}>
-              {period.label}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field label="Target period">
-        <select
-          name="targetPeriodId"
-          required
-          disabled={!canCreate}
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
-        >
-          {periods.map((period) => (
-            <option key={period.id} value={period.id}>
-              {period.label}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field label="Type">
-        <select
-          name="targetType"
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
-        >
-          <option value="absolute">Absolute</option>
-          <option value="intensity">Intensity</option>
-        </select>
-      </Field>
-      <Field label="Reduction kgCO2e">
-        <Input name="reductionAmount" type="number" min="0.0001" step="0.0001" required disabled={!canCreate} />
-      </Field>
-      <div className="flex items-end">
-        <Button type="submit" disabled={!canCreate || isPending} className="w-full">
-          <Plus className="h-4 w-4" />
-          Add target
-        </Button>
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#e5e7eb] p-4">
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Type</label>
+        <Select value={targetType} onValueChange={setTargetType}>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TARGET_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
-      {!canCreate && (
-        <p className="text-sm text-slate-500 lg:col-span-5">
-          Create at least two reporting periods before adding a reduction target.
-        </p>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Baseline period</label>
+        <Select value={baselinePeriodId} onValueChange={setBaselinePeriodId}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Select" />
+          </SelectTrigger>
+          <SelectContent>
+            {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Target period</label>
+        <Select value={targetPeriodId} onValueChange={setTargetPeriodId}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Select" />
+          </SelectTrigger>
+          <SelectContent>
+            {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Reduction (kgCO2e)</label>
+        <Input
+          type="number"
+          min="0"
+          step="any"
+          value={reductionAmount}
+          onChange={(e) => setReductionAmount(e.target.value)}
+          placeholder="e.g. 10000"
+          className="w-32"
+        />
+      </div>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading} size="sm">
+          {loading ? "Saving…" : "Save"}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+      </div>
+      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+    </form>
+  );
+}
+
+const INITIATIVE_STATUSES = [
+  { value: "planned", label: "Planned" },
+  { value: "in_progress", label: "In progress" },
+  { value: "complete", label: "Complete" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
+interface CreateInitiativeFormProps {
+  orgId: string;
+  members: { userId: string; label: string }[];
+}
+
+export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormProps) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [status, setStatus] = useState(INITIATIVE_STATUSES[0].value);
+  const [ownerId, setOwnerId] = useState(members[0]?.userId ?? "");
+  const [expectedImpact, setExpectedImpact] = useState("");
+  const [costAmount, setCostAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError("Name is required.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/initiatives`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          status,
+          ownerUserId: ownerId || undefined,
+          expectedImpactCo2e: expectedImpact ? parseFloat(expectedImpact) : undefined,
+          costAmount: costAmount ? parseFloat(costAmount) : undefined,
+          costCurrency: "GBP",
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed to create initiative.");
+      } else {
+        window.location.reload();
+      }
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)} className="gap-1.5">
+        <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+        Add initiative
+      </Button>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#e5e7eb] p-4">
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Name</label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Switch to EVs" className="w-52" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Status</label>
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {INITIATIVE_STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      {members.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-[#333333] tracking-[-0.36px]">Owner</label>
+          <Select value={ownerId} onValueChange={setOwnerId}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Optional" />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((m) => <SelectItem key={m.userId} value={m.userId}>{m.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       )}
-      {error && <p className="text-sm text-red-600 lg:col-span-5">{error}</p>}
-    </form>
-  );
-}
-
-export function CreateInitiativeForm({
-  orgId,
-  members,
-}: {
-  orgId: string;
-  members: MemberOption[];
-}) {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    const form = new FormData(event.currentTarget);
-
-    startTransition(async () => {
-      try {
-        await postJson(`/api/orgs/${orgId}/initiatives`, {
-          name: form.get("name"),
-          ownerUserId: form.get("ownerUserId"),
-          status: form.get("status"),
-          costAmount: form.get("costAmount"),
-          costCurrency: form.get("costCurrency") || "GBP",
-          expectedImpactCo2e: form.get("expectedImpactCo2e"),
-          expectedStartDate: form.get("expectedStartDate"),
-          notes: form.get("notes"),
-        });
-        event.currentTarget.reset();
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not create initiative");
-      }
-    });
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border border-slate-200 p-4 lg:grid-cols-6">
-      <Field label="Initiative" className="lg:col-span-2">
-        <Input name="name" minLength={2} maxLength={160} required />
-      </Field>
-      <Field label="Owner">
-        <select name="ownerUserId" className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm">
-          <option value="">Unassigned</option>
-          {members.map((member) => (
-            <option key={member.userId} value={member.userId}>
-              {member.label}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field label="Status">
-        <select name="status" className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm">
-          <option value="planned">Planned</option>
-          <option value="in_progress">In progress</option>
-          <option value="complete">Complete</option>
-          <option value="canceled">Canceled</option>
-        </select>
-      </Field>
-      <Field label="Impact kgCO2e">
-        <Input name="expectedImpactCo2e" type="number" min="0" step="0.0001" />
-      </Field>
-      <Field label="Cost GBP">
-        <Input name="costAmount" type="number" min="0" step="0.01" />
-        <input type="hidden" name="costCurrency" value="GBP" />
-      </Field>
-      <Field label="Start date">
-        <Input name="expectedStartDate" type="date" />
-      </Field>
-      <Field label="Notes" className="lg:col-span-5">
-        <Input name="notes" maxLength={2000} />
-      </Field>
-      <div className="flex items-end">
-        <Button type="submit" disabled={isPending} className="w-full">
-          <Plus className="h-4 w-4" />
-          Add initiative
-        </Button>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Expected impact (kgCO2e)</label>
+        <Input type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} placeholder="Optional" className="w-36" />
       </div>
-      {error && <p className="text-sm text-red-600 lg:col-span-6">{error}</p>}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Cost (GBP)</label>
+        <Input type="number" min="0" step="any" value={costAmount} onChange={(e) => setCostAmount(e.target.value)} placeholder="Optional" className="w-28" />
+      </div>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading} size="sm">
+          {loading ? "Saving…" : "Save"}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+      </div>
+      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
     </form>
-  );
-}
-
-function Field({
-  label,
-  className,
-  children,
-}: {
-  label: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className={className}>
-      <Label className="mb-1.5 block text-xs font-medium text-slate-600">{label}</Label>
-      <div className="flex flex-col">{children}</div>
-    </div>
   );
 }

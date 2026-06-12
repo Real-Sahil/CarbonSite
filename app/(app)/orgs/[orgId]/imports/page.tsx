@@ -36,6 +36,13 @@ const STATE_LABELS: Record<string, string> = {
   failed: "Failed",
 };
 
+const STATE_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+  committed: "default",
+  ready_to_commit: "secondary",
+  needs_attention: "destructive",
+  failed: "destructive",
+};
+
 export default async function ImportsPage({ params }: ImportsPageProps) {
   const { orgId } = await params;
 
@@ -44,7 +51,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
-      return <AccessDenied label="imports" />;
+      return <AccessDenied />;
     }
     throw err;
   }
@@ -59,6 +66,12 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         },
       },
       _count: { select: { stagedRecords: true, activityRecords: true, evidence: true } },
+      stagedRecords: {
+        where: { status: "staged" },
+        take: 5,
+        select: { validationErrors: true, rowNumber: true },
+        orderBy: { rowNumber: "asc" },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: 100,
@@ -81,10 +94,18 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   const periodLabelById = new Map(periods.map((period) => [period.id, period.label]));
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Imports</h1>
-        <p className="text-slate-500 mt-1">
+    <div className="p-[42px] max-w-[1200px] mx-auto">
+      <div className="mb-[42px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+          Data intake
+        </p>
+        <h1
+          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+        >
+          Imports
+        </h1>
+        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
           Upload, validate, stage, and commit activity data batches.
         </p>
       </div>
@@ -92,7 +113,8 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            Import batches <span className="text-sm font-normal text-slate-500">({imports.length})</span>
+            Import batches{" "}
+            <span className="text-sm font-normal text-[#333333]">({imports.length})</span>
           </CardTitle>
           <CardDescription>
             Source files and validation exports are stored using organisation-scoped storage keys.
@@ -103,11 +125,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
             <CreateImportForm orgId={orgId} periods={allPeriods} />
           </div>
           {imports.length === 0 ? (
-            <EmptyState
-              icon={Upload}
-              title="No import batches yet"
-              description="Create an import batch to upload CSV or XLSX activity data for validation."
-            />
+            <EmptyState />
           ) : (
             <Table>
               <TableHeader>
@@ -124,62 +142,84 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {imports.map((batch) => (
-                  <TableRow key={batch.id}>
-                    <TableCell className="font-medium">{batch.sourceFilename}</TableCell>
-                    <TableCell className="text-slate-600">{batch.templateKey}</TableCell>
-                    <TableCell className="text-slate-600">
-                      {periodLabelById.get(batch.reportingPeriodId) ?? batch.reportingPeriodId}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {(batch.rowCount ?? batch._count.stagedRecords).toLocaleString("en-GB")}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      <div>
-                        {batch.errorCount} errors, {batch.warningCount} warnings
-                      </div>
-                      {batch.errorCsvStorageKey && (
-                        <div className="text-xs text-slate-500">
-                          Error export ready
+                {imports.map((batch) => {
+                  const inlineErrors = batch.stagedRecords
+                    .flatMap((record) =>
+                      Array.isArray(record.validationErrors)
+                        ? (record.validationErrors as string[]).slice(0, 1).map((msg) => ({
+                            row: record.rowNumber,
+                            msg,
+                          }))
+                        : [],
+                    )
+                    .slice(0, 3);
+
+                  return (
+                    <TableRow key={batch.id}>
+                      <TableCell className="font-normal text-[#000000]">
+                        {batch.sourceFilename}
+                      </TableCell>
+                      <TableCell className="text-[#222222]">{batch.templateKey}</TableCell>
+                      <TableCell className="text-[#222222]">
+                        {periodLabelById.get(batch.reportingPeriodId) ?? batch.reportingPeriodId}
+                      </TableCell>
+                      <TableCell className="text-[#222222]">
+                        {(batch.rowCount ?? batch._count.stagedRecords).toLocaleString("en-GB")}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-[#222222] tracking-[-0.42px]">
+                          {batch.errorCount} errors, {batch.warningCount} warnings
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <ImportBatchEvidenceActions
-                        orgId={orgId}
-                        importId={batch.id}
-                        files={batch.evidence.map((item) => ({
-                          id: item.evidenceFile.id,
-                          filename: item.evidenceFile.filename,
-                        }))}
-                      />
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {batch.createdBy.name ?? batch.createdBy.email}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          batch.state === "failed" || batch.state === "needs_attention"
-                            ? "destructive"
-                            : batch.state === "committed"
-                              ? "default"
-                              : "outline"
-                        }
-                      >
-                        {STATE_LABELS[batch.state] ?? batch.state}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <ImportBatchActions
-                        orgId={orgId}
-                        importId={batch.id}
-                        canCommit={batch.state === "ready_to_commit"}
-                        hasErrorExport={Boolean(batch.errorCsvStorageKey)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        {inlineErrors.length > 0 && (
+                          <ul className="mt-1.5 space-y-1">
+                            {inlineErrors.map((err, i) => (
+                              <li key={i} className="text-xs text-[#333333] tracking-[-0.36px]">
+                                <span className="font-normal text-[#0f3e17]">Row {err.row}:</span>{" "}
+                                {err.msg}
+                              </li>
+                            ))}
+                            {batch.errorCount > inlineErrors.length && (
+                              <li className="text-xs text-[#333333] tracking-[-0.36px] italic">
+                                +{batch.errorCount - inlineErrors.length} more — download error export
+                              </li>
+                            )}
+                          </ul>
+                        )}
+                        {!inlineErrors.length && batch.errorCsvStorageKey && (
+                          <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                            Error export ready
+                          </p>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <ImportBatchEvidenceActions
+                          orgId={orgId}
+                          importId={batch.id}
+                          files={batch.evidence.map((item) => ({
+                            id: item.evidenceFile.id,
+                            filename: item.evidenceFile.filename,
+                          }))}
+                        />
+                      </TableCell>
+                      <TableCell className="text-[#222222]">
+                        {batch.createdBy.name ?? batch.createdBy.email}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={STATE_VARIANT[batch.state] ?? "outline"}>
+                          {STATE_LABELS[batch.state] ?? batch.state}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <ImportBatchActions
+                          orgId={orgId}
+                          importId={batch.id}
+                          canCommit={batch.state === "ready_to_commit"}
+                          hasErrorExport={Boolean(batch.errorCsvStorageKey)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -189,31 +229,27 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   );
 }
 
-function AccessDenied({ label }: { label: string }) {
+function AccessDenied() {
   return (
-    <div className="p-8">
-      <p className="text-red-600">You do not have permission to view {label}.</p>
+    <div className="p-[42px]">
+      <p className="text-sm text-[#222222] tracking-[-0.42px]">
+        You do not have permission to view imports.
+      </p>
     </div>
   );
 }
 
-function EmptyState({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-}) {
+function EmptyState() {
   return (
     <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
-        <Icon className="h-7 w-7 text-slate-400" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
+        <Upload className="h-7 w-7 text-[#0f3e17]" />
       </div>
       <div>
-        <p className="font-medium text-slate-700">{title}</p>
-        <p className="text-sm text-slate-500 mt-1 max-w-sm">{description}</p>
+        <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">No import batches yet</p>
+        <p className="text-sm text-[#222222] tracking-[-0.42px] mt-[7px] max-w-sm">
+          Create an import batch to upload CSV or XLSX activity data for validation.
+        </p>
       </div>
     </div>
   );
