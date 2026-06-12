@@ -4,6 +4,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { reviewFieldSubmissionSchema } from "@/lib/validation/records";
+import { enqueueNotification } from "@/lib/jobs/queues/index";
 
 type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 
@@ -14,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const submission = await prisma.fieldSubmission.findUnique({
       where: { id: submissionId },
-      select: { organizationId: true, status: true, reportingPeriodId: true },
+      select: { organizationId: true, status: true, reportingPeriodId: true, submittedByUserId: true },
     });
     if (!submission || submission.organizationId !== orgId) {
       return apiError("NOT_FOUND", "Submission not found.", 404);
@@ -86,6 +87,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       resourceId: submissionId,
       metadata: { action: body.action },
     });
+
+    // Notify field worker of review outcome
+    enqueueNotification({
+      type: "submission_reviewed",
+      recipientUserId: submission.submittedByUserId,
+      orgId,
+      resourceId: submissionId,
+    }).catch((err) => console.error("[field-submissions] Failed to enqueue notification:", err));
 
     return NextResponse.json(updated);
   } catch (err) {
