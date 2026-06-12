@@ -11,6 +11,7 @@ import type {
   NotificationJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
+import { processCalculationRun } from "@/lib/calculation/run-worker";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -42,10 +43,10 @@ async function start() {
     { localConcurrency: 4 },
     async (jobs: Job<CalculationJobData>[]) => {
       for (const job of jobs) {
-        console.log("[calculations] processing:", job.data);
-        // TODO: normalizeUnit() → selectFactor() → computeCo2e()
-        // → persist immutable EmissionCalculation rows
-        // → rebuild DashboardAggregate
+        const { calculationRunId, orgId } = job.data;
+        console.log(`[calculations] processing run ${calculationRunId}`);
+        await processCalculationRun(calculationRunId, orgId);
+        console.log(`[calculations] finished run ${calculationRunId}`);
       }
     },
   );
