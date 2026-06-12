@@ -1,13 +1,18 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/invite_screen.dart';
 import '../../features/auth/pin_setup_screen.dart';
+import '../../features/capture/capture_screen.dart';
+import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/submissions/home_screen.dart';
 import '../../features/submissions/submissions_screen.dart';
-import '../../features/capture/capture_screen.dart';
+import 'main_shell.dart';
 
 const _storage = FlutterSecureStorage();
+
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Async provider that resolves to the current session token (null = not logged in).
 final sessionTokenProvider = FutureProvider<String?>((ref) async {
@@ -16,6 +21,7 @@ final sessionTokenProvider = FutureProvider<String?>((ref) async {
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: '/',
     // Redirect is async-capable via GoRouter's refreshListenable pattern, but
     // for simplicity here we read storage directly in the redirect callback.
@@ -33,11 +39,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (hasSession && path == '/pin-setup') {
-        return '/home';
+        return '/dashboard';
       }
 
       if (path == '/') {
-        return hasSession ? '/home' : '/pin-setup';
+        return hasSession ? '/dashboard' : '/pin-setup';
       }
 
       return null; // no redirect
@@ -48,7 +54,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: (_, __) async {
           final token = await _storage.read(key: 'session_token');
           final hasSession = token != null && token.isNotEmpty;
-          return hasSession ? '/home' : '/pin-setup';
+          return hasSession ? '/dashboard' : '/pin-setup';
         },
       ),
       GoRoute(
@@ -62,17 +68,47 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/pin-setup',
         builder: (context, state) => const PinSetupScreen(),
       ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
+
+      // Main app: bottom-nav shell with three tabs.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            MainShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/dashboard',
+                builder: (context, state) => const DashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/submissions',
+                builder: (context, state) => const SubmissionsScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
-      GoRoute(
-        path: '/submissions',
-        builder: (context, state) => const SubmissionsScreen(),
-      ),
+
+      // Capture flow renders above the shell (full screen, no nav bar).
       GoRoute(
         path: '/capture',
-        builder: (context, state) => const CaptureScreen(),
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => CaptureScreen(
+          projectId: state.uri.queryParameters['projectId'],
+          projectLabel: state.uri.queryParameters['projectLabel'],
+        ),
       ),
     ],
   );
