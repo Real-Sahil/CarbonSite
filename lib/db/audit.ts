@@ -20,6 +20,11 @@ type AuditAction =
   | "snapshot.published"
   | "report.generation_triggered"
   | "report.published"
+  | "report.downloaded"
+  | "target.created"
+  | "target.deleted"
+  | "initiative.created"
+  | "initiative.deleted"
   | "field_submission.submitted"
   | "field_submission.reviewed";
 
