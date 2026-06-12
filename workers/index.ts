@@ -10,6 +10,7 @@ import type {
   ReportJobData,
   NotificationJobData,
 } from "@/lib/jobs/queues/index";
+import { processImportBatch } from "@/lib/imports/worker";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -27,9 +28,10 @@ async function start() {
     { localConcurrency: 2 },
     async (jobs: Job<ImportJobData>[]) => {
       for (const job of jobs) {
-        console.log("[imports] processing:", job.data);
-        // TODO: parse file from R2 → validate rows → create StagedActivityRecord rows
-        // → update ImportBatch.state → produce error CSV
+        const { importBatchId, orgId } = job.data;
+        console.log(`[imports] processing batch ${importBatchId}`);
+        await processImportBatch(importBatchId, orgId);
+        console.log(`[imports] finished batch ${importBatchId}`);
       }
     },
   );

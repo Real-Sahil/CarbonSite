@@ -70,6 +70,26 @@ export async function presignDownload(key: string): Promise<string> {
   return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
 
+// ── Direct read (used by workers, not by HTTP clients) ───────────────────────
+export async function getObject(key: string): Promise<Buffer> {
+  if (DRIVER === "local") {
+    const { readFile } = await import("fs/promises");
+    const localPath = path.join(process.cwd(), "uploads", key);
+    return readFile(localPath);
+  }
+  const { GetObjectCommand } = await import("@aws-sdk/client-s3");
+  const response = await s3!.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  const stream = response.Body;
+  if (!stream) throw new Error(`Empty response body for key: ${key}`);
+  // Collect stream chunks into a Buffer
+  const chunks: Uint8Array[] = [];
+  // @ts-expect-error — AWS SDK stream is a web ReadableStream or Node stream depending on env
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
 // ── Direct write (used by workers, not by HTTP clients) ───────────────────────
 export async function putObject(key: string, body: Buffer, contentType: string): Promise<void> {
   if (DRIVER === "local") {
