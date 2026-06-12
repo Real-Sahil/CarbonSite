@@ -90,7 +90,7 @@ export function InviteLinkGenerator({
 
       {links.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+          <p className="text-xs font-normal text-[#333333] uppercase tracking-wide">
             Active invite links
           </p>
           {links.map((link) => {
@@ -100,12 +100,12 @@ export function InviteLinkGenerator({
             return (
               <div
                 key={link.id}
-                className="flex items-center gap-2 p-2.5 rounded-md border border-slate-200 bg-slate-50"
+                className="flex items-center gap-2 p-[9px] rounded-[7px] border border-[#e5e7eb] bg-[#e1f4df]"
               >
                 <Input
                   readOnly
                   value={url}
-                  className="text-xs h-7 bg-white text-slate-600 font-mono border-slate-200"
+                  className="text-xs h-7 bg-[#fffefc] text-[#222222] font-mono border-[#e5e7eb]"
                   onFocus={(e) => e.target.select()}
                 />
                 <Button
@@ -116,12 +116,12 @@ export function InviteLinkGenerator({
                   title="Copy link"
                 >
                   {isCopied ? (
-                    <Check className="h-3.5 w-3.5 text-green-700" />
+                    <Check className="h-3.5 w-3.5 text-[#0f3e17]" />
                   ) : (
                     <Copy className="h-3.5 w-3.5" />
                   )}
                 </Button>
-                <span className="text-xs text-slate-400 shrink-0 whitespace-nowrap">
+                <span className="text-xs text-[#333333] shrink-0 whitespace-nowrap tracking-[-0.36px]">
                   Expires{" "}
                   {expiresAt.toLocaleDateString("en-GB", {
                     day: "numeric",

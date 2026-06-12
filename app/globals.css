@@ -1,43 +1,45 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&family=Inter:wght@300;400&display=swap');
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 71% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 142 71% 94%;
-    --accent-foreground: 142 71% 20%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 71% 45%;
-    --radius: 0.5rem;
-  }
-}
+@theme {
+  /* ── Ease Health Design Tokens ───────────────────────────────────────── */
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Colors */
+  --color-forest-ink:    #0f3e17;
+  --color-sage-wash:     #b1dbb8;
+  --color-mist-blue:     #b6ced5;
+  --color-mint-veil:     #cfe7d3;
+  --color-linen:         #e1f4df;
+  --color-linen-white:   #fffefc;
+  --color-hairline-gray: #e5e7eb;
+  --color-charcoal:      #222222;
+  --color-graphite:      #333333;
+  --color-true-black:    #000000;
+
+  /* Fonts */
+  --font-display: 'Fraunces', 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Border radius */
+  --radius-nav:    7px;
+  --radius-card:   14px;
+  --radius-badge:  999px;
+  --radius-button: 14px;
 }
 
 @layer base {
   * {
     @apply box-border;
-    border-color: hsl(214.3 31.8% 91.4%);
+    border-color: #e5e7eb;
   }
-  body {
-    background: hsl(0 0% 100%);
-    color: hsl(222.2 84% 4.9%);
-    font-family: var(--font-geist-sans, Arial, sans-serif);
+
+  html, body {
+    background-color: #fffefc;
+    color: #000000;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.42px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }

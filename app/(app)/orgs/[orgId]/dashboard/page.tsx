@@ -17,23 +17,31 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const { orgId } = await params;
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-500 mt-1">
+    <div className="p-[42px] max-w-[1200px] mx-auto">
+      <div className="mb-[42px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+          Overview
+        </p>
+        <h1
+          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+        >
+          Dashboard
+        </h1>
+        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
           Your organisation&apos;s GHG emissions overview.
         </p>
       </div>
 
-      <Card className="border-green-100 bg-green-50/40">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-              <BarChart2 className="h-5 w-5 text-green-700" />
+      <Card className="border-[#b1dbb8] bg-[#e1f4df]">
+        <CardHeader className="pb-[21px]">
+          <div className="flex items-center gap-[14px] mb-[14px]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#b1dbb8]">
+              <BarChart2 aria-hidden="true" className="h-5 w-5 text-[#0f3e17]" />
             </div>
             <CardTitle className="text-lg">Coming in Milestone 3</CardTitle>
           </div>
-          <CardDescription className="text-slate-600 text-sm leading-relaxed">
+          <CardDescription>
             Calculation results and aggregates will appear here once you have
             imported activity records and run a calculation. You will see
             real-time Scope 1, 2, and 3 breakdowns, period comparisons, and
@@ -41,25 +49,25 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-[21px] mb-[28px]">
             {["Scope 1", "Scope 2", "Scope 3"].map((scope) => (
               <div
                 key={scope}
-                className="rounded-lg border border-green-200 bg-white p-4"
+                className="rounded-[14px] border border-[#b1dbb8] bg-[#fffefc] p-[21px]"
               >
-                <p className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-1">
+                <p className="text-xs font-normal text-[#0f3e17] uppercase tracking-wide mb-[7px]">
                   {scope}
                 </p>
-                <div className="h-7 w-24 rounded bg-slate-100 animate-pulse" />
-                <p className="text-xs text-slate-400 mt-1">tCO2e</p>
+                <div className="h-7 w-24 rounded-[7px] bg-[#cfe7d3] animate-pulse" />
+                <p className="text-xs text-[#222222] mt-[7px] tracking-[-0.36px]">tCO2e</p>
               </div>
             ))}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-[14px]">
             <Button asChild variant="default" size="sm">
               <Link href={`/orgs/${orgId}/submissions`}>
                 Review field submissions
-                <ArrowRight className="h-4 w-4 ml-1" />
+                <ArrowRight aria-hidden="true" className="h-4 w-4 ml-1" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
@@ -69,7 +77,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-2 gap-[21px] mt-[28px]">
         {[
           {
             title: "Activity Records",
@@ -83,7 +91,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           },
         ].map((item) => (
           <Link key={item.href} href={item.href} className="group block">
-            <Card className="h-full transition-shadow group-hover:shadow-md">
+            <Card className="h-full transition-colors group-hover:border-[#b1dbb8] group-hover:bg-[#e1f4df]">
               <CardHeader>
                 <CardTitle className="text-base">{item.title}</CardTitle>
                 <CardDescription>{item.description}</CardDescription>

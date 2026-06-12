@@ -87,12 +87,18 @@ export default async function MembersPage({ params }: MembersPageProps) {
   ]);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+    <div className="p-[42px] max-w-[900px] mx-auto flex flex-col gap-[42px]">
+      <div className="mb-0">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+          Settings
+        </p>
+        <h1
+          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+        >
           Members &amp; Access
         </h1>
-        <p className="text-slate-500 mt-1">
+        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
           Manage who has access to your organisation and their roles.
         </p>
       </div>
@@ -118,15 +124,15 @@ export default async function MembersPage({ params }: MembersPageProps) {
             <TableBody>
               {members.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-normal text-[#000000]">
                     {m.user.name ?? (
-                      <span className="text-slate-400 italic">No name</span>
+                      <span className="text-[#333333] italic">No name</span>
                     )}
                     {m.user.id === currentUserId && (
-                      <span className="ml-2 text-xs text-slate-400">(you)</span>
+                      <span className="ml-2 text-xs text-[#333333]">(you)</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-slate-600">
+                  <TableCell className="text-[#222222]">
                     {m.user.email}
                   </TableCell>
                   <TableCell>
