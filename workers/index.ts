@@ -13,6 +13,7 @@ import type {
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
 import { processNotification } from "@/lib/notifications/worker";
+import { processReport } from "@/lib/reports/worker";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -58,9 +59,10 @@ async function start() {
     { localConcurrency: 1 },
     async (jobs: Job<ReportJobData>[]) => {
       for (const job of jobs) {
-        console.log("[reports] processing:", job.data);
-        // TODO: read PublishedSnapshot → Puppeteer PDF + CSV
-        // → upload to R2 with checksum → update Report.status = 'ready'
+        const { reportId, orgId } = job.data;
+        console.log(`[reports] processing report ${reportId}`);
+        await processReport(reportId, orgId);
+        console.log(`[reports] finished report ${reportId}`);
       }
     },
   );
