@@ -38,7 +38,7 @@ Thumbs.db
 .idea/
 
 # Local storage uploads (STORAGE_DRIVER=local dev mode)
-uploads/
+/uploads/
 
 # Logs
 *.log
