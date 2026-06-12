@@ -1,6 +1,6 @@
 import { PgBoss } from "pg-boss";
 
-const globalForBoss = globalThis as unknown as { boss: PgBoss };
+const globalForBoss = globalThis as unknown as { boss: PgBoss; bossStarted: boolean };
 
 export const boss =
   globalForBoss.boss ??
@@ -10,3 +10,11 @@ export const boss =
   });
 
 if (process.env.NODE_ENV !== "production") globalForBoss.boss = boss;
+
+export async function getBoss(): Promise<PgBoss> {
+  if (!globalForBoss.bossStarted) {
+    await boss.start();
+    globalForBoss.bossStarted = true;
+  }
+  return boss;
+}

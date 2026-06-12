@@ -174,34 +174,14 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
               <CardTitle className="text-base">Route information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {record.pickupPostcode || record.deliveryPostcode ? (
+              {record.distanceAmount != null ? (
                 <>
-                  {record.pickupPostcode && (
-                    <DetailRow label="Pickup postcode" value={record.pickupPostcode} />
-                  )}
-                  {record.deliveryPostcode && (
-                    <DetailRow label="Delivery postcode" value={record.deliveryPostcode} />
-                  )}
-                  {record.distanceAmount != null && (
-                    <DetailRow
-                      label="Distance"
-                      value={`${Number(record.distanceAmount).toFixed(2)} ${record.distanceUnit ?? "km"}${record.routeDistanceSource ? ` via ${record.routeDistanceSource}` : ""}`}
-                    />
-                  )}
-                  {record.pickupLat != null && record.pickupLng != null && (
-                    <DetailRow
-                      label="Pickup coords"
-                      value={`${Number(record.pickupLat).toFixed(5)}, ${Number(record.pickupLng).toFixed(5)}`}
-                    />
-                  )}
-                  {record.deliveryLat != null && record.deliveryLng != null && (
-                    <DetailRow
-                      label="Delivery coords"
-                      value={`${Number(record.deliveryLat).toFixed(5)}, ${Number(record.deliveryLng).toFixed(5)}`}
-                    />
-                  )}
-                  {record.distanceOverrideReason && (
-                    <DetailRow label="Override reason" value={record.distanceOverrideReason} />
+                  <DetailRow
+                    label="Distance"
+                    value={`${Number(record.distanceAmount).toFixed(2)} ${record.distanceUnit ?? "km"}`}
+                  />
+                  {record.transportMode && (
+                    <DetailRow label="Transport mode" value={record.transportMode} />
                   )}
                 </>
               ) : (

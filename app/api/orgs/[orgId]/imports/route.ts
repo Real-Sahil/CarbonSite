@@ -1,0 +1,136 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { requireOrgMember } from "@/lib/auth/session";
+import { writeAuditLog } from "@/lib/db/audit";
+import { apiError, handleRouteError } from "@/lib/validation/api";
+import { putObject, keys } from "@/lib/storage";
+import { createHash } from "crypto";
+
+type Params = { params: Promise<{ orgId: string }> };
+
+export async function GET(req: NextRequest, { params }: Params) {
+  try {
+    const { orgId } = await params;
+    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+
+    const url = new URL(req.url);
+    const cursor = url.searchParams.get("cursor");
+    const take = 50;
+
+    const batches = await prisma.importBatch.findMany({
+      where: { organizationId: orgId },
+      include: {
+        createdBy: { select: { name: true, email: true } },
+        _count: { select: { stagedRecords: true, activityRecords: true } },
+        stagedRecords: {
+          where: { status: "staged" },
+          take: 5,
+          select: { validationErrors: true, rowNumber: true },
+          orderBy: { rowNumber: "asc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+
+    const hasMore = batches.length > take;
+    const data = hasMore ? batches.slice(0, take) : batches;
+    const nextCursor = hasMore ? data[data.length - 1].id : null;
+
+    return NextResponse.json({ data, nextCursor });
+  } catch (err) {
+    return handleRouteError(err);
+  }
+}
+
+export async function POST(req: NextRequest, { params }: Params) {
+  try {
+    const { orgId } = await params;
+    const { session } = await requireOrgMember(orgId, "admin", "editor");
+
+    const formData = await req.formData();
+    const file = formData.get("file");
+    const reportingPeriodId = formData.get("reportingPeriodId");
+    const templateKey = formData.get("templateKey");
+
+    if (!(file instanceof File)) {
+      return apiError("BAD_REQUEST", "A file is required.", 400);
+    }
+    if (typeof reportingPeriodId !== "string" || !reportingPeriodId) {
+      return apiError("BAD_REQUEST", "reportingPeriodId is required.", 400);
+    }
+    if (typeof templateKey !== "string" || !templateKey) {
+      return apiError("BAD_REQUEST", "templateKey is required.", 400);
+    }
+
+    const allowedTypes = [
+      "text/csv",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+    ];
+    const allowedExts = [".csv", ".xlsx", ".xls"];
+    const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+    if (!allowedExts.includes(ext)) {
+      return apiError("BAD_REQUEST", "File must be a CSV or Excel file.", 400);
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      return apiError("TOO_LARGE", "File must be under 50 MB.", 413);
+    }
+
+    // Verify period belongs to this org
+    const period = await prisma.reportingPeriod.findUnique({
+      where: { id: reportingPeriodId },
+      select: { organizationId: true, status: true },
+    });
+    if (!period || period.organizationId !== orgId) {
+      return apiError("NOT_FOUND", "Reporting period not found.", 404);
+    }
+    if (period.status === "locked") {
+      return apiError("LOCKED", "Reporting period is locked.", 409);
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const checksum = createHash("sha256").update(buffer).digest("hex");
+
+    // Create batch record first
+    const batch = await prisma.importBatch.create({
+      data: {
+        organizationId: orgId,
+        reportingPeriodId,
+        templateKey,
+        sourceFilename: file.name,
+        sourceStorageKey: "pending",
+        sourceChecksum: checksum,
+        state: "uploaded",
+        createdByUserId: session.user.id,
+      },
+    });
+
+    const storageKey = keys.importSource(orgId, batch.id);
+    await putObject(storageKey, buffer, file.type || "text/csv");
+
+    await prisma.importBatch.update({
+      where: { id: batch.id },
+      data: { sourceStorageKey: storageKey, state: "parsing" },
+    });
+
+    // Enqueue parse job
+    const { getBoss } = await import("@/lib/jobs/boss");
+    const boss = await getBoss();
+    await boss.send("imports", { importBatchId: batch.id, orgId });
+
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: session.user.id,
+      action: "import.created",
+      resourceType: "import_batch",
+      resourceId: batch.id,
+      metadata: { filename: file.name, templateKey },
+    });
+
+    return NextResponse.json(batch, { status: 202 });
+  } catch (err) {
+    return handleRouteError(err);
+  }
+}
