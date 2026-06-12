@@ -1,143 +1,109 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { Save, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CheckCircle2, XCircle, Trash2 } from "lucide-react";
 
-const REVIEW_STATUSES = [
-  { value: "draft", label: "Draft" },
-  { value: "in_review", label: "In review" },
-  { value: "approved", label: "Approved" },
-  { value: "rejected", label: "Rejected" },
-] as const;
-
-const EVIDENCE_STATUSES = [
-  { value: "missing", label: "Missing" },
-  { value: "partial", label: "Partial" },
-  { value: "complete", label: "Complete" },
-] as const;
-
-export function RecordActions({
-  orgId,
-  recordId,
-  label,
-  reviewStatus,
-  evidenceStatus,
-  canDelete,
-}: {
+interface RecordActionsProps {
   orgId: string;
   recordId: string;
   label: string;
   reviewStatus: string;
   evidenceStatus: string;
   canDelete: boolean;
-}) {
-  const router = useRouter();
-  const [review, setReview] = useState(reviewStatus);
-  const [evidence, setEvidence] = useState(evidenceStatus);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const changed = review !== reviewStatus || evidence !== evidenceStatus;
+}
 
-  function save() {
+export function RecordActions({
+  orgId,
+  recordId,
+  label,
+  reviewStatus,
+  canDelete,
+}: RecordActionsProps) {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleReview(status: "approved" | "rejected") {
+    setLoading(status);
     setError(null);
-    startTransition(async () => {
-      const res = await fetch(`/api/orgs/${orgId}/records/${recordId}`, {
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/activity-records/${recordId}/review`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reviewStatus: review,
-          evidenceStatus: evidence,
-        }),
+        body: JSON.stringify({ reviewStatus: status }),
       });
-
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not update record");
-        return;
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed.");
+      } else {
+        window.location.reload();
       }
-
-      router.refresh();
-    });
+    } catch {
+      setError("Network error.");
+    } finally {
+      setLoading(null);
+    }
   }
 
-  function remove() {
-    const confirmed = window.confirm(
-      `Delete ${label}? Records with calculation history cannot be deleted.`,
-    );
-    if (!confirmed) return;
-
+  async function handleDelete() {
+    if (!window.confirm(`Delete record "${label}"? This cannot be undone.`)) return;
+    setLoading("delete");
     setError(null);
-    startTransition(async () => {
-      const res = await fetch(`/api/orgs/${orgId}/records/${recordId}`, {
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/activity-records/${recordId}`, {
         method: "DELETE",
       });
-
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not delete record");
-        return;
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Delete failed.");
+      } else {
+        window.location.reload();
       }
-
-      router.refresh();
-    });
+    } catch {
+      setError("Network error.");
+    } finally {
+      setLoading(null);
+    }
   }
 
   return (
-    <div className="flex min-w-64 flex-col gap-1.5">
-      <div className="flex items-center gap-2">
-        <select
-          value={review}
-          disabled={isPending}
-          aria-label={`Review status for ${label}`}
-          onChange={(event) => setReview(event.target.value)}
-          className={selectClass}
-        >
-          {REVIEW_STATUSES.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={evidence}
-          disabled={isPending}
-          aria-label={`Evidence status for ${label}`}
-          onChange={(event) => setEvidence(event.target.value)}
-          className={selectClass}
-        >
-          {EVIDENCE_STATUSES.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+    <div className="flex flex-col gap-1.5">
+      {reviewStatus !== "approved" && (
         <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          title="Save record status"
-          disabled={isPending || !changed}
-          onClick={save}
+          size="sm"
+          onClick={() => handleReview("approved")}
+          disabled={loading === "approved"}
+          className="gap-1 h-7 text-xs"
         >
-          <Save className="h-4 w-4" />
+          <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
+          {loading === "approved" ? "Approving…" : "Approve"}
         </Button>
+      )}
+      {reviewStatus !== "rejected" && (
         <Button
-          type="button"
-          size="icon"
+          size="sm"
           variant="outline"
-          title="Delete record"
-          disabled={isPending || !canDelete}
-          onClick={remove}
+          onClick={() => handleReview("rejected")}
+          disabled={loading === "rejected"}
+          className="gap-1 h-7 text-xs"
         >
-          <Trash2 className="h-4 w-4" />
+          <XCircle aria-hidden="true" className="h-3.5 w-3.5" />
+          {loading === "rejected" ? "Rejecting…" : "Reject"}
         </Button>
-      </div>
+      )}
+      {canDelete && (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={handleDelete}
+          disabled={loading === "delete"}
+          className="gap-1 h-7 text-xs text-red-600 hover:text-red-700"
+        >
+          <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
+          {loading === "delete" ? "Deleting…" : "Delete"}
+        </Button>
+      )}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
 }
-
-const selectClass =
-  "h-9 rounded-md border border-slate-200 bg-white px-2 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";

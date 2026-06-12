@@ -1,6 +1,7 @@
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -145,7 +146,6 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                   <TableHead>Amount</TableHead>
                   <TableHead>Period</TableHead>
                   <TableHead>Location</TableHead>
-                  <TableHead>Route</TableHead>
                   <TableHead>Distance</TableHead>
                   <TableHead>Evidence</TableHead>
                   <TableHead>Status</TableHead>
@@ -156,7 +156,12 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                 {records.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell className="font-medium">
-                      {record.sourceDescription ?? record.supplierName ?? "Activity record"}
+                      <Link
+                        href={`/orgs/${orgId}/records/${record.id}`}
+                        className="hover:underline underline-offset-2 text-[#0f3e17]"
+                      >
+                        {record.sourceDescription ?? record.supplierName ?? "Activity record"}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <div className="font-medium text-slate-900">
@@ -174,17 +179,6 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {record.facility?.name ?? record.businessUnit?.name ?? record.country ?? "Not assigned"}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      <RouteProvenance
-                        pickupPostcode={record.pickupPostcode}
-                        deliveryPostcode={record.deliveryPostcode}
-                        pickupLat={record.pickupLat}
-                        pickupLng={record.pickupLng}
-                        deliveryLat={record.deliveryLat}
-                        deliveryLng={record.deliveryLng}
-                        source={record.routeDistanceSource}
-                      />
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {record.distanceAmount

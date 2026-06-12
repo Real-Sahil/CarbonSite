@@ -1,6 +1,5 @@
-import 'dart:typed_data';
+import 'dart:convert';
 
-import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'client.dart';
@@ -65,13 +64,10 @@ class Project {
     return Project(
       id: json['id'] as String? ?? '',
       label: json['label'] as String? ?? json['name'] as String? ?? '',
-      startDate:
-          json['startDate'] as String? ?? json['start_date'] as String? ?? '',
+      startDate: json['startDate'] as String? ?? json['start_date'] as String? ?? '',
       endDate: json['endDate'] as String? ?? json['end_date'] as String? ?? '',
       status: json['status'] as String? ?? 'draft',
-      orgId: json['organizationId'] as String? ??
-          json['organization_id'] as String? ??
-          '',
+      orgId: json['organizationId'] as String? ?? json['organization_id'] as String? ?? '',
       orgName: orgName,
     );
   }
@@ -83,22 +79,52 @@ class FieldSubmission {
   final String status;
   final String createdAt;
 
+  /// Idempotency key echoed back by the server — used to de-duplicate
+  /// against local drafts that have already synced.
+  final String? clientKey;
+
+  /// Estimated emissions for this submission once approved + calculated.
+  /// Only ever this field worker's own submissions — never org-wide data.
+  final double? co2eKg;
+
+  /// GHG Protocol scope (1, 2 or 3) assigned during review, if known.
+  final int? scope;
+
   const FieldSubmission({
     required this.id,
     required this.documentType,
     required this.status,
     required this.createdAt,
+    this.clientKey,
+    this.co2eKg,
+    this.scope,
   });
 
   factory FieldSubmission.fromJson(Map<String, dynamic> json) {
+    double? toDouble(Object? v) {
+      if (v is num) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    }
+
+    int? toInt(Object? v) {
+      if (v is int) return v;
+      if (v is String) return int.tryParse(v);
+      return null;
+    }
+
     return FieldSubmission(
       id: json['id'] as String? ?? '',
       documentType: json['documentType'] as String? ??
           json['document_type'] as String? ??
           'other',
       status: json['status'] as String? ?? 'pending',
-      createdAt:
-          json['createdAt'] as String? ?? json['created_at'] as String? ?? '',
+      createdAt: json['createdAt'] as String? ?? json['created_at'] as String? ?? '',
+      clientKey: json['clientKey'] as String? ??
+          json['client_key'] as String? ??
+          json['idempotencyKey'] as String?,
+      co2eKg: toDouble(json['co2eKg'] ?? json['co2e_kg']),
+      scope: toInt(json['scope']),
     );
   }
 }
@@ -174,102 +200,54 @@ Future<List<FieldSubmission>> getMySubmissions(String orgId) async {
       .toList();
 }
 
-class EvidenceUpload {
-  final String id;
-  final String filename;
-
-  const EvidenceUpload({
-    required this.id,
-    required this.filename,
-  });
-
-  factory EvidenceUpload.fromJson(Map<String, dynamic> json) {
-    final evidence = json['evidence'] as Map<String, dynamic>? ?? {};
-    return EvidenceUpload(
-      id: evidence['id'] as String? ?? '',
-      filename: evidence['filename'] as String? ?? '',
-    );
-  }
-}
-
-Future<FieldSubmission> submitFieldSubmission({
+/// Creates a field submission (called by the background sync service).
+/// POST /api/orgs/{orgId}/field-submissions
+///
+/// Sends `Idempotency-Key` so retries after a network drop are de-duplicated
+/// server-side. Photo evidence (if any) is uploaded as multipart.
+Future<FieldSubmission> createFieldSubmission({
   required String orgId,
-  required String reportingPeriodId,
+  required String idempotencyKey,
+  required String projectId,
   required String documentType,
   required Map<String, dynamic> formData,
-  String? idempotencyKey,
-  List<String> evidenceIds = const [],
-  Map<String, dynamic>? ocrExtractedData,
-  String? emissionCategoryId,
-  String? facilityId,
+  String? photoPath,
   double? gpsLat,
   double? gpsLng,
-  String? pickupPostcode,
-  String? deliveryPostcode,
 }) async {
   final client = await getClient();
+
+  final fields = <String, dynamic>{
+    'reportingPeriodId': projectId,
+    'documentType': documentType,
+    'formData': jsonEncode(formData),
+    if (gpsLat != null) 'gpsLat': gpsLat.toString(),
+    if (gpsLng != null) 'gpsLng': gpsLng.toString(),
+  };
+
+  // Dio sets the multipart content type (with boundary) automatically
+  // when the body is FormData.
+  final Object body;
+  if (photoPath != null && photoPath.isNotEmpty) {
+    body = FormData.fromMap({
+      ...fields,
+      'photo': await MultipartFile.fromFile(photoPath),
+    });
+  } else {
+    body = fields;
+  }
+
   final response = await client.post(
     '/api/orgs/$orgId/field-submissions',
-    data: {
-      'reportingPeriodId': reportingPeriodId,
-      'documentType': documentType,
-      'formData': formData,
-      if (ocrExtractedData != null) 'ocrExtractedData': ocrExtractedData,
-      if (emissionCategoryId != null && emissionCategoryId.isNotEmpty)
-        'emissionCategoryId': emissionCategoryId,
-      if (facilityId != null && facilityId.isNotEmpty) 'facilityId': facilityId,
-      if (gpsLat != null) 'gpsLat': gpsLat,
-      if (gpsLng != null) 'gpsLng': gpsLng,
-      if (pickupPostcode != null && pickupPostcode.isNotEmpty)
-        'pickupPostcode': pickupPostcode,
-      if (deliveryPostcode != null && deliveryPostcode.isNotEmpty)
-        'deliveryPostcode': deliveryPostcode,
-      if (evidenceIds.isNotEmpty) 'evidenceIds': evidenceIds,
-      'deviceSubmittedAt': DateTime.now().toUtc().toIso8601String(),
-      'idempotencyKey': idempotencyKey ??
-          '$reportingPeriodId-${DateTime.now().microsecondsSinceEpoch}',
-    },
-  );
-  return FieldSubmission.fromJson(response.data as Map<String, dynamic>);
-}
-
-Future<EvidenceUpload> uploadEvidenceFile({
-  required String orgId,
-  required String filename,
-  required String contentType,
-  required Uint8List bytes,
-}) async {
-  final client = await getClient();
-  final checksum = sha256.convert(bytes).toString();
-  final presignResponse = await client.post(
-    '/api/orgs/$orgId/evidence',
-    data: {
-      'filename': filename,
-      'contentType': contentType,
-      'byteSize': bytes.length,
-      'checksum': checksum,
-    },
-  );
-  final upload = EvidenceUpload.fromJson(
-    presignResponse.data as Map<String, dynamic>,
-  );
-  final uploadUrl =
-      (presignResponse.data as Map<String, dynamic>)['uploadUrl'] as String;
-
-  final storageClient = Dio();
-  final targetUrl = uploadUrl.startsWith('/')
-      ? '${client.options.baseUrl}$uploadUrl'
-      : uploadUrl;
-  await storageClient.put(
-    targetUrl,
-    data: bytes,
-    options: Options(
-      headers: {
-        'Content-Type': contentType,
-        'Content-Length': bytes.length,
-      },
-    ),
+    data: body,
+    options: Options(headers: {'Idempotency-Key': idempotencyKey}),
   );
 
-  return upload;
+  final raw = response.data;
+  final json = raw is Map<String, dynamic>
+      ? (raw['data'] is Map<String, dynamic>
+          ? raw['data'] as Map<String, dynamic>
+          : raw)
+      : <String, dynamic>{};
+  return FieldSubmission.fromJson(json);
 }

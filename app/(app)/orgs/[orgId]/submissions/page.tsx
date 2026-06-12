@@ -1,6 +1,7 @@
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -18,9 +19,6 @@ import {
 } from "@/components/ui/table";
 import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SubmissionReviewActions } from "./review-actions";
-import { SubmissionEvidenceDownloads } from "./evidence-download-actions";
-import { SubmissionCommentActions } from "./comment-actions";
 
 interface SubmissionsPageProps {
   params: Promise<{ orgId: string }>;
@@ -83,47 +81,11 @@ export default async function SubmissionsPage({
     include: {
       submittedBy: { select: { name: true, email: true } },
       reportingPeriod: { select: { label: true } },
-      emissionCategory: { select: { id: true, scope: true, name: true } },
       facility: { select: { name: true } },
-      files: {
-        include: {
-          evidenceFile: { select: { id: true, filename: true } },
-        },
-      },
     },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
-  const submissionIds = submissions.map((submission) => submission.id);
-  const [emissionCategories, facilities] = await Promise.all([
-    prisma.emissionCategory.findMany({
-      select: { id: true, scope: true, name: true },
-      orderBy: [{ scope: "asc" }, { name: "asc" }],
-    }),
-    prisma.facility.findMany({
-      where: { organizationId: orgId },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
-  const comments = submissionIds.length
-    ? await prisma.comment.findMany({
-        where: {
-          organizationId: orgId,
-          targetType: "field_submission",
-          targetId: { in: submissionIds },
-        },
-        include: { author: { select: { name: true, email: true } } },
-        orderBy: { createdAt: "desc" },
-      })
-    : [];
-  const commentsBySubmissionId = new Map<string, typeof comments>();
-  for (const comment of comments) {
-    commentsBySubmissionId.set(comment.targetId, [
-      ...(commentsBySubmissionId.get(comment.targetId) ?? []),
-      comment,
-    ]);
-  }
 
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto">
@@ -183,19 +145,19 @@ export default async function SubmissionsPage({
                   <TableHead>Submitted by</TableHead>
                   <TableHead>Reporting period</TableHead>
                   <TableHead>Facility</TableHead>
-                  <TableHead>Route</TableHead>
-                  <TableHead>Evidence</TableHead>
-                  <TableHead>Record</TableHead>
-                  <TableHead>Comments</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {submissions.map((s) => (
                   <TableRow key={s.id}>
                     <TableCell className="font-medium">
-                      {DOC_TYPE_LABELS[s.documentType] ?? s.documentType}
+                      <Link
+                        href={`/orgs/${orgId}/submissions/${s.id}`}
+                        className="hover:underline underline-offset-2 text-[#0f3e17]"
+                      >
+                        {DOC_TYPE_LABELS[s.documentType] ?? s.documentType}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <span
@@ -218,59 +180,6 @@ export default async function SubmissionsPage({
                       {s.facility?.name ?? (
                         <span className="text-[#333333] italic">None</span>
                       )}
-                      {s.emissionCategory && (
-                        <p className="mt-1 text-xs text-slate-500">
-                          Scope {s.emissionCategory.scope}: {s.emissionCategory.name}
-                        </p>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      <RouteProvenance
-                        pickupPostcode={s.pickupPostcode}
-                        deliveryPostcode={s.deliveryPostcode}
-                        pickupLat={s.pickupLat}
-                        pickupLng={s.pickupLng}
-                        deliveryLat={s.deliveryLat}
-                        deliveryLng={s.deliveryLng}
-                        distanceKm={s.calculatedDistanceKm}
-                        source={s.distanceSource}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <SubmissionEvidenceDownloads
-                        orgId={orgId}
-                        files={s.files.map((file) => ({
-                          id: file.evidenceFile.id,
-                          filename: file.evidenceFile.filename,
-                        }))}
-                      />
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {s.activityRecordId ? (
-                        <span className="font-mono text-xs">
-                          {s.activityRecordId.slice(0, 8)}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 italic">Not created</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <SubmissionCommentActions
-                        orgId={orgId}
-                        submissionId={s.id}
-                        comments={(commentsBySubmissionId.get(s.id) ?? []).map(
-                          (comment) => ({
-                            id: comment.id,
-                            body: comment.body,
-                            createdAt: comment.createdAt.toLocaleDateString("en-GB", {
-                              day: "numeric",
-                              month: "short",
-                            }),
-                            authorName:
-                              comment.author.name ?? comment.author.email,
-                          }),
-                        )}
-                      />
                     </TableCell>
                     <TableCell className="text-[#333333] text-sm tracking-[-0.36px]">
                       {s.createdAt.toLocaleDateString("en-GB", {
@@ -278,17 +187,6 @@ export default async function SubmissionsPage({
                         month: "short",
                         year: "numeric",
                       })}
-                    </TableCell>
-                    <TableCell>
-                      <SubmissionReviewActions
-                        orgId={orgId}
-                        submissionId={s.id}
-                        currentEmissionCategoryId={s.emissionCategoryId}
-                        currentFacilityId={s.facilityId}
-                        emissionCategories={emissionCategories}
-                        facilities={facilities}
-                        disabled={s.status === "approved" || s.status === "rejected"}
-                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -299,56 +197,4 @@ export default async function SubmissionsPage({
       </Card>
     </div>
   );
-}
-
-function RouteProvenance({
-  pickupPostcode,
-  deliveryPostcode,
-  pickupLat,
-  pickupLng,
-  deliveryLat,
-  deliveryLng,
-  distanceKm,
-  source,
-}: {
-  pickupPostcode?: string | null;
-  deliveryPostcode?: string | null;
-  pickupLat?: unknown;
-  pickupLng?: unknown;
-  deliveryLat?: unknown;
-  deliveryLng?: unknown;
-  distanceKm?: unknown;
-  source?: string | null;
-}) {
-  if (!pickupPostcode || !deliveryPostcode) return <>No route</>;
-
-  return (
-    <div className="min-w-44 space-y-1">
-      <p className="font-medium text-slate-700">
-        {pickupPostcode} to {deliveryPostcode}
-      </p>
-      {distanceKm != null && (
-        <p className="text-xs text-slate-500">
-          {formatNumber(distanceKm, 2)} km{source ? ` via ${source}` : ""}
-        </p>
-      )}
-      {pickupLat != null && pickupLng != null && deliveryLat != null && deliveryLng != null && (
-        <p className="text-xs text-slate-400">
-          {formatCoordinate(pickupLat)}, {formatCoordinate(pickupLng)} to{" "}
-          {formatCoordinate(deliveryLat)}, {formatCoordinate(deliveryLng)}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function formatNumber(value: unknown, maximumFractionDigits: number) {
-  return Number(value).toLocaleString("en-GB", { maximumFractionDigits });
-}
-
-function formatCoordinate(value: unknown) {
-  return Number(value).toLocaleString("en-GB", {
-    maximumFractionDigits: 5,
-    minimumFractionDigits: 5,
-  });
 }

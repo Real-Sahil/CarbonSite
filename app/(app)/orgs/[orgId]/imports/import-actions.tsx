@@ -1,57 +1,14 @@
 "use client";
 
-import { ChangeEvent, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { CheckCircle, Download, Upload } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  EVIDENCE_ACCEPT_ATTRIBUTE,
-  EVIDENCE_MAX_BYTES,
-} from "@/lib/evidence/upload-policy";
+import { CheckCircle2, Download, ExternalLink, Trash2 } from "lucide-react";
 
-export function CommitImportButton({
-  orgId,
-  importId,
-  disabled,
-}: {
+interface ImportBatchActionsProps {
   orgId: string;
   importId: string;
-  disabled: boolean;
-}) {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  function commitImport() {
-    setError(null);
-    startTransition(async () => {
-      const res = await fetch(`/api/orgs/${orgId}/imports/${importId}/commit`, {
-        method: "POST",
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not commit import");
-        return;
-      }
-      router.refresh();
-    });
-  }
-
-  return (
-    <div className="flex flex-col gap-1">
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        disabled={disabled || isPending}
-        onClick={commitImport}
-      >
-        <CheckCircle className="h-4 w-4" />
-        Commit
-      </Button>
-      {error && <p className="max-w-44 text-xs text-red-600">{error}</p>}
-    </div>
-  );
+  canCommit: boolean;
+  hasErrorExport: boolean;
 }
 
 export function ImportBatchActions({
@@ -59,201 +16,142 @@ export function ImportBatchActions({
   importId,
   canCommit,
   hasErrorExport,
-}: {
-  orgId: string;
-  importId: string;
-  canCommit: boolean;
-  hasErrorExport: boolean;
-}) {
+}: ImportBatchActionsProps) {
+  const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
 
-  function downloadErrors() {
+  async function handleCommit() {
+    setLoading("commit");
     setError(null);
-    startTransition(async () => {
-      const res = await fetch(`/api/orgs/${orgId}/imports/${importId}/errors/download`);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/imports/${importId}/commit`, {
+        method: "POST",
+      });
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not create error export link");
-        return;
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Commit failed.");
+      } else {
+        window.location.reload();
       }
+    } catch {
+      setError("Network error.");
+    } finally {
+      setLoading(null);
+    }
+  }
 
-      const body = (await res.json()) as { downloadUrl: string };
-      window.location.assign(body.downloadUrl);
-    });
+  async function handleDownloadErrors() {
+    setLoading("errors");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/imports/${importId}/error-export`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `import-errors-${importId}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } finally {
+      setLoading(null);
+    }
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-1">
-        <CommitImportButton
-          orgId={orgId}
-          importId={importId}
-          disabled={!canCommit || isPending}
-        />
+    <div className="flex flex-col gap-1.5">
+      {canCommit && (
         <Button
-          type="button"
+          size="sm"
+          onClick={handleCommit}
+          disabled={loading === "commit"}
+          className="gap-1 h-7 text-xs"
+        >
+          <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
+          {loading === "commit" ? "Committing…" : "Commit"}
+        </Button>
+      )}
+      {hasErrorExport && (
+        <Button
           size="sm"
           variant="outline"
-          disabled={!hasErrorExport || isPending}
-          onClick={downloadErrors}
+          onClick={handleDownloadErrors}
+          disabled={loading === "errors"}
+          className="gap-1 h-7 text-xs"
         >
-          <Download className="h-4 w-4" />
-          Errors
+          <Download aria-hidden="true" className="h-3.5 w-3.5" />
+          Error CSV
         </Button>
-      </div>
-      {error && <p className="max-w-48 text-xs text-red-600">{error}</p>}
+      )}
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
 }
 
-type ImportEvidenceFile = {
-  id: string;
-  filename: string;
-};
+interface ImportBatchEvidenceActionsProps {
+  orgId: string;
+  importId: string;
+  files: { id: string; filename: string }[];
+}
 
 export function ImportBatchEvidenceActions({
   orgId,
   importId,
   files,
-}: {
-  orgId: string;
-  importId: string;
-  files: ImportEvidenceFile[];
-}) {
-  const router = useRouter();
-  const fileRef = useRef<HTMLInputElement | null>(null);
+}: ImportBatchEvidenceActionsProps) {
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
 
-  function download(evidenceId: string) {
-    setError(null);
-    startTransition(async () => {
-      const res = await fetch(`/api/orgs/${orgId}/evidence/${evidenceId}/download`);
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not create evidence download link");
-        return;
-      }
-      const body = (await res.json()) as { downloadUrl: string };
-      window.location.assign(body.downloadUrl);
-    });
-  }
-
-  function upload(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
     if (!file) return;
-
+    setUploading(true);
     setError(null);
-    if (!EVIDENCE_ACCEPT_ATTRIBUTE.split(",").includes(file.type)) {
-      setError("Choose a PDF, image, CSV or XLSX evidence file.");
-      return;
-    }
-    if (file.size > EVIDENCE_MAX_BYTES) {
-      setError("Evidence files must be 25 MB or smaller.");
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        const bytes = await file.arrayBuffer();
-        const checksum = await sha256(bytes);
-        const presignRes = await fetch(`/api/orgs/${orgId}/evidence`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            filename: file.name,
-            contentType: file.type,
-            byteSize: file.size,
-            checksum,
-          }),
-        });
-        if (!presignRes.ok) {
-          const body = await presignRes.json().catch(() => null);
-          throw new Error(body?.message ?? "Could not create upload link");
-        }
-
-        const presignBody = (await presignRes.json()) as {
-          evidence: { id: string };
-          uploadUrl: string;
-        };
-        const uploadRes = await fetch(presignBody.uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
-        });
-        if (!uploadRes.ok) {
-          throw new Error("Evidence file upload failed");
-        }
-
-        const attachRes = await fetch(
-          `/api/orgs/${orgId}/imports/${importId}/evidence`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ evidenceId: presignBody.evidence.id }),
-          },
-        );
-        if (!attachRes.ok) {
-          const body = await attachRes.json().catch(() => null);
-          throw new Error(body?.message ?? "Could not attach evidence to import");
-        }
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not upload evidence");
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch(`/api/orgs/${orgId}/imports/${importId}/evidence`, {
+        method: "POST",
+        body: form,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Upload failed.");
+      } else {
+        window.location.reload();
       }
-    });
+    } catch {
+      setError("Network error.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
-    <div className="flex min-w-48 flex-col gap-1.5">
-      <div className="flex flex-wrap items-center gap-1">
-        {files.length === 0 ? (
-          <span className="text-slate-400 italic">No files</span>
-        ) : (
-          files.map((file) => (
-            <Button
-              key={file.id}
-              type="button"
-              size="sm"
-              variant="ghost"
-              title={`Download ${file.filename}`}
-              disabled={isPending}
-              className="h-8 max-w-40 justify-start px-2"
-              onClick={() => download(file.id)}
-            >
-              <Download className="h-4 w-4" />
-              <span className="truncate">{file.filename}</span>
-            </Button>
-          ))
-        )}
-        <input
-          ref={fileRef}
-          type="file"
-          accept={EVIDENCE_ACCEPT_ATTRIBUTE}
-          className="hidden"
-          onChange={upload}
-        />
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={isPending}
-          onClick={() => fileRef.current?.click()}
+    <div className="flex flex-col gap-1 min-w-[120px]">
+      {files.map((f) => (
+        <a
+          key={f.id}
+          href={`/api/orgs/${orgId}/evidence/${f.id}/download`}
+          className="inline-flex items-center gap-1 text-xs text-[#0f3e17] hover:underline underline-offset-2 tracking-[-0.36px]"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          <Upload className="h-4 w-4" />
-          Attach
-        </Button>
-      </div>
-      {error && <p className="max-w-48 text-xs text-red-600">{error}</p>}
+          <ExternalLink aria-hidden="true" className="h-3 w-3 shrink-0" />
+          {f.filename}
+        </a>
+      ))}
+      <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-[#333333] hover:text-[#0f3e17] transition-colors tracking-[-0.36px]">
+        <Trash2 aria-hidden="true" className="h-3 w-3 sr-only" />
+        <input
+          type="file"
+          className="sr-only"
+          onChange={handleUpload}
+          disabled={uploading}
+        />
+        {uploading ? "Uploading…" : files.length > 0 ? `+${files.length} file${files.length !== 1 ? "s" : ""}` : "Attach file"}
+      </label>
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
-}
-
-async function sha256(buffer: ArrayBuffer) {
-  const hash = await crypto.subtle.digest("SHA-256", buffer);
-  return [...new Uint8Array(hash)]
-    .map((value) => value.toString(16).padStart(2, "0"))
-    .join("");
 }

@@ -1,33 +1,23 @@
 "use client";
 
-import { FormEvent, useState, useTransition } from "react";
-import type { ReactNode, SelectHTMLAttributes } from "react";
-import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus } from "lucide-react";
 
-type Option = {
-  id: string;
-  label: string;
-};
-
-type CategoryOption = Option & {
-  scope: number;
-};
-
-async function postJson(url: string, payload: Record<string, unknown>) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    throw new Error(body?.message ?? "Request failed");
-  }
+interface CreateRecordFormProps {
+  orgId: string;
+  periods: { id: string; label: string }[];
+  categories: { id: string; scope: number; label: string }[];
+  facilities: { id: string; label: string }[];
+  businessUnits: { id: string; label: string }[];
 }
 
 export function CreateRecordForm({
@@ -36,198 +26,136 @@ export function CreateRecordForm({
   categories,
   facilities,
   businessUnits,
-}: {
-  orgId: string;
-  periods: Option[];
-  categories: CategoryOption[];
-  facilities: Option[];
-  businessUnits: Option[];
-}) {
-  const router = useRouter();
+}: CreateRecordFormProps) {
+  const [open, setOpen] = useState(false);
+  const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
+  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
+  const [facilityId, setFacilityId] = useState("");
+  const [businessUnitId, setBusinessUnitId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [unit, setUnit] = useState("");
+  const [sourceDescription, setSourceDescription] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const canCreate = periods.length > 0 && categories.length > 0;
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!periodId || !categoryId || !amount || !unit) {
+      setError("Reporting period, category, amount, and unit are required.");
+      return;
+    }
+    setLoading(true);
     setError(null);
-    const form = new FormData(event.currentTarget);
-
-    startTransition(async () => {
-      try {
-        await postJson(`/api/orgs/${orgId}/records`, {
-          reportingPeriodId: form.get("reportingPeriodId"),
-          emissionCategoryId: form.get("emissionCategoryId"),
-          activityDate: form.get("activityDate"),
-          sourceDescription: form.get("sourceDescription"),
-          amount: form.get("amount"),
-          unit: form.get("unit"),
-          supplierName: form.get("supplierName"),
-          facilityId: form.get("facilityId"),
-          businessUnitId: form.get("businessUnitId"),
-          country: form.get("country"),
-          pickupPostcode: form.get("pickupPostcode"),
-          deliveryPostcode: form.get("deliveryPostcode"),
-          distanceAmount: form.get("distanceAmount"),
-          distanceUnit: form.get("distanceUnit"),
-          distanceOverrideReason: form.get("distanceOverrideReason"),
-          transportMode: form.get("transportMode"),
-          fuelType: form.get("fuelType"),
-          reviewStatus: form.get("reviewStatus"),
-          evidenceStatus: form.get("evidenceStatus"),
-          assumptionNotes: form.get("assumptionNotes"),
-        });
-        event.currentTarget.reset();
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not create record");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/activity-records`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportingPeriodId: periodId,
+          emissionCategoryId: categoryId,
+          facilityId: facilityId || undefined,
+          businessUnitId: businessUnitId || undefined,
+          amount: parseFloat(amount),
+          unit,
+          sourceDescription: sourceDescription || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed to create record.");
+      } else {
+        window.location.reload();
       }
-    });
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)} className="gap-1.5">
+        <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+        Add record
+      </Button>
+    );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border border-slate-200 p-4 xl:grid-cols-6">
-      <Field label="Source" className="xl:col-span-2">
-        <Input name="sourceDescription" maxLength={240} required disabled={!canCreate} />
-      </Field>
-      <Field label="Period">
-        <Select name="reportingPeriodId" required disabled={!canCreate}>
-          {periods.map((period) => (
-            <option key={period.id} value={period.id}>
-              {period.label}
-            </option>
-          ))}
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#e5e7eb] p-4">
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Period</label>
+        <Select value={periodId} onValueChange={setPeriodId}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Period" />
+          </SelectTrigger>
+          <SelectContent>
+            {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
+          </SelectContent>
         </Select>
-      </Field>
-      <Field label="Category" className="xl:col-span-2">
-        <Select name="emissionCategoryId" required disabled={!canCreate}>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              Scope {category.scope}: {category.label}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      <Field label="Date">
-        <Input name="activityDate" type="date" disabled={!canCreate} />
-      </Field>
-      <Field label="Amount">
-        <Input name="amount" type="number" min="0.000001" step="0.000001" required disabled={!canCreate} />
-      </Field>
-      <Field label="Unit">
-        <Input name="unit" maxLength={32} required disabled={!canCreate} />
-      </Field>
-      <Field label="Supplier">
-        <Input name="supplierName" maxLength={160} disabled={!canCreate} />
-      </Field>
-      <Field label="Facility">
-        <Select name="facilityId" disabled={!canCreate}>
-          <option value="">Not assigned</option>
-          {facilities.map((facility) => (
-            <option key={facility.id} value={facility.id}>
-              {facility.label}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      <Field label="Business unit">
-        <Select name="businessUnitId" disabled={!canCreate}>
-          <option value="">Not assigned</option>
-          {businessUnits.map((unit) => (
-            <option key={unit.id} value={unit.id}>
-              {unit.label}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      <Field label="Country">
-        <Input name="country" maxLength={80} disabled={!canCreate} />
-      </Field>
-      <Field label="Transport mode">
-        <Input name="transportMode" maxLength={80} disabled={!canCreate} />
-      </Field>
-      <Field label="Fuel type">
-        <Input name="fuelType" maxLength={80} disabled={!canCreate} />
-      </Field>
-      <Field label="Pickup postcode">
-        <Input name="pickupPostcode" maxLength={12} disabled={!canCreate} />
-      </Field>
-      <Field label="Delivery postcode">
-        <Input name="deliveryPostcode" maxLength={12} disabled={!canCreate} />
-      </Field>
-      <Field label="Manual distance">
-        <Input name="distanceAmount" type="number" min="0" step="0.0001" disabled={!canCreate} />
-      </Field>
-      <Field label="Distance unit">
-        <Select name="distanceUnit" disabled={!canCreate}>
-          <option value="">Use route result</option>
-          <option value="km">km</option>
-          <option value="mile">mile</option>
-        </Select>
-      </Field>
-      <Field label="Review">
-        <Select name="reviewStatus" disabled={!canCreate}>
-          <option value="draft">Draft</option>
-          <option value="in_review">In review</option>
-          <option value="approved">Approved</option>
-        </Select>
-      </Field>
-      <Field label="Evidence">
-        <Select name="evidenceStatus" disabled={!canCreate}>
-          <option value="missing">Missing</option>
-          <option value="partial">Partial</option>
-          <option value="complete">Complete</option>
-        </Select>
-      </Field>
-      <Field label="Assumptions" className="xl:col-span-5">
-        <Input name="assumptionNotes" maxLength={2000} disabled={!canCreate} />
-      </Field>
-      <Field label="Distance override reason" className="xl:col-span-5">
-        <Input name="distanceOverrideReason" maxLength={500} disabled={!canCreate} />
-      </Field>
-      <div className="flex items-end">
-        <Button type="submit" disabled={!canCreate || isPending} className="w-full">
-          <Plus className="h-4 w-4" />
-          Add record
-        </Button>
       </div>
-      {!canCreate && (
-        <p className="text-sm text-slate-500 xl:col-span-6">
-          Create a reporting period and seed emission categories before entering activity records.
-        </p>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Category</label>
+        <Select value={categoryId} onValueChange={setCategoryId}>
+          <SelectTrigger className="w-52">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((c) => <SelectItem key={c.id} value={c.id}>Scope {c.scope}: {c.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Amount</label>
+        <Input
+          type="number"
+          min="0"
+          step="any"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="e.g. 120"
+          className="w-28"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Unit</label>
+        <Input
+          value={unit}
+          onChange={(e) => setUnit(e.target.value)}
+          placeholder="e.g. kWh"
+          className="w-24"
+        />
+      </div>
+      {facilities.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-[#333333] tracking-[-0.36px]">Facility</label>
+          <Select value={facilityId} onValueChange={setFacilityId}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Optional" />
+            </SelectTrigger>
+            <SelectContent>
+              {facilities.map((f) => <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       )}
-      {error && <p className="text-sm text-red-600 xl:col-span-6">{error}</p>}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Description</label>
+        <Input
+          value={sourceDescription}
+          onChange={(e) => setSourceDescription(e.target.value)}
+          placeholder="Optional"
+          className="w-40"
+        />
+      </div>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading} size="sm">
+          {loading ? "Saving…" : "Save"}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+      </div>
+      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
     </form>
-  );
-}
-
-function Field({
-  label,
-  className,
-  children,
-}: {
-  label: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className={className}>
-      <Label className="mb-1.5 block text-xs font-medium text-slate-600">{label}</Label>
-      <div className="flex flex-col">{children}</div>
-    </div>
-  );
-}
-
-function Select({
-  children,
-  ...props
-}: SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select
-      {...props}
-      className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {children}
-    </select>
   );
 }

@@ -1,94 +1,64 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { FormEvent, useState, useTransition } from "react";
-import { MessageSquare } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Send } from "lucide-react";
 
-type SubmissionComment = {
-  id: string;
-  body: string;
-  createdAt: string;
-  authorName: string;
-};
+interface CommentActionsProps {
+  orgId: string;
+  submissionId: string;
+  comments: { id: string; body: string; createdAt: string; authorName: string }[];
+}
 
 export function SubmissionCommentActions({
   orgId,
   submissionId,
-  comments,
-}: {
-  orgId: string;
-  submissionId: string;
-  comments: SubmissionComment[];
-}) {
-  const router = useRouter();
+}: CommentActionsProps) {
   const [body, setBody] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmed = body.trim();
-    if (!trimmed) return;
-
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!body.trim()) return;
+    setLoading(true);
     setError(null);
-    startTransition(async () => {
-      const res = await fetch(`/api/orgs/${orgId}/comments`, {
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/field-submissions/${submissionId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          targetType: "field_submission",
-          targetId: submissionId,
-          body: trimmed,
-        }),
+        body: JSON.stringify({ body }),
       });
       if (!res.ok) {
-        const responseBody = await res.json().catch(() => null);
-        setError(responseBody?.message ?? "Could not add comment");
-        return;
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed to post comment.");
+      } else {
+        window.location.reload();
       }
-      setBody("");
-      router.refresh();
-    });
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="flex min-w-56 flex-col gap-2">
-      {comments.length === 0 ? (
-        <p className="text-xs text-slate-400 italic">No comments</p>
-      ) : (
-        <div className="max-h-28 space-y-2 overflow-y-auto pr-1">
-          {comments.map((comment) => (
-            <div key={comment.id} className="rounded-md bg-slate-50 p-2">
-              <p className="text-xs text-slate-700">{comment.body}</p>
-              <p className="mt-1 text-[11px] text-slate-400">
-                {comment.authorName} - {comment.createdAt}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-      <form onSubmit={submit} className="flex flex-col gap-1.5">
-        <textarea
-          value={body}
-          disabled={isPending}
-          maxLength={2000}
-          placeholder="Add reviewer comment"
-          onChange={(event) => setBody(event.target.value)}
-          className="min-h-16 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-        />
-        <Button
-          type="submit"
-          size="sm"
-          variant="outline"
-          disabled={isPending || body.trim().length === 0}
-          className="self-start"
-        >
-          <MessageSquare className="h-4 w-4" />
-          Add comment
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <Textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder="Add a comment for the field worker or review team…"
+        rows={3}
+        className="resize-none text-sm"
+      />
+      <div className="flex items-center gap-3">
+        <Button type="submit" disabled={loading || !body.trim()} size="sm" className="gap-1.5">
+          <Send aria-hidden="true" className="h-3.5 w-3.5" />
+          {loading ? "Posting…" : "Post comment"}
         </Button>
-      </form>
-      {error && <p className="text-xs text-red-600">{error}</p>}
-    </div>
+        {error && <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+      </div>
+    </form>
   );
 }

@@ -1,117 +1,115 @@
 "use client";
 
-import { FormEvent, useState, useTransition } from "react";
-import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { Upload } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Upload } from "lucide-react";
 
-type PeriodOption = {
-  id: string;
-  label: string;
-};
+const TEMPLATE_KEYS = [
+  { value: "ghg_protocol_v1", label: "GHG Protocol v1 (default)" },
+  { value: "defra_2025", label: "DEFRA 2025 template" },
+  { value: "epa_2025", label: "EPA 2025 template" },
+];
 
-export function CreateImportForm({
-  orgId,
-  periods,
-}: {
+interface CreateImportFormProps {
   orgId: string;
-  periods: PeriodOption[];
-}) {
-  const router = useRouter();
+  periods: { id: string; label: string }[];
+}
+
+export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
+  const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
+  const [templateKey, setTemplateKey] = useState(TEMPLATE_KEYS[0].value);
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const canCreate = periods.length > 0;
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!file || !periodId) {
+      setError("Select a file and reporting period.");
+      return;
+    }
+    setLoading(true);
     setError(null);
-    const form = new FormData(event.currentTarget);
-
-    startTransition(async () => {
-      try {
-        const res = await fetch(`/api/orgs/${orgId}/imports`, {
-          method: "POST",
-          body: form,
-        });
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          throw new Error(body?.message ?? "Import upload failed");
-        }
-        event.currentTarget.reset();
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Import upload failed");
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("reportingPeriodId", periodId);
+      form.append("templateKey", templateKey);
+      const res = await fetch(`/api/orgs/${orgId}/imports`, {
+        method: "POST",
+        body: form,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Upload failed.");
+      } else {
+        window.location.reload();
       }
-    });
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (periods.length === 0) {
+    return (
+      <p className="text-sm text-[#333333] tracking-[-0.42px]">
+        Create a reporting period before importing data.
+      </p>
+    );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border border-slate-200 p-4 lg:grid-cols-4">
-      <Field label="Reporting period">
-        <select
-          name="reportingPeriodId"
-          required
-          disabled={!canCreate}
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {periods.map((period) => (
-            <option key={period.id} value={period.id}>
-              {period.label}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field label="Template">
-        <select
-          name="templateKey"
-          disabled={!canCreate}
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <option value="activity_csv">Activity CSV</option>
-          <option value="construction_materials">Construction materials</option>
-          <option value="waste_collections">Waste collections</option>
-          <option value="haulage_trips">Haulage trips</option>
-        </select>
-      </Field>
-      <Field label="Source file">
-        <input
-          name="file"
-          type="file"
-          accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          required
-          disabled={!canCreate}
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
-        />
-      </Field>
-      <div className="flex items-end">
-        <Button type="submit" disabled={!canCreate || isPending} className="w-full">
-          <Upload className="h-4 w-4" />
-          Upload import
-        </Button>
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Reporting period</label>
+        <Select value={periodId} onValueChange={setPeriodId}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            {periods.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      {!canCreate && (
-        <p className="text-sm text-slate-500 lg:col-span-4">
-          Create a reporting period before uploading import data.
-        </p>
-      )}
-      {error && <p className="text-sm text-red-600 lg:col-span-4">{error}</p>}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">Template</label>
+        <Select value={templateKey} onValueChange={setTemplateKey}>
+          <SelectTrigger className="w-52">
+            <SelectValue placeholder="Select template" />
+          </SelectTrigger>
+          <SelectContent>
+            {TEMPLATE_KEYS.map((t) => (
+              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#333333] tracking-[-0.36px]">CSV / XLSX file</label>
+        <Input
+          type="file"
+          accept=".csv,.xlsx,.xls"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          className="w-56 text-sm"
+        />
+      </div>
+      <Button type="submit" disabled={loading || !file} size="sm" className="gap-1.5">
+        <Upload aria-hidden="true" className="h-3.5 w-3.5" />
+        {loading ? "Uploading…" : "Upload"}
+      </Button>
+      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
     </form>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <Label className="mb-1.5 block text-xs font-medium text-slate-600">{label}</Label>
-      <div className="flex flex-col">{children}</div>
-    </div>
   );
 }
