@@ -1,6 +1,7 @@
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -151,7 +152,12 @@ export default async function SubmissionsPage({
                 {submissions.map((s) => (
                   <TableRow key={s.id}>
                     <TableCell className="font-medium">
-                      {DOC_TYPE_LABELS[s.documentType] ?? s.documentType}
+                      <Link
+                        href={`/orgs/${orgId}/submissions/${s.id}`}
+                        className="hover:underline underline-offset-2 text-[#0f3e17]"
+                      >
+                        {DOC_TYPE_LABELS[s.documentType] ?? s.documentType}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <span
