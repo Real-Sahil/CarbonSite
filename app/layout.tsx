@@ -1,5 +1,20 @@
 import type { Metadata } from "next";
+import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["300"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite.app"),
@@ -38,8 +53,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html
+      lang="en"
+      className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
+    >
+      <body
+        className="min-h-full flex flex-col"
+        style={{ fontFamily: "var(--font-inter, Inter, sans-serif)" }}
+      >
+        {children}
+      </body>
     </html>
   );
 }
