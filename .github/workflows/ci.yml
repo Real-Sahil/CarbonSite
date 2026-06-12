@@ -37,7 +37,7 @@ jobs:
           TRUSTED_ORIGINS: http://localhost:3000
 
   flutter:
-    name: Flutter — analyze / test / build
+    name: Flutter — analyze / test
     runs-on: ubuntu-latest
     if: hashFiles('mobile/pubspec.yaml') != ''
     steps:
@@ -49,6 +49,9 @@ jobs:
           cache: true
       - working-directory: mobile
         run: flutter pub get
+      - name: Generate code (drift, riverpod)
+        working-directory: mobile
+        run: dart run build_runner build --delete-conflicting-outputs
       - working-directory: mobile
         run: flutter analyze
       - working-directory: mobile

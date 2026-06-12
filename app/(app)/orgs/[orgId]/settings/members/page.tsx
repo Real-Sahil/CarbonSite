@@ -23,6 +23,7 @@ import { InviteMemberForm } from "./invite-member-form";
 import { InviteLinkGenerator } from "./invite-link-generator";
 import { MemberActions } from "./member-actions";
 import { FieldWorkerAssignments } from "./field-worker-assignments";
+import { PendingInviteActions } from "./pending-invite-actions";
 
 interface MembersPageProps {
   params: Promise<{ orgId: string }>;
@@ -218,8 +219,13 @@ export default async function MembersPage({ params }: MembersPageProps) {
           <InviteMemberForm orgId={orgId} />
           {pendingTeamInvites.length > 0 && (
             <div className="mt-5 rounded-[14px] border border-[#e5e7eb]">
-              <div className="border-b border-[#e5e7eb] px-4 py-3">
-                <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">Pending email invites</p>
+              <div className="border-b border-[#e5e7eb] px-4 py-3 flex items-center justify-between">
+                <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+                  Pending email invites
+                </p>
+                <p className="text-xs text-[#333333]">
+                  {pendingTeamInvites.length} pending
+                </p>
               </div>
               <div className="divide-y divide-[#e5e7eb]">
                 {pendingTeamInvites.map((invite) => (
@@ -228,19 +234,25 @@ export default async function MembersPage({ params }: MembersPageProps) {
                     className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{invite.email}</p>
+                      <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+                        {invite.email}
+                      </p>
                       <p className="text-xs text-[#333333] tracking-[-0.36px]">
                         {ROLE_LABELS[invite.role] ?? invite.role}
+                        {" · "}Expires{" "}
+                        {invite.expiresAt.toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
                       </p>
                     </div>
-                    <p className="text-xs text-[#333333] tracking-[-0.36px]">
-                      Expires{" "}
-                      {invite.expiresAt.toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
+                    <PendingInviteActions
+                      orgId={orgId}
+                      inviteId={invite.id}
+                      email={invite.email!}
+                      role={invite.role}
+                    />
                   </div>
                 ))}
               </div>
