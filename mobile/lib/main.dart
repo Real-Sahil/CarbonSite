@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/router.dart';
+import 'core/theme/app_theme.dart';
+import 'features/sync/sync_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,13 +15,14 @@ class CarbonSiteApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    // Boot the background sync service with the app — it listens for
+    // connectivity and drains any drafts queued while offline.
+    ref.watch(syncServiceProvider);
+
     return MaterialApp.router(
       title: 'CarbonSite',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF166534), // green-800 — sustainability green
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light(),
       routerConfig: router,
     );
   }

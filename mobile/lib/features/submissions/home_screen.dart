@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/endpoints.dart';
+import '../../core/widgets/offline_banner.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -143,7 +144,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _buildBody(context, colorScheme, textTheme),
+      body: Column(
+        children: [
+          const OfflineBanner(),
+          Expanded(child: _buildBody(context, colorScheme, textTheme)),
+        ],
+      ),
     );
   }
 
@@ -276,7 +282,16 @@ class _ProjectCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => context.push('/capture'),
+                onPressed: () => context.push(
+                  Uri(
+                    path: '/capture',
+                    queryParameters: {
+                      'projectId': project.id,
+                      if (project.label.isNotEmpty)
+                        'projectLabel': project.label,
+                    },
+                  ).toString(),
+                ),
                 icon: const Icon(Icons.camera_alt_outlined, size: 18),
                 label: const Text('Submit document'),
                 style: OutlinedButton.styleFrom(
