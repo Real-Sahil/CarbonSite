@@ -31,6 +31,9 @@ import { Badge } from "@/components/ui/badge";
 import { CalculationControls } from "./calculation-controls";
 import { ReviewTaskPanel, type ReviewTaskPanelCandidate } from "./review-task-panel";
 import { resolveReviewTarget } from "@/lib/review-tasks/targets";
+import { ScopeDonut } from "@/components/charts/scope-donut";
+import { CategoryBar } from "@/components/charts/category-bar";
+import { TrendLine, type TrendLineDatum } from "@/components/charts/trend-line";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -88,7 +91,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   ]);
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
-  const [batchA, batchB] = await Promise.all([
+  const [batchA, batchB, trendAggregates] = await Promise.all([
     Promise.all([
       currentPeriod
         ? prisma.dashboardAggregate.groupBy({
@@ -246,6 +249,22 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         orderBy: { status: "asc" },
       }),
     ] as const),
+    // Period trend: live scope-level aggregates across all reporting periods.
+    // Reads DashboardAggregate only — never raw EmissionCalculation rows.
+    prisma.dashboardAggregate.findMany({
+      where: {
+        organizationId: orgId,
+        snapshotId: null,
+        emissionCategoryId: null,
+        facilityId: null,
+        businessUnitId: null,
+      },
+      select: {
+        scope: true,
+        totalCo2e: true,
+        reportingPeriod: { select: { id: true, label: true, startDate: true } },
+      },
+    }),
   ]);
 
   const [
@@ -303,6 +322,40 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     ...topCategoryAggregates.map((aggregate) => Number(aggregate.totalCo2e)),
     0,
   );
+
+  // Chart data — Prisma Decimals converted to numbers server-side (values are kgCO2e).
+  const scopeDonutData = scopeRows.map((row) => ({
+    scope: row.scope,
+    label: `Scope ${row.scope}`,
+    value: Number(row.total),
+  }));
+  const categoryBarData = topCategoryAggregates.map((aggregate) => ({
+    name: aggregate.emissionCategory?.name ?? "Uncategorised",
+    scope: aggregate.emissionCategory?.scope ?? aggregate.scope,
+    value: Number(aggregate.totalCo2e),
+  }));
+  const trendByPeriod = new Map<
+    string,
+    { startDate: Date; datum: TrendLineDatum }
+  >();
+  for (const aggregate of trendAggregates) {
+    const period = aggregate.reportingPeriod;
+    let entry = trendByPeriod.get(period.id);
+    if (!entry) {
+      entry = {
+        startDate: period.startDate,
+        datum: { label: period.label, scope1: 0, scope2: 0, scope3: 0 },
+      };
+      trendByPeriod.set(period.id, entry);
+    }
+    if (aggregate.scope === 1) entry.datum.scope1 += Number(aggregate.totalCo2e);
+    if (aggregate.scope === 2) entry.datum.scope2 += Number(aggregate.totalCo2e);
+    if (aggregate.scope === 3) entry.datum.scope3 += Number(aggregate.totalCo2e);
+  }
+  const trendData = [...trendByPeriod.values()]
+    .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+    .map((entry) => entry.datum);
+  const showTrend = trendData.length >= 2;
   const submissionTotal = submissionStatusRows.reduce(
     (total, row) => total + row._count._all,
     0,
@@ -437,6 +490,51 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           detail={`${reportCount.toLocaleString("en-GB")} total requested`}
         />
       </div>
+
+      {hasAggregates && (
+        <div
+          className={`mt-6 grid gap-6 lg:grid-cols-2 ${showTrend ? "xl:grid-cols-3" : ""}`}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Scope breakdown</CardTitle>
+              <CardDescription>
+                {currentPeriod ? currentPeriod.label : "Current period"} totals by GHG Protocol scope.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScopeDonut data={scopeDonutData} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Top categories</CardTitle>
+              <CardDescription>
+                Largest emission categories from current calculation aggregates.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CategoryBar
+                data={categoryBarData}
+                ariaLabel="Top emission categories bar chart"
+              />
+            </CardContent>
+          </Card>
+          {showTrend && (
+            <Card className="lg:col-span-2 xl:col-span-1">
+              <CardHeader>
+                <CardTitle className="text-base">Period trend</CardTitle>
+                <CardDescription>
+                  Scope totals across reporting periods with calculated aggregates.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TrendLine data={trendData} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
         <Card>
