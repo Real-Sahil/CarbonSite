@@ -183,44 +183,16 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Route information</CardTitle>
+              <CardTitle className="text-base">Location</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {submission.pickupPostcode || submission.deliveryPostcode ? (
-                <>
-                  {submission.pickupPostcode && (
-                    <DetailRow label="Pickup postcode" value={submission.pickupPostcode} />
-                  )}
-                  {submission.deliveryPostcode && (
-                    <DetailRow label="Delivery postcode" value={submission.deliveryPostcode} />
-                  )}
-                  {submission.calculatedDistanceKm != null && (
-                    <DetailRow
-                      label="Distance"
-                      value={`${Number(submission.calculatedDistanceKm).toFixed(2)} km${submission.distanceSource ? ` via ${submission.distanceSource}` : ""}`}
-                    />
-                  )}
-                  {submission.pickupLat != null && submission.pickupLng != null && (
-                    <DetailRow
-                      label="Pickup coords"
-                      value={`${Number(submission.pickupLat).toFixed(5)}, ${Number(submission.pickupLng).toFixed(5)}`}
-                    />
-                  )}
-                  {submission.deliveryLat != null && submission.deliveryLng != null && (
-                    <DetailRow
-                      label="Delivery coords"
-                      value={`${Number(submission.deliveryLat).toFixed(5)}, ${Number(submission.deliveryLng).toFixed(5)}`}
-                    />
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-[#333333] italic tracking-[-0.42px]">No route information captured</p>
-              )}
-              {submission.gpsLat != null && submission.gpsLng != null && (
+              {submission.gpsLat != null && submission.gpsLng != null ? (
                 <DetailRow
                   label="GPS location"
                   value={`${Number(submission.gpsLat).toFixed(5)}, ${Number(submission.gpsLng).toFixed(5)}`}
                 />
+              ) : (
+                <p className="text-sm text-[#333333] italic tracking-[-0.42px]">No location captured</p>
               )}
             </CardContent>
           </Card>

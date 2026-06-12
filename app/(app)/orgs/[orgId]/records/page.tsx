@@ -146,7 +146,6 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                   <TableHead>Amount</TableHead>
                   <TableHead>Period</TableHead>
                   <TableHead>Location</TableHead>
-                  <TableHead>Route</TableHead>
                   <TableHead>Distance</TableHead>
                   <TableHead>Evidence</TableHead>
                   <TableHead>Status</TableHead>
@@ -180,17 +179,6 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {record.facility?.name ?? record.businessUnit?.name ?? record.country ?? "Not assigned"}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      <RouteProvenance
-                        pickupPostcode={record.pickupPostcode}
-                        deliveryPostcode={record.deliveryPostcode}
-                        pickupLat={record.pickupLat}
-                        pickupLng={record.pickupLng}
-                        deliveryLat={record.deliveryLat}
-                        deliveryLng={record.deliveryLng}
-                        source={record.routeDistanceSource}
-                      />
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {record.distanceAmount

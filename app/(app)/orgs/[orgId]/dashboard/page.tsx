@@ -87,6 +87,167 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     }),
   ]);
 
+  // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
+  const [batchA, batchB] = await Promise.all([
+    Promise.all([
+      currentPeriod
+        ? prisma.dashboardAggregate.groupBy({
+            by: ["scope"],
+            where: {
+              organizationId: orgId,
+              reportingPeriodId: currentPeriod.id,
+              snapshotId: null,
+            },
+            _sum: { totalCo2e: true, recordCount: true },
+            orderBy: { scope: "asc" },
+          })
+        : Promise.resolve([] as { scope: number; _sum: { totalCo2e: string | null; recordCount: number | null } }[]),
+      prisma.activityRecord.count({ where: { organizationId: orgId } }),
+      prisma.activityRecord.count({
+        where: { organizationId: orgId, reviewStatus: "approved" },
+      }),
+      prisma.fieldSubmission.count({
+        where: {
+          organizationId: orgId,
+          status: { in: ["pending", "submitted", "under_review", "needs_info"] },
+        },
+      }),
+      prisma.importBatch.count({ where: { organizationId: orgId } }),
+      prisma.importBatch.count({
+        where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
+      }),
+      prisma.report.count({ where: { organizationId: orgId } }),
+      prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
+      prisma.report.count({ where: { organizationId: orgId, status: "failed" } }),
+      prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }),
+      prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }),
+      prisma.reviewTask.findMany({
+        where: {
+          organizationId: orgId,
+          assigneeUserId: session.user.id,
+          status: "open",
+        },
+        include: {
+          assignee: { select: { name: true, email: true } },
+          createdBy: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+      prisma.importBatch.findMany({
+        where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
+        select: {
+          id: true,
+          sourceFilename: true,
+          state: true,
+          errorCount: true,
+          warningCount: true,
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 4,
+      }),
+      prisma.activityRecord.findMany({
+        where: { organizationId: orgId, reviewStatus: { in: ["in_review", "rejected"] } },
+        include: {
+          emissionCategory: { select: { scope: true, name: true } },
+          reportingPeriod: { select: { label: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 4,
+      }),
+      prisma.report.findMany({
+        where: { organizationId: orgId, status: "failed" },
+        include: {
+          reportingPeriod: { select: { label: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 4,
+      }),
+    ] as const),
+    Promise.all([
+      prisma.organizationMembership.findMany({
+        where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
+        include: { user: { select: { id: true, name: true, email: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.auditLog.findMany({
+        where: { organizationId: orgId },
+        include: { actor: { select: { name: true, email: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+      prisma.reductionTarget.count({ where: { organizationId: orgId } }),
+      prisma.reductionInitiative.count({ where: { organizationId: orgId } }),
+      prisma.reportingPeriod.findMany({
+        where: { organizationId: orgId },
+        select: { id: true, label: true },
+        orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      }),
+      prisma.methodologyVersion.findMany({
+        select: { id: true, name: true, gwpVersion: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.factorLibrary.findMany({
+        select: { id: true, name: true, version: true },
+        orderBy: { publishedAt: "desc" },
+      }),
+      prisma.calculationRun.findMany({
+        where: { organizationId: orgId },
+        include: {
+          reportingPeriod: { select: { label: true } },
+          factorLibrary: { select: { name: true, version: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+      prisma.evidenceFile.count({ where: { organizationId: orgId } }),
+      prisma.fieldSubmission.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: { _all: true },
+        orderBy: { status: "asc" },
+      }),
+      prisma.fieldSubmission.groupBy({
+        by: ["documentType"],
+        where: { organizationId: orgId },
+        _count: { _all: true },
+        orderBy: { documentType: "asc" },
+      }),
+      prisma.reductionInitiative.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: { _all: true },
+        _sum: { costAmount: true, expectedImpactCo2e: true },
+        orderBy: { status: "asc" },
+      }),
+      prisma.reductionTarget.aggregate({
+        where: { organizationId: orgId },
+        _sum: { reductionAmount: true },
+      }),
+      currentPeriod
+        ? prisma.dashboardAggregate.findMany({
+            where: {
+              organizationId: orgId,
+              reportingPeriodId: currentPeriod.id,
+              snapshotId: null,
+              emissionCategoryId: { not: null },
+            },
+            include: {
+              emissionCategory: { select: { name: true, scope: true } },
+            },
+            orderBy: { totalCo2e: "desc" },
+            take: 5,
+          })
+        : Promise.resolve([] as { id: string; scope: number; totalCo2e: string; recordCount: number; emissionCategory: { name: string; scope: number } | null }[]),
+      prisma.report.groupBy({
+        by: ["status"],
+        where: { organizationId: orgId },
+        _count: { _all: true },
+        orderBy: { status: "asc" },
+      }),
+    ] as const),
+  ]);
+
   const [
     scopeAggregates,
     recordCount,
@@ -103,6 +264,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     reviewImports,
     reviewRecords,
     reviewReports,
+  ] = batchA;
+
+  const [
     reviewAssignees,
     recentAuditLogs,
     targetCount,
@@ -112,173 +276,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     factorLibraries,
     calculationRuns,
     evidenceFileCount,
-    routeDistanceStats,
     submissionStatusRows,
     submissionDocumentRows,
     initiativeStatusRows,
     targetReductionStats,
     topCategoryAggregates,
     reportStatusRows,
-  ] = await Promise.all([
-    currentPeriod
-      ? prisma.dashboardAggregate.groupBy({
-          by: ["scope"],
-          where: {
-            organizationId: orgId,
-            reportingPeriodId: currentPeriod.id,
-            snapshotId: null,
-          },
-          _sum: { totalCo2e: true, recordCount: true },
-          orderBy: { scope: "asc" },
-        })
-      : Promise.resolve([]),
-    prisma.activityRecord.count({ where: { organizationId: orgId } }),
-    prisma.activityRecord.count({
-      where: { organizationId: orgId, reviewStatus: "approved" },
-    }),
-    prisma.fieldSubmission.count({
-      where: {
-        organizationId: orgId,
-        status: { in: ["pending", "submitted", "under_review", "needs_info"] },
-      },
-    }),
-    prisma.importBatch.count({ where: { organizationId: orgId } }),
-    prisma.importBatch.count({
-      where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
-    }),
-    prisma.report.count({ where: { organizationId: orgId } }),
-    prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
-    prisma.report.count({ where: { organizationId: orgId, status: "failed" } }),
-    prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }),
-    prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }),
-    prisma.reviewTask.findMany({
-      where: {
-        organizationId: orgId,
-        assigneeUserId: session.user.id,
-        status: "open",
-      },
-      include: {
-        assignee: { select: { name: true, email: true } },
-        createdBy: { select: { name: true, email: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-    prisma.importBatch.findMany({
-      where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
-      select: {
-        id: true,
-        sourceFilename: true,
-        state: true,
-        errorCount: true,
-        warningCount: true,
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 4,
-    }),
-    prisma.activityRecord.findMany({
-      where: { organizationId: orgId, reviewStatus: { in: ["in_review", "rejected"] } },
-      include: {
-        emissionCategory: { select: { scope: true, name: true } },
-        reportingPeriod: { select: { label: true } },
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 4,
-    }),
-    prisma.report.findMany({
-      where: { organizationId: orgId, status: "failed" },
-      include: {
-        reportingPeriod: { select: { label: true } },
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 4,
-    }),
-    prisma.organizationMembership.findMany({
-      where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
-      include: { user: { select: { id: true, name: true, email: true } } },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.auditLog.findMany({
-      where: { organizationId: orgId },
-      include: { actor: { select: { name: true, email: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-    prisma.reductionTarget.count({ where: { organizationId: orgId } }),
-    prisma.reductionInitiative.count({ where: { organizationId: orgId } }),
-    prisma.reportingPeriod.findMany({
-      where: { organizationId: orgId },
-      select: { id: true, label: true },
-      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-    }),
-    prisma.methodologyVersion.findMany({
-      select: { id: true, name: true, gwpVersion: true },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.factorLibrary.findMany({
-      select: { id: true, name: true, version: true },
-      orderBy: { publishedAt: "desc" },
-    }),
-    prisma.calculationRun.findMany({
-      where: { organizationId: orgId },
-      include: {
-        reportingPeriod: { select: { label: true } },
-        factorLibrary: { select: { name: true, version: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-    prisma.evidenceFile.count({ where: { organizationId: orgId } }),
-    prisma.routeDistance.aggregate({
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      _sum: { distanceKm: true },
-    }),
-    prisma.fieldSubmission.groupBy({
-      by: ["status"],
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      orderBy: { status: "asc" },
-    }),
-    prisma.fieldSubmission.groupBy({
-      by: ["documentType"],
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      orderBy: { documentType: "asc" },
-    }),
-    prisma.reductionInitiative.groupBy({
-      by: ["status"],
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      _sum: { costAmount: true, expectedImpactCo2e: true },
-      orderBy: { status: "asc" },
-    }),
-    prisma.reductionTarget.aggregate({
-      where: { organizationId: orgId },
-      _sum: { reductionAmount: true },
-    }),
-    currentPeriod
-      ? prisma.dashboardAggregate.findMany({
-          where: {
-            organizationId: orgId,
-            reportingPeriodId: currentPeriod.id,
-            snapshotId: null,
-            emissionCategoryId: { not: null },
-          },
-          include: {
-            emissionCategory: { select: { name: true, scope: true } },
-          },
-          orderBy: { totalCo2e: "desc" },
-          take: 5,
-        })
-      : Promise.resolve([]),
-    prisma.report.groupBy({
-      by: ["status"],
-      where: { organizationId: orgId },
-      _count: { _all: true },
-      orderBy: { status: "asc" },
-    }),
-  ]);
+  ] = batchB;
 
   const scopeRows = [1, 2, 3].map((scope) => {
     const aggregate = scopeAggregates.find((row) => row.scope === scope);
@@ -316,10 +320,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     0,
   );
   const targetReductionTotal = Number(targetReductionStats._sum.reductionAmount ?? 0);
-  const routeDistanceKm = Number(routeDistanceStats._sum.distanceKm ?? 0);
-  const routeDistanceCount = routeDistanceStats._count._all;
-  const routeAverageKm =
-    routeDistanceCount > 0 ? routeDistanceKm / routeDistanceCount : 0;
   const reportStatusTotal = reportStatusRows.reduce(
     (total, row) => total + row._count._all,
     0,
@@ -678,9 +678,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               />
               <InsightCard
                 icon={Route}
-                label="Average route distance"
-                value={`${formatNumber(routeAverageKm, 1)} km`}
-                detail={`${routeDistanceCount.toLocaleString("en-GB")} postcode routes cached`}
+                label="Pending submissions"
+                value={pendingSubmissionCount.toLocaleString("en-GB")}
+                detail="Awaiting review from field workers"
               />
             </div>
             <div className="rounded-[14px] border border-[#e5e7eb]">
@@ -779,9 +779,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                 />
                 <InsightCard
                   icon={Route}
-                  label="Route km captured"
-                  value={`${formatNumber(routeDistanceKm, 1)} km`}
-                  detail="Pickup to delivery distance"
+                  label="Field submissions"
+                  value={pendingSubmissionCount.toLocaleString("en-GB")}
+                  detail="Pending review"
                 />
               </div>
             </div>
