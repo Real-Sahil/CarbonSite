@@ -135,12 +135,18 @@ export default async function MembersPage({ params }: MembersPageProps) {
   const assignments = assignmentState.assignments;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+    <div className="p-[42px] max-w-[900px] mx-auto flex flex-col gap-[42px]">
+      <div className="mb-0">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+          Settings
+        </p>
+        <h1
+          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+        >
           Members &amp; Access
         </h1>
-        <p className="text-slate-500 mt-1">
+        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
           Manage who has access to your organisation and their roles.
         </p>
       </div>
@@ -167,15 +173,15 @@ export default async function MembersPage({ params }: MembersPageProps) {
             <TableBody>
               {members.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-normal text-[#000000]">
                     {m.user.name ?? (
-                      <span className="text-slate-400 italic">No name</span>
+                      <span className="text-[#333333] italic">No name</span>
                     )}
                     {m.user.id === currentUserId && (
-                      <span className="ml-2 text-xs text-slate-400">(you)</span>
+                      <span className="ml-2 text-xs text-[#333333]">(you)</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-slate-600">
+                  <TableCell className="text-[#222222]">
                     {m.user.email}
                   </TableCell>
                   <TableCell>
@@ -211,23 +217,23 @@ export default async function MembersPage({ params }: MembersPageProps) {
         <CardContent>
           <InviteMemberForm orgId={orgId} />
           {pendingTeamInvites.length > 0 && (
-            <div className="mt-5 rounded-lg border border-slate-200">
-              <div className="border-b border-slate-100 px-4 py-3">
-                <p className="text-sm font-medium text-slate-800">Pending email invites</p>
+            <div className="mt-5 rounded-[14px] border border-[#e5e7eb]">
+              <div className="border-b border-[#e5e7eb] px-4 py-3">
+                <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">Pending email invites</p>
               </div>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[#e5e7eb]">
                 {pendingTeamInvites.map((invite) => (
                   <div
                     key={invite.id}
                     className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="text-sm font-medium text-slate-800">{invite.email}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{invite.email}</p>
+                      <p className="text-xs text-[#333333] tracking-[-0.36px]">
                         {ROLE_LABELS[invite.role] ?? invite.role}
                       </p>
                     </div>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#333333] tracking-[-0.36px]">
                       Expires{" "}
                       {invite.expiresAt.toLocaleDateString("en-GB", {
                         day: "numeric",

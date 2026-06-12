@@ -387,11 +387,19 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     session.user.id;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div className="p-[42px] max-w-[1200px] mx-auto">
+      <div className="mb-[42px] flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+            Overview
+          </p>
+          <h1
+            className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+            style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+          >
+            Dashboard
+          </h1>
+          <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
             Live emissions operations for {organization.name}.
           </p>
         </div>
@@ -442,14 +450,14 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             {hasAggregates ? (
               <div className="grid gap-3 md:grid-cols-3">
                 {scopeRows.map((row) => (
-                  <div key={row.scope} className="rounded-lg border border-slate-200 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div key={row.scope} className="rounded-[14px] border border-[#e5e7eb] p-[21px]">
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">
                       Scope {row.scope}
                     </p>
-                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                    <p className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#0f3e17]">
                       {formatKgCo2e(row.total)}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
                       {Number(row.records).toLocaleString("en-GB")} calculated records
                     </p>
                   </div>
@@ -508,16 +516,16 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
-          <CardHeader className="border-b border-slate-100 bg-slate-950 text-white">
+          <CardHeader className="border-b border-[#e5e7eb] bg-[#0f3e17] text-[#fffefc]">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
-                <CardDescription className="text-slate-300">
+                <CardTitle className="text-base text-[#fffefc]">Analytics workbench</CardTitle>
+                <CardDescription className="text-[#b1dbb8]">
                   Category concentration and scope movement for the active reporting period.
                 </CardDescription>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-emerald-200">
-                <LineChart className="h-5 w-5" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-white/10 text-[#b1dbb8]">
+                <LineChart aria-hidden="true" className="h-5 w-5" />
               </div>
             </div>
           </CardHeader>
@@ -525,8 +533,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             <div>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">Top emission categories</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">Top emission categories</p>
+                  <p className="text-xs text-[#333333] tracking-[-0.36px]">
                     Ranked from current calculation aggregates.
                   </p>
                 </div>
@@ -643,8 +651,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                   Track decarbonisation work, route-efficiency signals, and target ambition from live records.
                 </CardDescription>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
-                <Handshake className="h-5 w-5" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#e1f4df] text-[#0f3e17]">
+                <Handshake aria-hidden="true" className="h-5 w-5" />
               </div>
             </div>
           </CardHeader>
@@ -675,16 +683,16 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                 detail={`${routeDistanceCount.toLocaleString("en-GB")} postcode routes cached`}
               />
             </div>
-            <div className="rounded-lg border border-slate-200">
+            <div className="rounded-[14px] border border-[#e5e7eb]">
               {initiativeStatusRows.length > 0 ? (
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-[#e5e7eb]">
                   {initiativeStatusRows.map((row) => (
                     <div key={row.status} className="flex items-center justify-between gap-4 p-3">
                       <div>
-                        <p className="text-sm font-medium capitalize text-slate-800">
+                        <p className="text-sm font-normal capitalize text-[#0f3e17] tracking-[-0.42px]">
                           {row.status.replaceAll("_", " ")}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-[#333333] tracking-[-0.36px]">
                           {formatKgCo2e(row._sum.expectedImpactCo2e)} expected impact
                         </p>
                       </div>
@@ -723,7 +731,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           </CardHeader>
           <CardContent className="grid gap-5 lg:grid-cols-2">
             <div>
-              <p className="text-sm font-semibold text-slate-900">Capture status</p>
+              <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">Capture status</p>
               <div className="mt-3 space-y-3">
                 {submissionStatusRows.length > 0 ? (
                   submissionStatusRows.map((row) => (
@@ -745,7 +753,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               </div>
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Document mix</p>
+              <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">Document mix</p>
               <div className="mt-3 space-y-3">
                 {submissionDocumentRows.length > 0 ? (
                   submissionDocumentRows.map((row) => (
@@ -757,7 +765,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                     />
                   ))
                 ) : (
-                  <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
+                  <div className="rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-5 text-sm text-[#222222] tracking-[-0.42px]">
                     Document type analytics appear when field submissions are received.
                   </div>
                 )}
@@ -806,28 +814,28 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               value={failedCalculationCount}
             />
           </div>
-          <div className="rounded-lg border border-slate-200">
+          <div className="rounded-[14px] border border-[#e5e7eb]">
             {recentAuditLogs.length === 0 ? (
               <div className="flex min-h-32 flex-col items-center justify-center p-6 text-center">
-                <Clock className="h-6 w-6 text-slate-400" />
-                <p className="mt-2 text-sm font-medium text-slate-700">No audit events yet</p>
-                <p className="mt-1 text-xs text-slate-500">
+                <Clock aria-hidden="true" className="h-6 w-6 text-[#333333]" />
+                <p className="mt-2 text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">No audit events yet</p>
+                <p className="mt-1 text-xs text-[#222222] tracking-[-0.36px]">
                   Operational events appear here after users create, review, calculate, or publish data.
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[#e5e7eb]">
                 {recentAuditLogs.map((log) => (
                   <div key={log.id} className="flex items-start justify-between gap-4 p-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-800">
+                      <p className="truncate text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
                         {log.action.replaceAll("_", " ")}
                       </p>
-                      <p className="mt-0.5 text-xs text-slate-500">
+                      <p className="mt-0.5 text-xs text-[#333333] tracking-[-0.36px]">
                         {log.resourceType} - {log.actor?.name ?? log.actor?.email ?? "System"}
                       </p>
                     </div>
-                    <time className="shrink-0 text-xs text-slate-400">
+                    <time className="shrink-0 text-xs text-[#333333] tracking-[-0.36px]">
                       {log.createdAt.toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -891,13 +899,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               {calculationRuns.map((run) => (
                 <div
                   key={run.id}
-                  className="flex flex-col gap-2 rounded-lg border border-slate-200 p-3 md:flex-row md:items-center md:justify-between"
+                  className="flex flex-col gap-2 rounded-[14px] border border-[#e5e7eb] p-3 md:flex-row md:items-center md:justify-between"
                 >
                   <div>
-                    <p className="text-sm font-medium text-slate-900">
+                    <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
                       {run.reportingPeriod.label}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[#333333] tracking-[-0.36px]">
                       {run.factorLibrary.name} {run.factorLibrary.version}
                     </p>
                   </div>
@@ -933,15 +941,15 @@ function InsightCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] p-[21px]">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-          <p className="mt-2 text-xl font-semibold text-slate-950">{value}</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+          <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">{label}</p>
+          <p className="mt-2 text-xl font-normal tracking-[-0.4px] text-[#0f3e17]">{value}</p>
+          <p className="mt-1 text-xs leading-5 text-[#333333] tracking-[-0.36px]">{detail}</p>
         </div>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
-          <Icon className="h-4 w-4" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-[#e1f4df] text-[#0f3e17]">
+          <Icon aria-hidden="true" className="h-4 w-4" />
         </div>
       </div>
     </div>
@@ -961,16 +969,16 @@ function ProgressRow({
 }) {
   const width = `${Math.max(2, Math.min(100, percent))}%`;
   return (
-    <div className="rounded-lg border border-slate-200 p-3">
+    <div className="rounded-[14px] border border-[#e5e7eb] p-3">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-slate-900">{label}</p>
-          <p className="mt-0.5 text-xs text-slate-500">{meta}</p>
+          <p className="truncate text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{label}</p>
+          <p className="mt-0.5 text-xs text-[#333333] tracking-[-0.36px]">{meta}</p>
         </div>
-        <p className="shrink-0 text-sm font-semibold text-slate-900">{value}</p>
+        <p className="shrink-0 text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{value}</p>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-emerald-700" style={{ width }} />
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e1f4df]">
+        <div className="h-full rounded-full bg-[#0f3e17]" style={{ width }} />
       </div>
     </div>
   );
@@ -988,13 +996,13 @@ function PipelineRow({
   const percent = total > 0 ? (count / total) * 100 : 0;
   const width = `${Math.max(2, Math.min(100, percent))}%`;
   return (
-    <div className="rounded-lg border border-slate-200 p-3">
+    <div className="rounded-[14px] border border-[#e5e7eb] p-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium capitalize text-slate-800">{label}</span>
-        <span className="text-sm font-semibold text-slate-950">{count.toLocaleString("en-GB")}</span>
+        <span className="text-sm font-normal capitalize text-[#222222] tracking-[-0.42px]">{label}</span>
+        <span className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{count.toLocaleString("en-GB")}</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-slate-900" style={{ width }} />
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e1f4df]">
+        <div className="h-full rounded-full bg-[#0f3e17]" style={{ width }} />
       </div>
     </div>
   );
@@ -1013,16 +1021,16 @@ function HealthSignal({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-lg border border-slate-200 p-4 transition-colors hover:bg-slate-50"
+      className="flex items-center justify-between rounded-[14px] border border-[#e5e7eb] p-[21px] transition-colors hover:bg-[#e1f4df]"
     >
       <div>
-        <p className="text-sm font-medium text-slate-700">{label}</p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="text-sm font-normal text-[#222222] tracking-[-0.42px]">{label}</p>
+        <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
           {hasIssue ? "Open the workflow to resolve" : "No failures recorded"}
         </p>
       </div>
       <Badge variant={hasIssue ? "destructive" : "outline"} className="gap-1">
-        {hasIssue && <AlertTriangle className="h-3 w-3" />}
+        {hasIssue && <AlertTriangle aria-hidden="true" className="h-3 w-3" />}
         {value}
       </Badge>
     </Link>
@@ -1042,15 +1050,15 @@ function MetricCard({
 }) {
   return (
     <Card>
-      <CardContent className="p-5">
+      <CardContent className="p-[21px]">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-medium text-slate-500">{label}</p>
-            <p className="mt-2 text-3xl font-bold text-slate-950">{value}</p>
-            <p className="mt-1 text-xs text-slate-500">{detail}</p>
+            <p className="text-sm font-normal text-[#333333] tracking-[-0.42px]">{label}</p>
+            <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#0f3e17]">{value}</p>
+            <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">{detail}</p>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-700">
-            <Icon className="h-5 w-5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#e1f4df] text-[#0f3e17]">
+            <Icon aria-hidden="true" className="h-5 w-5" />
           </div>
         </div>
       </CardContent>
@@ -1068,12 +1076,12 @@ function ReadinessRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-3">
+    <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#e5e7eb] p-3">
       <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4 text-slate-400" />
-        <span className="text-sm text-slate-600">{label}</span>
+        <Icon aria-hidden="true" className="h-4 w-4 text-[#333333]" />
+        <span className="text-sm text-[#222222] tracking-[-0.42px]">{label}</span>
       </div>
-      <span className="text-sm font-semibold text-slate-900">{value}</span>
+      <span className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{value}</span>
     </div>
   );
 }
@@ -1090,9 +1098,9 @@ function EmptyPanel({
   action: string;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6">
-      <p className="font-medium text-slate-800">{title}</p>
-      <p className="mt-1 max-w-xl text-sm text-slate-500">{description}</p>
+    <div className="rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px]">
+      <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">{title}</p>
+      <p className="mt-1 max-w-xl text-sm text-[#222222] tracking-[-0.42px]">{description}</p>
       <Button asChild size="sm" className="mt-4">
         <Link href={href}>{action}</Link>
       </Button>
@@ -1111,7 +1119,7 @@ function ActionCard({
 }) {
   return (
     <Link href={href} className="group block">
-      <Card className="h-full transition-shadow group-hover:shadow-md">
+      <Card className="h-full transition-colors group-hover:border-[#b1dbb8] group-hover:bg-[#e1f4df]">
         <CardHeader>
           <CardTitle className="text-base">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>

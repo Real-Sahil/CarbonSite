@@ -136,7 +136,7 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         </p>
       )}
       {success && (
-        <p className="text-sm text-green-700" role="status">
+        <p className="text-sm text-[#0f3e17]" role="status">
           {success}
         </p>
       )}
