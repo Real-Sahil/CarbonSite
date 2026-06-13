@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { updateActivityRecordStatusSchema } from "@/lib/validation/org";
 
@@ -13,7 +13,7 @@ export async function PATCH(
   try {
     const { orgId, recordId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
-    const limited = rateLimit(req, {
+    const limited = rateLimitRequest(req, {
       key: rateLimitKey(orgId, "record-update", session.user.id),
       limit: 60,
       windowMs: 60_000,
@@ -78,7 +78,7 @@ export async function DELETE(
   try {
     const { orgId, recordId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
-    const limited = rateLimit(req, {
+    const limited = rateLimitRequest(req, {
       key: rateLimitKey(orgId, "record-delete", session.user.id),
       limit: 30,
       windowMs: 60_000,

@@ -33,6 +33,21 @@ const securityHeaders = [
     key: "Cross-Origin-Opener-Policy",
     value: "same-origin",
   },
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires these
+      "style-src 'self' 'unsafe-inline'",                // Tailwind inline styles
+      "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com",
+      "connect-src 'self' https://*.r2.cloudflarestorage.com https://api.postcodes.io",
+      "font-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join("; "),
+  },
 ];
 
 const nextConfig: NextConfig = {
