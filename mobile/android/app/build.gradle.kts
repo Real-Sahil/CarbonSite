@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         applicationId = "app.carbonsite.carbonsite_mobile"
-        minSdk = flutter.minSdkVersion
+        minSdk = 23          // ML Kit + flutter_secure_storage require >= 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
