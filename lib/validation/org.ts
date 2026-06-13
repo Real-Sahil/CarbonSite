@@ -9,10 +9,19 @@ import {
 
 export const orgRoleSchema = z.enum([
   "admin",
+  "sustainability_director",
+  "sustainability_manager",
+  "operations_manager",
   "editor",
   "reviewer",
   "viewer",
   "auditor",
+  "contract_manager",
+  "project_manager",
+  "site_manager",
+  "supervisor",
+  "employee",
+  "client_viewer",
   "field_worker",
 ]);
 
@@ -203,7 +212,15 @@ export const routeDistanceSchema = z.object({
 export const createReportSchema = z.object({
   reportingPeriodId: z.string().min(1),
   snapshotId: z.string().min(1),
-  type: z.enum(["inventory", "monthly_snapshot", "audit_package"]),
+  type: z.enum([
+    "inventory", "monthly_snapshot", "audit_package",
+    "secr", "ppn_06_21", "nhs_evergreen", "breeam_evidence",
+    "national_toms", "csrd_esrs_e1", "contract_carbon",
+  ]),
+  contractId: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.string().min(1).optional(),
+  ),
 });
 
 export const createCalculationRunSchema = z.object({
@@ -274,3 +291,106 @@ export const createReviewTaskSchema = z.object({
 export const updateReviewTaskSchema = z.object({
   status: z.enum(["open", "completed", "blocked"]),
 });
+
+// ─── Contract ────────────────────────────────────────────────────────────────
+
+export const createContractSchema = z.object({
+  name: z.string().min(2).max(160),
+  businessUnitId: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+  clientName: z.string().max(160).optional(),
+  contractReference: z.string().max(80).optional(),
+  contractValue: z.coerce.number().nonnegative().optional(),
+  currency: z.string().length(3).default("GBP"),
+  startDate: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  endDate: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  ppn0621Required: z.boolean().default(false),
+  nhsEvergreenRequired: z.boolean().default(false),
+  breeamRequired: z.boolean().default(false),
+  status: z.enum(["active", "completed", "suspended", "cancelled"]).default("active"),
+  notes: z.string().max(2000).optional(),
+});
+
+export const updateContractSchema = createContractSchema.partial();
+
+// ─── Project ─────────────────────────────────────────────────────────────────
+
+export const createProjectSchema = z.object({
+  name: z.string().min(2).max(160),
+  projectCode: z.string().max(40).optional(),
+  description: z.string().max(2000).optional(),
+  startDate: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  endDate: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  status: z.enum(["active", "completed", "on_hold", "cancelled"]).default("active"),
+});
+
+export const updateProjectSchema = createProjectSchema.partial();
+
+// ─── Site ─────────────────────────────────────────────────────────────────────
+
+export const createSiteSchema = z.object({
+  name: z.string().min(2).max(160),
+  siteCode: z.string().max(40).optional(),
+  postcode: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().min(5).max(12).optional(),
+  ),
+  addressLine1: z.string().max(160).optional(),
+  city: z.string().max(80).optional(),
+  country: z.string().length(2).default("GB"),
+});
+
+export const updateSiteSchema = createSiteSchema.partial();
+
+// ─── Branding ────────────────────────────────────────────────────────────────
+
+export const upsertBrandingSchema = z.object({
+  subdomain: z.string().min(3).max(63).regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers, hyphens only"),
+  customDomain: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().max(253).optional(),
+  ),
+  primaryHex: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#0f4c8a"),
+  accentHex: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#e8f0fe"),
+  emailFromName: z.string().max(80).optional(),
+  emailFromDomain: z.string().max(80).optional(),
+  fontFamily: z.enum(["Inter", "Roboto", "Open Sans", "Lato", "Montserrat"]).default("Inter"),
+});
+
+// ─── Social Value ─────────────────────────────────────────────────────────────
+
+export const createSocialValueRecordSchema = z.object({
+  contractId: z.string().min(1),
+  reportingPeriodId: z.string().min(1),
+  measureId: z.string().min(1),
+  quantity: z.coerce.number().positive(),
+  evidenceFileId: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+  notes: z.string().max(2000).optional(),
+});
+
+export const createSocialValueTargetSchema = z.object({
+  contractId: z.string().min(1),
+  reportingPeriodId: z.string().min(1),
+  targetPounds: z.coerce.number().positive(),
+  baselinePounds: z.coerce.number().nonnegative().optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export const updateSocialValueTargetSchema = createSocialValueTargetSchema.partial().omit({ contractId: true, reportingPeriodId: true });

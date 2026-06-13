@@ -42,7 +42,20 @@ type AuditAction =
   | "field_submission.submitted"
   | "field_submission.reviewed"
   | "field_worker.assignment_created"
-  | "field_worker.assignment_deleted";
+  | "field_worker.assignment_deleted"
+  | "contract.created"
+  | "contract.updated"
+  | "contract.deleted"
+  | "project.created"
+  | "project.updated"
+  | "project.deleted"
+  | "site.created"
+  | "site.updated"
+  | "site.deleted"
+  | "branding.upserted"
+  | "social_value_record.created"
+  | "social_value_record.deleted"
+  | "social_value_target.upserted";
 
 export async function writeAuditLog(params: {
   organizationId: string;
