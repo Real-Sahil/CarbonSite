@@ -5,7 +5,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { inviteMemberSchema } from "@/lib/validation/org";
-import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
 
 export async function GET(
@@ -45,7 +45,7 @@ export async function POST(
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
     const body = inviteMemberSchema.parse(await req.json());
-    const limited = rateLimit(req, {
+    const limited = rateLimitRequest(req, {
       key: rateLimitKey(orgId, "member_invites", session.user.id),
       limit: 15,
       windowMs: 60_000,

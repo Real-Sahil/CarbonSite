@@ -1,13 +1,12 @@
-// Fixed-window in-memory rate limiter. Suitable for a single-instance
-// deployment (this stack runs one Next.js server, no serverless fan-out).
-// If the app is ever scaled horizontally, replace the store with Postgres
-// or another shared backend; the public API here stays the same.
+// Fixed-window in-memory rate limiter. Single canonical module — lib/rate-limit.ts deleted.
+// If scaled horizontally, replace store with Upstash Redis; public API stays the same.
+
+import { NextRequest, NextResponse } from "next/server";
 
 type Window = { count: number; resetAt: number };
 
 const store = new Map<string, Window>();
 
-// Periodically drop expired windows so the map cannot grow unbounded.
 const SWEEP_INTERVAL_MS = 60_000;
 let lastSweep = Date.now();
 
@@ -25,6 +24,7 @@ export type RateLimitResult = {
   retryAfterSeconds: number;
 };
 
+// Key-based rate limit used by middleware and direct callers.
 export function rateLimit(
   key: string,
   limit: number,
@@ -50,8 +50,35 @@ export function rateLimit(
   return { allowed: true, remaining: limit - win.count, retryAfterSeconds: 0 };
 }
 
-// Route-class policies. Auth endpoints are the brute-force target; uploads
-// and report generation are the resource-exhaustion targets.
+// Request-scoped wrapper used by API route handlers.
+// Combines a semantic key (org+action+user) with the client IP.
+export function rateLimitRequest(
+  req: NextRequest,
+  opts: { key: string; limit: number; windowMs: number },
+): NextResponse | null {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "local";
+  const result = rateLimit(`${opts.key}:${ip}`, opts.limit, opts.windowMs);
+  if (result.allowed) return null;
+  return NextResponse.json(
+    { code: "RATE_LIMITED", message: "Too many requests. Please wait and try again." },
+    { status: 429, headers: { "Retry-After": String(result.retryAfterSeconds) } },
+  );
+}
+
+// Canonical key builder — org + action + optional user.
+export function rateLimitKey(orgId: string, action: string, userId?: string) {
+  return ["org", orgId, action, userId ?? "anonymous"].join(":");
+}
+
+// Test helper.
+export function resetRateLimitBucketsForTests() {
+  store.clear();
+}
+
+// Route-class policies.
 export const POLICIES = {
   auth: { limit: 20, windowMs: 60_000 },
   upload: { limit: 30, windowMs: 60_000 },

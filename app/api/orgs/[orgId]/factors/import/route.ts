@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { requireOrgMember } from "@/lib/auth/session";
 import { parseFactorWorkbook } from "@/lib/factors/import";
-import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 const MAX_FACTOR_IMPORT_BYTES = 10 * 1024 * 1024;
@@ -16,7 +16,7 @@ export async function POST(
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
-    const limited = rateLimit(req, {
+    const limited = rateLimitRequest(req, {
       key: rateLimitKey(orgId, "factor-imports", session.user.id),
       limit: 5,
       windowMs: 60_000,

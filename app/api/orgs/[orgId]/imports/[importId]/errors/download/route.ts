@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { presignDownload } from "@/lib/storage";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
@@ -23,7 +23,7 @@ export async function GET(
       "viewer",
       "auditor",
     );
-    const limited = rateLimit(req, {
+    const limited = rateLimitRequest(req, {
       key: rateLimitKey(orgId, "import-error-download", session.user.id),
       limit: 60,
       windowMs: 60_000,
