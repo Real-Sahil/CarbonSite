@@ -22,6 +22,10 @@ export interface CsrdEsrsE1Data {
   scope3Tonnes: number;
   totalTonnes: number;
   recordCount: number;
+  co2Tonnes?: number;
+  ch4Tonnes?: number;
+  n2oTonnes?: number;
+  biogenicCo2Tonnes?: number;
   netZeroTargetYear?: number;
   baselineYear?: string;
   baselineTonnes?: number;
@@ -143,6 +147,20 @@ export function renderCsrdEsrsE1Html(d: CsrdEsrsE1Data): string {
     ${allRows}
     <tr style="font-weight:700"><td colspan="3">Total</td><td class="num">${fmtNum(d.totalTonnes)}</td></tr>
   </table>
+</section>
+
+<section>
+  <h2>E1-6a GHG Emissions by Gas (AR6 GWP)</h2>
+  <p class="disc-ref">Reference: ESRS E1 Appendix A.1 — gas-level split required under mandatory phase-in</p>
+  <table>
+    <tr><th>Greenhouse gas</th><th class="num">Gross (tCO₂e)</th><th>Notes</th></tr>
+    ${d.co2Tonnes !== undefined ? `<tr><td>Carbon dioxide (CO₂)</td><td class="num">${fmtNum(d.co2Tonnes)}</td><td>Fossil combustion and process emissions</td></tr>` : ""}
+    ${d.ch4Tonnes !== undefined ? `<tr><td>Methane (CH₄)</td><td class="num">${fmtNum(d.ch4Tonnes)}</td><td>GWP₁₀₀ = 27.9 (IPCC AR6)</td></tr>` : ""}
+    ${d.n2oTonnes !== undefined ? `<tr><td>Nitrous oxide (N₂O)</td><td class="num">${fmtNum(d.n2oTonnes)}</td><td>GWP₁₀₀ = 273 (IPCC AR6)</td></tr>` : ""}
+    ${d.biogenicCo2Tonnes !== undefined ? `<tr><td>Biogenic CO₂ (CO₂b)</td><td class="num">${fmtNum(d.biogenicCo2Tonnes)}</td><td>Reported separately — not included in Scope 1 total per GHG Protocol</td></tr>` : ""}
+    <tr style="font-weight:700"><td>Total GHG (fossil + non-CO₂)</td><td class="num">${fmtNum(d.totalTonnes)}</td><td>Matches E1-6 total</td></tr>
+  </table>
+  ${(!d.co2Tonnes && !d.ch4Tonnes && !d.n2oTonnes) ? '<div class="caution">Gas-level split not available for this calculation run. Re-run calculations with a factor library that includes gas-specific CO₂, CH₄, and N₂O values.</div>' : ""}
 </section>
 
 <section>
