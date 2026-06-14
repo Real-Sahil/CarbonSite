@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -115,6 +116,42 @@ export function CreateSocialValueRecordForm({
     } finally {
       setLoading(false);
     }
+  }
+
+  const missingPrereqs = contracts.length === 0 || periods.length === 0 || themes.length === 0;
+  if (missingPrereqs) {
+    const missing: string[] = [];
+    if (contracts.length === 0) missing.push("a contract");
+    if (periods.length === 0) missing.push("a reporting period");
+    if (themes.length === 0) missing.push("TOMS themes (run db seed)");
+    return (
+      <div className="flex items-start gap-2 rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3">
+        <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" aria-hidden="true" />
+        <p className="text-sm text-amber-800 tracking-[-0.42px]">
+          You need {missing.join(", ")} before recording social value.{" "}
+          {contracts.length === 0 && (
+            <Link
+              href={`/orgs/${orgId}/contracts`}
+              className="font-medium underline underline-offset-2 hover:text-amber-900"
+            >
+              Create a contract
+            </Link>
+          )}
+          {periods.length === 0 && (
+            <>
+              {contracts.length === 0 ? " and " : ""}
+              <Link
+                href={`/orgs/${orgId}/settings/operations`}
+                className="font-medium underline underline-offset-2 hover:text-amber-900"
+              >
+                add a reporting period
+              </Link>
+            </>
+          )}
+          .
+        </p>
+      </div>
+    );
   }
 
   if (!open) {

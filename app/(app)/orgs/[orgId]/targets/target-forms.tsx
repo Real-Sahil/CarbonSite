@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,12 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 
+// Enum values must match prisma schema exactly: absolute | intensity
 const TARGET_TYPES = [
-  { value: "absolute", label: "Absolute reduction" },
-  { value: "intensity", label: "Intensity reduction" },
-  { value: "science_based", label: "Science-based" },
+  { value: "absolute", label: "Absolute reduction (kgCO2e)" },
+  { value: "intensity", label: "Intensity reduction (per unit of output)" },
 ];
 
 interface CreateTargetFormProps {
@@ -31,6 +32,24 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
   const [reductionAmount, setReductionAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (periods.length === 0) {
+    return (
+      <div className="flex items-start gap-2 rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3">
+        <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" aria-hidden="true" />
+        <p className="text-sm text-amber-800 tracking-[-0.42px]">
+          No reporting periods found.{" "}
+          <Link
+            href={`/orgs/${orgId}/settings/operations`}
+            className="font-medium underline underline-offset-2 hover:text-amber-900"
+          >
+            Create one in Settings → Operations
+          </Link>{" "}
+          before setting reduction targets.
+        </p>
+      </div>
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -34,6 +34,7 @@ import { resolveReviewTarget } from "@/lib/review-tasks/targets";
 import { ScopeDonut } from "@/components/charts/scope-donut";
 import { CategoryBar } from "@/components/charts/category-bar";
 import { TrendLine, type TrendLineDatum } from "@/components/charts/trend-line";
+import { OnboardingChecklist } from "./onboarding-checklist";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -462,6 +463,42 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           {currentPeriod && <Badge variant="secondary">{currentPeriod.status}</Badge>}
         </div>
       </div>
+
+      <OnboardingChecklist
+        orgId={orgId}
+        steps={[
+          {
+            label: "Reporting periods",
+            description: "Define your inventory years or quarters",
+            href: `/orgs/${orgId}/settings/operations`,
+            done: reportingPeriods.length > 0,
+          },
+          {
+            label: "Emission factors",
+            description: "Import DEFRA, EPA, or SustainMetrics factors",
+            href: `/orgs/${orgId}/settings/operations`,
+            done: factorLibraries.length > 0,
+          },
+          {
+            label: "Activity data",
+            description: "Import CSV or add records manually",
+            href: `/orgs/${orgId}/imports`,
+            done: recordCount > 0 || importCount > 0,
+          },
+          {
+            label: "Run calculation",
+            description: "Convert activity data to CO2e",
+            href: `/orgs/${orgId}/calculations`,
+            done: calculationRuns.some((r) => r.status === "succeeded"),
+          },
+          {
+            label: "Generate report",
+            description: "Publish a snapshot and export",
+            href: `/orgs/${orgId}/reports`,
+            done: readyReportCount > 0,
+          },
+        ]}
+      />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
