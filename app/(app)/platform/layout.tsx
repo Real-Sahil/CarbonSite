@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#fffefc]">
@@ -8,12 +10,12 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
         >
           Fluid Platform
         </span>
-        <a
+        <Link
           href="/"
           className="text-xs text-[#222222] hover:text-[#0f3e17] tracking-[-0.36px]"
         >
           &larr; Back to app
-        </a>
+        </Link>
       </header>
       <main>{children}</main>
     </div>

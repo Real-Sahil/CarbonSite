@@ -34,12 +34,12 @@ export default function GlobalError({
             >
               Try again
             </button>
-            <a
+            <Link
               href="/"
-              style={{ padding: "10px 20px", background: "#e1f4df", color: "#0f3e17", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, textDecoration: "none" }}
+              style={{ padding: "10px 20px", background: "#e1f4df", color: "#0f3e17", borderRadius: 8, fontSize: 14, textDecoration: "none", display: "inline-block" }}
             >
               Go home
-            </a>
+            </Link>
           </div>
         </div>
       </body>
