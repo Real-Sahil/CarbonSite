@@ -35,6 +35,17 @@ const registry: Record<string, UnitConversion> = {
 
   // Currency (spend-based Scope 3) - canonical: GBP
   gbp: { toCanonical: 1, canonical: "GBP" },
+
+  // Freight transport - canonical: tonne.km
+  "tonne.km": { toCanonical: 1, canonical: "tonne.km" },
+  "tonne-km": { toCanonical: 1, canonical: "tonne.km" },
+  tkm: { toCanonical: 1, canonical: "tonne.km" },
+  "t.km": { toCanonical: 1, canonical: "tonne.km" },
+
+  // Passenger transport - canonical: pkm (maps to km dimension with pkm label)
+  pkm: { toCanonical: 1, canonical: "pkm" },
+  "passenger.km": { toCanonical: 1, canonical: "pkm" },
+  "passenger-km": { toCanonical: 1, canonical: "pkm" },
 };
 
 export type NormalizedUnit = { amount: number; unit: string };
