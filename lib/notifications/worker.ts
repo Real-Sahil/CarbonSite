@@ -7,6 +7,7 @@ import {
   reportReadyEmail,
   submissionReviewedEmail,
 } from "./email";
+import { sendPushToUser } from "./fcm";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite.app";
 
@@ -32,15 +33,24 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       });
       if (!task) return;
 
+      const taskType = task.type.replaceAll("_", " ");
+      const targetLabel = data.metadata?.targetLabel as string ?? task.targetId;
       const template = taskAssignedEmail({
         recipientName,
         orgName,
-        taskType: task.type.replaceAll("_", " "),
-        targetLabel: data.metadata?.targetLabel as string ?? task.targetId,
+        taskType,
+        targetLabel,
         appUrl: `${APP_URL}/orgs/${data.orgId}/dashboard`,
       });
 
-      await sendEmail({ to: recipient.email, ...template });
+      await Promise.all([
+        sendEmail({ to: recipient.email, ...template }),
+        sendPushToUser(data.recipientUserId, {
+          title: "Review task assigned",
+          body: `A ${taskType} task has been assigned to you in ${orgName}.`,
+          data: { type: "task_assigned", taskId: data.resourceId, orgId: data.orgId },
+        }),
+      ]);
       break;
     }
 
@@ -59,19 +69,34 @@ export async function processNotification(data: NotificationJobData): Promise<vo
         appUrl: `${APP_URL}/orgs/${data.orgId}/imports`,
       });
 
-      await sendEmail({ to: recipient.email, ...template });
+      await Promise.all([
+        sendEmail({ to: recipient.email, ...template }),
+        sendPushToUser(data.recipientUserId, {
+          title: "Import needs attention",
+          body: `${batch.sourceFilename} failed to import — ${batch.errorCount} error${batch.errorCount !== 1 ? "s" : ""}.`,
+          data: { type: "import_failed", importId: data.resourceId, orgId: data.orgId },
+        }),
+      ]);
       break;
     }
 
     case "report_ready": {
+      const reportLabel = data.metadata?.reportLabel as string ?? "Report";
       const template = reportReadyEmail({
         recipientName,
         orgName,
-        reportLabel: data.metadata?.reportLabel as string ?? "Report",
+        reportLabel,
         appUrl: `${APP_URL}/orgs/${data.orgId}/reports`,
       });
 
-      await sendEmail({ to: recipient.email, ...template });
+      await Promise.all([
+        sendEmail({ to: recipient.email, ...template }),
+        sendPushToUser(data.recipientUserId, {
+          title: "Report ready",
+          body: `Your ${reportLabel.toLowerCase()} is ready to download.`,
+          data: { type: "report_ready", reportId: data.resourceId, orgId: data.orgId },
+        }),
+      ]);
       break;
     }
 
@@ -90,7 +115,22 @@ export async function processNotification(data: NotificationJobData): Promise<vo
         appUrl: `${APP_URL}/orgs/${data.orgId}/submissions/${data.resourceId}`,
       });
 
-      await sendEmail({ to: recipient.email, ...template });
+      const statusLabel = submission.status === "approved" ? "approved" : "needs attention";
+      await Promise.all([
+        sendEmail({ to: recipient.email, ...template }),
+        sendPushToUser(data.recipientUserId, {
+          title: `Submission ${statusLabel}`,
+          body: submission.status === "approved"
+            ? `Your submission has been approved by ${orgName}.`
+            : `Your submission from ${orgName} needs attention — ${submission.reviewNote ?? "check the app for details"}.`,
+          data: {
+            type: "submission_reviewed",
+            submissionId: data.resourceId,
+            orgId: data.orgId,
+            status: submission.status,
+          },
+        }),
+      ]);
       break;
     }
 
