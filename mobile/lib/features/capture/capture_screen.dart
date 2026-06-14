@@ -14,6 +14,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/storage/app_database.dart';
 import '../sync/sync_service.dart';
+import 'barcode_scan_screen.dart';
 import 'ocr_extractor.dart';
 
 /// Field evidence capture flow:
@@ -70,19 +71,64 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
   Future<void> _onTypeSelected(DocumentType type) async {
     setState(() => _documentType = type);
-    await _takePhoto(initial: true);
+
+    final source = await _pickImageSource();
+    if (!mounted) return;
+
+    await _takePhoto(initial: true, source: source);
   }
 
-  Future<void> _takePhoto({bool initial = false}) async {
+  /// Shows a bottom sheet asking how the user wants to provide the image.
+  /// Returns null if the sheet is dismissed without a selection.
+  Future<ImageSource?> _pickImageSource() async {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        final colorScheme = Theme.of(ctx).colorScheme;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera_alt_outlined,
+                    color: colorScheme.onSurface),
+                title: const Text('Take Photo'),
+                onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_library_outlined,
+                    color: colorScheme.onSurface),
+                title: const Text('Photo Library'),
+                onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
+              ),
+              ListTile(
+                leading: Icon(Icons.folder_outlined,
+                    color: colorScheme.onSurface),
+                title: const Text('Choose File'),
+                onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _takePhoto({
+    bool initial = false,
+    ImageSource? source,
+  }) async {
+    final imageSource = source ?? ImageSource.camera;
     XFile? picked;
     try {
       picked = await _picker.pickImage(
-        source: ImageSource.camera,
+        source: imageSource,
         maxWidth: 2400,
         imageQuality: 85,
       );
     } catch (_) {
-      picked = null; // camera unavailable (e.g. emulator) — manual entry
+      picked = null; // camera/gallery unavailable (e.g. emulator) — manual entry
     }
 
     if (!mounted) return;
@@ -376,7 +422,13 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           children: [
             _PhotoCard(
               photoPath: _photoPath,
-              onRetake: _submitting ? null : () => _takePhoto(),
+              onRetake: _submitting
+                  ? null
+                  : () async {
+                      final source = await _pickImageSource();
+                      if (!mounted) return;
+                      await _takePhoto(source: source);
+                    },
             ),
             const SizedBox(height: 16),
             if (_autoFilled.isNotEmpty) ...[
@@ -455,6 +507,29 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
               keyboard: TextInputType.number, requiredField: true),
           _unitField('weightUnit', const ['kg', 'tonnes']),
           _field('ewcCode', 'EWC code', hint: 'e.g. 17 01 01'),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text('Scan Barcode'),
+              onPressed: _submitting
+                  ? null
+                  : () async {
+                      final code = await Navigator.push<String>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BarcodeScanScreen(
+                            onDetected: (c) => c,
+                          ),
+                        ),
+                      );
+                      if (code != null && code.isNotEmpty) {
+                        _controller('ewcCode').text = code;
+                        setState(() => _autoFilled.remove('ewcCode'));
+                      }
+                    },
+            ),
+          ),
           _field('date', 'Document date', hint: 'e.g. 12/06/2026'),
           _field('vehicleReg', 'Vehicle registration', hint: 'e.g. AB12 CDE'),
           _field('supplierName', 'Carrier / supplier'),

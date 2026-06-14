@@ -8,6 +8,7 @@ import '../../features/capture/capture_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/reports/reports_screen.dart';
 import '../../features/submissions/home_screen.dart';
+import '../../features/submissions/submission_detail_screen.dart';
 import '../../features/submissions/submissions_screen.dart';
 import 'main_shell.dart';
 
@@ -117,6 +118,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => CaptureScreen(
           projectId: state.uri.queryParameters['projectId'],
           projectLabel: state.uri.queryParameters['projectLabel'],
+        ),
+      ),
+      GoRoute(
+        path: '/submissions/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => SubmissionDetailScreen(
+          submissionId: state.pathParameters['id']!,
         ),
       ),
     ],
