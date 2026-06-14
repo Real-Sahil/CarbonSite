@@ -45,6 +45,7 @@ model User {
   classificationReviews     EvidenceClassification[] @relation("ClassificationReviewer")
   ocrCorrections            OcrCorrection[]          @relation("OcrCorrectionBy")
   deviceTokens              DeviceToken[]
+  snapshotVerifications     PublishedSnapshot[]      @relation("SnapshotVerifiedBy")
 
   platformMembership PlatformMembership?
 
@@ -509,6 +510,7 @@ model ActivityRecord {
   fuelType           String?        @map("fuel_type")
   refrigerantType    String?        @map("refrigerant_type")
   scope2Method       Scope2Method?  @map("scope2_method")
+  biogenicCo2e       Decimal?       @map("biogenic_co2e") @db.Decimal(18, 8)
   reviewStatus       ReviewStatus   @default(draft) @map("review_status")
   evidenceStatus     EvidenceStatus @default(missing) @map("evidence_status")
   assumptionNotes    String?        @map("assumption_notes")
@@ -763,6 +765,14 @@ model EmissionFactor {
 
 // ─── Calculations & Snapshots ─────────────────────────────────────────────────
 
+enum SnapshotVerificationStatus {
+  pending_review
+  approved
+  changes_requested
+
+  @@map("snapshot_verification_status")
+}
+
 enum CalculationRunStatus {
   queued
   running
@@ -814,6 +824,7 @@ model EmissionCalculation {
   co2                    Decimal? @db.Decimal(18, 8)
   ch4                    Decimal? @db.Decimal(18, 8)
   n2o                    Decimal? @db.Decimal(18, 8)
+  biogenicCo2e           Decimal? @map("biogenic_co2e") @db.Decimal(18, 8)
   totalCo2e              Decimal  @map("total_co2e") @db.Decimal(18, 8)
   formula                String
   warnings               Json     @default("[]")
@@ -830,22 +841,27 @@ model EmissionCalculation {
 }
 
 model PublishedSnapshot {
-  id                String   @id @default(cuid())
-  organizationId    String   @map("organization_id")
-  reportingPeriodId String   @map("reporting_period_id")
-  calculationRunId  String   @map("calculation_run_id")
-  publishedByUserId String   @map("published_by_user_id")
-  publishedAt       DateTime @default(now()) @map("published_at")
-  version           Int      @default(1)
+  id                     String                       @id @default(cuid())
+  organizationId         String                       @map("organization_id")
+  reportingPeriodId      String                       @map("reporting_period_id")
+  calculationRunId       String                       @map("calculation_run_id")
+  publishedByUserId      String                       @map("published_by_user_id")
+  publishedAt            DateTime                     @default(now()) @map("published_at")
+  version                Int                          @default(1)
+  verificationStatus     SnapshotVerificationStatus   @default(pending_review) @map("verification_status")
+  verifiedByUserId       String?                      @map("verified_by_user_id")
+  verifiedAt             DateTime?                    @map("verified_at")
 
   organization    Organization         @relation(fields: [organizationId], references: [id])
   reportingPeriod ReportingPeriod      @relation(fields: [reportingPeriodId], references: [id])
   calculationRun  CalculationRun       @relation(fields: [calculationRunId], references: [id])
   publishedBy     User                 @relation(fields: [publishedByUserId], references: [id])
+  verifiedBy      User?                @relation("SnapshotVerifiedBy", fields: [verifiedByUserId], references: [id])
   aggregates      DashboardAggregate[]
   reports         Report[]
 
   @@index([organizationId, reportingPeriodId])
+  @@index([organizationId, verificationStatus])
   @@map("published_snapshots")
 }
 

@@ -66,6 +66,22 @@ export async function POST(req: NextRequest, { params }: Params) {
       return apiError("NOT_FOUND", "Reporting period not found.", 404);
     }
 
+    // Idempotency: if the same key exists for this user+org, return the existing record
+    if (body.idempotencyKey) {
+      const existing = await prisma.fieldSubmission.findUnique({
+        where: {
+          organizationId_submittedByUserId_idempotencyKey: {
+            organizationId: orgId,
+            submittedByUserId: session.user.id,
+            idempotencyKey: body.idempotencyKey,
+          },
+        },
+      });
+      if (existing) {
+        return NextResponse.json(existing, { status: 200 });
+      }
+    }
+
     const submission = await prisma.fieldSubmission.create({
       data: {
         organizationId: orgId,
@@ -78,6 +94,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         gpsLat: body.gpsLat,
         gpsLng: body.gpsLng,
         deviceSubmittedAt: body.deviceSubmittedAt ? new Date(body.deviceSubmittedAt) : undefined,
+        idempotencyKey: body.idempotencyKey,
         status: "submitted",
         submittedByUserId: session.user.id,
       },
