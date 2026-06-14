@@ -121,6 +121,14 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
   const catTotals = new Map<string, { name: string; scope: number; totalKg: number; count: number }>();
   const facTotals = new Map<string, { totalKg: number; count: number }>();
   let grandKg = 0;
+  let totalCo2Kg = 0;
+  let totalCh4Kg = 0;
+  let totalN2oKg = 0;
+  let totalBiogenicKg = 0;
+  let hasCo2 = false;
+  let hasCh4 = false;
+  let hasN2o = false;
+  let hasBiogenic = false;
 
   for (const calc of calcs) {
     const kg = Number(calc.totalCo2e);
@@ -135,6 +143,10 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
     const f = facTotals.get(facName) ?? { totalKg: 0, count: 0 };
     f.totalKg += kg; f.count += 1;
     facTotals.set(facName, f);
+    if (calc.co2 != null) { totalCo2Kg += Number(calc.co2); hasCo2 = true; }
+    if (calc.ch4 != null) { totalCh4Kg += Number(calc.ch4); hasCh4 = true; }
+    if (calc.n2o != null) { totalN2oKg += Number(calc.n2o); hasN2o = true; }
+    if (calc.biogenicCo2e != null) { totalBiogenicKg += Number(calc.biogenicCo2e); hasBiogenic = true; }
   }
 
   const s1kg = scopeKg.get(1) ?? 0;
@@ -341,6 +353,10 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       scope3Tonnes: s3kg / 1000,
       totalTonnes: grandKg / 1000,
       recordCount: calcs.length,
+      co2Tonnes: hasCo2 ? totalCo2Kg / 1000 : undefined,
+      ch4Tonnes: hasCh4 ? totalCh4Kg / 1000 : undefined,
+      n2oTonnes: hasN2o ? totalN2oKg / 1000 : undefined,
+      biogenicCo2Tonnes: hasBiogenic ? totalBiogenicKg / 1000 : undefined,
       netZeroTargetYear: opts.netZeroTargetYear !== undefined ? Number(opts.netZeroTargetYear) : undefined,
       baselineYear: opts.baselineYear as string | undefined,
       baselineTonnes: opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined,
@@ -457,6 +473,10 @@ type CalcRow = {
   normalizedUnit: string;
   factorLibraryVersion: string;
   methodologyVersionName: string;
+  co2?: unknown;
+  ch4?: unknown;
+  n2o?: unknown;
+  biogenicCo2e?: unknown;
   totalCo2e: unknown;
   formula: string;
 };
@@ -472,7 +492,7 @@ function buildCsv(calculations: CalcRow[], report: { organization: { name: strin
   const lines: string[] = [
     `# ${report.organization.name} — GHG emissions export`,
     `# Period: ${report.reportingPeriod.label} | Snapshot v${report.snapshot.version} | Factors: ${factorLib} | Methodology: ${methodology} (GWP ${gwp})`,
-    ["scope","category_code","category_name","facility","source_description","original_amount","original_unit","normalized_amount","normalized_unit","factor_library_version","methodology","total_kg_co2e","total_t_co2e","formula"].join(","),
+    ["scope","category_code","category_name","facility","source_description","original_amount","original_unit","normalized_amount","normalized_unit","factor_library_version","methodology","co2_kg","ch4_kg_co2e","n2o_kg_co2e","biogenic_co2_kg","total_kg_co2e","total_t_co2e","formula"].join(","),
   ];
   for (const calc of calculations) {
     const kg = Number(calc.totalCo2e);
@@ -488,6 +508,10 @@ function buildCsv(calculations: CalcRow[], report: { organization: { name: strin
       esc2(calc.normalizedUnit),
       esc2(calc.factorLibraryVersion),
       esc2(calc.methodologyVersionName),
+      calc.co2 != null ? Number(calc.co2).toFixed(6) : "",
+      calc.ch4 != null ? Number(calc.ch4).toFixed(6) : "",
+      calc.n2o != null ? Number(calc.n2o).toFixed(6) : "",
+      calc.biogenicCo2e != null ? Number(calc.biogenicCo2e).toFixed(6) : "",
       kg.toFixed(6),
       (kg / 1000).toFixed(6),
       esc2(calc.formula),
