@@ -4,48 +4,48 @@ import { AnimateIn } from "@/components/marketing/animate-in";
 
 export const metadata: Metadata = {
   title: "Security - CarbonSite",
-  description: "Multi-tenant data isolation, six-role RBAC, append-only audit logs, 15-minute presigned URLs, and immutable calculation snapshots.",
+  description: "Multi-tenant data isolation, role-based access control, append-only audit logs, time-limited presigned URLs, and immutable calculation snapshots.",
 };
 
 const CONTROLS = [
   {
     area: "Multi-tenant isolation",
-    detail: "Every tenant-scoped table includes organization_id. Every database query must include an explicit org scope. Cross-tenant access is a P0 security classification. Enforced at the ORM query level, not just at the route level.",
+    detail: "Every organisation's data is strictly scoped at the query level. No tenant can access another organisation's records, files, or calculations — isolation is enforced in the data layer, not just in route handlers.",
     severity: "P0",
   },
   {
     area: "Role-based access control",
-    detail: "Six roles: admin, editor, reviewer, viewer, auditor, field_worker. Checked on every org-scoped API request via requireOrgMember(). Role comes from the server-side membership record - never from a client-supplied header or body field.",
+    detail: "Six roles govern what each user can see and do: admin, editor, reviewer, viewer, auditor, and field worker. Role assignment is managed server-side. Client-supplied claims are never trusted for authorisation decisions.",
     severity: "Core",
   },
   {
     area: "Object storage access",
-    detail: "Evidence files, import source files, error CSVs, and report PDFs live in Cloudflare R2. Clients never receive raw storage keys. Download URLs are 15-minute presigned URLs generated server-side after an auth and org-membership check.",
+    detail: "Evidence files, import data, and generated reports are stored in isolated object storage. Clients never receive raw storage keys or bucket credentials. All download links are short-lived, server-generated signed URLs issued only after authentication and membership verification.",
     severity: "Core",
   },
   {
     area: "Append-only audit log",
-    detail: "Every auth event, role change, import, record mutation, calculation run, snapshot publication, report download, and field submission review is written to AuditLog. Rows are never updated or deleted. Required for SECR and ISO 14064-1 compliance evidence.",
+    detail: "Every authentication event, role change, data import, record mutation, calculation run, snapshot publication, report download, and submission review is permanently recorded. Audit rows are never modified or deleted, providing a tamper-evident trail for SECR and ISO 14064-1 compliance.",
     severity: "Core",
   },
   {
     area: "Immutable calculation snapshots",
-    detail: "Publishing a snapshot locks the calculation run used to produce it. Reports generated from that snapshot will always reproduce the same figures. Recalculation creates a new PublishedSnapshot version - previous versions are never modified.",
+    detail: "Publishing a snapshot locks the underlying calculation run. Reports produced from that snapshot will always reproduce the same figures. Recalculation produces a new versioned snapshot — prior versions are preserved and unchanged.",
     severity: "Core",
   },
   {
     area: "Rate limiting",
-    detail: "Auth endpoints: 20 requests per minute per IP. Upload endpoints: 30/min. Mutations: 120/min. Read endpoints: 600/min. Applied in Next.js middleware before any route handler. Returns 429 with Retry-After header.",
+    detail: "Authentication, upload, and mutation endpoints are rate-limited per IP address. Limits are enforced before any route handler executes. Requests that exceed the limit receive a 429 response with a Retry-After header.",
     severity: "Defence",
   },
   {
     area: "Security headers",
-    detail: "X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy locks camera, microphone, geolocation, payment. HSTS in production. Applied on every response by middleware.",
+    detail: "Every response carries security headers: clickjacking protection, content-type sniffing prevention, strict referrer policy, a permissions policy that restricts access to device APIs, and HSTS in production. Applied globally in middleware.",
     severity: "Defence",
   },
   {
     area: "Field worker isolation",
-    detail: "The field_worker role has zero access to org dashboards, aggregate calculations, factor libraries, or any other user's submissions. They see only the reporting periods they were explicitly invited to and the status of their own submissions.",
+    detail: "External users (subcontractors, suppliers, tipper hires) operate in a strictly limited mode. They can submit evidence for the reporting periods they were invited to and check the status of their own submissions — nothing else. Organisation dashboards, calculations, and other users' data are completely inaccessible.",
     severity: "Core",
   },
 ];
@@ -70,7 +70,7 @@ export default function SecurityPage() {
               Designed to be audited.
             </h1>
             <p className="text-lg text-zinc-400 leading-relaxed max-w-[55ch]">
-              Multi-tenant isolation, six-role RBAC, append-only audit logs,
+              Multi-tenant isolation, role-based access control, append-only audit logs,
               and immutable snapshots. Every control is enforced server-side.
             </p>
           </AnimateIn>
@@ -118,15 +118,14 @@ export default function SecurityPage() {
                 No external auth dependencies.
               </h2>
               <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                Authentication is handled by Better Auth with Postgres sessions - your session data
-                lives in your own database, not a third-party auth service. JWT tokens for the Flutter
-                mobile client are issued by the same Better Auth instance with auto-refresh via Dio
-                interceptor on 401.
+                Authentication runs entirely on your own infrastructure. Session data lives in your
+                database — not a third-party auth service — so you have full custody of who has access
+                and when. Mobile clients use short-lived tokens with automatic renewal.
               </p>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Object storage uses Cloudflare R2 with org-scoped key conventions:
-                <code className="text-zinc-200 font-mono text-xs ml-1">org/[orgId]/reports/[reportId]/report.pdf</code>.
-                No cross-org key patterns are constructable. Presigned URLs have a 15-minute TTL.
+                Files are stored in isolated, access-controlled object storage. Each organisation's
+                content is scoped to its own namespace. Download links expire after a short window
+                and are only issued to authenticated, authorised users.
               </p>
             </div>
           </AnimateIn>
