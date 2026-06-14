@@ -70,6 +70,7 @@ export const createFieldSubmissionSchema = z.object({
   gpsLat: z.number().min(-90).max(90).optional(),
   gpsLng: z.number().min(-180).max(180).optional(),
   deviceSubmittedAt: z.string().datetime().optional(),
+  idempotencyKey: z.string().max(128).optional(),
 });
 
 export const reviewFieldSubmissionSchema = z.object({

@@ -73,7 +73,17 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
         facility: { select: { id: true, name: true } },
         files: {
           include: {
-            evidenceFile: { select: { id: true, filename: true } },
+            evidenceFile: {
+              select: {
+                id: true,
+                filename: true,
+                classifications: {
+                  select: { confidenceScore: true, documentType: true, modelVersion: true },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
           },
         },
       },
@@ -234,13 +244,43 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             {submission.files.length === 0 ? (
               <p className="text-sm text-[#333333] italic tracking-[-0.42px]">No evidence files attached</p>
             ) : (
-              <SubmissionEvidenceDownloads
-                orgId={orgId}
-                files={submission.files.map((file) => ({
-                  id: file.evidenceFile.id,
-                  filename: file.evidenceFile.filename,
-                }))}
-              />
+              <div className="space-y-3">
+                <SubmissionEvidenceDownloads
+                  orgId={orgId}
+                  files={submission.files.map((file) => ({
+                    id: file.evidenceFile.id,
+                    filename: file.evidenceFile.filename,
+                  }))}
+                />
+                {submission.files.some((f) => f.evidenceFile.classifications.length > 0) && (
+                  <div className="divide-y divide-[#e5e7eb] rounded-[10px] border border-[#e5e7eb] mt-3">
+                    {submission.files.map((file) => {
+                      const cls = file.evidenceFile.classifications[0];
+                      if (!cls) return null;
+                      const score = cls.confidenceScore;
+                      const scoreColor =
+                        score >= 80 ? "text-[#0f3e17]" : score >= 50 ? "text-amber-700" : "text-red-600";
+                      const scoreBg =
+                        score >= 80 ? "bg-[#e1f4df]" : score >= 50 ? "bg-amber-50" : "bg-red-50";
+                      return (
+                        <div key={file.evidenceFile.id} className="flex items-center justify-between px-3 py-2.5 gap-3">
+                          <p className="text-xs text-[#222222] tracking-[-0.36px] truncate flex-1">
+                            {file.evidenceFile.filename}
+                          </p>
+                          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${scoreBg}`}>
+                            <span className={`text-xs font-medium ${scoreColor}`}>
+                              {score}% confidence
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[#555] tracking-[-0.33px] shrink-0">
+                            {cls.documentType.replace(/_/g, " ")} · {cls.modelVersion}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
