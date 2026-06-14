@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowRight,
   BarChart3,
+  Building2,
   ClipboardCheck,
   Clock,
   FileText,
@@ -13,6 +14,7 @@ import {
   PieChart,
   Route,
   Scale,
+  ShieldCheck,
   Target,
   TrendingUp,
   Upload,
@@ -38,6 +40,7 @@ import { OnboardingChecklist } from "./onboarding-checklist";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
+  searchParams: Promise<{ facilityId?: string }>;
 }
 
 function formatKgCo2e(value: unknown): string {
@@ -68,8 +71,9 @@ function formatPercent(complete: number, total: number): string {
   return `${Math.round((complete / total) * 100)}%`;
 }
 
-export default async function DashboardPage({ params }: DashboardPageProps) {
+export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
+  const { facilityId: selectedFacilityId } = await searchParams;
   const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
   const [organization, currentPeriod] = await Promise.all([
@@ -84,8 +88,15 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     }),
   ]);
 
+  // Latest succeeded calculation run (used for data quality metrics)
+  const latestSucceededRun = await prisma.calculationRun.findFirst({
+    where: { organizationId: orgId, status: "succeeded" },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
-  const [batchA, batchB, trendAggregates] = await Promise.all([
+  const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch] = await Promise.all([
     Promise.all([
       currentPeriod
         ? prisma.dashboardAggregate.groupBy({
@@ -264,6 +275,67 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         reportingPeriod: { select: { id: true, label: true, startDate: true } },
       },
     }),
+    // Facility breakdowns for the current period (live, no snapshot)
+    currentPeriod
+      ? prisma.dashboardAggregate.findMany({
+          where: {
+            organizationId: orgId,
+            reportingPeriodId: currentPeriod.id,
+            snapshotId: null,
+            emissionCategoryId: null,
+            businessUnitId: null,
+            facilityId: { not: null },
+          },
+          include: {
+            facility: { select: { id: true, name: true } },
+          },
+          orderBy: { totalCo2e: "desc" },
+        })
+      : Promise.resolve(
+          [] as {
+            id: string;
+            facilityId: string | null;
+            totalCo2e: string | { toNumber: () => number };
+            recordCount: number;
+            facility: { id: string; name: string } | null;
+          }[],
+        ),
+    // Data quality metrics
+    Promise.all([
+      // Total CO2e for all records in the latest calculation run
+      latestSucceededRun
+        ? prisma.emissionCalculation.aggregate({
+            where: { calculationRunId: latestSucceededRun.id, organizationId: orgId },
+            _sum: { totalCo2e: true },
+          })
+        : Promise.resolve({ _sum: { totalCo2e: null } }),
+      // CO2e for approved records only (join via activityRecord reviewStatus)
+      latestSucceededRun
+        ? prisma.emissionCalculation.aggregate({
+            where: {
+              calculationRunId: latestSucceededRun.id,
+              organizationId: orgId,
+              activityRecord: { reviewStatus: "approved" },
+            },
+            _sum: { totalCo2e: true },
+          })
+        : Promise.resolve({ _sum: { totalCo2e: null } }),
+      // Approved records missing evidence (no ActivityRecordEvidence rows)
+      prisma.activityRecord.count({
+        where: {
+          organizationId: orgId,
+          reviewStatus: "approved",
+          evidence: { none: {} },
+        },
+      }),
+      // Records needing attention (in_review or draft)
+      prisma.activityRecord.count({
+        where: {
+          organizationId: orgId,
+          reviewStatus: { in: ["in_review", "draft"] },
+        },
+      }),
+    ] as const),
   ]);
 
   const [
@@ -302,6 +374,26 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     reportStatusRows,
     socialValueStats,
   ] = batchB;
+
+  const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount] =
+    dataQualityBatch;
+
+  const totalCalcCo2e = Number(totalCo2eAgg._sum.totalCo2e ?? 0);
+  const approvedCalcCo2e = Number(approvedCo2eAgg._sum.totalCo2e ?? 0);
+  const dataConfidencePct =
+    totalCalcCo2e > 0 ? Math.round((approvedCalcCo2e / totalCalcCo2e) * 100) : null;
+
+  // Facility breakdown derived values
+  const facilityRows = facilityAggregates.map((agg) => ({
+    id: agg.facilityId ?? "",
+    name: agg.facility?.name ?? "Unknown facility",
+    totalCo2e: Number(agg.totalCo2e),
+    recordCount: agg.recordCount,
+  }));
+  const facilityTotal = facilityRows.reduce((sum, row) => sum + row.totalCo2e, 0);
+  const activeFacility = selectedFacilityId
+    ? facilityRows.find((row) => row.id === selectedFacilityId) ?? null
+    : null;
 
   const scopeRows = [1, 2, 3].map((scope) => {
     const aggregate = scopeAggregates.find((row) => row.scope === scope);
@@ -572,12 +664,126 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         </div>
       )}
 
+      {facilityRows.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Building2 aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+                  <CardTitle className="text-base">By facility</CardTitle>
+                </div>
+                <CardDescription className="mt-1">
+                  CO₂e breakdown by facility for the current reporting period.
+                  {activeFacility && (
+                    <span className="ml-1 font-normal text-[#0f3e17]">
+                      Filtered: {activeFacility.name}
+                    </span>
+                  )}
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/orgs/${orgId}/dashboard`}
+                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                    !selectedFacilityId
+                      ? "bg-[#0f3e17] text-[#fffefc]"
+                      : "border border-[#e5e7eb] text-[#333333] hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+                  }`}
+                >
+                  All
+                </Link>
+                {facilityRows.map((fac) => (
+                  <Link
+                    key={fac.id}
+                    href={`/orgs/${orgId}/dashboard?facilityId=${fac.id}`}
+                    className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                      selectedFacilityId === fac.id
+                        ? "bg-[#0f3e17] text-[#fffefc]"
+                        : "border border-[#e5e7eb] text-[#333333] hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+                    }`}
+                  >
+                    {fac.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-hidden rounded-[14px] border border-[#e5e7eb]">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
+                    <th className="px-4 py-3 text-left text-xs font-normal uppercase tracking-wide text-[#333333]">
+                      Facility
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#333333]">
+                      Total CO₂e
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#333333]">
+                      Share
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#333333]">
+                      Records
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#e5e7eb]">
+                  {(activeFacility ? [activeFacility] : facilityRows).map((fac) => {
+                    const share =
+                      facilityTotal > 0
+                        ? Math.round((fac.totalCo2e / facilityTotal) * 100)
+                        : 0;
+                    return (
+                      <tr
+                        key={fac.id}
+                        className={
+                          selectedFacilityId === fac.id ? "bg-[#e1f4df]/40" : "hover:bg-[#f9fafb]"
+                        }
+                      >
+                        <td className="px-4 py-3 font-normal text-[#0f3e17] tracking-[-0.42px]">
+                          {fac.name}
+                        </td>
+                        <td className="px-4 py-3 text-right font-normal text-[#0f3e17] tracking-[-0.42px]">
+                          {formatKgCo2e(fac.totalCo2e)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#e1f4df]">
+                              <div
+                                className="h-full rounded-full bg-[#0f3e17]"
+                                style={{ width: `${share}%` }}
+                              />
+                            </div>
+                            <span className="w-8 text-right text-xs text-[#333333] tracking-[-0.36px]">
+                              {share}%
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right text-xs text-[#333333] tracking-[-0.36px]">
+                          {fac.recordCount.toLocaleString("en-GB")}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Emissions by scope</CardTitle>
             <CardDescription>
               Aggregates rebuilt from immutable calculation runs.
+              {activeFacility && (
+                <span className="ml-1 font-normal text-[#0f3e17]">
+                  Showing all scopes — facility filter applies to the breakdown table above.
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -647,6 +853,104 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+                <CardTitle className="text-base">Data quality</CardTitle>
+              </div>
+              <CardDescription className="mt-1">
+                Confidence signals derived from record review status and evidence completeness.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-[14px] border border-[#e5e7eb] p-[21px]">
+              <dt className="text-xs font-normal uppercase tracking-wide text-[#333333]">
+                Emissions from reviewed records
+              </dt>
+              {dataConfidencePct !== null ? (
+                <>
+                  <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#0f3e17]">
+                    {dataConfidencePct}%
+                  </dd>
+                  <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                    of calculated CO₂e from approved records
+                  </p>
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e5e7eb]">
+                    <div
+                      className={`h-full rounded-full ${
+                        dataConfidencePct >= 90
+                          ? "bg-emerald-600"
+                          : dataConfidencePct >= 50
+                            ? "bg-amber-500"
+                            : "bg-red-500"
+                      }`}
+                      style={{ width: `${dataConfidencePct}%` }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#333333]">
+                    —
+                  </dd>
+                  <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                    Run a calculation to see confidence
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="rounded-[14px] border border-[#e5e7eb] p-[21px]">
+              <dt className="text-xs font-normal uppercase tracking-wide text-[#333333]">
+                Approved records missing evidence
+              </dt>
+              <dd
+                className={`mt-2 text-2xl font-normal tracking-[-0.4px] ${
+                  missingEvidenceCount > 0 ? "text-amber-600" : "text-[#0f3e17]"
+                }`}
+              >
+                {missingEvidenceCount.toLocaleString("en-GB")}
+              </dd>
+              <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                Approved records with no linked evidence files
+              </p>
+            </div>
+
+            <div className="rounded-[14px] border border-[#e5e7eb] p-[21px]">
+              <dt className="text-xs font-normal uppercase tracking-wide text-[#333333]">
+                Records pending attention
+              </dt>
+              <dd
+                className={`mt-2 text-2xl font-normal tracking-[-0.4px] ${
+                  pendingAttentionCount > 0 ? "text-amber-600" : "text-[#0f3e17]"
+                }`}
+              >
+                {pendingAttentionCount.toLocaleString("en-GB")}
+              </dd>
+              <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                Records in draft or in review status
+              </p>
+              {pendingAttentionCount > 0 && (
+                <div className="mt-3">
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/orgs/${orgId}/records`}>
+                      Review records
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </dl>
+        </CardContent>
+      </Card>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
