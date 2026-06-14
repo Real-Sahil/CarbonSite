@@ -17,6 +17,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Briefcase,
+  Heart,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -95,6 +97,8 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
     { label: "Calculations", href: `/orgs/${orgId}/calculations`,     icon: Calculator },
     { label: "Reports",      href: `/orgs/${orgId}/reports`,          icon: BarChart2 },
     { label: "Targets",      href: `/orgs/${orgId}/targets`,          icon: Target },
+    { label: "Contracts",    href: `/orgs/${orgId}/contracts`,         icon: Briefcase },
+    { label: "Social Value", href: `/orgs/${orgId}/social-value`,      icon: Heart },
     { label: "Settings",     href: `/orgs/${orgId}/settings/members`, icon: Settings },
   ];
 
