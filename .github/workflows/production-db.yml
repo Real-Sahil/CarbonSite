@@ -15,12 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
       NO_COLOR: "1"
     steps:
       - name: Check DATABASE_URL secret
         run: |
           if [ -z "$DATABASE_URL" ]; then
             echo "::error::Add the Neon Postgres connection string as a GitHub Actions secret named DATABASE_URL."
+            exit 1
+          fi
+          if [ -z "$DIRECT_DATABASE_URL" ]; then
+            echo "::error::Add the Neon direct connection string as a GitHub Actions secret named DIRECT_DATABASE_URL."
             exit 1
           fi
       - name: Show safe database target
