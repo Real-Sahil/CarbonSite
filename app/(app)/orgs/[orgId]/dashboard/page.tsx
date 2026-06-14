@@ -248,6 +248,11 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         _count: { _all: true },
         orderBy: { status: "asc" },
       }),
+      prisma.socialValueRecord.aggregate({
+        where: { organizationId: orgId },
+        _sum: { valuePounds: true },
+        _count: { _all: true },
+      }),
     ] as const),
     // Period trend: live scope-level aggregates across all reporting periods.
     // Reads DashboardAggregate only — never raw EmissionCalculation rows.
@@ -301,6 +306,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     targetReductionStats,
     topCategoryAggregates,
     reportStatusRows,
+    socialValueStats,
   ] = batchB;
 
   const scopeRows = [1, 2, 3].map((scope) => {
@@ -773,6 +779,12 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                 label="Planned investment"
                 value={formatCurrency(initiativeTotalCost)}
                 detail="Cost recorded against initiatives"
+              />
+              <InsightCard
+                icon={Handshake}
+                label="TOMS social value"
+                value={formatCurrency(socialValueStats._sum.valuePounds ?? 0)}
+                detail={`${socialValueStats._count._all.toLocaleString("en-GB")} TOMS records`}
               />
               <InsightCard
                 icon={Route}
