@@ -145,7 +145,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           _MonthlyBarChart(stats: stats),
                           const SizedBox(height: 24),
                         ],
-                        _SectionTitle(
+                        const _SectionTitle(
                           title: 'Data summary',
                           subtitle: 'The figures behind the charts',
                         ),

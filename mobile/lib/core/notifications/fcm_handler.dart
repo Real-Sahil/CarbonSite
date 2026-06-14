@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
@@ -101,7 +102,9 @@ class FcmHandler {
     debugPrint('[FCM] Foreground: $title — $body');
     // The foreground notification is handled by the in-app SnackBar banner
     // wired up in main.dart via the navigatorKey.
-    _foregroundNotificationHandlers.forEach((handler) => handler(message));
+    for (final handler in _foregroundNotificationHandlers) {
+      handler(message);
+    }
   }
 
   static void _handleTap(RemoteMessage message) {
