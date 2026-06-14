@@ -18,7 +18,6 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
   FieldSubmissionDetail? _detail;
   bool _loading = true;
   String? _error;
-  String _orgId = '';
 
   @override
   void initState() {
@@ -29,7 +28,6 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
   Future<void> _load() async {
     final orgId = await _storage.read(key: 'org_id') ?? '';
     if (!mounted) return;
-    setState(() => _orgId = orgId);
 
     if (orgId.isEmpty) {
       setState(() { _loading = false; _error = 'No organisation found.'; });
