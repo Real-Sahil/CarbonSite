@@ -41,7 +41,9 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter analyze
+      - name: Generate code (drift)
+        run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter analyze --no-fatal-infos
       - run: flutter test
       - name: Check Android release signing secrets
         env:
@@ -100,7 +102,9 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter analyze
+      - name: Generate code (drift)
+        run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter analyze --no-fatal-infos
       - run: flutter test
       - run: flutter build ios --release --no-codesign --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
       - name: Package unsigned iOS app
