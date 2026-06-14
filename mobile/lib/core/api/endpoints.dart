@@ -402,6 +402,78 @@ Future<String> getReportDownloadUrl(String orgId, String reportId, {String artif
   return data['downloadUrl'] as String? ?? '';
 }
 
+class EvidenceFile {
+  final String id;
+  final String filename;
+  final String? downloadUrl;
+
+  const EvidenceFile({required this.id, required this.filename, this.downloadUrl});
+
+  factory EvidenceFile.fromJson(Map<String, dynamic> json) {
+    return EvidenceFile(
+      id: json['id'] as String? ?? '',
+      filename: json['filename'] as String? ?? '',
+      downloadUrl: json['downloadUrl'] as String? ?? json['download_url'] as String?,
+    );
+  }
+}
+
+class FieldSubmissionDetail {
+  final String id;
+  final String documentType;
+  final String status;
+  final String createdAt;
+  final String? reviewNote;
+  final double? co2eKg;
+  final int? scope;
+  final List<EvidenceFile> evidenceFiles;
+
+  const FieldSubmissionDetail({
+    required this.id,
+    required this.documentType,
+    required this.status,
+    required this.createdAt,
+    this.reviewNote,
+    this.co2eKg,
+    this.scope,
+    this.evidenceFiles = const [],
+  });
+
+  factory FieldSubmissionDetail.fromJson(Map<String, dynamic> json) {
+    double? toDouble(Object? v) {
+      if (v is num) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    }
+    int? toInt(Object? v) {
+      if (v is int) return v;
+      if (v is String) return int.tryParse(v);
+      return null;
+    }
+    final rawFiles = (json['evidenceFiles'] ?? json['evidence_files']) as List<dynamic>? ?? [];
+    return FieldSubmissionDetail(
+      id: json['id'] as String? ?? '',
+      documentType: json['documentType'] as String? ?? json['document_type'] as String? ?? 'other',
+      status: json['status'] as String? ?? 'pending_review',
+      createdAt: json['createdAt'] as String? ?? json['created_at'] as String? ?? '',
+      reviewNote: json['reviewNote'] as String? ?? json['review_note'] as String?,
+      co2eKg: toDouble(json['co2eKg'] ?? json['co2e_kg']),
+      scope: toInt(json['scope']),
+      evidenceFiles: rawFiles.map((e) => EvidenceFile.fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+}
+
+Future<FieldSubmissionDetail> getSubmissionDetail(String orgId, String submissionId) async {
+  final client = await getClient();
+  final response = await client.get('/api/orgs/$orgId/field-submissions/$submissionId');
+  final raw = response.data;
+  final json = raw is Map<String, dynamic>
+      ? (raw['data'] is Map<String, dynamic> ? raw['data'] as Map<String, dynamic> : raw)
+      : <String, dynamic>{};
+  return FieldSubmissionDetail.fromJson(json);
+}
+
 /// Submits a field submission with optional pre-uploaded evidence IDs.
 /// POST /api/orgs/{orgId}/field-submissions
 ///

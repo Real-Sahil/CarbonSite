@@ -16,6 +16,7 @@ void main() async {
   try {
     await Firebase.initializeApp();
     await FcmHandler.initialise();
+    FcmHandler.setupBackgroundMessageHandler();
   } catch (e) {
     debugPrint('[FCM] Firebase initialisation skipped: $e');
   }

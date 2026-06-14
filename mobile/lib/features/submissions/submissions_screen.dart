@@ -297,44 +297,48 @@ class _RemoteTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              _docIcon(submission.documentType),
-              size: 22,
-              color: colorScheme.primary,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _docLabel(submission.documentType),
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    dt == null
-                        ? submission.createdAt
-                        : DateFormat('d MMM yyyy, HH:mm').format(dt.toLocal()),
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+      child: InkWell(
+        onTap: () => context.push('/submissions/${submission.id}'),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colorScheme.outlineVariant),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                _docIcon(submission.documentType),
+                size: 22,
+                color: colorScheme.primary,
               ),
-            ),
-            const SizedBox(width: 8),
-            SubmissionStatusChip(status: submission.status, compact: true),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _docLabel(submission.documentType),
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      dt == null
+                          ? submission.createdAt
+                          : DateFormat('d MMM yyyy, HH:mm').format(dt.toLocal()),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              SubmissionStatusChip(status: submission.status, compact: true),
+            ],
+          ),
         ),
       ),
     );

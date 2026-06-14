@@ -116,7 +116,9 @@ class FcmHandler {
     switch (type) {
       case 'submission_reviewed':
         final submissionId = data['submissionId'] as String?;
-        if (submissionId != null && orgId != null) {
+        if (submissionId != null && submissionId.isNotEmpty) {
+          GoRouter.of(context).push('/submissions/$submissionId');
+        } else {
           GoRouter.of(context).go('/submissions');
         }
         break;
@@ -147,5 +149,37 @@ class FcmHandler {
 
   static void removeForegroundHandler(void Function(RemoteMessage) handler) {
     _foregroundNotificationHandlers.remove(handler);
+  }
+
+  // ── Background message handler + pending navigation ────────────────────────
+
+  static const _pendingStorage = FlutterSecureStorage();
+
+  /// Call once at app startup after Firebase.initializeApp().
+  static void setupBackgroundMessageHandler() {
+    // App opened from terminated state by notification tap
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) _handleNotificationOpen(message);
+    });
+
+    // App in background, user taps notification
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationOpen);
+  }
+
+  static void _handleNotificationOpen(RemoteMessage message) {
+    final submissionId = message.data['submissionId'] as String?;
+    if (submissionId != null && submissionId.isNotEmpty) {
+      _pendingStorage.write(key: 'pending_navigation_target', value: '/submissions/$submissionId');
+    }
+  }
+
+  /// Call in a widget's initState to check for a pending deep link.
+  static Future<void> consumePendingNavigation(BuildContext context) async {
+    final target = await _pendingStorage.read(key: 'pending_navigation_target');
+    if (target == null || target.isEmpty) return;
+    await _pendingStorage.delete(key: 'pending_navigation_target');
+    if (context.mounted) {
+      GoRouter.of(context).push(target);
+    }
   }
 }

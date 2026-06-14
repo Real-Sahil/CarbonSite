@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Target } from "lucide-react";
 import { DeleteInitiativeButton, DeleteTargetButton } from "./target-actions";
+import { TargetProgressSection, type TargetWithProgress } from "./target-progress";
 
 interface TargetsPageProps {
   params: Promise<{ orgId: string }>;
@@ -74,6 +75,42 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
     }),
   ]);
 
+  // Fetch aggregate totals for all periods referenced by targets
+  const periodIds = [
+    ...new Set(targets.flatMap((t) => [t.baselinePeriodId, t.targetPeriodId])),
+  ];
+
+  // Aggregate totalCo2e (kgCO2e) across all scopes per period.
+  // We group in application code: sum all rows for a period regardless of scope/category/facility.
+  const aggregateRows =
+    periodIds.length > 0
+      ? await prisma.dashboardAggregate.findMany({
+          where: { organizationId: orgId, reportingPeriodId: { in: periodIds } },
+          select: { reportingPeriodId: true, totalCo2e: true },
+        })
+      : [];
+
+  // Sum kgCO2e per period then convert to tonnes
+  const aggregateByPeriod = new Map<string, number>();
+  for (const row of aggregateRows) {
+    const prev = aggregateByPeriod.get(row.reportingPeriodId) ?? 0;
+    aggregateByPeriod.set(row.reportingPeriodId, prev + Number(row.totalCo2e));
+  }
+
+  const targetsWithProgress: TargetWithProgress[] = targets.map((t) => {
+    const baselineKg = aggregateByPeriod.get(t.baselinePeriodId) ?? null;
+    const currentKg = aggregateByPeriod.get(t.targetPeriodId) ?? null;
+    return {
+      id: t.id,
+      targetType: t.targetType,
+      baselinePeriodLabel: t.baselinePeriod.label,
+      baselineTonnes: baselineKg !== null ? baselineKg / 1000 : null,
+      targetPeriodLabel: t.targetPeriod.label,
+      currentTonnes: currentKg !== null ? currentKg / 1000 : null,
+      reductionAmountKg: Number(t.reductionAmount),
+    };
+  });
+
   const memberOptions = memberships.map((membership) => ({
     userId: membership.user.id,
     label: membership.user.name ?? membership.user.email,
@@ -95,6 +132,8 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
           Reduction targets and initiatives connected to reporting periods.
         </p>
       </div>
+
+      <TargetProgressSection targets={targetsWithProgress} />
 
       <Card>
         <CardHeader>
