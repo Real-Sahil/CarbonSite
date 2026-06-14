@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { updateFacilitySchema } from "@/lib/validation/org";
 
@@ -22,6 +23,12 @@ export async function PATCH(
   try {
     const { orgId, facilityId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const limited = rateLimitRequest(req, {
+      key: rateLimitKey(orgId, "facility-update", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const facility = await resolveFacility(orgId, facilityId);
     if (!facility) {
@@ -42,7 +49,7 @@ export async function PATCH(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.updated",
+      action: "facility.updated",
       resourceType: "facility",
       resourceId: facilityId,
       metadata: { changes: body },
@@ -55,12 +62,18 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string; facilityId: string }> },
 ) {
   try {
     const { orgId, facilityId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
+    const limited = rateLimitRequest(req, {
+      key: rateLimitKey(orgId, "facility-delete", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const facility = await resolveFacility(orgId, facilityId);
     if (!facility) {
@@ -84,7 +97,7 @@ export async function DELETE(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.deleted",
+      action: "facility.deleted",
       resourceType: "facility",
       resourceId: facilityId,
       metadata: { name: facility.name },

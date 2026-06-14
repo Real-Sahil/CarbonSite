@@ -67,7 +67,9 @@ class _InviteScreenState extends State<InviteScreen> {
 
   String _friendlyError(Object e) {
     final msg = e.toString();
-    if (msg.contains('404') || msg.contains('invalid') || msg.contains('expired')) {
+    if (msg.contains('404') ||
+        msg.contains('invalid') ||
+        msg.contains('expired')) {
       return 'This invite link is invalid or has expired. Ask your administrator for a new one.';
     }
     if (msg.contains('SocketException') ||
@@ -173,17 +175,17 @@ class _InviteScreenState extends State<InviteScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _loading ? null : _joinOrganisation(),
+                  onFieldSubmitted: (_) =>
+                      _loading ? null : _joinOrganisation(),
                   decoration: const InputDecoration(
                     labelText: 'Email address',
-                    hintText: 'Optional — used for your account',
+                    hintText: 'Optional unless your invite names an email',
                     prefixIcon: Icon(Icons.email_outlined),
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) return null;
-                    final emailRegex =
-                        RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+                    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
                     if (!emailRegex.hasMatch(value.trim())) {
                       return 'Enter a valid email address';
                     }

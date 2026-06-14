@@ -26,11 +26,7 @@ export function AnimatedCounter({
   const [value, setValue] = useState(0);
 
   useEffect(() => {
-    if (!isInView) return;
-    if (prefersReduced) {
-      setValue(to);
-      return;
-    }
+    if (!isInView || prefersReduced) return;
 
     const start = performance.now();
     let frame: number;
@@ -48,10 +44,12 @@ export function AnimatedCounter({
     return () => cancelAnimationFrame(frame);
   }, [isInView, to, duration, prefersReduced, decimals]);
 
+  const display = isInView && prefersReduced ? to : value;
+
   return (
     <span ref={ref}>
       {prefix}
-      {value.toLocaleString("en-GB", {
+      {display.toLocaleString("en-GB", {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
       })}

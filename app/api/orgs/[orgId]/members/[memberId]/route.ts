@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { updateMemberRoleSchema } from "@/lib/validation/org";
 
@@ -12,6 +13,12 @@ export async function PATCH(
   try {
     const { orgId, memberId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
+    const limited = rateLimitRequest(req, {
+      key: rateLimitKey(orgId, "member-role-change", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
     const body = updateMemberRoleSchema.parse(await req.json());
 
     const target = await prisma.organizationMembership.findUnique({
@@ -49,6 +56,12 @@ export async function PATCH(
       },
     });
 
+    // Invalidate all sessions for the affected user so the new role takes
+    // effect immediately rather than waiting for their session to expire.
+    if (target.role !== body.role) {
+      await prisma.session.deleteMany({ where: { userId: target.userId } });
+    }
+
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
@@ -69,12 +82,18 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string; memberId: string }> },
 ) {
   try {
     const { orgId, memberId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
+    const limited = rateLimitRequest(req, {
+      key: rateLimitKey(orgId, "member-remove", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const target = await prisma.organizationMembership.findUnique({
       where: { id: memberId },

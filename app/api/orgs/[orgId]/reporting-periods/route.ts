@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { createReportingPeriodSchema } from "@/lib/validation/org";
 
@@ -11,7 +13,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(
+    const { session, membership } = await requireOrgMember(
       orgId,
       "admin",
       "editor",
@@ -21,10 +23,27 @@ export async function GET(
       "field_worker",
     );
 
-    const periods = await prisma.reportingPeriod.findMany({
-      where: { organizationId: orgId },
-      orderBy: { startDate: "desc" },
-    });
+    let periods;
+    try {
+      periods = await prisma.reportingPeriod.findMany({
+        where: {
+          organizationId: orgId,
+          ...(membership.role === "field_worker"
+            ? {
+                fieldWorkerAssignments: {
+                  some: { userId: session.user.id, organizationId: orgId },
+                },
+              }
+            : {}),
+        },
+        orderBy: { startDate: "desc" },
+      });
+    } catch (err) {
+      if (membership.role === "field_worker" && isMissingDatabaseObjectError(err)) {
+        return NextResponse.json([]);
+      }
+      throw err;
+    }
 
     return NextResponse.json(periods);
   } catch (err) {
@@ -39,6 +58,12 @@ export async function POST(
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const limited = rateLimitRequest(req, {
+      key: rateLimitKey(orgId, "reporting-periods", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
     const body = createReportingPeriodSchema.parse(await req.json());
 
     const start = new Date(body.startDate);
@@ -66,7 +91,7 @@ export async function POST(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.created",
+      action: "reporting_period.created",
       resourceType: "reporting_period",
       resourceId: period.id,
       metadata: { label: period.label, type: period.type },

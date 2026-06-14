@@ -96,7 +96,6 @@ export default function NewOrgPage() {
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Acme Ltd"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -113,18 +112,16 @@ export default function NewOrgPage() {
                 <Input
                   id="industry"
                   type="text"
-                  placeholder="e.g. Construction, Logistics, Manufacturing"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
                   disabled={loading}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="hqCountry">HQ Country (optional)</Label>
+                <Label htmlFor="hqCountry">HQ country (optional)</Label>
                 <Input
                   id="hqCountry"
                   type="text"
-                  placeholder="e.g. United Kingdom"
                   value={hqCountry}
                   onChange={(e) => setHqCountry(e.target.value)}
                   disabled={loading}

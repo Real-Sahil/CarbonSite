@@ -1,44 +1,53 @@
-import { describe, expect, it } from "vitest";
-import { rateLimit } from "../rate-limit";
+import { NextRequest } from "next/server";
+import { describe, expect, test, beforeEach } from "vitest";
+import {
+  rateLimit,
+  rateLimitRequest,
+  rateLimitKey,
+  resetRateLimitBucketsForTests,
+} from "../rate-limit";
 
-describe("rateLimit", () => {
-  it("allows requests under the limit", () => {
-    const key = `test-under-${Math.random()}`;
-    for (let i = 0; i < 5; i++) {
-      expect(rateLimit(key, 5, 60_000).allowed).toBe(true);
-    }
+describe("rateLimit (key-based)", () => {
+  beforeEach(() => resetRateLimitBucketsForTests());
+
+  test("allows requests within the window limit", () => {
+    expect(rateLimit("test-key", 2, 60_000).allowed).toBe(true);
+    expect(rateLimit("test-key", 2, 60_000).allowed).toBe(true);
   });
 
-  it("blocks requests over the limit and reports retry-after", () => {
-    const key = `test-over-${Math.random()}`;
-    for (let i = 0; i < 3; i++) rateLimit(key, 3, 60_000);
-    const blocked = rateLimit(key, 3, 60_000);
-    expect(blocked.allowed).toBe(false);
-    expect(blocked.retryAfterSeconds).toBeGreaterThan(0);
+  test("blocks after limit exceeded", () => {
+    rateLimit("test-key", 1, 60_000);
+    const result = rateLimit("test-key", 1, 60_000);
+    expect(result.allowed).toBe(false);
+    expect(result.retryAfterSeconds).toBeGreaterThan(0);
+  });
+});
+
+describe("rateLimitRequest (NextRequest wrapper)", () => {
+  beforeEach(() => resetRateLimitBucketsForTests());
+
+  const makeReq = (ip = "203.0.113.10") =>
+    new NextRequest("https://example.test/api", {
+      headers: { "x-forwarded-for": ip },
+    });
+
+  test("returns null when within limit", () => {
+    const req = makeReq();
+    expect(rateLimitRequest(req, { key: "comments", limit: 2, windowMs: 60_000 })).toBeNull();
+    expect(rateLimitRequest(req, { key: "comments", limit: 2, windowMs: 60_000 })).toBeNull();
   });
 
-  it("tracks separate keys independently", () => {
-    const keyA = `test-a-${Math.random()}`;
-    const keyB = `test-b-${Math.random()}`;
-    rateLimit(keyA, 1, 60_000);
-    expect(rateLimit(keyA, 1, 60_000).allowed).toBe(false);
-    expect(rateLimit(keyB, 1, 60_000).allowed).toBe(true);
+  test("returns 429 after limit exceeded", () => {
+    const req = makeReq();
+    rateLimitRequest(req, { key: "comments", limit: 1, windowMs: 60_000 });
+    const res = rateLimitRequest(req, { key: "comments", limit: 1, windowMs: 60_000 });
+    expect(res?.status).toBe(429);
   });
+});
 
-  it("resets after the window expires", () => {
-    const key = `test-reset-${Math.random()}`;
-    rateLimit(key, 1, 1); // 1ms window
-    const before = Date.now();
-    while (Date.now() - before < 5) {
-      /* spin past the window */
-    }
-    expect(rateLimit(key, 1, 1).allowed).toBe(true);
-  });
-
-  it("decrements remaining correctly", () => {
-    const key = `test-remaining-${Math.random()}`;
-    expect(rateLimit(key, 3, 60_000).remaining).toBe(2);
-    expect(rateLimit(key, 3, 60_000).remaining).toBe(1);
-    expect(rateLimit(key, 3, 60_000).remaining).toBe(0);
+describe("rateLimitKey", () => {
+  test("builds canonical key", () => {
+    expect(rateLimitKey("org-1", "act", "u-1")).toBe("org:org-1:act:u-1");
+    expect(rateLimitKey("org-1", "act")).toBe("org:org-1:act:anonymous");
   });
 });

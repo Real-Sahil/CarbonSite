@@ -3,6 +3,47 @@
 const DRIVER = process.env.EMAIL_DRIVER ?? (process.env.RESEND_API_KEY ? "resend" : "console");
 const FROM = process.env.EMAIL_FROM ?? "CarbonSite <noreply@carbonsite.app>";
 
+export type TransactionalEmailPayload = {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+};
+
+export type TransactionalEmailResult = {
+  provider: string;
+  messageId: string | null;
+};
+
+export async function sendTransactionalEmail(
+  payload: TransactionalEmailPayload,
+): Promise<TransactionalEmailResult> {
+  if (DRIVER === "console") {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Transactional email is not configured");
+    }
+    console.log("[email:console]", { to: payload.to, subject: payload.subject });
+    return { provider: "console", messageId: null };
+  }
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY!);
+
+  const { data, error } = await resend.emails.send({
+    from: FROM,
+    to: payload.to,
+    subject: payload.subject,
+    text: payload.text,
+    html: payload.html ?? `<pre>${payload.text}</pre>`,
+  });
+
+  if (error) {
+    throw new Error(`Resend error: ${error.message}`);
+  }
+
+  return { provider: "resend", messageId: data?.id ?? null };
+}
+
 export type EmailPayload = {
   to: string;
   subject: string;

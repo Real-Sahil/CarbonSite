@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimitRequest } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { acceptInviteSchema } from "@/lib/validation/org";
 
 export async function POST(req: NextRequest) {
   try {
     const body = acceptInviteSchema.parse(await req.json());
+    const limited = rateLimitRequest(req, {
+      key: `invite_accept:${body.token}`,
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     // 1. Look up and validate the invite link
     const invite = await prisma.inviteLink.findUnique({
@@ -28,10 +35,35 @@ export async function POST(req: NextRequest) {
     if (invite.usedAt !== null) {
       return apiError("INVITE_ALREADY_USED", "This invite link has already been used.", 400);
     }
+    if (!invite.email && invite.role !== "field_worker") {
+      return apiError(
+        "INVITE_REQUIRES_EMAIL",
+        "Privileged organisation roles must be accepted through an email-bound invite.",
+        400,
+      );
+    }
 
-    // 2. Determine the email for this field worker
+    const requestedEmail = body.email?.trim().toLowerCase();
+    if (invite.email && requestedEmail && requestedEmail !== invite.email.toLowerCase()) {
+      return apiError(
+        "INVITE_EMAIL_MISMATCH",
+        "This invite must be accepted with the invited email address.",
+        400,
+      );
+    }
+    if (invite.email && !requestedEmail && invite.role !== "field_worker") {
+      return apiError(
+        "INVITE_EMAIL_REQUIRED",
+        "This invite must be accepted with the invited email address.",
+        400,
+      );
+    }
+
+    // 2. Determine the email for this invite acceptance
     const email =
-      body.email ?? `fw-${randomUUID().substring(0, 8)}@field.carbonsite.app`;
+      invite.email?.toLowerCase() ??
+      requestedEmail ??
+      `fw-${randomUUID().substring(0, 8)}@field.carbonsite.app`;
 
     // 3. Find or create the user
     let user = await prisma.user.findUnique({ where: { email } });
@@ -42,6 +74,8 @@ export async function POST(req: NextRequest) {
         data: {
           id: userId,
           email,
+          emailVerified: Boolean(invite.email),
+          emailVerifiedAt: invite.email ? now : null,
           name: body.name,
         },
       });
@@ -111,7 +145,7 @@ export async function POST(req: NextRequest) {
     await writeAuditLog({
       organizationId: invite.organizationId,
       actorUserId: user.id,
-      action: "org.member.invite",
+      action: "org.member.invite_accepted",
       resourceType: "invite_link",
       resourceId: invite.id,
       metadata: {

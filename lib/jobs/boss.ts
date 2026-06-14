@@ -18,3 +18,7 @@ export async function getBoss(): Promise<PgBoss> {
   }
   return boss;
 }
+
+export async function ensureBossStarted(): Promise<void> {
+  await getBoss();
+}

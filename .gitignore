@@ -10,6 +10,9 @@ out/
 # Build outputs
 dist/
 build/
+.vinext/
+.wrangler/
+.pnpm-store/
 
 # Environment files
 .env
@@ -17,6 +20,7 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+Import.env
 
 # Prisma
 prisma/generated/
@@ -34,7 +38,7 @@ Thumbs.db
 .idea/
 
 # Local storage uploads (STORAGE_DRIVER=local dev mode)
-uploads/
+/uploads/
 
 # Logs
 *.log

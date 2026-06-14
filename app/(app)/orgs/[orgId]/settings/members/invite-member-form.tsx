@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +20,7 @@ const ROLES = [
   { value: "reviewer", label: "Reviewer" },
   { value: "viewer", label: "Viewer" },
   { value: "auditor", label: "Auditor" },
+  { value: "field_worker", label: "Field Worker" },
 ] as const;
 
 interface InviteMemberFormProps {
@@ -26,16 +29,21 @@ interface InviteMemberFormProps {
 }
 
 export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<string>("viewer");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [inviteUrl, setInviteUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setInviteUrl("");
+    setCopied(false);
 
     if (!email.trim()) {
       setError("Email is required.");
@@ -56,15 +64,37 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         return;
       }
 
-      setSuccess(`Invitation sent to ${email.trim()}.`);
+      const data = await res.json().catch(() => null);
+      setInviteUrl(data?.inviteUrl ?? "");
+      setSuccess(
+        data?.action === "member_added"
+          ? data.emailDelivery === "email_failed"
+            ? `${email.trim()} already has an account and was added. Notification email needs follow-up.`
+            : `${email.trim()} already has an account and was added to this organisation.`
+          : role === "field_worker"
+            ? data?.emailDelivery === "email_failed"
+              ? `Mobile field worker invite created for ${email.trim()}. Copy the link below because email delivery failed.`
+              : `Mobile field worker invite sent to ${email.trim()}. Assign their project after they accept.`
+            : data?.emailDelivery === "email_failed"
+              ? `Invite created for ${email.trim()}. Copy the link below because email delivery failed.`
+              : `Invite sent to ${email.trim()}.`,
+      );
       setEmail("");
       setRole("viewer");
+      router.refresh();
       onSuccess?.();
     } catch {
       setError("An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
+  }
+
+  async function copyInviteUrl() {
+    if (!inviteUrl) return;
+    await navigator.clipboard.writeText(inviteUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   }
 
   return (
@@ -75,7 +105,6 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
           <Input
             id="invite-email"
             type="email"
-            placeholder="colleague@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
@@ -110,6 +139,26 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         <p className="text-sm text-[#0f3e17]" role="status">
           {success}
         </p>
+      )}
+      {inviteUrl && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <Label htmlFor="latest-invite-url">Invite link</Label>
+          <div className="mt-2 flex gap-2">
+            <Input
+              id="latest-invite-url"
+              readOnly
+              value={inviteUrl}
+              className="font-mono text-xs"
+              onFocus={(event) => event.target.select()}
+            />
+            <Button type="button" variant="outline" size="icon" onClick={copyInviteUrl}>
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            Share this link with the mobile user if the email invite is delayed.
+          </p>
+        </div>
       )}
     </form>
   );

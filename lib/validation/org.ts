@@ -1,13 +1,27 @@
 import { z } from "zod";
+import {
+  EVIDENCE_MAX_BYTES,
+  isAllowedEvidenceMimeType,
+  normalizeMimeType,
+} from "@/lib/evidence/upload-policy";
 
 // ─── OrgRole enum (mirrors Prisma) ──────────────────────────────────────────
 
 export const orgRoleSchema = z.enum([
   "admin",
+  "sustainability_director",
+  "sustainability_manager",
+  "operations_manager",
   "editor",
   "reviewer",
   "viewer",
   "auditor",
+  "contract_manager",
+  "project_manager",
+  "site_manager",
+  "supervisor",
+  "employee",
+  "client_viewer",
   "field_worker",
 ]);
 
@@ -59,7 +73,7 @@ export const updateReportingPeriodSchema = createReportingPeriodSchema
 // ─── InviteLink ──────────────────────────────────────────────────────────────
 
 export const createInviteLinkSchema = z.object({
-  role: orgRoleSchema.default("field_worker"),
+  role: z.literal("field_worker").default("field_worker"),
   expiresInDays: z.number().int().min(1).max(30).default(7),
 });
 
@@ -80,9 +94,303 @@ export const updateMemberRoleSchema = z.object({
   role: orgRoleSchema,
 });
 
+export const createFieldWorkerAssignmentSchema = z.object({
+  userId: z.string().min(1),
+  reportingPeriodId: z.string().min(1),
+  facilityId: z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+});
+
 // ─── Presign upload ──────────────────────────────────────────────────────────
 
 export const presignUploadSchema = z.object({
-  key: z.string().min(1),
-  contentType: z.string().min(1),
+  filename: z.string().min(1).max(180),
+  contentType: z
+    .string()
+    .min(1)
+    .max(120)
+    .transform(normalizeMimeType)
+    .refine(isAllowedEvidenceMimeType, "Unsupported evidence file type"),
+  byteSize: z.coerce.number().int().positive().max(EVIDENCE_MAX_BYTES),
+  checksum: z.string().min(16).max(128),
 });
+
+const optionalIsoDateSchema = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().regex(isoDateRegex, "Must be YYYY-MM-DD").optional(),
+);
+
+const optionalMoneySchema = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.coerce.number().nonnegative().optional(),
+);
+
+export const createReductionTargetSchema = z
+  .object({
+    baselinePeriodId: z.string().min(1),
+    targetPeriodId: z.string().min(1),
+    targetType: z.enum(["absolute", "intensity"]).default("absolute"),
+    reductionAmount: z.coerce.number().positive(),
+  })
+  .refine((data) => data.baselinePeriodId !== data.targetPeriodId, {
+    message: "Baseline and target periods must be different.",
+    path: ["targetPeriodId"],
+  });
+
+export const createReductionInitiativeSchema = z.object({
+  name: z.string().min(2).max(160),
+  ownerUserId: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  status: z
+    .enum(["planned", "in_progress", "complete", "canceled"])
+    .default("planned"),
+  costAmount: optionalMoneySchema,
+  costCurrency: z.string().min(3).max(3).default("GBP"),
+  expectedImpactCo2e: optionalMoneySchema,
+  expectedStartDate: optionalIsoDateSchema,
+  notes: z.string().max(2000).optional(),
+});
+
+export const createActivityRecordSchema = z.object({
+  reportingPeriodId: z.string().min(1),
+  emissionCategoryId: z.string().min(1),
+  activityDate: optionalIsoDateSchema,
+  amount: z.coerce.number().positive(),
+  unit: z.string().min(1).max(32),
+  sourceDescription: z.string().max(240).optional(),
+  facilityId: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  businessUnitId: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  supplierName: z.string().max(160).optional(),
+  country: z.string().max(80).optional(),
+  distanceAmount: optionalMoneySchema,
+  distanceUnit: z.string().max(16).optional(),
+  pickupPostcode: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(5).max(12).optional(),
+  ),
+  deliveryPostcode: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(5).max(12).optional(),
+  ),
+  distanceOverrideReason: z.string().max(500).optional(),
+  transportMode: z.string().max(80).optional(),
+  fuelType: z.string().max(80).optional(),
+  reviewStatus: z
+    .enum(["draft", "in_review", "approved", "rejected"])
+    .default("draft"),
+  evidenceStatus: z
+    .enum(["missing", "partial", "complete"])
+    .default("missing"),
+  assumptionNotes: z.string().max(2000).optional(),
+});
+
+export const updateActivityRecordStatusSchema = z.object({
+  reviewStatus: z.enum(["draft", "in_review", "approved", "rejected"]),
+  evidenceStatus: z.enum(["missing", "partial", "complete"]).optional(),
+  assumptionNotes: z.string().max(2000).optional(),
+});
+
+export const attachActivityRecordEvidenceSchema = z.object({
+  evidenceId: z.string().min(1),
+});
+
+export const routeDistanceSchema = z.object({
+  pickupPostcode: z.string().min(5).max(12),
+  deliveryPostcode: z.string().min(5).max(12),
+});
+
+export const createReportSchema = z.object({
+  reportingPeriodId: z.string().min(1),
+  snapshotId: z.string().min(1),
+  type: z.enum([
+    "inventory", "monthly_snapshot", "audit_package",
+    "secr", "ppn_06_21", "nhs_evergreen", "breeam_evidence",
+    "national_toms", "csrd_esrs_e1", "contract_carbon",
+  ]),
+  contractId: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+});
+
+export const createCalculationRunSchema = z.object({
+  reportingPeriodId: z.string().min(1),
+  methodologyVersionId: z.string().min(1),
+  factorLibraryId: z.string().min(1),
+});
+
+export const createFieldSubmissionSchema = z.object({
+  reportingPeriodId: z.string().min(1),
+  emissionCategoryId: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  facilityId: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
+  documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "other"]),
+  ocrExtractedData: z.record(z.unknown()).optional(),
+  formData: z.record(z.unknown()),
+  gpsLat: z.coerce.number().optional(),
+  gpsLng: z.coerce.number().optional(),
+  pickupPostcode: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(5).max(12).optional(),
+  ),
+  deliveryPostcode: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(5).max(12).optional(),
+  ),
+  deviceSubmittedAt: z.string().datetime().optional(),
+  idempotencyKey: z.string().min(8).max(120).optional(),
+  evidenceIds: z.array(z.string().min(1)).max(10).default([]),
+});
+
+export const reviewFieldSubmissionSchema = z.object({
+  status: z.enum(["approved", "rejected", "needs_info", "under_review"]),
+  emissionCategoryId: z.string().min(1).optional(),
+  facilityId: z.string().min(1).nullable().optional(),
+  reviewNote: z.string().max(1000).optional(),
+});
+
+export const createCommentSchema = z.object({
+  targetType: z.enum([
+    "import_batch",
+    "activity_record",
+    "report",
+    "initiative",
+    "field_submission",
+  ]),
+  targetId: z.string().min(1),
+  body: z.string().trim().min(1).max(2000),
+});
+
+export const reviewTaskTypeSchema = z.enum([
+  "import_batch",
+  "activity_record",
+  "report",
+]);
+
+export const createReviewTaskSchema = z.object({
+  type: reviewTaskTypeSchema,
+  targetId: z.string().min(1),
+  assigneeUserId: z.string().min(1),
+});
+
+export const updateReviewTaskSchema = z.object({
+  status: z.enum(["open", "completed", "blocked"]),
+});
+
+// ─── Contract ────────────────────────────────────────────────────────────────
+
+export const createContractSchema = z.object({
+  name: z.string().min(2).max(160),
+  businessUnitId: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+  clientName: z.string().max(160).optional(),
+  contractReference: z.string().max(80).optional(),
+  contractValue: z.coerce.number().nonnegative().optional(),
+  currency: z.string().length(3).default("GBP"),
+  startDate: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  endDate: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  ppn0621Required: z.boolean().default(false),
+  nhsEvergreenRequired: z.boolean().default(false),
+  breeamRequired: z.boolean().default(false),
+  status: z.enum(["active", "completed", "suspended", "cancelled"]).default("active"),
+  notes: z.string().max(2000).optional(),
+});
+
+export const updateContractSchema = createContractSchema.partial();
+
+// ─── Project ─────────────────────────────────────────────────────────────────
+
+export const createProjectSchema = z.object({
+  name: z.string().min(2).max(160),
+  projectCode: z.string().max(40).optional(),
+  description: z.string().max(2000).optional(),
+  startDate: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  endDate: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  status: z.enum(["active", "completed", "on_hold", "cancelled"]).default("active"),
+});
+
+export const updateProjectSchema = createProjectSchema.partial();
+
+// ─── Site ─────────────────────────────────────────────────────────────────────
+
+export const createSiteSchema = z.object({
+  name: z.string().min(2).max(160),
+  siteCode: z.string().max(40).optional(),
+  postcode: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().min(5).max(12).optional(),
+  ),
+  addressLine1: z.string().max(160).optional(),
+  city: z.string().max(80).optional(),
+  country: z.string().length(2).default("GB"),
+});
+
+export const updateSiteSchema = createSiteSchema.partial();
+
+// ─── Branding ────────────────────────────────────────────────────────────────
+
+export const upsertBrandingSchema = z.object({
+  subdomain: z.string().min(3).max(63).regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers, hyphens only"),
+  customDomain: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().max(253).optional(),
+  ),
+  primaryHex: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#0f4c8a"),
+  accentHex: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#e8f0fe"),
+  emailFromName: z.string().max(80).optional(),
+  emailFromDomain: z.string().max(80).optional(),
+  fontFamily: z.enum(["Inter", "Roboto", "Open Sans", "Lato", "Montserrat"]).default("Inter"),
+});
+
+// ─── Social Value ─────────────────────────────────────────────────────────────
+
+export const createSocialValueRecordSchema = z.object({
+  contractId: z.string().min(1),
+  reportingPeriodId: z.string().min(1),
+  measureId: z.string().min(1),
+  quantity: z.coerce.number().positive(),
+  evidenceFileId: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+  notes: z.string().max(2000).optional(),
+});
+
+export const createSocialValueTargetSchema = z.object({
+  contractId: z.string().min(1),
+  reportingPeriodId: z.string().min(1),
+  targetPounds: z.coerce.number().positive(),
+  baselinePounds: z.coerce.number().nonnegative().optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export const updateSocialValueTargetSchema = createSocialValueTargetSchema.partial().omit({ contractId: true, reportingPeriodId: true });

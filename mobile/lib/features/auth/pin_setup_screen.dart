@@ -15,11 +15,35 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   static const _storage = FlutterSecureStorage();
   static const int _pinLength = 4;
 
+  final _inviteController = TextEditingController();
   _PinStep _step = _PinStep.entry;
   String _firstPin = '';
   String _currentInput = '';
   String? _errorMessage;
+  bool _checkingSession = true;
+  bool _hasSession = false;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessionState();
+  }
+
+  @override
+  void dispose() {
+    _inviteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadSessionState() async {
+    final token = await _storage.read(key: 'session_token');
+    if (!mounted) return;
+    setState(() {
+      _hasSession = token != null && token.isNotEmpty;
+      _checkingSession = false;
+    });
+  }
 
   void _onDigitTap(String digit) {
     if (_currentInput.length >= _pinLength) return;
@@ -85,116 +109,243 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     context.go('/home');
   }
 
+  void _continueWithInvite() {
+    final token = _extractInviteToken(_inviteController.text);
+    if (token == null) {
+      setState(() {
+        _errorMessage = 'Paste the invite link or token from your administrator.';
+      });
+      return;
+    }
+    context.go('/invite/$token');
+  }
+
+  String? _extractInviteToken(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    final uri = Uri.tryParse(trimmed);
+    if (uri != null && uri.pathSegments.isNotEmpty) {
+      final inviteIndex = uri.pathSegments.indexOf('invite');
+      if (inviteIndex >= 0 && uri.pathSegments.length > inviteIndex + 1) {
+        return uri.pathSegments[inviteIndex + 1];
+      }
+    }
+    return trimmed.contains('/') ? null : trimmed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    if (_checkingSession) {
+      return const Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      );
+    }
+
+    if (!_hasSession) {
+      return _buildInviteEntry(context, colorScheme, textTheme);
+    }
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Column(
-            children: [
-              const SizedBox(height: 56),
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                children: [
+                  const SizedBox(height: 56),
 
-              // Icon
+                  // Icon
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.lock_outline,
+                      color: colorScheme.primary,
+                      size: 32,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Heading
+                  Text(
+                    _step == _PinStep.entry
+                        ? 'Set Your PIN'
+                        : 'Confirm Your PIN',
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    _step == _PinStep.entry
+                        ? 'This PIN protects your device access to CarbonSite'
+                        : 'Re-enter your PIN to confirm',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // PIN dots
+                  _PinDots(
+                    pinLength: _pinLength,
+                    currentLength: _currentInput.length,
+                    hasError: _errorMessage != null,
+                    primaryColor: colorScheme.primary,
+                    errorColor: colorScheme.error,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Error message
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: _errorMessage != null
+                        ? Container(
+                            key: ValueKey(_errorMessage),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.error_outline,
+                                    size: 16,
+                                    color: colorScheme.onErrorContainer),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onErrorContainer,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox(key: ValueKey('no-error'), height: 36),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Keypad
+                  if (_saving)
+                    const CircularProgressIndicator()
+                  else
+                    _NumPad(
+                      onDigit: _onDigitTap,
+                      onDelete: _onDelete,
+                    ),
+
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInviteEntry(
+    BuildContext context,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 56),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               Container(
                 width: 64,
                 height: 64,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: colorScheme.primaryContainer,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.lock_outline,
+                  Icons.assignment_ind_outlined,
                   color: colorScheme.primary,
                   size: 32,
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // Heading
               Text(
-                _step == _PinStep.entry ? 'Set Your PIN' : 'Confirm Your PIN',
+                'Join your CarbonSite project',
                 style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
-
               const SizedBox(height: 8),
-
               Text(
-                _step == _PinStep.entry
-                    ? 'This PIN protects your device access to CarbonSite'
-                    : 'Re-enter your PIN to confirm',
+                'Paste the invite link or token from your administrator to create your mobile field profile.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
-
-              const SizedBox(height: 40),
-
-              // PIN dots
-              _PinDots(
-                pinLength: _pinLength,
-                currentLength: _currentInput.length,
-                hasError: _errorMessage != null,
-                primaryColor: colorScheme.primary,
-                errorColor: colorScheme.error,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Error message
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: _errorMessage != null
-                    ? Container(
-                        key: ValueKey(_errorMessage),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.error_outline,
-                                size: 16, color: colorScheme.onErrorContainer),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                _errorMessage!,
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onErrorContainer,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : const SizedBox(key: ValueKey('no-error'), height: 36),
-              ),
-
-              const Spacer(),
-
-              // Keypad
-              if (_saving)
-                const CircularProgressIndicator()
-              else
-                _NumPad(
-                  onDigit: _onDigitTap,
-                  onDelete: _onDelete,
+              const SizedBox(height: 28),
+              TextField(
+                controller: _inviteController,
+                textInputAction: TextInputAction.done,
+                autocorrect: false,
+                onSubmitted: (_) => _continueWithInvite(),
+                decoration: const InputDecoration(
+                  labelText: 'Invite link or token',
+                  hintText: 'https://.../invite/...',
+                  prefixIcon: Icon(Icons.link_outlined),
+                  border: OutlineInputBorder(),
                 ),
-
-              const SizedBox(height: 32),
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                ),
+              ],
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: _continueWithInvite,
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Continue'),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'After your invite is accepted, you will set a device PIN and see only the projects assigned to you.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
@@ -238,7 +389,7 @@ class _PinDots extends StatelessWidget {
             shape: BoxShape.circle,
             color: filled ? activeColor : Colors.transparent,
             border: Border.all(
-              color: filled ? activeColor : activeColor.withOpacity(0.4),
+              color: filled ? activeColor : activeColor.withValues(alpha: 0.4),
               width: 2,
             ),
           ),
@@ -301,7 +452,7 @@ class _DigitButton extends StatelessWidget {
         shape: const CircleBorder(),
         padding: EdgeInsets.zero,
         foregroundColor: colorScheme.onSurface,
-        overlayColor: colorScheme.primary.withOpacity(0.12),
+        overlayColor: colorScheme.primary.withValues(alpha: 0.12),
       ),
       child: Text(
         digit,
