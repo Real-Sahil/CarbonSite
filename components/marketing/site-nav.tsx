@@ -36,9 +36,8 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${navBg}`}
-      style={{ height: 64 }}
     >
-      <div className="mx-auto max-w-7xl px-5 h-full flex items-center justify-between gap-8">
+      <div className="mx-auto max-w-7xl px-5 flex items-center justify-between gap-8" style={{ height: 64 }}>
         <Link
           href="/"
           className={`text-xl font-semibold tracking-tight ${scrolled || isDark ? "text-white" : "text-zinc-900"}`}
