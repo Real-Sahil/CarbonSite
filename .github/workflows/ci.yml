@@ -24,6 +24,7 @@ jobs:
       - run: pnpm build
         env:
           DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
+          DIRECT_DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
           STORAGE_DRIVER: local
           STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
           STORAGE_ACCESS_KEY_ID: placeholder
@@ -33,6 +34,9 @@ jobs:
           BETTER_AUTH_URL: http://localhost:3000
           EMAIL_DRIVER: console
           TRUSTED_ORIGINS: http://localhost:3000
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          JOB_PROCESSING_MODE: inline
+          ROUTING_PROVIDER: none
 
   android:
     name: Android — release APK
