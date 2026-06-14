@@ -73,11 +73,19 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl p-8">
-      <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Audit trail</h1>
-          <p className="mt-1 text-slate-500">
+          <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+            Compliance
+          </p>
+          <h1
+            className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+            style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+          >
+            Audit trail
+          </h1>
+          <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
             Tenant-scoped event history for operational, evidence, review, calculation, and report activity.
           </p>
         </div>
@@ -252,13 +260,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
-        <Clock className="h-6 w-6 text-slate-400" />
+    <div className="flex flex-col items-center gap-4 py-12 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
+        <Clock className="h-7 w-7 text-[#0f3e17]" />
       </div>
       <div>
-        <p className="font-medium text-slate-700">No audit events match these filters</p>
-        <p className="mt-1 max-w-sm text-sm text-slate-500">
+        <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">No audit events match these filters</p>
+        <p className="mt-[7px] max-w-sm text-sm text-[#222222] tracking-[-0.42px]">
           Clear filters or perform an operational action to create a new audit entry.
         </p>
       </div>
@@ -268,11 +276,11 @@ function EmptyState() {
 
 function AccessDenied() {
   return (
-    <div className="p-8">
-      <p className="text-red-600">You do not have permission to view the audit trail.</p>
+    <div className="p-[42px]">
+      <p className="text-sm text-[#222222] tracking-[-0.42px]">You do not have permission to view the audit trail.</p>
     </div>
   );
 }
 
 const selectClass =
-  "h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";

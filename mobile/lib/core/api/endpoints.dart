@@ -251,3 +251,112 @@ Future<FieldSubmission> createFieldSubmission({
       : <String, dynamic>{};
   return FieldSubmission.fromJson(json);
 }
+
+// ---------------------------------------------------------------------------
+// Evidence upload helpers (used by OfflineSubmissionQueue)
+// ---------------------------------------------------------------------------
+
+class EvidenceUploadResult {
+  final String id;
+  final String url;
+
+  const EvidenceUploadResult({required this.id, required this.url});
+
+  factory EvidenceUploadResult.fromJson(Map<String, dynamic> json) {
+    return EvidenceUploadResult(
+      id: json['id'] as String? ?? '',
+      url: json['url'] as String? ?? '',
+    );
+  }
+}
+
+/// Uploads raw evidence bytes via a presigned R2 URL.
+/// POST /api/uploads/presign → PUT to the presigned URL → returns [EvidenceUploadResult].
+Future<EvidenceUploadResult> uploadEvidenceFile({
+  required String orgId,
+  required String filename,
+  required String contentType,
+  required List<int> bytes,
+}) async {
+  final client = await getClient();
+
+  // Step 1: request a presigned upload URL from our backend.
+  final presignRes = await client.post(
+    '/api/uploads/presign',
+    data: {
+      'orgId': orgId,
+      'filename': filename,
+      'contentType': contentType,
+      'size': bytes.length,
+    },
+  );
+
+  final presignData = presignRes.data as Map<String, dynamic>;
+  final uploadUrl = presignData['uploadUrl'] as String;
+  final evidenceId = presignData['id'] as String? ?? '';
+  final evidenceUrl = presignData['url'] as String? ?? '';
+
+  // Step 2: PUT directly to R2 using the presigned URL.
+  // Use a plain Dio instance without our auth interceptor — the presigned URL
+  // is already scoped and adding a Bearer header would break the R2 signature.
+  final presignedDio = Dio();
+  await presignedDio.put(
+    uploadUrl,
+    data: bytes,
+    options: Options(
+      headers: {
+        'Content-Type': contentType,
+        'Content-Length': bytes.length,
+      },
+    ),
+  );
+
+  return EvidenceUploadResult(id: evidenceId, url: evidenceUrl);
+}
+
+/// Submits a field submission with optional pre-uploaded evidence IDs.
+/// POST /api/orgs/{orgId}/field-submissions
+///
+/// Used by [OfflineSubmissionQueue] which handles evidence upload separately.
+Future<FieldSubmission> submitFieldSubmission({
+  required String orgId,
+  required String reportingPeriodId,
+  required String documentType,
+  required Map<String, dynamic> formData,
+  required String idempotencyKey,
+  List<String> evidenceIds = const [],
+  String? pickupPostcode,
+  String? deliveryPostcode,
+  double? gpsLat,
+  double? gpsLng,
+  Map<String, dynamic>? ocrExtractedData,
+}) async {
+  final client = await getClient();
+
+  final body = <String, dynamic>{
+    'reportingPeriodId': reportingPeriodId,
+    'documentType': documentType,
+    'formData': jsonEncode(formData),
+    if (evidenceIds.isNotEmpty) 'evidenceIds': evidenceIds,
+    if (pickupPostcode != null) 'pickupPostcode': pickupPostcode,
+    if (deliveryPostcode != null) 'deliveryPostcode': deliveryPostcode,
+    if (gpsLat != null) 'gpsLat': gpsLat,
+    if (gpsLng != null) 'gpsLng': gpsLng,
+    if (ocrExtractedData != null)
+      'ocrExtractedData': jsonEncode(ocrExtractedData),
+  };
+
+  final response = await client.post(
+    '/api/orgs/$orgId/field-submissions',
+    data: body,
+    options: Options(headers: {'Idempotency-Key': idempotencyKey}),
+  );
+
+  final raw = response.data;
+  final json = raw is Map<String, dynamic>
+      ? (raw['data'] is Map<String, dynamic>
+          ? raw['data'] as Map<String, dynamic>
+          : raw)
+      : <String, dynamic>{};
+  return FieldSubmission.fromJson(json);
+}

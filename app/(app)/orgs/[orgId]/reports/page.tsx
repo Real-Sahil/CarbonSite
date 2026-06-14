@@ -19,6 +19,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Camera, FileText } from "lucide-react";
+import { CreateReportForm } from "./report-form";
+import { ReportDownloadActions } from "./report-download-actions";
 
 interface ReportsPageProps {
   params: Promise<{ orgId: string }>;
@@ -28,6 +30,13 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   inventory: "Inventory",
   monthly_snapshot: "Monthly snapshot",
   audit_package: "Audit package",
+  secr: "SECR",
+  ppn_06_21: "PPN 06/21",
+  nhs_evergreen: "NHS Evergreen L1",
+  breeam_evidence: "BREEAM Evidence",
+  national_toms: "National TOMS",
+  csrd_esrs_e1: "CSRD ESRS E1",
+  contract_carbon: "Contract Carbon",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -38,7 +47,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  queued: "bg-slate-100 text-slate-700 border-transparent",
+  queued: "bg-[#e1f4df] text-[#0f3e17] border-transparent",
   generating: "bg-blue-100 text-blue-700 border-transparent",
   ready: "bg-green-100 text-green-700 border-transparent",
   failed: "bg-red-100 text-red-700 border-transparent",
@@ -68,7 +77,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
     throw err;
   }
 
-  const [snapshots, reports] = await Promise.all([
+  const [snapshots, reports, contracts] = await Promise.all([
     prisma.publishedSnapshot.findMany({
       where: { organizationId: orgId },
       include: {
@@ -88,24 +97,37 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
       },
       orderBy: { createdAt: "desc" },
       take: 100,
+      // pdfStorageKey and csvStorageKey are scalar fields, no include needed
+    }),
+    prisma.contract.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
     }),
   ]);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Reports</h1>
-        <p className="text-slate-500 mt-1">
-          Published snapshots and generated report artefacts. Report totals always match
-          dashboard totals for the same snapshot.
+    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
+      <div>
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+          Reporting
+        </p>
+        <h1
+          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+        >
+          Reports
+        </h1>
+        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
+          Published snapshots and generated report artefacts. Totals always match dashboard totals for the same snapshot.
         </p>
       </div>
 
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
           <CardTitle className="text-base">
             Published snapshots{" "}
-            <span className="text-sm font-normal text-slate-500">({snapshots.length})</span>
+            <span className="text-sm font-normal text-[#222222]">({snapshots.length})</span>
           </CardTitle>
           <CardDescription>
             Immutable, versioned links between a reporting period and a calculation run.
@@ -134,16 +156,16 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
               <TableBody>
                 {snapshots.map((snapshot) => (
                   <TableRow key={snapshot.id}>
-                    <TableCell className="font-medium text-slate-900">
+                    <TableCell className="font-medium text-[#0f3e17]">
                       v{snapshot.version}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {snapshot.reportingPeriod.label}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {snapshot.publishedBy.name ?? snapshot.publishedBy.email}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {formatTimestamp(snapshot.publishedAt)}
                     </TableCell>
                     <TableCell>
@@ -154,7 +176,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                         View run
                       </Link>
                     </TableCell>
-                    <TableCell className="text-right text-slate-600">
+                    <TableCell className="text-right text-[#222222]">
                       {snapshot._count.reports.toLocaleString("en-GB")}
                     </TableCell>
                   </TableRow>
@@ -168,18 +190,29 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            Reports <span className="text-sm font-normal text-slate-500">({reports.length})</span>
+            Reports <span className="text-sm font-normal text-[#222222]">({reports.length})</span>
           </CardTitle>
           <CardDescription>
             PDF and CSV outputs generated asynchronously from published snapshots.
           </CardDescription>
         </CardHeader>
         <CardContent className={reports.length === 0 ? "pb-8" : "p-0 pb-2"}>
+          <div className="px-6 pb-5">
+            <CreateReportForm
+              orgId={orgId}
+              snapshots={snapshots.map((s) => ({
+                id: s.id,
+                reportingPeriodId: s.reportingPeriodId,
+                label: `${s.reportingPeriod.label} v${s.version}`,
+              }))}
+              contracts={contracts}
+            />
+          </div>
           {reports.length === 0 ? (
             <EmptyState
               icon={FileText}
               title="No reports requested yet"
-              description="Publish a snapshot, then request inventory, monthly snapshot, or audit package outputs."
+              description="Select a snapshot and report type above to generate your first report."
             />
           ) : (
             <Table>
@@ -191,18 +224,19 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                   <TableHead>Status</TableHead>
                   <TableHead>Created by</TableHead>
                   <TableHead>Created at</TableHead>
+                  <TableHead>Download</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {reports.map((report) => (
                   <TableRow key={report.id}>
-                    <TableCell className="font-medium text-slate-900">
+                    <TableCell className="font-normal text-[#0f3e17]">
                       {REPORT_TYPE_LABELS[report.type] ?? report.type.replaceAll("_", " ")}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {report.reportingPeriod.label}
                     </TableCell>
-                    <TableCell className="text-slate-600">v{report.snapshot.version}</TableCell>
+                    <TableCell className="text-[#222222]">v{report.snapshot.version}</TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
@@ -211,11 +245,20 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                         {STATUS_LABELS[report.status] ?? report.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {report.createdBy.name ?? report.createdBy.email}
                     </TableCell>
-                    <TableCell className="text-slate-600">
+                    <TableCell className="text-[#222222]">
                       {formatTimestamp(report.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <ReportDownloadActions
+                        orgId={orgId}
+                        reportId={report.id}
+                        hasPdf={!!report.pdfStorageKey}
+                        hasCsv={!!report.csvStorageKey}
+                        ready={report.status === "ready"}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -230,8 +273,8 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
 
 function AccessDenied() {
   return (
-    <div className="p-8">
-      <p className="text-red-600">You do not have permission to view reports.</p>
+    <div className="p-[42px]">
+      <p className="text-sm text-[#222222] tracking-[-0.42px]">You do not have permission to view reports.</p>
     </div>
   );
 }
@@ -247,12 +290,12 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
-        <Icon className="h-7 w-7 text-slate-400" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
+        <Icon className="h-7 w-7 text-[#0f3e17]" />
       </div>
       <div>
-        <p className="font-medium text-slate-700">{title}</p>
-        <p className="text-sm text-slate-500 mt-1 max-w-sm">{description}</p>
+        <p className="font-medium text-[#0f3e17]">{title}</p>
+        <p className="text-sm text-[#222222] mt-1 max-w-sm">{description}</p>
       </div>
     </div>
   );
