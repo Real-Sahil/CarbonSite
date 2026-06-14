@@ -20,6 +20,8 @@ import {
   Briefcase,
   Heart,
   Clock,
+  Menu,
+  X,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -77,6 +79,7 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
       return false;
     }
   });
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   function toggleCollapsed() {
     setCollapsed((prev) => {
@@ -109,11 +112,140 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
     router.push("/sign-in");
   }
 
+  function handleMobileNavClick() {
+    setMobileOpen(false);
+  }
+
   return (
     <TooltipProvider delayDuration={200}>
+      {/* ── Mobile top bar ────────────────────────────────────────────────── */}
+      <header className="flex md:hidden sticky top-0 z-30 items-center h-14 px-4 bg-[#fffefc] border-b border-[#e5e7eb] shrink-0">
+        <button
+          aria-label="Open menu"
+          onClick={() => setMobileOpen(true)}
+          className="flex items-center justify-center h-9 w-9 rounded-[7px] hover:bg-[#e1f4df] transition-colors"
+        >
+          <Menu className="h-5 w-5 text-[#0f3e17]" aria-hidden="true" />
+        </button>
+        <span
+          className="ml-3 text-base font-light tracking-[-0.48px] text-[#0f3e17]"
+          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+        >
+          CarbonSite
+        </span>
+        <span className="ml-2 text-xs text-[#555] truncate max-w-[140px]">/ {orgName}</span>
+      </header>
+
+      {/* ── Mobile drawer overlay ─────────────────────────────────────────── */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/30"
+            aria-hidden="true"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#fffefc] shadow-xl flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-[#e5e7eb]">
+              <div className="min-w-0">
+                <span
+                  className="block text-base font-light tracking-[-0.48px] text-[#0f3e17]"
+                  style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+                >
+                  CarbonSite
+                </span>
+                <span className="text-xs text-[#222222] font-normal mt-1 block truncate tracking-[-0.36px]">
+                  {orgName}
+                </span>
+              </div>
+              <button
+                aria-label="Close menu"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center h-8 w-8 rounded-[7px] hover:bg-[#e1f4df] transition-colors ml-2 shrink-0"
+              >
+                <X className="h-4 w-4 text-[#0f3e17]" aria-hidden="true" />
+              </button>
+            </div>
+
+            {/* Nav */}
+            <nav className="flex-1 px-2 py-4 flex flex-col gap-0.5 overflow-y-auto" aria-label="Organisation navigation">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={handleMobileNavClick}
+                    className={cn(
+                      "flex items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm font-normal tracking-[-0.42px] transition-colors",
+                      isActive
+                        ? "bg-[#e1f4df] text-[#0f3e17]"
+                        : "text-[#222222] hover:bg-[#e1f4df] hover:text-[#0f3e17]",
+                    )}
+                  >
+                    <Icon
+                      aria-hidden="true"
+                      className={cn("h-4 w-4 shrink-0", isActive ? "text-[#0f3e17]" : "text-[#333333]")}
+                    />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* User footer */}
+            <div className="border-t border-[#e5e7eb] px-2 py-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-[#e1f4df] transition-colors text-left">
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarImage src={undefined} alt={user.name ?? user.email} />
+                      <AvatarFallback className="bg-[#b1dbb8] text-[#0f3e17] text-xs font-normal">
+                        {getInitials(user.name, user.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      {user.name && (
+                        <p className="text-sm font-normal tracking-[-0.42px] text-black truncate">{user.name}</p>
+                      )}
+                      <p className="text-xs text-[#222222] tracking-[-0.36px] truncate">{user.email}</p>
+                    </div>
+                    <ChevronDown aria-hidden="true" className="h-4 w-4 text-[#333333] shrink-0" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" className="w-52 rounded-[14px] border-[#e5e7eb] bg-[#fffefc]">
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={`/orgs/${orgId}/settings/members`}
+                      onClick={handleMobileNavClick}
+                      className="rounded-[7px] text-[#222222] focus:bg-[#e1f4df] focus:text-[#0f3e17]"
+                    >
+                      <Users aria-hidden="true" className="h-4 w-4 mr-2" />
+                      Members &amp; Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-[#e5e7eb]" />
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-[7px]"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
       <aside
         className={cn(
-          "relative flex flex-col min-h-screen bg-[#fffefc] border-r border-[#e5e7eb] shrink-0 transition-[width] duration-200",
+          "relative hidden md:flex flex-col min-h-screen bg-[#fffefc] border-r border-[#e5e7eb] shrink-0 transition-[width] duration-200",
           collapsed ? "w-[60px]" : "w-60",
         )}
       >
