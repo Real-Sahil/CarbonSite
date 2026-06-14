@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-label="Mobile field evidence capture for construction teams">
+  <rect width="960" height="620" rx="24" fill="#eff6ff"/>
+  <rect x="84" y="72" width="324" height="476" rx="32" fill="#0f172a"/>
+  <rect x="112" y="112" width="268" height="396" rx="20" fill="#f8fafc"/>
+  <rect x="136" y="138" width="220" height="132" rx="14" fill="#dcfce7"/>
+  <path d="M158 232h174" stroke="#15803d" stroke-width="10" stroke-linecap="round"/>
+  <path d="M158 294h118M158 326h174M158 358h150" stroke="#cbd5e1" stroke-width="12" stroke-linecap="round"/>
+  <rect x="156" y="406" width="168" height="42" rx="10" fill="#15803d"/>
+  <circle cx="626" cy="232" r="78" fill="#f59e0b"/>
+  <path d="M548 232h156" stroke="#92400e" stroke-width="18" stroke-linecap="round"/>
+  <rect x="548" y="338" width="276" height="90" rx="16" fill="#fff" stroke="#cbd5e1"/>
+  <path d="M578 372h120M578 400h190" stroke="#64748b" stroke-width="12" stroke-linecap="round"/>
+  <rect x="520" y="122" width="272" height="72" rx="16" fill="#fff" stroke="#cbd5e1"/>
+  <path d="M550 158h148M550 178h88" stroke="#64748b" stroke-width="10" stroke-linecap="round"/>
+  <path d="M438 516h408" stroke="#94a3b8" stroke-width="12" stroke-linecap="round"/>
+</svg>

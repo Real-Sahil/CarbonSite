@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { updateBusinessUnitSchema } from "@/lib/validation/org";
 
@@ -22,6 +23,12 @@ export async function PATCH(
   try {
     const { orgId, businessUnitId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const limited = rateLimitRequest(req, {
+      key: rateLimitKey(orgId, "business-unit-update", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const bu = await resolveBusinessUnit(orgId, businessUnitId);
     if (!bu) {
@@ -40,7 +47,7 @@ export async function PATCH(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.updated",
+      action: "business_unit.updated",
       resourceType: "business_unit",
       resourceId: businessUnitId,
       metadata: { changes: body },
@@ -53,12 +60,18 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string; businessUnitId: string }> },
 ) {
   try {
     const { orgId, businessUnitId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
+    const limited = rateLimitRequest(req, {
+      key: rateLimitKey(orgId, "business-unit-delete", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const bu = await resolveBusinessUnit(orgId, businessUnitId);
     if (!bu) {
@@ -82,7 +95,7 @@ export async function DELETE(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.deleted",
+      action: "business_unit.deleted",
       resourceType: "business_unit",
       resourceId: businessUnitId,
       metadata: { name: bu.name },

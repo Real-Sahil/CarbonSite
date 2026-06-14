@@ -1,5 +1,6 @@
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { redirect } from "next/navigation";
 import {
   Card,
@@ -20,6 +21,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { InviteMemberForm } from "./invite-member-form";
 import { InviteLinkGenerator } from "./invite-link-generator";
+import { MemberActions } from "./member-actions";
+import { FieldWorkerAssignments } from "./field-worker-assignments";
+import { PendingInviteActions } from "./pending-invite-actions";
 
 interface MembersPageProps {
   params: Promise<{ orgId: string }>;
@@ -51,7 +55,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
 
   let currentUserId: string;
   try {
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, "admin");
     currentUserId = session.user.id;
   } catch (err) {
     if (err instanceof AuthError) {
@@ -59,7 +63,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
       return (
         <div className="p-8">
           <p className="text-red-600">
-            You do not have permission to manage members.
+          You do not have permission to manage members.
           </p>
         </div>
       );
@@ -67,7 +71,27 @@ export default async function MembersPage({ params }: MembersPageProps) {
     throw err;
   }
 
-  const [members, inviteLinks] = await Promise.all([
+  const assignmentQuery = prisma.fieldWorkerAssignment
+    .findMany({
+      where: { organizationId: orgId },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        reportingPeriod: { select: { id: true, label: true } },
+        facility: { select: { name: true } },
+        assignedBy: { select: { name: true, email: true } },
+      },
+      orderBy: [{ createdAt: "desc" }],
+    })
+    .then((assignments) => ({ assignments, available: true }))
+    .catch((err) => {
+      if (isMissingDatabaseObjectError(err)) {
+        return { assignments: [], available: false };
+      }
+      throw err;
+    });
+
+  const [members, pendingTeamInvites, inviteLinks, periods, facilities, assignmentState] =
+    await Promise.all([
     prisma.organizationMembership.findMany({
       where: { organizationId: orgId },
       include: {
@@ -78,13 +102,38 @@ export default async function MembersPage({ params }: MembersPageProps) {
     prisma.inviteLink.findMany({
       where: {
         organizationId: orgId,
+        email: { not: null },
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    prisma.inviteLink.findMany({
+      where: {
+        organizationId: orgId,
+        email: null,
+        role: "field_worker",
         usedAt: null,
         expiresAt: { gt: new Date() },
       },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
+    prisma.reportingPeriod.findMany({
+      where: { organizationId: orgId },
+      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      select: { id: true, label: true, status: true, startDate: true, endDate: true },
+    }),
+    prisma.facility.findMany({
+      where: { organizationId: orgId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+    assignmentQuery,
   ]);
+  const fieldWorkers = members.filter((member) => member.role === "field_worker");
+  const assignments = assignmentState.assignments;
 
   return (
     <div className="p-[42px] max-w-[900px] mx-auto flex flex-col gap-[42px]">
@@ -119,6 +168,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -140,6 +190,15 @@ export default async function MembersPage({ params }: MembersPageProps) {
                       {ROLE_LABELS[m.role] ?? m.role}
                     </Badge>
                   </TableCell>
+                  <TableCell>
+                    <MemberActions
+                      orgId={orgId}
+                      memberId={m.id}
+                      memberName={m.user.name ?? m.user.email}
+                      currentRole={m.role}
+                      isCurrentUser={m.user.id === currentUserId}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -152,12 +211,97 @@ export default async function MembersPage({ params }: MembersPageProps) {
         <CardHeader>
           <CardTitle className="text-base">Invite a team member</CardTitle>
           <CardDescription>
-            Send an email invitation to add a sustainability manager, auditor, or
-            other team member.
+            Send a named invitation to add admins, reviewers, auditors, or
+            mobile Field Worker users.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <InviteMemberForm orgId={orgId} />
+          {pendingTeamInvites.length > 0 && (
+            <div className="mt-5 rounded-[14px] border border-[#e5e7eb]">
+              <div className="border-b border-[#e5e7eb] px-4 py-3 flex items-center justify-between">
+                <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+                  Pending email invites
+                </p>
+                <p className="text-xs text-[#333333]">
+                  {pendingTeamInvites.length} pending
+                </p>
+              </div>
+              <div className="divide-y divide-[#e5e7eb]">
+                {pendingTeamInvites.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+                        {invite.email}
+                      </p>
+                      <p className="text-xs text-[#333333] tracking-[-0.36px]">
+                        {ROLE_LABELS[invite.role] ?? invite.role}
+                        {" · "}Expires{" "}
+                        {invite.expiresAt.toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <PendingInviteActions
+                      orgId={orgId}
+                      inviteId={invite.id}
+                      email={invite.email!}
+                      role={invite.role}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Mobile worker assignments</CardTitle>
+          <CardDescription>
+            Assign Field Worker users to the reporting periods and sites they can
+            submit delivery notes, waste tickets, fuel receipts, and haulage evidence for.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldWorkerAssignments
+            orgId={orgId}
+            assignmentsAvailable={assignmentState.available}
+            workers={fieldWorkers.map((member) => ({
+              id: member.user.id,
+              label: member.user.name ?? "Field worker",
+              email: member.user.email,
+            }))}
+            periods={periods.map((period) => ({
+              id: period.id,
+              label: period.label,
+              status: period.status,
+              startDate: period.startDate.toISOString(),
+              endDate: period.endDate.toISOString(),
+            }))}
+            facilities={facilities.map((facility) => ({
+              id: facility.id,
+              name: facility.name,
+            }))}
+            assignments={assignments.map((assignment) => ({
+              id: assignment.id,
+              userId: assignment.user.id,
+              workerLabel: assignment.user.name ?? "Field worker",
+              workerEmail: assignment.user.email,
+              reportingPeriodId: assignment.reportingPeriod.id,
+              reportingPeriodLabel: assignment.reportingPeriod.label,
+              facilityName: assignment.facility?.name ?? null,
+              assignedByLabel:
+                assignment.assignedBy.name ?? assignment.assignedBy.email,
+              createdAt: assignment.createdAt.toISOString(),
+            }))}
+          />
         </CardContent>
       </Card>
 
@@ -172,7 +316,8 @@ export default async function MembersPage({ params }: MembersPageProps) {
           <CardDescription>
             Generate a one-time link for subcontractors or field workers. They
             will be onboarded directly via the CarbonSite mobile app without
-            needing an email and password.
+            needing an email and password, then can be assigned to projects here
+            after accepting.
           </CardDescription>
         </CardHeader>
         <CardContent>

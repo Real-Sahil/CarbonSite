@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError } from "@/lib/validation/api";
 import { createFacilitySchema } from "@/lib/validation/org";
 
@@ -39,6 +40,12 @@ export async function POST(
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const limited = rateLimitRequest(req, {
+      key: rateLimitKey(orgId, "facilities", session.user.id),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
     const body = createFacilitySchema.parse(await req.json());
 
     const facility = await prisma.facility.create({
@@ -53,7 +60,7 @@ export async function POST(
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "record.created",
+      action: "facility.created",
       resourceType: "facility",
       resourceId: facility.id,
       metadata: { name: facility.name },

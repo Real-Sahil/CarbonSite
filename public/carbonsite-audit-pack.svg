@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-label="Audit package reports and evidence trail">
+  <rect width="960" height="620" rx="24" fill="#f8fafc"/>
+  <rect x="100" y="80" width="360" height="450" rx="18" fill="#fff" stroke="#cbd5e1"/>
+  <path d="M144 138h174M144 180h236M144 222h210" stroke="#64748b" stroke-width="12" stroke-linecap="round"/>
+  <rect x="144" y="278" width="264" height="122" rx="14" fill="#dcfce7"/>
+  <path d="M168 324h106M168 360h180" stroke="#15803d" stroke-width="12" stroke-linecap="round"/>
+  <path d="M144 454h224M144 488h160" stroke="#cbd5e1" stroke-width="12" stroke-linecap="round"/>
+  <rect x="520" y="116" width="300" height="90" rx="16" fill="#0f172a"/>
+  <path d="M552 154h150M552 182h226" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round"/>
+  <rect x="520" y="244" width="300" height="90" rx="16" fill="#fff" stroke="#cbd5e1"/>
+  <path d="M552 278h116M552 306h198" stroke="#64748b" stroke-width="12" stroke-linecap="round"/>
+  <rect x="520" y="372" width="300" height="90" rx="16" fill="#fff" stroke="#cbd5e1"/>
+  <path d="M552 406h160M552 434h214" stroke="#64748b" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="818" cy="484" r="42" fill="#15803d"/>
+  <path d="m798 484 14 14 30-34" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -27,21 +27,22 @@ export default function SignInPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    await authClient.signIn.email(
-      { email, password },
-      {
-        onSuccess: () => {
-          router.push("/");
-        },
-        onError: (ctx) => {
-          setError(
-            ctx.error.message ?? "Sign in failed. Please check your credentials."
-          );
-          setLoading(false);
-        },
+    try {
+      const result = await authClient.signIn.email({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Sign in failed. Please check your credentials.");
+        return;
       }
-    );
+      router.push("/app");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign in failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -59,7 +60,6 @@ export default function SignInPage() {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -72,7 +72,6 @@ export default function SignInPage() {
             <Input
               id="password"
               type="password"
-              placeholder="Your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

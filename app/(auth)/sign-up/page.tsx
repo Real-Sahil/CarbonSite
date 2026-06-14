@@ -34,21 +34,27 @@ export default function SignUpPage() {
     }
 
     setLoading(true);
-
-    await authClient.signUp.email(
-      { name, email, password },
-      {
-        onSuccess: () => {
-          router.push("/");
-        },
-        onError: (ctx) => {
-          setError(
-            ctx.error.message ?? "Could not create account. Please try again."
-          );
-          setLoading(false);
-        },
+    try {
+      const result = await authClient.signUp.email({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Could not create account. Please try again.");
+        return;
       }
-    );
+      if (result.data?.token === null) {
+        setError("Check your email to verify your CarbonSite account before signing in.");
+        return;
+      }
+      router.push("/app");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create account. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -66,7 +72,6 @@ export default function SignUpPage() {
             <Input
               id="name"
               type="text"
-              placeholder="Jane Smith"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -79,7 +84,6 @@ export default function SignUpPage() {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -92,7 +96,6 @@ export default function SignUpPage() {
             <Input
               id="password"
               type="password"
-              placeholder="At least 8 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
