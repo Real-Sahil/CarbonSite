@@ -39,7 +39,6 @@ jobs:
   android:
     name: Android — release APK
     runs-on: ubuntu-latest
-    if: hashFiles('mobile/pubspec.yaml') != ''
     steps:
       - uses: actions/checkout@v4
 
