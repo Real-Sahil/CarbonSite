@@ -71,6 +71,12 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
         reportingPeriod: { select: { id: true, label: true } },
         emissionCategory: { select: { id: true, scope: true, name: true } },
         facility: { select: { id: true, name: true } },
+        resubmittedFrom: { select: { id: true, documentType: true, createdAt: true } },
+        resubmissions: {
+          select: { id: true, status: true, createdAt: true },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
         files: {
           include: {
             evidenceFile: {
@@ -97,6 +103,28 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+  ]);
+
+  const [reviewer, activityRecord] = await Promise.all([
+    submission?.reviewedByUserId
+      ? prisma.user.findUnique({
+          where: { id: submission.reviewedByUserId },
+          select: { name: true },
+        })
+      : Promise.resolve(null),
+    submission?.activityRecordId
+      ? prisma.activityRecord.findUnique({
+          where: { id: submission.activityRecordId },
+          select: {
+            id: true,
+            calculations: {
+              select: { totalCo2e: true },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        })
+      : Promise.resolve(null),
   ]);
 
   if (!submission || submission.organizationId !== orgId) {
@@ -155,6 +183,12 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               year: "numeric",
             })}
           </p>
+          {isResolved && submission.reviewedAt && (
+            <p className="text-sm text-[#222222] font-normal tracking-[-0.42px]">
+              Reviewed by {reviewer?.name ?? "Unknown reviewer"} at{" "}
+              {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(submission.reviewedAt))}
+            </p>
+          )}
         </div>
       </div>
 
@@ -303,6 +337,71 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                   className="text-xs text-[#0f3e17] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
                 >
                   View record
+                </Link>
+              </div>
+              {submission.status === "approved" && activityRecord?.calculations[0] && (
+                <p className="mt-3 text-sm text-[#222222] tracking-[-0.42px]">
+                  Calculated CO₂e:{" "}
+                  <span className="font-medium text-[#0f3e17]">
+                    {Number(activityRecord.calculations[0].totalCo2e).toFixed(2)} tCO₂e
+                  </span>
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {submission.resubmittedFrom && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Resubmission</CardTitle>
+              <CardDescription>
+                This is a corrected resubmission of an earlier rejected submission.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-[#333333] tracking-[-0.36px]">Original submission:</span>
+                <Link
+                  href={`/orgs/${orgId}/submissions/${submission.resubmittedFrom.id}`}
+                  className="text-xs text-[#0f3e17] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
+                >
+                  {DOC_TYPE_LABELS[submission.resubmittedFrom.documentType] ?? submission.resubmittedFrom.documentType}
+                  {" · "}
+                  {submission.resubmittedFrom.createdAt.toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {submission.resubmissions.length > 0 && submission.status === "rejected" && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Resubmission received</CardTitle>
+              <CardDescription>
+                The field worker has submitted a corrected version of this rejected submission.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <span
+                  className={cn(
+                    "inline-flex items-center rounded-full border px-[10px] py-[5px] text-xs tracking-[-0.36px]",
+                    STATUS_CLASSES[submission.resubmissions[0].status] ?? "border-[#e5e7eb] bg-[#e5e7eb] text-[#333333]",
+                  )}
+                >
+                  {STATUS_LABELS[submission.resubmissions[0].status] ?? submission.resubmissions[0].status}
+                </span>
+                <Link
+                  href={`/orgs/${orgId}/submissions/${submission.resubmissions[0].id}`}
+                  className="text-xs text-[#0f3e17] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
+                >
+                  Review resubmission
                 </Link>
               </div>
             </CardContent>

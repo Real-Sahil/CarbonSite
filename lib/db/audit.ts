@@ -44,6 +44,7 @@ type AuditAction =
   | "field_submission.approved"
   | "field_submission.rejected"
   | "field_submission.needs_info"
+  | "field_submission.resubmitted"
   | "snapshot.approved"
   | "snapshot.changes_requested"
   | "field_worker.assignment_created"

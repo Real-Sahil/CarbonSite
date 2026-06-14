@@ -102,6 +102,8 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         [...unitWarnings, ...(selectionReason ? [] : ["Factor selected without clear reason."])],
       );
 
+      const factorValue = factor.co2e ?? factor.co2;
+
       await prisma.emissionCalculation.create({
         data: {
           organizationId: orgId,
@@ -119,7 +121,9 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
           ch4: toDecimal(result.ch4),
           n2o: toDecimal(result.n2o),
           totalCo2e: result.totalCo2e,
-          formula: `${result.formula} [factor: ${selectionReason}]`,
+          selectionReason,
+          factorValue: factorValue != null ? toDecimal(Number(factorValue)) : null,
+          formula: result.formula,
           warnings: result.warnings,
         },
       });
