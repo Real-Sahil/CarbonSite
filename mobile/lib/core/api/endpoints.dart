@@ -314,6 +314,94 @@ Future<EvidenceUploadResult> uploadEvidenceFile({
   return EvidenceUploadResult(id: evidenceId, url: evidenceUrl);
 }
 
+// ---------------------------------------------------------------------------
+// Report models + helpers
+// ---------------------------------------------------------------------------
+
+class OrgReport {
+  final String id;
+  final String type;
+  final String status;
+  final String periodLabel;
+  final int snapshotVersion;
+  final String createdAt;
+  final bool hasPdf;
+  final bool hasCsv;
+
+  const OrgReport({
+    required this.id,
+    required this.type,
+    required this.status,
+    required this.periodLabel,
+    required this.snapshotVersion,
+    required this.createdAt,
+    required this.hasPdf,
+    required this.hasCsv,
+  });
+
+  factory OrgReport.fromJson(Map<String, dynamic> json) {
+    final period = json['reportingPeriod'] as Map<String, dynamic>? ?? {};
+    final snapshot = json['snapshot'] as Map<String, dynamic>? ?? {};
+    return OrgReport(
+      id: json['id'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      status: json['status'] as String? ?? 'queued',
+      periodLabel: period['label'] as String? ?? '',
+      snapshotVersion: snapshot['version'] as int? ?? 0,
+      createdAt: json['createdAt'] as String? ?? json['created_at'] as String? ?? '',
+      hasPdf: json['pdfStorageKey'] != null,
+      hasCsv: json['csvStorageKey'] != null,
+    );
+  }
+
+  String get typeLabel {
+    const labels = {
+      'inventory': 'Inventory',
+      'monthly_snapshot': 'Monthly Snapshot',
+      'audit_package': 'Audit Package',
+      'secr': 'SECR',
+      'ppn_06_21': 'PPN 06/21',
+      'nhs_evergreen': 'NHS Evergreen L1',
+      'breeam_evidence': 'BREEAM Evidence',
+      'national_toms': 'National TOMS',
+      'csrd_esrs_e1': 'CSRD ESRS E1',
+      'contract_carbon': 'Contract Carbon',
+    };
+    return labels[type] ?? type.replaceAll('_', ' ');
+  }
+}
+
+/// Fetches published reports for this org.
+/// GET /api/orgs/{orgId}/reports
+Future<List<OrgReport>> getOrgReports(String orgId) async {
+  final client = await getClient();
+  final response = await client.get('/api/orgs/$orgId/reports');
+  final raw = response.data;
+  List<dynamic> items;
+  if (raw is List) {
+    items = raw;
+  } else if (raw is Map && raw['data'] is List) {
+    items = raw['data'] as List;
+  } else {
+    items = [];
+  }
+  return items
+      .map((e) => OrgReport.fromJson(e as Map<String, dynamic>))
+      .toList();
+}
+
+/// Gets a presigned download URL for a report artefact.
+/// GET /api/orgs/{orgId}/reports/{reportId}/download?artifact=pdf
+Future<String> getReportDownloadUrl(String orgId, String reportId, {String artifact = 'pdf'}) async {
+  final client = await getClient();
+  final response = await client.get(
+    '/api/orgs/$orgId/reports/$reportId/download',
+    queryParameters: {'artifact': artifact},
+  );
+  final data = response.data as Map<String, dynamic>;
+  return data['downloadUrl'] as String? ?? '';
+}
+
 /// Submits a field submission with optional pre-uploaded evidence IDs.
 /// POST /api/orgs/{orgId}/field-submissions
 ///

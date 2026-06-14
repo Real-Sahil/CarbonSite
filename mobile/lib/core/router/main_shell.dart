@@ -35,6 +35,11 @@ class MainShell extends StatelessWidget {
             selectedIcon: Icon(Icons.receipt_long),
             label: 'Submissions',
           ),
+          NavigationDestination(
+            icon: Icon(Icons.description_outlined),
+            selectedIcon: Icon(Icons.description),
+            label: 'Reports',
+          ),
         ],
       ),
     );
