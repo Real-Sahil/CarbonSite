@@ -1,13 +1,38 @@
 // Reports worker — generates PDF + CSV for a Report from its PublishedSnapshot.
-// PDF via Puppeteer (headless Chromium), CSV built directly from EmissionCalculation
-// rows of the snapshot's calculation run. Totals here must match dashboard totals
+// Dispatches to a type-specific HTML template based on report.type.
+// PDF via Puppeteer (headless Chromium). Totals here must match dashboard totals
 // for the same snapshot — both derive from the same calculation run.
 
 import { createHash } from "crypto";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { putObject, keys } from "@/lib/storage";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { renderReportHtml, type ReportData } from "./template";
+import { renderSecrHtml, type SecrData } from "./templates/secr";
+import { renderPpn0621Html, type Ppn0621Data } from "./templates/ppn-0621";
+import { renderNhsEvergreenHtml, type NhsEvergreenData } from "./templates/nhs-evergreen";
+import { renderNationalTomsHtml, type NationalTomsData, type TomsThemeSummary } from "./templates/national-toms";
+
+const REPORT_INCLUDE = {
+  organization: { select: { name: true } },
+  reportingPeriod: { select: { label: true, startDate: true, endDate: true } },
+  contract: { select: { name: true } },
+  snapshot: {
+    include: {
+      calculationRun: {
+        include: {
+          factorLibrary: { select: { name: true, version: true } },
+          methodologyVersion: { select: { name: true, gwpVersion: true } },
+        },
+      },
+      publishedBy: { select: { name: true, email: true } },
+    },
+  },
+  createdBy: { select: { name: true, email: true } },
+} as const;
+
+type ReportWithIncludes = Prisma.ReportGetPayload<{ include: typeof REPORT_INCLUDE }>;
 
 const SCOPE_LABELS: Record<number, string> = {
   1: "Scope 1 — Direct emissions",
@@ -18,127 +43,45 @@ const SCOPE_LABELS: Record<number, string> = {
 export async function processReport(reportId: string, orgId: string): Promise<void> {
   const report = await prisma.report.findUniqueOrThrow({
     where: { id: reportId },
-    include: {
-      organization: { select: { name: true } },
-      reportingPeriod: { select: { label: true, startDate: true, endDate: true } },
-      snapshot: {
-        include: {
-          calculationRun: {
-            include: {
-              factorLibrary: { select: { name: true, version: true } },
-              methodologyVersion: { select: { name: true, gwpVersion: true } },
-            },
-          },
-          publishedBy: { select: { name: true, email: true } },
-        },
-      },
-      createdBy: { select: { name: true, email: true } },
-    },
+    include: REPORT_INCLUDE,
   });
 
-  if (report.organizationId !== orgId) {
-    throw new Error("Org mismatch on report job.");
-  }
-  if (report.status === "ready") return; // idempotent re-delivery
+  if (report.organizationId !== orgId) throw new Error("Org mismatch on report job.");
+  if (report.status === "ready") return;
 
-  await prisma.report.update({
-    where: { id: reportId },
-    data: { status: "generating" },
-  });
+  await prisma.report.update({ where: { id: reportId }, data: { status: "generating" } });
 
   try {
-    const calculations = await prisma.emissionCalculation.findMany({
-      where: {
-        organizationId: orgId,
-        calculationRunId: report.snapshot.calculationRunId,
-      },
-      include: {
-        activityRecord: {
-          include: {
-            emissionCategory: { select: { code: true, name: true, scope: true } },
-            facility: { select: { name: true } },
-          },
-        },
-      },
-      orderBy: { totalCo2e: "desc" },
-    });
+    const html = await renderForType(report);
 
-    // ── Aggregate by scope and category ───────────────────────────────────────
-    const scopeTotals = new Map<number, { totalKg: number; count: number }>();
-    const categoryTotals = new Map<string, { name: string; scope: number; totalKg: number; count: number }>();
-    const facilityTotals = new Map<string, { totalKg: number; count: number }>();
-    let grandTotalKg = 0;
-
-    for (const calc of calculations) {
-      const kg = Number(calc.totalCo2e);
-      const scope = calc.activityRecord.emissionCategory.scope;
-      const catName = calc.activityRecord.emissionCategory.name;
-      grandTotalKg += kg;
-
-      const s = scopeTotals.get(scope) ?? { totalKg: 0, count: 0 };
-      s.totalKg += kg;
-      s.count += 1;
-      scopeTotals.set(scope, s);
-
-      const c = categoryTotals.get(catName) ?? { name: catName, scope, totalKg: 0, count: 0 };
-      c.totalKg += kg;
-      c.count += 1;
-      categoryTotals.set(catName, c);
-
-      const facName = calc.activityRecord.facility?.name ?? "Unassigned";
-      const f = facilityTotals.get(facName) ?? { totalKg: 0, count: 0 };
-      f.totalKg += kg;
-      f.count += 1;
-      facilityTotals.set(facName, f);
+    // CSV only for carbon-based reports (not TOMS)
+    let csvBuffer: Buffer | null = null;
+    if (report.type !== "national_toms") {
+      const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
+      csvBuffer = buildCsv(calculations, report);
     }
 
-    const data: ReportData = {
-      orgName: report.organization.name,
-      reportType: report.type,
-      periodLabel: report.reportingPeriod.label,
-      periodStart: report.reportingPeriod.startDate,
-      periodEnd: report.reportingPeriod.endDate,
-      snapshotVersion: report.snapshot.version,
-      publishedAt: report.snapshot.publishedAt,
-      publishedBy: report.snapshot.publishedBy.name ?? report.snapshot.publishedBy.email,
-      factorLibrary: `${report.snapshot.calculationRun.factorLibrary.name} ${report.snapshot.calculationRun.factorLibrary.version}`,
-      methodology: report.snapshot.calculationRun.methodologyVersion.name,
-      gwpVersion: report.snapshot.calculationRun.methodologyVersion.gwpVersion,
-      grandTotalKg,
-      recordCount: calculations.length,
-      scopes: [1, 2, 3].map((scope) => ({
-        scope,
-        label: SCOPE_LABELS[scope],
-        totalKg: scopeTotals.get(scope)?.totalKg ?? 0,
-        count: scopeTotals.get(scope)?.count ?? 0,
-      })),
-      categories: [...categoryTotals.values()].sort((a, b) => b.totalKg - a.totalKg),
-      facilities: [...facilityTotals.entries()]
-        .map(([name, v]) => ({ name, ...v }))
-        .sort((a, b) => b.totalKg - a.totalKg),
-    };
-
-    // ── CSV export ─────────────────────────────────────────────────────────────
-    const csvBuffer = buildCsv(calculations, data);
-    const csvKey = keys.reportCsv(orgId, reportId);
-    const csvChecksum = createHash("sha256").update(csvBuffer).digest("hex");
-    await putObject(csvKey, csvBuffer, "text/csv");
-
-    // ── PDF via Puppeteer ──────────────────────────────────────────────────────
-    const html = renderReportHtml(data);
     const pdfBuffer = await renderPdf(html);
     const pdfKey = keys.reportPdf(orgId, reportId);
     const pdfChecksum = createHash("sha256").update(pdfBuffer).digest("hex");
     await putObject(pdfKey, pdfBuffer, "application/pdf");
+
+    let csvKey: string | undefined;
+    let csvChecksum: string | undefined;
+    if (csvBuffer) {
+      csvKey = keys.reportCsv(orgId, reportId);
+      csvChecksum = createHash("sha256").update(csvBuffer).digest("hex");
+      await putObject(csvKey, csvBuffer, "text/csv");
+    }
 
     const updated = await prisma.report.update({
       where: { id: reportId },
       data: {
         status: "ready",
         pdfStorageKey: pdfKey,
-        csvStorageKey: csvKey,
+        csvStorageKey: csvKey ?? null,
         pdfChecksum,
-        csvChecksum,
+        csvChecksum: csvChecksum ?? null,
         publishedAt: new Date(),
       },
       select: { createdByUserId: true, type: true },
@@ -149,16 +92,253 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       recipientUserId: updated.createdByUserId,
       orgId,
       resourceId: reportId,
-      metadata: { reportLabel: `${updated.type.replaceAll("_", " ")} — ${data.periodLabel}` },
+      metadata: { reportLabel: `${updated.type.replaceAll("_", " ")} — ${report.reportingPeriod.label}` },
     }).catch((err) => console.error("[reports] Failed to enqueue notification:", err));
+
   } catch (err) {
     console.error(`[reports] Error generating report ${reportId}:`, err);
-    await prisma.report.update({
-      where: { id: reportId },
-      data: { status: "failed" },
-    });
+    await prisma.report.update({ where: { id: reportId }, data: { status: "failed" } });
     throw err;
   }
+}
+
+// ── Template dispatch ──────────────────────────────────────────────────────────
+
+async function renderForType(report: ReportWithIncludes): Promise<string> {
+  const orgId = report.organizationId;
+  const runId = report.snapshot.calculationRunId;
+  const opts = (report.options ?? {}) as Record<string, unknown>;
+
+  const calcs = report.type !== "national_toms"
+    ? await fetchCalculations(orgId, runId, report.contractId ?? undefined)
+    : [];
+
+  // Aggregate totals
+  const scopeKg = new Map<number, number>();
+  const catTotals = new Map<string, { name: string; scope: number; totalKg: number; count: number }>();
+  const facTotals = new Map<string, { totalKg: number; count: number }>();
+  let grandKg = 0;
+
+  for (const calc of calcs) {
+    const kg = Number(calc.totalCo2e);
+    const scope = calc.activityRecord.emissionCategory.scope;
+    const catName = calc.activityRecord.emissionCategory.name;
+    grandKg += kg;
+    scopeKg.set(scope, (scopeKg.get(scope) ?? 0) + kg);
+    const c = catTotals.get(catName) ?? { name: catName, scope, totalKg: 0, count: 0 };
+    c.totalKg += kg; c.count += 1;
+    catTotals.set(catName, c);
+    const facName = calc.activityRecord.facility?.name ?? "Unassigned";
+    const f = facTotals.get(facName) ?? { totalKg: 0, count: 0 };
+    f.totalKg += kg; f.count += 1;
+    facTotals.set(facName, f);
+  }
+
+  const s1kg = scopeKg.get(1) ?? 0;
+  const s2kg = scopeKg.get(2) ?? 0;
+  const s3kg = scopeKg.get(3) ?? 0;
+  const factorLibrary = `${report.snapshot.calculationRun.factorLibrary.name} ${report.snapshot.calculationRun.factorLibrary.version}`;
+  const methodology = report.snapshot.calculationRun.methodologyVersion.name;
+  const gwpVersion = report.snapshot.calculationRun.methodologyVersion.gwpVersion;
+  const publishedBy = report.snapshot.publishedBy.name ?? report.snapshot.publishedBy.email;
+
+  // ── SECR ─────────────────────────────────────────────────────────────────
+  if (report.type === "secr") {
+    const intensityValue = Number(opts.intensityDenominatorValue ?? 1);
+    const data: SecrData = {
+      orgName: report.organization.name,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      snapshotVersion: report.snapshot.version,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      factorLibrary, methodology, gwpVersion,
+      gasKwh: Number(opts.gasKwh ?? 0),
+      electricityKwh: Number(opts.electricityKwh ?? 0),
+      transportFuelKwh: Number(opts.transportFuelKwh ?? 0),
+      totalUkEnergyKwh: Number(opts.totalUkEnergyKwh ?? 0),
+      scope1Tonnes: s1kg / 1000,
+      scope2Tonnes: s2kg / 1000,
+      totalTonnes: (s1kg + s2kg) / 1000,
+      intensityMetric: String(opts.intensityMetric ?? "tCO₂e per employee"),
+      intensityValue: intensityValue > 0 ? (s1kg + s2kg) / 1000 / intensityValue : 0,
+      intensityDenominator: String(opts.intensityDenominator ?? ""),
+      efficiencyMeasures: Array.isArray(opts.efficiencyMeasures) ? opts.efficiencyMeasures as string[] : [],
+      recordCount: calcs.length,
+    };
+    return renderSecrHtml(data);
+  }
+
+  // ── PPN 06/21 ─────────────────────────────────────────────────────────────
+  if (report.type === "ppn_06_21") {
+    const initiatives = await prisma.reductionInitiative.findMany({
+      where: { organizationId: orgId },
+      select: { name: true, expectedImpactCo2e: true, status: true },
+      orderBy: { createdAt: "asc" },
+    });
+    const data: Ppn0621Data = {
+      orgName: report.organization.name,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      snapshotVersion: report.snapshot.version,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      factorLibrary, methodology, gwpVersion,
+      scope1Tonnes: s1kg / 1000,
+      scope2Tonnes: s2kg / 1000,
+      scope3Tonnes: s3kg / 1000,
+      totalTonnes: grandKg / 1000,
+      baselineYear: opts.baselineYear as string | undefined,
+      baselineTonnes: opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined,
+      netZeroTargetYear: Number(opts.netZeroTargetYear ?? 2050),
+      interimTargetYear: opts.interimTargetYear !== undefined ? Number(opts.interimTargetYear) : undefined,
+      interimReductionPct: opts.interimReductionPct !== undefined ? Number(opts.interimReductionPct) : undefined,
+      initiatives: initiatives.map((i) => ({
+        name: i.name,
+        expectedImpactTonnes: i.expectedImpactCo2e !== null ? Number(i.expectedImpactCo2e) / 1000 : undefined,
+        status: i.status,
+      })),
+      scopesReported: ["Scope 1", "Scope 2", s3kg > 0 ? "Scope 3" : null].filter(Boolean) as string[],
+      recordCount: calcs.length,
+    };
+    return renderPpn0621Html(data);
+  }
+
+  // ── NHS Evergreen ─────────────────────────────────────────────────────────
+  if (report.type === "nhs_evergreen") {
+    const initiatives = await prisma.reductionInitiative.findMany({
+      where: { organizationId: orgId, status: { not: "canceled" } },
+      select: { name: true, status: true },
+      orderBy: { createdAt: "asc" },
+    });
+    const data: NhsEvergreenData = {
+      orgName: report.organization.name,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      snapshotVersion: report.snapshot.version,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      factorLibrary, methodology, gwpVersion,
+      scope1Tonnes: s1kg / 1000,
+      scope2Tonnes: s2kg / 1000,
+      totalTonnes: grandKg / 1000,
+      netZeroTargetYear: Number(opts.netZeroTargetYear ?? 2050),
+      accountableOfficerName: opts.accountableOfficerName as string | undefined,
+      accountableOfficerTitle: opts.accountableOfficerTitle as string | undefined,
+      initiatives: initiatives.map((i) => ({ name: i.name, status: i.status })),
+      recordCount: calcs.length,
+    };
+    return renderNhsEvergreenHtml(data);
+  }
+
+  // ── National TOMS ─────────────────────────────────────────────────────────
+  if (report.type === "national_toms") {
+    const contractId = report.contractId;
+    if (!contractId) throw new Error("national_toms report requires a contractId.");
+
+    const svRecords = await prisma.socialValueRecord.findMany({
+      where: { organizationId: orgId, contractId, reportingPeriodId: report.reportingPeriodId },
+      include: {
+        measure: { include: { theme: { select: { code: true, name: true } } } },
+      },
+      orderBy: { measure: { tomsCode: "asc" } },
+    });
+
+    // Aggregate by theme
+    const themeMap = new Map<string, TomsThemeSummary>();
+    let grandTotalPounds = 0;
+    for (const r of svRecords) {
+      const code = r.measure.theme.code;
+      const name = r.measure.theme.name;
+      if (!themeMap.has(code)) {
+        themeMap.set(code, { themeCode: code, themeName: name, totalPounds: 0, measures: [] });
+      }
+      const theme = themeMap.get(code)!;
+      const pounds = Number(r.valuePounds);
+      grandTotalPounds += pounds;
+      theme.totalPounds += pounds;
+      const existing = theme.measures.find((m) => m.tomsCode === r.measure.tomsCode);
+      if (existing) {
+        existing.quantity += Number(r.quantity);
+        existing.valuePounds += pounds;
+      } else {
+        theme.measures.push({
+          tomsCode: r.measure.tomsCode,
+          measureName: r.measure.name,
+          unit: r.measure.unit,
+          quantity: Number(r.quantity),
+          valuePounds: pounds,
+        });
+      }
+    }
+
+    const contract = await prisma.contract.findUnique({ where: { id: contractId }, select: { name: true } });
+    const data: NationalTomsData = {
+      orgName: report.organization.name,
+      contractName: contract?.name ?? contractId,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      themes: [...themeMap.values()].sort((a, b) => a.themeCode.localeCompare(b.themeCode)),
+      grandTotalPounds,
+      totalRecords: svRecords.length,
+    };
+    return renderNationalTomsHtml(data);
+  }
+
+  // ── Inventory / monthly_snapshot / audit_package / contract_carbon / CSRD ──
+  const data: ReportData = {
+    orgName: report.organization.name,
+    reportType: report.type,
+    periodLabel: report.reportingPeriod.label,
+    periodStart: report.reportingPeriod.startDate,
+    periodEnd: report.reportingPeriod.endDate,
+    snapshotVersion: report.snapshot.version,
+    publishedAt: report.snapshot.publishedAt,
+    publishedBy,
+    factorLibrary,
+    methodology,
+    gwpVersion,
+    grandTotalKg: grandKg,
+    recordCount: calcs.length,
+    scopes: [1, 2, 3].map((scope) => ({
+      scope,
+      label: SCOPE_LABELS[scope],
+      totalKg: scopeKg.get(scope) ?? 0,
+      count: 0,
+    })),
+    categories: [...catTotals.values()].sort((a, b) => b.totalKg - a.totalKg),
+    facilities: [...facTotals.entries()]
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.totalKg - a.totalKg),
+  };
+  return renderReportHtml(data);
+}
+
+// ── Data helpers ──────────────────────────────────────────────────────────────
+
+async function fetchCalculations(orgId: string, runId: string, contractId?: string) {
+  return prisma.emissionCalculation.findMany({
+    where: {
+      organizationId: orgId,
+      calculationRunId: runId,
+      ...(contractId ? { activityRecord: { contractId } } : {}),
+    },
+    include: {
+      activityRecord: {
+        include: {
+          emissionCategory: { select: { code: true, name: true, scope: true } },
+          facility: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { totalCo2e: "desc" },
+  });
 }
 
 async function renderPdf(html: string): Promise<Buffer> {
@@ -197,54 +377,37 @@ type CalcRow = {
   formula: string;
 };
 
-function buildCsv(calculations: CalcRow[], data: ReportData): Buffer {
-  const esc = (v: string | number | null | undefined) => {
+function buildCsv(calculations: CalcRow[], report: { organization: { name: string }; reportingPeriod: { label: string }; snapshot: { version: number; calculationRun: { factorLibrary: { name: string; version: string }; methodologyVersion: { name: string; gwpVersion: string } } } }): Buffer {
+  const esc2 = (v: string | number | null | undefined) => {
     const s = String(v ?? "");
     return /[",\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
   };
-
+  const factorLib = `${report.snapshot.calculationRun.factorLibrary.name} ${report.snapshot.calculationRun.factorLibrary.version}`;
+  const methodology = report.snapshot.calculationRun.methodologyVersion.name;
+  const gwp = report.snapshot.calculationRun.methodologyVersion.gwpVersion;
   const lines: string[] = [
-    `# ${data.orgName} — GHG emissions export`,
-    `# Period: ${data.periodLabel} | Snapshot v${data.snapshotVersion} | Factors: ${data.factorLibrary} | Methodology: ${data.methodology} (GWP ${data.gwpVersion})`,
-    [
-      "scope",
-      "category_code",
-      "category_name",
-      "facility",
-      "source_description",
-      "original_amount",
-      "original_unit",
-      "normalized_amount",
-      "normalized_unit",
-      "factor_library_version",
-      "methodology",
-      "total_kg_co2e",
-      "total_t_co2e",
-      "formula",
-    ].join(","),
+    `# ${report.organization.name} — GHG emissions export`,
+    `# Period: ${report.reportingPeriod.label} | Snapshot v${report.snapshot.version} | Factors: ${factorLib} | Methodology: ${methodology} (GWP ${gwp})`,
+    ["scope","category_code","category_name","facility","source_description","original_amount","original_unit","normalized_amount","normalized_unit","factor_library_version","methodology","total_kg_co2e","total_t_co2e","formula"].join(","),
   ];
-
   for (const calc of calculations) {
     const kg = Number(calc.totalCo2e);
-    lines.push(
-      [
-        calc.activityRecord.emissionCategory.scope,
-        esc(calc.activityRecord.emissionCategory.code),
-        esc(calc.activityRecord.emissionCategory.name),
-        esc(calc.activityRecord.facility?.name ?? ""),
-        esc(calc.activityRecord.sourceDescription ?? ""),
-        esc(String(calc.originalAmount)),
-        esc(calc.originalUnit),
-        esc(String(calc.normalizedAmount)),
-        esc(calc.normalizedUnit),
-        esc(calc.factorLibraryVersion),
-        esc(calc.methodologyVersionName),
-        kg.toFixed(6),
-        (kg / 1000).toFixed(6),
-        esc(calc.formula),
-      ].join(","),
-    );
+    lines.push([
+      calc.activityRecord.emissionCategory.scope,
+      esc2(calc.activityRecord.emissionCategory.code),
+      esc2(calc.activityRecord.emissionCategory.name),
+      esc2(calc.activityRecord.facility?.name ?? ""),
+      esc2(calc.activityRecord.sourceDescription ?? ""),
+      esc2(String(calc.originalAmount)),
+      esc2(calc.originalUnit),
+      esc2(String(calc.normalizedAmount)),
+      esc2(calc.normalizedUnit),
+      esc2(calc.factorLibraryVersion),
+      esc2(calc.methodologyVersionName),
+      kg.toFixed(6),
+      (kg / 1000).toFixed(6),
+      esc2(calc.formula),
+    ].join(","));
   }
-
   return Buffer.from(lines.join("\n"), "utf-8");
 }
