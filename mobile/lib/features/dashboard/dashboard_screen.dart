@@ -358,7 +358,7 @@ class _TotalCard extends StatelessWidget {
           Text(
             'Your estimated emissions',
             style: textTheme.labelLarge?.copyWith(
-              color: colorScheme.onPrimary.withOpacity(0.85),
+              color: colorScheme.onPrimary.withValues(alpha: 0.85),
             ),
           ),
           const SizedBox(height: 6),
@@ -378,7 +378,7 @@ class _TotalCard extends StatelessWidget {
               Text(
                 'tCO2e',
                 style: textTheme.titleSmall?.copyWith(
-                  color: colorScheme.onPrimary.withOpacity(0.85),
+                  color: colorScheme.onPrimary.withValues(alpha: 0.85),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -389,7 +389,7 @@ class _TotalCard extends StatelessWidget {
             Text(
               'Estimates appear once your submissions are approved.',
               style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.onPrimary.withOpacity(0.8),
+                color: colorScheme.onPrimary.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -447,7 +447,7 @@ class _MiniStat extends StatelessWidget {
           Text(
             label,
             style: textTheme.labelSmall?.copyWith(
-              color: color.withOpacity(0.8),
+              color: color.withValues(alpha: 0.8),
             ),
           ),
         ],
