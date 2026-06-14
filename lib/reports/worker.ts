@@ -13,6 +13,9 @@ import { renderSecrHtml, type SecrData } from "./templates/secr";
 import { renderPpn0621Html, type Ppn0621Data } from "./templates/ppn-0621";
 import { renderNhsEvergreenHtml, type NhsEvergreenData } from "./templates/nhs-evergreen";
 import { renderNationalTomsHtml, type NationalTomsData, type TomsThemeSummary } from "./templates/national-toms";
+import { renderBreeamEvidenceHtml, type BreeamData } from "./templates/breeam-evidence";
+import { renderCsrdEsrsE1Html, type CsrdEsrsE1Data } from "./templates/csrd-esrs-e1";
+import { renderContractCarbonHtml, type ContractCarbonData } from "./templates/contract-carbon";
 
 const REPORT_INCLUDE = {
   organization: { select: { name: true } },
@@ -291,7 +294,88 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
     return renderNationalTomsHtml(data);
   }
 
-  // ── Inventory / monthly_snapshot / audit_package / contract_carbon / CSRD ──
+  // ── BREEAM Evidence Pack ─────────────────────────────────────────────────────
+  if (report.type === "breeam_evidence") {
+    const data: BreeamData = {
+      orgName: report.organization.name,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      snapshotVersion: report.snapshot.version,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      factorLibrary, methodology, gwpVersion,
+      scope1Tonnes: s1kg / 1000,
+      scope2Tonnes: s2kg / 1000,
+      scope3Tonnes: s3kg / 1000,
+      totalTonnes: grandKg / 1000,
+      recordCount: calcs.length,
+      categories: [...catTotals.values()],
+    };
+    return renderBreeamEvidenceHtml(data);
+  }
+
+  // ── CSRD ESRS E1 ─────────────────────────────────────────────────────────────
+  if (report.type === "csrd_esrs_e1") {
+    // Separate Scope 2 location-based vs market-based by category code.
+    let s2lbKg = 0;
+    let s2mbKg = 0;
+    for (const calc of calcs) {
+      const code = calc.activityRecord.emissionCategory.code;
+      if (code === "s2-electricity-lb") s2lbKg += Number(calc.totalCo2e);
+      else if (code === "s2-electricity-mb") s2mbKg += Number(calc.totalCo2e);
+    }
+
+    const data: CsrdEsrsE1Data = {
+      orgName: report.organization.name,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      snapshotVersion: report.snapshot.version,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      factorLibrary, methodology, gwpVersion,
+      scope1Tonnes: s1kg / 1000,
+      scope2LocationTonnes: s2lbKg / 1000,
+      scope2MarketTonnes: s2mbKg / 1000,
+      scope3Tonnes: s3kg / 1000,
+      totalTonnes: grandKg / 1000,
+      recordCount: calcs.length,
+      netZeroTargetYear: opts.netZeroTargetYear !== undefined ? Number(opts.netZeroTargetYear) : undefined,
+      baselineYear: opts.baselineYear as string | undefined,
+      baselineTonnes: opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined,
+      interimTargetYear: opts.interimTargetYear !== undefined ? Number(opts.interimTargetYear) : undefined,
+      interimReductionPct: opts.interimReductionPct !== undefined ? Number(opts.interimReductionPct) : undefined,
+      categories: [...catTotals.values()],
+    };
+    return renderCsrdEsrsE1Html(data);
+  }
+
+  // ── Contract Carbon ───────────────────────────────────────────────────────────
+  if (report.type === "contract_carbon") {
+    const contractName = report.contract?.name ?? report.contractId ?? "Unknown contract";
+    const data: ContractCarbonData = {
+      orgName: report.organization.name,
+      contractName,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      snapshotVersion: report.snapshot.version,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      factorLibrary, methodology, gwpVersion,
+      scope1Tonnes: s1kg / 1000,
+      scope2Tonnes: s2kg / 1000,
+      scope3Tonnes: s3kg / 1000,
+      totalTonnes: grandKg / 1000,
+      recordCount: calcs.length,
+      contractValueGbp: opts.contractValueGbp !== undefined ? Number(opts.contractValueGbp) : undefined,
+      categories: [...catTotals.values()],
+    };
+    return renderContractCarbonHtml(data);
+  }
+
+  // ── Inventory / monthly_snapshot / audit_package ──────────────────────────────
   const data: ReportData = {
     orgName: report.organization.name,
     reportType: report.type,
