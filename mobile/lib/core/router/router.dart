@@ -6,6 +6,7 @@ import '../../features/auth/invite_screen.dart';
 import '../../features/auth/pin_setup_screen.dart';
 import '../../features/capture/capture_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/reports/reports_screen.dart';
 import '../../features/submissions/home_screen.dart';
 import '../../features/submissions/submissions_screen.dart';
 import 'main_shell.dart';
@@ -95,6 +96,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/submissions',
                 builder: (context, state) => const SubmissionsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/reports',
+                builder: (context, state) => const ReportsScreen(),
               ),
             ],
           ),

@@ -48,18 +48,7 @@ export default async function OperationsSettingsPage({
   ]);
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 p-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          Operations setup
-        </h1>
-        <p className="mt-1 max-w-3xl text-slate-500">
-          Manage the reporting periods, facilities, and business units that
-          activity records, imports, field submissions, calculations, and
-          reports depend on.
-        </p>
-      </div>
-
+    <div className="flex flex-col gap-[28px]">
       <OperationsSetup
         orgId={orgId}
         periods={periods.map((period) => ({
