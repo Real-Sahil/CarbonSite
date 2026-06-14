@@ -17,7 +17,7 @@ import {
   TrendingUp,
   Upload,
 } from "lucide-react";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import {
   Card,
@@ -69,14 +69,7 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const { orgId } = await params;
-  const { session } = await requireOrgMember(
-    orgId,
-    "admin",
-    "editor",
-    "reviewer",
-    "viewer",
-    "auditor",
-  );
+  const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
   const [organization, currentPeriod] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
