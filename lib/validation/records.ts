@@ -60,18 +60,26 @@ export const createInitiativeSchema = z.object({
 
 export const updateInitiativeSchema = createInitiativeSchema.partial();
 
-export const createFieldSubmissionSchema = z.object({
-  reportingPeriodId: z.string().min(1),
-  documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "other"]),
-  formData: z.record(z.any()),
-  emissionCategoryId: z.string().optional(),
-  facilityId: z.string().optional(),
-  ocrExtractedData: z.record(z.any()).optional(),
-  gpsLat: z.number().min(-90).max(90).optional(),
-  gpsLng: z.number().min(-180).max(180).optional(),
-  deviceSubmittedAt: z.string().datetime().optional(),
-  idempotencyKey: z.string().max(128).optional(),
-});
+export const createFieldSubmissionSchema = z
+  .object({
+    // Either a siteId (preferred — server resolves the reporting period by
+    // date) or an explicit reportingPeriodId must be provided.
+    siteId: z.string().min(1).optional(),
+    reportingPeriodId: z.string().min(1).optional(),
+    documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "other"]),
+    formData: z.record(z.any()),
+    emissionCategoryId: z.string().optional(),
+    facilityId: z.string().optional(),
+    ocrExtractedData: z.record(z.any()).optional(),
+    gpsLat: z.number().min(-90).max(90).optional(),
+    gpsLng: z.number().min(-180).max(180).optional(),
+    deviceSubmittedAt: z.string().datetime().optional(),
+    idempotencyKey: z.string().max(128).optional(),
+  })
+  .refine((data) => Boolean(data.siteId) || Boolean(data.reportingPeriodId), {
+    message: "Either siteId or reportingPeriodId is required.",
+    path: ["siteId"],
+  });
 
 export const reviewFieldSubmissionSchema = z.object({
   action: z.enum(["approved", "rejected", "needs_info"]),

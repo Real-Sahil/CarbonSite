@@ -1,16 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, Copy, Check, Trash2, RefreshCw } from "lucide-react";
+import { Link, Copy, Check, Trash2, RefreshCw, MapPin } from "lucide-react";
+
+interface SiteOption {
+  id: string;
+  name: string;
+  siteCode: string | null;
+  project: { id: string; name: string } | null;
+}
 
 interface ActiveInviteLink {
   id: string;
   token: string;
   expiresAt: Date | string;
   role: string;
+  site?: { id: string; name: string; project: { name: string } | null } | null;
 }
 
 interface InviteLinkGeneratorProps {
@@ -28,6 +36,25 @@ export function InviteLinkGenerator({
   const [revoking, setRevoking] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sites, setSites] = useState<SiteOption[]>([]);
+  const [selectedSiteId, setSelectedSiteId] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/orgs/${orgId}/sites`);
+        if (!res.ok) return;
+        const data = (await res.json()) as SiteOption[];
+        if (!cancelled) setSites(data);
+      } catch {
+        // sites are optional — leave the picker empty
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [orgId]);
 
   function buildInviteUrl(token: string): string {
     const origin =
@@ -44,7 +71,11 @@ export function InviteLinkGenerator({
       const res = await fetch(`/api/orgs/${orgId}/invite-links`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: "field_worker", expiresInDays: 30 }),
+        body: JSON.stringify({
+          role: "field_worker",
+          expiresInDays: 30,
+          ...(selectedSiteId ? { siteId: selectedSiteId } : {}),
+        }),
       });
 
       if (!res.ok) {
@@ -96,25 +127,54 @@ export function InviteLinkGenerator({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <Button
-          onClick={handleGenerate}
-          disabled={loading}
-          variant="outline"
-          size="sm"
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor="invite-site"
+          className="text-xs font-medium text-[#333333] uppercase tracking-wide"
         >
-          {loading ? (
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Link className="h-4 w-4 mr-2" />
+          Assign to site
+        </label>
+        <div className="flex items-center gap-3 flex-wrap">
+          <select
+            id="invite-site"
+            value={selectedSiteId}
+            onChange={(e) => setSelectedSiteId(e.target.value)}
+            disabled={loading}
+            className="h-9 rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm min-w-[16rem]"
+          >
+            <option value="">No specific site (org-wide)</option>
+            {sites.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.project ? `${s.project.name} — ` : ""}{s.name}
+                {s.siteCode ? ` (${s.siteCode})` : ""}
+              </option>
+            ))}
+          </select>
+          <Button
+            onClick={handleGenerate}
+            disabled={loading}
+            variant="outline"
+            size="sm"
+          >
+            {loading ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Link className="h-4 w-4 mr-2" />
+            )}
+            {loading ? "Generating..." : "Generate field worker link"}
+          </Button>
+          {error && (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
           )}
-          {loading ? "Generating..." : "Generate field worker link"}
-        </Button>
-        {error && (
-          <p className="text-sm text-red-600" role="alert">
-            {error}
-          </p>
-        )}
+        </div>
+        <p className="text-xs text-[#555555]">
+          Scoping a link to a site auto-assigns the field worker to that site
+          when they join — they land straight on their project with no extra setup.
+          {sites.length === 0 &&
+            " Create a project and site first to enable site scoping."}
+        </p>
       </div>
 
       {links.length > 0 && (
@@ -136,6 +196,13 @@ export function InviteLinkGenerator({
                 key={link.id}
                 className="flex items-center gap-2 p-[9px] rounded-[7px] border border-[#e5e7eb] bg-[#e1f4df]"
               >
+                {link.site && (
+                  <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#cfe7d3] px-2 py-1 text-xs text-[#0f3e17] whitespace-nowrap">
+                    <MapPin className="h-3 w-3" />
+                    {link.site.project ? `${link.site.project.name} · ` : ""}
+                    {link.site.name}
+                  </span>
+                )}
                 <Input
                   readOnly
                   value={url}
