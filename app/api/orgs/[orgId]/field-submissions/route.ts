@@ -93,12 +93,60 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
     const body = createFieldSubmissionSchema.parse(rawBody);
 
-    const period = await prisma.reportingPeriod.findUnique({
-      where: { id: body.reportingPeriodId },
-      select: { organizationId: true },
-    });
-    if (!period || period.organizationId !== orgId) {
-      return apiError("NOT_FOUND", "Reporting period not found.", 404);
+    // Resolve the site (preferred path) and derive the contract for tagging.
+    const siteId: string | undefined = body.siteId;
+    let contractId: string | undefined;
+    if (siteId) {
+      const site = await prisma.site.findFirst({
+        where: { id: siteId, organizationId: orgId },
+        select: { id: true, project: { select: { contractId: true } } },
+      });
+      if (!site) {
+        return apiError("NOT_FOUND", "Site not found.", 404);
+      }
+      contractId = site.project?.contractId;
+    }
+
+    // Resolve the reporting period: explicit id wins, otherwise pick the period
+    // whose date range contains the submission date (falling back to the most
+    // recent period). Field workers never choose a period themselves.
+    let reportingPeriodId = body.reportingPeriodId;
+    if (reportingPeriodId) {
+      const period = await prisma.reportingPeriod.findUnique({
+        where: { id: reportingPeriodId },
+        select: { organizationId: true },
+      });
+      if (!period || period.organizationId !== orgId) {
+        return apiError("NOT_FOUND", "Reporting period not found.", 404);
+      }
+    } else {
+      const submissionDate = body.deviceSubmittedAt
+        ? new Date(body.deviceSubmittedAt)
+        : new Date();
+      const covering = await prisma.reportingPeriod.findFirst({
+        where: {
+          organizationId: orgId,
+          startDate: { lte: submissionDate },
+          endDate: { gte: submissionDate },
+        },
+        orderBy: { startDate: "desc" },
+        select: { id: true },
+      });
+      const resolved =
+        covering ??
+        (await prisma.reportingPeriod.findFirst({
+          where: { organizationId: orgId },
+          orderBy: { startDate: "desc" },
+          select: { id: true },
+        }));
+      if (!resolved) {
+        return apiError(
+          "NO_REPORTING_PERIOD",
+          "No reporting period is set up for this organisation. Ask an administrator to create one.",
+          422,
+        );
+      }
+      reportingPeriodId = resolved.id;
     }
 
     // Idempotency: if the same key exists for this user+org, return the existing record
@@ -120,7 +168,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     const submission = await prisma.fieldSubmission.create({
       data: {
         organizationId: orgId,
-        reportingPeriodId: body.reportingPeriodId,
+        reportingPeriodId,
+        siteId,
+        contractId,
         documentType: body.documentType,
         formData: body.formData,
         emissionCategoryId: body.emissionCategoryId,

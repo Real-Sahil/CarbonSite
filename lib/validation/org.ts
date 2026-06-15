@@ -75,6 +75,10 @@ export const updateReportingPeriodSchema = createReportingPeriodSchema
 export const createInviteLinkSchema = z.object({
   role: z.literal("field_worker").default("field_worker"),
   expiresInDays: z.number().int().min(1).max(30).default(7),
+  siteId: z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    z.string().min(1).optional(),
+  ),
 });
 
 export const acceptInviteSchema = z.object({

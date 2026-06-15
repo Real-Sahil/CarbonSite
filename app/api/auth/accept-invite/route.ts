@@ -126,6 +126,27 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Site-scoped invite: auto-assign the worker to the site so they land
+      // straight on their assigned project — no manual admin step required.
+      if (invite.siteId) {
+        await tx.fieldWorkerSiteAssignment.upsert({
+          where: {
+            organizationId_userId_siteId: {
+              organizationId: invite.organizationId,
+              userId: user!.id,
+              siteId: invite.siteId,
+            },
+          },
+          update: {},
+          create: {
+            organizationId: invite.organizationId,
+            userId: user!.id,
+            siteId: invite.siteId,
+            assignedByUserId: invite.usedByUserId ?? user!.id,
+          },
+        });
+      }
+
       await tx.inviteLink.update({
         where: { id: invite.id },
         data: { usedAt: now, usedByUserId: user!.id },

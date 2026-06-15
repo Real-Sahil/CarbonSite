@@ -41,6 +41,8 @@ model User {
   fieldSubmissions     FieldSubmission[]
   fieldWorkerAssignments FieldWorkerAssignment[] @relation("AssignedFieldWorker")
   createdFieldWorkerAssignments FieldWorkerAssignment[] @relation("FieldWorkerAssignmentCreator")
+  fieldWorkerSiteAssignments FieldWorkerSiteAssignment[] @relation("AssignedFieldWorkerSite")
+  createdFieldWorkerSiteAssignments FieldWorkerSiteAssignment[] @relation("FieldWorkerSiteAssignmentCreator")
   contractsCreated          Contract[]               @relation("ContractCreator")
   socialValueRecordsCreated SocialValueRecord[]      @relation("SocialValueCreator")
   classificationReviews     EvidenceClassification[] @relation("ClassificationReviewer")
@@ -135,6 +137,7 @@ model Organization {
   fieldSubmissions FieldSubmission[]
   inviteLinks      InviteLink[]
   fieldWorkerAssignments FieldWorkerAssignment[]
+  fieldWorkerSiteAssignments FieldWorkerSiteAssignment[]
   socialValueRecords  SocialValueRecord[]
   socialValueTargets  SocialValueTarget[]
   sites               Site[]              @relation("OrgSites")
@@ -239,12 +242,14 @@ model InviteLink {
   role           OrgRole   @default(field_worker)
   email          String?
   token          String    @unique @default(cuid())
+  siteId         String?   @map("site_id")
   expiresAt      DateTime  @map("expires_at")
   usedAt         DateTime? @map("used_at")
   usedByUserId   String?   @map("used_by_user_id")
   createdAt      DateTime  @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  site         Site?        @relation(fields: [siteId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([organizationId, email])
@@ -1198,9 +1203,30 @@ model Site {
   organization     Organization      @relation("OrgSites", fields: [organizationId], references: [id], onDelete: Cascade)
   activityRecords  ActivityRecord[]
   fieldSubmissions FieldSubmission[] @relation("FieldSubmissionSite")
+  inviteLinks      InviteLink[]
+  workerAssignments FieldWorkerSiteAssignment[]
 
   @@index([organizationId, projectId])
   @@map("sites")
+}
+
+model FieldWorkerSiteAssignment {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  userId           String   @map("user_id")
+  siteId           String   @map("site_id")
+  assignedByUserId String   @map("assigned_by_user_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("AssignedFieldWorkerSite", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy   User         @relation("FieldWorkerSiteAssignmentCreator", fields: [assignedByUserId], references: [id])
+  site         Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId, siteId])
+  @@index([organizationId, userId])
+  @@index([organizationId, siteId])
+  @@map("field_worker_site_assignments")
 }
 
 // ─── Social Value Engine (National TOMS) ─────────────────────────────────────
