@@ -30,10 +30,8 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification,
     // Guard against bcrypt DoS: reject passwords over 128 chars before hashing.
-    password: {
-      minPasswordLength: 8,
-      maxPasswordLength: 128,
-    },
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
     sendResetPassword: async ({ user, url }) => {
       await sendTransactionalEmail({
         to: user.email,
