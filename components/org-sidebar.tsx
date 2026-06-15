@@ -46,6 +46,11 @@ interface NavItem {
   icon: React.ElementType;
 }
 
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
 interface OrgSidebarProps {
   orgId: string;
   orgName: string;
@@ -93,19 +98,52 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
     });
   }
 
-  const navItems: NavItem[] = [
-    { label: "Dashboard",    href: `/orgs/${orgId}/dashboard`,       icon: LayoutDashboard },
-    { label: "Submissions",  href: `/orgs/${orgId}/submissions`,      icon: Inbox },
-    { label: "Records",      href: `/orgs/${orgId}/records`,          icon: FileText },
-    { label: "Imports",      href: `/orgs/${orgId}/imports`,          icon: Upload },
-    { label: "Calculations", href: `/orgs/${orgId}/calculations`,     icon: Calculator },
-    { label: "Reports",      href: `/orgs/${orgId}/reports`,          icon: BarChart2 },
-    { label: "Targets",      href: `/orgs/${orgId}/targets`,          icon: Target },
-    { label: "Contracts",    href: `/orgs/${orgId}/contracts`,         icon: Briefcase },
-    { label: "Social Value", href: `/orgs/${orgId}/social-value`,      icon: Heart },
-    { label: "Audit",        href: `/orgs/${orgId}/audit`,             icon: Clock },
-    { label: "Settings",     href: `/orgs/${orgId}/settings/members`, icon: Settings },
+  const navGroups: NavGroup[] = [
+    {
+      label: "",
+      items: [
+        { label: "Dashboard", href: `/orgs/${orgId}/dashboard`, icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: "Data",
+      items: [
+        { label: "Imports",     href: `/orgs/${orgId}/imports`,     icon: Upload },
+        { label: "Records",     href: `/orgs/${orgId}/records`,     icon: FileText },
+        { label: "Submissions", href: `/orgs/${orgId}/submissions`, icon: Inbox },
+      ],
+    },
+    {
+      label: "Calculations",
+      items: [
+        { label: "Calculations", href: `/orgs/${orgId}/calculations`, icon: Calculator },
+        { label: "Reports",      href: `/orgs/${orgId}/reports`,      icon: BarChart2 },
+      ],
+    },
+    {
+      label: "Planning",
+      items: [
+        { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target },
+        { label: "Social Value", href: `/orgs/${orgId}/social-value`, icon: Heart },
+      ],
+    },
+    {
+      label: "Contracts",
+      items: [
+        { label: "Contracts", href: `/orgs/${orgId}/contracts`, icon: Briefcase },
+      ],
+    },
+    {
+      label: "Admin",
+      items: [
+        { label: "Audit",    href: `/orgs/${orgId}/audit`,             icon: Clock },
+        { label: "Settings", href: `/orgs/${orgId}/settings/members`, icon: Settings },
+      ],
+    },
   ];
+
+  // Flat list for mobile drawer (preserves order)
+  const navItems: NavItem[] = navGroups.flatMap((g) => g.items);
 
   async function handleSignOut() {
     await authClient.signOut();
@@ -284,49 +322,63 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
 
         {/* Nav */}
         <nav
-          className="flex-1 px-2 py-4 flex flex-col gap-0.5 overflow-hidden"
+          className="flex-1 px-2 py-4 flex flex-col overflow-hidden"
           aria-label="Organisation navigation"
         >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
-            const link = (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-[7px] text-sm font-normal tracking-[-0.42px] transition-colors",
-                  collapsed ? "px-0 py-2 justify-center" : "px-3 py-2",
-                  isActive
-                    ? "bg-[#e1f4df] text-[#0f3e17]"
-                    : "text-[#222222] hover:bg-[#e1f4df] hover:text-[#0f3e17]",
-                )}
-              >
-                <Icon
-                  aria-hidden="true"
-                  className={cn(
-                    "h-4 w-4 shrink-0",
-                    isActive ? "text-[#0f3e17]" : "text-[#333333]",
-                  )}
-                />
-                {!collapsed && item.label}
-              </Link>
-            );
+          {navGroups.map((group, groupIdx) => (
+            <div
+              key={group.label || "__top__"}
+              className={cn(groupIdx > 0 && "mt-3")}
+            >
+              {group.label && !collapsed && (
+                <p className="px-3 mb-1 text-[10px] uppercase tracking-widest font-medium text-zinc-500">
+                  {group.label}
+                </p>
+              )}
+              <div className="flex flex-col gap-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    pathname === item.href || pathname.startsWith(item.href + "/");
+                  const link = (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-[7px] text-sm font-normal tracking-[-0.42px] transition-colors",
+                        collapsed ? "px-0 py-2 justify-center" : "px-3 py-2",
+                        isActive
+                          ? "bg-[#e1f4df] text-[#0f3e17]"
+                          : "text-[#222222] hover:bg-[#e1f4df] hover:text-[#0f3e17]",
+                      )}
+                    >
+                      <Icon
+                        aria-hidden="true"
+                        className={cn(
+                          "h-4 w-4 shrink-0",
+                          isActive ? "text-[#0f3e17]" : "text-[#333333]",
+                        )}
+                      />
+                      {!collapsed && item.label}
+                    </Link>
+                  );
 
-            if (collapsed) {
-              return (
-                <Tooltip key={item.href}>
-                  <TooltipTrigger asChild>{link}</TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs">
-                    {item.label}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            }
+                  if (collapsed) {
+                    return (
+                      <Tooltip key={item.href}>
+                        <TooltipTrigger asChild>{link}</TooltipTrigger>
+                        <TooltipContent side="right" className="text-xs">
+                          {item.label}
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  }
 
-            return link;
-          })}
+                  return link;
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* User footer */}

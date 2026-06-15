@@ -90,8 +90,12 @@ export default async function MembersPage({ params }: MembersPageProps) {
       throw err;
     });
 
-  const [members, pendingTeamInvites, inviteLinks, periods, facilities, assignmentState] =
+  const [org, members, pendingTeamInvites, inviteLinks, periods, facilities, assignmentState] =
     await Promise.all([
+    prisma.organization.findUniqueOrThrow({
+      where: { id: orgId },
+      select: { name: true, plan: true },
+    }),
     prisma.organizationMembership.findMany({
       where: { organizationId: orgId },
       include: {
@@ -135,8 +139,29 @@ export default async function MembersPage({ params }: MembersPageProps) {
   const fieldWorkers = members.filter((member) => member.role === "field_worker");
   const assignments = assignmentState.assignments;
 
+  const PLAN_CLASSES: Record<string, string> = {
+    trial: "bg-amber-100 text-amber-800 border border-amber-300",
+    starter: "bg-blue-100 text-blue-800 border border-blue-300",
+    professional: "bg-emerald-100 text-emerald-800 border border-emerald-300",
+    enterprise: "bg-purple-100 text-purple-800 border border-purple-300",
+  };
+  const planClass =
+    PLAN_CLASSES[org.plan] ?? "bg-zinc-100 text-zinc-800 border border-zinc-300";
+
   return (
     <div className="flex flex-col gap-[28px]">
+      {/* Plan badge */}
+      <div className="flex items-center gap-3">
+        <p className="text-sm font-normal text-[#333333] tracking-[-0.42px]">
+          {org.name}
+        </p>
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${planClass}`}
+        >
+          {org.plan}
+        </span>
+      </div>
+
       {/* Members table */}
       <Card>
         <CardHeader>

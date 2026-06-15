@@ -19,30 +19,35 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const reviewStatus = url.searchParams.get("reviewStatus");
     const take = 50;
 
-    const records = await prisma.activityRecord.findMany({
-      where: {
-        organizationId: orgId,
-        ...(periodId ? { reportingPeriodId: periodId } : {}),
-        ...(categoryId ? { emissionCategoryId: categoryId } : {}),
-        ...(reviewStatus ? { reviewStatus: reviewStatus as never } : {}),
-      },
-      include: {
-        reportingPeriod: { select: { label: true } },
-        emissionCategory: { select: { scope: true, name: true, code: true } },
-        facility: { select: { name: true } },
-        businessUnit: { select: { name: true } },
-        _count: { select: { calculations: true, evidence: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: take + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-    });
+    const where = {
+      organizationId: orgId,
+      ...(periodId ? { reportingPeriodId: periodId } : {}),
+      ...(categoryId ? { emissionCategoryId: categoryId } : {}),
+      ...(reviewStatus ? { reviewStatus: reviewStatus as never } : {}),
+    };
+
+    const [records, total] = await Promise.all([
+      prisma.activityRecord.findMany({
+        where,
+        include: {
+          reportingPeriod: { select: { label: true } },
+          emissionCategory: { select: { scope: true, name: true, code: true } },
+          facility: { select: { name: true } },
+          businessUnit: { select: { name: true } },
+          _count: { select: { calculations: true, evidence: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: take + 1,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      }),
+      prisma.activityRecord.count({ where }),
+    ]);
 
     const hasMore = records.length > take;
     const data = hasMore ? records.slice(0, take) : records;
     const nextCursor = hasMore ? data[data.length - 1].id : null;
 
-    return NextResponse.json({ data, nextCursor });
+    return NextResponse.json({ data, nextCursor, total });
   } catch (err) {
     return handleRouteError(err);
   }

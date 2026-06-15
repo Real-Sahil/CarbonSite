@@ -1,3 +1,4 @@
+import { StagedRecordStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getObject, putObject, keys } from "@/lib/storage";
 import { parseSpreadsheet } from "./parser";
@@ -80,10 +81,22 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
 
     const errorRows: { rowNumber: number; errors: (typeof validatedRows)[0]["errors"]; warnings: (typeof validatedRows)[0]["warnings"] }[] = [];
 
-    // Create StagedActivityRecord for each row
+    // Collect StagedActivityRecord rows for batched insert
     let totalErrors = 0;
     let totalWarnings = 0;
     let readyCount = 0;
+
+    type StagedRow = {
+      organizationId: string;
+      importBatchId: string;
+      rowNumber: number;
+      data: object;
+      validationErrors: (typeof validatedRows)[0]["errors"];
+      validationWarnings: (typeof validatedRows)[0]["warnings"];
+      status: StagedRecordStatus;
+    };
+
+    const rowsToInsert: StagedRow[] = [];
 
     for (let i = 0; i < validatedRows.length; i++) {
       const { data, errors, warnings } = validatedRows[i];
@@ -99,19 +112,26 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
         errorRows.push({ rowNumber, errors: [], warnings });
       }
 
-      await prisma.stagedActivityRecord.create({
-        data: {
-          organizationId: orgId,
-          importBatchId,
-          rowNumber,
-          data: data as object,
-          validationErrors: errors,
-          validationWarnings: warnings,
-          status: hasErrors ? "staged" : "ready",
-        },
+      rowsToInsert.push({
+        organizationId: orgId,
+        importBatchId,
+        rowNumber,
+        data: data as object,
+        validationErrors: errors,
+        validationWarnings: warnings,
+        status: (hasErrors ? "staged" : "ready") as StagedRecordStatus,
       });
 
       if (!hasErrors) readyCount++;
+    }
+
+    const BATCH = 500;
+    for (let i = 0; i < rowsToInsert.length; i += BATCH) {
+      await prisma.stagedActivityRecord.createMany({ data: rowsToInsert.slice(i, i + BATCH) });
+      await prisma.importBatch.update({
+        where: { id: importBatchId },
+        data: { lastProcessedRowIndex: i + Math.min(BATCH, rowsToInsert.length - i) },
+      });
     }
 
     // Determine new batch state

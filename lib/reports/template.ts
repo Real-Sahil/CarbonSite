@@ -19,6 +19,7 @@ export type ReportData = {
   scopes: { scope: number; label: string; totalKg: number; count: number }[];
   categories: { name: string; scope: number; totalKg: number; count: number }[];
   facilities: { name: string; totalKg: number; count: number }[];
+  biogenicCo2eTonnes?: number;
 };
 
 const REPORT_TYPE_TITLES: Record<string, string> = {
@@ -171,6 +172,7 @@ export function renderReportHtml(data: ReportData): string {
     <thead><tr><th>Scope</th><th class="num">Records</th><th class="num">tCO<sub>2</sub>e</th><th class="num">Share</th></tr></thead>
     <tbody>${scopeRows}</tbody>
   </table>
+  ${data.biogenicCo2eTonnes != null ? `<p style="margin-top:12px;font-size:13px;color:#555"><strong>Biogenic CO₂e (memo item, excluded from totals):</strong> ${data.biogenicCo2eTonnes.toFixed(4)} tCO₂e</p><p style="font-size:11px;color:#888;margin-top:4px">Biogenic CO₂e is reported separately per GHG Protocol. Not included in Scope 1, 2, or 3 figures.</p>` : ""}
 
   <h2>Emissions by category</h2>
   <table>

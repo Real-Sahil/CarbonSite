@@ -3,7 +3,7 @@
 import { FormEvent, useState, useTransition } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, CheckCircle, XCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, CheckCircle, XCircle, AlertCircle, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
@@ -88,6 +88,9 @@ export function CreateReportForm({
   const [isPending, startTransition] = useTransition();
   const [reportType, setReportType] = useState("inventory");
   const [snapshotId, setSnapshotId] = useState(snapshots[0]?.id ?? "");
+  const [secrOpen, setSecrOpen] = useState(false);
+  const [intensityMetricLabel, setIntensityMetricLabel] = useState("");
+  const [intensityMetricValue, setIntensityMetricValue] = useState("");
 
   // Validation state
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -157,11 +160,19 @@ export function CreateReportForm({
 
     startTransition(async () => {
       try {
+        const secrOptions =
+          reportType === "secr"
+            ? {
+                ...(intensityMetricLabel ? { intensityMetricLabel } : {}),
+                ...(intensityMetricValue !== "" ? { intensityMetricValue: Number(intensityMetricValue) } : {}),
+              }
+            : {};
         await postJson(`/api/orgs/${orgId}/reports`, {
           snapshotId: sid,
           reportingPeriodId: snapshot?.reportingPeriodId,
           type: reportType,
           ...(contractId && contractId !== "" ? { contractId } : {}),
+          options: { ...secrOptions },
         });
         (event.target as HTMLFormElement).reset();
         setReportType("inventory");
@@ -285,6 +296,48 @@ export function CreateReportForm({
         )}
         {submitError && <p className="text-sm text-red-600 lg:col-span-5">{submitError}</p>}
       </form>
+
+      {/* SECR intensity metrics collapsible */}
+      {reportType === "secr" && (
+        <div className="rounded-[14px] border border-[#e5e7eb]">
+          <button
+            type="button"
+            onClick={() => setSecrOpen((v) => !v)}
+            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-normal text-[#0f3e17] tracking-[-0.42px] hover:bg-[#f9fafb] rounded-[14px]"
+          >
+            <span>SECR intensity metrics</span>
+            {secrOpen ? (
+              <ChevronUp className="h-4 w-4 text-[#333333]" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-[#333333]" />
+            )}
+          </button>
+          {secrOpen && (
+            <div className="grid gap-4 border-t border-[#e5e7eb] px-4 pb-4 pt-4 sm:grid-cols-2">
+              <Field label="Intensity metric label">
+                <input
+                  type="text"
+                  value={intensityMetricLabel}
+                  onChange={(e) => setIntensityMetricLabel(e.target.value)}
+                  placeholder="e.g. per £m revenue, per FTE, per tonne output"
+                  className="h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm placeholder:text-[#999]"
+                />
+              </Field>
+              <Field label="Intensity ratio (tCO₂e per unit)">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={intensityMetricValue}
+                  onChange={(e) => setIntensityMetricValue(e.target.value)}
+                  placeholder="0.00"
+                  className="h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm placeholder:text-[#999]"
+                />
+              </Field>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Validation results panel */}
       {(validationResult || validationError) && validationFresh && (

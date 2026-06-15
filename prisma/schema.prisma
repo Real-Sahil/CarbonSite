@@ -46,6 +46,7 @@ model User {
   classificationReviews     EvidenceClassification[] @relation("ClassificationReviewer")
   ocrCorrections            OcrCorrection[]          @relation("OcrCorrectionBy")
   deviceTokens              DeviceToken[]
+  webhooks                  Webhook[]                @relation("WebhookCreator")
   snapshotVerifications     PublishedSnapshot[]      @relation("SnapshotVerifiedBy")
 
   platformMembership PlatformMembership?
@@ -109,6 +110,7 @@ model Organization {
   hqCountry         String?  @map("hq_country")
   reportingCurrency String   @default("GBP") @map("reporting_currency")
   defaultUnits      Json?    @map("default_units")
+  plan              String   @default("trial") @map("plan")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
@@ -138,6 +140,7 @@ model Organization {
   sites               Site[]              @relation("OrgSites")
   projects            Project[]           @relation("OrgProjects")
   branding            TenantBranding?
+  webhooks            Webhook[]
 
   @@map("organizations")
 }
@@ -411,10 +414,11 @@ model ImportBatch {
   errorCount          Int         @default(0) @map("error_count")
   warningCount        Int         @default(0) @map("warning_count")
   errorCsvStorageKey  String?     @map("error_csv_storage_key")
-  idempotencyKey      String?     @unique @map("idempotency_key")
-  createdByUserId     String      @map("created_by_user_id")
-  createdAt           DateTime    @default(now()) @map("created_at")
-  updatedAt           DateTime    @updatedAt @map("updated_at")
+  idempotencyKey           String?     @unique @map("idempotency_key")
+  lastProcessedRowIndex    Int?        @map("last_processed_row_index")
+  createdByUserId          String      @map("created_by_user_id")
+  createdAt                DateTime    @default(now()) @map("created_at")
+  updatedAt                DateTime    @updatedAt @map("updated_at")
 
   organization    Organization         @relation(fields: [organizationId], references: [id])
   createdBy       User                 @relation(fields: [createdByUserId], references: [id])
@@ -895,6 +899,7 @@ model DashboardAggregate {
   businessUnit     BusinessUnit?     @relation(fields: [businessUnitId], references: [id])
 
   @@index([organizationId, reportingPeriodId, snapshotId])
+  @@index([organizationId, snapshotId, scope])
   @@map("dashboard_aggregates")
 }
 
@@ -948,6 +953,7 @@ model ReductionInitiative {
   expectedImpactCo2e  Decimal?         @map("expected_impact_co2e") @db.Decimal(18, 4)
   expectedStartDate   DateTime?        @map("expected_start_date") @db.Date
   notes               String?
+  methodology         String?          @map("methodology")
   createdByUserId     String           @map("created_by_user_id")
   createdAt           DateTime         @default(now()) @map("created_at")
   updatedAt           DateTime         @updatedAt @map("updated_at")
@@ -1302,6 +1308,7 @@ model EvidenceClassification {
   modelVersion     String       @map("model_version")
   reviewedByUserId String?      @map("reviewed_by_user_id")
   reviewedAt       DateTime?    @map("reviewed_at")
+  certified        Boolean      @default(false) @map("certified")
   createdAt        DateTime     @default(now()) @map("created_at")
 
   evidenceFile EvidenceFile @relation(fields: [evidenceFileId], references: [id], onDelete: Cascade)
@@ -1341,4 +1348,41 @@ model DeviceToken {
 
   @@index([userId])
   @@map("device_tokens")
+}
+
+// ─── Webhooks ─────────────────────────────────────────────────────────────────
+
+model Webhook {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  url            String
+  secret         String
+  events         String[]  // e.g. ["calculation_run.completed", "report.ready"]
+  enabled        Boolean   @default(true)
+  createdByUserId String   @map("created_by_user_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  createdBy    User         @relation("WebhookCreator", fields: [createdByUserId], references: [id])
+  deliveries   WebhookDelivery[]
+
+  @@index([organizationId])
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id          String   @id @default(cuid())
+  webhookId   String   @map("webhook_id")
+  event       String
+  payload     Json
+  statusCode  Int?     @map("status_code")
+  attempts    Int      @default(0)
+  succeededAt DateTime? @map("succeeded_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId, createdAt])
+  @@map("webhook_deliveries")
 }

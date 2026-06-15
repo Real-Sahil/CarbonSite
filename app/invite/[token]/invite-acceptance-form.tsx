@@ -36,13 +36,14 @@ export function InviteAcceptanceForm({
   state: InviteState;
 }) {
   const router = useRouter();
+  const isFieldWorker = role === "field_worker";
   const [name, setName] = useState("");
   const [email, setEmail] = useState(invitedEmail ?? "");
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const isTeamInvite = role !== "field_worker";
+  const isTeamInvite = !isFieldWorker;
   const expires = new Date(expiresAt);
 
   async function copyToken() {
@@ -82,7 +83,7 @@ export function InviteAcceptanceForm({
         body: JSON.stringify({
           token,
           name: name.trim(),
-          email: normalizedEmail || undefined,
+          ...(isFieldWorker ? {} : { email: normalizedEmail || undefined }),
         }),
       });
       if (!response.ok) {
@@ -152,6 +153,9 @@ export function InviteAcceptanceForm({
               </Button>
             </div>
           </div>
+          <p className="text-sm text-zinc-500">
+            You'll sign in using your PIN — no email account needed.
+          </p>
           <p className="flex items-start gap-2 text-xs text-slate-500">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-700" />
             Open CarbonSite mobile, paste the invite link or token, enter the
@@ -191,18 +195,24 @@ export function InviteAcceptanceForm({
               required
             />
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="invite-email">Email</Label>
-            <Input
-              id="invite-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
-              disabled={loading || Boolean(invitedEmail)}
-              required={isTeamInvite}
-            />
-          </div>
+          {isFieldWorker ? (
+            <p className="text-sm text-zinc-500">
+              You'll sign in using your PIN — no email account needed.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="invite-email">Email</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
+                disabled={loading || Boolean(invitedEmail)}
+                required={isTeamInvite}
+              />
+            </div>
+          )}
           {isTeamInvite && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="invite-password">Password</Label>

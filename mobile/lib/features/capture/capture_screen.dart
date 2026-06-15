@@ -28,7 +28,21 @@ class CaptureScreen extends ConsumerStatefulWidget {
   final String? projectId;
   final String? projectLabel;
 
-  const CaptureScreen({super.key, this.projectId, this.projectLabel});
+  /// When non-null this is a correction re-submission.  The ID is included
+  /// in the POST body sent to the field-submissions API so the server can
+  /// link the new submission back to the rejected original.
+  final String? resubmittedFromId;
+
+  /// Pre-selected document type when arriving from a resubmission flow.
+  final String? documentType;
+
+  const CaptureScreen({
+    super.key,
+    this.projectId,
+    this.projectLabel,
+    this.resubmittedFromId,
+    this.documentType,
+  });
 
   @override
   ConsumerState<CaptureScreen> createState() => _CaptureScreenState();
@@ -51,7 +65,19 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   /// Field keys auto-filled by OCR — rendered with a sparkle marker.
   final Set<String> _autoFilled = {};
 
+  /// Per-field OCR confidence scores from the last extraction.
+  Map<String, double> _fieldConfidence = {};
+
   final Map<String, TextEditingController> _controllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // If arriving from a resubmission, pre-select the document type.
+    if (widget.documentType != null) {
+      _documentType = _documentTypeFromApiValue(widget.documentType!);
+    }
+  }
 
   @override
   void dispose() {
@@ -189,6 +215,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
   void _applyExtracted(ExtractedFields fields) {
     _autoFilled.clear();
+    _fieldConfidence = Map<String, double>.from(fields.fieldConfidence);
+
     void apply(String key, String? value) {
       if (value == null || value.isEmpty) return;
       _controller(key).text = value;
@@ -228,6 +256,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       if (value.isNotEmpty) formData[key] = value;
     });
     formData['autoExtracted'] = _autoFilled.toList();
+
+    // Include the resubmission link if this is a correction.
+    if (widget.resubmittedFromId != null) {
+      formData['resubmittedFromId'] = widget.resubmittedFromId;
+    }
 
     final draftId = _uuid.v4();
     final type = _documentType ?? DocumentType.other;
@@ -304,6 +337,19 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     }
   }
 
+  DocumentType _documentTypeFromApiValue(String value) {
+    switch (value) {
+      case 'waste_ticket':
+        return DocumentType.wasteTicket;
+      case 'delivery_note':
+        return DocumentType.deliveryNote;
+      case 'fuel_receipt':
+        return DocumentType.fuelReceipt;
+      default:
+        return DocumentType.other;
+    }
+  }
+
   // ---------------------------------------------------------------------
   // UI
   // ---------------------------------------------------------------------
@@ -316,7 +362,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       appBar: AppBar(
         title: Text(
           _step == _CaptureStep.selectType
-              ? 'Capture Document'
+              ? (widget.resubmittedFromId != null
+                  ? 'Submit Correction'
+                  : 'Capture Document')
               : _documentTypeLabel(_documentType ?? DocumentType.other),
         ),
         leading: _step == _CaptureStep.review
@@ -576,6 +624,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     int maxLines = 1,
   }) {
     final auto = _autoFilled.contains(key);
+    final confidence = _fieldConfidence[key] ?? 0.0;
+    final isHighConfidence = auto && confidence >= 0.85;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
@@ -583,6 +634,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         keyboardType: keyboard,
         maxLines: maxLines,
         enabled: !_submitting,
+        style: isHighConfidence
+            ? TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)
+            : null,
         onChanged: (_) {
           // Once the user edits an auto value it is theirs, drop the marker.
           if (auto) setState(() => _autoFilled.remove(key));
@@ -592,13 +646,21 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           hintText: hint,
           helperText: auto ? 'Auto-filled from photo' : null,
           suffixIcon: auto
-              ? Tooltip(
-                  message: 'Read automatically from the photo',
-                  child: Icon(
-                    Icons.auto_awesome,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _ConfidenceDot(confidence: confidence),
+                    const SizedBox(width: 4),
+                    Tooltip(
+                      message: 'Read automatically from the photo',
+                      child: Icon(
+                        Icons.auto_awesome,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 )
               : null,
         ),
@@ -615,6 +677,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     final controller = _controller(key);
     final current = units.contains(controller.text) ? controller.text : null;
     final auto = _autoFilled.contains(key);
+    final confidence = _fieldConfidence[key] ?? 0.0;
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: DropdownButtonFormField<String>(
@@ -634,10 +697,18 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           labelText: 'Unit',
           helperText: auto ? 'Auto-filled from photo' : null,
           suffixIcon: auto
-              ? Icon(
-                  Icons.auto_awesome,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.primary,
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _ConfidenceDot(confidence: confidence),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.auto_awesome,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 )
               : null,
         ),
@@ -656,6 +727,37 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       case DocumentType.other:
         return 'Other Document';
     }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Confidence indicator dot
+// -----------------------------------------------------------------------------
+
+class _ConfidenceDot extends StatelessWidget {
+  final double confidence;
+
+  const _ConfidenceDot({required this.confidence});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color;
+    if (confidence >= 0.85) {
+      color = Colors.green;
+    } else if (confidence >= 0.5) {
+      color = Colors.orange;
+    } else {
+      color = Colors.red;
+    }
+
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+      ),
+    );
   }
 }
 

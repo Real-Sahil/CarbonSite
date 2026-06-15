@@ -76,11 +76,24 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
                         const SizedBox(height: 16),
                       ],
                       const SizedBox(height: 8),
-                      FilledButton.icon(
-                        onPressed: () => context.push('/capture'),
-                        icon: const Icon(Icons.camera_alt_outlined),
-                        label: const Text('Submit new document'),
-                      ),
+                      if (_detail!.status == 'rejected')
+                        FilledButton.icon(
+                          onPressed: () => context.push(
+                            '/capture',
+                            extra: {
+                              'resubmittedFromId': _detail!.id,
+                              'documentType': _detail!.documentType,
+                            },
+                          ),
+                          icon: const Icon(Icons.edit_document),
+                          label: const Text('Submit correction'),
+                        )
+                      else
+                        FilledButton.icon(
+                          onPressed: () => context.push('/capture'),
+                          icon: const Icon(Icons.camera_alt_outlined),
+                          label: const Text('Submit new document'),
+                        ),
                     ],
                   ),
                 ),

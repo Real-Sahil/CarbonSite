@@ -17,28 +17,33 @@ export async function GET(req: NextRequest, { params }: Params) {
     const cursor = url.searchParams.get("cursor");
     const take = 50;
 
-    const submissions = await prisma.fieldSubmission.findMany({
-      where: {
-        organizationId: orgId,
-        ...(status ? { status: status as never } : {}),
-      },
-      include: {
-        submittedBy: { select: { name: true, email: true } },
-        reportingPeriod: { select: { label: true } },
-        emissionCategory: { select: { scope: true, name: true } },
-        facility: { select: { name: true } },
-        _count: { select: { files: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: take + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-    });
+    const where = {
+      organizationId: orgId,
+      ...(status ? { status: status as never } : {}),
+    };
+
+    const [submissions, total] = await Promise.all([
+      prisma.fieldSubmission.findMany({
+        where,
+        include: {
+          submittedBy: { select: { name: true, email: true } },
+          reportingPeriod: { select: { label: true } },
+          emissionCategory: { select: { scope: true, name: true } },
+          facility: { select: { name: true } },
+          _count: { select: { files: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: take + 1,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      }),
+      prisma.fieldSubmission.count({ where }),
+    ]);
 
     const hasMore = submissions.length > take;
     const data = hasMore ? submissions.slice(0, take) : submissions;
     const nextCursor = hasMore ? data[data.length - 1].id : null;
 
-    return NextResponse.json({ data, nextCursor });
+    return NextResponse.json({ data, nextCursor, total });
   } catch (err) {
     return handleRouteError(err);
   }
