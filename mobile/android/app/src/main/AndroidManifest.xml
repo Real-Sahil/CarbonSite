@@ -34,12 +34,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Custom scheme: carbonsite://invite/{token} -->
+            <!-- Custom scheme: carbonsite://app/invite/{token}?server=https://... -->
+            <!-- host=app means GoRouter receives path /invite/{token}, matching the route -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="carbonsite" android:host="invite"/>
+                <data android:scheme="carbonsite" android:host="app" android:pathPrefix="/invite"/>
             </intent-filter>
 
             <!-- HTTPS app link: https://carbonsite.app/invite/{token} -->
