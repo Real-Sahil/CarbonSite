@@ -2,8 +2,11 @@
 // and testable without Puppeteer. All emission values stored in kg CO2e;
 // displayed in tonnes (tCO2e) per GHG Protocol reporting convention.
 
+import { brandStyles, brandLogoHtml } from "./templates/shared";
+
 export type ReportData = {
   orgName: string;
+  logoDataUri?: string;
   reportType: string;
   periodLabel: string;
   periodStart: Date;
@@ -140,10 +143,12 @@ export function renderReportHtml(data: ReportData): string {
   .bar-value { width: 110px; text-align: right; font-size: 10px; font-weight: 600; }
   .footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #e2e8f0; font-size: 9px; color: #64748b; }
   .footer p { margin-bottom: 3px; }
+  ${brandStyles()}
 </style>
 </head>
 <body>
   <div class="header">
+    ${brandLogoHtml(data.logoDataUri, data.orgName)}
     <div class="org">${escapeHtml(data.orgName)}</div>
     <h1>${escapeHtml(title)}</h1>
     <div class="period">${escapeHtml(data.periodLabel)} · ${fmtDate(data.periodStart)} – ${fmtDate(data.periodEnd)}</div>

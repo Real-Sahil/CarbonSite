@@ -59,6 +59,7 @@ type AuditAction =
   | "site.updated"
   | "site.deleted"
   | "branding.upserted"
+  | "branding.logo_uploaded"
   | "social_value_record.created"
   | "social_value_record.deleted"
   | "social_value_target.upserted"

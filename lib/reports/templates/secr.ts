@@ -2,10 +2,11 @@
 // Mandatory for large UK businesses: >250 employees OR >£36m turnover OR >£18m balance sheet
 // Reports must cover a 12-month period aligned to the financial year.
 
-import { esc } from "./shared";
+import { esc, brandStyles, brandLogoHtml } from "./shared";
 
 export type SecrData = {
   orgName: string;
+  logoDataUri?: string;
   periodLabel: string;
   periodStart: Date;
   periodEnd: Date;
@@ -90,11 +91,13 @@ export function renderSecrHtml(d: SecrData): string {
   li { margin: 4px 0; line-height: 1.5; }
   .footer { background: #f9fafb; padding: 16px 40px; font-size: 9pt; color: #6b7280; border-top: 1px solid #e5e7eb; }
   .badge { display: inline-block; background: #003087; color: #fff; font-size: 8pt; padding: 2px 8px; border-radius: 3px; margin-right: 6px; }
+  ${brandStyles()}
 </style>
 </head>
 <body>
 
 <div class="cover">
+  ${brandLogoHtml(d.logoDataUri, d.orgName)}
   <div class="subtitle">Streamlined Energy &amp; Carbon Report</div>
   <div class="org">${esc(d.orgName)}</div>
   <div class="period">Reporting period: ${pStart} – ${pEnd}</div>

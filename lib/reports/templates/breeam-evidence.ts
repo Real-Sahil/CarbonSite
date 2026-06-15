@@ -2,7 +2,7 @@
 // Provides structured evidence of GHG measurement and reduction for BREEAM
 // Mat 01 / Ene 01 / Man 03 and related credits.
 
-import { esc } from "./shared";
+import { esc, brandStyles, brandLogoHtml } from "./shared";
 
 export interface BreeamCategory {
   name: string;
@@ -13,6 +13,7 @@ export interface BreeamCategory {
 
 export interface BreeamData {
   orgName: string;
+  logoDataUri?: string;
   periodLabel: string;
   periodStart: Date;
   periodEnd: Date;
@@ -80,10 +81,12 @@ export function renderBreeamEvidenceHtml(d: BreeamData): string {
   .checklist li::before { content: '✓'; position: absolute; left: 0; color: #00573f; font-weight: 700 }
   .note { background: #fffde8; border-left: 3px solid #f0c020; padding: 10px 14px; font-size: 9pt; margin-top: 14px }
   footer { text-align: center; font-size: 8pt; color: #888; padding: 20px 40px; border-top: 1px solid #ddd; margin-top: 32px }
+  ${brandStyles()}
 </style>
 </head>
 <body>
 <div class="cover">
+  ${brandLogoHtml(d.logoDataUri, d.orgName)}
   <h1>BREEAM Evidence Pack</h1>
   <p>${esc(d.orgName)}</p>
   <p>Reporting period: ${esc(d.periodLabel)}</p>

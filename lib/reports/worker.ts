@@ -6,7 +6,7 @@
 import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { putObject, keys } from "@/lib/storage";
+import { putObject, getObject, keys } from "@/lib/storage";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { renderReportHtml, type ReportData } from "./template";
 import { renderSecrHtml, type SecrData } from "./templates/secr";
@@ -18,7 +18,12 @@ import { renderCsrdEsrsE1Html, type CsrdEsrsE1Data } from "./templates/csrd-esrs
 import { renderContractCarbonHtml, type ContractCarbonData } from "./templates/contract-carbon";
 
 const REPORT_INCLUDE = {
-  organization: { select: { name: true } },
+  organization: {
+    select: {
+      name: true,
+      branding: { select: { reportHeaderLogoKey: true } },
+    },
+  },
   reportingPeriod: { select: { label: true, startDate: true, endDate: true } },
   contract: { select: { name: true } },
   snapshot: {
@@ -107,10 +112,31 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
 
 // ── Template dispatch ──────────────────────────────────────────────────────────
 
+/// Loads the org's report header logo as a base64 data URI. Returns undefined
+/// when no logo is set or the object can't be read — the report still renders
+/// (just without the logo), so a missing logo never fails generation.
+async function loadLogoDataUri(logoKey: string | null | undefined): Promise<string | undefined> {
+  if (!logoKey) return undefined;
+  try {
+    const buf = await getObject(logoKey);
+    const ext = logoKey.split(".").pop()?.toLowerCase();
+    const mime =
+      ext === "png" ? "image/png"
+      : ext === "webp" ? "image/webp"
+      : ext === "svg" ? "image/svg+xml"
+      : "image/jpeg";
+    return `data:${mime};base64,${buf.toString("base64")}`;
+  } catch (err) {
+    console.error("[reports] Failed to load branding logo:", err);
+    return undefined;
+  }
+}
+
 async function renderForType(report: ReportWithIncludes): Promise<string> {
   const orgId = report.organizationId;
   const runId = report.snapshot.calculationRunId;
   const opts = (report.options ?? {}) as Record<string, unknown>;
+  const logoDataUri = await loadLogoDataUri(report.organization.branding?.reportHeaderLogoKey);
 
   const calcs = report.type !== "national_toms"
     ? await fetchCalculations(orgId, runId, report.contractId ?? undefined)
@@ -162,6 +188,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
     const intensityValue = Number(opts.intensityDenominatorValue ?? 1);
     const data: SecrData = {
       orgName: report.organization.name,
+      logoDataUri,
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
       periodEnd: report.reportingPeriod.endDate,
@@ -194,6 +221,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
     });
     const data: Ppn0621Data = {
       orgName: report.organization.name,
+      logoDataUri,
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
       periodEnd: report.reportingPeriod.endDate,
@@ -230,6 +258,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
     });
     const data: NhsEvergreenData = {
       orgName: report.organization.name,
+      logoDataUri,
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
       periodEnd: report.reportingPeriod.endDate,
@@ -293,6 +322,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
     const contract = await prisma.contract.findUnique({ where: { id: contractId }, select: { name: true } });
     const data: NationalTomsData = {
       orgName: report.organization.name,
+      logoDataUri,
       contractName: contract?.name ?? contractId,
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
@@ -310,6 +340,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
   if (report.type === "breeam_evidence") {
     const data: BreeamData = {
       orgName: report.organization.name,
+      logoDataUri,
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
       periodEnd: report.reportingPeriod.endDate,
@@ -340,6 +371,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
 
     const data: CsrdEsrsE1Data = {
       orgName: report.organization.name,
+      logoDataUri,
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
       periodEnd: report.reportingPeriod.endDate,
@@ -372,6 +404,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
     const contractName = report.contract?.name ?? report.contractId ?? "Unknown contract";
     const data: ContractCarbonData = {
       orgName: report.organization.name,
+      logoDataUri,
       contractName,
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
@@ -400,6 +433,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
 
   const data: ReportData = {
     orgName: report.organization.name,
+      logoDataUri,
     reportType: report.type,
     periodLabel: report.reportingPeriod.label,
     periodStart: report.reportingPeriod.startDate,

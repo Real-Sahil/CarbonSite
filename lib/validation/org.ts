@@ -373,6 +373,11 @@ export const upsertBrandingSchema = z.object({
   emailFromName: z.string().max(80).optional(),
   emailFromDomain: z.string().max(80).optional(),
   fontFamily: z.enum(["Inter", "Roboto", "Open Sans", "Lato", "Montserrat"]).default("Inter"),
+  // Storage key of the uploaded white-label report logo. Empty string clears it.
+  reportHeaderLogoKey: z.preprocess(
+    (v) => (v === "" ? null : v),
+    z.string().max(1024).nullable().optional(),
+  ),
 });
 
 // ─── Social Value ─────────────────────────────────────────────────────────────

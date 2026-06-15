@@ -3,10 +3,11 @@
 // E1-6 Gross Scopes 1/2/3, E1-7 GHG removals, E1-9 Anticipated financial effects.
 // Aligns with EFRAG ESRS E1 standard (January 2023, effective FY2024+).
 
-import { esc } from "./shared";
+import { esc, brandStyles, brandLogoHtml } from "./shared";
 
 export interface CsrdEsrsE1Data {
   orgName: string;
+  logoDataUri?: string;
   periodLabel: string;
   periodStart: Date;
   periodEnd: Date;
@@ -85,11 +86,13 @@ export function renderCsrdEsrsE1Html(d: CsrdEsrsE1Data): string {
   .kpi .lbl { font-size: 8.5pt; color: #566; }
   .caution { background: #fff8e1; border-left: 3px solid #f9a825; padding: 10px 14px; font-size: 9pt; margin-top: 14px }
   footer { font-size: 8pt; color: #888; text-align: center; padding: 20px; border-top: 1px solid #ddd; margin-top: 32px }
+  ${brandStyles()}
 </style>
 </head>
 <body>
 
 <div class="cover">
+  ${brandLogoHtml(d.logoDataUri, d.orgName)}
   <h1>CSRD / ESRS E1 — Climate Change</h1>
   <p class="sub">${esc(d.orgName)}</p>
   <p class="sub">Financial period: ${esc(d.periodLabel)}</p>

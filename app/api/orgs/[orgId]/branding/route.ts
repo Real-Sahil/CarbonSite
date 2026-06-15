@@ -72,6 +72,9 @@ export async function PUT(
         emailFromName: body.emailFromName ?? null,
         emailFromDomain: body.emailFromDomain ?? null,
         fontFamily: body.fontFamily,
+        ...(body.reportHeaderLogoKey !== undefined
+          ? { reportHeaderLogoKey: body.reportHeaderLogoKey }
+          : {}),
       },
       update: {
         subdomain: body.subdomain,
@@ -81,6 +84,9 @@ export async function PUT(
         emailFromName: body.emailFromName ?? null,
         emailFromDomain: body.emailFromDomain ?? null,
         fontFamily: body.fontFamily,
+        ...(body.reportHeaderLogoKey !== undefined
+          ? { reportHeaderLogoKey: body.reportHeaderLogoKey }
+          : {}),
       },
     });
 

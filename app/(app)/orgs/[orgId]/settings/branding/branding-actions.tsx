@@ -30,10 +30,12 @@ interface UpsertBrandingFormProps {
     emailFromName: string | null;
     fontFamily: string | null;
     customDomain: string | null;
+    reportHeaderLogoKey: string | null;
   } | null;
+  logoPreviewUrl: string | null;
 }
 
-export function UpsertBrandingForm({ orgId, current }: UpsertBrandingFormProps) {
+export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBrandingFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -45,8 +47,47 @@ export function UpsertBrandingForm({ orgId, current }: UpsertBrandingFormProps) 
   const [customDomain, setCustomDomain] = useState(current?.customDomain ?? "");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  const [logoKey, setLogoKey] = useState(current?.reportHeaderLogoKey ?? "");
+  const [logoPreview, setLogoPreview] = useState(logoPreviewUrl ?? "");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSuccessMessage(null);
+    setErrorMessage(null);
+    setUploadingLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`/api/orgs/${orgId}/branding/logo`, {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErrorMessage((data as { message?: string }).message ?? "Logo upload failed.");
+        return;
+      }
+      setLogoKey(data.key as string);
+      setLogoPreview(data.url as string);
+      setSuccessMessage("Logo uploaded — click Save branding to apply it.");
+    } catch {
+      setErrorMessage("Logo upload failed. Please try again.");
+    } finally {
+      setUploadingLogo(false);
+    }
+  }
+
+  function handleRemoveLogo() {
+    setLogoKey("");
+    setLogoPreview("");
+    setSuccessMessage(null);
+    setErrorMessage(null);
+  }
 
   function handlePrimaryHexChange(value: string) {
     setPrimaryHex(value);
@@ -77,6 +118,7 @@ export function UpsertBrandingForm({ orgId, current }: UpsertBrandingFormProps) 
             emailFromName: emailFromName || undefined,
             fontFamily,
             customDomain: customDomain || undefined,
+            reportHeaderLogoKey: logoKey,
           }),
         });
 
@@ -102,6 +144,55 @@ export function UpsertBrandingForm({ orgId, current }: UpsertBrandingFormProps) 
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      {/* Report logo (white-label) */}
+      <div className="flex flex-col gap-2">
+        <Label className="text-sm text-[#0f3e17] tracking-[-0.42px]">
+          Report logo{" "}
+          <span className="text-[#333333] font-normal">(appears on every PDF export)</span>
+        </Label>
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-32 items-center justify-center rounded-[10px] border border-dashed border-[#cbd5e1] bg-[#fffefc] overflow-hidden shrink-0">
+            {logoPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logoPreview}
+                alt="Report logo preview"
+                className="max-h-14 max-w-[120px] object-contain"
+              />
+            ) : (
+              <span className="text-xs text-[#94a3b8]">No logo</span>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <input
+              id="logo-upload"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              onChange={handleLogoChange}
+              disabled={uploadingLogo || isPending}
+              className="text-sm file:mr-3 file:rounded-md file:border file:border-[#e5e7eb] file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
+            />
+            <div className="flex items-center gap-3">
+              {uploadingLogo && (
+                <span className="text-xs text-[#333333]">Uploading…</span>
+              )}
+              {logoPreview && !uploadingLogo && (
+                <button
+                  type="button"
+                  onClick={handleRemoveLogo}
+                  className="text-xs text-red-600 hover:underline"
+                >
+                  Remove logo
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-[#333333] tracking-[-0.36px]">
+              PNG, JPEG, WEBP or SVG · up to 2 MB. A transparent PNG looks best.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Subdomain */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="subdomain" className="text-sm text-[#0f3e17] tracking-[-0.42px]">
