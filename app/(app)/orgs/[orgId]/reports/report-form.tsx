@@ -110,8 +110,6 @@ export function CreateReportForm({
     !needsValidation ||
     (validationFresh && validationResult !== null && validationResult.valid);
 
-  // Show the generate button when: no validation needed, OR validation passed
-  const showGenerate = !needsValidation || (validationFresh && validationResult?.valid);
 
   function handleTypeChange(newType: string) {
     setReportType(newType);

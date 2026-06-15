@@ -108,14 +108,14 @@ export default function ResourcesPage() {
       {/* Guides */}
       <section className="px-5 py-20">
         <div className="mx-auto max-w-7xl space-y-16">
-          {GUIDES.map((section, si) => (
+          {GUIDES.map((section) => (
             <AnimateIn key={section.category}>
               <div>
                 <div className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-6">
                   {section.category}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {section.items.map((item, i) => (
+                  {section.items.map((item) => (
                     <div
                       key={item.title}
                       className="rounded-xl border border-zinc-800 bg-zinc-900 p-6"

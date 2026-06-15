@@ -154,7 +154,7 @@ export function InviteAcceptanceForm({
             </div>
           </div>
           <p className="text-sm text-zinc-500">
-            You'll sign in using your PIN — no email account needed.
+            You&apos;ll sign in using your PIN — no email account needed.
           </p>
           <p className="flex items-start gap-2 text-xs text-slate-500">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-700" />
@@ -197,7 +197,7 @@ export function InviteAcceptanceForm({
           </div>
           {isFieldWorker ? (
             <p className="text-sm text-zinc-500">
-              You'll sign in using your PIN — no email account needed.
+              You&apos;ll sign in using your PIN — no email account needed.
             </p>
           ) : (
             <div className="flex flex-col gap-1.5">

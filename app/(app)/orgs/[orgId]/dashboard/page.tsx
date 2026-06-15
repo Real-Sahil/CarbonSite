@@ -51,11 +51,6 @@ function formatKgCo2e(value: unknown): string {
   return `${numeric.toFixed(1)} kgCO2e`;
 }
 
-function formatNumber(value: unknown, maximumFractionDigits = 0): string {
-  const numeric = Number(value ?? 0);
-  if (!Number.isFinite(numeric)) return "0";
-  return new Intl.NumberFormat("en-GB", { maximumFractionDigits }).format(numeric);
-}
 
 function formatCurrency(value: unknown, currency = "GBP"): string {
   const numeric = Number(value ?? 0);
