@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/api/client.dart';
 import '../../core/api/endpoints.dart';
 
 class InviteScreen extends StatefulWidget {
@@ -19,57 +18,19 @@ class _InviteScreenState extends State<InviteScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _serverUrlController = TextEditingController();
 
   bool _loading = false;
   String? _errorMessage;
-  bool _showServerUrl = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStoredServerUrl();
-  }
-
-  Future<void> _loadStoredServerUrl() async {
-    final stored = await _storage.read(key: 'api_base_url');
-    if (!mounted) return;
-    final url = stored ?? 'http://localhost:3000';
-    _serverUrlController.text = url;
-    // Automatically show the server URL field when it's still pointing at
-    // localhost — the field worker needs to configure the real server address.
-    if (url.contains('localhost') || url.contains('127.0.0.1')) {
-      setState(() => _showServerUrl = true);
-    }
-  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _serverUrlController.dispose();
     super.dispose();
   }
 
   Future<void> _joinOrganisation() async {
     if (!_formKey.currentState!.validate()) return;
-
-    // Persist a manually entered server URL before making the request.
-    final enteredUrl = _serverUrlController.text.trim();
-    if (enteredUrl.isNotEmpty) {
-      try {
-        final normalized = normalizeBaseUrl(enteredUrl);
-        await _storage.write(key: 'api_base_url', value: normalized);
-        invalidateClient();
-      } catch (_) {
-        setState(() {
-          _errorMessage =
-              'Invalid server URL. Use https://yourserver.example.com';
-          _showServerUrl = true;
-        });
-        return;
-      }
-    }
 
     setState(() {
       _loading = true;
@@ -109,24 +70,21 @@ class _InviteScreenState extends State<InviteScreen> {
 
     if (msg.contains('404') ||
         msg.contains('invalid') ||
-        msg.contains('expired')) {
-      return 'This invite link is invalid or has expired. Ask your administrator for a new one.';
+        msg.contains('expired') ||
+        msg.contains('already_used')) {
+      return 'This invite link is invalid or has already been used. Ask your administrator to send a new one.';
     }
 
-    // Connection refused or wrong host = server URL is not configured correctly,
-    // NOT a network connectivity problem on the device.
     if (msg.contains('connection refused') ||
         msg.contains('localhost') ||
         msg.contains('127.0.0.1') ||
         msg.contains('os error: 111') ||
-        msg.contains('os error: 61')) {
-      setState(() => _showServerUrl = true);
-      return 'Cannot reach the CarbonSite server. Enter the correct server address below and try again.';
+        msg.contains('os error: 61') ||
+        msg.contains('failed host lookup')) {
+      return 'Could not connect. Please tap the invite link your administrator sent rather than typing it manually.';
     }
 
-    // True network failures (no WiFi / no mobile data).
     if (msg.contains('socketexception') ||
-        msg.contains('failed host lookup') ||
         msg.contains('network is unreachable') ||
         msg.contains('no address associated') ||
         msg.contains('network unreachable')) {
@@ -134,10 +92,10 @@ class _InviteScreenState extends State<InviteScreen> {
     }
 
     if (msg.contains('500') || msg.contains('502') || msg.contains('503')) {
-      return 'The CarbonSite server is temporarily unavailable. Try again in a moment.';
+      return 'The server is temporarily unavailable. Try again in a moment.';
     }
 
-    return 'Something went wrong. Please try again.';
+    return 'Something went wrong. Please try again or ask your administrator to resend the invite link.';
   }
 
   @override
@@ -155,23 +113,19 @@ class _InviteScreenState extends State<InviteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Brand
+                // Brand mark
                 Column(
                   children: [
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: 72,
+                      height: 72,
                       decoration: BoxDecoration(
                         color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                       ),
-                      child: const Icon(
-                        Icons.eco,
-                        color: Colors.white,
-                        size: 36,
-                      ),
+                      child: const Icon(Icons.eco, color: Colors.white, size: 40),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     Text(
                       'CarbonSite',
                       style: textTheme.headlineMedium?.copyWith(
@@ -186,16 +140,16 @@ class _InviteScreenState extends State<InviteScreen> {
                 const SizedBox(height: 40),
 
                 Text(
-                  "You've been invited to join an organisation",
-                  style: textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  "You've been invited",
+                  style: textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
                     color: colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Enter your details below to get started.',
+                  'Enter your name to join your organisation and start submitting field records.',
                   style: textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -204,7 +158,7 @@ class _InviteScreenState extends State<InviteScreen> {
 
                 const SizedBox(height: 36),
 
-                // Name field
+                // Name — only required field for field workers
                 TextFormField(
                   controller: _nameController,
                   keyboardType: TextInputType.name,
@@ -212,17 +166,14 @@ class _InviteScreenState extends State<InviteScreen> {
                   textInputAction: TextInputAction.next,
                   autofocus: true,
                   decoration: const InputDecoration(
-                    labelText: 'Full name',
+                    labelText: 'Your name',
                     hintText: 'e.g. Jane Smith',
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
+                    if (value == null || value.trim().length < 2) {
                       return 'Please enter your name';
-                    }
-                    if (value.trim().length < 2) {
-                      return 'Name must be at least 2 characters';
                     }
                     return null;
                   },
@@ -230,16 +181,15 @@ class _InviteScreenState extends State<InviteScreen> {
 
                 const SizedBox(height: 16),
 
-                // Email field (optional)
+                // Email — optional for field workers, required if invite is email-bound
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) =>
-                      _loading ? null : _joinOrganisation(),
+                  onFieldSubmitted: (_) => _loading ? null : _joinOrganisation(),
                   decoration: const InputDecoration(
-                    labelText: 'Email address',
-                    hintText: 'Optional unless your invite names an email',
+                    labelText: 'Email address (optional)',
+                    hintText: 'Leave blank if not required',
                     prefixIcon: Icon(Icons.email_outlined),
                     border: OutlineInputBorder(),
                   ),
@@ -253,127 +203,62 @@ class _InviteScreenState extends State<InviteScreen> {
                   },
                 ),
 
-                const SizedBox(height: 16),
-
-                // Server URL — shown automatically when the app is pointing at
-                // localhost (not configured) or after a connection error.
-                GestureDetector(
-                  onTap: () =>
-                      setState(() => _showServerUrl = !_showServerUrl),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Icon(
-                        _showServerUrl
-                            ? Icons.keyboard_arrow_up
-                            : Icons.settings_outlined,
-                        size: 14,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Server settings',
-                        style: textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                if (_showServerUrl) ...[
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _serverUrlController,
-                    keyboardType: TextInputType.url,
-                    textInputAction: TextInputAction.done,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: 'Server URL',
-                      hintText: 'https://app.carbonsite.com',
-                      prefixIcon: const Icon(Icons.dns_outlined),
-                      border: const OutlineInputBorder(),
-                      helperText:
-                          'Your organisation\'s CarbonSite server address',
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.clear, size: 18),
-                        onPressed: () => _serverUrlController.clear(),
-                      ),
-                    ),
-                  ),
-                ],
-
                 const SizedBox(height: 28),
 
-                // Error message
+                // Error
                 if (_errorMessage != null) ...[
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: colorScheme.onErrorContainer,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
+                        Icon(Icons.info_outline,
+                            color: colorScheme.onErrorContainer, size: 18),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             _errorMessage!,
                             style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onErrorContainer,
-                            ),
+                                color: colorScheme.onErrorContainer),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                 ],
 
-                // Join button
                 SizedBox(
                   height: 52,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _loading ? null : _joinOrganisation,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                      foregroundColor: colorScheme.onPrimary,
+                    style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     child: _loading
                         ? const SizedBox(
                             width: 22,
                             height: 22,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
+                                strokeWidth: 2.5, color: Colors.white),
                           )
-                        : const Text(
-                            'Join Organisation',
+                        : const Text('Join Organisation',
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                                fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ),
 
                 const SizedBox(height: 24),
 
                 Text(
-                  'By joining, you agree to use CarbonSite only for authorised document submissions.',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  'By joining you agree to use CarbonSite only for authorised document submissions.',
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: colorScheme.onSurfaceVariant),
                   textAlign: TextAlign.center,
                 ),
               ],
