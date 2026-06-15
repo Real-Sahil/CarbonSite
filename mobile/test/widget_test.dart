@@ -13,7 +13,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Join your CarbonSite project'), findsOneWidget);
-    expect(find.text('Invite link or token'), findsOneWidget);
+    expect(find.text('Paste invite link here'), findsOneWidget);
   });
 
   testWidgets('CarbonSite mobile app renders dashboard shell with a session',
