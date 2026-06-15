@@ -32,8 +32,15 @@ interface Submission {
   facility: { name: string } | null;
 }
 
+interface OrgMember {
+  id: string;
+  name: string | null;
+  email: string;
+}
+
 interface SubmissionsTableProps {
   orgId: string;
+  members: OrgMember[];
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -63,12 +70,15 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 
 const BULK_ELIGIBLE = new Set(["submitted", "under_review"]);
 
-export function SubmissionsTable({ orgId }: SubmissionsTableProps) {
+export function SubmissionsTable({ orgId, members }: SubmissionsTableProps) {
   const [submissions, setSubmissions] = useState<Submission[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [approving, setApproving] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const [showAssignSelect, setShowAssignSelect] = useState(false);
+  const [assigneeUserId, setAssigneeUserId] = useState(members[0]?.id ?? "");
 
   const fetchSubmissions = useCallback(async () => {
     setLoading(true);
@@ -136,6 +146,28 @@ export function SubmissionsTable({ orgId }: SubmissionsTableProps) {
     }
   }
 
+  async function handleBulkAssign() {
+    if (selected.size === 0 || !assigneeUserId) return;
+    setAssigning(true);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/field-submissions/bulk-review`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selected), action: "assign", assigneeUserId }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({})) as { message?: string };
+        throw new Error(json.message ?? "Bulk assign failed");
+      }
+      setShowAssignSelect(false);
+      await fetchSubmissions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Bulk assign failed");
+    } finally {
+      setAssigning(false);
+    }
+  }
+
   const list = submissions ?? [];
 
   return (
@@ -158,16 +190,59 @@ export function SubmissionsTable({ orgId }: SubmissionsTableProps) {
             )}
           </div>
           {selected.size > 0 && (
-            <Button
-              size="sm"
-              onClick={handleBulkApprove}
-              disabled={approving}
-              className="shrink-0"
-            >
-              {approving
-                ? "Approving…"
-                : `Bulk approve (${selected.size})`}
-            </Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                size="sm"
+                onClick={handleBulkApprove}
+                disabled={approving || assigning}
+                className="shrink-0"
+              >
+                {approving ? "Approving…" : `Bulk approve (${selected.size})`}
+              </Button>
+              {members.length > 0 && !showAssignSelect && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowAssignSelect(true)}
+                  disabled={approving || assigning}
+                  className="shrink-0"
+                >
+                  Assign
+                </Button>
+              )}
+              {members.length > 0 && showAssignSelect && (
+                <div className="flex items-center gap-2">
+                  <select
+                    value={assigneeUserId}
+                    onChange={(e) => setAssigneeUserId(e.target.value)}
+                    className="h-8 rounded-md border border-[#e5e7eb] bg-[#fffefc] px-2 text-sm"
+                  >
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name ?? m.email}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleBulkAssign}
+                    disabled={assigning || !assigneeUserId}
+                    className="shrink-0"
+                  >
+                    {assigning ? "Assigning…" : "Confirm"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowAssignSelect(false)}
+                    className="shrink-0"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </CardHeader>

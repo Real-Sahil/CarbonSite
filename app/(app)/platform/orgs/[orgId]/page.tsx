@@ -3,6 +3,7 @@ import { requirePlatformMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { PlanSelector } from "./plan-selector";
 import {
   Table,
   TableBody,
@@ -69,8 +70,8 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
       </nav>
 
       {/* Heading */}
-      <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+      <div className="flex flex-col gap-3">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex">
           Platform
         </p>
         <h1
@@ -79,6 +80,10 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
         >
           {org.name}
         </h1>
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">Plan</p>
+          <PlanSelector orgId={orgId} currentPlan={org.plan} />
+        </div>
       </div>
 
       {/* Stats */}

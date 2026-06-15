@@ -5,11 +5,24 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
-const bulkReviewSchema = z.object({
-  ids: z.array(z.string().cuid()).min(1).max(100),
-  action: z.enum(["approve", "reject"]),
-  reviewNote: z.string().optional(),
-});
+const bulkReviewSchema = z.discriminatedUnion("action", [
+  z.object({
+    ids: z.array(z.string().cuid()).min(1).max(100),
+    action: z.literal("approve"),
+    reviewNote: z.string().optional(),
+  }),
+  z.object({
+    ids: z.array(z.string().cuid()).min(1).max(100),
+    action: z.literal("reject"),
+    reviewNote: z.string().optional(),
+  }),
+  z.object({
+    ids: z.array(z.string().cuid()).min(1).max(100),
+    action: z.literal("assign"),
+    assigneeUserId: z.string(),
+    reviewNote: z.string().optional(),
+  }),
+]);
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -34,6 +47,35 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const eligibleIds = submissions.map((s) => s.id);
+
+    if (body.action === "assign") {
+      await prisma.$transaction(async (tx) => {
+        for (const submissionId of eligibleIds) {
+          await tx.reviewTask.create({
+            data: {
+              organizationId: orgId,
+              assigneeUserId: body.assigneeUserId,
+              createdByUserId: session.user.id,
+              type: "activity_record",
+              targetId: submissionId,
+              status: "open",
+            },
+          });
+        }
+      });
+
+      await writeAuditLog({
+        organizationId: orgId,
+        actorUserId: session.user.id,
+        action: "field_submission.assigned",
+        resourceType: "field_submission",
+        resourceId: orgId,
+        metadata: { action: "assign", assigneeUserId: body.assigneeUserId, count: eligibleIds.length, ids: eligibleIds },
+      });
+
+      return NextResponse.json({ updated: eligibleIds.length, ids: eligibleIds });
+    }
+
     const status = body.action === "approve" ? "approved" : "rejected";
     const now = new Date();
 

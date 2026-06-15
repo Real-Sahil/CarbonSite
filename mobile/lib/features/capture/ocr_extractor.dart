@@ -34,6 +34,13 @@ class ExtractedFields {
   final String? volume;
   final String? volumeUnit;
 
+  /// Per-field confidence scores.
+  /// Keys match [toMap()] keys.  Values are in [0.0, 1.0]:
+  ///   0.95 — exact pattern match
+  ///   0.65 — partial / fuzzy match
+  ///   0.0  — not found (field is null)
+  final Map<String, double> fieldConfidence;
+
   const ExtractedFields({
     required this.documentType,
     this.weight,
@@ -48,11 +55,12 @@ class ExtractedFields {
     this.fuelType,
     this.volume,
     this.volumeUnit,
+    this.fieldConfidence = const {},
   });
 
   /// Non-null extracted values keyed by field name — handy for pre-filling
   /// the review form and for marking which fields were auto-extracted.
-  Map<String, String> toMap() {
+  Map<String, dynamic> toMap() {
     return {
       if (weight != null) 'weight': weight!,
       if (weightUnit != null) 'weightUnit': weightUnit!,
@@ -66,6 +74,7 @@ class ExtractedFields {
       if (fuelType != null) 'fuelType': fuelType!,
       if (volume != null) 'volume': volume!,
       if (volumeUnit != null) 'volumeUnit': volumeUnit!,
+      'fieldConfidence': fieldConfidence,
     };
   }
 }
@@ -157,6 +166,11 @@ class OcrExtractor {
     caseSensitive: false,
   );
 
+  // Confidence score constants.
+  static const double _exactMatch = 0.95;
+  static const double _fuzzyMatch = 0.65;
+  static const double _notFound = 0.0;
+
   static ExtractedFields extract(String rawText, DocumentType type) {
     final lines = rawText
         .split(RegExp(r'[\r\n]+'))
@@ -167,26 +181,51 @@ class OcrExtractor {
 
     // 1. Date first, then mask all date-shaped runs so their digits cannot
     //    be misread as EWC codes or registrations.
-    final date = _extractDate(working);
+    final dateResult = _extractDateWithConfidence(working);
+    final date = dateResult.$1;
+    final dateConfidence = dateResult.$2;
     working = _maskAll(working, _numericDate);
     working = _maskAll(working, _isoDate);
     working = _maskAll(working, _writtenDate);
 
     // 2. EWC code (chapter-validated).
-    final ewcCode = _extractEwc(working);
+    final ewcResult = _extractEwcWithConfidence(working);
+    final ewcCode = ewcResult.$1;
+    final ewcConfidence = ewcResult.$2;
 
     // 3. Vehicle registration.
     final vehicleReg = _extractVehicleReg(working);
+    final vehicleRegConfidence =
+        vehicleReg != null ? _exactMatch : _notFound;
 
     // 4. Weight — prefer an explicit "net" line over the first match.
-    final weightMatch = _extractWeight(working, lines);
+    final weightResult = _extractWeightWithConfidence(working, lines);
+    final weightMatch = weightResult.$1;
+    final weightConfidence = weightResult.$2;
 
     // 5. Volume + fuel type (fuel receipts, but harmless elsewhere).
     final volumeMatch = _volumePattern.firstMatch(working);
+    final volumeConfidence = volumeMatch != null ? _exactMatch : _notFound;
+
     final fuelType = _extractFuelType(working);
+    final fuelConfidence = fuelType != null ? _exactMatch : _notFound;
 
     // 6. Supplier name from line heuristics.
-    final supplierName = _extractSupplier(lines);
+    final supplierResult = _extractSupplierWithConfidence(lines);
+    final supplierName = supplierResult.$1;
+    final supplierConfidence = supplierResult.$2;
+
+    final confidence = <String, double>{
+      'weight': weightConfidence,
+      'weightUnit': weightMatch != null ? _exactMatch : _notFound,
+      'ewcCode': ewcConfidence,
+      'date': dateConfidence,
+      'vehicleReg': vehicleRegConfidence,
+      'supplierName': supplierConfidence,
+      'fuelType': fuelConfidence,
+      'volume': volumeConfidence,
+      'volumeUnit': volumeMatch != null ? _exactMatch : _notFound,
+    };
 
     return ExtractedFields(
       documentType: type,
@@ -205,37 +244,92 @@ class OcrExtractor {
       volumeUnit: volumeMatch == null
           ? null
           : _normalizeVolumeUnit(volumeMatch.group(2)!),
+      fieldConfidence: confidence,
     );
   }
 
   // -------------------------------------------------------------------------
-  // Helpers
+  // Helpers — with-confidence variants
   // -------------------------------------------------------------------------
 
-  /// Earliest date match across all supported formats, returned verbatim.
-  static String? _extractDate(String text) {
+  /// Returns (date string | null, confidence).
+  static (String?, double) _extractDateWithConfidence(String text) {
+    // Numeric / ISO formats are considered exact matches; written dates are
+    // slightly more prone to OCR error but still good.
     RegExpMatch? best;
-    for (final pattern in [_numericDate, _isoDate, _writtenDate]) {
-      final m = pattern.firstMatch(text);
+    bool isWritten = false;
+    for (final entry in [
+      (_numericDate, false),
+      (_isoDate, false),
+      (_writtenDate, true),
+    ]) {
+      final m = entry.$1.firstMatch(text);
       if (m != null && (best == null || m.start < best.start)) {
         best = m;
+        isWritten = entry.$2;
       }
     }
-    return best?.group(0);
+    if (best == null) return (null, _notFound);
+    return (best.group(0), isWritten ? _fuzzyMatch : _exactMatch);
   }
 
-  static String? _extractEwc(String text) {
+  /// Returns (ewc string | null, confidence).
+  static (String?, double) _extractEwcWithConfidence(String text) {
     final labelled = _ewcLabelled.firstMatch(text);
     if (labelled != null && _validEwcChapter(labelled.group(1)!)) {
-      return '${labelled.group(1)} ${labelled.group(2)} ${labelled.group(3)}';
+      return (
+        '${labelled.group(1)} ${labelled.group(2)} ${labelled.group(3)}',
+        _exactMatch,
+      );
     }
     for (final m in _ewcSeparated.allMatches(text)) {
       if (_validEwcChapter(m.group(1)!)) {
-        return '${m.group(1)} ${m.group(2)} ${m.group(3)}';
+        return (
+          '${m.group(1)} ${m.group(2)} ${m.group(3)}',
+          _fuzzyMatch, // no explicit label — higher chance of false positive
+        );
       }
     }
-    return null;
+    return (null, _notFound);
   }
+
+  /// Returns (RegExpMatch? | null, confidence).
+  static (RegExpMatch?, double) _extractWeightWithConfidence(
+      String working, List<String> lines) {
+    for (final line in lines) {
+      if (line.toLowerCase().contains('net')) {
+        final m = _weightPattern.firstMatch(line);
+        if (m != null) return (m, _exactMatch); // explicit "net" line
+      }
+    }
+    final m = _weightPattern.firstMatch(working);
+    // First match in document without "net" label — slightly less certain.
+    return (m, m != null ? _fuzzyMatch : _notFound);
+  }
+
+  /// Returns (supplier | null, confidence).
+  static (String?, double) _extractSupplierWithConfidence(List<String> lines) {
+    for (final line in lines) {
+      final m = _supplierLabelled.firstMatch(line);
+      if (m != null) {
+        final value = m.group(1)!.trim();
+        if (value.isNotEmpty) return (value, _exactMatch);
+      }
+    }
+    for (final line in lines) {
+      if (line.length <= 48 && _companySuffix.hasMatch(line)) {
+        return (
+          line.replaceAll(RegExp(r'[.,;]+$'), '').trim(),
+          _fuzzyMatch,
+        );
+      }
+    }
+    return (null, _notFound);
+  }
+
+  // -------------------------------------------------------------------------
+  // Shared helpers
+  // -------------------------------------------------------------------------
 
   /// EWC chapters run 01-20 (European Waste Catalogue).
   static bool _validEwcChapter(String chapter) {
@@ -253,39 +347,10 @@ class OcrExtractor {
     return null;
   }
 
-  /// Prefer a weight that appears on a line mentioning "net" (waste tickets
-  /// list gross / tare / net — net is the billable figure); otherwise take
-  /// the first weight in the document.
-  static RegExpMatch? _extractWeight(String working, List<String> lines) {
-    for (final line in lines) {
-      if (line.toLowerCase().contains('net')) {
-        final m = _weightPattern.firstMatch(line);
-        if (m != null) return m;
-      }
-    }
-    return _weightPattern.firstMatch(working);
-  }
-
   static String? _extractFuelType(String text) {
     final lower = text.toLowerCase();
     for (final fuel in _fuelTypes) {
       if (lower.contains(fuel)) return fuel;
-    }
-    return null;
-  }
-
-  static String? _extractSupplier(List<String> lines) {
-    for (final line in lines) {
-      final m = _supplierLabelled.firstMatch(line);
-      if (m != null) {
-        final value = m.group(1)!.trim();
-        if (value.isNotEmpty) return value;
-      }
-    }
-    for (final line in lines) {
-      if (line.length <= 48 && _companySuffix.hasMatch(line)) {
-        return line.replaceAll(RegExp(r'[.,;]+$'), '').trim();
-      }
     }
     return null;
   }

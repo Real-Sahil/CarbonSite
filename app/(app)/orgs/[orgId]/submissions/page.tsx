@@ -1,5 +1,6 @@
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db";
 import { SubmissionsTable } from "./submissions-table";
 
 interface SubmissionsPageProps {
@@ -11,8 +12,15 @@ export default async function SubmissionsPage({
 }: SubmissionsPageProps) {
   const { orgId } = await params;
 
+  let members: { id: string; name: string | null; email: string }[] = [];
   try {
     await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const memberships = await prisma.organizationMembership.findMany({
+      where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
+      include: { user: { select: { id: true, name: true, email: true } } },
+      orderBy: { createdAt: "asc" },
+    });
+    members = memberships.map((m) => ({ id: m.user.id, name: m.user.name, email: m.user.email }));
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
@@ -45,7 +53,7 @@ export default async function SubmissionsPage({
         </p>
       </div>
 
-      <SubmissionsTable orgId={orgId} />
+      <SubmissionsTable orgId={orgId} members={members} />
     </div>
   );
 }

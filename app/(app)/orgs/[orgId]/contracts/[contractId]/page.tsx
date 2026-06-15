@@ -70,6 +70,12 @@ function formatCurrency(value: unknown) {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(num);
 }
 
+function formatTco2e(kgCo2e: number): string {
+  if (kgCo2e === 0) return "— tCO₂e";
+  const tCo2e = kgCo2e / 1000;
+  return `${tCo2e.toFixed(2)} tCO₂e`;
+}
+
 function FlagCell({ value, label }: { value: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2">
@@ -116,7 +122,7 @@ export default async function ContractDetailPage({ params }: Props) {
 
   const canEdit = EDIT_ROLES.includes(role);
 
-  const [contract, projects] = await Promise.all([
+  const [contract, projects, co2eResult] = await Promise.all([
     prisma.contract.findUniqueOrThrow({
       where: { id: contractId, organizationId: orgId },
       include: { _count: { select: { projects: true } } },
@@ -126,7 +132,39 @@ export default async function ContractDetailPage({ params }: Props) {
       include: { _count: { select: { sites: true } } },
       orderBy: { createdAt: "desc" },
     }),
+    prisma.$queryRaw<Array<{ total_co2e: number }>>`
+      SELECT COALESCE(SUM(ec.total_co2e), 0)::float AS total_co2e
+      FROM contracts c
+      LEFT JOIN projects p ON p.contract_id = c.id
+      LEFT JOIN sites s ON s.project_id = p.id
+      LEFT JOIN activity_records ar ON ar.site_id = s.id
+      LEFT JOIN LATERAL (
+        SELECT total_co2e FROM emission_calculations
+        WHERE activity_record_id = ar.id
+        ORDER BY created_at DESC LIMIT 1
+      ) ec ON TRUE
+      WHERE c.id = ${contractId}
+        AND c.organization_id = ${orgId}
+      GROUP BY c.id
+    `,
   ]);
+
+  const directCo2eResult = await prisma.$queryRaw<Array<{ total_co2e: number }>>`
+    SELECT COALESCE(SUM(ec.total_co2e), 0)::float AS total_co2e
+    FROM activity_records ar
+    LEFT JOIN LATERAL (
+      SELECT total_co2e FROM emission_calculations
+      WHERE activity_record_id = ar.id
+      ORDER BY created_at DESC LIMIT 1
+    ) ec ON TRUE
+    WHERE ar.organization_id = ${orgId}
+      AND ar.contract_id = ${contractId}
+      AND ar.site_id IS NULL
+  `;
+
+  const totalKgCo2e =
+    Number(co2eResult[0]?.total_co2e ?? 0) +
+    Number(directCo2eResult[0]?.total_co2e ?? 0);
 
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
@@ -191,6 +229,10 @@ export default async function ContractDetailPage({ params }: Props) {
             <div>
               <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">Projects</p>
               <p className="mt-1 text-sm text-[#0f3e17] tracking-[-0.42px]">{contract._count.projects}</p>
+            </div>
+            <div>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">Total CO₂e</p>
+              <p className="mt-1 text-sm text-[#0f3e17] tracking-[-0.42px]">{formatTco2e(totalKgCo2e)}</p>
             </div>
           </div>
           <div className="mt-5 flex flex-wrap gap-5">

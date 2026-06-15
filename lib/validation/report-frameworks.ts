@@ -192,6 +192,16 @@ const csrdChecks: FrameworkCheck[] = [
     description: "Scope 3 records present and non-zero (value-chain emissions required by CSRD)",
     required: true,
   },
+  {
+    id: "csrd-scope2-market-based",
+    description: "Market-based Scope 2 (s2-electricity-mb) records declared",
+    required: false,
+  },
+  {
+    id: "csrd-materiality",
+    description: "Materiality assessment note included in report narrative",
+    required: false,
+  },
 ];
 
 function validateCsrd(data: ReportValidationInput): FrameworkCheckResult[] {
@@ -225,6 +235,131 @@ function validateCsrd(data: ReportValidationInput): FrameworkCheckResult[] {
           message: ok
             ? undefined
             : "CSRD ESRS E1 requires non-zero Scope 3 (value-chain) emissions. Add upstream transport, purchased goods, or business travel records.",
+        };
+      }
+      case "csrd-scope2-market-based": {
+        const hasMarketBased =
+          (data.categoryRecordCounts.find((c) => c.categoryCode === "s2-electricity-mb")?.count ?? 0) > 0;
+        return {
+          check,
+          passed: hasMarketBased,
+          message: hasMarketBased
+            ? undefined
+            : "Market-based Scope 2 (s2-electricity-mb) records not found. CSRD ESRS E1 requires disclosure of both location-based and market-based Scope 2.",
+        };
+      }
+      case "csrd-materiality":
+        return {
+          check,
+          passed: true,
+          message:
+            "Ensure a materiality assessment note is included in the report narrative. CSRD requires disclosure of the assessment methodology.",
+        };
+      default:
+        return { check, passed: true };
+    }
+  });
+}
+
+// ─── PPN 06/21 ────────────────────────────────────────────────────────────────
+// UK Procurement Policy Note 06/21 — Carbon Reporting for Government Suppliers
+
+const ppn0621Checks: FrameworkCheck[] = [
+  {
+    id: "ppn-scope1",
+    description: "Scope 1 records present (direct emissions)",
+    required: true,
+  },
+  {
+    id: "ppn-scope2",
+    description: "Scope 2 records present (purchased electricity, heat, steam)",
+    required: true,
+  },
+  {
+    id: "ppn-s3-upstream-transport",
+    description: "Scope 3 category 4 (upstream transport and distribution) records present",
+    required: true,
+  },
+  {
+    id: "ppn-s3-business-travel",
+    description: "Scope 3 category 6 (business travel) records present",
+    required: true,
+  },
+  {
+    id: "ppn-s3-commuting",
+    description: "Scope 3 category 7 (employee commuting) records present",
+    required: true,
+  },
+  {
+    id: "ppn-all-approved",
+    description: "All activity records are approved",
+    required: false,
+  },
+];
+
+function hasCategoryRecords(data: ReportValidationInput, categoryCode: string): boolean {
+  const entry = data.categoryRecordCounts.find((c) => c.categoryCode === categoryCode);
+  return (entry?.count ?? 0) > 0;
+}
+
+function validatePpn0621(data: ReportValidationInput): FrameworkCheckResult[] {
+  return ppn0621Checks.map((check) => {
+    switch (check.id) {
+      case "ppn-scope1":
+        return {
+          check,
+          passed: hasScopeRecords(data, 1),
+          message: hasScopeRecords(data, 1)
+            ? undefined
+            : "PPN 06/21 requires Scope 1 records. Add direct combustion or company vehicle records.",
+        };
+      case "ppn-scope2":
+        return {
+          check,
+          passed: hasScopeRecords(data, 2),
+          message: hasScopeRecords(data, 2)
+            ? undefined
+            : "PPN 06/21 requires Scope 2 records. Add purchased electricity or heat records.",
+        };
+      case "ppn-s3-upstream-transport": {
+        const ok = hasCategoryRecords(data, "s3-upstream-transport");
+        return {
+          check,
+          passed: ok,
+          message: ok
+            ? undefined
+            : "PPN 06/21 requires at least one Scope 3 category 4 (upstream transport and distribution) record.",
+        };
+      }
+      case "ppn-s3-business-travel": {
+        const ok = hasCategoryRecords(data, "s3-business-travel");
+        return {
+          check,
+          passed: ok,
+          message: ok
+            ? undefined
+            : "PPN 06/21 requires at least one Scope 3 category 6 (business travel) record.",
+        };
+      }
+      case "ppn-s3-commuting": {
+        const ok = hasCategoryRecords(data, "s3-commuting");
+        return {
+          check,
+          passed: ok,
+          message: ok
+            ? undefined
+            : "PPN 06/21 requires at least one Scope 3 category 7 (employee commuting) record.",
+        };
+      }
+      case "ppn-all-approved": {
+        const allApproved =
+          data.totalRecords > 0 && data.approvedRecords === data.totalRecords;
+        return {
+          check,
+          passed: allApproved,
+          message: allApproved
+            ? undefined
+            : `${data.totalRecords - data.approvedRecords} of ${data.totalRecords} records are not yet approved. Review all records before PPN 06/21 submission.`,
         };
       }
       default:
@@ -309,6 +444,11 @@ export const FRAMEWORK_VALIDATIONS: Record<string, FrameworkValidation> = {
     checks: iso14064Checks,
     validate: validateIso14064,
   },
+  ppn_06_21: {
+    framework: "ppn_06_21",
+    checks: ppn0621Checks,
+    validate: validatePpn0621,
+  },
 };
 
 /**
@@ -319,6 +459,9 @@ export function reportTypeToFramework(reportType: string): string | null {
   const map: Record<string, string> = {
     secr: "secr",
     csrd_esrs_e1: "csrd_esrs_e1",
+    ppn_06_21: "ppn_06_21",
+    iso_14064: "iso_14064",
+    audit_package: "ghg_protocol",
   };
   return map[reportType] ?? null;
 }

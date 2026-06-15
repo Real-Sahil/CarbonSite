@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -6,6 +8,54 @@ const _configuredBaseUrl = String.fromEnvironment(
   'CARBONSITE_API_BASE_URL',
   defaultValue: 'http://localhost:3000',
 );
+
+// ---------------------------------------------------------------------------
+// JWT refresh state — shared across all interceptors on the singleton client.
+// ---------------------------------------------------------------------------
+
+bool _isRefreshing = false;
+final List<Completer<bool>> _pendingQueue = [];
+
+/// Attempt a token refresh.  Returns `true` if a new token was obtained and
+/// stored, `false` if the refresh failed (caller should clear the session).
+Future<bool> _refreshToken(Dio dio) async {
+  final currentToken = await _storage.read(key: 'session_token');
+  if (currentToken == null || currentToken.isEmpty) return false;
+
+  try {
+    // Use a plain Dio instance without our interceptor so the refresh request
+    // itself never triggers another 401 loop.
+    final refreshDio = Dio(BaseOptions(
+      baseUrl: dio.options.baseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {'Content-Type': 'application/json'},
+    ));
+
+    final response = await refreshDio.post(
+      '/api/auth/token',
+      options: Options(
+        headers: {'Authorization': 'Bearer $currentToken'},
+      ),
+    );
+
+    final data = response.data;
+    String? newToken;
+    if (data is Map) {
+      newToken = data['token'] as String? ??
+          data['sessionToken'] as String? ??
+          data['accessToken'] as String?;
+    }
+
+    if (newToken != null && newToken.isNotEmpty) {
+      await _storage.write(key: 'session_token', value: newToken);
+      return true;
+    }
+    return false;
+  } catch (_) {
+    return false;
+  }
+}
 
 Dio createApiClient(String baseUrl) {
   final dio = Dio(BaseOptions(
@@ -24,11 +74,74 @@ Dio createApiClient(String baseUrl) {
       handler.next(options);
     },
     onError: (error, handler) async {
-      // 401: clear stale token and rethrow — caller (router) redirects to /pin-setup
-      if (error.response?.statusCode == 401) {
-        await _storage.delete(key: 'session_token');
+      if (error.response?.statusCode != 401) {
+        handler.next(error);
+        return;
       }
-      handler.next(error);
+
+      // Skip refresh loop for the refresh endpoint itself.
+      final isRefreshRequest =
+          error.requestOptions.path.contains('/api/auth/token');
+      if (isRefreshRequest) {
+        await _storage.delete(key: 'session_token');
+        handler.next(error);
+        return;
+      }
+
+      if (_isRefreshing) {
+        // Queue this request until the in-flight refresh resolves.
+        final completer = Completer<bool>();
+        _pendingQueue.add(completer);
+        final succeeded = await completer.future;
+        if (!succeeded) {
+          handler.next(error);
+          return;
+        }
+        // Retry with the new token.
+        try {
+          final newToken = await _storage.read(key: 'session_token');
+          final opts = error.requestOptions;
+          if (newToken != null) {
+            opts.headers['Authorization'] = 'Bearer $newToken';
+          }
+          final response = await dio.fetch(opts);
+          handler.resolve(response);
+        } catch (retryError) {
+          handler.next(error);
+        }
+        return;
+      }
+
+      // This request is first to hit the 401 — take the refresh lock.
+      _isRefreshing = true;
+      final succeeded = await _refreshToken(dio);
+      _isRefreshing = false;
+
+      // Resolve all queued requesters.
+      for (final completer in _pendingQueue) {
+        completer.complete(succeeded);
+      }
+      _pendingQueue.clear();
+
+      if (!succeeded) {
+        // Refresh failed — clear the stale token and propagate the error.
+        await _storage.delete(key: 'session_token');
+        handler.next(error);
+        return;
+      }
+
+      // Retry the original request with the new token.
+      try {
+        final newToken = await _storage.read(key: 'session_token');
+        final opts = error.requestOptions;
+        if (newToken != null) {
+          opts.headers['Authorization'] = 'Bearer $newToken';
+        }
+        final response = await dio.fetch(opts);
+        handler.resolve(response);
+      } catch (retryError) {
+        handler.next(error);
+      }
     },
   ));
 

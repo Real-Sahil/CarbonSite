@@ -115,10 +115,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/capture',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => CaptureScreen(
-          projectId: state.uri.queryParameters['projectId'],
-          projectLabel: state.uri.queryParameters['projectLabel'],
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return CaptureScreen(
+            projectId: state.uri.queryParameters['projectId'],
+            projectLabel: state.uri.queryParameters['projectLabel'],
+            resubmittedFromId: extra?['resubmittedFromId'] as String?,
+            documentType: extra?['documentType'] as String?,
+          );
+        },
       ),
       GoRoute(
         path: '/submissions/:id',

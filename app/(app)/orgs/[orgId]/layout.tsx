@@ -4,6 +4,27 @@ import { prisma } from "@/lib/db";
 import { OrgSidebar } from "@/components/org-sidebar";
 import React from "react";
 
+function buildBrandingCssVars(branding: {
+  primaryHex: string | null;
+  accentHex: string | null;
+  fontFamily: string | null;
+} | null): string {
+  if (!branding) return "";
+  const parts: string[] = [];
+  if (branding.primaryHex) {
+    parts.push(`--color-forest-ink: #${branding.primaryHex.replace(/^#/, "")};`);
+    parts.push(`--color-brand-primary: #${branding.primaryHex.replace(/^#/, "")};`);
+  }
+  if (branding.accentHex) {
+    parts.push(`--color-mist-blue: #${branding.accentHex.replace(/^#/, "")};`);
+    parts.push(`--color-brand-accent: #${branding.accentHex.replace(/^#/, "")};`);
+  }
+  if (branding.fontFamily) {
+    parts.push(`--font-sans: "${branding.fontFamily}", system-ui, sans-serif;`);
+  }
+  return parts.join(" ");
+}
+
 interface OrgLayoutProps {
   children: React.ReactNode;
   params: Promise<{ orgId: string }>;
@@ -42,10 +63,16 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     throw err;
   }
 
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: { id: true, name: true },
-  });
+  const [org, branding] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, name: true },
+    }),
+    prisma.tenantBranding.findUnique({
+      where: { organizationId: orgId },
+      select: { primaryHex: true, accentHex: true, fontFamily: true, logoStorageKey: true },
+    }),
+  ]);
 
   if (!org) {
     redirect("/");
@@ -56,8 +83,11 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     email: session.user.email,
   };
 
+  const cssVars = buildBrandingCssVars(branding);
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#fffefc]">
+      {cssVars && <style>{`:root { ${cssVars} }`}</style>}
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} />
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">{children}</main>
     </div>

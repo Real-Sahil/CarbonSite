@@ -392,6 +392,12 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
   }
 
   // ── Inventory / monthly_snapshot / audit_package ──────────────────────────────
+  const biogenicAgg = await prisma.emissionCalculation.aggregate({
+    where: { calculationRunId: runId, organizationId: orgId, biogenicCo2e: { not: null } },
+    _sum: { biogenicCo2e: true },
+  });
+  const biogenicTotal = Number(biogenicAgg._sum.biogenicCo2e ?? 0);
+
   const data: ReportData = {
     orgName: report.organization.name,
     reportType: report.type,
@@ -416,6 +422,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
     facilities: [...facTotals.entries()]
       .map(([name, v]) => ({ name, ...v }))
       .sort((a, b) => b.totalKg - a.totalKg),
+    biogenicCo2eTonnes: biogenicTotal > 0 ? biogenicTotal / 1000 : undefined,
   };
   return renderReportHtml(data);
 }

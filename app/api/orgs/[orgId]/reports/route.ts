@@ -23,21 +23,26 @@ export async function GET(req: NextRequest, { params }: Params) {
     const cursor = url.searchParams.get("cursor");
     const take = 20;
 
-    const reports = await prisma.report.findMany({
-      where: { organizationId: orgId },
-      include: {
-        reportingPeriod: { select: { label: true } },
-        snapshot: { select: { version: true, publishedAt: true } },
-        createdBy: { select: { name: true, email: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: take + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-    });
+    const where = { organizationId: orgId };
+
+    const [reports, total] = await Promise.all([
+      prisma.report.findMany({
+        where,
+        include: {
+          reportingPeriod: { select: { label: true } },
+          snapshot: { select: { version: true, publishedAt: true } },
+          createdBy: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: take + 1,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      }),
+      prisma.report.count({ where }),
+    ]);
 
     const hasMore = reports.length > take;
     const data = hasMore ? reports.slice(0, take) : reports;
-    return NextResponse.json({ data, nextCursor: hasMore ? data[data.length - 1].id : null });
+    return NextResponse.json({ data, nextCursor: hasMore ? data[data.length - 1].id : null, total });
   } catch (err) {
     return handleRouteError(err);
   }

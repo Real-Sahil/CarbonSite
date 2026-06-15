@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Building2 } from "lucide-react";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import type { OrgRole } from "@prisma/client";
 import {
   Card,
@@ -55,6 +56,14 @@ function formatCurrency(value: unknown) {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(num);
 }
 
+function formatTco2e(kgCo2e: number): string {
+  if (kgCo2e === 0) return "— tCO₂e";
+  const tCo2e = kgCo2e / 1000;
+  return `${tCo2e.toFixed(2)} tCO₂e`;
+}
+
+type ContractCo2eRow = { contract_id: string; total_co2e: number };
+
 export default async function ContractsPage({ params }: Props) {
   const { orgId } = await params;
 
@@ -88,11 +97,63 @@ export default async function ContractsPage({ params }: Props) {
 
   const canEdit = EDIT_ROLES.includes(role);
 
-  const contracts = await prisma.contract.findMany({
-    where: { organizationId: orgId },
-    include: { _count: { select: { projects: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+  const [contracts, co2eRows] = await Promise.all([
+    prisma.contract.findMany({
+      where: { organizationId: orgId },
+      include: { _count: { select: { projects: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.$queryRaw<ContractCo2eRow[]>`
+      SELECT
+        c.id AS contract_id,
+        COALESCE(SUM(ec.total_co2e), 0)::float AS total_co2e
+      FROM contracts c
+      LEFT JOIN projects p ON p.contract_id = c.id
+      LEFT JOIN sites s ON s.project_id = p.id
+      LEFT JOIN activity_records ar ON ar.site_id = s.id
+      LEFT JOIN LATERAL (
+        SELECT total_co2e
+        FROM emission_calculations
+        WHERE activity_record_id = ar.id
+        ORDER BY created_at DESC
+        LIMIT 1
+      ) ec ON true
+      WHERE c.organization_id = ${Prisma.raw(`'${orgId}'`)}
+      GROUP BY c.id
+    `,
+  ]);
+
+  // Also include CO2e from activity_records linked directly via contractId
+  const directCo2eRows = await prisma.$queryRaw<ContractCo2eRow[]>`
+    SELECT
+      ar.contract_id,
+      COALESCE(SUM(ec.total_co2e), 0)::float AS total_co2e
+    FROM activity_records ar
+    LEFT JOIN LATERAL (
+      SELECT total_co2e
+      FROM emission_calculations
+      WHERE activity_record_id = ar.id
+      ORDER BY created_at DESC
+      LIMIT 1
+    ) ec ON true
+    WHERE ar.organization_id = ${Prisma.raw(`'${orgId}'`)}
+      AND ar.contract_id IS NOT NULL
+      AND ar.site_id IS NULL
+    GROUP BY ar.contract_id
+  `;
+
+  const co2eByContract = new Map<string, number>();
+  for (const row of co2eRows) {
+    co2eByContract.set(row.contract_id, Number(row.total_co2e));
+  }
+  for (const row of directCo2eRows) {
+    if (row.contract_id) {
+      co2eByContract.set(
+        row.contract_id,
+        (co2eByContract.get(row.contract_id) ?? 0) + Number(row.total_co2e),
+      );
+    }
+  }
 
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
@@ -135,6 +196,7 @@ export default async function ContractsPage({ params }: Props) {
                     <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Start</TableHead>
                     <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">End</TableHead>
                     <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Projects</TableHead>
+                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">CO₂e</TableHead>
                     <TableHead className="w-[80px]" />
                   </TableRow>
                 </TableHeader>
@@ -164,6 +226,9 @@ export default async function ContractsPage({ params }: Props) {
                       </TableCell>
                       <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
                         {contract._count.projects}
+                      </TableCell>
+                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                        {formatTco2e(co2eByContract.get(contract.id) ?? 0)}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -40,7 +41,7 @@ import { OnboardingChecklist } from "./onboarding-checklist";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ facilityId?: string }>;
+  searchParams: Promise<{ facilityId?: string; contractId?: string }>;
 }
 
 function formatKgCo2e(value: unknown): string {
@@ -73,7 +74,7 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
-  const { facilityId: selectedFacilityId } = await searchParams;
+  const { facilityId: selectedFacilityId, contractId: selectedContractId } = await searchParams;
   const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
   const [organization, currentPeriod] = await Promise.all([
@@ -88,11 +89,41 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     }),
   ]);
 
+  // Contract filter support
+  const [activeContracts, selectedContract] = await Promise.all([
+    prisma.contract.findMany({
+      where: { organizationId: orgId, status: "active" },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    selectedContractId
+      ? prisma.contract.findUnique({
+          where: { id: selectedContractId },
+          select: { name: true },
+        })
+      : Promise.resolve(null),
+  ]);
+
+  // Get facilityIds linked to the selected contract via sites → activity records
+  let contractFacilityIds: string[] | null = null;
+  if (selectedContractId) {
+    const rows = await prisma.$queryRaw<Array<{ facility_id: string }>>`
+      SELECT DISTINCT ar.facility_id
+      FROM activity_records ar
+      INNER JOIN sites s ON s.id = ar.site_id
+      INNER JOIN projects p ON p.id = s.project_id
+      WHERE p.contract_id = ${selectedContractId}
+        AND ar.organization_id = ${orgId}
+        AND ar.facility_id IS NOT NULL
+    `;
+    contractFacilityIds = rows.map((r) => r.facility_id);
+  }
+
   // Latest succeeded calculation run (used for data quality metrics)
   const latestSucceededRun = await prisma.calculationRun.findFirst({
     where: { organizationId: orgId, status: "succeeded" },
     orderBy: { createdAt: "desc" },
-    select: { id: true },
+    select: { id: true, finishedAt: true, reportingPeriodId: true },
   });
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
@@ -105,6 +136,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               organizationId: orgId,
               reportingPeriodId: currentPeriod.id,
               snapshotId: null,
+              ...(contractFacilityIds !== null
+                ? { facilityId: { in: contractFacilityIds } }
+                : {}),
             },
             _sum: { totalCo2e: true, recordCount: true },
             orderBy: { scope: "asc" },
@@ -335,6 +369,37 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           reviewStatus: { in: ["in_review", "draft"] },
         },
       }),
+      // Signal 1: records added after last calculation run (stale warning)
+      latestSucceededRun?.finishedAt && latestSucceededRun.reportingPeriodId
+        ? prisma.activityRecord.count({
+            where: {
+              organizationId: orgId,
+              reportingPeriodId: latestSucceededRun.reportingPeriodId,
+              createdAt: { gt: latestSucceededRun.finishedAt },
+            },
+          })
+        : Promise.resolve(0),
+      // Signal 2: fallback factor exposure — CO2e from fallback selections
+      latestSucceededRun
+        ? prisma.emissionCalculation.aggregate({
+            where: {
+              calculationRunId: latestSucceededRun.id,
+              organizationId: orgId,
+              selectionReason: { contains: "fallback", mode: "insensitive" },
+            },
+            _sum: { totalCo2e: true },
+          })
+        : Promise.resolve({ _sum: { totalCo2e: null } }),
+      // Signal 3: approved field submissions with both ocrExtractedData and formData set
+      prisma.fieldSubmission.findMany({
+        where: {
+          organizationId: orgId,
+          status: "approved",
+          ocrExtractedData: { not: Prisma.JsonNull },
+          formData: { not: Prisma.JsonNull },
+        },
+        select: { ocrExtractedData: true, formData: true },
+      }),
     ] as const),
   ]);
 
@@ -375,13 +440,34 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     socialValueStats,
   ] = batchB;
 
-  const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount] =
+  const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
     dataQualityBatch;
 
   const totalCalcCo2e = Number(totalCo2eAgg._sum.totalCo2e ?? 0);
   const approvedCalcCo2e = Number(approvedCo2eAgg._sum.totalCo2e ?? 0);
   const dataConfidencePct =
     totalCalcCo2e > 0 ? Math.round((approvedCalcCo2e / totalCalcCo2e) * 100) : null;
+
+  // Signal 2: fallback factor exposure percentage
+  const fallbackCo2e = Number(fallbackCo2eAgg._sum.totalCo2e ?? 0);
+  const fallbackPct = totalCalcCo2e > 0 ? Math.round((fallbackCo2e / totalCalcCo2e) * 100) : 0;
+
+  // Signal 3: OCR vs formData discrepancy count
+  const ocrDiscrepancyCount = ocrDiscrepancySubmissions.filter((sub) => {
+    try {
+      const ocr = sub.ocrExtractedData as Record<string, unknown>;
+      const form = sub.formData as Record<string, unknown>;
+      const sharedKeys = Object.keys(ocr).filter((k) => k in form);
+      return sharedKeys.some((k) => {
+        const oVal = Number(ocr[k]);
+        const fVal = Number(form[k]);
+        if (!Number.isFinite(oVal) || !Number.isFinite(fVal) || fVal === 0) return false;
+        return Math.abs(oVal - fVal) / Math.abs(fVal) > 0.1;
+      });
+    } catch {
+      return false;
+    }
+  }).length;
 
   // Facility breakdown derived values
   const facilityRows = facilityAggregates.map((agg) => ({
@@ -591,6 +677,51 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           },
         ]}
       />
+
+      {/* Contract filter */}
+      {activeContracts.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {selectedContract && (
+            <div className="flex items-center gap-2 rounded-[14px] border border-[#b6ced5] bg-[#b6ced5]/20 px-4 py-3">
+              <span className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+                Filtering by contract: <strong>{selectedContract.name}</strong>
+              </span>
+              <Link
+                href={`/orgs/${orgId}/dashboard`}
+                className="ml-auto text-xs text-[#333333] underline hover:text-[#0f3e17]"
+              >
+                Clear
+              </Link>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs font-normal text-[#333333] tracking-[-0.36px] mr-1">Filter by contract:</span>
+            <Link
+              href={`/orgs/${orgId}/dashboard`}
+              className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                !selectedContractId
+                  ? "bg-[#0f3e17] text-[#fffefc]"
+                  : "border border-[#e5e7eb] text-[#333333] hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+              }`}
+            >
+              All
+            </Link>
+            {activeContracts.map((contract) => (
+              <Link
+                key={contract.id}
+                href={`/orgs/${orgId}/dashboard?contractId=${contract.id}`}
+                className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                  selectedContractId === contract.id
+                    ? "bg-[#0f3e17] text-[#fffefc]"
+                    : "border border-[#e5e7eb] text-[#333333] hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+                }`}
+              >
+                {contract.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -949,6 +1080,28 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               )}
             </div>
           </dl>
+
+          {/* Deeper signals */}
+          <div className="mt-4 flex flex-col gap-2">
+            {staleRecordCount > 0 && (
+              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                {staleRecordCount} record{staleRecordCount !== 1 ? "s" : ""} added since last calculation run — results may be outdated.
+              </div>
+            )}
+            {fallbackPct > 0 && (
+              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                {fallbackPct}% of emissions from fallback factors.
+              </div>
+            )}
+            {ocrDiscrepancyCount > 0 && (
+              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                {ocrDiscrepancyCount} approved submission{ocrDiscrepancyCount !== 1 ? "s" : ""} have OCR vs form data discrepancies.
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

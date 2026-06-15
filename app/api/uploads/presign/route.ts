@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     const url = await presignUpload(key, contentType);
 
-    return NextResponse.json({ url, key });
+    return NextResponse.json({ url, key, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() });
   } catch (err) {
     return handleRouteError(err);
   }

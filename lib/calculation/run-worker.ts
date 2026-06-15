@@ -60,6 +60,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         geographyCountry: record.country,
         activityDate,
         factorLibraryId: run.factorLibraryId,
+        scope2Method: record.scope2Method ?? undefined,
       });
 
       if (!factorSelection) {
@@ -88,7 +89,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         continue;
       }
 
-      const { factor, selectionReason } = factorSelection;
+      const { factor, selectionReason, warnings: selectionWarnings = [] } = factorSelection;
       const result = computeCo2e(
         normalized.amount,
         normalized.unit,
@@ -99,7 +100,11 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
           co2e: factor.co2e != null ? Number(factor.co2e) : null,
         },
         factor.inputUnit,
-        [...unitWarnings, ...(selectionReason ? [] : ["Factor selected without clear reason."])],
+        [
+          ...unitWarnings,
+          ...selectionWarnings,
+          ...(selectionReason ? [] : ["Factor selected without clear reason."]),
+        ],
       );
 
       const factorValue = factor.co2e ?? factor.co2;
