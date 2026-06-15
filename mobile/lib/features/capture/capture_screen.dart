@@ -229,9 +229,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     apply('date', fields.date);
     apply('vehicleReg', fields.vehicleReg);
     apply('supplierName', fields.supplierName);
+    apply('materialType', fields.materialType);
     apply('fuelType', fields.fuelType);
     apply('volume', fields.volume);
     apply('volumeUnit', fields.volumeUnit);
+    apply('postcode', fields.postcode);
   }
 
   // ---------------------------------------------------------------------
@@ -581,6 +583,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           _field('date', 'Document date', hint: 'e.g. 12/06/2026'),
           _field('vehicleReg', 'Vehicle registration', hint: 'e.g. AB12 CDE'),
           _field('supplierName', 'Carrier / supplier'),
+          _field('postcode', 'Site postcode', hint: 'e.g. SW1A 1AA'),
           _field('notes', 'Notes', maxLines: 3),
         ];
       case DocumentType.deliveryNote:
@@ -593,6 +596,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           _field('date', 'Delivery date', hint: 'e.g. 12/06/2026'),
           _field('vehicleReg', 'Vehicle registration', hint: 'e.g. AB12 CDE'),
           _field('supplierName', 'Supplier'),
+          _field('postcode', 'Delivery postcode', hint: 'e.g. SW1A 1AA'),
           _field('notes', 'Notes', maxLines: 3),
         ];
       case DocumentType.fuelReceipt:

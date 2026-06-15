@@ -431,7 +431,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'No projects assigned',
+              'No sites assigned yet',
               style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onSurface,
@@ -440,7 +440,8 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Contact your project administrator to be assigned to a reporting period.',
+              'Ask your administrator to send you a site invite link. '
+              'Once you open it, your site appears here automatically.',
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

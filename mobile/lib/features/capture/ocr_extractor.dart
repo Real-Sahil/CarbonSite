@@ -33,6 +33,7 @@ class ExtractedFields {
   final String? fuelType;
   final String? volume;
   final String? volumeUnit;
+  final String? postcode;
 
   /// Per-field confidence scores.
   /// Keys match [toMap()] keys.  Values are in [0.0, 1.0]:
@@ -55,6 +56,7 @@ class ExtractedFields {
     this.fuelType,
     this.volume,
     this.volumeUnit,
+    this.postcode,
     this.fieldConfidence = const {},
   });
 
@@ -74,6 +76,7 @@ class ExtractedFields {
       if (fuelType != null) 'fuelType': fuelType!,
       if (volume != null) 'volume': volume!,
       if (volumeUnit != null) 'volumeUnit': volumeUnit!,
+      if (postcode != null) 'postcode': postcode!,
       'fieldConfidence': fieldConfidence,
     };
   }
@@ -166,6 +169,25 @@ class OcrExtractor {
     caseSensitive: false,
   );
 
+  // ---------------------------------------------------------------------
+  // UK postcodes — e.g. "SW1A 1AA", "M1 1AE", "B33 8TH", "CR2 6XH"
+  // ---------------------------------------------------------------------
+
+  static final _postcodePattern = RegExp(
+    r'\b([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})\b',
+    caseSensitive: false,
+  );
+
+  // ---------------------------------------------------------------------
+  // Material / product type (delivery notes)
+  // ---------------------------------------------------------------------
+
+  static final _materialLabelled = RegExp(
+    r'^(?:material|materials|description|product|goods|commodity|item|'
+    r'waste\s*type|waste\s*description)\s*[:\-]\s*(.+)$',
+    caseSensitive: false,
+  );
+
   // Confidence score constants.
   static const double _exactMatch = 0.95;
   static const double _fuzzyMatch = 0.65;
@@ -215,6 +237,15 @@ class OcrExtractor {
     final supplierName = supplierResult.$1;
     final supplierConfidence = supplierResult.$2;
 
+    // 7. UK postcode (pickup/delivery site — feeds transport distance calc).
+    final postcode = _extractPostcode(working);
+    final postcodeConfidence = postcode != null ? _exactMatch : _notFound;
+
+    // 8. Material / product type (delivery notes).
+    final materialResult = _extractMaterialWithConfidence(lines);
+    final materialType = materialResult.$1;
+    final materialConfidence = materialResult.$2;
+
     final confidence = <String, double>{
       'weight': weightConfidence,
       'weightUnit': weightMatch != null ? _exactMatch : _notFound,
@@ -225,6 +256,8 @@ class OcrExtractor {
       'fuelType': fuelConfidence,
       'volume': volumeConfidence,
       'volumeUnit': volumeMatch != null ? _exactMatch : _notFound,
+      'postcode': postcodeConfidence,
+      'materialType': materialConfidence,
     };
 
     return ExtractedFields(
@@ -238,14 +271,37 @@ class OcrExtractor {
       date: date,
       vehicleReg: vehicleReg,
       supplierName: supplierName,
+      materialType: materialType,
       fuelType: fuelType,
       volume:
           volumeMatch == null ? null : _normalizeNumber(volumeMatch.group(1)!),
       volumeUnit: volumeMatch == null
           ? null
           : _normalizeVolumeUnit(volumeMatch.group(2)!),
+      postcode: postcode,
       fieldConfidence: confidence,
     );
+  }
+
+  /// First UK postcode in the text, normalised to "OUTWARD INWARD" upper case.
+  static String? _extractPostcode(String text) {
+    final m = _postcodePattern.firstMatch(text);
+    if (m == null) return null;
+    return '${m.group(1)!.toUpperCase()} ${m.group(2)!.toUpperCase()}';
+  }
+
+  /// Returns (material | null, confidence) from a labelled line.
+  static (String?, double) _extractMaterialWithConfidence(List<String> lines) {
+    for (final line in lines) {
+      final m = _materialLabelled.firstMatch(line);
+      if (m != null) {
+        final value = m.group(1)!.trim();
+        if (value.isNotEmpty && value.length <= 80) {
+          return (value, _exactMatch);
+        }
+      }
+    }
+    return (null, _notFound);
   }
 
   // -------------------------------------------------------------------------
