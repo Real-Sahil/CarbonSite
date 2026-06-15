@@ -9,10 +9,11 @@ import { acceptInviteSchema } from "@/lib/validation/org";
 export async function POST(req: NextRequest) {
   try {
     const body = acceptInviteSchema.parse(await req.json());
+    // Rate-limit by IP, not by token — prevents enumeration via per-token buckets.
     const limited = rateLimitRequest(req, {
-      key: `invite_accept:${body.token}`,
-      limit: 10,
-      windowMs: 60_000,
+      key: "invite_accept",
+      limit: 5,
+      windowMs: 15 * 60_000,
     });
     if (limited) return limited;
 
@@ -45,9 +46,10 @@ export async function POST(req: NextRequest) {
 
     const requestedEmail = body.email?.trim().toLowerCase();
     if (invite.email && requestedEmail && requestedEmail !== invite.email.toLowerCase()) {
+      // Return the same message as INVITE_NOT_FOUND to prevent email enumeration.
       return apiError(
-        "INVITE_EMAIL_MISMATCH",
-        "This invite must be accepted with the invited email address.",
+        "INVALID_INVITE",
+        "This invite link is invalid or has expired.",
         400,
       );
     }

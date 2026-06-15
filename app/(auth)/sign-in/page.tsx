@@ -68,13 +68,23 @@ export default function SignInPage() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-[#0f3e17] hover:underline"
+                tabIndex={-1}
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              maxLength={128}
               autoComplete="current-password"
               disabled={loading}
             />

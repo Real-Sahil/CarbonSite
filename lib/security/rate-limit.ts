@@ -80,7 +80,9 @@ export function resetRateLimitBucketsForTests() {
 
 // Route-class policies.
 export const POLICIES = {
-  auth: { limit: 20, windowMs: 60_000 },
+  // Auth endpoints: 5 attempts per 15 minutes per IP.
+  // Tighter than the generic bucket to resist credential brute-force.
+  auth: { limit: 5, windowMs: 15 * 60_000 },
   upload: { limit: 30, windowMs: 60_000 },
   mutation: { limit: 120, windowMs: 60_000 },
   read: { limit: 600, windowMs: 60_000 },

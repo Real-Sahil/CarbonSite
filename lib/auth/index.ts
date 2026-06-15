@@ -29,6 +29,28 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification,
+    // Guard against bcrypt DoS: reject passwords over 128 chars before hashing.
+    password: {
+      minPasswordLength: 8,
+      maxPasswordLength: 128,
+    },
+    sendResetPassword: async ({ user, url }) => {
+      await sendTransactionalEmail({
+        to: user.email,
+        subject: "Reset your CarbonSite password",
+        text: [
+          `Hello ${user.name || "there"},`,
+          "",
+          "Someone requested a password reset for your CarbonSite account.",
+          "Click the link below to choose a new password (expires in 1 hour):",
+          "",
+          url,
+          "",
+          "If you did not request this, you can safely ignore this email.",
+          "Your password will not change unless you click the link above.",
+        ].join("\n"),
+      });
+    },
   },
   emailVerification: {
     sendOnSignUp: requireEmailVerification,

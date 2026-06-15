@@ -32,6 +32,10 @@ export default function SignUpPage() {
       setError("Password must be at least 8 characters.");
       return;
     }
+    if (password.length > 128) {
+      setError("Password must not exceed 128 characters.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -100,6 +104,7 @@ export default function SignUpPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
+              maxLength={128}
               autoComplete="new-password"
               disabled={loading}
             />
