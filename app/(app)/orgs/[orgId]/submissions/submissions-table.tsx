@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -41,6 +42,7 @@ interface OrgMember {
 interface SubmissionsTableProps {
   orgId: string;
   members: OrgMember[];
+  initialSubmissions: Submission[];
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -70,38 +72,16 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 
 const BULK_ELIGIBLE = new Set(["submitted", "under_review"]);
 
-export function SubmissionsTable({ orgId, members }: SubmissionsTableProps) {
-  const [submissions, setSubmissions] = useState<Submission[] | null>(null);
-  const [loading, setLoading] = useState(false);
+export function SubmissionsTable({ orgId, members, initialSubmissions }: SubmissionsTableProps) {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [approving, setApproving] = useState(false);
-  const [assigning, setAssigning] = useState(false);
+  const [approving, startApproving] = useTransition();
+  const [assigning, startAssigning] = useTransition();
   const [showAssignSelect, setShowAssignSelect] = useState(false);
   const [assigneeUserId, setAssigneeUserId] = useState(members[0]?.id ?? "");
 
-  const fetchSubmissions = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/orgs/${orgId}/field-submissions`);
-      if (!res.ok) throw new Error("Failed to load submissions");
-      const json = await res.json() as { data: Submission[] };
-      setSubmissions(json.data);
-      setSelected(new Set());
-    } catch {
-      setError("Could not load submissions. Please refresh.");
-    } finally {
-      setLoading(false);
-    }
-  }, [orgId]);
-
-  // Fetch on mount
-  if (submissions === null && !loading && !error) {
-    fetchSubmissions();
-  }
-
-  const eligible = (submissions ?? []).filter((s) => BULK_ELIGIBLE.has(s.status));
+  const eligible = initialSubmissions.filter((s) => BULK_ELIGIBLE.has(s.status));
   const allEligibleSelected =
     eligible.length > 0 && eligible.every((s) => selected.has(s.id));
 
@@ -125,50 +105,57 @@ export function SubmissionsTable({ orgId, members }: SubmissionsTableProps) {
     });
   }
 
-  async function handleBulkApprove() {
+  function handleBulkApprove() {
     if (selected.size === 0) return;
-    setApproving(true);
-    try {
-      const res = await fetch(`/api/orgs/${orgId}/field-submissions/bulk-review`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: Array.from(selected), action: "approve" }),
-      });
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({})) as { message?: string };
-        throw new Error(json.message ?? "Bulk approve failed");
+    const confirmed = window.confirm(
+      `Bulk approve ${selected.size} submission(s)?\n\n` +
+      "Note: bulk approval marks submissions as approved but does NOT create " +
+      "activity records for calculations. Open each submission individually " +
+      "to assign an emission category and create the record."
+    );
+    if (!confirmed) return;
+    startApproving(async () => {
+      try {
+        const res = await fetch(`/api/orgs/${orgId}/field-submissions/bulk-review`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: Array.from(selected), action: "approve" }),
+        });
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({})) as { message?: string };
+          throw new Error(json.message ?? "Bulk approve failed");
+        }
+        setSelected(new Set());
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Bulk approve failed");
       }
-      await fetchSubmissions();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Bulk approve failed");
-    } finally {
-      setApproving(false);
-    }
+    });
   }
 
-  async function handleBulkAssign() {
+  function handleBulkAssign() {
     if (selected.size === 0 || !assigneeUserId) return;
-    setAssigning(true);
-    try {
-      const res = await fetch(`/api/orgs/${orgId}/field-submissions/bulk-review`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: Array.from(selected), action: "assign", assigneeUserId }),
-      });
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({})) as { message?: string };
-        throw new Error(json.message ?? "Bulk assign failed");
+    startAssigning(async () => {
+      try {
+        const res = await fetch(`/api/orgs/${orgId}/field-submissions/bulk-review`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: Array.from(selected), action: "assign", assigneeUserId }),
+        });
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({})) as { message?: string };
+          throw new Error(json.message ?? "Bulk assign failed");
+        }
+        setShowAssignSelect(false);
+        setSelected(new Set());
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Bulk assign failed");
       }
-      setShowAssignSelect(false);
-      await fetchSubmissions();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Bulk assign failed");
-    } finally {
-      setAssigning(false);
-    }
+    });
   }
 
-  const list = submissions ?? [];
+  const list = initialSubmissions;
 
   return (
     <Card>
@@ -177,13 +164,11 @@ export function SubmissionsTable({ orgId, members }: SubmissionsTableProps) {
           <div>
             <CardTitle className="text-base">
               Submissions
-              {submissions !== null && (
-                <span className="ml-2 text-sm font-normal text-[#333333]">
-                  ({list.length})
-                </span>
-              )}
+              <span className="ml-2 text-sm font-normal text-[#333333]">
+                ({list.length})
+              </span>
             </CardTitle>
-            {submissions !== null && list.length === 0 && (
+            {list.length === 0 && (
               <CardDescription className="mt-1">
                 Share an invite link with your field workers to get started.
               </CardDescription>
@@ -252,13 +237,7 @@ export function SubmissionsTable({ orgId, members }: SubmissionsTableProps) {
           <p className="px-4 py-3 text-sm text-red-600 tracking-[-0.42px]">{error}</p>
         )}
 
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <p className="text-sm text-[#333333] tracking-[-0.42px]">Loading…</p>
-          </div>
-        )}
-
-        {!loading && submissions !== null && list.length === 0 && (
+        {list.length === 0 && (
           <div className="flex flex-col items-center gap-4 py-12 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
               <Inbox aria-hidden="true" className="h-7 w-7 text-[#0f3e17]" />
@@ -276,7 +255,7 @@ export function SubmissionsTable({ orgId, members }: SubmissionsTableProps) {
           </div>
         )}
 
-        {!loading && list.length > 0 && (
+        {list.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>

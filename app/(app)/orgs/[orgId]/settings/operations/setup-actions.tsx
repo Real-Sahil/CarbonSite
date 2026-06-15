@@ -99,7 +99,8 @@ function FactorImportPanel({
     event.preventDefault();
     setError(null);
     setSuccess(null);
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
 
     startTransition(async () => {
       try {
@@ -111,7 +112,7 @@ function FactorImportPanel({
         if (!res.ok) {
           throw new Error(body?.message ?? "Factor import failed");
         }
-        event.currentTarget.reset();
+        formEl.reset();
         setSuccess(`${body.importedRows} factor rows imported.`);
         router.refresh();
       } catch (err) {
@@ -186,7 +187,8 @@ function ReportingPeriodsPanel({
   function createPeriod(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
 
     startTransition(async () => {
       try {
@@ -196,7 +198,7 @@ function ReportingPeriodsPanel({
           startDate: form.get("startDate"),
           endDate: form.get("endDate"),
         });
-        event.currentTarget.reset();
+        formEl.reset();
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not create period");
@@ -363,7 +365,8 @@ function FacilitiesPanel({
   function createFacility(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
 
     startTransition(async () => {
       try {
@@ -372,7 +375,7 @@ function FacilitiesPanel({
           country: form.get("country"),
           region: form.get("region"),
         });
-        event.currentTarget.reset();
+        formEl.reset();
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not create facility");
@@ -472,14 +475,15 @@ function BusinessUnitsPanel({
   function createBusinessUnit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
 
     startTransition(async () => {
       try {
         await requestJson(`/api/orgs/${orgId}/business-units`, "POST", {
           name: form.get("name"),
         });
-        event.currentTarget.reset();
+        formEl.reset();
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not create business unit");

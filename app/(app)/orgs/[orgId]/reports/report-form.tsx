@@ -151,7 +151,8 @@ export function CreateReportForm({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitError(null);
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
     const sid = form.get("snapshotId") as string;
     const snapshot = snapshots.find((s) => s.id === sid);
     const contractId = form.get("contractId") as string | null;
@@ -172,7 +173,7 @@ export function CreateReportForm({
           ...(contractId && contractId !== "" ? { contractId } : {}),
           options: { ...secrOptions },
         });
-        (event.target as HTMLFormElement).reset();
+        formEl.reset();
         setReportType("inventory");
         setSnapshotId(snapshots[0]?.id ?? "");
         setValidationResult(null);

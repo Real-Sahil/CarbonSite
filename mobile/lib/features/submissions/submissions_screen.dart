@@ -134,9 +134,10 @@ class _SubmissionsScreenState extends ConsumerState<SubmissionsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/capture'),
-        icon: const Icon(Icons.camera_alt),
-        label: const Text('Capture'),
+        onPressed: () => context.go('/home'),
+        icon: const Icon(Icons.add_a_photo_outlined),
+        label: const Text('New submission'),
+        tooltip: 'Select a project first',
       ),
     );
   }

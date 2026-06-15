@@ -13,14 +13,47 @@ export default async function SubmissionsPage({
   const { orgId } = await params;
 
   let members: { id: string; name: string | null; email: string }[] = [];
+  let initialSubmissions: {
+    id: string;
+    documentType: string;
+    status: string;
+    createdAt: string;
+    submittedBy: { name: string | null; email: string };
+    reportingPeriod: { label: string };
+    facility: { name: string } | null;
+  }[] = [];
+
   try {
     await requireOrgMember(orgId, "admin", "editor", "reviewer");
-    const memberships = await prisma.organizationMembership.findMany({
-      where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
-      include: { user: { select: { id: true, name: true, email: true } } },
-      orderBy: { createdAt: "asc" },
-    });
+
+    const [memberships, submissions] = await Promise.all([
+      prisma.organizationMembership.findMany({
+        where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
+        include: { user: { select: { id: true, name: true, email: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.fieldSubmission.findMany({
+        where: { organizationId: orgId },
+        include: {
+          submittedBy: { select: { name: true, email: true } },
+          reportingPeriod: { select: { label: true } },
+          facility: { select: { name: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+    ]);
+
     members = memberships.map((m) => ({ id: m.user.id, name: m.user.name, email: m.user.email }));
+    initialSubmissions = submissions.map((s) => ({
+      id: s.id,
+      documentType: s.documentType,
+      status: s.status,
+      createdAt: s.createdAt.toISOString(),
+      submittedBy: { name: s.submittedBy.name, email: s.submittedBy.email },
+      reportingPeriod: { label: s.reportingPeriod?.label ?? "" },
+      facility: s.facility ? { name: s.facility.name } : null,
+    }));
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
@@ -53,7 +86,7 @@ export default async function SubmissionsPage({
         </p>
       </div>
 
-      <SubmissionsTable orgId={orgId} members={members} />
+      <SubmissionsTable orgId={orgId} members={members} initialSubmissions={initialSubmissions} />
     </div>
   );
 }

@@ -10,16 +10,25 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const { session, membership } = await requireOrgMember(
+      orgId,
+      "admin",
+      "editor",
+      "reviewer",
+      "field_worker",
+    );
 
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
     const cursor = url.searchParams.get("cursor");
     const take = 50;
 
+    // field_workers can only see their own submissions
+    const isFieldWorker = membership.role === "field_worker";
     const where = {
       organizationId: orgId,
-      ...(status ? { status: status as never } : {}),
+      ...(isFieldWorker ? { submittedByUserId: session.user.id } : {}),
+      ...(!isFieldWorker && status ? { status: status as never } : {}),
     };
 
     const [submissions, total] = await Promise.all([
@@ -61,7 +70,28 @@ export async function POST(req: NextRequest, { params }: Params) {
       "field_worker",
     );
 
-    const body = createFieldSubmissionSchema.parse(await req.json());
+    // Accept both JSON (no photo) and multipart/form-data (photo attached).
+    // The Flutter sync service sends multipart when a photo is present.
+    const contentType = req.headers.get("content-type") ?? "";
+    let rawBody: Record<string, unknown>;
+    if (contentType.includes("multipart/form-data")) {
+      const form = await req.formData();
+      rawBody = {};
+      for (const [key, value] of form.entries()) {
+        if (typeof value === "string") rawBody[key] = value;
+        // Photo binary is intentionally ignored here; OCR data is in formData JSON
+      }
+      // formData field arrives as a JSON string — parse it back
+      if (typeof rawBody.formData === "string") {
+        try { rawBody.formData = JSON.parse(rawBody.formData); } catch { /* leave as-is */ }
+      }
+      // Numeric fields from multipart arrive as strings
+      if (rawBody.gpsLat) rawBody.gpsLat = Number(rawBody.gpsLat);
+      if (rawBody.gpsLng) rawBody.gpsLng = Number(rawBody.gpsLng);
+    } else {
+      rawBody = await req.json();
+    }
+    const body = createFieldSubmissionSchema.parse(rawBody);
 
     const period = await prisma.reportingPeriod.findUnique({
       where: { id: body.reportingPeriodId },
