@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { Smartphone, ArrowRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -10,18 +10,17 @@ interface MobileAppInviteProps {
 }
 
 export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
-  const [appLinkUrl, setAppLinkUrl] = useState<string>("");
+  // carbonsite://app/invite/TOKEN?server=https://yourorg.com
+  // This is the URL format the Flutter router expects.
+  const appLinkUrl = useMemo(
+    () =>
+      typeof window !== "undefined"
+        ? `carbonsite://app/invite/${token}?server=${encodeURIComponent(window.location.origin)}`
+        : "",
+    [token]
+  );
   const [opening, setOpening] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
-
-  useEffect(() => {
-    const origin = window.location.origin;
-    // carbonsite://app/invite/TOKEN?server=https://yourorg.com
-    // This is the URL format the Flutter router expects.
-    setAppLinkUrl(
-      `carbonsite://app/invite/${token}?server=${encodeURIComponent(origin)}`
-    );
-  }, [token]);
 
   function handleOpenApp() {
     if (!appLinkUrl) return;
