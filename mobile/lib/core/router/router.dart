@@ -64,19 +64,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/invite/:token',
         builder: (context, state) {
           final token = state.pathParameters['token'] ?? '';
-          // Auto-detect server URL from the deep link host so field workers
-          // don't have to configure it manually.  Only persist when the link
-          // came from a real HTTPS host (not from the in-app redirect or a
-          // localhost dev build).
-          final host = state.uri.host;
-          final scheme = state.uri.scheme;
-          if (host.isNotEmpty &&
-              host != 'localhost' &&
-              scheme == 'https') {
-            final serverUrl = 'https://$host';
-            _storage.write(key: 'api_base_url', value: serverUrl);
+
+          // Option A: Custom scheme carbonsite://app/invite/{token}?server=https://...
+          // The ?server= param carries the web app's origin so we know where to call.
+          final serverParam = state.uri.queryParameters['server'];
+          if (serverParam != null &&
+              serverParam.startsWith('https://') &&
+              !serverParam.contains('localhost')) {
+            _storage.write(key: 'api_base_url', value: serverParam);
             invalidateClient();
+          } else {
+            // Option B: HTTPS app link https://{host}/invite/{token}
+            // Extract the server URL directly from the deep link host.
+            final host = state.uri.host;
+            final scheme = state.uri.scheme;
+            if (host.isNotEmpty &&
+                host != 'localhost' &&
+                scheme == 'https') {
+              _storage.write(key: 'api_base_url', value: 'https://$host');
+              invalidateClient();
+            }
           }
+
           return InviteScreen(token: token);
         },
       ),
