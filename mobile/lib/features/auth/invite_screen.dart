@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/api/client.dart';
 import '../../core/api/endpoints.dart';
 
 class InviteScreen extends StatefulWidget {
@@ -18,19 +19,57 @@ class _InviteScreenState extends State<InviteScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _serverUrlController = TextEditingController();
 
   bool _loading = false;
   String? _errorMessage;
+  bool _showServerUrl = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStoredServerUrl();
+  }
+
+  Future<void> _loadStoredServerUrl() async {
+    final stored = await _storage.read(key: 'api_base_url');
+    if (!mounted) return;
+    final url = stored ?? 'http://localhost:3000';
+    _serverUrlController.text = url;
+    // Automatically show the server URL field when it's still pointing at
+    // localhost — the field worker needs to configure the real server address.
+    if (url.contains('localhost') || url.contains('127.0.0.1')) {
+      setState(() => _showServerUrl = true);
+    }
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _serverUrlController.dispose();
     super.dispose();
   }
 
   Future<void> _joinOrganisation() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // Persist a manually entered server URL before making the request.
+    final enteredUrl = _serverUrlController.text.trim();
+    if (enteredUrl.isNotEmpty) {
+      try {
+        final normalized = normalizeBaseUrl(enteredUrl);
+        await _storage.write(key: 'api_base_url', value: normalized);
+        invalidateClient();
+      } catch (_) {
+        setState(() {
+          _errorMessage =
+              'Invalid server URL. Use https://yourserver.example.com';
+          _showServerUrl = true;
+        });
+        return;
+      }
+    }
 
     setState(() {
       _loading = true;
@@ -66,17 +105,38 @@ class _InviteScreenState extends State<InviteScreen> {
   }
 
   String _friendlyError(Object e) {
-    final msg = e.toString();
+    final msg = e.toString().toLowerCase();
+
     if (msg.contains('404') ||
         msg.contains('invalid') ||
         msg.contains('expired')) {
       return 'This invite link is invalid or has expired. Ask your administrator for a new one.';
     }
-    if (msg.contains('SocketException') ||
-        msg.contains('connection') ||
-        msg.contains('network')) {
+
+    // Connection refused or wrong host = server URL is not configured correctly,
+    // NOT a network connectivity problem on the device.
+    if (msg.contains('connection refused') ||
+        msg.contains('localhost') ||
+        msg.contains('127.0.0.1') ||
+        msg.contains('os error: 111') ||
+        msg.contains('os error: 61')) {
+      setState(() => _showServerUrl = true);
+      return 'Cannot reach the CarbonSite server. Enter the correct server address below and try again.';
+    }
+
+    // True network failures (no WiFi / no mobile data).
+    if (msg.contains('socketexception') ||
+        msg.contains('failed host lookup') ||
+        msg.contains('network is unreachable') ||
+        msg.contains('no address associated') ||
+        msg.contains('network unreachable')) {
       return 'No internet connection. Check your network and try again.';
     }
+
+    if (msg.contains('500') || msg.contains('502') || msg.contains('503')) {
+      return 'The CarbonSite server is temporarily unavailable. Try again in a moment.';
+    }
+
     return 'Something went wrong. Please try again.';
   }
 
@@ -192,6 +252,57 @@ class _InviteScreenState extends State<InviteScreen> {
                     return null;
                   },
                 ),
+
+                const SizedBox(height: 16),
+
+                // Server URL — shown automatically when the app is pointing at
+                // localhost (not configured) or after a connection error.
+                GestureDetector(
+                  onTap: () =>
+                      setState(() => _showServerUrl = !_showServerUrl),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Icon(
+                        _showServerUrl
+                            ? Icons.keyboard_arrow_up
+                            : Icons.settings_outlined,
+                        size: 14,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Server settings',
+                        style: textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                if (_showServerUrl) ...[
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _serverUrlController,
+                    keyboardType: TextInputType.url,
+                    textInputAction: TextInputAction.done,
+                    autocorrect: false,
+                    decoration: InputDecoration(
+                      labelText: 'Server URL',
+                      hintText: 'https://app.carbonsite.com',
+                      prefixIcon: const Icon(Icons.dns_outlined),
+                      border: const OutlineInputBorder(),
+                      helperText:
+                          'Your organisation\'s CarbonSite server address',
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.clear, size: 18),
+                        onPressed: () => _serverUrlController.clear(),
+                      ),
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 28),
 

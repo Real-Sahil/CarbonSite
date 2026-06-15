@@ -81,11 +81,15 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
         </div>
 
         <button
-          className={`md:hidden p-2 rounded-lg ${scrolled || isDark ? "text-zinc-400" : "text-zinc-600"}`}
+          className={`md:hidden p-2 rounded-lg transition-colors ${
+            scrolled || isDark
+              ? "text-white hover:bg-white/10"
+              : "text-zinc-900 hover:bg-zinc-100"
+          }`}
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
