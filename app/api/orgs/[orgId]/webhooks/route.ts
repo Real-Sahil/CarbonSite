@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { handleRouteError, apiError } from "@/lib/validation/api";
+import { handleRouteError } from "@/lib/validation/api";
 
 const ALLOWED_EVENTS = [
   "calculation_run.completed",

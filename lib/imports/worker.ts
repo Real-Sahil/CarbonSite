@@ -75,7 +75,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
     const columnMap = mapColumns(headers);
 
     // Validate all rows
-    const validatedRows = rows.map((row, idx) =>
+    const validatedRows = rows.map((row) =>
       validateRow(row, columnMap, categoryCodeIndex, facilityNameIndex, businessUnitNameIndex),
     );
 

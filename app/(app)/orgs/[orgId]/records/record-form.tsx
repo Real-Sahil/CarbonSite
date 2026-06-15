@@ -26,13 +26,13 @@ export function CreateRecordForm({
   periods,
   categories,
   facilities,
-  businessUnits,
+  businessUnits: _businessUnits,
 }: CreateRecordFormProps) {
   const [open, setOpen] = useState(false);
   const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [facilityId, setFacilityId] = useState("");
-  const [businessUnitId, setBusinessUnitId] = useState("");
+  const [businessUnitId] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("");
   const [sourceDescription, setSourceDescription] = useState("");

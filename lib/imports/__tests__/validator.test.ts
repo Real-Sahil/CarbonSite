@@ -48,7 +48,7 @@ describe("validateRow", () => {
       "Activity Date": "2025-01-15",
       Facility: "Site A",
     };
-    const { data, errors, warnings } = validateRow(row, colMap, CATEGORY_INDEX, FACILITY_INDEX, BU_INDEX);
+    const { data, errors } = validateRow(row, colMap, CATEGORY_INDEX, FACILITY_INDEX, BU_INDEX);
 
     expect(errors).toHaveLength(0);
     expect(data.amount).toBe(100);

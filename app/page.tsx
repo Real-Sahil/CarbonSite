@@ -3,7 +3,7 @@ import { BarChart3, ClipboardCheck, FileCheck, Lock, Smartphone, Users } from "l
 import { HeroSection } from "@/components/hero-section";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { StandardsMarquee } from "@/components/marketing/standards-marquee";
-import { AnimateIn, AnimateInStagger } from "@/components/marketing/animate-in";
+import { AnimateIn } from "@/components/marketing/animate-in";
 import { AnimatedCounter } from "@/components/marketing/animated-counter";
 
 // Varied bento cells - deliberately NOT uniform 4-up cards.

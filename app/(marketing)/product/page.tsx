@@ -87,7 +87,7 @@ export default function ProductPage() {
       {/* Workflow stages */}
       <section className="px-5 py-16">
         <div className="mx-auto max-w-7xl space-y-12">
-          {STAGES.map((stage, i) => (
+          {STAGES.map((stage) => (
             <AnimateIn key={stage.num}>
               <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-6 rounded-xl border border-zinc-800 bg-zinc-900 p-8">
                 <div>

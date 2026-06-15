@@ -64,11 +64,6 @@ export async function POST(req: NextRequest, { params }: Params) {
       return apiError("BAD_REQUEST", "templateKey is required.", 400);
     }
 
-    const allowedTypes = [
-      "text/csv",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.ms-excel",
-    ];
     const allowedExts = [".csv", ".xlsx", ".xls"];
     const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
     if (!allowedExts.includes(ext)) {

@@ -229,47 +229,6 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
   );
 }
 
-function RouteProvenance({
-  pickupPostcode,
-  deliveryPostcode,
-  pickupLat,
-  pickupLng,
-  deliveryLat,
-  deliveryLng,
-  source,
-}: {
-  pickupPostcode?: string | null;
-  deliveryPostcode?: string | null;
-  pickupLat?: unknown;
-  pickupLng?: unknown;
-  deliveryLat?: unknown;
-  deliveryLng?: unknown;
-  source?: string | null;
-}) {
-  if (!pickupPostcode || !deliveryPostcode) return <>No route</>;
-
-  return (
-    <div className="min-w-44 space-y-1">
-      <p className="font-medium text-slate-700">
-        {pickupPostcode} to {deliveryPostcode}
-      </p>
-      {source && <p className="text-xs text-slate-500">Distance source: {source}</p>}
-      {pickupLat != null && pickupLng != null && deliveryLat != null && deliveryLng != null && (
-        <p className="text-xs text-slate-400">
-          {formatCoordinate(pickupLat)}, {formatCoordinate(pickupLng)} to{" "}
-          {formatCoordinate(deliveryLat)}, {formatCoordinate(deliveryLng)}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function formatCoordinate(value: unknown) {
-  return Number(value).toLocaleString("en-GB", {
-    maximumFractionDigits: 5,
-    minimumFractionDigits: 5,
-  });
-}
 
 function AccessDenied({ label }: { label: string }) {
   return (

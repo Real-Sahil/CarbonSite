@@ -123,7 +123,7 @@ export default function SecurityPage() {
                 and when. Mobile clients use short-lived tokens with automatic renewal.
               </p>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Files are stored in isolated, access-controlled object storage. Each organisation's
+                Files are stored in isolated, access-controlled object storage. Each organisation&apos;s
                 content is scoped to its own namespace. Download links expire after a short window
                 and are only issued to authenticated, authorised users.
               </p>
