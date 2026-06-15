@@ -10,6 +10,7 @@ import '../../features/reports/reports_screen.dart';
 import '../../features/submissions/home_screen.dart';
 import '../../features/submissions/submission_detail_screen.dart';
 import '../../features/submissions/submissions_screen.dart';
+import '../api/client.dart';
 import 'main_shell.dart';
 
 const _storage = FlutterSecureStorage();
@@ -63,6 +64,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/invite/:token',
         builder: (context, state) {
           final token = state.pathParameters['token'] ?? '';
+          // Auto-detect server URL from the deep link host so field workers
+          // don't have to configure it manually.  Only persist when the link
+          // came from a real HTTPS host (not from the in-app redirect or a
+          // localhost dev build).
+          final host = state.uri.host;
+          final scheme = state.uri.scheme;
+          if (host.isNotEmpty &&
+              host != 'localhost' &&
+              scheme == 'https') {
+            final serverUrl = 'https://$host';
+            _storage.write(key: 'api_base_url', value: serverUrl);
+            invalidateClient();
+          }
           return InviteScreen(token: token);
         },
       ),
