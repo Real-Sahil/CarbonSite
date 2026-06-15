@@ -1,10 +1,11 @@
 // NHS Evergreen Level 1 — mandatory for all NHS suppliers from April 2026
 // Aligned to NHS Net Zero Supplier Roadmap requirements.
 
-import { esc } from "./shared";
+import { esc, brandStyles, brandLogoHtml } from "./shared";
 
 export type NhsEvergreenData = {
   orgName: string;
+  logoDataUri?: string;
   periodLabel: string;
   periodStart: Date;
   periodEnd: Date;
@@ -63,11 +64,13 @@ export function renderNhsEvergreenHtml(d: NhsEvergreenData): string {
   th { background: #005eb8; color: #fff; padding: 8px 10px; text-align: left; font-size: 9pt; }
   td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; }
   .footer { background: #f9fafb; padding: 16px 40px; font-size: 9pt; color: #6b7280; border-top: 1px solid #e5e7eb; }
+  ${brandStyles()}
 </style>
 </head>
 <body>
 
 <div class="cover">
+  ${brandLogoHtml(d.logoDataUri, d.orgName)}
   <div class="nhs-logo">NHS</div>
   <h1>Evergreen Sustainability Assessment</h1>
   <div class="level">Level 1 Supplier Declaration</div>

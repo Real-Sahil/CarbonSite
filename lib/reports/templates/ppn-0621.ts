@@ -1,10 +1,11 @@
 // PPN 06/21 Carbon Reduction Plan — mandatory for UK government contracts >£5m (from Feb 2025)
 // Template aligns with Crown Commercial Service CRP requirements.
 
-import { esc } from "./shared";
+import { esc, brandStyles, brandLogoHtml } from "./shared";
 
 export type Ppn0621Data = {
   orgName: string;
+  logoDataUri?: string;
   periodLabel: string;
   periodStart: Date;
   periodEnd: Date;
@@ -77,11 +78,13 @@ export function renderPpn0621Html(d: Ppn0621Data): string {
   ul { margin: 8px 0 8px 20px; }
   li { margin: 4px 0; line-height: 1.5; }
   .footer { background: #f9fafb; padding: 16px 40px; font-size: 9pt; color: #6b7280; border-top: 1px solid #e5e7eb; }
+  ${brandStyles()}
 </style>
 </head>
 <body>
 
 <div class="cover">
+  ${brandLogoHtml(d.logoDataUri, d.orgName)}
   <div class="label">Procurement Policy Note 06/21</div>
   <h1>Carbon Reduction Plan</h1>
   <div class="org">${esc(d.orgName)}</div>

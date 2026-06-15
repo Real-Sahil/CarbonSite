@@ -1,5 +1,6 @@
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { presignDownload } from "@/lib/storage";
 import { redirect } from "next/navigation";
 import {
   Card,
@@ -37,6 +38,16 @@ export default async function BrandingPage({ params }: BrandingPageProps) {
     where: { organizationId: orgId },
   });
 
+  // Short-lived preview URL for an already-uploaded logo.
+  let logoPreviewUrl: string | null = null;
+  if (branding?.reportHeaderLogoKey) {
+    try {
+      logoPreviewUrl = await presignDownload(branding.reportHeaderLogoKey);
+    } catch {
+      logoPreviewUrl = null;
+    }
+  }
+
   return (
     <div className="flex flex-col gap-[28px]">
       <Card>
@@ -58,9 +69,11 @@ export default async function BrandingPage({ params }: BrandingPageProps) {
                     emailFromName: branding.emailFromName,
                     fontFamily: branding.fontFamily,
                     customDomain: branding.customDomain,
+                    reportHeaderLogoKey: branding.reportHeaderLogoKey,
                   }
                 : null
             }
+            logoPreviewUrl={logoPreviewUrl}
           />
         </CardContent>
       </Card>

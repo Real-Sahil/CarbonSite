@@ -2,7 +2,7 @@
 // Scope 1/2/3 breakdown and category detail for a single contract/project.
 // Used for supply chain disclosure, procurement due-diligence, and client reporting.
 
-import { esc } from "./shared";
+import { esc, brandStyles, brandLogoHtml } from "./shared";
 
 export interface ContractCarbonCategory {
   name: string;
@@ -13,6 +13,7 @@ export interface ContractCarbonCategory {
 
 export interface ContractCarbonData {
   orgName: string;
+  logoDataUri?: string;
   contractName: string;
   periodLabel: string;
   periodStart: Date;
@@ -94,11 +95,13 @@ export function renderContractCarbonHtml(d: ContractCarbonData): string {
   .intensity-box .val { font-size: 14pt; font-weight: 700; color: #1a2e4a }
   .intensity-box .lbl { font-size: 9pt; color: #4a6070; margin-top: 2px }
   footer { font-size: 8pt; color: #888; text-align: center; padding: 20px; border-top: 1px solid #ddd; margin-top: 32px }
+  ${brandStyles()}
 </style>
 </head>
 <body>
 
 <div class="cover">
+  ${brandLogoHtml(d.logoDataUri, d.orgName)}
   <h1>Contract Carbon Report</h1>
   <p class="contract">${esc(d.contractName)}</p>
   <p class="sub">${esc(d.orgName)} · ${esc(d.periodLabel)}</p>

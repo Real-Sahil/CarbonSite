@@ -1,7 +1,7 @@
 // National TOMS Social Value Report
 // Framework: National TOMs (Themes, Outcomes, Measures) for Social Value
 
-import { esc } from "./shared";
+import { esc, brandStyles, brandLogoHtml } from "./shared";
 
 export type TomsThemeSummary = {
   themeCode: string;
@@ -18,6 +18,7 @@ export type TomsThemeSummary = {
 
 export type NationalTomsData = {
   orgName: string;
+  logoDataUri?: string;
   contractName: string;
   periodLabel: string;
   periodStart: Date;
@@ -75,11 +76,13 @@ export function renderNationalTomsHtml(d: NationalTomsData): string {
   .theme-card .tname { font-size: 8pt; opacity: 0.85; margin-bottom: 8px; line-height: 1.3; }
   .theme-card .amount { font-size: 13pt; font-weight: 700; }
   .footer { background: #f9fafb; padding: 16px 40px; font-size: 9pt; color: #6b7280; border-top: 1px solid #e5e7eb; }
+  ${brandStyles()}
 </style>
 </head>
 <body>
 
 <div class="cover">
+  ${brandLogoHtml(d.logoDataUri, d.orgName)}
   <div class="label">National TOMS Framework — Social Value Report</div>
   <h1>Social Value Impact</h1>
   <div class="org">${esc(d.orgName)}</div>

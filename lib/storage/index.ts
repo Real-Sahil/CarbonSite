@@ -44,6 +44,8 @@ export const keys = {
     `org/${orgId}/reports/${reportId}/report.pdf`,
   reportCsv: (orgId: string, reportId: string) =>
     `org/${orgId}/reports/${reportId}/report.csv`,
+  brandingLogo: (orgId: string, filename: string) =>
+    `org/${orgId}/branding/${filename}`,
 };
 
 // Legacy exports for backward compat
@@ -69,7 +71,7 @@ export function isValidStorageKey(key: string) {
   const segments = key.split("/");
   if (segments.length < 4) return false;
   if (segments[0] !== "org") return false;
-  if (!["evidence", "imports", "reports"].includes(segments[2])) return false;
+  if (!["evidence", "imports", "reports", "branding"].includes(segments[2])) return false;
 
   return segments.every((segment) => {
     if (!segment || segment === "." || segment === "..") return false;
