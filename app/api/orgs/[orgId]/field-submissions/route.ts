@@ -78,7 +78,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       const form = await req.formData();
       rawBody = {};
       for (const [key, value] of form.entries()) {
-        if (typeof value === "string") rawBody[key] = value;
+        // Skip empty strings so optional ids resolve to undefined, not "".
+        if (typeof value === "string" && value !== "") rawBody[key] = value;
         // Photo binary is intentionally ignored here; OCR data is in formData JSON
       }
       // formData field arrives as a JSON string — parse it back

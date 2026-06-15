@@ -71,6 +71,24 @@ class Project {
       orgName: orgName,
     );
   }
+
+  /// Builds a Project from a /my-sites entry. The site is the unit the field
+  /// worker submits against; the project name provides context in the label.
+  factory Project.fromSite(Map<String, dynamic> json, {String orgName = ''}) {
+    final siteName = json['name'] as String? ?? 'Site';
+    final projectName = json['projectName'] as String?;
+    return Project(
+      id: json['id'] as String? ?? '',
+      label: projectName != null && projectName.isNotEmpty
+          ? '$projectName — $siteName'
+          : siteName,
+      startDate: json['startDate'] as String? ?? '',
+      endDate: json['endDate'] as String? ?? '',
+      status: json['projectStatus'] as String? ?? 'active',
+      orgId: json['organizationId'] as String? ?? '',
+      orgName: orgName,
+    );
+  }
 }
 
 class FieldSubmission {
@@ -154,12 +172,13 @@ Future<AcceptInviteResponse> acceptInvite({
   );
 }
 
-/// Fetches the org's reporting periods (presented as "projects" to field workers).
-/// GET /api/orgs/{orgId}/reporting-periods
+/// Fetches the sites this field worker is assigned to (presented as
+/// "projects" in the mobile UI). Each is a place they can submit against.
+/// GET /api/orgs/{orgId}/my-sites
 Future<List<Project>> getProjects(String orgId) async {
   final client = await getClient();
   final orgName = await _storage.read(key: 'org_name') ?? '';
-  final response = await client.get('/api/orgs/$orgId/reporting-periods');
+  final response = await client.get('/api/orgs/$orgId/my-sites');
 
   final raw = response.data;
   List<dynamic> items;
@@ -172,7 +191,7 @@ Future<List<Project>> getProjects(String orgId) async {
   }
 
   return items
-      .map((e) => Project.fromJson(e as Map<String, dynamic>, orgName: orgName))
+      .map((e) => Project.fromSite(e as Map<String, dynamic>, orgName: orgName))
       .toList();
 }
 
@@ -218,7 +237,11 @@ Future<FieldSubmission> createFieldSubmission({
   final client = await getClient();
 
   final fields = <String, dynamic>{
-    'reportingPeriodId': projectId,
+    // The mobile "project" a worker selects is a Site; the server resolves
+    // the reporting period from the submission date automatically. Omitted
+    // when empty (e.g. a correction resubmission) so the server can resolve
+    // the period from the date alone.
+    if (projectId.isNotEmpty) 'siteId': projectId,
     'documentType': documentType,
     'formData': jsonEncode(formData),
     if (gpsLat != null) 'gpsLat': gpsLat.toString(),

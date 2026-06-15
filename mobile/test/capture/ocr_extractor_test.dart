@@ -158,6 +158,46 @@ void main() {
     });
   });
 
+  group('OcrExtractor — postcode', () {
+    test('extracts a standard UK postcode', () {
+      const text = 'Delivery to site\nLondon SW1A 1AA\nDate: 15/06/2026';
+      final result = OcrExtractor.extract(text, DocumentType.deliveryNote);
+      expect(result.postcode, 'SW1A 1AA');
+    });
+
+    test('normalises a postcode without an internal space', () {
+      const text = 'Site address: M11AE';
+      final result = OcrExtractor.extract(text, DocumentType.deliveryNote);
+      expect(result.postcode, 'M1 1AE');
+    });
+
+    test('returns null when no postcode present', () {
+      const text = 'Concrete blocks delivered';
+      final result = OcrExtractor.extract(text, DocumentType.deliveryNote);
+      expect(result.postcode, isNull);
+    });
+  });
+
+  group('OcrExtractor — material type', () {
+    test('extracts labelled material', () {
+      const text = 'Delivery Note\nMaterial: Concrete blocks\nQty: 1250 kg';
+      final result = OcrExtractor.extract(text, DocumentType.deliveryNote);
+      expect(result.materialType, 'Concrete blocks');
+    });
+
+    test('extracts labelled product/description variants', () {
+      const text = 'Description: Crushed aggregate Type 1';
+      final result = OcrExtractor.extract(text, DocumentType.deliveryNote);
+      expect(result.materialType, 'Crushed aggregate Type 1');
+    });
+
+    test('returns null when material is unlabelled', () {
+      const text = 'Some random text with no material label';
+      final result = OcrExtractor.extract(text, DocumentType.deliveryNote);
+      expect(result.materialType, isNull);
+    });
+  });
+
   group('OcrExtractor — toMap', () {
     test('only includes extracted fields', () {
       const text = 'Weight: 2.5 tonnes';
@@ -167,6 +207,14 @@ void main() {
       expect(map['weightUnit'], 'tonnes');
       expect(map.containsKey('ewcCode'), isFalse);
       expect(map.containsKey('vehicleReg'), isFalse);
+    });
+
+    test('includes postcode and material when present', () {
+      const text = 'Material: Sand\nSite: B33 8TH';
+      final result = OcrExtractor.extract(text, DocumentType.deliveryNote);
+      final map = result.toMap();
+      expect(map['materialType'], 'Sand');
+      expect(map['postcode'], 'B33 8TH');
     });
   });
 }

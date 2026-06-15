@@ -69,6 +69,31 @@ class _SubmissionsScreenState extends ConsumerState<SubmissionsScreen> {
     }
   }
 
+  Future<void> _confirmDiscard(String draftId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Discard submission?'),
+        content: const Text(
+          'This removes the draft from your device permanently. '
+          'It has not been submitted, so nothing is sent to your organisation.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref.read(appDatabaseProvider).deleteDraft(draftId);
+  }
+
   @override
   Widget build(BuildContext context) {
     final drafts = ref.watch(localDraftsProvider).value ?? const [];
@@ -117,6 +142,7 @@ class _SubmissionsScreenState extends ConsumerState<SubmissionsScreen> {
                                     onRetry: () => ref
                                         .read(syncServiceProvider)
                                         .retryDraft(d.id),
+                                    onDiscard: () => _confirmDiscard(d.id),
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -173,8 +199,13 @@ class _SectionHeader extends StatelessWidget {
 class _DraftTile extends StatelessWidget {
   final DraftSubmission draft;
   final VoidCallback onRetry;
+  final VoidCallback onDiscard;
 
-  const _DraftTile({required this.draft, required this.onRetry});
+  const _DraftTile({
+    required this.draft,
+    required this.onRetry,
+    required this.onDiscard,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +278,17 @@ class _DraftTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
+                  TextButton.icon(
+                    onPressed: onDiscard,
+                    icon: const Icon(Icons.delete_outline, size: 16),
+                    label: const Text('Discard'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: colorScheme.onSurfaceVariant,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
                   TextButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh, size: 16),
