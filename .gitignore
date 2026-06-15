@@ -43,4 +43,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# MCP server config (contains API keys)
 .mcp.json
