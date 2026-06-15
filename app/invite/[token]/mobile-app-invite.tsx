@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Smartphone, ArrowRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -10,25 +10,23 @@ interface MobileAppInviteProps {
 }
 
 export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
-  // carbonsite://app/invite/TOKEN?server=https://yourorg.com
-  // This is the URL format the Flutter router expects.
-  const appLinkUrl = useMemo(
-    () =>
-      typeof window !== "undefined"
-        ? `carbonsite://app/invite/${token}?server=${encodeURIComponent(window.location.origin)}`
-        : "",
-    [token]
-  );
   const [opening, setOpening] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
+  function buildAppLink(): string {
+    // carbonsite://app/invite/TOKEN?server=https://yourorg.com
+    if (typeof window === "undefined") return "";
+    return `carbonsite://app/invite/${token}?server=${encodeURIComponent(window.location.origin)}`;
+  }
+
   function handleOpenApp() {
-    if (!appLinkUrl) return;
+    const url = buildAppLink();
+    if (!url) return;
     setOpening(true);
 
-    // Try to open the app via custom scheme. If app is installed it opens
-    // immediately. If not, nothing happens — show the fallback after 2.5s.
-    window.location.href = appLinkUrl;
+    // Try to open the app via custom scheme. If installed it opens immediately.
+    // If not installed, nothing happens — show the fallback after 2.5s.
+    window.location.href = url;
 
     setTimeout(() => {
       setOpening(false);
@@ -56,7 +54,7 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
           size="lg"
           className="w-full bg-green-700 hover:bg-green-600 text-white gap-2 h-14 text-base rounded-xl"
           onClick={handleOpenApp}
-          disabled={opening || !appLinkUrl}
+          disabled={opening}
         >
           {opening ? (
             "Opening app…"
