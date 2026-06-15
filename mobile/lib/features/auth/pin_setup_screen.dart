@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/api/client.dart';
 
 enum _PinStep { entry, confirm }
 
@@ -109,29 +110,66 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     context.go('/home');
   }
 
-  void _continueWithInvite() {
-    final token = _extractInviteToken(_inviteController.text);
-    if (token == null) {
+  Future<void> _continueWithInvite() async {
+    final parsed = _parseInviteInput(_inviteController.text);
+    if (parsed == null) {
       setState(() {
         _errorMessage = 'Paste the invite link or token from your administrator.';
       });
       return;
     }
-    context.go('/invite/$token');
+
+    // Save the server URL BEFORE navigating so the invite screen
+    // connects to the right server without asking the worker.
+    if (parsed.serverUrl != null) {
+      await _storage.write(key: 'api_base_url', value: parsed.serverUrl!);
+      invalidateClient();
+    }
+
+    if (!mounted) return;
+    context.go('/invite/${parsed.token}');
   }
 
-  String? _extractInviteToken(String value) {
+  /// Extracts the invite token AND the server URL from whatever the user pastes.
+  /// Accepts:
+  ///   - carbonsite://app/invite/TOKEN?server=https://org.example.com
+  ///   - https://carbonsite.app/invite/TOKEN
+  ///   - TOKEN (bare token)
+  ({String token, String? serverUrl})? _parseInviteInput(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) return null;
+
     final uri = Uri.tryParse(trimmed);
     if (uri != null && uri.pathSegments.isNotEmpty) {
       final inviteIndex = uri.pathSegments.indexOf('invite');
       if (inviteIndex >= 0 && uri.pathSegments.length > inviteIndex + 1) {
-        return uri.pathSegments[inviteIndex + 1];
+        final token = uri.pathSegments[inviteIndex + 1];
+        String? serverUrl;
+
+        // Custom scheme: carbonsite://app/invite/TOKEN?server=https://...
+        if (uri.scheme == 'carbonsite' &&
+            uri.queryParameters.containsKey('server')) {
+          serverUrl = uri.queryParameters['server'];
+        }
+        // HTTPS app link: https://domain.com/invite/TOKEN
+        else if (uri.scheme == 'https' &&
+            uri.host.isNotEmpty &&
+            uri.host != 'localhost') {
+          serverUrl = 'https://${uri.host}';
+        }
+
+        return (token: token, serverUrl: serverUrl);
       }
     }
-    return trimmed.contains('/') ? null : trimmed;
+
+    // Bare token (no slashes)
+    if (!trimmed.contains('/') && trimmed.isNotEmpty) {
+      return (token: trimmed, serverUrl: null);
+    }
+
+    return null;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -313,18 +351,20 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 28),
+
               TextField(
                 controller: _inviteController,
                 textInputAction: TextInputAction.done,
                 autocorrect: false,
                 onSubmitted: (_) => _continueWithInvite(),
                 decoration: const InputDecoration(
-                  labelText: 'Invite link or token',
-                  hintText: 'https://.../invite/...',
+                  labelText: 'Paste invite link here',
+                  hintText: 'https://...',
                   prefixIcon: Icon(Icons.link_outlined),
                   border: OutlineInputBorder(),
                 ),
               ),
+
               if (_errorMessage != null) ...[
                 const SizedBox(height: 12),
                 Text(
@@ -333,14 +373,19 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                 ),
               ],
               const SizedBox(height: 20),
-              FilledButton.icon(
+              FilledButton(
                 onPressed: _continueWithInvite,
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('Continue'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Continue', style: TextStyle(fontSize: 16)),
               ),
               const SizedBox(height: 16),
               Text(
-                'After your invite is accepted, you will set a device PIN and see only the projects assigned to you.',
+                'Your administrator will send you the invite link.',
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -484,3 +529,4 @@ class _DeleteButton extends StatelessWidget {
     );
   }
 }
+
