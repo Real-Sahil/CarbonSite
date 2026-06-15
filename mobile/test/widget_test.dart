@@ -16,13 +16,15 @@ void main() {
     expect(find.text('Invite link or token'), findsOneWidget);
   });
 
-  testWidgets('CarbonSite mobile app renders PIN setup with a session',
+  testWidgets('CarbonSite mobile app renders dashboard shell with a session',
       (tester) async {
     FlutterSecureStorage.setMockInitialValues({'session_token': 'test-session'});
 
     await tester.pumpWidget(const ProviderScope(child: CarbonSiteApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Set Your PIN'), findsOneWidget);
+    // With a valid session the router navigates to /dashboard inside the
+    // main shell — the bottom nav bar is always present.
+    expect(find.text('Submissions'), findsOneWidget);
   });
 }
