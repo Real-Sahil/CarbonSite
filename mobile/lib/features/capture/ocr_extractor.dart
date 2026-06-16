@@ -33,6 +33,7 @@ class ExtractedFields {
   final String? fuelType;
   final String? volume;
   final String? volumeUnit;
+  final String? postcode;
 
   const ExtractedFields({
     required this.documentType,
@@ -48,6 +49,7 @@ class ExtractedFields {
     this.fuelType,
     this.volume,
     this.volumeUnit,
+    this.postcode,
   });
 
   /// Non-null extracted values keyed by field name — handy for pre-filling
@@ -66,6 +68,7 @@ class ExtractedFields {
       if (fuelType != null) 'fuelType': fuelType!,
       if (volume != null) 'volume': volume!,
       if (volumeUnit != null) 'volumeUnit': volumeUnit!,
+      if (postcode != null) 'postcode': postcode!,
     };
   }
 }
@@ -143,6 +146,28 @@ class OcrExtractor {
   ];
 
   // ---------------------------------------------------------------------
+  // UK postcodes — used to pre-fill pickup/delivery postcode for transport
+  // carbon calculations.
+  // Matches both spaced (SW1A 1AA) and unspaced (SW1A1AA) forms.
+  // ---------------------------------------------------------------------
+
+  static final _ukPostcode = RegExp(
+    r'\b([A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})\b',
+    caseSensitive: false,
+  );
+
+  static String? _extractPostcode(String text) {
+    final m = _ukPostcode.firstMatch(text);
+    if (m == null) return null;
+    final raw = m.group(1)!.toUpperCase().replaceAll(RegExp(r'\s+'), '');
+    // Normalise to outward + inward with a single space (SW1A 1AA).
+    if (raw.length >= 5) {
+      return '${raw.substring(0, raw.length - 3)} ${raw.substring(raw.length - 3)}';
+    }
+    return raw;
+  }
+
+  // ---------------------------------------------------------------------
   // Supplier names
   // ---------------------------------------------------------------------
 
@@ -188,13 +213,20 @@ class OcrExtractor {
     // 6. Supplier name from line heuristics.
     final supplierName = _extractSupplier(lines);
 
+    // 7. UK postcode — used for transport carbon distance calculations.
+    final postcode = _extractPostcode(rawText);
+
+    // For delivery notes, weight pattern results are quantities, not waste weights.
+    final isDelivery = type == DocumentType.deliveryNote;
+    final extractedWeight = weightMatch == null ? null : _normalizeNumber(weightMatch.group(1)!);
+    final extractedWeightUnit = weightMatch == null ? null : _normalizeWeightUnit(weightMatch.group(2)!);
+
     return ExtractedFields(
       documentType: type,
-      weight:
-          weightMatch == null ? null : _normalizeNumber(weightMatch.group(1)!),
-      weightUnit: weightMatch == null
-          ? null
-          : _normalizeWeightUnit(weightMatch.group(2)!),
+      weight: isDelivery ? null : extractedWeight,
+      weightUnit: isDelivery ? null : extractedWeightUnit,
+      quantity: isDelivery ? extractedWeight : null,
+      quantityUnit: isDelivery ? extractedWeightUnit : null,
       ewcCode: ewcCode,
       date: date,
       vehicleReg: vehicleReg,
@@ -205,6 +237,7 @@ class OcrExtractor {
       volumeUnit: volumeMatch == null
           ? null
           : _normalizeVolumeUnit(volumeMatch.group(2)!),
+      postcode: postcode,
     );
   }
 
