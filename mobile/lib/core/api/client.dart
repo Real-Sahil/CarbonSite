@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 const _storage = FlutterSecureStorage();
 const _configuredBaseUrl = String.fromEnvironment(
   'CARBONSITE_API_BASE_URL',
-  defaultValue: 'http://localhost:3000',
+  defaultValue: 'https://carbonsite.app',
 );
 
 // ---------------------------------------------------------------------------

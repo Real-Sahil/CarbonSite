@@ -77,8 +77,8 @@ jobs:
             echo "keyAlias=$CARBONSITE_ANDROID_KEY_ALIAS"
             echo "keyPassword=$CARBONSITE_ANDROID_KEY_PASSWORD"
           } > android/key.properties
-      - run: flutter build apk --release --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
-      - run: flutter build appbundle --release --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
+      - run: flutter build apk --release --no-tree-shake-icons --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
+      - run: flutter build appbundle --release --no-tree-shake-icons --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
       - uses: actions/upload-artifact@v4
         with:
           name: carbonsite-android-release
@@ -106,7 +106,7 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
-      - run: flutter build ios --release --no-codesign --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
+      - run: flutter build ios --release --no-codesign --no-tree-shake-icons --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
       - name: Package unsigned iOS app
         run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/iphoneos/carbonsite-ios-unsigned.zip
       - uses: actions/upload-artifact@v4
