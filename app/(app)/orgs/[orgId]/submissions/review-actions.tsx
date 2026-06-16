@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, MessageCircle } from "lucide-react";
 
 interface SubmissionReviewActionsProps {
   orgId: string;
@@ -37,7 +37,7 @@ export function SubmissionReviewActions({
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleAction(action: "approved" | "rejected") {
+  async function handleAction(action: "approved" | "rejected" | "needs_info") {
     if (action === "approved" && !emissionCategoryId) {
       setError("Assign an emission category before approving.");
       return;
@@ -132,6 +132,16 @@ export function SubmissionReviewActions({
         >
           <XCircle aria-hidden="true" className="h-4 w-4" />
           {loading === "rejected" ? "Rejecting…" : "Reject"}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => handleAction("needs_info")}
+          disabled={disabled || loading === "needs_info"}
+          size="sm"
+          className="gap-1.5"
+        >
+          <MessageCircle aria-hidden="true" className="h-4 w-4" />
+          {loading === "needs_info" ? "Sending…" : "Needs info"}
         </Button>
       </div>
       {error && <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>}

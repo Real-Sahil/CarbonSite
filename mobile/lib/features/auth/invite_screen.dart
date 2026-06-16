@@ -80,13 +80,16 @@ class _InviteScreenState extends State<InviteScreen> {
         msg.contains('127.0.0.1') ||
         msg.contains('os error: 111') ||
         msg.contains('os error: 61') ||
-        msg.contains('failed host lookup')) {
-      return 'Could not connect. Please tap the invite link your administrator sent rather than typing it manually.';
+        msg.contains('failed host lookup') ||
+        msg.contains('no address associated') ||
+        msg.contains('no route to host') ||
+        msg.contains('os error: 7') ||
+        msg.contains('os error: 65')) {
+      return 'Could not reach the server. Make sure you pasted the full invite link from your administrator.';
     }
 
     if (msg.contains('socketexception') ||
         msg.contains('network is unreachable') ||
-        msg.contains('no address associated') ||
         msg.contains('network unreachable')) {
       return 'No internet connection. Check your network and try again.';
     }
