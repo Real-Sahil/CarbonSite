@@ -260,13 +260,17 @@ class OcrExtractor {
       'materialType': materialConfidence,
     };
 
+    // For delivery notes, weight pattern results are quantities, not waste weights.
+    final isDelivery = type == DocumentType.deliveryNote;
+    final extractedWeight = weightMatch == null ? null : _normalizeNumber(weightMatch.group(1)!);
+    final extractedWeightUnit = weightMatch == null ? null : _normalizeWeightUnit(weightMatch.group(2)!);
+
     return ExtractedFields(
       documentType: type,
-      weight:
-          weightMatch == null ? null : _normalizeNumber(weightMatch.group(1)!),
-      weightUnit: weightMatch == null
-          ? null
-          : _normalizeWeightUnit(weightMatch.group(2)!),
+      weight: isDelivery ? null : extractedWeight,
+      weightUnit: isDelivery ? null : extractedWeightUnit,
+      quantity: isDelivery ? extractedWeight : null,
+      quantityUnit: isDelivery ? extractedWeightUnit : null,
       ewcCode: ewcCode,
       date: date,
       vehicleReg: vehicleReg,

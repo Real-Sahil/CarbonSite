@@ -230,6 +230,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     apply('vehicleReg', fields.vehicleReg);
     apply('supplierName', fields.supplierName);
     apply('materialType', fields.materialType);
+    apply('quantity', fields.quantity);
+    apply('quantityUnit', fields.quantityUnit);
     apply('fuelType', fields.fuelType);
     apply('volume', fields.volume);
     apply('volumeUnit', fields.volumeUnit);
@@ -590,9 +592,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         return [
           _field('materialType', 'Material', hint: 'e.g. Concrete blocks',
               requiredField: true),
-          _field('weight', 'Quantity / weight', hint: 'e.g. 1250',
+          _field('quantity', 'Quantity', hint: 'e.g. 1250',
               keyboard: TextInputType.number),
-          _unitField('weightUnit', const ['kg', 'tonnes']),
+          _unitField('quantityUnit', const ['kg', 'tonnes', 'units', 'm3']),
           _field('date', 'Delivery date', hint: 'e.g. 12/06/2026'),
           _field('vehicleReg', 'Vehicle registration', hint: 'e.g. AB12 CDE'),
           _field('supplierName', 'Supplier'),

@@ -9,12 +9,14 @@
 //     treated as success.
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:path/path.dart' as p;
 
 import '../../core/api/endpoints.dart';
 import '../../core/storage/app_database.dart';
@@ -97,13 +99,37 @@ class SyncService {
         formData = {'raw': draft.formData};
       }
 
-      await createFieldSubmission(
+      // Upload photo evidence separately via presigned URL, then submit JSON.
+      final evidenceIds = <String>[];
+      final photoPath = draft.photoLocalPath;
+      if (photoPath != null && photoPath.isNotEmpty) {
+        try {
+          final file = File(photoPath);
+          if (await file.exists()) {
+            final bytes = await file.readAsBytes();
+            final filename = p.basename(photoPath);
+            final ext = p.extension(filename).toLowerCase();
+            final contentType = ext == '.png' ? 'image/png' : 'image/jpeg';
+            final result = await uploadEvidenceFile(
+              orgId: orgId,
+              filename: filename,
+              contentType: contentType,
+              bytes: bytes,
+            );
+            if (result.id.isNotEmpty) evidenceIds.add(result.id);
+          }
+        } catch (_) {
+          // Evidence upload failure is non-fatal — submit without photo.
+        }
+      }
+
+      await submitFieldSubmission(
         orgId: orgId,
-        idempotencyKey: draft.idempotencyKey,
-        projectId: draft.projectId,
+        reportingPeriodId: draft.projectId,
         documentType: draft.documentType,
         formData: formData,
-        photoPath: draft.photoLocalPath,
+        idempotencyKey: draft.idempotencyKey,
+        evidenceIds: evidenceIds,
         gpsLat: draft.gpsLat,
         gpsLng: draft.gpsLng,
       );

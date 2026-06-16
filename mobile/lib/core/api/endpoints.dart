@@ -243,17 +243,19 @@ Future<FieldSubmission> createFieldSubmission({
     // the period from the date alone.
     if (projectId.isNotEmpty) 'siteId': projectId,
     'documentType': documentType,
-    'formData': jsonEncode(formData),
-    if (gpsLat != null) 'gpsLat': gpsLat.toString(),
-    if (gpsLng != null) 'gpsLng': gpsLng.toString(),
+    'formData': formData,
+    if (gpsLat != null) 'gpsLat': gpsLat,
+    if (gpsLng != null) 'gpsLng': gpsLng,
   };
 
-  // Dio sets the multipart content type (with boundary) automatically
-  // when the body is FormData.
+  // When a photo is attached send it as multipart so the server can receive
+  // the file; formData must be JSON-encoded in that context because FormData
+  // fields are always strings. For plain JSON (no photo) the Map is sent as-is.
   final Object body;
   if (photoPath != null && photoPath.isNotEmpty) {
     body = FormData.fromMap({
       ...fields,
+      'formData': jsonEncode(formData),
       'photo': await MultipartFile.fromFile(photoPath),
     });
   } else {
@@ -519,14 +521,13 @@ Future<FieldSubmission> submitFieldSubmission({
   final body = <String, dynamic>{
     'reportingPeriodId': reportingPeriodId,
     'documentType': documentType,
-    'formData': jsonEncode(formData),
+    'formData': formData,
     if (evidenceIds.isNotEmpty) 'evidenceIds': evidenceIds,
     if (pickupPostcode != null) 'pickupPostcode': pickupPostcode,
     if (deliveryPostcode != null) 'deliveryPostcode': deliveryPostcode,
     if (gpsLat != null) 'gpsLat': gpsLat,
     if (gpsLng != null) 'gpsLng': gpsLng,
-    if (ocrExtractedData != null)
-      'ocrExtractedData': jsonEncode(ocrExtractedData),
+    if (ocrExtractedData != null) 'ocrExtractedData': ocrExtractedData,
   };
 
   final response = await client.post(
