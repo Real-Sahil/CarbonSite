@@ -67,14 +67,20 @@ export const createFieldSubmissionSchema = z
     siteId: z.string().min(1).optional(),
     reportingPeriodId: z.string().min(1).optional(),
     documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "other"]),
-    formData: z.record(z.any()),
+    // Accept object or pre-encoded JSON string (Flutter double-encodes in some paths)
+    formData: z.union([z.record(z.any()), z.string()]).transform((v) =>
+      typeof v === "string" ? (() => { try { return JSON.parse(v); } catch { return {}; } })() : v
+    ),
     emissionCategoryId: z.string().optional(),
     facilityId: z.string().optional(),
-    ocrExtractedData: z.record(z.any()).optional(),
+    ocrExtractedData: z.union([z.record(z.any()), z.string()]).optional().transform((v) =>
+      typeof v === "string" ? (() => { try { return JSON.parse(v); } catch { return undefined; } })() : v
+    ),
     gpsLat: z.number().min(-90).max(90).optional(),
     gpsLng: z.number().min(-180).max(180).optional(),
     deviceSubmittedAt: z.string().datetime().optional(),
     idempotencyKey: z.string().max(128).optional(),
+    evidenceIds: z.array(z.string()).optional(),
   })
   .refine((data) => Boolean(data.siteId) || Boolean(data.reportingPeriodId), {
     message: "Either siteId or reportingPeriodId is required.",

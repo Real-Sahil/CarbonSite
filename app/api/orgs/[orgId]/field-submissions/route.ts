@@ -20,14 +20,17 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
+    const submittedByMe = url.searchParams.get("submittedByMe") === "true";
     const cursor = url.searchParams.get("cursor");
     const take = 50;
 
-    // field_workers can only see their own submissions
+    // field_workers can only see their own submissions; submittedByMe param
+    // lets other roles filter to their own as well.
     const isFieldWorker = membership.role === "field_worker";
+    const ownOnly = isFieldWorker || submittedByMe;
     const where = {
       organizationId: orgId,
-      ...(isFieldWorker ? { submittedByUserId: session.user.id } : {}),
+      ...(ownOnly ? { submittedByUserId: session.user.id } : {}),
       ...(!isFieldWorker && status ? { status: status as never } : {}),
     };
 
@@ -71,7 +74,6 @@ export async function POST(req: NextRequest, { params }: Params) {
     );
 
     // Accept both JSON (no photo) and multipart/form-data (photo attached).
-    // The Flutter sync service sends multipart when a photo is present.
     const contentType = req.headers.get("content-type") ?? "";
     let rawBody: Record<string, unknown>;
     if (contentType.includes("multipart/form-data")) {
@@ -79,19 +81,25 @@ export async function POST(req: NextRequest, { params }: Params) {
       rawBody = {};
       for (const [key, value] of form.entries()) {
         // Skip empty strings so optional ids resolve to undefined, not "".
+        // Skip File blobs — evidence is uploaded separately via presigned URL.
         if (typeof value === "string" && value !== "") rawBody[key] = value;
-        // Photo binary is intentionally ignored here; OCR data is in formData JSON
       }
-      // formData field arrives as a JSON string — parse it back
-      if (typeof rawBody.formData === "string") {
-        try { rawBody.formData = JSON.parse(rawBody.formData); } catch { /* leave as-is */ }
-      }
-      // Numeric fields from multipart arrive as strings
+      // Numeric fields from multipart arrive as strings — coerce before Zod.
       if (rawBody.gpsLat) rawBody.gpsLat = Number(rawBody.gpsLat);
       if (rawBody.gpsLng) rawBody.gpsLng = Number(rawBody.gpsLng);
     } else {
       rawBody = await req.json();
     }
+
+    // formData and ocrExtractedData may arrive as JSON-encoded strings — normalise.
+    if (typeof rawBody.formData === "string") {
+      try { rawBody.formData = JSON.parse(rawBody.formData); } catch { rawBody.formData = {}; }
+    }
+    if (typeof rawBody.ocrExtractedData === "string") {
+      try { rawBody.ocrExtractedData = JSON.parse(rawBody.ocrExtractedData); } catch { rawBody.ocrExtractedData = undefined; }
+    }
+
+
     const body = createFieldSubmissionSchema.parse(rawBody);
 
     // Resolve the site (preferred path) and derive the contract for tagging.
@@ -185,6 +193,17 @@ export async function POST(req: NextRequest, { params }: Params) {
         submittedByUserId: session.user.id,
       },
     });
+
+    // Link pre-uploaded evidence files (uploaded separately via presigned URL)
+    if (body.evidenceIds && body.evidenceIds.length > 0) {
+      await prisma.fieldSubmissionFile.createMany({
+        data: body.evidenceIds.map((evidenceFileId) => ({
+          fieldSubmissionId: submission.id,
+          evidenceFileId,
+        })),
+        skipDuplicates: true,
+      });
+    }
 
     await writeAuditLog({
       organizationId: orgId,

@@ -33,12 +33,39 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         return apiError("VALIDATION_ERROR", "emissionCategoryId is required to approve.", 422);
       }
 
-      // Read submission form data to extract amount/unit
+      // Read submission form data and documentType to extract amount/unit
       const full = await prisma.fieldSubmission.findUnique({
         where: { id: submissionId },
-        select: { formData: true },
+        select: { formData: true, documentType: true },
       });
       const formData = (full?.formData ?? {}) as Record<string, unknown>;
+      const docType = full?.documentType ?? "other";
+
+      // Map document-type field names to canonical amount/unit.
+      // Flutter sends type-specific keys: weight/weightUnit, quantity/quantityUnit,
+      // volume/volumeUnit. Fall back to generic amount/unit for other types.
+      let amount: number;
+      let unit: string;
+      switch (docType) {
+        case "waste_ticket":
+          amount = Number(formData["weight"] ?? formData["amount"] ?? 0) || 0;
+          unit = String(formData["weightUnit"] ?? formData["unit"] ?? "kg");
+          break;
+        case "delivery_note":
+          amount = Number(formData["quantity"] ?? formData["weight"] ?? formData["amount"] ?? 0) || 0;
+          unit = String(formData["quantityUnit"] ?? formData["weightUnit"] ?? formData["unit"] ?? "units");
+          break;
+        case "fuel_receipt":
+          amount = Number(formData["volume"] ?? formData["amount"] ?? 0) || 0;
+          unit = String(formData["volumeUnit"] ?? formData["unit"] ?? "litres");
+          break;
+        default:
+          amount = Number(formData["amount"] ?? 0) || 0;
+          unit = String(formData["unit"] ?? "units");
+      }
+
+      const sourceDesc =
+        String(formData["supplierName"] ?? formData["description"] ?? "Field submission");
 
       // Create committed ActivityRecord from submission
       const record = await prisma.activityRecord.create({
@@ -48,9 +75,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           emissionCategoryId: body.emissionCategoryId,
           facilityId: body.facilityId,
           fieldSubmissionId: submissionId,
-          amount: Number(formData["amount"] ?? 0) || 0,
-          unit: String(formData["unit"] ?? "units"),
-          sourceDescription: String(formData["sourceDescription"] ?? "Field submission"),
+          amount,
+          unit,
+          sourceDescription: sourceDesc,
           createdByUserId: session.user.id,
         },
       });

@@ -292,6 +292,9 @@ Skills live in `.claude/skills/` and can be invoked as slash commands.
 | `karpathy-principles` | `/karpathy-principles` | Think before coding, simplicity, surgical changes |
 | `ui-ux-pro-max` | `/ui-ux-pro-max` | 10-priority design system generator for web + Flutter |
 | `impeccable` | Install via `npx impeccable install` | 23-command design audit (https://github.com/pbakaus/impeccable) |
+| `graphify` | `/graphify` | Turn any folder into a queryable knowledge graph — architecture, file relationships, community detection |
+
+`graphify` requires the CLI: `uv tool install graphifyy && graphify install --platform claude` (one-time per machine).
 
 `motion` (https://github.com/motiondivision/motion) is an npm dependency, not a skill. Add as `motion` to `package.json` — it is the animation library for the web app.
 
