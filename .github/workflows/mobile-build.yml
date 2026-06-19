@@ -10,7 +10,7 @@ on:
       api_base_url:
         description: Production CarbonSite web URL used by the mobile app.
         required: true
-        default: https://carbonsite.app
+        default: https://carbonsite-rosy.vercel.app
       build_android:
         description: Build Android APK and app bundle artifacts.
         type: boolean
@@ -23,7 +23,7 @@ on:
         default: true
 
 env:
-  CARBONSITE_API_BASE_URL: ${{ inputs.api_base_url || vars.CARBONSITE_API_BASE_URL || 'https://carbonsite.app' }}
+  CARBONSITE_API_BASE_URL: ${{ inputs.api_base_url || vars.CARBONSITE_API_BASE_URL || 'https://carbonsite-rosy.vercel.app' }}
 
 jobs:
   android:

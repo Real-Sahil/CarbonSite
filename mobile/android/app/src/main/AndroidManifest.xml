@@ -43,7 +43,18 @@
                 <data android:scheme="carbonsite" android:host="app" android:pathPrefix="/invite"/>
             </intent-filter>
 
-            <!-- HTTPS app link: https://carbonsite.app/invite/{token} -->
+            <!-- HTTPS app link: https://carbonsite-rosy.vercel.app/invite/{token} -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="https"
+                    android:host="carbonsite-rosy.vercel.app"
+                    android:pathPrefix="/invite"/>
+            </intent-filter>
+
+            <!-- HTTPS app link: future custom domain, once carbonsite.app is registered -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>

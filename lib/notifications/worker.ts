@@ -9,7 +9,7 @@ import {
 } from "./email";
 import { sendPushToUser } from "./fcm";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite-rosy.vercel.app";
 
 export async function processNotification(data: NotificationJobData): Promise<void> {
   const recipient = await prisma.user.findUnique({

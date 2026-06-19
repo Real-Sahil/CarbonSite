@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'client.dart';
@@ -59,18 +58,6 @@ class Project {
     required this.orgId,
     required this.orgName,
   });
-
-  factory Project.fromJson(Map<String, dynamic> json, {String orgName = ''}) {
-    return Project(
-      id: json['id'] as String? ?? '',
-      label: json['label'] as String? ?? json['name'] as String? ?? '',
-      startDate: json['startDate'] as String? ?? json['start_date'] as String? ?? '',
-      endDate: json['endDate'] as String? ?? json['end_date'] as String? ?? '',
-      status: json['status'] as String? ?? 'draft',
-      orgId: json['organizationId'] as String? ?? json['organization_id'] as String? ?? '',
-      orgName: orgName,
-    );
-  }
 
   /// Builds a Project from a /my-sites entry. The site is the unit the field
   /// worker submits against; the project name provides context in the label.
@@ -219,66 +206,8 @@ Future<List<FieldSubmission>> getMySubmissions(String orgId) async {
       .toList();
 }
 
-/// Creates a field submission (called by the background sync service).
-/// POST /api/orgs/{orgId}/field-submissions
-///
-/// Sends `Idempotency-Key` so retries after a network drop are de-duplicated
-/// server-side. Photo evidence (if any) is uploaded as multipart.
-Future<FieldSubmission> createFieldSubmission({
-  required String orgId,
-  required String idempotencyKey,
-  required String projectId,
-  required String documentType,
-  required Map<String, dynamic> formData,
-  String? photoPath,
-  double? gpsLat,
-  double? gpsLng,
-}) async {
-  final client = await getClient();
-
-  final fields = <String, dynamic>{
-    // The mobile "project" a worker selects is a Site; the server resolves
-    // the reporting period from the submission date automatically. Omitted
-    // when empty (e.g. a correction resubmission) so the server can resolve
-    // the period from the date alone.
-    if (projectId.isNotEmpty) 'siteId': projectId,
-    'documentType': documentType,
-    'formData': formData,
-    if (gpsLat != null) 'gpsLat': gpsLat,
-    if (gpsLng != null) 'gpsLng': gpsLng,
-  };
-
-  // When a photo is attached send it as multipart so the server can receive
-  // the file; formData must be JSON-encoded in that context because FormData
-  // fields are always strings. For plain JSON (no photo) the Map is sent as-is.
-  final Object body;
-  if (photoPath != null && photoPath.isNotEmpty) {
-    body = FormData.fromMap({
-      ...fields,
-      'formData': jsonEncode(formData),
-      'photo': await MultipartFile.fromFile(photoPath),
-    });
-  } else {
-    body = fields;
-  }
-
-  final response = await client.post(
-    '/api/orgs/$orgId/field-submissions',
-    data: body,
-    options: Options(headers: {'Idempotency-Key': idempotencyKey}),
-  );
-
-  final raw = response.data;
-  final json = raw is Map<String, dynamic>
-      ? (raw['data'] is Map<String, dynamic>
-          ? raw['data'] as Map<String, dynamic>
-          : raw)
-      : <String, dynamic>{};
-  return FieldSubmission.fromJson(json);
-}
-
 // ---------------------------------------------------------------------------
-// Evidence upload helpers (used by OfflineSubmissionQueue)
+// Evidence upload helpers (used by SyncService)
 // ---------------------------------------------------------------------------
 
 class EvidenceUploadResult {
@@ -296,7 +225,8 @@ class EvidenceUploadResult {
 }
 
 /// Uploads raw evidence bytes via a presigned R2 URL.
-/// POST /api/uploads/presign → PUT to the presigned URL → returns [EvidenceUploadResult].
+/// POST /api/orgs/{orgId}/evidence (creates the EvidenceFile row and returns
+/// a presigned upload URL) → PUT to that URL → returns [EvidenceUploadResult].
 Future<EvidenceUploadResult> uploadEvidenceFile({
   required String orgId,
   required String filename,
@@ -304,22 +234,23 @@ Future<EvidenceUploadResult> uploadEvidenceFile({
   required List<int> bytes,
 }) async {
   final client = await getClient();
+  final checksum = sha256.convert(bytes).toString();
 
-  // Step 1: request a presigned upload URL from our backend.
+  // Step 1: register the evidence file and request a presigned upload URL.
   final presignRes = await client.post(
-    '/api/uploads/presign',
+    '/api/orgs/$orgId/evidence',
     data: {
-      'orgId': orgId,
       'filename': filename,
       'contentType': contentType,
-      'size': bytes.length,
+      'byteSize': bytes.length,
+      'checksum': checksum,
     },
   );
 
   final presignData = presignRes.data as Map<String, dynamic>;
+  final evidence = presignData['evidence'] as Map<String, dynamic>;
   final uploadUrl = presignData['uploadUrl'] as String;
-  final evidenceId = presignData['id'] as String? ?? '';
-  final evidenceUrl = presignData['url'] as String? ?? '';
+  final evidenceId = evidence['id'] as String? ?? '';
 
   // Step 2: PUT directly to R2 using the presigned URL.
   // Use a plain Dio instance without our auth interceptor — the presigned URL
@@ -336,7 +267,7 @@ Future<EvidenceUploadResult> uploadEvidenceFile({
     ),
   );
 
-  return EvidenceUploadResult(id: evidenceId, url: evidenceUrl);
+  return EvidenceUploadResult(id: evidenceId, url: uploadUrl);
 }
 
 // ---------------------------------------------------------------------------
@@ -502,16 +433,17 @@ Future<FieldSubmissionDetail> getSubmissionDetail(String orgId, String submissio
 /// Submits a field submission with optional pre-uploaded evidence IDs.
 /// POST /api/orgs/{orgId}/field-submissions
 ///
-/// Used by [OfflineSubmissionQueue] which handles evidence upload separately.
+/// Used by [SyncService] which handles evidence upload separately.
 Future<FieldSubmission> submitFieldSubmission({
   required String orgId,
-  required String reportingPeriodId,
+  // The mobile "project" a worker selects is a Site id, not a reporting
+  // period — the server resolves the reporting period from the submission
+  // date. Passing this as reportingPeriodId would 404 on every submission.
+  required String siteId,
   required String documentType,
   required Map<String, dynamic> formData,
   required String idempotencyKey,
   List<String> evidenceIds = const [],
-  String? pickupPostcode,
-  String? deliveryPostcode,
   double? gpsLat,
   double? gpsLng,
   Map<String, dynamic>? ocrExtractedData,
@@ -519,12 +451,10 @@ Future<FieldSubmission> submitFieldSubmission({
   final client = await getClient();
 
   final body = <String, dynamic>{
-    'reportingPeriodId': reportingPeriodId,
+    if (siteId.isNotEmpty) 'siteId': siteId,
     'documentType': documentType,
     'formData': formData,
     if (evidenceIds.isNotEmpty) 'evidenceIds': evidenceIds,
-    if (pickupPostcode != null) 'pickupPostcode': pickupPostcode,
-    if (deliveryPostcode != null) 'deliveryPostcode': deliveryPostcode,
     if (gpsLat != null) 'gpsLat': gpsLat,
     if (gpsLng != null) 'gpsLng': gpsLng,
     if (ocrExtractedData != null) 'ocrExtractedData': ocrExtractedData,

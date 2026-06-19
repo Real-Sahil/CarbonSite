@@ -8,10 +8,10 @@ on:
 
 # CARBONSITE_API_BASE_URL must be set as a GitHub repository variable
 # (Settings → Variables) pointing at the production web app, e.g.:
-#   https://carbonsite.vercel.app
-# CI falls back to https://carbonsite.app when the variable is not set.
+#   https://carbonsite-rosy.vercel.app
+# CI falls back to https://carbonsite-rosy.vercel.app when the variable is not set.
 env:
-  CARBONSITE_API_BASE_URL: ${{ vars.CARBONSITE_API_BASE_URL || 'https://carbonsite.app' }}
+  CARBONSITE_API_BASE_URL: ${{ vars.CARBONSITE_API_BASE_URL || 'https://carbonsite-rosy.vercel.app' }}
 
 jobs:
   web:

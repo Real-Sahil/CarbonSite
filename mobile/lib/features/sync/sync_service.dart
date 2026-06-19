@@ -125,7 +125,7 @@ class SyncService {
 
       await submitFieldSubmission(
         orgId: orgId,
-        reportingPeriodId: draft.projectId,
+        siteId: draft.projectId,
         documentType: draft.documentType,
         formData: formData,
         idempotencyKey: draft.idempotencyKey,

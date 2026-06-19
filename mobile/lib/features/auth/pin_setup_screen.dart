@@ -133,7 +133,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   /// Extracts the invite token AND the server URL from whatever the user pastes.
   /// Accepts:
   ///   - carbonsite://app/invite/TOKEN?server=https://org.example.com
-  ///   - https://carbonsite.app/invite/TOKEN
+  ///   - https://carbonsite-rosy.vercel.app/invite/TOKEN
   ///   - TOKEN (bare token)
   ({String token, String? serverUrl})? _parseInviteInput(String value) {
     final trimmed = value.trim();
