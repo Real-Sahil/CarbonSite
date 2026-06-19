@@ -20,6 +20,7 @@ import {
   Briefcase,
   Heart,
   Clock,
+  ListChecks,
   Menu,
   X,
 } from "lucide-react";
@@ -111,6 +112,7 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
         { label: "Imports",     href: `/orgs/${orgId}/imports`,     icon: Upload },
         { label: "Records",     href: `/orgs/${orgId}/records`,     icon: FileText },
         { label: "Submissions", href: `/orgs/${orgId}/submissions`, icon: Inbox },
+        { label: "Tasks",       href: `/orgs/${orgId}/tasks`,       icon: ListChecks },
       ],
     },
     {

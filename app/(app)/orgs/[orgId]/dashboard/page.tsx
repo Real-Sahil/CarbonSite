@@ -8,14 +8,18 @@ import {
   ClipboardCheck,
   Clock,
   FileText,
+  Gauge,
   Handshake,
   Inbox,
+  Leaf,
   LineChart,
+  ListChecks,
   PieChart,
   Route,
   Scale,
   ShieldCheck,
   Target,
+  TrendingDown,
   TrendingUp,
   Upload,
 } from "lucide-react";
@@ -529,6 +533,18 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
     .map((entry) => entry.datum);
   const showTrend = trendData.length >= 2;
+
+  // Period-over-period change for the carbon hero, from live scope aggregates.
+  // Suppressed under a contract filter because the trend series is org-wide.
+  const trendTotals = trendData.map((d) => d.scope1 + d.scope2 + d.scope3);
+  const latestTrendTotal = trendTotals.length > 0 ? trendTotals[trendTotals.length - 1] : 0;
+  const previousTrendTotal = trendTotals.length > 1 ? trendTotals[trendTotals.length - 2] : null;
+  const periodDeltaPct =
+    !selectedContractId && previousTrendTotal && previousTrendTotal > 0
+      ? ((latestTrendTotal - previousTrendTotal) / previousTrendTotal) * 100
+      : null;
+  const scopesWithActivity = scopeRows.filter((row) => Number(row.records) > 0).length;
+
   const submissionTotal = submissionStatusRows.reduce(
     (total, row) => total + row._count._all,
     0,
@@ -717,6 +733,89 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </div>
         </div>
       )}
+
+      {/* ── Carbon footprint hero ─────────────────────────────────────────── */}
+      <section
+        aria-label="Carbon footprint summary"
+        className="mt-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+      >
+        <div className="rounded-[14px] border border-[#0f3e17] bg-[#0f3e17] p-[21px] text-[#fffefc] md:col-span-2 xl:col-span-1">
+          <div className="flex items-center gap-2">
+            <Leaf aria-hidden="true" className="h-4 w-4 text-[#b1dbb8]" />
+            <p className="text-xs font-normal uppercase tracking-wide text-[#b1dbb8]">
+              Total footprint
+            </p>
+          </div>
+          <p className="mt-3 text-4xl font-normal tracking-[-0.4px]">
+            {currentFootprint > 0 ? formatKgCo2e(currentFootprint) : "—"}
+          </p>
+          <p className="mt-1 text-xs text-[#b1dbb8] tracking-[-0.36px]">
+            {currentFootprint > 0
+              ? `Scopes 1–3 · ${currentPeriod?.label ?? "current period"}`
+              : "Run a calculation to populate your footprint"}
+          </p>
+        </div>
+
+        <HeroStat
+          icon={periodDeltaPct !== null && periodDeltaPct <= 0 ? TrendingDown : TrendingUp}
+          label="Period change"
+          value={
+            periodDeltaPct !== null
+              ? `${periodDeltaPct > 0 ? "+" : ""}${periodDeltaPct.toFixed(1)}%`
+              : "—"
+          }
+          detail={
+            selectedContractId
+              ? "Clear the contract filter to compare"
+              : periodDeltaPct !== null
+                ? "vs previous reporting period"
+                : "Calculate a second period to compare"
+          }
+          tone={periodDeltaPct === null ? "neutral" : periodDeltaPct <= 0 ? "good" : "bad"}
+        />
+
+        <HeroStat
+          icon={Gauge}
+          label="Scope coverage"
+          value={`${scopesWithActivity}/3`}
+          detail={`${currentCalculatedRecords.toLocaleString("en-GB")} calculated records`}
+        />
+
+        {targetCount > 0 ? (
+          <HeroStat
+            icon={Target}
+            label="Target ambition"
+            value={formatKgCo2e(targetReductionTotal)}
+            detail={`${targetCount.toLocaleString("en-GB")} active reduction target${targetCount !== 1 ? "s" : ""}`}
+            href={`/orgs/${orgId}/targets`}
+          />
+        ) : (
+          <Link
+            href={`/orgs/${orgId}/targets`}
+            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px] transition-colors hover:bg-[#d4efd2]"
+          >
+            <div className="flex items-center gap-2">
+              <Target aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+              <p className="text-xs font-normal uppercase tracking-wide text-[#0f3e17]">
+                Reduction target
+              </p>
+            </div>
+            <div className="mt-3">
+              <p className="text-base font-normal text-[#0f3e17] tracking-[-0.42px]">
+                Set your first target
+              </p>
+              <p className="mt-1 inline-flex items-center gap-1 text-xs text-[#333333] tracking-[-0.36px]">
+                Define a baseline and goal
+                <ArrowRight aria-hidden="true" className="h-3 w-3" />
+              </p>
+            </div>
+          </Link>
+        )}
+      </section>
+
+      <p className="mt-8 mb-3 text-[10px] font-medium uppercase tracking-widest text-zinc-500">
+        Operations
+      </p>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -1145,7 +1244,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   <EmptyPanel
                     title="No category analytics yet"
                     description="Run a calculation after records are approved to rank materials, waste, haulage, fuel, and other categories."
-                    href={`/orgs/${orgId}/dashboard`}
+                    href="#run-calculation"
                     action="Run calculation"
                   />
                 )}
@@ -1401,7 +1500,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               value={failedReportCount}
             />
             <HealthSignal
-              href={`/orgs/${orgId}/dashboard`}
+              href={`/orgs/${orgId}/calculations`}
               label="Failed calculations"
               value={failedCalculationCount}
             />
@@ -1443,10 +1542,20 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-base">Review task queue</CardTitle>
-          <CardDescription>
-            Assign operational exceptions and close review work with an audit trail.
-          </CardDescription>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">Review task queue</CardTitle>
+              <CardDescription>
+                Assign operational exceptions and close review work with an audit trail.
+              </CardDescription>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/orgs/${orgId}/tasks`}>
+                <ListChecks className="h-4 w-4" />
+                All tasks
+              </Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <ReviewTaskPanel
@@ -1459,12 +1568,23 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardContent>
       </Card>
 
-      <Card className="mt-6">
+      <Card id="run-calculation" className="mt-6 scroll-mt-6">
         <CardHeader>
-          <CardTitle className="text-base">Calculations and snapshots</CardTitle>
-          <CardDescription>
-            Run calculations from approved records, then publish a snapshot for reports.
-          </CardDescription>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">Run a calculation</CardTitle>
+              <CardDescription>
+                Convert approved activity records into CO₂e for a reporting period. Each run is
+                immutable and fully traceable.
+              </CardDescription>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/orgs/${orgId}/calculations`}>
+                All runs
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-5">
           {calculationRuns.some((run) => run.status === "queued" || run.status === "running") && (
@@ -1537,6 +1657,48 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <ActionCard title="Targets" description="Manage reduction targets and operational initiatives." href={`/orgs/${orgId}/targets`} />
       </div>
     </div>
+  );
+}
+
+function HeroStat({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  tone = "neutral",
+  href,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  detail: string;
+  tone?: "good" | "bad" | "neutral";
+  href?: string;
+}) {
+  const valueColor =
+    tone === "good" ? "text-emerald-600" : tone === "bad" ? "text-red-600" : "text-[#0f3e17]";
+  const inner = (
+    <>
+      <div className="flex items-center gap-2">
+        <Icon aria-hidden="true" className="h-4 w-4 text-[#333333]" />
+        <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">{label}</p>
+      </div>
+      <p className={`mt-3 text-3xl font-normal tracking-[-0.4px] ${valueColor}`}>{value}</p>
+      <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">{detail}</p>
+    </>
+  );
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="block rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] p-[21px] transition-colors hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <div className="rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] p-[21px]">{inner}</div>
   );
 }
 

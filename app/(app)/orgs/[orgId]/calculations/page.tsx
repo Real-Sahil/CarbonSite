@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -18,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calculator } from "lucide-react";
+import { Calculator, Play } from "lucide-react";
 
 interface CalculationsPageProps {
   params: Promise<{ orgId: string }>;
@@ -76,12 +77,28 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
   });
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Calculation runs</h1>
-        <p className="text-slate-500 mt-1">
-          Deterministic emission calculations from approved activity records, traceable per run.
-        </p>
+    <div className="p-[42px] max-w-[1200px] mx-auto">
+      <div className="mb-[42px] flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+            Calculations
+          </p>
+          <h1
+            className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+            style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+          >
+            Calculation runs
+          </h1>
+          <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
+            Deterministic emission calculations from approved activity records, traceable per run.
+          </p>
+        </div>
+        <Button asChild size="sm">
+          <Link href={`/orgs/${orgId}/dashboard#run-calculation`}>
+            <Play className="h-3.5 w-3.5" />
+            Run a calculation
+          </Link>
+        </Button>
       </div>
 
       <Card>
