@@ -382,6 +382,10 @@ class FieldSubmissionDetail {
   final String? reviewNote;
   final double? co2eKg;
   final int? scope;
+
+  /// Site the submission was made against — used to start a correction
+  /// capture for the same site.
+  final String? siteId;
   final List<EvidenceFile> evidenceFiles;
 
   const FieldSubmissionDetail({
@@ -392,6 +396,7 @@ class FieldSubmissionDetail {
     this.reviewNote,
     this.co2eKg,
     this.scope,
+    this.siteId,
     this.evidenceFiles = const [],
   });
 
@@ -415,9 +420,46 @@ class FieldSubmissionDetail {
       reviewNote: json['reviewNote'] as String? ?? json['review_note'] as String?,
       co2eKg: toDouble(json['co2eKg'] ?? json['co2e_kg']),
       scope: toInt(json['scope']),
+      siteId: json['siteId'] as String? ?? json['site_id'] as String?,
       evidenceFiles: rawFiles.map((e) => EvidenceFile.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
+}
+
+/// Resubmits a corrected version of a rejected / needs-info submission.
+/// POST /api/orgs/{orgId}/field-submissions/{submissionId}/resubmit
+///
+/// The server links the new submission to the original via resubmittedFromId
+/// so reviewers see the correction chain.
+Future<FieldSubmission> resubmitFieldSubmission({
+  required String orgId,
+  required String originalSubmissionId,
+  required String documentType,
+  required Map<String, dynamic> formData,
+  String? idempotencyKey,
+  Map<String, dynamic>? ocrExtractedData,
+  List<String> evidenceFileIds = const [],
+  double? gpsLat,
+  double? gpsLng,
+}) async {
+  final client = await getClient();
+  final response = await client.post(
+    '/api/orgs/$orgId/field-submissions/$originalSubmissionId/resubmit',
+    data: {
+      'documentType': documentType,
+      'formData': formData,
+      if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
+      if (ocrExtractedData != null) 'ocrExtractedData': ocrExtractedData,
+      if (evidenceFileIds.isNotEmpty) 'evidenceFileIds': evidenceFileIds,
+      if (gpsLat != null) 'gpsLat': gpsLat,
+      if (gpsLng != null) 'gpsLng': gpsLng,
+    },
+  );
+  final raw = response.data;
+  final json = raw is Map<String, dynamic>
+      ? (raw['data'] is Map<String, dynamic> ? raw['data'] as Map<String, dynamic> : raw)
+      : <String, dynamic>{};
+  return FieldSubmission.fromJson(json);
 }
 
 Future<FieldSubmissionDetail> getSubmissionDetail(String orgId, String submissionId) async {
@@ -447,6 +489,9 @@ Future<FieldSubmission> submitFieldSubmission({
   double? gpsLat,
   double? gpsLng,
   Map<String, dynamic>? ocrExtractedData,
+  // When the draft was captured on-device — the server uses it to book the
+  // submission into the correct reporting period even if sync happens later.
+  DateTime? deviceSubmittedAt,
 }) async {
   final client = await getClient();
 
@@ -454,10 +499,15 @@ Future<FieldSubmission> submitFieldSubmission({
     if (siteId.isNotEmpty) 'siteId': siteId,
     'documentType': documentType,
     'formData': formData,
+    // Belt and braces: the key travels in the body (what the server's Zod
+    // schema reads) AND as a header (accepted as a fallback server-side).
+    'idempotencyKey': idempotencyKey,
     if (evidenceIds.isNotEmpty) 'evidenceIds': evidenceIds,
     if (gpsLat != null) 'gpsLat': gpsLat,
     if (gpsLng != null) 'gpsLng': gpsLng,
     if (ocrExtractedData != null) 'ocrExtractedData': ocrExtractedData,
+    if (deviceSubmittedAt != null)
+      'deviceSubmittedAt': deviceSubmittedAt.toUtc().toIso8601String(),
   };
 
   final response = await client.post(

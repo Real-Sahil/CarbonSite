@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -12,6 +13,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/api/endpoints.dart';
 import '../../core/storage/app_database.dart';
 import '../sync/sync_service.dart';
 import 'barcode_scan_screen.dart';
@@ -51,6 +53,8 @@ class CaptureScreen extends ConsumerStatefulWidget {
 enum _CaptureStep { selectType, review }
 
 class _CaptureScreenState extends ConsumerState<CaptureScreen> {
+  static const _storage = FlutterSecureStorage();
+
   final _picker = ImagePicker();
   final _uuid = const Uuid();
   final _formKey = GlobalKey<FormState>();
@@ -62,6 +66,14 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   bool _gpsEnabled = true;
   bool _submitting = false;
 
+  /// Site the submission is filed against. Server-side siteId is REQUIRED
+  /// for new submissions — a draft without one can never sync. Seeded from
+  /// the navigation parameter, otherwise picked in-screen.
+  String? _selectedSiteId;
+  String? _selectedSiteLabel;
+  List<Project> _siteOptions = [];
+  bool _loadingSites = false;
+
   /// Field keys auto-filled by OCR — rendered with a sparkle marker.
   final Set<String> _autoFilled = {};
 
@@ -70,12 +82,52 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
   final Map<String, TextEditingController> _controllers = {};
 
+  bool get _isResubmission => widget.resubmittedFromId != null;
+
+  /// The picker renders whenever the screen was opened without a site.
+  /// Resubmissions inherit the site from the original server-side.
+  bool get _showSitePicker =>
+      !_isResubmission &&
+      (widget.projectId == null || widget.projectId!.isEmpty);
+
+  /// True while no site has been chosen — blocks submission of new drafts.
+  bool get _needsSitePicker =>
+      !_isResubmission && (_selectedSiteId == null || _selectedSiteId!.isEmpty);
+
   @override
   void initState() {
     super.initState();
     // If arriving from a resubmission, pre-select the document type.
     if (widget.documentType != null) {
       _documentType = _documentTypeFromApiValue(widget.documentType!);
+    }
+    if (widget.projectId != null && widget.projectId!.isNotEmpty) {
+      _selectedSiteId = widget.projectId;
+      _selectedSiteLabel = widget.projectLabel;
+    } else if (!_isResubmission) {
+      _loadSiteOptions();
+    }
+  }
+
+  Future<void> _loadSiteOptions() async {
+    setState(() => _loadingSites = true);
+    try {
+      final orgId = await _storage.read(key: 'org_id') ?? '';
+      if (orgId.isEmpty) return;
+      final sites = await getProjects(orgId);
+      if (!mounted) return;
+      setState(() {
+        _siteOptions = sites;
+        // A worker with exactly one site never needs to choose.
+        if (sites.length == 1) {
+          _selectedSiteId = sites.first.id;
+          _selectedSiteLabel = sites.first.label;
+        }
+      });
+    } catch (_) {
+      // Offline or error — the picker shows a retry affordance.
+    } finally {
+      if (mounted) setState(() => _loadingSites = false);
     }
   }
 
@@ -244,6 +296,17 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    // A new submission without a site is guaranteed to be rejected by the
+    // server (siteId is required) — block here instead of stranding a draft.
+    if (_needsSitePicker) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Choose a site before submitting. If none are listed, '
+              'ask your administrator for site access.'),
+        ),
+      );
+      return;
+    }
     setState(() => _submitting = true);
 
     double? gpsLat;
@@ -274,7 +337,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       await db.insertDraft(
         DraftSubmissionsCompanion.insert(
           id: draftId,
-          projectId: widget.projectId ?? '',
+          projectId: _selectedSiteId ?? '',
           documentType: _documentTypeApiValue(type),
           formData: jsonEncode(formData),
           idempotencyKey: draftId,
@@ -398,15 +461,20 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (widget.projectLabel != null &&
-                widget.projectLabel!.isNotEmpty) ...[
+            if (!_showSitePicker &&
+                _selectedSiteLabel != null &&
+                _selectedSiteLabel!.isNotEmpty) ...[
               Text(
-                widget.projectLabel!,
+                _selectedSiteLabel!,
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 4),
+            ],
+            if (_showSitePicker) ...[
+              _buildSitePicker(colorScheme, textTheme),
+              const SizedBox(height: 16),
             ],
             Text(
               'What are you photographing?',
@@ -458,6 +526,70 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Shown when the capture flow was opened without a site (e.g. from the
+  /// dashboard quick action). Submissions must be filed against a site.
+  Widget _buildSitePicker(ColorScheme colorScheme, TextTheme textTheme) {
+    if (_loadingSites) {
+      return const LinearProgressIndicator();
+    }
+    if (_siteOptions.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, size: 18, color: colorScheme.onSurfaceVariant),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'No sites available. Connect to the internet, or ask your '
+                'administrator for site access.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            TextButton(onPressed: _loadSiteOptions, child: const Text('Retry')),
+          ],
+        ),
+      );
+    }
+    return DropdownButtonFormField<String>(
+      value: _selectedSiteId != null &&
+              _siteOptions.any((s) => s.id == _selectedSiteId)
+          ? _selectedSiteId
+          : null,
+      items: _siteOptions
+          .map((s) => DropdownMenuItem(
+                value: s.id,
+                child: Text(s.label, overflow: TextOverflow.ellipsis),
+              ))
+          .toList(),
+      onChanged: (value) {
+        String? label;
+        for (final site in _siteOptions) {
+          if (site.id == value) {
+            label = site.label;
+            break;
+          }
+        }
+        setState(() {
+          _selectedSiteId = value;
+          _selectedSiteLabel = label;
+        });
+      },
+      decoration: const InputDecoration(
+        labelText: 'Site',
+        helperText: 'Which site is this document for?',
+        prefixIcon: Icon(Icons.location_city_outlined),
+        border: OutlineInputBorder(),
       ),
     );
   }

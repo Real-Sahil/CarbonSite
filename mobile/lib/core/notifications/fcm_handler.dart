@@ -126,7 +126,8 @@ class FcmHandler {
         }
         break;
       case 'report_ready':
-        GoRouter.of(context).go('/reports');
+        // No Reports tab in the field-worker app — land on the dashboard.
+        GoRouter.of(context).go('/dashboard');
         break;
       case 'task_assigned':
         GoRouter.of(context).go('/submissions');

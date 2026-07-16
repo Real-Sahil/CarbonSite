@@ -33,7 +33,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "report.downloaded",
+      action: "evidence.downloaded",
       resourceType: "evidence_file",
       resourceId: evidenceId,
     });

@@ -68,6 +68,11 @@ class _InviteScreenState extends State<InviteScreen> {
   String _friendlyError(Object e) {
     final msg = e.toString().toLowerCase();
 
+    if (msg.contains('already a member') || msg.contains('already_member')) {
+      return 'This invite was already used on another device or install. '
+          'Ask your administrator to send a new invite link to sign in again.';
+    }
+
     if (msg.contains('404') ||
         msg.contains('invalid') ||
         msg.contains('expired') ||

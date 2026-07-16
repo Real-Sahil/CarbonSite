@@ -52,7 +52,13 @@ export function middleware(req: NextRequest) {
     let policy: { limit: number; windowMs: number } | null = null;
     let bucket = "";
 
-    if (pathname.startsWith("/api/auth")) {
+    if (pathname === "/api/auth/token") {
+      // Mobile token refresh: legitimate traffic from many field workers can
+      // share one site NAT IP — must not compete with the strict sign-in
+      // brute-force bucket.
+      policy = POLICIES.tokenRefresh;
+      bucket = "token_refresh";
+    } else if (pathname.startsWith("/api/auth")) {
       policy = POLICIES.auth;
       bucket = "auth";
     } else if (pathname.startsWith("/api/platform/")) {

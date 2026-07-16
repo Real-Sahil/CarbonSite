@@ -71,13 +71,16 @@ export default async function MembersPage({ params }: MembersPageProps) {
     throw err;
   }
 
-  const assignmentQuery = prisma.fieldWorkerAssignment
+  // FieldWorkerSiteAssignment is what the mobile app's /my-sites reads —
+  // this page manages those rows directly.
+  const assignmentQuery = prisma.fieldWorkerSiteAssignment
     .findMany({
       where: { organizationId: orgId },
       include: {
         user: { select: { id: true, name: true, email: true } },
-        reportingPeriod: { select: { id: true, label: true } },
-        facility: { select: { name: true } },
+        site: {
+          select: { id: true, name: true, project: { select: { name: true } } },
+        },
         assignedBy: { select: { name: true, email: true } },
       },
       orderBy: [{ createdAt: "desc" }],
@@ -90,7 +93,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
       throw err;
     });
 
-  const [org, members, pendingTeamInvites, inviteLinks, periods, facilities, assignmentState] =
+  const [org, members, pendingTeamInvites, inviteLinks, sites, assignmentState] =
     await Promise.all([
     prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
@@ -121,18 +124,18 @@ export default async function MembersPage({ params }: MembersPageProps) {
         usedAt: null,
         expiresAt: { gt: new Date() },
       },
+      include: {
+        site: {
+          select: { id: true, name: true, project: { select: { name: true } } },
+        },
+      },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
-    prisma.reportingPeriod.findMany({
-      where: { organizationId: orgId },
-      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-      select: { id: true, label: true, status: true, startDate: true, endDate: true },
-    }),
-    prisma.facility.findMany({
+    prisma.site.findMany({
       where: { organizationId: orgId },
       orderBy: { name: "asc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, project: { select: { name: true } } },
     }),
     assignmentQuery,
   ]);
@@ -273,10 +276,11 @@ export default async function MembersPage({ params }: MembersPageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Mobile worker assignments</CardTitle>
+          <CardTitle className="text-base">Mobile worker site access</CardTitle>
           <CardDescription>
-            Assign Field Worker users to the reporting periods and sites they can
-            submit delivery notes, waste tickets, fuel receipts, and haulage evidence for.
+            Grant Field Worker users access to the sites they submit delivery notes,
+            waste tickets, fuel receipts, and haulage evidence for. Assigned sites
+            appear as projects in the mobile app.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -288,25 +292,20 @@ export default async function MembersPage({ params }: MembersPageProps) {
               label: member.user.name ?? "Field worker",
               email: member.user.email,
             }))}
-            periods={periods.map((period) => ({
-              id: period.id,
-              label: period.label,
-              status: period.status,
-              startDate: period.startDate.toISOString(),
-              endDate: period.endDate.toISOString(),
-            }))}
-            facilities={facilities.map((facility) => ({
-              id: facility.id,
-              name: facility.name,
+            sites={sites.map((site) => ({
+              id: site.id,
+              name: site.name,
+              projectName: site.project?.name ?? null,
             }))}
             assignments={assignments.map((assignment) => ({
               id: assignment.id,
               userId: assignment.user.id,
               workerLabel: assignment.user.name ?? "Field worker",
               workerEmail: assignment.user.email,
-              reportingPeriodId: assignment.reportingPeriod.id,
-              reportingPeriodLabel: assignment.reportingPeriod.label,
-              facilityName: assignment.facility?.name ?? null,
+              siteId: assignment.site.id,
+              siteLabel: assignment.site.project?.name
+                ? `${assignment.site.project.name} — ${assignment.site.name}`
+                : assignment.site.name,
               assignedByLabel:
                 assignment.assignedBy.name ?? assignment.assignedBy.email,
               createdAt: assignment.createdAt.toISOString(),
@@ -326,8 +325,8 @@ export default async function MembersPage({ params }: MembersPageProps) {
           <CardDescription>
             Generate a one-time link for subcontractors or field workers. They
             will be onboarded directly via the CarbonSite mobile app without
-            needing an email and password, then can be assigned to projects here
-            after accepting.
+            needing an email and password. Site-scoped links grant site access
+            automatically; org-wide links need a manual site assignment above.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -338,6 +337,13 @@ export default async function MembersPage({ params }: MembersPageProps) {
               token: l.token,
               expiresAt: l.expiresAt,
               role: l.role,
+              site: l.site
+                ? {
+                    id: l.site.id,
+                    name: l.site.name,
+                    project: l.site.project ? { name: l.site.project.name } : null,
+                  }
+                : null,
             }))}
           />
         </CardContent>

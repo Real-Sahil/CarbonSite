@@ -62,7 +62,7 @@ export function ReviewTaskPanel({
       const res = await fetch(`/api/orgs/${orgId}/review-tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "closed" }),
+        body: JSON.stringify({ status: "completed" }),
       });
       if (res.ok) {
         setClosedIds((prev) => new Set([...prev, taskId]));

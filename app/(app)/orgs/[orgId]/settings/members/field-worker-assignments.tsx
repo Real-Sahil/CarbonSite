@@ -1,5 +1,9 @@
 "use client";
 
+// Manages FieldWorkerSiteAssignment — the table the mobile app's /my-sites
+// endpoint reads. A field worker with no site assignments sees zero projects
+// in the app, so this panel is the org-wide-invite recovery path.
+
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, UserRoundCheck } from "lucide-react";
@@ -13,17 +17,10 @@ interface WorkerOption {
   email: string;
 }
 
-interface PeriodOption {
-  id: string;
-  label: string;
-  status: string;
-  startDate: string;
-  endDate: string;
-}
-
-interface FacilityOption {
+interface SiteOption {
   id: string;
   name: string;
+  projectName: string | null;
 }
 
 interface AssignmentRow {
@@ -31,9 +28,8 @@ interface AssignmentRow {
   userId: string;
   workerLabel: string;
   workerEmail: string;
-  reportingPeriodId: string;
-  reportingPeriodLabel: string;
-  facilityName: string | null;
+  siteId: string;
+  siteLabel: string;
   assignedByLabel: string;
   createdAt: string;
 }
@@ -42,8 +38,7 @@ interface FieldWorkerAssignmentsProps {
   orgId: string;
   assignmentsAvailable: boolean;
   workers: WorkerOption[];
-  periods: PeriodOption[];
-  facilities: FacilityOption[];
+  sites: SiteOption[];
   assignments: AssignmentRow[];
 }
 
@@ -51,47 +46,41 @@ export function FieldWorkerAssignments({
   orgId,
   assignmentsAvailable,
   workers,
-  periods,
-  facilities,
+  sites,
   assignments,
 }: FieldWorkerAssignmentsProps) {
   const router = useRouter();
   const [workerId, setWorkerId] = useState(workers[0]?.id ?? "");
-  const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
-  const [facilityId, setFacilityId] = useState("");
+  const [siteId, setSiteId] = useState(sites[0]?.id ?? "");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
-  const assignedPeriodIds = useMemo(
+  const assignedSiteIds = useMemo(
     () =>
       new Set(
         assignments
           .filter((assignment) => assignment.userId === workerId)
-          .map((assignment) => assignment.reportingPeriodId),
+          .map((assignment) => assignment.siteId),
       ),
     [assignments, workerId],
   );
-  const hasSetup = workers.length > 0 && periods.length > 0;
+  const hasSetup = workers.length > 0 && sites.length > 0;
   const canAssign = assignmentsAvailable && hasSetup;
 
   function assignWorker(event: React.FormEvent) {
     event.preventDefault();
     setError("");
     setSuccess("");
-    if (!workerId || !periodId) {
-      setError("Choose a field worker and reporting period.");
+    if (!workerId || !siteId) {
+      setError("Choose a field worker and a site.");
       return;
     }
 
     startTransition(async () => {
-      const response = await fetch(`/api/orgs/${orgId}/field-worker-assignments`, {
+      const response = await fetch(`/api/orgs/${orgId}/field-worker-site-assignments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: workerId,
-          reportingPeriodId: periodId,
-          facilityId,
-        }),
+        body: JSON.stringify({ userId: workerId, siteId }),
       });
 
       if (!response.ok) {
@@ -100,15 +89,14 @@ export function FieldWorkerAssignments({
         return;
       }
 
-      setSuccess("Mobile project assignment saved.");
-      setFacilityId("");
+      setSuccess("Site access saved — it appears in the worker's app immediately.");
       router.refresh();
     });
   }
 
   function removeAssignment(assignment: AssignmentRow) {
     const confirmed = window.confirm(
-      `Remove ${assignment.workerLabel}'s access to ${assignment.reportingPeriodLabel}?`,
+      `Remove ${assignment.workerLabel}'s access to ${assignment.siteLabel}?`,
     );
     if (!confirmed) return;
 
@@ -116,7 +104,7 @@ export function FieldWorkerAssignments({
     setSuccess("");
     startTransition(async () => {
       const response = await fetch(
-        `/api/orgs/${orgId}/field-worker-assignments/${assignment.id}`,
+        `/api/orgs/${orgId}/field-worker-site-assignments/${assignment.id}`,
         { method: "DELETE" },
       );
 
@@ -139,9 +127,10 @@ export function FieldWorkerAssignments({
               <UserRoundCheck className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Assign mobile access</p>
+              <p className="text-sm font-semibold text-slate-900">Assign site access</p>
               <p className="mt-1 text-sm leading-6 text-slate-600">
-                Field workers only see assigned reporting periods in the mobile app.
+                Field workers only see assigned sites in the mobile app. Workers who
+                joined with an org-wide invite have no sites until you assign one here.
               </p>
             </div>
           </div>
@@ -153,7 +142,7 @@ export function FieldWorkerAssignments({
                 id="field-worker-user"
                 value={workerId}
                 onChange={(event) => setWorkerId(event.target.value)}
-            disabled={isPending || !assignmentsAvailable || workers.length === 0}
+                disabled={isPending || !assignmentsAvailable || workers.length === 0}
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
               >
                 {workers.length === 0 ? (
@@ -169,47 +158,29 @@ export function FieldWorkerAssignments({
             </div>
 
             <div className="grid gap-1.5">
-              <Label htmlFor="field-worker-period">Project / reporting period</Label>
+              <Label htmlFor="field-worker-site">Site</Label>
               <select
-                id="field-worker-period"
-                value={periodId}
-                onChange={(event) => setPeriodId(event.target.value)}
-                disabled={isPending || !assignmentsAvailable || periods.length === 0}
+                id="field-worker-site"
+                value={siteId}
+                onChange={(event) => setSiteId(event.target.value)}
+                disabled={isPending || !assignmentsAvailable || sites.length === 0}
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
               >
-                {periods.length === 0 ? (
-                  <option value="">No reporting periods</option>
+                {sites.length === 0 ? (
+                  <option value="">No sites yet — create one under Contracts</option>
                 ) : (
-                  periods.map((period) => (
-                    <option key={period.id} value={period.id}>
-                      {period.label}
-                      {assignedPeriodIds.has(period.id) ? " (assigned)" : ""}
+                  sites.map((site) => (
+                    <option key={site.id} value={site.id}>
+                      {site.projectName ? `${site.projectName} — ${site.name}` : site.name}
+                      {assignedSiteIds.has(site.id) ? " (assigned)" : ""}
                     </option>
                   ))
                 )}
               </select>
             </div>
 
-            <div className="grid gap-1.5">
-              <Label htmlFor="field-worker-facility">Site / facility scope</Label>
-              <select
-                id="field-worker-facility"
-                value={facilityId}
-                onChange={(event) => setFacilityId(event.target.value)}
-                disabled={isPending || !assignmentsAvailable}
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
-              >
-                <option value="">All sites in this reporting period</option>
-                {facilities.map((facility) => (
-                  <option key={facility.id} value={facility.id}>
-                    {facility.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <Button type="submit" disabled={isPending || !canAssign}>
-              {isPending ? "Saving..." : "Save assignment"}
+              {isPending ? "Saving..." : "Grant site access"}
             </Button>
           </div>
           {!assignmentsAvailable && (
@@ -220,7 +191,8 @@ export function FieldWorkerAssignments({
           )}
           {!hasSetup && (
             <p className="mt-3 text-sm text-slate-500">
-              Invite a Field Worker and create a reporting period before assigning mobile access.
+              Invite a Field Worker and create a contract, project, and site before
+              assigning mobile access.
             </p>
           )}
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
@@ -229,11 +201,12 @@ export function FieldWorkerAssignments({
 
         <div className="rounded-lg border border-slate-200">
           <div className="border-b border-slate-100 px-4 py-3">
-            <p className="text-sm font-semibold text-slate-900">Current mobile assignments</p>
+            <p className="text-sm font-semibold text-slate-900">Current site access</p>
           </div>
           {assignments.length === 0 ? (
             <div className="p-5 text-sm leading-6 text-slate-500">
-              No field workers have project access yet. Assigned projects appear in the mobile app after the user accepts their invite.
+              No field workers have site access yet. Site-scoped invite links grant
+              access automatically; org-wide invites need a manual assignment here.
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
@@ -248,10 +221,7 @@ export function FieldWorkerAssignments({
                       <Badge variant="outline">Mobile</Badge>
                     </div>
                     <p className="mt-1 text-sm text-slate-500">{assignment.workerEmail}</p>
-                    <p className="mt-2 text-sm text-slate-700">
-                      {assignment.reportingPeriodLabel}
-                      {assignment.facilityName ? ` - ${assignment.facilityName}` : " - all sites"}
-                    </p>
+                    <p className="mt-2 text-sm text-slate-700">{assignment.siteLabel}</p>
                     <p className="mt-1 text-xs text-slate-400">
                       Assigned by {assignment.assignedByLabel} on{" "}
                       {new Date(assignment.createdAt).toLocaleDateString("en-GB", {
@@ -265,7 +235,7 @@ export function FieldWorkerAssignments({
                     type="button"
                     size="icon"
                     variant="outline"
-                    title="Remove assignment"
+                    title="Remove site access"
                     disabled={isPending}
                     onClick={() => removeAssignment(assignment)}
                   >

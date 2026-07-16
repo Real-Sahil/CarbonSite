@@ -1032,6 +1032,7 @@ model Report {
 enum ReviewTaskType {
   import_batch
   activity_record
+  field_submission
   report
 
   @@map("review_task_type")

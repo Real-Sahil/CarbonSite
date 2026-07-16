@@ -40,11 +40,15 @@ function statusBadge(status: ReviewTaskStatus) {
 function targetLink(orgId: string, type: ReviewTaskType, targetId: string): string {
   switch (type) {
     case "import_batch":
-      return `/orgs/${orgId}/imports/${targetId}`;
+      // No per-batch detail page exists — land on the imports list.
+      return `/orgs/${orgId}/imports`;
     case "activity_record":
       return `/orgs/${orgId}/records/${targetId}`;
+    case "field_submission":
+      return `/orgs/${orgId}/submissions/${targetId}`;
     case "report":
-      return `/orgs/${orgId}/reports/${targetId}`;
+      // No per-report detail page exists — land on the reports list.
+      return `/orgs/${orgId}/reports`;
     default:
       return `/orgs/${orgId}/dashboard`;
   }
@@ -56,6 +60,8 @@ function typeLabel(type: ReviewTaskType): string {
       return "Import batch";
     case "activity_record":
       return "Activity record";
+    case "field_submission":
+      return "Field submission";
     case "report":
       return "Report";
     default:

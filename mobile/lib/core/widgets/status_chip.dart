@@ -80,6 +80,20 @@ class SubmissionStatusChip extends StatelessWidget {
           StatusPalette.approvedBg,
           StatusPalette.approvedFg,
         );
+      case 'under_review':
+        return (
+          'In review',
+          Icons.visibility_outlined,
+          StatusPalette.syncingBg,
+          StatusPalette.syncingFg,
+        );
+      case 'needs_info':
+        return (
+          'Needs info',
+          Icons.info_outline,
+          StatusPalette.pendingBg,
+          StatusPalette.pendingFg,
+        );
       case 'rejected':
         return (
           'Rejected',

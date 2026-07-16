@@ -42,7 +42,8 @@ class DraftSubmissions extends Table {
   /// Client-generated UUID — primary key and stable across retries.
   TextColumn get id => text()();
 
-  /// Reporting period ("project") the submission belongs to.
+  /// Site the submission belongs to (shown as a "project" in the UI).
+  /// Sent to the server as siteId; the server resolves the reporting period.
   TextColumn get projectId => text()();
 
   /// waste_ticket | delivery_note | fuel_receipt | other
@@ -151,6 +152,17 @@ class AppDatabase extends _$AppDatabase {
         attemptCount: Value(attemptCount),
         syncError: Value(error),
       ),
+    );
+  }
+
+  /// Recover drafts stranded in `syncing` by a mid-upload app kill — they are
+  /// invisible to [draftsToSync] (which selects only `pending`) and would
+  /// otherwise show a perpetual "Syncing" chip. Called on sync-service start.
+  Future<void> resetStuckSyncingDrafts() {
+    return (update(draftSubmissions)
+          ..where((t) => t.status.equals(DraftStatus.syncing.dbValue)))
+        .write(
+      const DraftSubmissionsCompanion(status: Value('pending')),
     );
   }
 

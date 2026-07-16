@@ -83,7 +83,12 @@ export const POLICIES = {
   // Auth endpoints: 5 attempts per 15 minutes per IP.
   // Tighter than the generic bucket to resist credential brute-force.
   auth: { limit: 5, windowMs: 15 * 60_000 },
-  upload: { limit: 30, windowMs: 60_000 },
+  // Mobile session refresh: many field workers can share one site NAT IP,
+  // so this is looser than `auth` but still bounded.
+  tokenRefresh: { limit: 60, windowMs: 15 * 60_000 },
+  // Evidence/import uploads: sized for a crew draining offline photo queues
+  // behind a shared IP; per-user route-level limits still apply on top.
+  upload: { limit: 120, windowMs: 60_000 },
   mutation: { limit: 120, windowMs: 60_000 },
   read: { limit: 600, windowMs: 60_000 },
 } as const;

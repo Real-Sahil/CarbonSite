@@ -88,6 +88,21 @@ export function taskAssignedEmail(params: {
   return { subject, html, text };
 }
 
+export function submissionReceivedEmail(params: {
+  recipientName: string;
+  orgName: string;
+  submitterLabel: string;
+  documentLabel: string;
+  siteLabel: string | null;
+  appUrl: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const siteSuffix = params.siteLabel ? ` at ${params.siteLabel}` : "";
+  const subject = `New field submission awaiting review — ${params.orgName}`;
+  const text = `Hi ${params.recipientName},\n\n${params.submitterLabel} submitted a ${params.documentLabel}${siteSuffix} for review in ${params.orgName}.\n\nReview it in CarbonSite: ${params.appUrl}`;
+  const html = `<p>Hi ${params.recipientName},</p><p><strong>${params.submitterLabel}</strong> submitted a ${params.documentLabel}${siteSuffix} for review in <strong>${params.orgName}</strong>.</p><p><a href="${params.appUrl}">Review it in CarbonSite</a></p>`;
+  return { subject, html, text };
+}
+
 export function importFailedEmail(params: {
   recipientName: string;
   orgName: string;

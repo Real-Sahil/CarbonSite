@@ -4,7 +4,11 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { reviewFieldSubmissionSchema } from "@/lib/validation/records";
-import { enqueueNotification } from "@/lib/jobs/queues/index";
+import { dispatchNotification } from "@/lib/jobs/dispatch";
+import {
+  approvalBlocker,
+  approveSubmissionInTx,
+} from "@/lib/field-submissions/approve";
 
 type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 
@@ -13,11 +17,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const { orgId, submissionId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
 
-    const submission = await prisma.fieldSubmission.findUnique({
-      where: { id: submissionId },
-      select: { organizationId: true, status: true, reportingPeriodId: true, submittedByUserId: true },
+    const submission = await prisma.fieldSubmission.findFirst({
+      where: { id: submissionId, organizationId: orgId },
+      include: { files: { select: { evidenceFileId: true } } },
     });
-    if (!submission || submission.organizationId !== orgId) {
+    if (!submission) {
       return apiError("NOT_FOUND", "Submission not found.", 404);
     }
     if (submission.status === "approved" || submission.status === "rejected") {
@@ -26,85 +30,67 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const body = reviewFieldSubmissionSchema.parse(await req.json());
 
-    let activityRecordId: string | undefined;
+    if (body.facilityId) {
+      const facility = await prisma.facility.findFirst({
+        where: { id: body.facilityId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!facility) {
+        return apiError("INVALID_FACILITY", "Facility does not belong to this organisation.", 422);
+      }
+    }
+
+    let activityRecordId: string | null = null;
+    let updated;
 
     if (body.action === "approved") {
-      if (!body.emissionCategoryId) {
-        return apiError("VALIDATION_ERROR", "emissionCategoryId is required to approve.", 422);
+      const emissionCategoryId = body.emissionCategoryId ?? submission.emissionCategoryId;
+      const blocker = approvalBlocker(submission, emissionCategoryId);
+      if (blocker) {
+        return apiError(blocker.code, blocker.message, 422);
       }
-
-      // Read submission form data and documentType to extract amount/unit
-      const full = await prisma.fieldSubmission.findUnique({
-        where: { id: submissionId },
-        select: { formData: true, documentType: true },
+      const category = await prisma.emissionCategory.findUnique({
+        where: { id: emissionCategoryId! },
+        select: { id: true },
       });
-      const formData = (full?.formData ?? {}) as Record<string, unknown>;
-      const docType = full?.documentType ?? "other";
-
-      // Map document-type field names to canonical amount/unit.
-      // Flutter sends type-specific keys: weight/weightUnit, quantity/quantityUnit,
-      // volume/volumeUnit. Fall back to generic amount/unit for other types.
-      let amount: number;
-      let unit: string;
-      switch (docType) {
-        case "waste_ticket":
-          amount = Number(formData["weight"] ?? formData["amount"] ?? 0) || 0;
-          unit = String(formData["weightUnit"] ?? formData["unit"] ?? "kg");
-          break;
-        case "delivery_note":
-          amount = Number(formData["quantity"] ?? formData["weight"] ?? formData["amount"] ?? 0) || 0;
-          unit = String(formData["quantityUnit"] ?? formData["weightUnit"] ?? formData["unit"] ?? "units");
-          break;
-        case "fuel_receipt":
-          amount = Number(formData["volume"] ?? formData["amount"] ?? 0) || 0;
-          unit = String(formData["volumeUnit"] ?? formData["unit"] ?? "litres");
-          break;
-        default:
-          amount = Number(formData["amount"] ?? 0) || 0;
-          unit = String(formData["unit"] ?? "units");
+      if (!category) {
+        return apiError("INVALID_EMISSION_CATEGORY", "Emission category does not exist.", 422);
       }
 
-      const sourceDesc =
-        String(formData["supplierName"] ?? formData["description"] ?? "Field submission");
-
-      // Create committed ActivityRecord from submission
-      const record = await prisma.activityRecord.create({
-        data: {
-          organizationId: orgId,
-          reportingPeriodId: submission.reportingPeriodId,
-          emissionCategoryId: body.emissionCategoryId,
+      const result = await prisma.$transaction((tx) =>
+        approveSubmissionInTx(tx, {
+          orgId,
+          submission,
+          emissionCategoryId: emissionCategoryId!,
           facilityId: body.facilityId,
-          fieldSubmissionId: submissionId,
-          amount,
-          unit,
-          sourceDescription: sourceDesc,
-          createdByUserId: session.user.id,
-        },
-      });
-      activityRecordId = record.id;
+          reviewerUserId: session.user.id,
+          reviewNote: body.reviewNote,
+        }),
+      );
+      activityRecordId = result.activityRecordId;
+      updated = result.submission;
 
       await writeAuditLog({
         organizationId: orgId,
         actorUserId: session.user.id,
         action: "record.created",
         resourceType: "activity_record",
-        resourceId: record.id,
+        resourceId: activityRecordId!,
         metadata: { fromFieldSubmission: submissionId },
       });
+    } else {
+      updated = await prisma.fieldSubmission.update({
+        where: { id: submissionId },
+        data: {
+          status: body.action,
+          reviewedByUserId: session.user.id,
+          reviewedAt: new Date(),
+          reviewNote: body.reviewNote,
+          ...(body.emissionCategoryId ? { emissionCategoryId: body.emissionCategoryId } : {}),
+          ...(body.facilityId ? { facilityId: body.facilityId } : {}),
+        },
+      });
     }
-
-    const updated = await prisma.fieldSubmission.update({
-      where: { id: submissionId },
-      data: {
-        status: body.action,
-        reviewedByUserId: session.user.id,
-        reviewedAt: new Date(),
-        reviewNote: body.reviewNote,
-        ...(body.emissionCategoryId ? { emissionCategoryId: body.emissionCategoryId } : {}),
-        ...(body.facilityId ? { facilityId: body.facilityId } : {}),
-        ...(activityRecordId ? { activityRecordId } : {}),
-      },
-    });
 
     await writeAuditLog({
       organizationId: orgId,
@@ -112,16 +98,21 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       action: "field_submission.reviewed",
       resourceType: "field_submission",
       resourceId: submissionId,
-      metadata: { action: body.action },
+      metadata: { action: body.action, activityRecordId },
     });
 
-    // Notify field worker of review outcome
-    enqueueNotification({
+    // Notify the field worker of the review outcome. dispatchNotification is
+    // inline-mode aware — enqueueNotification alone never delivers when no
+    // separate worker process is running (the default deployment).
+    dispatchNotification({
       type: "submission_reviewed",
       recipientUserId: submission.submittedByUserId,
       orgId,
       resourceId: submissionId,
-    }).catch((err) => console.error("[field-submissions] Failed to enqueue notification:", err));
+      metadata: { orgId, status: body.action, activityRecordId },
+    }).catch((err) =>
+      console.error("[field-submissions] Failed to dispatch review notification:", err),
+    );
 
     return NextResponse.json(updated);
   } catch (err) {

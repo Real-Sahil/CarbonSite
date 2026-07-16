@@ -109,9 +109,9 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
     if (selected.size === 0) return;
     const confirmed = window.confirm(
       `Bulk approve ${selected.size} submission(s)?\n\n` +
-      "Note: bulk approval marks submissions as approved but does NOT create " +
-      "activity records for calculations. Open each submission individually " +
-      "to assign an emission category and create the record."
+      "Approval creates a committed activity record for each submission. " +
+      "Submissions without an emission category (or without a valid amount) " +
+      "are skipped — open those individually to assign a category first."
     );
     if (!confirmed) return;
     startApproving(async () => {
@@ -121,9 +121,19 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ids: Array.from(selected), action: "approve" }),
         });
+        const json = await res.json().catch(() => ({})) as {
+          message?: string;
+          updated?: number;
+          skipped?: { id: string; reason: string }[];
+        };
         if (!res.ok) {
-          const json = await res.json().catch(() => ({})) as { message?: string };
           throw new Error(json.message ?? "Bulk approve failed");
+        }
+        if (json.skipped && json.skipped.length > 0) {
+          setError(
+            `Approved ${json.updated ?? 0}; skipped ${json.skipped.length} — ` +
+            "assign emission categories to the remaining submissions and retry.",
+          );
         }
         setSelected(new Set());
         router.refresh();

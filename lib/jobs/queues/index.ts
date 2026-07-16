@@ -10,7 +10,12 @@ export type ImportJobData = { importBatchId: string; orgId: string };
 export type CalculationJobData = { calculationRunId: string; orgId: string };
 export type ReportJobData = { reportId: string; orgId: string; snapshotId: string };
 export type NotificationJobData = {
-  type: "task_assigned" | "import_failed" | "report_ready" | "submission_reviewed";
+  type:
+    | "task_assigned"
+    | "import_failed"
+    | "report_ready"
+    | "submission_reviewed"
+    | "submission_received";
   recipientUserId: string;
   orgId: string;
   resourceId: string;

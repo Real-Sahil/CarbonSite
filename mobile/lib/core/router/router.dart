@@ -6,11 +6,11 @@ import '../../features/auth/invite_screen.dart';
 import '../../features/auth/pin_setup_screen.dart';
 import '../../features/capture/capture_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
-import '../../features/reports/reports_screen.dart';
 import '../../features/submissions/home_screen.dart';
 import '../../features/submissions/submission_detail_screen.dart';
 import '../../features/submissions/submissions_screen.dart';
 import '../api/client.dart';
+import '../notifications/fcm_handler.dart';
 import 'main_shell.dart';
 
 const _storage = FlutterSecureStorage();
@@ -23,6 +23,8 @@ final sessionTokenProvider = FutureProvider<String?>((ref) async {
 });
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // Notification taps navigate through the root navigator.
+  FcmHandler.setNavigatorKey(_rootNavigatorKey);
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/',
@@ -41,9 +43,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/pin-setup';
       }
 
-      if (hasSession && path == '/pin-setup') {
-        return '/dashboard';
-      }
+      // NOTE: authenticated users are allowed on /pin-setup — the invite flow
+      // lands there right after acceptInvite stores the session. Bouncing to
+      // /dashboard here made the PIN screen unreachable.
 
       if (path == '/') {
         return hasSession ? '/dashboard' : '/pin-setup';
@@ -95,6 +97,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // Main app: bottom-nav shell with three tabs.
+      // No Reports tab: the app serves the field_worker role only, and the
+      // org-wide reports API rightly denies that role (zero org-level access).
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             MainShell(navigationShell: navigationShell),
@@ -120,14 +124,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/submissions',
                 builder: (context, state) => const SubmissionsScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/reports',
-                builder: (context, state) => const ReportsScreen(),
               ),
             ],
           ),

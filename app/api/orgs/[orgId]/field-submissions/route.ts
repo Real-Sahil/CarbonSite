@@ -1,11 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createFieldSubmissionSchema } from "@/lib/validation/records";
+import { dispatchNotification } from "@/lib/jobs/dispatch";
 
 type Params = { params: Promise<{ orgId: string }> };
+
+// Notify org admins and reviewers that a new submission needs review.
+async function notifyReviewersOfSubmission(
+  orgId: string,
+  submissionId: string,
+  submitterUserId: string,
+) {
+  const reviewers = await prisma.organizationMembership.findMany({
+    where: {
+      organizationId: orgId,
+      role: { in: ["admin", "reviewer"] },
+      userId: { not: submitterUserId },
+    },
+    select: { userId: true },
+  });
+  await Promise.all(
+    reviewers.map((reviewer) =>
+      dispatchNotification({
+        type: "submission_received",
+        recipientUserId: reviewer.userId,
+        orgId,
+        resourceId: submissionId,
+        metadata: { orgId },
+      }),
+    ),
+  );
+}
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
@@ -52,8 +81,34 @@ export async function GET(req: NextRequest, { params }: Params) {
     ]);
 
     const hasMore = submissions.length > take;
-    const data = hasMore ? submissions.slice(0, take) : submissions;
-    const nextCursor = hasMore ? data[data.length - 1].id : null;
+    const page = hasMore ? submissions.slice(0, take) : submissions;
+    const nextCursor = hasMore ? page[page.length - 1].id : null;
+
+    // Attach the latest calculated CO2e per linked activity record and a flat
+    // scope field — the mobile client reads both at the top level.
+    const recordIds = page
+      .map((s) => s.activityRecordId)
+      .filter((id): id is string => Boolean(id));
+    const co2eByRecord = new Map<string, number>();
+    if (recordIds.length > 0) {
+      const calcs = await prisma.emissionCalculation.findMany({
+        where: { organizationId: orgId, activityRecordId: { in: recordIds } },
+        orderBy: { createdAt: "desc" },
+        select: { activityRecordId: true, totalCo2e: true },
+      });
+      for (const calc of calcs) {
+        if (!co2eByRecord.has(calc.activityRecordId)) {
+          co2eByRecord.set(calc.activityRecordId, Number(calc.totalCo2e));
+        }
+      }
+    }
+    const data = page.map((submission) => ({
+      ...submission,
+      scope: submission.emissionCategory?.scope ?? null,
+      co2eKg: submission.activityRecordId
+        ? co2eByRecord.get(submission.activityRecordId) ?? null
+        : null,
+    }));
 
     return NextResponse.json({ data, nextCursor, total });
   } catch (err) {
@@ -65,7 +120,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     // field_workers can submit; org members can also submit on behalf
-    const { session } = await requireOrgMember(
+    const { session, membership } = await requireOrgMember(
       orgId,
       "admin",
       "editor",
@@ -99,6 +154,12 @@ export async function POST(req: NextRequest, { params }: Params) {
       try { rawBody.ocrExtractedData = JSON.parse(rawBody.ocrExtractedData); } catch { rawBody.ocrExtractedData = undefined; }
     }
 
+    // The mobile sync service sends the idempotency key as an HTTP header;
+    // accept it there as well as in the body so offline retries dedupe.
+    const headerIdempotencyKey = req.headers.get("idempotency-key");
+    if (!rawBody.idempotencyKey && headerIdempotencyKey) {
+      rawBody.idempotencyKey = headerIdempotencyKey;
+    }
 
     const body = createFieldSubmissionSchema.parse(rawBody);
 
@@ -113,7 +174,51 @@ export async function POST(req: NextRequest, { params }: Params) {
       if (!site) {
         return apiError("NOT_FOUND", "Site not found.", 404);
       }
+      // External field workers may only submit against sites they are
+      // assigned to — never other contractors' sites in the same org.
+      if (membership.role === "field_worker") {
+        const assignment = await prisma.fieldWorkerSiteAssignment.findUnique({
+          where: {
+            organizationId_userId_siteId: {
+              organizationId: orgId,
+              userId: session.user.id,
+              siteId,
+            },
+          },
+          select: { id: true },
+        });
+        if (!assignment) {
+          return apiError(
+            "SITE_NOT_ASSIGNED",
+            "You are not assigned to this site. Ask your administrator for access.",
+            403,
+          );
+        }
+      }
       contractId = site.project?.contractId;
+    }
+
+    // Cross-tenant guards: evidence files and facility must belong to this org.
+    if (body.evidenceIds && body.evidenceIds.length > 0) {
+      const ownedCount = await prisma.evidenceFile.count({
+        where: { id: { in: body.evidenceIds }, organizationId: orgId },
+      });
+      if (ownedCount !== body.evidenceIds.length) {
+        return apiError(
+          "INVALID_EVIDENCE",
+          "One or more evidence files do not belong to this organisation.",
+          422,
+        );
+      }
+    }
+    if (body.facilityId) {
+      const facility = await prisma.facility.findFirst({
+        where: { id: body.facilityId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!facility) {
+        return apiError("INVALID_FACILITY", "Facility does not belong to this organisation.", 422);
+      }
     }
 
     // Resolve the reporting period: explicit id wins, otherwise pick the period
@@ -174,25 +279,50 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
-    const submission = await prisma.fieldSubmission.create({
-      data: {
-        organizationId: orgId,
-        reportingPeriodId,
-        siteId,
-        contractId,
-        documentType: body.documentType,
-        formData: body.formData,
-        emissionCategoryId: body.emissionCategoryId,
-        facilityId: body.facilityId,
-        ocrExtractedData: body.ocrExtractedData,
-        gpsLat: body.gpsLat,
-        gpsLng: body.gpsLng,
-        deviceSubmittedAt: body.deviceSubmittedAt ? new Date(body.deviceSubmittedAt) : undefined,
-        idempotencyKey: body.idempotencyKey,
-        status: "submitted",
-        submittedByUserId: session.user.id,
-      },
-    });
+    let submission;
+    try {
+      submission = await prisma.fieldSubmission.create({
+        data: {
+          organizationId: orgId,
+          reportingPeriodId,
+          siteId,
+          contractId,
+          documentType: body.documentType,
+          formData: body.formData,
+          emissionCategoryId: body.emissionCategoryId,
+          facilityId: body.facilityId,
+          ocrExtractedData: body.ocrExtractedData,
+          gpsLat: body.gpsLat,
+          gpsLng: body.gpsLng,
+          deviceSubmittedAt: body.deviceSubmittedAt ? new Date(body.deviceSubmittedAt) : undefined,
+          idempotencyKey: body.idempotencyKey,
+          status: "submitted",
+          submittedByUserId: session.user.id,
+        },
+      });
+    } catch (createErr) {
+      // Concurrent retry with the same idempotency key: the find-then-create
+      // above races; the unique constraint wins — return the existing row.
+      if (
+        body.idempotencyKey &&
+        createErr instanceof Prisma.PrismaClientKnownRequestError &&
+        createErr.code === "P2002"
+      ) {
+        const existing = await prisma.fieldSubmission.findUnique({
+          where: {
+            organizationId_submittedByUserId_idempotencyKey: {
+              organizationId: orgId,
+              submittedByUserId: session.user.id,
+              idempotencyKey: body.idempotencyKey,
+            },
+          },
+        });
+        if (existing) {
+          return NextResponse.json(existing, { status: 200 });
+        }
+      }
+      throw createErr;
+    }
 
     // Link pre-uploaded evidence files (uploaded separately via presigned URL)
     if (body.evidenceIds && body.evidenceIds.length > 0) {
@@ -213,6 +343,12 @@ export async function POST(req: NextRequest, { params }: Params) {
       resourceId: submission.id,
       metadata: { documentType: submission.documentType },
     });
+
+    // Tell reviewers new field evidence has arrived — otherwise the review
+    // queue is poll-only. Notify admins and reviewers, not the submitter.
+    notifyReviewersOfSubmission(orgId, submission.id, session.user.id).catch((err) =>
+      console.error("[field-submissions] reviewer notification failed:", err),
+    );
 
     return NextResponse.json(submission, { status: 201 });
   } catch (err) {

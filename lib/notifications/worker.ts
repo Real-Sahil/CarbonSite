@@ -6,6 +6,7 @@ import {
   importFailedEmail,
   reportReadyEmail,
   submissionReviewedEmail,
+  submissionReceivedEmail,
 } from "./email";
 import { sendPushToUser } from "./fcm";
 
@@ -128,6 +129,43 @@ export async function processNotification(data: NotificationJobData): Promise<vo
             submissionId: data.resourceId,
             orgId: data.orgId,
             status: submission.status,
+          },
+        }),
+      ]);
+      break;
+    }
+
+    case "submission_received": {
+      const submission = await prisma.fieldSubmission.findUnique({
+        where: { id: data.resourceId },
+        select: {
+          documentType: true,
+          submittedBy: { select: { name: true, email: true } },
+          site: { select: { name: true } },
+        },
+      });
+      if (!submission) return;
+
+      const docLabel = submission.documentType.replaceAll("_", " ");
+      const submitter = submission.submittedBy.name ?? submission.submittedBy.email;
+      const template = submissionReceivedEmail({
+        recipientName,
+        orgName,
+        submitterLabel: submitter,
+        documentLabel: docLabel,
+        siteLabel: submission.site?.name ?? null,
+        appUrl: `${APP_URL}/orgs/${data.orgId}/submissions/${data.resourceId}`,
+      });
+
+      await Promise.all([
+        sendEmail({ to: recipient.email, ...template }),
+        sendPushToUser(data.recipientUserId, {
+          title: "New field submission",
+          body: `${submitter} submitted a ${docLabel}${submission.site ? ` at ${submission.site.name}` : ""}.`,
+          data: {
+            type: "submission_received",
+            submissionId: data.resourceId,
+            orgId: data.orgId,
           },
         }),
       ]);

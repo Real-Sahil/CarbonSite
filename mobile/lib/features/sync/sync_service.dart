@@ -45,7 +45,9 @@ class SyncService {
         syncNow();
       }
     });
-    syncNow();
+    // Recover drafts stranded in `syncing` by a mid-upload app kill — they
+    // are invisible to draftsToSync() and would never be retried.
+    _db.resetStuckSyncingDrafts().whenComplete(syncNow);
   }
 
   void dispose() {
@@ -99,17 +101,26 @@ class SyncService {
         formData = {'raw': draft.formData};
       }
 
+      // Corrections carry the original submission id — they go through the
+      // /resubmit endpoint so the server links the correction chain and
+      // inherits the original's site and reporting period.
+      final resubmittedFromId = formData.remove('resubmittedFromId') as String?;
+
       // Upload photo evidence separately via presigned URL, then submit JSON.
+      // This is an evidence-capture app: an upload failure must NOT silently
+      // drop the photo. Transient failures (network, 5xx, 429, auth) retry
+      // the whole draft later; only unrecoverable file rejections (bad type /
+      // too large) fall through to a photo-less submission.
       final evidenceIds = <String>[];
       final photoPath = draft.photoLocalPath;
       if (photoPath != null && photoPath.isNotEmpty) {
-        try {
-          final file = File(photoPath);
-          if (await file.exists()) {
-            final bytes = await file.readAsBytes();
-            final filename = p.basename(photoPath);
-            final ext = p.extension(filename).toLowerCase();
-            final contentType = ext == '.png' ? 'image/png' : 'image/jpeg';
+        final file = File(photoPath);
+        if (await file.exists()) {
+          final bytes = await file.readAsBytes();
+          final filename = p.basename(photoPath);
+          final ext = p.extension(filename).toLowerCase();
+          final contentType = ext == '.png' ? 'image/png' : 'image/jpeg';
+          try {
             final result = await uploadEvidenceFile(
               orgId: orgId,
               filename: filename,
@@ -117,24 +128,58 @@ class SyncService {
               bytes: bytes,
             );
             if (result.id.isNotEmpty) evidenceIds.add(result.id);
+          } on DioException catch (e) {
+            final status = e.response?.statusCode;
+            final unrecoverableFile = status == 400 ||
+                status == 413 ||
+                status == 415 ||
+                status == 422;
+            // Transient — retry the whole draft later instead of losing
+            // the photo.
+            if (!unrecoverableFile) rethrow;
+            // The server permanently rejects this file — submit the record
+            // without it rather than blocking the data forever.
           }
-        } catch (_) {
-          // Evidence upload failure is non-fatal — submit without photo.
         }
       }
 
-      await submitFieldSubmission(
-        orgId: orgId,
-        siteId: draft.projectId,
-        documentType: draft.documentType,
-        formData: formData,
-        idempotencyKey: draft.idempotencyKey,
-        evidenceIds: evidenceIds,
-        gpsLat: draft.gpsLat,
-        gpsLng: draft.gpsLng,
-      );
+      if (resubmittedFromId != null && resubmittedFromId.isNotEmpty) {
+        await resubmitFieldSubmission(
+          orgId: orgId,
+          originalSubmissionId: resubmittedFromId,
+          documentType: draft.documentType,
+          formData: formData,
+          idempotencyKey: draft.idempotencyKey,
+          evidenceFileIds: evidenceIds,
+          gpsLat: draft.gpsLat,
+          gpsLng: draft.gpsLng,
+        );
+      } else {
+        await submitFieldSubmission(
+          orgId: orgId,
+          siteId: draft.projectId,
+          documentType: draft.documentType,
+          formData: formData,
+          idempotencyKey: draft.idempotencyKey,
+          evidenceIds: evidenceIds,
+          gpsLat: draft.gpsLat,
+          gpsLng: draft.gpsLng,
+          // Book the submission into the period covering capture time, not
+          // whenever connectivity happened to return.
+          deviceSubmittedAt: draft.createdAt,
+        );
+      }
 
       await _db.updateDraftStatus(draft.id, DraftStatus.submitted);
+      // Evidence is on the server now — free the local photo (best-effort).
+      if (photoPath != null && photoPath.isNotEmpty) {
+        try {
+          final file = File(photoPath);
+          if (await file.exists()) await file.delete();
+        } catch (_) {
+          // Non-fatal — the row keeps working without the local file.
+        }
+      }
       return false;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
@@ -145,12 +190,22 @@ class SyncService {
         return false;
       }
 
+      // 401 is an auth problem, not a data problem — keep the draft pending
+      // so it syncs once the session recovers instead of marking good
+      // offline data as failed.
       final permanent = statusCode != null &&
           statusCode >= 400 &&
           statusCode < 500 &&
+          statusCode != 401 &&
           statusCode != 408 &&
           statusCode != 429;
-      return _recordFailure(draft, _describeDioError(e), permanent: permanent);
+      return _recordFailure(
+        draft,
+        statusCode == 401
+            ? 'Session expired — sign in again to sync'
+            : _describeDioError(e),
+        permanent: permanent,
+      );
     } catch (e) {
       return _recordFailure(draft, e.toString(), permanent: false);
     }

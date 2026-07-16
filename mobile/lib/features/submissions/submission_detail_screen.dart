@@ -76,15 +76,26 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
                         const SizedBox(height: 16),
                       ],
                       const SizedBox(height: 8),
-                      if (_detail!.status == 'rejected')
+                      // Corrections apply to rejected AND needs-info reviews —
+                      // both are reviewer requests for the worker to act.
+                      if (_detail!.status == 'rejected' ||
+                          _detail!.status == 'needs_info')
                         FilledButton.icon(
-                          onPressed: () => context.push(
-                            '/capture',
-                            extra: {
-                              'resubmittedFromId': _detail!.id,
-                              'documentType': _detail!.documentType,
-                            },
-                          ),
+                          onPressed: () {
+                            // Carry the original site so the corrected draft
+                            // can actually sync (siteId is required).
+                            final siteId = _detail!.siteId;
+                            final target = siteId != null && siteId.isNotEmpty
+                                ? '/capture?projectId=${Uri.encodeQueryComponent(siteId)}'
+                                : '/capture';
+                            context.push(
+                              target,
+                              extra: {
+                                'resubmittedFromId': _detail!.id,
+                                'documentType': _detail!.documentType,
+                              },
+                            );
+                          },
                           icon: const Icon(Icons.edit_document),
                           label: const Text('Submit correction'),
                         )
