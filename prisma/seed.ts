@@ -25,6 +25,10 @@ async function main() {
     { scope: 3, code: "s3-commuting", name: "Employee Commuting", activityType: "employee_commuting" },
     { scope: 3, code: "s3-purchased-goods", name: "Purchased Goods & Services", activityType: "purchased_goods_spend" },
     { scope: 3, code: "s3-upstream-transport", name: "Upstream Transportation & Distribution", activityType: "upstream_transport" },
+    // GHG Protocol Scope 3 Category 5 — the category field-worker waste
+    // tickets are reviewed into. Without it (and mass-based factors below),
+    // the platform's flagship capture flow could never be calculated.
+    { scope: 3, code: "s3-waste", name: "Waste Generated in Operations", activityType: "waste_disposal" },
   ];
 
   for (const cat of categories) {
@@ -659,6 +663,47 @@ async function main() {
       activityType: "upstream_transport_air_freight", inputUnit: "tonne.km",
       co2e: 0.60200,
       usageNotes: "Air freight, per tonne.km, with radiative forcing. DEFRA 2025.",
+    },
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // DEFRA — WASTE TREATMENT (per tonne) — consumed by field waste tickets
+    // Indicative values from DEFRA conversion factor magnitudes; replace with
+    // the exact rows from your DEFRA download via the factor import screen.
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+      externalId: "defra-2025-waste-mixed-landfill",
+      libraryId: defra.id, scope: 3, categoryCode: "s3-waste",
+      activityType: "waste_disposal", geographyCountry: "GB", inputUnit: "tonne",
+      co2e: 467.0,
+      usageNotes: "Mixed commercial & industrial waste to landfill. DEFRA 2025 (indicative).",
+    },
+    {
+      externalId: "defra-2025-waste-mixed-recycling",
+      libraryId: defra.id, scope: 3, categoryCode: "s3-waste",
+      activityType: "waste_disposal", geographyCountry: "GB", inputUnit: "tonne",
+      co2e: 21.3,
+      usageNotes: "Mixed recyclables, closed-loop recycling. DEFRA 2025 (indicative).",
+    },
+    {
+      externalId: "defra-2025-waste-inert-landfill",
+      libraryId: defra.id, scope: 3, categoryCode: "s3-waste",
+      activityType: "waste_disposal", geographyCountry: "GB", inputUnit: "tonne",
+      co2e: 1.24,
+      usageNotes: "Inert construction & demolition waste (soils, aggregates, concrete) to landfill. DEFRA 2025 (indicative).",
+    },
+    {
+      externalId: "defra-2025-waste-wood-landfill",
+      libraryId: defra.id, scope: 3, categoryCode: "s3-waste",
+      activityType: "waste_disposal", geographyCountry: "GB", inputUnit: "tonne",
+      co2e: 828.0,
+      usageNotes: "Wood waste to landfill. DEFRA 2025 (indicative).",
+    },
+    {
+      externalId: "defra-2025-waste-efw-incineration",
+      libraryId: defra.id, scope: 3, categoryCode: "s3-waste",
+      activityType: "waste_disposal", geographyCountry: "GB", inputUnit: "tonne",
+      co2e: 21.3,
+      usageNotes: "Mixed waste to energy-from-waste incineration. DEFRA 2025 (indicative).",
     },
 
     // ══════════════════════════════════════════════════════════════════════════

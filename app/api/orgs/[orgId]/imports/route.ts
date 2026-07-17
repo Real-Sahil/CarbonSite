@@ -4,7 +4,11 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { putObject, keys } from "@/lib/storage";
+import { dispatchImport } from "@/lib/jobs/dispatch";
 import { createHash } from "crypto";
+
+// Inline job mode parses the CSV inside this request — allow time for it.
+export const maxDuration = 60;
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -110,10 +114,13 @@ export async function POST(req: NextRequest, { params }: Params) {
       data: { sourceStorageKey: storageKey, state: "parsing" },
     });
 
-    // Enqueue parse job
-    const { getBoss } = await import("@/lib/jobs/boss");
-    const boss = await getBoss();
-    await boss.send("imports", { importBatchId: batch.id, orgId });
+    // Inline-mode aware: parses now when no worker process is deployed,
+    // enqueues to pg-boss when JOB_PROCESSING_MODE=worker. Direct boss.send
+    // here previously left every import stuck at "parsing" forever in the
+    // default deployment. Failures are recorded on the batch state.
+    await dispatchImport({ importBatchId: batch.id, orgId }).catch((err) =>
+      console.error(`[imports] batch ${batch.id} failed:`, err),
+    );
 
     await writeAuditLog({
       organizationId: orgId,

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createReviewTaskSchema } from "@/lib/validation/records";
-import { enqueueNotification } from "@/lib/jobs/queues/index";
+import { dispatchNotification } from "@/lib/jobs/dispatch";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -67,8 +67,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       },
     });
 
-    // Notify assignee (fire-and-forget — don't fail the request if enqueue fails)
-    enqueueNotification({
+    // Notify assignee (fire-and-forget — don't fail the request if it fails).
+    // dispatchNotification is inline-mode aware; plain enqueueNotification
+    // never delivers when no worker process is running.
+    dispatchNotification({
       type: "task_assigned",
       recipientUserId: body.assigneeUserId,
       orgId,

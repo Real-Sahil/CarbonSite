@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeUnit, areUnitsCompatible, UnitError } from "../units";
+import { normalizeUnit, areUnitsCompatible, convertBetween, UnitError } from "../units";
 
 describe("normalizeUnit", () => {
   it("returns same value for canonical units", () => {
@@ -64,5 +64,43 @@ describe("areUnitsCompatible", () => {
 
   it("returns false for unknown units", () => {
     expect(areUnitsCompatible("kWh", "furlong")).toBe(false);
+  });
+
+  it("matches the mobile app's plural forms across dimensions", () => {
+    expect(areUnitsCompatible("tonnes", "kg")).toBe(true);
+    expect(areUnitsCompatible("litres", "us gallon")).toBe(true);
+    expect(areUnitsCompatible("kg", "litre")).toBe(false);
+  });
+});
+
+describe("normalizeUnit — mobile capture vocabulary", () => {
+  it("normalizes the exact strings the Flutter form and OCR emit", () => {
+    expect(normalizeUnit(2.5, "tonnes")).toEqual({ amount: 2500, unit: "kg" });
+    expect(normalizeUnit(42.5, "litres")).toEqual({ amount: 42.5, unit: "litre" });
+    expect(normalizeUnit(10, "gallons").amount).toBeCloseTo(45.4609);
+    expect(normalizeUnit(1250, "units")).toEqual({ amount: 1250, unit: "unit" });
+  });
+});
+
+describe("convertBetween", () => {
+  it("converts within a dimension (kg record vs per-tonne factor)", () => {
+    expect(convertBetween(2500, "kg", "tonne")).toBeCloseTo(2.5);
+    expect(convertBetween(2.5, "tonne", "kg")).toBeCloseTo(2500);
+    expect(convertBetween(1, "mwh", "kWh")).toBeCloseTo(1000);
+    expect(convertBetween(10, "gallon", "litre")).toBeCloseTo(45.4609);
+  });
+
+  it("is identity for the same unit", () => {
+    expect(convertBetween(7, "kg", "kg")).toBe(7);
+  });
+
+  it("returns null across dimensions — callers must not multiply through", () => {
+    expect(convertBetween(100, "kg", "litre")).toBeNull();
+    expect(convertBetween(100, "kg", "GBP")).toBeNull();
+    expect(convertBetween(100, "unit", "kg")).toBeNull();
+  });
+
+  it("returns null for unknown units", () => {
+    expect(convertBetween(1, "bananas", "kg")).toBeNull();
   });
 });

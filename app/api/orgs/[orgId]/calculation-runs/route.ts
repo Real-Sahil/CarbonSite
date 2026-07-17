@@ -4,7 +4,11 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createCalculationRunSchema } from "@/lib/validation/records";
+import { dispatchCalculation } from "@/lib/jobs/dispatch";
 import { createHash } from "crypto";
+
+// Inline job mode processes the run inside this request — allow time for it.
+export const maxDuration = 60;
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -65,35 +69,57 @@ export async function POST(req: NextRequest, { params }: Params) {
       return apiError("NOT_FOUND", "Factor library not found.", 404);
     }
 
-    // Idempotency — same org + period + methodology + library = same run
+    // Double-trigger guard: identical parameters within the same minute
+    // dedupe to one run. The hash must NOT be permanent — re-running the
+    // same period/library after new data arrives is the normal
+    // recalculation flow (a permanent unique hash made every recalc 500).
+    const minuteBucket = Math.floor(Date.now() / 60_000);
     const triggerHash = createHash("sha256")
-      .update(`${orgId}:${body.reportingPeriodId}:${body.methodologyVersionId}:${body.factorLibraryId}`)
+      .update(`${orgId}:${body.reportingPeriodId}:${body.methodologyVersionId}:${body.factorLibraryId}:${minuteBucket}`)
       .digest("hex");
 
-    const existing = await prisma.calculationRun.findUnique({
-      where: { triggerHash },
-      select: { id: true, status: true },
-    });
-    if (existing && (existing.status === "queued" || existing.status === "running")) {
-      return NextResponse.json(existing, { status: 200 });
-    }
-
-    const run = await prisma.calculationRun.create({
-      data: {
+    // Never run two calculations for the same period concurrently.
+    const inFlight = await prisma.calculationRun.findFirst({
+      where: {
         organizationId: orgId,
         reportingPeriodId: body.reportingPeriodId,
-        methodologyVersionId: body.methodologyVersionId,
-        factorLibraryId: body.factorLibraryId,
-        triggeredByUserId: session.user.id,
-        triggerHash,
-        status: "queued",
+        status: { in: ["queued", "running"] },
       },
+      select: { id: true, status: true },
     });
+    if (inFlight) {
+      return NextResponse.json(inFlight, { status: 200 });
+    }
 
-    // Enqueue the background job
-    const { getBoss } = await import("@/lib/jobs/boss");
-    const boss = await getBoss();
-    await boss.send("calculations", { calculationRunId: run.id, orgId });
+    let run;
+    try {
+      run = await prisma.calculationRun.create({
+        data: {
+          organizationId: orgId,
+          reportingPeriodId: body.reportingPeriodId,
+          methodologyVersionId: body.methodologyVersionId,
+          factorLibraryId: body.factorLibraryId,
+          triggeredByUserId: session.user.id,
+          triggerHash,
+          status: "queued",
+        },
+      });
+    } catch (createErr) {
+      // Same-minute double-click raced past the in-flight check.
+      const existing = await prisma.calculationRun.findUnique({
+        where: { triggerHash },
+        select: { id: true, status: true },
+      });
+      if (existing) return NextResponse.json(existing, { status: 200 });
+      throw createErr;
+    }
+
+    // Inline-mode aware: processes the run now when no worker is deployed,
+    // enqueues to pg-boss when JOB_PROCESSING_MODE=worker. Failures are
+    // recorded on the run itself (status + errorMessage), not thrown here.
+    await dispatchCalculation({ calculationRunId: run.id, orgId }).catch((err) =>
+      console.error(`[calculations] run ${run.id} failed:`, err),
+    );
 
     await writeAuditLog({
       organizationId: orgId,

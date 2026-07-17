@@ -3,8 +3,12 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { dispatchReport } from "@/lib/jobs/dispatch";
 import { createHash } from "crypto";
 import { z } from "zod";
+
+// Inline job mode renders the PDF (Puppeteer) inside this request.
+export const maxDuration = 60;
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -89,10 +93,13 @@ export async function POST(req: NextRequest, { params }: Params) {
       },
     });
 
-    // Enqueue report generation job
-    const { getBoss } = await import("@/lib/jobs/boss");
-    const boss = await getBoss();
-    await boss.send("reports", { reportId: report.id, orgId, snapshotId: body.snapshotId });
+    // Inline-mode aware: renders now when no worker process is deployed,
+    // enqueues to pg-boss when JOB_PROCESSING_MODE=worker. Direct boss.send
+    // here previously left every report stuck at "queued" forever in the
+    // default deployment. Failures are recorded on the report status.
+    await dispatchReport({ reportId: report.id, orgId, snapshotId: body.snapshotId }).catch(
+      (err) => console.error(`[reports] report ${report.id} failed:`, err),
+    );
 
     await writeAuditLog({
       organizationId: orgId,

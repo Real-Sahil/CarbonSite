@@ -13,19 +13,35 @@ const registry: Record<string, UnitConversion> = {
 
   // Mass - canonical: kg
   kg: { toCanonical: 1, canonical: "kg" },
+  kgs: { toCanonical: 1, canonical: "kg" },
   tonne: { toCanonical: 1000, canonical: "kg" },
+  // The mobile capture form and OCR emit the plural / abbreviated forms.
+  tonnes: { toCanonical: 1000, canonical: "kg" },
+  t: { toCanonical: 1000, canonical: "kg" },
   "metric ton": { toCanonical: 1000, canonical: "kg" },
   "short ton": { toCanonical: 907.185, canonical: "kg" },
   lb: { toCanonical: 0.453592, canonical: "kg" },
+  lbs: { toCanonical: 0.453592, canonical: "kg" },
   g: { toCanonical: 0.001, canonical: "kg" },
 
   // Volume - canonical: litre
   litre: { toCanonical: 1, canonical: "litre" },
+  litres: { toCanonical: 1, canonical: "litre" },
   liter: { toCanonical: 1, canonical: "litre" },
+  liters: { toCanonical: 1, canonical: "litre" },
   l: { toCanonical: 1, canonical: "litre" },
   gallon: { toCanonical: 4.54609, canonical: "litre" }, // UK gallon
+  gallons: { toCanonical: 4.54609, canonical: "litre" },
   "us gallon": { toCanonical: 3.78541, canonical: "litre" },
+  "us gallons": { toCanonical: 3.78541, canonical: "litre" },
   m3: { toCanonical: 1000, canonical: "litre" },
+
+  // Discrete count (delivery notes) - canonical: unit
+  unit: { toCanonical: 1, canonical: "unit" },
+  units: { toCanonical: 1, canonical: "unit" },
+  item: { toCanonical: 1, canonical: "unit" },
+  items: { toCanonical: 1, canonical: "unit" },
+  each: { toCanonical: 1, canonical: "unit" },
 
   // Distance - canonical: km
   km: { toCanonical: 1, canonical: "km" },
@@ -60,6 +76,20 @@ export function areUnitsCompatible(unitA: string, unitB: string): boolean {
   const a = registry[unitA.toLowerCase().trim()];
   const b = registry[unitB.toLowerCase().trim()];
   return !!a && !!b && a.canonical === b.canonical;
+}
+
+/// Converts an amount between two units of the same dimension.
+/// Returns null when either unit is unknown or the dimensions differ —
+/// callers must treat null as "cannot calculate", never multiply through.
+export function convertBetween(
+  amount: number,
+  fromUnit: string,
+  toUnit: string,
+): number | null {
+  const from = registry[fromUnit.toLowerCase().trim()];
+  const to = registry[toUnit.toLowerCase().trim()];
+  if (!from || !to || from.canonical !== to.canonical) return null;
+  return (amount * from.toCanonical) / to.toCanonical;
 }
 
 export class UnitError extends Error {}

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { normalizeUnit, UnitError } from "./units";
+import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 
@@ -61,6 +61,13 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         activityDate,
         factorLibraryId: run.factorLibraryId,
         scope2Method: record.scope2Method ?? undefined,
+        // Prefer factors whose input unit can actually consume this record,
+        // and whose description matches the record's fuel/transport detail
+        // (diesel vs petrol live in the same category otherwise).
+        recordUnit: normalized.unit,
+        matchHint: [record.fuelType, record.transportMode, record.refrigerantType]
+          .filter(Boolean)
+          .join(" "),
       });
 
       if (!factorSelection) {
@@ -92,9 +99,48 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       }
 
       const { factor, selectionReason, warnings: selectionWarnings = [] } = factorSelection;
+
+      // Reconcile the record's unit with the factor's input unit BEFORE
+      // multiplying. Multiplying through a mismatch (2,500 kg × a per-tonne
+      // factor) silently overstates by 1000× — refusing with a visible zero
+      // is always safer than a wrong number.
+      let amountForFactor = normalized.amount;
+      if (normalized.unit !== factor.inputUnit) {
+        const converted = convertBetween(normalized.amount, normalized.unit, factor.inputUnit);
+        if (converted == null) {
+          await prisma.emissionCalculation.create({
+            data: {
+              organizationId: orgId,
+              activityRecordId: record.id,
+              calculationRunId,
+              emissionFactorId: factor.id,
+              factorLibraryId: run.factorLibraryId,
+              factorLibraryVersion,
+              methodologyVersionName,
+              originalAmount: record.amount,
+              originalUnit: record.unit,
+              normalizedAmount: normalized.amount,
+              normalizedUnit: normalized.unit,
+              totalCo2e: 0,
+              selectionReason,
+              formula: `Cannot convert ${normalized.unit} to the factor's input unit (${factor.inputUnit}) — not calculated.`,
+              warnings: [
+                ...unitWarnings,
+                `Record unit "${normalized.unit}" is incompatible with factor input unit "${factor.inputUnit}". Correct the record's unit or import a matching factor.`,
+              ],
+            },
+          });
+          continue;
+        }
+        amountForFactor = converted;
+        unitWarnings.push(
+          `Converted ${normalized.amount} ${normalized.unit} to ${converted} ${factor.inputUnit} to match the factor.`,
+        );
+      }
+
       const result = computeCo2e(
-        normalized.amount,
-        normalized.unit,
+        amountForFactor,
+        factor.inputUnit,
         {
           co2: factor.co2 != null ? Number(factor.co2) : null,
           ch4: factor.ch4 != null ? Number(factor.ch4) : null,
