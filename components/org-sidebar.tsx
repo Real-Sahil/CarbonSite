@@ -45,12 +45,26 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
+  /** Roles that can open the target page (mirrors its requireOrgMember
+   *  call). Omitted = any org member. Items the current role cannot open
+   *  are hidden — a nav link to an Access Denied page is a dead end. */
+  roles?: string[];
 }
 
 interface NavGroup {
   label: string;
   items: NavItem[];
 }
+
+// Core review/reporting roles shared by most data pages.
+const CORE_ROLES = ["admin", "editor", "reviewer", "viewer", "auditor"];
+const EXTENDED_VIEW_ROLES = [
+  ...CORE_ROLES,
+  "sustainability_director",
+  "sustainability_manager",
+  "operations_manager",
+  "contract_manager",
+];
 
 interface OrgSidebarProps {
   orgId: string;
@@ -59,6 +73,8 @@ interface OrgSidebarProps {
     name?: string | null;
     email: string;
   };
+  /** Current member's role — drives which nav items render. */
+  role?: string;
 }
 
 const COLLAPSED_KEY = "carbonsite:sidebar:collapsed";
@@ -74,7 +90,7 @@ function getInitials(name?: string | null, email?: string): string {
   return (email ?? "?").slice(0, 2).toUpperCase();
 }
 
-export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
+export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -99,7 +115,7 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
     });
   }
 
-  const navGroups: NavGroup[] = [
+  const allGroups: NavGroup[] = [
     {
       label: "",
       items: [
@@ -109,40 +125,58 @@ export function OrgSidebar({ orgId, orgName, user }: OrgSidebarProps) {
     {
       label: "Data",
       items: [
-        { label: "Imports",     href: `/orgs/${orgId}/imports`,     icon: Upload },
-        { label: "Records",     href: `/orgs/${orgId}/records`,     icon: FileText },
-        { label: "Submissions", href: `/orgs/${orgId}/submissions`, icon: Inbox },
+        { label: "Imports",     href: `/orgs/${orgId}/imports`,     icon: Upload,  roles: CORE_ROLES },
+        { label: "Records",     href: `/orgs/${orgId}/records`,     icon: FileText, roles: CORE_ROLES },
+        { label: "Submissions", href: `/orgs/${orgId}/submissions`, icon: Inbox,   roles: ["admin", "editor", "reviewer"] },
         { label: "Tasks",       href: `/orgs/${orgId}/tasks`,       icon: ListChecks },
       ],
     },
     {
       label: "Calculations",
       items: [
-        { label: "Calculations", href: `/orgs/${orgId}/calculations`, icon: Calculator },
-        { label: "Reports",      href: `/orgs/${orgId}/reports`,      icon: BarChart2 },
+        { label: "Calculations", href: `/orgs/${orgId}/calculations`, icon: Calculator, roles: CORE_ROLES },
+        { label: "Reports",      href: `/orgs/${orgId}/reports`,      icon: BarChart2,  roles: CORE_ROLES },
       ],
     },
     {
       label: "Planning",
       items: [
-        { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target },
-        { label: "Social Value", href: `/orgs/${orgId}/social-value`, icon: Heart },
+        { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target, roles: CORE_ROLES },
+        { label: "Social Value", href: `/orgs/${orgId}/social-value`, icon: Heart,  roles: EXTENDED_VIEW_ROLES },
       ],
     },
     {
       label: "Contracts",
       items: [
-        { label: "Contracts", href: `/orgs/${orgId}/contracts`, icon: Briefcase },
+        { label: "Contracts", href: `/orgs/${orgId}/contracts`, icon: Briefcase, roles: EXTENDED_VIEW_ROLES },
       ],
     },
     {
       label: "Admin",
       items: [
-        { label: "Audit",    href: `/orgs/${orgId}/audit`,             icon: Clock },
-        { label: "Settings", href: `/orgs/${orgId}/settings/members`, icon: Settings },
+        { label: "Audit",    href: `/orgs/${orgId}/audit`,    icon: Clock, roles: CORE_ROLES },
+        // Editors manage operational setup (periods, factors, facilities);
+        // the members tab inside settings stays admin-only.
+        {
+          label: "Settings",
+          href: role === "admin" ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/settings/operations`,
+          icon: Settings,
+          roles: ["admin", "editor"],
+        },
       ],
     },
   ];
+
+  // Hide items the current role cannot open (unknown role = show member-wide
+  // items only). Groups with no visible items disappear entirely.
+  const navGroups: NavGroup[] = allGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !item.roles || (role != null && item.roles.includes(role)),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   // Flat list for mobile drawer (preserves order)
   const navItems: NavItem[] = navGroups.flatMap((g) => g.items);

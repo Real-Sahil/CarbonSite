@@ -1417,3 +1417,17 @@ model WebhookDelivery {
   @@index([webhookId, createdAt])
   @@map("webhook_deliveries")
 }
+
+// Zero-cost storage driver: evidence/report bytes persisted in Postgres when
+// no S3-compatible bucket is configured (R2 requires a credit card). Written
+// and served via HMAC-signed URLs — see lib/storage.
+model StorageObject {
+  key         String   @id
+  contentType String   @map("content_type")
+  byteSize    Int      @map("byte_size")
+  bytes       Bytes
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("storage_objects")
+}

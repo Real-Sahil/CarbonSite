@@ -265,6 +265,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
                       inviteId={invite.id}
                       email={invite.email!}
                       role={invite.role}
+                      token={invite.token}
                     />
                   </div>
                 ))}

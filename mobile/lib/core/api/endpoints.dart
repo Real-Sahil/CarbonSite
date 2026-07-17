@@ -249,8 +249,14 @@ Future<EvidenceUploadResult> uploadEvidenceFile({
 
   final presignData = presignRes.data as Map<String, dynamic>;
   final evidence = presignData['evidence'] as Map<String, dynamic>;
-  final uploadUrl = presignData['uploadUrl'] as String;
+  var uploadUrl = presignData['uploadUrl'] as String;
   final evidenceId = evidence['id'] as String? ?? '';
+
+  // Defensive: some storage drivers can return a server-relative upload path.
+  // A bare path is not a valid URL for the plain Dio instance below.
+  if (uploadUrl.startsWith('/')) {
+    uploadUrl = client.options.baseUrl + uploadUrl;
+  }
 
   // Step 2: PUT directly to R2 using the presigned URL.
   // Use a plain Dio instance without our auth interceptor — the presigned URL

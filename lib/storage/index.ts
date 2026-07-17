@@ -1,6 +1,10 @@
-// Storage abstraction — supports two drivers:
-//   STORAGE_DRIVER=r2    (default, production) — Cloudflare R2 via S3 API
-//   STORAGE_DRIVER=local (development) — local filesystem under ./uploads/
+// Storage abstraction — supports three drivers:
+//   STORAGE_DRIVER=r2    — Cloudflare R2 / any S3-compatible bucket
+//   STORAGE_DRIVER=db    — bytes persisted in Postgres (zero-cost default
+//                          for production when no bucket is configured)
+//   STORAGE_DRIVER=local — local filesystem under ./uploads/ (development
+//                          only; serverless filesystems are ephemeral, so
+//                          "local" silently upgrades to "db" in production)
 
 import {
   S3Client,
@@ -11,9 +15,46 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { mkdir, readFile, writeFile, unlink } from "fs/promises";
 import path from "path";
+import { prisma } from "@/lib/db";
+import { signStorageUrl } from "./signing";
 
-const DRIVER = process.env.STORAGE_DRIVER ?? "r2";
+function resolveDriver(): "r2" | "db" | "local" {
+  const configured = process.env.STORAGE_DRIVER;
+  const isProd = process.env.NODE_ENV === "production";
+  const hasR2 = Boolean(
+    process.env.STORAGE_ENDPOINT &&
+      process.env.STORAGE_ACCESS_KEY_ID &&
+      process.env.STORAGE_SECRET_ACCESS_KEY,
+  );
+
+  if (configured === "r2") return "r2";
+  if (configured === "db") return "db";
+  if (configured === "local") {
+    if (isProd) {
+      console.warn(
+        "[storage] STORAGE_DRIVER=local cannot persist files on serverless — using the Postgres-backed driver instead.",
+      );
+      return "db";
+    }
+    return "local";
+  }
+  // Nothing configured: prefer R2 when its credentials exist, otherwise a
+  // driver that actually works in the current environment.
+  if (hasR2) return "r2";
+  return isProd ? "db" : "local";
+}
+
+const DRIVER = resolveDriver();
 const PRESIGN_TTL = 60 * 15; // 15 minutes
+
+// Absolute origin for db-driver URLs — mobile clients and redirects need a
+// full URL, never a bare path.
+function appOrigin(): string {
+  const configured = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL;
+  if (configured) return configured.replace(/\/$/, "");
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "";
+}
 
 // ── R2 client (only initialised when driver = r2) ────────────────────────────
 const s3 =
@@ -92,6 +133,11 @@ export async function presignUpload(key: string, contentType: string): Promise<s
     // Local dev: return a special internal upload route
     return `/api/dev/storage/upload?key=${encodeURIComponent(key)}&contentType=${encodeURIComponent(contentType)}`;
   }
+  if (DRIVER === "db") {
+    const exp = Date.now() + PRESIGN_TTL * 1000;
+    const sig = signStorageUrl(key, exp);
+    return `${appOrigin()}/api/storage/upload?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}&contentType=${encodeURIComponent(contentType)}`;
+  }
   const cmd = new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType });
   return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
@@ -102,12 +148,20 @@ export async function presignDownload(key: string): Promise<string> {
   if (DRIVER === "local") {
     return `/api/dev/storage/serve?key=${encodeURIComponent(key)}`;
   }
+  if (DRIVER === "db") {
+    const exp = Date.now() + PRESIGN_TTL * 1000;
+    const sig = signStorageUrl(key, exp);
+    return `${appOrigin()}/api/storage/serve?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}`;
+  }
   const cmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
   return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
 
 // ── Direct read (used by workers, not by HTTP clients) ───────────────────────
 export async function getObject(key: string): Promise<Buffer> {
+  if (DRIVER === "db") {
+    return dbRead(key);
+  }
   if (DRIVER === "local") {
     const { readFile } = await import("fs/promises");
     const localPath = path.join(process.cwd(), "uploads", key);
@@ -129,6 +183,10 @@ export async function getObject(key: string): Promise<Buffer> {
 // ── Direct write (used by workers, not by HTTP clients) ───────────────────────
 export async function putObject(key: string, body: Buffer, contentType: string): Promise<void> {
   assertStorageKey(key);
+  if (DRIVER === "db") {
+    await dbWrite(key, body, contentType);
+    return;
+  }
   if (DRIVER === "local") {
     const localPath = localStoragePath(key);
     await mkdir(path.dirname(localPath), { recursive: true });
@@ -142,6 +200,9 @@ export async function putObject(key: string, body: Buffer, contentType: string):
 
 export async function getObjectBuffer(key: string): Promise<Buffer> {
   assertStorageKey(key);
+  if (DRIVER === "db") {
+    return dbRead(key);
+  }
   if (DRIVER === "local") {
     const localPath = localStoragePath(key);
     return readFile(localPath);
@@ -158,12 +219,40 @@ export async function getObjectBuffer(key: string): Promise<Buffer> {
 // ── Delete ────────────────────────────────────────────────────────────────────
 export async function deleteObject(key: string): Promise<void> {
   assertStorageKey(key);
+  if (DRIVER === "db") {
+    await prisma.storageObject.deleteMany({ where: { key } });
+    return;
+  }
   if (DRIVER === "local") {
     const localPath = localStoragePath(key);
     await unlink(localPath).catch(() => {}); // ignore if already gone
     return;
   }
   await s3!.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
+}
+
+// ── Postgres-backed driver primitives ────────────────────────────────────────
+export async function dbWrite(key: string, body: Buffer, contentType: string): Promise<void> {
+  const bytes = new Uint8Array(body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)) as Uint8Array<ArrayBuffer>;
+  await prisma.storageObject.upsert({
+    where: { key },
+    update: { bytes, contentType, byteSize: body.byteLength },
+    create: { key, bytes, contentType, byteSize: body.byteLength },
+  });
+}
+
+async function dbRead(key: string): Promise<Buffer> {
+  const object = await prisma.storageObject.findUnique({ where: { key } });
+  if (!object) throw new Error(`Storage object not found: ${key}`);
+  return Buffer.from(object.bytes);
+}
+
+export async function dbReadWithType(
+  key: string,
+): Promise<{ bytes: Buffer; contentType: string } | null> {
+  const object = await prisma.storageObject.findUnique({ where: { key } });
+  if (!object) return null;
+  return { bytes: Buffer.from(object.bytes), contentType: object.contentType };
 }
 
 function localStoragePath(key: string) {
