@@ -2,6 +2,10 @@ name: Mobile release builds
 
 on:
   push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-build.yml"
     tags:
       - "v*"
       - "mobile-v*"
@@ -89,7 +93,8 @@ jobs:
 
   ios:
     name: iOS unsigned release artifact
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_ios }}
+    # iOS builds only on tags or manual dispatch — branch pushes build Android only.
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_ios) || startsWith(github.ref, 'refs/tags/') }}
     runs-on: macos-14
     defaults:
       run:
