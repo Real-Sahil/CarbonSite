@@ -64,13 +64,15 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       });
 
       if (!factorSelection) {
-        // No factor found — skip this record, record a warning
+        // No factor found — include the record with zero CO2e and a warning
+        // instead of failing. (A fake "no-factor" FK value here used to
+        // violate the foreign key and abort the entire run.)
         await prisma.emissionCalculation.create({
           data: {
             organizationId: orgId,
             activityRecordId: record.id,
             calculationRunId,
-            emissionFactorId: "no-factor",
+            emissionFactorId: null,
             factorLibraryId: run.factorLibraryId,
             factorLibraryVersion,
             methodologyVersionName,
@@ -134,18 +136,35 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       });
     }
 
+    // A run over zero approved records would wipe the live dashboard
+    // aggregates and silently show zeros — fail loudly instead.
+    if (records.length === 0) {
+      await prisma.calculationRun.update({
+        where: { id: calculationRunId },
+        data: {
+          status: "failed",
+          finishedAt: new Date(),
+          errorMessage:
+            "No approved activity records found for this reporting period. " +
+            "Approve records (or commit an import) before running a calculation.",
+        },
+      });
+      return;
+    }
+
     // Rebuild DashboardAggregate for this period (live, snapshotId = null)
     await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId);
 
     await prisma.calculationRun.update({
       where: { id: calculationRunId },
-      data: { status: "succeeded", finishedAt: new Date() },
+      data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
     });
   } catch (err) {
     console.error(`[calculations] Error on run ${calculationRunId}:`, err);
+    const reason = err instanceof Error ? err.message.slice(0, 500) : "Unknown error";
     await prisma.calculationRun.update({
       where: { id: calculationRunId },
-      data: { status: "failed", finishedAt: new Date() },
+      data: { status: "failed", finishedAt: new Date(), errorMessage: reason },
     });
     throw err;
   }

@@ -68,7 +68,12 @@ export async function POST(_req: NextRequest, { params }: Params) {
               transportMode: (d.transportMode as string | undefined) ?? undefined,
               assumptionNotes: (d.assumptionNotes as string | undefined) ?? undefined,
               importBatchId: importId,
-              reviewStatus: "draft",
+              // Staged validation + the explicit commit action ARE the review
+              // gate for imports (admin/editor only, no partial commits) —
+              // committed records enter calculations immediately, consistent
+              // with reviewed field submissions. Individual records can still
+              // be rejected afterwards on the records page.
+              reviewStatus: "approved",
               evidenceStatus: "missing",
               createdByUserId: session.user.id,
             },

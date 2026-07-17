@@ -79,23 +79,61 @@ export async function POST(req: NextRequest, { params }: Params) {
     });
     const version = (latestSnapshot?.version ?? 0) + 1;
 
-    const snapshot = await prisma.publishedSnapshot.create({
-      data: {
-        organizationId: orgId,
-        reportingPeriodId: body.reportingPeriodId,
-        calculationRunId: body.calculationRunId,
-        publishedByUserId: session.user.id,
-        version,
-      },
-      include: {
-        reportingPeriod: { select: { label: true } },
-        calculationRun: {
-          include: {
-            factorLibrary: { select: { name: true, version: true } },
-            methodologyVersion: { select: { name: true } },
+    const snapshot = await prisma.$transaction(async (tx) => {
+      const created = await tx.publishedSnapshot.create({
+        data: {
+          organizationId: orgId,
+          reportingPeriodId: body.reportingPeriodId,
+          calculationRunId: body.calculationRunId,
+          publishedByUserId: session.user.id,
+          version,
+        },
+        include: {
+          reportingPeriod: { select: { label: true } },
+          calculationRun: {
+            include: {
+              factorLibrary: { select: { name: true, version: true } },
+              methodologyVersion: { select: { name: true } },
+            },
           },
         },
-      },
+      });
+
+      // Freeze the current live aggregates under this snapshot's id so
+      // snapshot-pinned dashboard views (?snapshotId=) read immutable data.
+      // Without this, those queries return rows that are never written.
+      const liveAggregates = await tx.dashboardAggregate.findMany({
+        where: {
+          organizationId: orgId,
+          reportingPeriodId: body.reportingPeriodId,
+          snapshotId: null,
+        },
+        select: {
+          scope: true,
+          emissionCategoryId: true,
+          facilityId: true,
+          businessUnitId: true,
+          totalCo2e: true,
+          recordCount: true,
+        },
+      });
+      if (liveAggregates.length > 0) {
+        await tx.dashboardAggregate.createMany({
+          data: liveAggregates.map((aggregate) => ({
+            organizationId: orgId,
+            reportingPeriodId: body.reportingPeriodId,
+            snapshotId: created.id,
+            scope: aggregate.scope,
+            emissionCategoryId: aggregate.emissionCategoryId,
+            facilityId: aggregate.facilityId,
+            businessUnitId: aggregate.businessUnitId,
+            totalCo2e: aggregate.totalCo2e,
+            recordCount: aggregate.recordCount,
+          })),
+        });
+      }
+
+      return created;
     });
 
     await writeAuditLog({

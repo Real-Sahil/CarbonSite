@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/api/client.dart';
 import '../../core/api/endpoints.dart';
 import '../../core/widgets/offline_banner.dart';
+import '../auth/pin_lock_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -95,6 +97,37 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();
   }
 
+  Future<void> _signOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out of CarbonSite?'),
+        content: const Text(
+          'You will need a new invite link from your administrator to sign '
+          'back in. Unsynced drafts stay on this device.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    await _storage.delete(key: 'session_token');
+    await _storage.delete(key: 'pin');
+    invalidateClient();
+    PinLock.unlocked = false;
+    if (!mounted) return;
+    context.go('/pin-setup');
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -130,14 +163,39 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: colorScheme.primaryContainer,
-              child: Text(
-                _initials(_userName),
-                style: textTheme.labelMedium?.copyWith(
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w700,
+            child: PopupMenuButton<String>(
+              tooltip: 'Account',
+              onSelected: (value) {
+                if (value == 'signout') _signOut();
+              },
+              itemBuilder: (ctx) => [
+                PopupMenuItem(
+                  enabled: false,
+                  child: Text(
+                    _userName.isEmpty ? 'Signed in' : _userName,
+                    style: Theme.of(ctx).textTheme.bodySmall,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'signout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, size: 18),
+                      SizedBox(width: 8),
+                      Text('Sign out'),
+                    ],
+                  ),
+                ),
+              ],
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: colorScheme.primaryContainer,
+                child: Text(
+                  _initials(_userName),
+                  style: textTheme.labelMedium?.copyWith(
+                    color: colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

@@ -155,6 +155,11 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                       >
                         {STATUS_LABELS[run.status] ?? run.status}
                       </Badge>
+                      {run.status === "failed" && run.errorMessage && (
+                        <p className="mt-1 max-w-[260px] text-xs text-red-700">
+                          {run.errorMessage}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell className="text-slate-600">
                       {run.triggeredBy.name ?? run.triggeredBy.email}

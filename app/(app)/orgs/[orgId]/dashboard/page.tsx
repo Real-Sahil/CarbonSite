@@ -291,6 +291,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         _sum: { valuePounds: true },
         _count: { _all: true },
       }),
+      prisma.site.count({ where: { organizationId: orgId } }),
+      prisma.organizationMembership.count({
+        where: { organizationId: orgId, role: "field_worker" },
+      }),
     ] as const),
     // Period trend: live scope-level aggregates across all reporting periods.
     // Reads DashboardAggregate only — never raw EmissionCalculation rows.
@@ -437,6 +441,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     topCategoryAggregates,
     reportStatusRows,
     socialValueStats,
+    siteCount,
+    fieldWorkerCount,
   ] = batchB;
 
   const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
@@ -669,10 +675,16 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             done: factorLibraries.length > 0,
           },
           {
+            label: "Sites & field workers",
+            description: "Create sites, invite workers to capture evidence",
+            href: siteCount > 0 ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/contracts`,
+            done: siteCount > 0 && fieldWorkerCount > 0,
+          },
+          {
             label: "Activity data",
             description: "Import CSV or add records manually",
             href: `/orgs/${orgId}/imports`,
-            done: recordCount > 0 || importCount > 0,
+            done: recordCount > 0 || importCount > 0 || submissionTotal > 0,
           },
           {
             label: "Run calculation",
@@ -1634,6 +1646,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     <p className="text-xs text-[#333333] tracking-[-0.36px]">
                       {run.factorLibrary.name} {run.factorLibrary.version}
                     </p>
+                    {run.status === "failed" && run.errorMessage && (
+                      <p className="mt-1 text-xs text-red-700 tracking-[-0.36px]">
+                        {run.errorMessage}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     {(run.status === "queued" || run.status === "running") && (

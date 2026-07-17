@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/invite_screen.dart';
+import '../../features/auth/pin_lock_screen.dart';
 import '../../features/auth/pin_setup_screen.dart';
 import '../../features/capture/capture_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
@@ -46,6 +47,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       // NOTE: authenticated users are allowed on /pin-setup — the invite flow
       // lands there right after acceptInvite stores the session. Bouncing to
       // /dashboard here made the PIN screen unreachable.
+
+      // PIN gate: once per app process, a session with a stored PIN must
+      // unlock before reaching the shell.
+      if (hasSession &&
+          !PinLock.unlocked &&
+          path != '/pin-lock' &&
+          path != '/pin-setup') {
+        final pin = await _storage.read(key: 'pin');
+        if (pin != null && pin.isNotEmpty) {
+          return '/pin-lock';
+        }
+        // No PIN configured — nothing to verify.
+        PinLock.unlocked = true;
+      }
 
       if (path == '/') {
         return hasSession ? '/dashboard' : '/pin-setup';
@@ -94,6 +109,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/pin-setup',
         builder: (context, state) => const PinSetupScreen(),
+      ),
+      GoRoute(
+        path: '/pin-lock',
+        builder: (context, state) => const PinLockScreen(),
       ),
 
       // Main app: bottom-nav shell with three tabs.

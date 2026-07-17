@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/client.dart';
+import 'pin_lock_screen.dart';
 
 enum _PinStep { entry, confirm }
 
@@ -105,6 +106,9 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
       });
       return;
     }
+
+    // The user just proved they know the PIN — no lock screen this session.
+    PinLock.unlocked = true;
 
     if (!mounted) return;
     context.go('/home');

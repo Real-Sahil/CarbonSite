@@ -23,6 +23,7 @@ import type { OrgRole } from "@prisma/client";
 import { CreateRecordForm } from "./record-form";
 import { RecordActions } from "./record-actions";
 import { RecordEvidenceActions } from "./record-evidence-actions";
+import { BulkRecordActions } from "./bulk-record-actions";
 
 interface RecordsPageProps {
   params: Promise<{ orgId: string }>;
@@ -52,7 +53,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
 
   const canCreateRecords = role === "admin" || role === "editor";
   const canManageRecords = canCreateRecords || role === "reviewer";
-  const [records, periods, categories, facilities, businessUnits] = await Promise.all([
+  const [records, periods, categories, facilities, businessUnits, draftGroups] = await Promise.all([
     prisma.activityRecord.findMany({
       where: { organizationId: orgId },
       include: {
@@ -89,7 +90,15 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+    prisma.activityRecord.groupBy({
+      by: ["reportingPeriodId"],
+      where: { organizationId: orgId, reviewStatus: "draft" },
+      _count: { _all: true },
+      orderBy: { reportingPeriodId: "asc" },
+    }),
   ]);
+
+  const periodLabelById = new Map(periods.map((period) => [period.id, period.label]));
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -99,6 +108,17 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
           Committed emissions activity data scoped to this organisation.
         </p>
       </div>
+
+      {canManageRecords && (
+        <BulkRecordActions
+          orgId={orgId}
+          draftGroups={draftGroups.map((group) => ({
+            reportingPeriodId: group.reportingPeriodId,
+            periodLabel: periodLabelById.get(group.reportingPeriodId) ?? "Unknown period",
+            count: group._count._all,
+          }))}
+        />
+      )}
 
       <Card>
         <CardHeader>

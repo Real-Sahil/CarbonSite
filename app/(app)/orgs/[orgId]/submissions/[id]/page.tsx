@@ -68,9 +68,11 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
       where: { id },
       include: {
         submittedBy: { select: { name: true, email: true } },
-        reportingPeriod: { select: { id: true, label: true } },
+        reportingPeriod: { select: { id: true, label: true, startDate: true, endDate: true } },
         emissionCategory: { select: { id: true, scope: true, name: true } },
         facility: { select: { id: true, name: true } },
+        site: { select: { name: true, project: { select: { name: true } } } },
+        contract: { select: { name: true } },
         resubmittedFrom: { select: { id: true, documentType: true, createdAt: true } },
         resubmissions: {
           select: { id: true, status: true, createdAt: true },
@@ -147,6 +149,36 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
   const formData = submission.formData as Record<string, unknown> | null;
   const ocrData = submission.ocrExtractedData as Record<string, unknown> | null;
 
+  // Side-by-side verification rows: OCR value vs what the worker submitted.
+  const IGNORED_KEYS = new Set(["autoExtracted", "resubmittedFromId", "raw"]);
+  const comparisonKeys = [
+    ...new Set([...Object.keys(ocrData ?? {}), ...Object.keys(formData ?? {})]),
+  ].filter((key) => !IGNORED_KEYS.has(key));
+  const comparisonRows = comparisonKeys
+    .map((key) => {
+      const ocrValue = ocrData?.[key];
+      const formValue = formData?.[key];
+      const ocrText = ocrValue == null || ocrValue === "" ? null : String(ocrValue);
+      const formText = formValue == null || formValue === "" ? null : String(formValue);
+      if (ocrText == null && formText == null) return null;
+      const mismatch =
+        ocrText != null &&
+        formText != null &&
+        ocrText.trim().toLowerCase() !== formText.trim().toLowerCase();
+      return { key, ocrText, formText, mismatch };
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null);
+  const mismatchCount = comparisonRows.filter((row) => row.mismatch).length;
+
+  // Flag submissions whose capture date falls outside the booked period —
+  // the server silently books out-of-range dates into the latest period.
+  const captureDate = submission.deviceSubmittedAt ?? submission.createdAt;
+  const periodMismatch =
+    captureDate < submission.reportingPeriod.startDate ||
+    captureDate > submission.reportingPeriod.endDate;
+
+  const IMAGE_EXTENSIONS = /\.(jpe?g|png|webp|gif)$/i;
+
   return (
     <div className="p-[42px] max-w-[900px] mx-auto">
       <div className="mb-[42px]">
@@ -201,6 +233,27 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             <CardContent className="space-y-3">
               <DetailRow label="Document type" value={DOC_TYPE_LABELS[submission.documentType] ?? submission.documentType} />
               <DetailRow label="Reporting period" value={submission.reportingPeriod.label} />
+              {periodMismatch && (
+                <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 tracking-[-0.36px]">
+                  Captured on{" "}
+                  {captureDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}{" "}
+                  — outside this reporting period&apos;s date range. It was booked into
+                  the most recent period; check the period setup if this is unexpected.
+                </div>
+              )}
+              {submission.site && (
+                <DetailRow
+                  label="Site"
+                  value={
+                    submission.site.project?.name
+                      ? `${submission.site.project.name} — ${submission.site.name}`
+                      : submission.site.name
+                  }
+                />
+              )}
+              {submission.contract && (
+                <DetailRow label="Contract" value={submission.contract.name} />
+              )}
               {submission.emissionCategory && (
                 <DetailRow
                   label="Category"
@@ -242,24 +295,49 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           </Card>
         </div>
 
-        {ocrData && Object.keys(ocrData).length > 0 && (
+        {comparisonRows.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">OCR extracted data</CardTitle>
+              <CardTitle className="text-base">
+                Document verification
+                {mismatchCount > 0 && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-normal text-amber-800">
+                    {mismatchCount} field{mismatchCount !== 1 ? "s" : ""} differ
+                  </span>
+                )}
+              </CardTitle>
               <CardDescription>
-                Data automatically extracted from the photographed document.
+                What the OCR read from the photo vs. what the field worker submitted.
+                Highlighted rows changed after auto-extraction — verify against the photo below.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {Object.entries(ocrData).map(([key, value]) =>
-                value != null && value !== "" ? (
-                  <DetailRow
-                    key={key}
-                    label={key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
-                    value={String(value)}
-                  />
-                ) : null,
-              )}
+            <CardContent>
+              <div className="overflow-hidden rounded-[10px] border border-[#e5e7eb]">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
+                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#333333]">Field</th>
+                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#333333]">Read from photo</th>
+                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#333333]">Submitted</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#e5e7eb]">
+                    {comparisonRows.map((row) => (
+                      <tr key={row.key} className={row.mismatch ? "bg-amber-50" : undefined}>
+                        <td className="px-3 py-2 text-xs text-[#333333] tracking-[-0.36px] capitalize">
+                          {row.key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
+                        </td>
+                        <td className="px-3 py-2 text-[#222222] tracking-[-0.42px]">
+                          {row.ocrText ?? <span className="text-[#999] italic">not read</span>}
+                        </td>
+                        <td className={`px-3 py-2 tracking-[-0.42px] ${row.mismatch ? "font-medium text-amber-900" : "text-[#222222]"}`}>
+                          {row.formText ?? <span className="text-[#999] italic">not provided</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -279,6 +357,35 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               <p className="text-sm text-[#333333] italic tracking-[-0.42px]">No evidence files attached</p>
             ) : (
               <div className="space-y-3">
+                {/* Inline previews so reviewers verify against the actual
+                    ticket photo without downloading. The download route 302s
+                    to a presigned URL, which <img> follows. */}
+                {submission.files.some((f) => IMAGE_EXTENSIONS.test(f.evidenceFile.filename)) && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {submission.files
+                      .filter((f) => IMAGE_EXTENSIONS.test(f.evidenceFile.filename))
+                      .map((file) => (
+                        <a
+                          key={file.evidenceFile.id}
+                          href={`/api/orgs/${orgId}/evidence/${file.evidenceFile.id}/download`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group block overflow-hidden rounded-[10px] border border-[#e5e7eb]"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={`/api/orgs/${orgId}/evidence/${file.evidenceFile.id}/download`}
+                            alt={`Evidence: ${file.evidenceFile.filename}`}
+                            className="h-56 w-full object-cover transition-transform group-hover:scale-[1.02]"
+                            loading="lazy"
+                          />
+                          <p className="truncate border-t border-[#e5e7eb] bg-[#f9fafb] px-3 py-1.5 text-xs text-[#333333] tracking-[-0.36px]">
+                            {file.evidenceFile.filename}
+                          </p>
+                        </a>
+                      ))}
+                  </div>
+                )}
                 <SubmissionEvidenceDownloads
                   orgId={orgId}
                   files={submission.files.map((file) => ({

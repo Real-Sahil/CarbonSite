@@ -806,6 +806,8 @@ model CalculationRun {
   triggerHash          String?              @unique @map("trigger_hash")
   startedAt            DateTime?            @map("started_at")
   finishedAt           DateTime?            @map("finished_at")
+  /// Human-readable failure reason — surfaced on the calculations pages.
+  errorMessage         String?              @map("error_message")
   createdAt            DateTime             @default(now()) @map("created_at")
 
   organization       Organization          @relation(fields: [organizationId], references: [id])
@@ -826,7 +828,9 @@ model EmissionCalculation {
   organizationId         String   @map("organization_id")
   activityRecordId       String   @map("activity_record_id")
   calculationRunId       String   @map("calculation_run_id")
-  emissionFactorId       String   @map("emission_factor_id")
+  /// Null when no matching factor existed — the record is included with
+  /// totalCo2e 0 and a warning instead of failing the whole run.
+  emissionFactorId       String?  @map("emission_factor_id")
   factorLibraryId        String   @map("factor_library_id")
   factorLibraryVersion   String   @map("factor_library_version")
   methodologyVersionName String   @map("methodology_version_name")
@@ -847,7 +851,7 @@ model EmissionCalculation {
 
   activityRecord  ActivityRecord     @relation(fields: [activityRecordId], references: [id])
   calculationRun  CalculationRun     @relation(fields: [calculationRunId], references: [id])
-  emissionFactor  EmissionFactor     @relation(fields: [emissionFactorId], references: [id])
+  emissionFactor  EmissionFactor?    @relation(fields: [emissionFactorId], references: [id])
   methodologyVersion MethodologyVersion @relation(fields: [methodologyVersionName], references: [name])
 
   @@index([calculationRunId])
