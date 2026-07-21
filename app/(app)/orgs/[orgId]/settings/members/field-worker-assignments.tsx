@@ -6,8 +6,9 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, UserRoundCheck } from "lucide-react";
+import { MapPinPlus, Trash2, UserRoundCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
@@ -52,9 +53,37 @@ export function FieldWorkerAssignments({
   const router = useRouter();
   const [workerId, setWorkerId] = useState(workers[0]?.id ?? "");
   const [siteId, setSiteId] = useState(sites[0]?.id ?? "");
+  const [newSiteName, setNewSiteName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  function createSite() {
+    const name = newSiteName.trim();
+    if (!name) {
+      setError("Enter a site name.");
+      return;
+    }
+    setError("");
+    setSuccess("");
+    startTransition(async () => {
+      const response = await fetch(`/api/orgs/${orgId}/sites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        setError(body?.message ?? "Could not create the site.");
+        return;
+      }
+      const site = (await response.json()) as { id: string };
+      setNewSiteName("");
+      setSiteId(site.id);
+      setSuccess(`Site "${name}" created — now grant a worker access to it.`);
+      router.refresh();
+    });
+  }
   const assignedSiteIds = useMemo(
     () =>
       new Set(
@@ -167,7 +196,7 @@ export function FieldWorkerAssignments({
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
               >
                 {sites.length === 0 ? (
-                  <option value="">No sites yet — create one under Contracts</option>
+                  <option value="">No sites yet — create one below</option>
                 ) : (
                   sites.map((site) => (
                     <option key={site.id} value={site.id}>
@@ -182,6 +211,40 @@ export function FieldWorkerAssignments({
             <Button type="submit" disabled={isPending || !canAssign}>
               {isPending ? "Saving..." : "Grant site access"}
             </Button>
+
+            {/* Quick site creation — Site requires a Contract → Project chain
+                that new orgs don't have yet; this provisions a default pair
+                so the field workflow isn't blocked on full setup. */}
+            <div className="mt-2 border-t border-slate-200 pt-3">
+              <Label htmlFor="quick-site-name" className="flex items-center gap-1.5">
+                <MapPinPlus className="h-3.5 w-3.5 text-slate-500" />
+                New site
+              </Label>
+              <div className="mt-1.5 flex gap-2">
+                <Input
+                  id="quick-site-name"
+                  value={newSiteName}
+                  onChange={(event) => setNewSiteName(event.target.value)}
+                  placeholder="e.g. Riverside Depot"
+                  disabled={isPending}
+                  className="h-9"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-9 shrink-0"
+                  disabled={isPending || newSiteName.trim().length === 0}
+                  onClick={createSite}
+                >
+                  Create site
+                </Button>
+              </div>
+              <p className="mt-1.5 text-xs text-slate-500">
+                Filed under a default &quot;General&quot; contract — reorganise
+                later from the Contracts page.
+              </p>
+            </div>
           </div>
           {!assignmentsAvailable && (
             <p className="mt-3 rounded-[7px] border border-[#e5e7eb] bg-[#e1f4df] px-3 py-2 text-sm text-[#0f3e17] tracking-[-0.42px]">
