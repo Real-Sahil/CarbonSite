@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getObjectBuffer, isValidStorageKey } from "@/lib/storage";
+import { requireSession } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 export async function GET(req: NextRequest) {
@@ -7,6 +8,8 @@ export async function GET(req: NextRequest) {
     if (process.env.NODE_ENV === "production" || process.env.STORAGE_DRIVER !== "local") {
       return apiError("NOT_FOUND", "Local storage route is disabled.", 404);
     }
+    // FIND-004: require auth even in dev to prevent unauthenticated file access.
+    await requireSession();
 
     const key = req.nextUrl.searchParams.get("key") ?? "";
     if (!isValidStorageKey(key)) {

@@ -15,7 +15,7 @@ export async function getSession() {
     where: { token: bearerToken },
     include: { user: true },
   });
-  if (!session || session.expiresAt <= new Date()) return null;
+  if (!session || session.expiresAt <= new Date() || session.revokedAt !== null) return null;
 
   return {
     session: {

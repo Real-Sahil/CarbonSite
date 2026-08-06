@@ -9,7 +9,7 @@ import { createOrgSchema } from "@/lib/validation/org";
 export async function POST(req: NextRequest) {
   try {
     const session = await requireSession();
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: `org-create:${session.user.id}`,
       limit: 10,
       windowMs: 60_000,

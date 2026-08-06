@@ -6,6 +6,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createFieldSubmissionSchema } from "@/lib/validation/records";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
+import { calculateGpsDistanceKm } from "@/lib/geo/gps-distance";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -142,6 +143,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       // Numeric fields from multipart arrive as strings — coerce before Zod.
       if (rawBody.gpsLat) rawBody.gpsLat = Number(rawBody.gpsLat);
       if (rawBody.gpsLng) rawBody.gpsLng = Number(rawBody.gpsLng);
+      if (rawBody.pickupLat) rawBody.pickupLat = Number(rawBody.pickupLat);
+      if (rawBody.pickupLng) rawBody.pickupLng = Number(rawBody.pickupLng);
+      if (rawBody.deliveryLat) rawBody.deliveryLat = Number(rawBody.deliveryLat);
+      if (rawBody.deliveryLng) rawBody.deliveryLng = Number(rawBody.deliveryLng);
     } else {
       rawBody = await req.json();
     }
@@ -279,6 +284,25 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
+    // Calculate road distance from GPS coordinates when both pickup and
+    // delivery points are provided. Stored immediately so reviewers can see
+    // the distance on the ticket detail page without waiting for approval.
+    let calculatedDistanceKm: number | undefined;
+    let distanceSource: string | undefined;
+    if (
+      body.pickupLat !== undefined && body.pickupLng !== undefined &&
+      body.deliveryLat !== undefined && body.deliveryLng !== undefined
+    ) {
+      const gpsResult = await calculateGpsDistanceKm({
+        pickupLat: body.pickupLat,
+        pickupLng: body.pickupLng,
+        deliveryLat: body.deliveryLat,
+        deliveryLng: body.deliveryLng,
+      });
+      calculatedDistanceKm = gpsResult.distanceKm;
+      distanceSource = gpsResult.source;
+    }
+
     let submission;
     try {
       submission = await prisma.fieldSubmission.create({
@@ -294,6 +318,12 @@ export async function POST(req: NextRequest, { params }: Params) {
           ocrExtractedData: body.ocrExtractedData,
           gpsLat: body.gpsLat,
           gpsLng: body.gpsLng,
+          pickupLat: body.pickupLat,
+          pickupLng: body.pickupLng,
+          deliveryLat: body.deliveryLat,
+          deliveryLng: body.deliveryLng,
+          calculatedDistanceKm,
+          distanceSource,
           deviceSubmittedAt: body.deviceSubmittedAt ? new Date(body.deviceSubmittedAt) : undefined,
           idempotencyKey: body.idempotencyKey,
           status: "submitted",

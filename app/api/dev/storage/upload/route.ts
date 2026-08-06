@@ -5,6 +5,7 @@ import {
   isAllowedEvidenceSize,
   normalizeMimeType,
 } from "@/lib/evidence/upload-policy";
+import { requireSession } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 export async function PUT(req: NextRequest) {
@@ -12,6 +13,8 @@ export async function PUT(req: NextRequest) {
     if (process.env.NODE_ENV === "production" || process.env.STORAGE_DRIVER !== "local") {
       return apiError("NOT_FOUND", "Local storage route is disabled.", 404);
     }
+    // FIND-004: require auth even in dev to prevent unauthenticated file writes.
+    await requireSession();
 
     const key = req.nextUrl.searchParams.get("key") ?? "";
     const contentType = normalizeMimeType(

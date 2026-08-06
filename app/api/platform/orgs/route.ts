@@ -7,7 +7,7 @@ import { handleRouteError } from "@/lib/validation/api";
 export async function GET(req: NextRequest) {
   try {
     const { session } = await requirePlatformMember();
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey("platform", "orgs-list", session.user.id),
       limit: 120,
       windowMs: 60_000,

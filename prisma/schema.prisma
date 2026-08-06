@@ -61,15 +61,16 @@ model User {
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime @map("expires_at")
-  token     String   @unique
-  ipAddress String?  @map("ip_address")
-  userAgent String?  @map("user_agent")
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        String    @id
+  expiresAt DateTime  @map("expires_at")
+  token     String    @unique
+  ipAddress String?   @map("ip_address")
+  userAgent String?   @map("user_agent")
+  userId    String    @map("user_id")
+  revokedAt DateTime? @map("revoked_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   @@map("sessions")
 }
@@ -1416,6 +1417,17 @@ model WebhookDelivery {
 
   @@index([webhookId, createdAt])
   @@map("webhook_deliveries")
+}
+
+// Fixed-window rate limit counters, Postgres-backed so they survive process
+// restarts and work across multiple Next.js workers. The key encodes the
+// semantic bucket + IP address. Rows are replaced atomically via ON CONFLICT.
+model RateLimitBucket {
+  key     String   @id
+  count   Int      @default(0)
+  resetAt DateTime @map("reset_at")
+
+  @@map("rate_limit_buckets")
 }
 
 // Zero-cost storage driver: evidence/report bytes persisted in Postgres when

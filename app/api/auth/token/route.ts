@@ -25,7 +25,7 @@ function extractBearerToken(header: string | null): string | null {
 
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimitRequest(req, { key: "token_refresh", ...POLICIES.tokenRefresh });
+    const limited = await rateLimitRequest(req, { key: "token_refresh", ...POLICIES.tokenRefresh });
     if (limited) return limited;
 
     const token = extractBearerToken(req.headers.get("authorization"));

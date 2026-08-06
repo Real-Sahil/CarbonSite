@@ -78,6 +78,11 @@ export const createFieldSubmissionSchema = z
     ),
     gpsLat: z.number().min(-90).max(90).optional(),
     gpsLng: z.number().min(-180).max(180).optional(),
+    // Explicit pickup/delivery coordinates for road-distance calculation.
+    pickupLat: z.number().min(-90).max(90).optional(),
+    pickupLng: z.number().min(-180).max(180).optional(),
+    deliveryLat: z.number().min(-90).max(90).optional(),
+    deliveryLng: z.number().min(-180).max(180).optional(),
     deviceSubmittedAt: z.string().datetime().optional(),
     idempotencyKey: z.string().max(128).optional(),
     evidenceIds: z.array(z.string()).optional(),
@@ -86,6 +91,18 @@ export const createFieldSubmissionSchema = z
     message: "Either siteId or reportingPeriodId is required.",
     path: ["siteId"],
   });
+
+// Admin/reviewer edit of a pending or needs_info submission.
+// Only non-immutable fields (formData, GPS coordinates, category, facility).
+export const updateFieldSubmissionSchema = z.object({
+  formData: z.record(z.any()).optional(),
+  emissionCategoryId: z.string().nullable().optional(),
+  facilityId: z.string().nullable().optional(),
+  pickupLat: z.number().min(-90).max(90).nullable().optional(),
+  pickupLng: z.number().min(-180).max(180).nullable().optional(),
+  deliveryLat: z.number().min(-90).max(90).nullable().optional(),
+  deliveryLng: z.number().min(-180).max(180).nullable().optional(),
+});
 
 export const reviewFieldSubmissionSchema = z.object({
   action: z.enum(["approved", "rejected", "needs_info"]),

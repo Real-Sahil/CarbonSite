@@ -56,7 +56,7 @@ export async function PATCH(
     const { session } = await requireOrgMember(
       orgId, "admin", "sustainability_director", "contract_manager",
     );
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "contracts-update", session.user.id),
       limit: 30,
       windowMs: 60_000,
@@ -109,7 +109,7 @@ export async function DELETE(
   try {
     const { orgId, contractId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "sustainability_director");
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "contracts-delete", session.user.id),
       limit: 10,
       windowMs: 60_000,

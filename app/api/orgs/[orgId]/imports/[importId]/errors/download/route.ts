@@ -23,7 +23,7 @@ export async function GET(
       "viewer",
       "auditor",
     );
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "import-error-download", session.user.id),
       limit: 60,
       windowMs: 60_000,
