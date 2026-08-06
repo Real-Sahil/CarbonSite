@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { rateLimitRequest, POLICIES } from "@/lib/security/rate-limit";
 
 // POST /api/auth/token — mobile bearer-token refresh.
 //
@@ -24,6 +25,9 @@ function extractBearerToken(header: string | null): string | null {
 
 export async function POST(req: NextRequest) {
   try {
+    const limited = rateLimitRequest(req, { key: "token_refresh", ...POLICIES.tokenRefresh });
+    if (limited) return limited;
+
     const token = extractBearerToken(req.headers.get("authorization"));
     if (!token) {
       return apiError("UNAUTHENTICATED", "Missing bearer token.", 401);
