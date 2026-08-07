@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { SubmissionReviewActions } from "../review-actions";
+import { SubmissionEditActions } from "../edit-actions";
 import { SubmissionEvidenceDownloads } from "../evidence-download-actions";
 import { SubmissionCommentActions } from "../comment-actions";
 
@@ -280,15 +281,34 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Location</CardTitle>
+              <CardTitle className="text-base">Location & distance</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {submission.gpsLat != null && submission.gpsLng != null ? (
+              {submission.gpsLat != null && submission.gpsLng != null && (
                 <DetailRow
-                  label="GPS location"
+                  label="Device GPS"
                   value={`${Number(submission.gpsLat).toFixed(5)}, ${Number(submission.gpsLng).toFixed(5)}`}
                 />
-              ) : (
+              )}
+              {submission.pickupLat != null && submission.pickupLng != null && (
+                <DetailRow
+                  label="Pickup"
+                  value={`${Number(submission.pickupLat).toFixed(5)}, ${Number(submission.pickupLng).toFixed(5)}`}
+                />
+              )}
+              {submission.deliveryLat != null && submission.deliveryLng != null && (
+                <DetailRow
+                  label="Delivery"
+                  value={`${Number(submission.deliveryLat).toFixed(5)}, ${Number(submission.deliveryLng).toFixed(5)}`}
+                />
+              )}
+              {submission.calculatedDistanceKm != null && (
+                <DetailRow
+                  label="Road distance"
+                  value={`${Number(submission.calculatedDistanceKm).toFixed(2)} km${submission.distanceSource ? ` (${submission.distanceSource === "gps_osrm" ? "OSRM" : submission.distanceSource === "gps_haversine" ? "straight-line" : submission.distanceSource})` : ""}`}
+                />
+              )}
+              {submission.gpsLat == null && submission.pickupLat == null && (
                 <p className="text-sm text-[#333333] italic tracking-[-0.42px]">No location captured</p>
               )}
             </CardContent>
@@ -559,6 +579,35 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             />
           </CardContent>
         </Card>
+
+        {!isResolved && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Edit submission values</CardTitle>
+              <CardDescription>
+                Correct OCR-extracted or field-worker-submitted values before approving.
+                Saving recalculates the road distance from any updated GPS coordinates.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SubmissionEditActions
+                orgId={orgId}
+                submissionId={id}
+                formData={(submission.formData ?? {}) as Record<string, unknown>}
+                emissionCategoryId={submission.emissionCategoryId}
+                facilityId={submission.facilityId}
+                pickupLat={submission.pickupLat !== null ? Number(submission.pickupLat) : null}
+                pickupLng={submission.pickupLng !== null ? Number(submission.pickupLng) : null}
+                deliveryLat={submission.deliveryLat !== null ? Number(submission.deliveryLat) : null}
+                deliveryLng={submission.deliveryLng !== null ? Number(submission.deliveryLng) : null}
+                calculatedDistanceKm={submission.calculatedDistanceKm !== null ? Number(submission.calculatedDistanceKm) : null}
+                distanceSource={submission.distanceSource}
+                emissionCategories={emissionCategories}
+                facilities={facilities}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {!isResolved && (
           <Card>

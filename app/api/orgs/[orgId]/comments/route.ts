@@ -19,7 +19,7 @@ export async function POST(
       "reviewer",
       "auditor",
     );
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "comments", session.user.id),
       limit: 30,
       windowMs: 60_000,

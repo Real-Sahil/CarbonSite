@@ -45,7 +45,7 @@ export async function POST(
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
     const body = inviteMemberSchema.parse(await req.json());
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "member_invites", session.user.id),
       limit: 15,
       windowMs: 60_000,

@@ -15,7 +15,7 @@ export async function getSession() {
     where: { token: bearerToken },
     include: { user: true },
   });
-  if (!session || session.expiresAt <= new Date()) return null;
+  if (!session || session.expiresAt <= new Date() || session.revokedAt !== null) return null;
 
   return {
     session: {
@@ -85,6 +85,10 @@ export const ROLE_GROUPS = {
   reviewers: [
     "admin", "sustainability_director", "sustainability_manager", "reviewer",
   ] as import("@prisma/client").OrgRole[],
+  // SECURITY: field_worker is intentionally absent. Field workers see only their
+  // own submissions via the field-submissions endpoint (own-only WHERE clause).
+  // Adding field_worker here would grant dashboard/calculation access to external
+  // subcontractors — do not add it.
   anyMember: [
     "admin", "sustainability_director", "sustainability_manager", "operations_manager",
     "editor", "reviewer", "viewer", "auditor", "contract_manager", "project_manager",

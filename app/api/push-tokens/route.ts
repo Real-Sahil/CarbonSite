@@ -14,7 +14,7 @@ const RegisterSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const { user } = await requireSession();
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey("push-tokens", "register", user.id),
       limit: 20,
       windowMs: 60_000,

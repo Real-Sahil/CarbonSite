@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = acceptInviteSchema.parse(await req.json());
     // Rate-limit by IP, not by token — prevents enumeration via per-token buckets.
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: "invite_accept",
       limit: 5,
       windowMs: 15 * 60_000,

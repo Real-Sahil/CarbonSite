@@ -35,7 +35,7 @@ export async function PUT(
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "branding-upsert", session.user.id),
       limit: 20,
       windowMs: 60_000,

@@ -55,7 +55,7 @@ export async function POST(
       "admin", "sustainability_director", "sustainability_manager",
       "contract_manager", "editor",
     );
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "sv-records-create", session.user.id),
       limit: 60,
       windowMs: 60_000,

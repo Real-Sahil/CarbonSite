@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit, POLICIES } from "@/lib/security/rate-limit";
 
+// Trusted proxy IPs whose X-Forwarded-For entries we honour (FIND-008).
+// Set TRUSTED_PROXY_IPS as a comma-separated list in the deployment environment.
+const TRUSTED_PROXY_SET: Set<string> = new Set(
+  (process.env.TRUSTED_PROXY_IPS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+);
+
 function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    req.headers.get("x-real-ip") ??
-    "unknown"
-  );
+  const xForwardedFor = req.headers.get("x-forwarded-for");
+  if (xForwardedFor) {
+    const ips = xForwardedFor.split(",").map((s) => s.trim());
+    // Walk right-to-left; skip known-trusted proxy hops, take the first
+    // untrusted IP as the real client address.
+    for (let i = ips.length - 1; i >= 0; i--) {
+      if (!TRUSTED_PROXY_SET.has(ips[i]!)) return ips[i]!;
+    }
+  }
+  return req.headers.get("x-real-ip") ?? "unknown";
 }
 
 // Extract subdomain from the host header.

@@ -43,7 +43,7 @@ export async function POST(
     const { session } = await requireOrgMember(
       orgId, "admin", "sustainability_director", "contract_manager",
     );
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "contracts-create", session.user.id),
       limit: 30,
       windowMs: 60_000,

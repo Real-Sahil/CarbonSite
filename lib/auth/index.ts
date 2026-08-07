@@ -73,6 +73,18 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24,     // refresh if older than 1 day
   },
+  advanced: {
+    // FIND-007: Harden session cookies.
+    // SameSite=Lax prevents cross-site form-POST CSRF.
+    // Secure ensures cookies are never sent over plaintext HTTP.
+    // HttpOnly is set by Better Auth by default; explicitly declaring it here
+    // ensures it survives future library upgrades.
+    defaultCookieAttributes: {
+      sameSite: "lax" as const,
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+    },
+  },
   trustedOrigins,
 });
 

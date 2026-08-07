@@ -6,7 +6,9 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
 function secret(): string {
-  return process.env.BETTER_AUTH_SECRET ?? "carbonsite-dev-storage-secret";
+  const s = process.env.BETTER_AUTH_SECRET;
+  if (!s) throw new Error("BETTER_AUTH_SECRET must be set — storage signing requires it.");
+  return s;
 }
 
 export function signStorageUrl(key: string, expiresAtMs: number): string {

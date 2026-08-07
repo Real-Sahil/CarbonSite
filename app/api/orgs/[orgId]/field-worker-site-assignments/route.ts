@@ -56,7 +56,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "field-worker-site-assignments", session.user.id),
       limit: 60,
       windowMs: 60_000,

@@ -201,10 +201,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         >
           <Menu className="h-5 w-5 text-[#0f3e17]" aria-hidden="true" />
         </button>
-        <span
-          className="ml-3 text-base font-light tracking-[-0.48px] text-[#0f3e17]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-        >
+        <span className="ml-3 text-base font-semibold tracking-tight text-[#0f3e17]">
           CarbonSite
         </span>
         <span className="ml-2 text-xs text-[#555] truncate max-w-[140px]">/ {orgName}</span>
@@ -224,10 +221,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-[#e5e7eb]">
               <div className="min-w-0">
-                <span
-                  className="block text-base font-light tracking-[-0.48px] text-[#0f3e17]"
-                  style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-                >
+                <span className="block text-base font-semibold tracking-tight text-[#0f3e17]">
                   CarbonSite
                 </span>
                 <span className="text-xs text-[#222222] font-normal mt-1 block truncate tracking-[-0.36px]">
@@ -332,18 +326,14 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         >
           {collapsed ? (
             <span
-              className="text-[#0f3e17] font-light text-lg select-none"
-              style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)" }}
+              className="text-[#0f3e17] font-bold text-base select-none"
               title={orgName}
             >
               C
             </span>
           ) : (
             <div className="min-w-0">
-              <span
-                className="block text-base font-light tracking-[-0.48px] text-[#0f3e17]"
-                style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-              >
+              <span className="block text-base font-semibold tracking-tight text-[#0f3e17]">
                 CarbonSite
               </span>
               <span

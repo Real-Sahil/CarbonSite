@@ -107,9 +107,15 @@ export async function POST(req: NextRequest, { params }: Params) {
     });
 
     const storageKey = keys.importSource(orgId, batch.id);
-    await putObject(storageKey, buffer, file.type || "text/csv");
+    try {
+      await putObject(storageKey, buffer, file.type || "text/csv");
+    } catch (storageErr) {
+      // Storage failed — clean up the orphan DB record before propagating
+      await prisma.importBatch.delete({ where: { id: batch.id } }).catch(() => null);
+      throw storageErr;
+    }
 
-    await prisma.importBatch.update({
+    const updatedBatch = await prisma.importBatch.update({
       where: { id: batch.id },
       data: { sourceStorageKey: storageKey, state: "parsing" },
     });
@@ -131,7 +137,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       metadata: { filename: file.name, templateKey },
     });
 
-    return NextResponse.json(batch, { status: 202 });
+    return NextResponse.json(updatedBatch, { status: 202 });
   } catch (err) {
     return handleRouteError(err);
   }

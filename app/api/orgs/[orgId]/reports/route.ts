@@ -14,7 +14,18 @@ type Params = { params: Promise<{ orgId: string }> };
 
 const createReportSchema = z.object({
   snapshotId: z.string().min(1),
-  type: z.enum(["inventory", "monthly_snapshot", "audit_package"]),
+  type: z.enum([
+    "inventory",
+    "monthly_snapshot",
+    "audit_package",
+    "secr",
+    "ppn_06_21",
+    "nhs_evergreen",
+    "breeam_evidence",
+    "national_toms",
+    "csrd_esrs_e1",
+    "contract_carbon",
+  ]),
   options: z.record(z.any()).optional(),
 });
 

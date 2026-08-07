@@ -13,7 +13,7 @@ export async function PATCH(
   try {
     const { orgId, memberId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "member-role-change", session.user.id),
       limit: 30,
       windowMs: 60_000,
@@ -88,7 +88,7 @@ export async function DELETE(
   try {
     const { orgId, memberId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
-    const limited = rateLimitRequest(req, {
+    const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "member-remove", session.user.id),
       limit: 30,
       windowMs: 60_000,

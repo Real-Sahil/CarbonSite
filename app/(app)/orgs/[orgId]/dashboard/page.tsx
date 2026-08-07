@@ -402,6 +402,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           formData: { not: Prisma.JsonNull },
         },
         select: { ocrExtractedData: true, formData: true },
+        take: 200,
+        orderBy: { createdAt: "desc" },
       }),
     ] as const),
   ]);
