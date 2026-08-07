@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm prisma migrate deploy && pnpm prisma db seed && pnpm build",
+  "buildCommand": "pnpm build",
   "devCommand": "pnpm dev"
 }
