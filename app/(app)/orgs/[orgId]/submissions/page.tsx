@@ -46,6 +46,7 @@ export default async function SubmissionsPage({
     submittedBy: { name: string | null; email: string };
     reportingPeriod: { label: string };
     facility: { name: string } | null;
+    emissionCategoryId: string | null;
   }[] = [];
   let statusCounts = new Map<string, number>();
   let hasMore = false;
@@ -97,6 +98,7 @@ export default async function SubmissionsPage({
       submittedBy: { name: s.submittedBy.name, email: s.submittedBy.email },
       reportingPeriod: { label: s.reportingPeriod?.label ?? "" },
       facility: s.facility ? { name: s.facility.name } : null,
+      emissionCategoryId: s.emissionCategoryId,
     }));
   } catch (err) {
     if (err instanceof AuthError) {
@@ -124,10 +126,7 @@ export default async function SubmissionsPage({
         <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Review
         </p>
-        <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-        >
+        <h1 className="text-[40px] font-bold leading-[1.35] tracking-[-0.4px] text-[#0f3e17]">
           Field submissions
         </h1>
         <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">

@@ -158,6 +158,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (typeof rawBody.ocrExtractedData === "string") {
       try { rawBody.ocrExtractedData = JSON.parse(rawBody.ocrExtractedData); } catch { rawBody.ocrExtractedData = undefined; }
     }
+    // Flutter embeds the raw OCR snapshot as __ocrExtracted__ inside formData
+    // (avoids a Flutter schema migration). Extract and promote it here so the
+    // server stores the pre-correction OCR values separately.
+    if (rawBody.formData && typeof rawBody.formData === "object" && !Array.isArray(rawBody.formData)) {
+      const embeddedOcr = (rawBody.formData as Record<string, unknown>)["__ocrExtracted__"];
+      if (embeddedOcr && typeof embeddedOcr === "object" && !Array.isArray(embeddedOcr)) {
+        rawBody.ocrExtractedData = rawBody.ocrExtractedData ?? embeddedOcr;
+        delete (rawBody.formData as Record<string, unknown>)["__ocrExtracted__"];
+      }
+    }
 
     // The mobile sync service sends the idempotency key as an HTTP header;
     // accept it there as well as in the body so offline retries dedupe.

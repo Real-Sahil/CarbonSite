@@ -80,6 +80,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   /// Per-field OCR confidence scores from the last extraction.
   Map<String, double> _fieldConfidence = {};
 
+  /// Original OCR-extracted values before any user correction.
+  /// Sent to the server as ocrExtractedData so reviewers can compare
+  /// what OCR read from the photo vs what the field worker confirmed.
+  Map<String, String> _ocrExtracted = {};
+
   final Map<String, TextEditingController> _controllers = {};
 
   bool get _isResubmission => widget.resubmittedFromId != null;
@@ -268,11 +273,14 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   void _applyExtracted(ExtractedFields fields) {
     _autoFilled.clear();
     _fieldConfidence = Map<String, double>.from(fields.fieldConfidence);
+    _ocrExtracted = {};
 
     void apply(String key, String? value) {
       if (value == null || value.isEmpty) return;
       _controller(key).text = value;
       _autoFilled.add(key);
+      // Snapshot the raw OCR value before any user correction.
+      _ocrExtracted[key] = value;
     }
 
     apply('weight', fields.weight);
@@ -323,6 +331,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       if (value.isNotEmpty) formData[key] = value;
     });
     formData['autoExtracted'] = _autoFilled.toList();
+
+    // Embed the raw OCR snapshot so the server can split it into ocrExtractedData.
+    // Using a namespaced key avoids colliding with real form fields.
+    if (_ocrExtracted.isNotEmpty) {
+      formData['__ocrExtracted__'] = Map<String, dynamic>.from(_ocrExtracted);
+    }
 
     // Include the resubmission link if this is a correction.
     if (widget.resubmittedFromId != null) {

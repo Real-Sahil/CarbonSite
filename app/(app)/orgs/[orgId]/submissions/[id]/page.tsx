@@ -146,6 +146,34 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
 
   const isResolved = submission.status === "approved" || submission.status === "rejected";
 
+  // Calculate what (if anything) blocks approval — shown as a banner so
+  // admins know exactly what to fix before clicking Approve.
+  let preApprovalIssue: { code: string; message: string } | null = null;
+  if (!isResolved) {
+    if (!submission.emissionCategoryId) {
+      preApprovalIssue = {
+        code: "MISSING_CATEGORY",
+        message: "Assign an emission category before approving this submission.",
+      };
+    } else {
+      const fd = (submission.formData ?? {}) as Record<string, unknown>;
+      const docType = submission.documentType;
+      let amount = 0;
+      if (docType === "waste_ticket") amount = Number(fd.weight ?? fd.amount ?? 0) || 0;
+      else if (docType === "delivery_note") amount = Number(fd.quantity ?? fd.weight ?? fd.amount ?? 0) || 0;
+      else if (docType === "fuel_receipt") amount = Number(fd.volume ?? fd.amount ?? 0) || 0;
+      else amount = Number(fd.amount ?? 0) || 0;
+      if (!Number.isFinite(amount) || amount <= 0) {
+        preApprovalIssue = {
+          code: "INVALID_FORM_DATA",
+          message: `No valid amount found in the form data. Open \"Edit submission values\" below and enter the ${
+            docType === "waste_ticket" ? "weight" : docType === "fuel_receipt" ? "volume" : "quantity"
+          } manually.`,
+        };
+      }
+    }
+  }
+
   // Parse form data for display
   const formData = submission.formData as Record<string, unknown> | null;
   const ocrData = submission.ocrExtractedData as Record<string, unknown> | null;
@@ -193,10 +221,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
         <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
           Review
         </p>
-        <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-        >
+        <h1 className="text-[40px] font-bold leading-[1.35] tracking-[-0.4px] text-[#0f3e17]">
           {DOC_TYPE_LABELS[submission.documentType] ?? submission.documentType}
         </h1>
         <div className="flex flex-wrap items-center gap-3 mt-[7px]">
@@ -224,6 +249,20 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           )}
         </div>
       </div>
+
+      {preApprovalIssue && (
+        <div className="mb-[21px] rounded-[14px] border border-amber-200 bg-amber-50 px-5 py-4">
+          <p className="text-sm font-medium text-amber-900 tracking-[-0.42px]">
+            {preApprovalIssue.code === "MISSING_CATEGORY"
+              ? "Emission category required before approving"
+              : "Amount or unit missing — check form data"}
+          </p>
+          <p className="mt-1 text-xs text-amber-800 tracking-[-0.36px]">
+            {preApprovalIssue.message}
+            {" "}Use the <span className="font-medium">Edit submission values</span> section below to make corrections, then click Approve.
+          </p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-[21px]">
         <div className="grid gap-[21px] md:grid-cols-2">

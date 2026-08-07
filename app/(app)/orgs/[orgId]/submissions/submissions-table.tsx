@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Inbox } from "lucide-react";
+import { Inbox, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Submission {
@@ -31,6 +31,7 @@ interface Submission {
   submittedBy: { name: string | null; email: string };
   reportingPeriod: { label: string };
   facility: { name: string } | null;
+  emissionCategoryId: string | null;
 }
 
 interface OrgMember {
@@ -280,6 +281,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
                 </TableHead>
                 <TableHead>Document type</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Setup</TableHead>
                 <TableHead>Submitted by</TableHead>
                 <TableHead>Reporting period</TableHead>
                 <TableHead>Facility</TableHead>
@@ -323,6 +325,19 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
                       >
                         {STATUS_LABELS[s.status] ?? s.status}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      {!s.emissionCategoryId &&
+                        (s.status === "submitted" || s.status === "under_review" || s.status === "needs_info") && (
+                        <Link
+                          href={`/orgs/${orgId}/submissions/${s.id}`}
+                          className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 hover:bg-amber-100 transition-colors"
+                          title="Assign an emission category before this can be approved"
+                        >
+                          <AlertCircle className="h-3 w-3 shrink-0" />
+                          Category needed
+                        </Link>
+                      )}
                     </TableCell>
                     <TableCell className="text-[#222222]">
                       {s.submittedBy.name ?? s.submittedBy.email}
