@@ -18,43 +18,45 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Camera, FileText } from "lucide-react";
+import { FileText, Layers, Clock, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { CreateReportForm } from "./report-form";
 import { ReportDownloadActions } from "./report-download-actions";
+import { StatusPoller } from "@/components/ui/status-poller";
 
 interface ReportsPageProps {
   params: Promise<{ orgId: string }>;
 }
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
-  inventory: "Inventory",
+  inventory:       "Inventory",
   monthly_snapshot: "Monthly snapshot",
-  audit_package: "Audit package",
-  secr: "SECR",
-  ppn_06_21: "PPN 06/21",
-  nhs_evergreen: "NHS Evergreen L1",
+  audit_package:   "Audit package",
+  secr:            "SECR",
+  ppn_06_21:       "PPN 06/21",
+  nhs_evergreen:   "NHS Evergreen L1",
   breeam_evidence: "BREEAM Evidence",
-  national_toms: "National TOMS",
-  csrd_esrs_e1: "CSRD ESRS E1",
+  national_toms:   "National TOMS",
+  csrd_esrs_e1:    "CSRD ESRS E1",
   contract_carbon: "Contract Carbon",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  queued: "Queued",
-  generating: "Generating",
-  ready: "Ready",
-  failed: "Failed",
-};
-
-const STATUS_CLASSES: Record<string, string> = {
-  queued: "bg-[#e1f4df] text-[#0f3e17] border-transparent",
-  generating: "bg-blue-100 text-blue-700 border-transparent",
-  ready: "bg-green-100 text-green-700 border-transparent",
-  failed: "bg-red-100 text-red-700 border-transparent",
-};
+function statusConfig(status: string) {
+  switch (status) {
+    case "queued":
+      return { label: "Queued", className: "bg-zinc-100 text-zinc-600 border-transparent", icon: Clock };
+    case "generating":
+      return { label: "Generating", className: "bg-blue-50 text-blue-700 border-transparent animate-pulse", icon: Loader2 };
+    case "ready":
+      return { label: "Ready", className: "bg-[#e1f4df] text-[#0f3e17] border-transparent", icon: CheckCircle2 };
+    case "failed":
+      return { label: "Failed", className: "bg-red-50 text-red-700 border-transparent", icon: AlertTriangle };
+    default:
+      return { label: status, className: "border-zinc-200", icon: Clock };
+  }
+}
 
 function formatTimestamp(value: Date | null): string {
-  if (!value) return "Not yet";
+  if (!value) return "-";
   return value.toLocaleString("en-GB", {
     day: "numeric",
     month: "short",
@@ -72,7 +74,11 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
-      return <AccessDenied />;
+      return (
+        <div className="p-8 text-sm text-zinc-500">
+          You do not have permission to view reports.
+        </div>
+      );
     }
     throw err;
   }
@@ -86,7 +92,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
         _count: { select: { reports: true } },
       },
       orderBy: { publishedAt: "desc" },
-      take: 100,
+      take: 20,
     }),
     prisma.report.findMany({
       where: { organizationId: orgId },
@@ -96,8 +102,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
         createdBy: { select: { name: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: 100,
-      // pdfStorageKey and csvStorageKey are scalar fields, no include needed
+      take: 50,
     }),
     prisma.contract.findMany({
       where: { organizationId: orgId },
@@ -106,175 +111,250 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
     }),
   ]);
 
+  const hasInFlight = reports.some((r) => r.status === "queued" || r.status === "generating");
+  const stats = {
+    total: reports.length,
+    ready: reports.filter((r) => r.status === "ready").length,
+    generating: reports.filter((r) => r.status === "queued" || r.status === "generating").length,
+  };
+
   return (
-    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
-      <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-          Reporting
-        </p>
-        <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-        >
-          Reports
-        </h1>
-        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
-          Published snapshots and generated report artefacts. Totals always match dashboard totals for the same snapshot.
-        </p>
+    <div className="min-h-[100dvh] bg-[#f9fafb]">
+      <StatusPoller active={hasInFlight} intervalMs={5000} />
+
+      {/* Page header */}
+      <div className="bg-white border-b border-[#e5e7eb]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex items-start gap-3 mb-1">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e1f4df] shrink-0 mt-0.5">
+              <FileText className="h-4 w-4 text-[#0f3e17]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-medium tracking-wide text-[#0f3e17] uppercase">Reporting</span>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Reports</h1>
+              <p className="mt-1 text-sm text-zinc-500 max-w-[65ch]">
+                Generate PDF and CSV reports from published snapshots. Totals are guaranteed to match dashboard figures for the same snapshot.
+              </p>
+            </div>
+          </div>
+
+          {reports.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-6">
+              <StatPill label="Total reports" value={stats.total} />
+              <StatPill label="Ready" value={stats.ready} accent="green" />
+              {stats.generating > 0 && (
+                <StatPill label="Generating" value={stats.generating} accent="blue" pulse />
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Published snapshots{" "}
-            <span className="text-sm font-normal text-[#222222]">({snapshots.length})</span>
-          </CardTitle>
-          <CardDescription>
-            Immutable, versioned links between a reporting period and a calculation run.
-            Dashboards and reports read from these.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className={snapshots.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          {snapshots.length === 0 ? (
-            <EmptyState
-              icon={Camera}
-              title="No published snapshots yet"
-              description="Run a calculation, review the results, then publish a snapshot to lock totals for reporting."
-            />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Version</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Published by</TableHead>
-                  <TableHead>Published at</TableHead>
-                  <TableHead>Calculation run</TableHead>
-                  <TableHead className="text-right">Reports</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {snapshots.map((snapshot) => (
-                  <TableRow key={snapshot.id}>
-                    <TableCell className="font-medium text-[#0f3e17]">
-                      v{snapshot.version}
-                    </TableCell>
-                    <TableCell className="text-[#222222]">
-                      {snapshot.reportingPeriod.label}
-                    </TableCell>
-                    <TableCell className="text-[#222222]">
-                      {snapshot.publishedBy.name ?? snapshot.publishedBy.email}
-                    </TableCell>
-                    <TableCell className="text-[#222222]">
-                      {formatTimestamp(snapshot.publishedAt)}
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/orgs/${orgId}/calculations/${snapshot.calculationRunId}`}
-                        className="hover:underline underline-offset-2 text-[#0f3e17]"
-                      >
-                        View run
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-right text-[#222222]">
-                      {snapshot._count.reports.toLocaleString("en-GB")}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* Content */}
+      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+        {/* Snapshots */}
+        <Card className="border-[#e5e7eb] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#e5e7eb]">
+            <div className="flex items-center gap-2">
+              <Layers className="h-4 w-4 text-zinc-400" />
+              <CardTitle className="text-sm font-semibold text-zinc-900">
+                Published snapshots
+                <span className="ml-2 text-xs font-normal text-zinc-400">({snapshots.length})</span>
+              </CardTitle>
+            </div>
+            <CardDescription className="text-xs text-zinc-400 mt-0.5">
+              Immutable links between a reporting period and a calculation run. Dashboards and reports read from these.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={snapshots.length === 0 ? "py-12" : "p-0"}>
+            {snapshots.length === 0 ? (
+              <EmptyState
+                icon={Layers}
+                title="No published snapshots yet"
+                description="Run a calculation, review the results, then publish a snapshot to lock totals for reporting."
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-[#f9fafb] border-b border-[#e5e7eb]">
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">Version</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Published by</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Published at</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Calculation run</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3 text-right pr-6">Reports</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {snapshots.map((snapshot) => (
+                      <TableRow key={snapshot.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition-colors">
+                        <TableCell className="py-3.5 pl-6">
+                          <span className="font-semibold text-sm text-[#0f3e17]">v{snapshot.version}</span>
+                        </TableCell>
+                        <TableCell className="text-sm text-zinc-700 py-3.5">
+                          {snapshot.reportingPeriod.label}
+                        </TableCell>
+                        <TableCell className="text-sm text-zinc-500 py-3.5">
+                          {snapshot.publishedBy.name ?? snapshot.publishedBy.email}
+                        </TableCell>
+                        <TableCell className="text-sm text-zinc-500 py-3.5 tabular-nums">
+                          {formatTimestamp(snapshot.publishedAt)}
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          <Link
+                            href={`/orgs/${orgId}/calculations/${snapshot.calculationRunId}`}
+                            className="text-sm text-[#0f3e17] hover:underline underline-offset-2"
+                          >
+                            View run
+                          </Link>
+                        </TableCell>
+                        <TableCell className="py-3.5 text-right pr-6 text-sm text-zinc-500 tabular-nums">
+                          {snapshot._count.reports.toLocaleString("en-GB")}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Reports <span className="text-sm font-normal text-[#222222]">({reports.length})</span>
-          </CardTitle>
-          <CardDescription>
-            PDF and CSV outputs generated asynchronously from published snapshots.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className={reports.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          <div className="px-6 pb-5">
-            <CreateReportForm
-              orgId={orgId}
-              snapshots={snapshots.map((s) => ({
-                id: s.id,
-                reportingPeriodId: s.reportingPeriodId,
-                label: `${s.reportingPeriod.label} v${s.version}`,
-              }))}
-              contracts={contracts}
-            />
-          </div>
-          {reports.length === 0 ? (
-            <EmptyState
-              icon={FileText}
-              title="No reports requested yet"
-              description="Select a snapshot and report type above to generate your first report."
-            />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Snapshot</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created by</TableHead>
-                  <TableHead>Created at</TableHead>
-                  <TableHead>Download</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reports.map((report) => (
-                  <TableRow key={report.id}>
-                    <TableCell className="font-normal text-[#0f3e17]">
-                      {REPORT_TYPE_LABELS[report.type] ?? report.type.replaceAll("_", " ")}
-                    </TableCell>
-                    <TableCell className="text-[#222222]">
-                      {report.reportingPeriod.label}
-                    </TableCell>
-                    <TableCell className="text-[#222222]">v{report.snapshot.version}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={STATUS_CLASSES[report.status] ?? STATUS_CLASSES.queued}
-                      >
-                        {STATUS_LABELS[report.status] ?? report.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-[#222222]">
-                      {report.createdBy.name ?? report.createdBy.email}
-                    </TableCell>
-                    <TableCell className="text-[#222222]">
-                      {formatTimestamp(report.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <ReportDownloadActions
-                        orgId={orgId}
-                        reportId={report.id}
-                        hasPdf={!!report.pdfStorageKey}
-                        hasCsv={!!report.csvStorageKey}
-                        ready={report.status === "ready"}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+        {/* Reports */}
+        <Card className="border-[#e5e7eb] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#e5e7eb]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-zinc-400" />
+                <CardTitle className="text-sm font-semibold text-zinc-900">
+                  Reports
+                  <span className="ml-2 text-xs font-normal text-zinc-400">({reports.length})</span>
+                </CardTitle>
+              </div>
+              {hasInFlight && (
+                <div className="flex items-center gap-1.5 text-xs text-blue-600">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                  </span>
+                  Live
+                </div>
+              )}
+            </div>
+            <CardDescription className="text-xs text-zinc-400 mt-0.5">
+              PDF and CSV outputs generated asynchronously from published snapshots.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="px-6 py-5 border-b border-[#f3f4f6]">
+              <CreateReportForm
+                orgId={orgId}
+                snapshots={snapshots.map((s) => ({
+                  id: s.id,
+                  reportingPeriodId: s.reportingPeriodId,
+                  label: `${s.reportingPeriod.label} v${s.version}`,
+                }))}
+                contracts={contracts}
+              />
+            </div>
+            {reports.length === 0 ? (
+              <EmptyState
+                icon={FileText}
+                title="No reports requested yet"
+                description="Select a snapshot and report type above to generate your first report."
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-[#f9fafb] border-b border-[#e5e7eb]">
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">Type</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Snapshot</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Requested by</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Requested at</TableHead>
+                      <TableHead className="text-xs font-medium text-zinc-500 py-3 pr-6">Download</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {reports.map((report) => {
+                      const cfg = statusConfig(report.status);
+                      const StatusIcon = cfg.icon;
+                      return (
+                        <TableRow key={report.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition-colors">
+                          <TableCell className="py-3.5 pl-6">
+                            <span className="text-sm font-medium text-zinc-900">
+                              {REPORT_TYPE_LABELS[report.type] ?? report.type.replaceAll("_", " ")}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-sm text-zinc-600 py-3.5">
+                            {report.reportingPeriod.label}
+                          </TableCell>
+                          <TableCell className="text-sm text-zinc-500 py-3.5">
+                            v{report.snapshot.version}
+                          </TableCell>
+                          <TableCell className="py-3.5">
+                            <Badge
+                              variant="outline"
+                              className={`inline-flex items-center gap-1 text-xs font-medium ${cfg.className}`}
+                            >
+                              <StatusIcon className="h-3 w-3" />
+                              {cfg.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-zinc-500 py-3.5">
+                            {report.createdBy.name ?? report.createdBy.email}
+                          </TableCell>
+                          <TableCell className="text-sm text-zinc-500 py-3.5 tabular-nums">
+                            {formatTimestamp(report.createdAt)}
+                          </TableCell>
+                          <TableCell className="py-3.5 pr-6">
+                            <ReportDownloadActions
+                              orgId={orgId}
+                              reportId={report.id}
+                              hasPdf={!!report.pdfStorageKey}
+                              hasCsv={!!report.csvStorageKey}
+                              ready={report.status === "ready"}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
 
-function AccessDenied() {
+function StatPill({
+  label,
+  value,
+  accent,
+  pulse,
+}: {
+  label: string;
+  value: number;
+  accent?: "green" | "blue";
+  pulse?: boolean;
+}) {
+  const colors = {
+    green: "bg-[#e1f4df] text-[#0f3e17]",
+    blue: "bg-blue-50 text-blue-700",
+  };
+  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#e5e7eb]";
   return (
-    <div className="p-[42px]">
-      <p className="text-sm text-[#222222] tracking-[-0.42px]">You do not have permission to view reports.</p>
+    <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base} ${pulse ? "animate-pulse" : ""}`}>
+      <span className="tabular-nums font-semibold">{value}</span>
+      <span>{label}</span>
     </div>
   );
 }
@@ -289,14 +369,12 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
-        <Icon className="h-7 w-7 text-[#0f3e17]" />
+    <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e1f4df] mb-4">
+        <Icon className="h-6 w-6 text-[#0f3e17]" />
       </div>
-      <div>
-        <p className="font-medium text-[#0f3e17]">{title}</p>
-        <p className="text-sm text-[#222222] mt-1 max-w-sm">{description}</p>
-      </div>
+      <h3 className="text-sm font-semibold text-zinc-900 mb-1">{title}</h3>
+      <p className="text-sm text-zinc-500 max-w-sm">{description}</p>
     </div>
   );
 }
