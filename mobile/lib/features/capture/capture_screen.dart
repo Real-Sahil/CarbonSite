@@ -18,6 +18,7 @@ import '../../core/storage/app_database.dart';
 import '../sync/sync_service.dart';
 import 'barcode_scan_screen.dart';
 import 'ocr_extractor.dart';
+import 'ocr_validation_panel.dart';
 
 /// Field evidence capture flow:
 ///
@@ -657,7 +658,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
               const SizedBox(height: 16),
             ],
             ..._fieldsForType(type),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            OcrValidationPanel(
+              fieldConfidence: _fieldConfidence,
+              autoFilledFields: _autoFilled,
+            ),
             SwitchListTile(
               value: _gpsEnabled,
               onChanged: _submitting
