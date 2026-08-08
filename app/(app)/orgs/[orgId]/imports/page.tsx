@@ -51,7 +51,14 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         </div>
       );
     }
-    throw err;
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[imports] auth/membership check failed:", msg);
+    return (
+      <div className="p-8">
+        <p className="text-sm font-medium text-red-700">Failed to load imports (auth/db error)</p>
+        <pre className="mt-2 text-xs text-red-600 whitespace-pre-wrap break-all max-w-2xl">{msg}</pre>
+      </div>
+    );
   }
 
   const importsQuery = prisma.importBatch.findMany({
