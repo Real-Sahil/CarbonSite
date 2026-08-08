@@ -11,6 +11,7 @@ import {
   Gauge,
   Handshake,
   Inbox,
+  Layers,
   Leaf,
   LineChart,
   ListChecks,
@@ -80,7 +81,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const [organization, currentPeriod] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
-      select: { name: true },
+      select: { name: true, industry: true },
     }),
     prisma.reportingPeriod.findFirst({
       where: { organizationId: orgId },
@@ -450,6 +451,85 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
   const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
     dataQualityBatch;
+
+  // Industry-specific data
+  const industry = organization.industry ?? null;
+  const [industryData] = await Promise.all([
+    (async () => {
+      if (industry === "construction") {
+        const agg = await prisma.embodiedCarbonRecord.aggregate({
+          where: { organizationId: orgId },
+          _sum: { totalKgCo2e: true },
+          _count: { _all: true },
+        });
+        const byCategory = await prisma.embodiedCarbonRecord.groupBy({
+          by: ["materialId"],
+          where: { organizationId: orgId },
+          _sum: { totalKgCo2e: true },
+          _count: { _all: true },
+          orderBy: { _sum: { totalKgCo2e: "desc" } },
+          take: 5,
+        });
+        return {
+          type: "construction" as const,
+          totalKgCo2e: Number(agg._sum.totalKgCo2e ?? 0),
+          recordCount: agg._count._all,
+          topCategories: byCategory.length,
+        };
+      }
+      if (industry === "logistics") {
+        const transportAgg = await prisma.dashboardAggregate.aggregate({
+          where: {
+            organizationId: orgId,
+            scope: 3,
+            snapshotId: null,
+            ...(currentPeriod ? { reportingPeriodId: currentPeriod.id } : {}),
+          },
+          _sum: { totalCo2e: true, recordCount: true },
+        });
+        return {
+          type: "logistics" as const,
+          transportKgCo2e: Number(transportAgg._sum.totalCo2e ?? 0),
+          transportRecords: transportAgg._sum.recordCount ?? 0,
+        };
+      }
+      if (industry === "facilities_management") {
+        const electricityCategory = await prisma.emissionCategory.findFirst({
+          where: { code: { in: ["s2-electricity-lb", "s2-electricity-mb"] } },
+          select: { id: true },
+        });
+        const energyAgg = electricityCategory
+          ? await prisma.dashboardAggregate.aggregate({
+              where: {
+                organizationId: orgId,
+                emissionCategoryId: electricityCategory.id,
+                snapshotId: null,
+                ...(currentPeriod ? { reportingPeriodId: currentPeriod.id } : {}),
+              },
+              _sum: { totalCo2e: true, recordCount: true },
+            })
+          : { _sum: { totalCo2e: null, recordCount: null } };
+        return {
+          type: "facilities_management" as const,
+          energyKgCo2e: Number(energyAgg._sum.totalCo2e ?? 0),
+          energyRecords: energyAgg._sum.recordCount ?? 0,
+        };
+      }
+      if (industry === "public_procurement") {
+        const latestCrp = await prisma.report.findFirst({
+          where: { organizationId: orgId, type: "ppn_006_crp" },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, status: true, createdAt: true },
+        });
+        return {
+          type: "public_procurement" as const,
+          crpStatus: latestCrp?.status ?? null,
+          crpDate: latestCrp?.createdAt?.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) ?? null,
+        };
+      }
+      return null;
+    })(),
+  ]);
 
   const approvedCountsByPeriod = await prisma.activityRecord.groupBy({
     by: ["reportingPeriodId"],
@@ -836,6 +916,120 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </Link>
         )}
       </section>
+
+      {industryData && (
+        <section aria-label="Industry insights" className="mt-8">
+          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-zinc-500">
+            {industryData.type === "construction" && "Embodied carbon"}
+            {industryData.type === "logistics" && "Logistics insights"}
+            {industryData.type === "facilities_management" && "Building energy"}
+            {industryData.type === "public_procurement" && "Procurement compliance"}
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {industryData.type === "construction" && (
+              <>
+                <MetricCard
+                  icon={Layers}
+                  label="Embodied carbon total"
+                  value={industryData.totalKgCo2e >= 1000
+                    ? `${(industryData.totalKgCo2e / 1000).toFixed(2)} tCO2e`
+                    : `${industryData.totalKgCo2e.toFixed(1)} kgCO2e`}
+                  detail={`${industryData.recordCount} material record${industryData.recordCount !== 1 ? "s" : ""}`}
+                  href={`/orgs/${orgId}/embodied-carbon`}
+                />
+                <MetricCard
+                  icon={BarChart3}
+                  label="Material categories"
+                  value={String(industryData.topCategories)}
+                  detail="Distinct material types recorded"
+                  href={`/orgs/${orgId}/embodied-carbon`}
+                />
+              </>
+            )}
+            {industryData.type === "logistics" && (
+              <>
+                <MetricCard
+                  icon={Route}
+                  label="Transport emissions (Scope 3)"
+                  value={industryData.transportKgCo2e >= 1000
+                    ? `${(industryData.transportKgCo2e / 1000).toFixed(2)} tCO2e`
+                    : `${industryData.transportKgCo2e.toFixed(1)} kgCO2e`}
+                  detail={`${industryData.transportRecords} Scope 3 records`}
+                />
+                <Link
+                  href={`/orgs/${orgId}/records?scope=3`}
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px] transition-colors hover:bg-[#d4efd2]"
+                >
+                  <div className="flex items-center gap-2">
+                    <Scale aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#0f3e17]">tCO2e/tonne-km</p>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-base font-normal text-[#0f3e17] tracking-[-0.42px]">Add transport data</p>
+                    <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                      Import freight records to calculate intensity
+                    </p>
+                  </div>
+                </Link>
+              </>
+            )}
+            {industryData.type === "facilities_management" && (
+              <>
+                <MetricCard
+                  icon={Gauge}
+                  label="Building energy (Scope 2)"
+                  value={industryData.energyKgCo2e >= 1000
+                    ? `${(industryData.energyKgCo2e / 1000).toFixed(2)} tCO2e`
+                    : `${industryData.energyKgCo2e.toFixed(1)} kgCO2e`}
+                  detail={`${industryData.energyRecords} electricity records`}
+                />
+                <Link
+                  href={`/orgs/${orgId}/records?scope=2`}
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px] transition-colors hover:bg-[#d4efd2]"
+                >
+                  <div className="flex items-center gap-2">
+                    <LineChart aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#0f3e17]">Energy intensity</p>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-base font-normal text-[#0f3e17] tracking-[-0.42px]">Add floor area</p>
+                    <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                      Import m² data to compute kgCO2e/m²
+                    </p>
+                  </div>
+                </Link>
+              </>
+            )}
+            {industryData.type === "public_procurement" && (
+              <>
+                <MetricCard
+                  icon={ShieldCheck}
+                  label="PPN 006 CRP status"
+                  value={industryData.crpStatus === "ready" ? "Ready" : industryData.crpStatus ?? "Not generated"}
+                  detail={industryData.crpDate ? `Last generated ${industryData.crpDate}` : "Generate a Carbon Reduction Plan report"}
+                  href={`/orgs/${orgId}/reports`}
+                  tone={industryData.crpStatus === "ready" ? "good" : "neutral"}
+                />
+                <Link
+                  href={`/orgs/${orgId}/reports`}
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px] transition-colors hover:bg-[#d4efd2]"
+                >
+                  <div className="flex items-center gap-2">
+                    <Handshake aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#0f3e17]">Procurement</p>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-base font-normal text-[#0f3e17] tracking-[-0.42px]">Generate CRP report</p>
+                    <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                      PPN 006/21 compliant Carbon Reduction Plan
+                    </p>
+                  </div>
+                </Link>
+              </>
+            )}
+          </div>
+        </section>
+      )}
 
       <p className="mt-8 mb-3 text-[10px] font-medium uppercase tracking-widest text-zinc-500">
         Operations
@@ -1800,19 +1994,25 @@ function MetricCard({
   label,
   value,
   detail,
+  href,
+  tone = "neutral",
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
   detail: string;
+  href?: string;
+  tone?: "neutral" | "good" | "bad";
 }) {
-  return (
-    <Card>
+  const valueColor =
+    tone === "good" ? "text-[#0f7a2a]" : tone === "bad" ? "text-red-700" : "text-[#0f3e17]";
+  const content = (
+    <Card className={href ? "transition-shadow hover:shadow-md" : undefined}>
       <CardContent className="p-[21px]">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-normal text-[#333333] tracking-[-0.42px]">{label}</p>
-            <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#0f3e17]">{value}</p>
+            <p className={`mt-2 text-3xl font-normal tracking-[-0.4px] ${valueColor}`}>{value}</p>
             <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">{detail}</p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#e1f4df] text-[#0f3e17]">
@@ -1822,6 +2022,8 @@ function MetricCard({
       </CardContent>
     </Card>
   );
+  if (href) return <Link href={href}>{content}</Link>;
+  return content;
 }
 
 function ReadinessRow({

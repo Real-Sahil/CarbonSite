@@ -5,6 +5,7 @@ type AuditAction =
   | "auth.sign_in"
   | "auth.sign_out"
   | "org.created"
+  | "org.updated"
   | "org.member.invite"
   | "org.member.invite_accepted"
   | "org.member.added"
