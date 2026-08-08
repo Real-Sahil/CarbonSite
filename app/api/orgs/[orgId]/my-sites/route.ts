@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
-// Sites assigned to the calling field worker. Drives the mobile "My Projects"
-// screen — each site is a place the worker can submit field evidence against.
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+// GET /api/orgs/[orgId]/my-sites
+//
+// Returns the sites this field worker is assigned to, shaped for the Flutter
+// mobile app. Each item includes the parent project name and date range so the
+// app can show meaningful labels without a second request.
+//
+// Admins and editors see all sites in the org (they can submit on behalf of
+// any site). Field workers see only their own assignments.
+
+type Params = { params: Promise<{ orgId: string }> };
+
+export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     const { session, membership } = await requireOrgMember(
@@ -20,23 +25,25 @@ export async function GET(
       "field_worker",
     );
 
-    try {
+    const isFieldWorker = membership.role === "field_worker";
+
+    if (isFieldWorker) {
       const assignments = await prisma.fieldWorkerSiteAssignment.findMany({
-        where: {
-          organizationId: orgId,
-          // field workers see only their own; org members see all assignments
-          ...(membership.role === "field_worker" ? { userId: session.user.id } : {}),
-        },
+        where: { organizationId: orgId, userId: session.user.id },
         include: {
           site: {
             select: {
               id: true,
               name: true,
-              siteCode: true,
               postcode: true,
-              city: true,
+              organizationId: true,
               project: {
-                select: { id: true, name: true, status: true, startDate: true, endDate: true },
+                select: {
+                  name: true,
+                  startDate: true,
+                  endDate: true,
+                  status: true,
+                },
               },
             },
           },
@@ -44,30 +51,54 @@ export async function GET(
         orderBy: { createdAt: "desc" },
       });
 
-      const sites = assignments
-        .filter((a) => a.site !== null)
-        .map((a) => ({
-          assignmentId: a.id,
-          id: a.site.id,
-          name: a.site.name,
-          siteCode: a.site.siteCode,
-          postcode: a.site.postcode,
-          city: a.site.city,
-          projectId: a.site.project?.id ?? null,
-          projectName: a.site.project?.name ?? null,
-          projectStatus: a.site.project?.status ?? null,
-          startDate: a.site.project?.startDate ?? null,
-          endDate: a.site.project?.endDate ?? null,
-        }));
+      const data = assignments.map((a) => ({
+        assignmentId: a.id,
+        id: a.site.id,
+        name: a.site.name,
+        postcode: a.site.postcode,
+        organizationId: a.site.organizationId,
+        projectName: a.site.project.name,
+        startDate: a.site.project.startDate?.toISOString().slice(0, 10) ?? "",
+        endDate: a.site.project.endDate?.toISOString().slice(0, 10) ?? "",
+        projectStatus: a.site.project.status,
+      }));
 
-      return NextResponse.json(sites);
-    } catch (err) {
-      // Migration not yet applied — return empty so the app degrades gracefully.
-      if (isMissingDatabaseObjectError(err)) {
-        return NextResponse.json([]);
-      }
-      throw err;
+      return NextResponse.json(data);
     }
+
+    // Admins / editors / reviewers see all sites in the org.
+    const sites = await prisma.site.findMany({
+      where: { organizationId: orgId },
+      select: {
+        id: true,
+        name: true,
+        postcode: true,
+        organizationId: true,
+        project: {
+          select: {
+            name: true,
+            startDate: true,
+            endDate: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+
+    const data = sites.map((s) => ({
+      assignmentId: null,
+      id: s.id,
+      name: s.name,
+      postcode: s.postcode,
+      organizationId: s.organizationId,
+      projectName: s.project.name,
+      startDate: s.project.startDate?.toISOString().slice(0, 10) ?? "",
+      endDate: s.project.endDate?.toISOString().slice(0, 10) ?? "",
+      projectStatus: s.project.status,
+    }));
+
+    return NextResponse.json(data);
   } catch (err) {
     return handleRouteError(err);
   }

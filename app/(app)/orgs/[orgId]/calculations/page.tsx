@@ -22,6 +22,7 @@ import {
 import { Calculator, Play, RefreshCw, AlertTriangle, CheckCircle2, Clock, Loader2 } from "lucide-react";
 import { StatusPoller } from "@/components/ui/status-poller";
 import { RetryCalculationButton } from "./retry-button";
+import { CancelRunButton } from "./cancel-run-button";
 
 interface CalculationsPageProps {
   params: Promise<{ orgId: string }>;
@@ -269,6 +270,9 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                                 methodologyVersionId={run.methodologyVersionId}
                                 factorLibraryId={run.factorLibraryId}
                               />
+                            )}
+                            {(run.status === "queued" || run.status === "running") && (
+                              <CancelRunButton orgId={orgId} runId={run.id} />
                             )}
                           </TableCell>
                         </TableRow>

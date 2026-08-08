@@ -32,6 +32,7 @@ type AuditAction =
   | "factor.library_imported"
   | "calculation.run_triggered"
   | "calculation.run_completed"
+  | "calculation.run_cancelled"
   | "snapshot.published"
   | "report.generation_triggered"
   | "report.published"

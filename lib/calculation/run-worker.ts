@@ -4,12 +4,11 @@ import { selectFactor } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 
 export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<void> {
-  await prisma.calculationRun.update({
-    where: { id: calculationRunId },
-    data: { status: "running", startedAt: new Date() },
-  });
-
   try {
+    await prisma.calculationRun.update({
+      where: { id: calculationRunId },
+      data: { status: "running", startedAt: new Date() },
+    });
     const run = await prisma.calculationRun.findUniqueOrThrow({
       where: { id: calculationRunId },
       include: {

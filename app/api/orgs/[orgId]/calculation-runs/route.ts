@@ -117,9 +117,20 @@ export async function POST(req: NextRequest, { params }: Params) {
     // Inline-mode aware: processes the run now when no worker is deployed,
     // enqueues to pg-boss when JOB_PROCESSING_MODE=worker. Failures are
     // recorded on the run itself (status + errorMessage), not thrown here.
-    await dispatchCalculation({ calculationRunId: run.id, orgId }).catch((err) =>
-      console.error(`[calculations] run ${run.id} failed:`, err),
-    );
+    // Belt-and-suspenders: if dispatch throws before updating the run status
+    // (e.g. the initial "running" update failed), explicitly mark it failed
+    // so it never stays stuck at "queued" forever.
+    await dispatchCalculation({ calculationRunId: run.id, orgId }).catch(async (err) => {
+      console.error(`[calculations] run ${run.id} failed:`, err);
+      await prisma.calculationRun.update({
+        where: { id: run.id, status: "queued" },
+        data: {
+          status: "failed",
+          finishedAt: new Date(),
+          errorMessage: err instanceof Error ? err.message.slice(0, 500) : "Dispatch failed.",
+        },
+      }).catch(() => {});
+    });
 
     await writeAuditLog({
       organizationId: orgId,
