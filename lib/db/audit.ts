@@ -71,7 +71,9 @@ type AuditAction =
   | "audit.data_export_requested"
   | "webhook.created"
   | "webhook.deleted"
-  | "field_submission.assigned";
+  | "field_submission.assigned"
+  | "embodied_carbon.record_created"
+  | "embodied_carbon.record_deleted";
 
 export async function writeAuditLog(params: {
   organizationId: string;

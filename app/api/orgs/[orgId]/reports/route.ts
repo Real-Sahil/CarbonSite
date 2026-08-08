@@ -28,6 +28,7 @@ const createReportSchema = z.object({
     "ghg_protocol",
     "cdp",
     "cbam",
+    "ppn_006_crp",
   ]),
   options: z.record(z.any()).optional(),
 });

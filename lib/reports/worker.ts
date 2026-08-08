@@ -20,6 +20,7 @@ import { renderGhgProtocolHtml, type GhgProtocolData } from "./templates/ghg-pro
 import { renderCdpHtml, type CdpData } from "./templates/cdp";
 import { renderCbamHtml, type CbamHtmlData } from "./templates/cbam";
 import { generateCbamXml, type CbamReportData, type CbamGoodsItem, MATERIAL_TO_CN, CONSTRUCTION_CBAM_CN_CODES } from "./cbam-xml";
+import { renderPpn006CrpHtml, type Ppn006CrpData, type CrpScopeRow } from "./templates/ppn-006-crp";
 
 const REPORT_INCLUDE = {
   organization: {
@@ -542,6 +543,54 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       employeeCount: opts.employeeCount !== undefined ? Number(opts.employeeCount) : undefined,
     };
     return { html: renderCdpHtml(data) };
+  }
+
+  // ── PPN 006 CRP ───────────────────────────────────────────────────────────────
+  if (report.type === "ppn_006_crp") {
+    const initiatives = await prisma.reductionInitiative.findMany({
+      where: { organizationId: orgId },
+      select: { name: true, expectedImpactCo2e: true, status: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const scopeRows: CrpScopeRow[] = [...catTotals.values()].map((c) => ({
+      scope: c.scope as 1 | 2 | 3,
+      category: c.name,
+      kgCo2e: c.totalKg,
+    }));
+
+    const baselineTonnes = opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined;
+    const baselineKgS1 = opts.baselineScope1Kg !== undefined ? Number(opts.baselineScope1Kg) : undefined;
+    const baselineKgS2 = opts.baselineScope2Kg !== undefined ? Number(opts.baselineScope2Kg) : undefined;
+    const baselineKgS3 = opts.baselineScope3Kg !== undefined ? Number(opts.baselineScope3Kg) : undefined;
+
+    // Build targets from opts (user-supplied via report options JSON)
+    const crpTargets = Array.isArray(opts.targets)
+      ? (opts.targets as Array<{ year: number; reductionPct: number; description?: string }>)
+      : [];
+
+    const data: Ppn006CrpData = {
+      orgName: report.organization.name,
+      logoDataUri,
+      periodLabel: report.reportingPeriod.label,
+      baselineYear: Number(opts.baselineYear ?? 2019),
+      reportingYear: report.reportingPeriod.endDate.getFullYear(),
+      scope1Kg: s1kg,
+      scope2Kg: s2kg,
+      scope3Kg: s3kg,
+      scope1BaselineKg: baselineKgS1 ?? (baselineTonnes ? baselineTonnes * 1000 * 0.4 : undefined),
+      scope2BaselineKg: baselineKgS2 ?? (baselineTonnes ? baselineTonnes * 1000 * 0.3 : undefined),
+      scope3BaselineKg: baselineKgS3 ?? (baselineTonnes ? baselineTonnes * 1000 * 0.3 : undefined),
+      scopeRows,
+      targets: crpTargets,
+      signatoryName: opts.signatoryName as string | undefined,
+      signatoryTitle: opts.signatoryTitle as string | undefined,
+      signatoryDate: opts.signatoryDate as string | undefined,
+      netZeroYear: opts.netZeroYear !== undefined ? Number(opts.netZeroYear) : 2050,
+      methodologyNotes: opts.methodologyNotes as string | undefined,
+    };
+    void initiatives; // available for future use (reduction initiatives list)
+    return { html: renderPpn006CrpHtml(data) };
   }
 
   // ── CBAM ───────────────────────────────────────────────────────────────────────

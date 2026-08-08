@@ -23,6 +23,7 @@ import {
   ListChecks,
   Menu,
   X,
+  Layers,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -129,8 +130,9 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     {
       label: "Calculations",
       items: [
-        { label: "Calculations", href: `/orgs/${orgId}/calculations`, icon: Calculator, roles: CORE_ROLES },
-        { label: "Reports",      href: `/orgs/${orgId}/reports`,      icon: BarChart2,  roles: CORE_ROLES },
+        { label: "Calculations",    href: `/orgs/${orgId}/calculations`,    icon: Calculator, roles: CORE_ROLES },
+        { label: "Embodied Carbon", href: `/orgs/${orgId}/embodied-carbon`, icon: Layers,     roles: CORE_ROLES },
+        { label: "Reports",         href: `/orgs/${orgId}/reports`,         icon: BarChart2,  roles: CORE_ROLES },
       ],
     },
     {
