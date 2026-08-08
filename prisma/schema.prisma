@@ -148,6 +148,8 @@ model Organization {
   epdRecords          EpdRecord[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
   apiKeys             ApiKey[]
+  billingSubscription BillingSubscription?
+  usageEvents         UsageEvent[]
 
   @@map("organizations")
 }
@@ -1551,6 +1553,38 @@ model ApiKey {
 
   @@index([organizationId])
   @@map("api_keys")
+}
+
+// ─── Billing ──────────────────────────────────────────────────────────────────
+
+model BillingSubscription {
+  id             String    @id @default(cuid())
+  organizationId String    @unique @map("organization_id")
+  plan           String    @default("trial")
+  status         String    @default("active")
+  trialEndsAt    DateTime? @map("trial_ends_at")
+  currentPeriodStart DateTime @default(now()) @map("current_period_start")
+  currentPeriodEnd   DateTime @map("current_period_end")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("billing_subscriptions")
+}
+
+model UsageEvent {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  eventType      String   @map("event_type")
+  quantity       Int      @default(1)
+  metadata       Json?
+  recordedAt     DateTime @default(now()) @map("recorded_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, eventType, recordedAt])
+  @@map("usage_events")
 }
 
 // Zero-cost storage driver: evidence/report bytes persisted in Postgres when

@@ -26,10 +26,12 @@
   --color-scope-2: #0ea5e9;
   --color-scope-3: #84cc16;
 
-  /* Brand palette — UK construction green identity */
+  /* Brand palette */
   --color-brand-forest: #228B22;
-  --color-sky-blue:     #87CEEB;
-  --color-cta-orange:   #FFA500;
+  --color-sky-blue:     #0EA5E9;
+  --color-sky-light:    #E0F2FE;
+  --color-cta-orange:   #F97316;
+  --color-surface:      #F9FAFB;
 }
 
 @layer base {
@@ -126,10 +128,10 @@
   animation: shimmer-bg 3s linear infinite;
 }
 
-/* ── Dark sidebar ───────────────────────────────────────────────────────────── */
-.sidebar-dark {
-  background-color: #091910;
-  border-right: 1px solid rgba(34, 197, 94, 0.08);
+/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+.sidebar-light {
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
 }
 
 /* ── Reduced motion (belt + suspenders alongside MotionConfig) ─────────────── */

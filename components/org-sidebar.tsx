@@ -185,44 +185,52 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
   return (
     <TooltipProvider delayDuration={200}>
       {/* ── Mobile top bar ────────────────────────────────────────────────── */}
-      <header className="flex md:hidden sticky top-0 z-30 items-center h-14 px-4 bg-[#091910] border-b border-emerald-900/20 shrink-0">
+      <header className="flex md:hidden sticky top-0 z-30 items-center h-14 px-4 bg-white border-b border-gray-200 shrink-0 shadow-sm">
         <button
           aria-label="Open menu"
           onClick={() => setMobileOpen(true)}
-          className="flex items-center justify-center h-9 w-9 rounded-[7px] hover:bg-white/5 transition-colors"
+          className="flex items-center justify-center h-9 w-9 rounded-[7px] hover:bg-gray-100 transition-colors"
         >
-          <Menu className="h-5 w-5 text-emerald-400" aria-hidden="true" />
+          <Menu className="h-5 w-5 text-gray-600" aria-hidden="true" />
         </button>
-        <span className="ml-3 text-base font-semibold tracking-tight text-white">
-          CarbonSite
-        </span>
-        <span className="ml-2 text-xs text-zinc-500 truncate max-w-[140px]">/ {orgName}</span>
+        <div className="ml-3 flex items-center gap-2 min-w-0">
+          <span className="h-6 w-6 rounded-md bg-sky-500 flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-xs">C</span>
+          </span>
+          <span className="text-sm font-semibold tracking-tight text-gray-900">CarbonSite</span>
+          <span className="text-xs text-gray-400 truncate max-w-[120px]">/ {orgName}</span>
+        </div>
       </header>
 
       {/* ── Mobile drawer overlay ─────────────────────────────────────────── */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/40"
             aria-hidden="true"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#091910] shadow-xl flex flex-col border-r border-emerald-900/20">
-            <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-emerald-900/20">
-              <div className="min-w-0">
-                <span className="block text-base font-semibold tracking-tight text-white">
-                  CarbonSite
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl flex flex-col border-r border-gray-200">
+            <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="h-7 w-7 rounded-lg bg-sky-500 flex items-center justify-center shrink-0">
+                  <span className="text-white font-bold text-sm">C</span>
                 </span>
-                <span className="text-xs text-zinc-500 font-normal mt-1 block truncate tracking-[-0.36px]">
-                  {orgName}
-                </span>
+                <div className="min-w-0">
+                  <span className="block text-sm font-semibold tracking-tight text-gray-900">
+                    CarbonSite
+                  </span>
+                  <span className="text-xs text-gray-400 font-normal block truncate">
+                    {orgName}
+                  </span>
+                </div>
               </div>
               <button
                 aria-label="Close menu"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center h-8 w-8 rounded-[7px] hover:bg-white/5 transition-colors ml-2 shrink-0"
+                className="flex items-center justify-center h-8 w-8 rounded-[7px] hover:bg-gray-100 transition-colors ml-2 shrink-0"
               >
-                <X className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+                <X className="h-4 w-4 text-gray-400" aria-hidden="true" />
               </button>
             </div>
 
@@ -238,13 +246,13 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                     className={cn(
                       "flex items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm font-normal tracking-[-0.42px] transition-colors",
                       isActive
-                        ? "bg-emerald-900/50 text-emerald-300"
-                        : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200",
+                        ? "bg-sky-50 text-sky-700"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                     )}
                   >
                     <Icon
                       aria-hidden="true"
-                      className={cn("h-4 w-4 shrink-0", isActive ? "text-emerald-400" : "text-zinc-500")}
+                      className={cn("h-4 w-4 shrink-0", isActive ? "text-sky-600" : "text-gray-400")}
                     />
                     {item.label}
                   </Link>
@@ -252,39 +260,39 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               })}
             </nav>
 
-            <div className="border-t border-emerald-900/20 px-2 py-3">
+            <div className="border-t border-gray-100 px-2 py-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-white/5 transition-colors text-left">
+                  <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-gray-50 transition-colors text-left">
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                      <AvatarFallback className="bg-emerald-900 text-emerald-300 text-xs font-normal">
+                      <AvatarFallback className="bg-sky-100 text-sky-700 text-xs font-medium">
                         {getInitials(user.name, user.email)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       {user.name && (
-                        <p className="text-sm font-normal tracking-[-0.42px] text-zinc-200 truncate">{user.name}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
                       )}
-                      <p className="text-xs text-zinc-500 tracking-[-0.36px] truncate">{user.email}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
-                    <ChevronDown aria-hidden="true" className="h-4 w-4 text-zinc-600 shrink-0" />
+                    <ChevronDown aria-hidden="true" className="h-4 w-4 text-gray-400 shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="top" className="w-52 rounded-[14px] border-emerald-900/30 bg-[#091910]">
+                <DropdownMenuContent align="end" side="top" className="w-52 rounded-[14px]">
                   <DropdownMenuItem asChild>
                     <Link
                       href={`/orgs/${orgId}/settings/members`}
                       onClick={handleMobileNavClick}
-                      className="rounded-[7px] text-zinc-300 focus:bg-white/5 focus:text-white"
+                      className="rounded-[7px] text-gray-700"
                     >
                       <Users aria-hidden="true" className="h-4 w-4 mr-2" />
                       Members &amp; Settings
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-emerald-900/30" />
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    className="text-red-400 focus:text-red-300 focus:bg-red-900/20 cursor-pointer rounded-[7px]"
+                    className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer rounded-[7px]"
                     onClick={handleSignOut}
                   >
                     <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
@@ -300,35 +308,40 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
       <aside
         className={cn(
-          "relative hidden md:flex flex-col min-h-screen bg-[#091910] border-r border-emerald-900/20 shrink-0 transition-[width] duration-200",
+          "relative hidden md:flex flex-col min-h-screen bg-white border-r border-gray-200 shrink-0 transition-[width] duration-200",
           collapsed ? "w-[60px]" : "w-60",
         )}
       >
         {/* Logo + Org */}
         <div
           className={cn(
-            "flex items-center border-b border-emerald-900/20 overflow-hidden",
-            collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-5 pt-6 pb-4",
+            "flex items-center border-b border-gray-100 overflow-hidden",
+            collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-4 pt-5 pb-4",
           )}
         >
           {collapsed ? (
             <span
-              className="text-emerald-400 font-bold text-base select-none"
+              className="h-7 w-7 rounded-lg bg-sky-500 flex items-center justify-center shrink-0"
               title={orgName}
             >
-              C
+              <span className="text-white font-bold text-sm">C</span>
             </span>
           ) : (
-            <div className="min-w-0">
-              <span className="block text-base font-semibold tracking-tight text-white">
-                CarbonSite
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="h-7 w-7 rounded-lg bg-sky-500 flex items-center justify-center shrink-0">
+                <span className="text-white font-bold text-sm">C</span>
               </span>
-              <span
-                className="text-xs text-zinc-500 font-normal mt-1 block truncate tracking-[-0.36px]"
-                title={orgName}
-              >
-                {orgName}
-              </span>
+              <div className="min-w-0">
+                <span className="block text-sm font-semibold tracking-tight text-gray-900">
+                  CarbonSite
+                </span>
+                <span
+                  className="text-xs text-gray-400 font-normal block truncate"
+                  title={orgName}
+                >
+                  {orgName}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -341,10 +354,10 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           {navGroups.map((group, groupIdx) => (
             <div
               key={group.label || "__top__"}
-              className={cn(groupIdx > 0 && "mt-3")}
+              className={cn(groupIdx > 0 && "mt-4")}
             >
               {group.label && !collapsed && (
-                <p className="px-3 mb-1 text-[10px] uppercase tracking-widest font-medium text-zinc-600">
+                <p className="px-3 mb-1 text-[10px] uppercase tracking-widest font-semibold text-gray-400">
                   {group.label}
                 </p>
               )}
@@ -361,15 +374,15 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                         "flex items-center gap-3 rounded-[7px] text-sm font-normal tracking-[-0.42px] transition-colors",
                         collapsed ? "px-0 py-2 justify-center" : "px-3 py-2",
                         isActive
-                          ? "bg-emerald-900/50 text-emerald-300"
-                          : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200",
+                          ? "bg-sky-50 text-sky-700"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                       )}
                     >
                       <Icon
                         aria-hidden="true"
                         className={cn(
                           "h-4 w-4 shrink-0",
-                          isActive ? "text-emerald-400" : "text-zinc-500",
+                          isActive ? "text-sky-600" : "text-gray-400",
                         )}
                       />
                       {!collapsed && item.label}
@@ -395,18 +408,18 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         </nav>
 
         {/* User footer */}
-        <div className={cn("border-t border-emerald-900/20 px-2 py-3", collapsed && "flex justify-center")}>
+        <div className={cn("border-t border-gray-100 px-2 py-3", collapsed && "flex justify-center")}>
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  className="flex items-center justify-center w-9 h-9 rounded-[7px] hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-center w-9 h-9 rounded-[7px] hover:bg-gray-100 transition-colors"
                   onClick={handleSignOut}
                   title="Sign out"
                 >
                   <Avatar className="h-7 w-7 shrink-0">
                     <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                    <AvatarFallback className="bg-emerald-900 text-emerald-300 text-[10px] font-normal">
+                    <AvatarFallback className="bg-sky-100 text-sky-700 text-[10px] font-medium">
                       {getInitials(user.name, user.email)}
                     </AvatarFallback>
                   </Avatar>
@@ -415,49 +428,49 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <TooltipContent side="right" className="text-xs">
                 {user.name ?? user.email}
                 <br />
-                <span className="text-zinc-400">Click to sign out</span>
+                <span className="text-gray-400">Click to sign out</span>
               </TooltipContent>
             </Tooltip>
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-white/5 transition-colors text-left">
+                <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-gray-50 transition-colors text-left">
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                    <AvatarFallback className="bg-emerald-900 text-emerald-300 text-xs font-normal">
+                    <AvatarFallback className="bg-sky-100 text-sky-700 text-xs font-medium">
                       {getInitials(user.name, user.email)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     {user.name && (
-                      <p className="text-sm font-normal tracking-[-0.42px] text-zinc-200 truncate">
+                      <p className="text-sm font-medium text-gray-900 truncate">
                         {user.name}
                       </p>
                     )}
-                    <p className="text-xs text-zinc-500 tracking-[-0.36px] truncate">
+                    <p className="text-xs text-gray-500 truncate">
                       {user.email}
                     </p>
                   </div>
-                  <ChevronDown aria-hidden="true" className="h-4 w-4 text-zinc-600 shrink-0" />
+                  <ChevronDown aria-hidden="true" className="h-4 w-4 text-gray-400 shrink-0" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
                 side="top"
-                className="w-52 rounded-[14px] border-emerald-900/30 bg-[#091910]"
+                className="w-52 rounded-[14px]"
               >
                 <DropdownMenuItem asChild>
                   <Link
                     href={`/orgs/${orgId}/settings/members`}
-                    className="rounded-[7px] text-zinc-300 focus:bg-white/5 focus:text-white"
+                    className="rounded-[7px] text-gray-700"
                   >
                     <Users aria-hidden="true" className="h-4 w-4 mr-2" />
                     Members &amp; Settings
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-emerald-900/30" />
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-red-400 focus:text-red-300 focus:bg-red-900/20 cursor-pointer rounded-[7px]"
+                  className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer rounded-[7px]"
                   onClick={handleSignOut}
                 >
                   <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
@@ -474,14 +487,14 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={cn(
             "absolute -right-3 top-[72px] z-10 flex h-6 w-6 items-center justify-center rounded-full",
-            "border border-emerald-900/30 bg-[#091910] shadow-sm",
-            "hover:bg-emerald-900/40 hover:border-emerald-800/50 transition-colors",
+            "border border-gray-200 bg-white shadow-sm",
+            "hover:bg-gray-50 hover:border-gray-300 transition-colors",
           )}
         >
           {collapsed ? (
-            <ChevronRight className="h-3 w-3 text-emerald-500" />
+            <ChevronRight className="h-3 w-3 text-gray-500" />
           ) : (
-            <ChevronLeft className="h-3 w-3 text-emerald-500" />
+            <ChevronLeft className="h-3 w-3 text-gray-500" />
           )}
         </button>
       </aside>
