@@ -26,6 +26,8 @@ import {
   Layers,
   Leaf,
   ShieldCheck,
+  Trash2,
+  TrendingDown,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -141,8 +143,10 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       label: "Planning",
       items: [
         { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
+        { label: "SBTi Roadmap", href: `/orgs/${orgId}/sbti`,         icon: TrendingDown, roles: CORE_ROLES },
         { label: "Offsets",      href: `/orgs/${orgId}/offsets`,      icon: Leaf,         roles: CORE_ROLES },
         { label: "Compliance",   href: `/orgs/${orgId}/compliance`,   icon: ShieldCheck,  roles: CORE_ROLES },
+        { label: "Waste",        href: `/orgs/${orgId}/waste`,        icon: Trash2,       roles: CORE_ROLES },
         { label: "Social Value", href: `/orgs/${orgId}/social-value`, icon: Heart,        roles: EXTENDED_VIEW_ROLES },
       ],
     },

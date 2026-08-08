@@ -152,6 +152,9 @@ model Organization {
   usageEvents         UsageEvent[]
   carbonOffsets       CarbonOffset[]
   complianceRecords   ComplianceRecord[]
+  carbonBudgets       CarbonBudget[]
+  wasteRecords        WasteRecord[]
+  sbtiTarget          SbtiTarget?
 
   @@map("organizations")
 }
@@ -1202,6 +1205,8 @@ model Project {
   organization Organization @relation("OrgProjects", fields: [organizationId], references: [id], onDelete: Cascade)
   sites        Site[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
+  carbonBudget  CarbonBudget?
+  wasteRecords  WasteRecord[]
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -1637,6 +1642,93 @@ model ComplianceRecord {
 }
 
 // Zero-cost storage driver: evidence/report bytes persisted in Postgres when
+// ─── Phase 6: Project Carbon Budgeting ───────────────────────────────────────
+
+model CarbonBudget {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  projectId         String   @unique @map("project_id")
+  totalBudgetTco2e  Decimal  @map("total_budget_tco2e") @db.Decimal(18, 4)
+  floorAreaM2       Decimal? @map("floor_area_m2") @db.Decimal(12, 2)
+  contractValueGbp  Decimal? @map("contract_value_gbp") @db.Decimal(18, 2)
+  notes             String?
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phases       CarbonBudgetPhase[]
+
+  @@index([organizationId])
+  @@map("carbon_budgets")
+}
+
+model CarbonBudgetPhase {
+  id          String   @id @default(cuid())
+  budgetId    String   @map("budget_id")
+  name        String
+  sortOrder   Int      @default(0) @map("sort_order")
+  budgetTco2e Decimal  @map("budget_tco2e") @db.Decimal(18, 4)
+  actualTco2e Decimal  @default(0) @map("actual_tco2e") @db.Decimal(18, 4)
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  budget CarbonBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@index([budgetId, sortOrder])
+  @@map("carbon_budget_phases")
+}
+
+// ─── Phase 6: Waste Emissions Module ─────────────────────────────────────────
+
+model WasteRecord {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  projectId      String?  @map("project_id")
+  wasteType      String   @map("waste_type")
+  disposalRoute  String   @map("disposal_route")
+  weightTonnes   Decimal  @map("weight_tonnes") @db.Decimal(12, 4)
+  co2eTonnes     Decimal? @map("co2e_tonnes") @db.Decimal(12, 6)
+  ewcCode        String?  @map("ewc_code")
+  carrierName    String?  @map("carrier_name")
+  recordedAt     DateTime @map("recorded_at")
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project?     @relation(fields: [projectId], references: [id])
+
+  @@index([organizationId, recordedAt])
+  @@index([organizationId, projectId])
+  @@map("waste_records")
+}
+
+// ─── Phase 6: SBTi Net-Zero Roadmap ──────────────────────────────────────────
+
+model SbtiTarget {
+  id                   String   @id @default(cuid())
+  organizationId       String   @unique @map("organization_id")
+  pathway              String   @default("1.5C")
+  baseYear             Int      @map("base_year")
+  baselineScope1Tco2e  Decimal  @map("baseline_scope1_tco2e") @db.Decimal(18, 4)
+  baselineScope2Tco2e  Decimal  @map("baseline_scope2_tco2e") @db.Decimal(18, 4)
+  baselineScope3Tco2e  Decimal? @map("baseline_scope3_tco2e") @db.Decimal(18, 4)
+  nearTermYear         Int      @default(2030) @map("near_term_year")
+  nearTermReductionPct Decimal  @map("near_term_reduction_pct") @db.Decimal(5, 2)
+  netZeroYear          Int      @default(2050) @map("net_zero_year")
+  netZeroReductionPct  Decimal  @default(90) @map("net_zero_reduction_pct") @db.Decimal(5, 2)
+  status               String   @default("draft")
+  notes                String?
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("sbti_targets")
+}
+
 // no S3-compatible bucket is configured (R2 requires a credit card). Written
 // and served via HMAC-signed URLs — see lib/storage.
 model StorageObject {
