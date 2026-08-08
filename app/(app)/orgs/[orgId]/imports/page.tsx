@@ -99,19 +99,32 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   }
 
   const periodIds = [...new Set(imports.map((batch) => batch.reportingPeriodId))];
-  const [periods, allPeriods] = await Promise.all([
-    periodIds.length
-      ? prisma.reportingPeriod.findMany({
-          where: { organizationId: orgId, id: { in: periodIds } },
-          select: { id: true, label: true },
-        })
-      : Promise.resolve([]),
-    prisma.reportingPeriod.findMany({
-      where: { organizationId: orgId },
-      select: { id: true, label: true },
-      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-    }),
-  ]);
+  let periods: { id: string; label: string }[] = [];
+  let allPeriods: { id: string; label: string }[] = [];
+  try {
+    [periods, allPeriods] = await Promise.all([
+      periodIds.length
+        ? prisma.reportingPeriod.findMany({
+            where: { organizationId: orgId, id: { in: periodIds } },
+            select: { id: true, label: true },
+          })
+        : Promise.resolve([]),
+      prisma.reportingPeriod.findMany({
+        where: { organizationId: orgId },
+        select: { id: true, label: true },
+        orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      }),
+    ]);
+  } catch (periodErr) {
+    const msg = periodErr instanceof Error ? periodErr.message : String(periodErr);
+    console.error("[imports] periods query failed:", msg);
+    return (
+      <div className="p-8">
+        <p className="text-sm font-medium text-red-700">Failed to load periods (db error)</p>
+        <pre className="mt-2 text-xs text-red-600 whitespace-pre-wrap break-all max-w-2xl">{msg}</pre>
+      </div>
+    );
+  }
   const periodLabelById = new Map(periods.map((period) => [period.id, period.label]));
 
   const stats = {
@@ -120,8 +133,16 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
     attention: imports.filter((b) => b.state === "needs_attention" || b.state === "failed").length,
   };
 
+  const dbHost = (() => {
+    try { return new URL(process.env.DATABASE_URL ?? "").hostname; } catch { return "unknown"; }
+  })();
+
   return (
     <div className="min-h-[100dvh] bg-[#f9fafb]">
+      {/* Temporary diagnostic — remove once DB is confirmed */}
+      <div className="bg-yellow-50 border-b border-yellow-200 px-8 py-2 text-xs text-yellow-800">
+        DB host: <span className="font-mono font-medium">{dbHost}</span>
+      </div>
       {/* Page header */}
       <div className="bg-white border-b border-[#e5e7eb]">
         <div className="max-w-[1200px] mx-auto px-8 py-8">
