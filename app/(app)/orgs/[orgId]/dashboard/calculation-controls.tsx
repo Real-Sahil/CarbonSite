@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Play } from "lucide-react";
+import { Play, AlertTriangle, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
 
 interface CalculationControlsProps {
   orgId: string;
@@ -17,6 +18,7 @@ interface CalculationControlsProps {
   methodologies: { id: string; label: string }[];
   factorLibraries: { id: string; label: string }[];
   succeededRuns: { id: string; status: string; label: string }[];
+  approvedCountByPeriod: Record<string, number>;
 }
 
 export function CalculationControls({
@@ -24,6 +26,7 @@ export function CalculationControls({
   periods,
   methodologies,
   factorLibraries,
+  approvedCountByPeriod,
 }: CalculationControlsProps) {
   const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
   const [methodologyId, setMethodologyId] = useState(methodologies[0]?.id ?? "");
@@ -66,6 +69,8 @@ export function CalculationControls({
       </p>
     );
   }
+
+  const approvedCount = periodId ? (approvedCountByPeriod[periodId] ?? 0) : 0;
 
   return (
     <div className="flex flex-wrap items-end gap-3">
@@ -112,6 +117,29 @@ export function CalculationControls({
         <Play aria-hidden="true" className="h-3.5 w-3.5" />
         {loading ? "Enqueueing…" : "Run calculation"}
       </Button>
+      {periodId && approvedCount === 0 && !success && (
+        <div className="w-full flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+          <div className="text-xs text-amber-800 leading-relaxed">
+            <span className="font-medium">No approved records for this period.</span>{" "}
+            Approve{" "}
+            <Link href={`/orgs/${orgId}/submissions`} className="underline underline-offset-2 hover:text-amber-900">
+              field submissions
+            </Link>{" "}
+            or{" "}
+            <Link href={`/orgs/${orgId}/records`} className="underline underline-offset-2 hover:text-amber-900">
+              activity records
+            </Link>{" "}
+            first, then run the calculation.
+          </div>
+        </div>
+      )}
+      {periodId && approvedCount > 0 && !success && (
+        <p className="w-full flex items-center gap-1.5 text-xs text-[#0f3e17] tracking-[-0.36px]">
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          {approvedCount.toLocaleString("en-GB")} approved record{approvedCount !== 1 ? "s" : ""} ready for this period.
+        </p>
+      )}
       {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
       {success && (
         <p className="w-full text-sm text-[#0f3e17] tracking-[-0.42px]">

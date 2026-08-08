@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SeedLibrariesButton } from "./seed-libraries-button";
 
 export default async function PlatformPage() {
   try {
@@ -26,15 +27,24 @@ export default async function PlatformPage() {
     throw err;
   }
 
-  const orgs = await prisma.organization.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    include: {
-      _count: { select: { memberships: true, activityRecords: true } },
-    },
-  });
+  const [orgs, factorLibraries] = await Promise.all([
+    prisma.organization.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: {
+        _count: { select: { memberships: true, activityRecords: true } },
+      },
+    }),
+    prisma.factorLibrary.findMany({
+      include: { _count: { select: { factors: true } } },
+      orderBy: [{ name: "asc" }, { version: "desc" }],
+    }),
+  ]);
 
   const totalMembers = orgs.reduce((sum, org) => sum + org._count.memberships, 0);
+  const missingStandardLibraries =
+    !factorLibraries.some((l) => l.name === "DEFRA") ||
+    !factorLibraries.some((l) => l.name === "EPA");
 
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
@@ -70,6 +80,56 @@ export default async function PlatformPage() {
           <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#0f3e17]">
             {totalMembers.toLocaleString("en-GB")}
           </p>
+        </div>
+      </div>
+
+      {/* Factor libraries */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-900">Factor libraries</h2>
+            <p className="text-xs text-[#333333] tracking-[-0.36px] mt-0.5">
+              Global emission factor libraries available to all orgs for calculation runs.
+            </p>
+          </div>
+          <SeedLibrariesButton />
+        </div>
+        {missingStandardLibraries && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            One or more standard libraries (DEFRA 2025.1, EPA 2025.1) are missing. Click
+            &ldquo;Seed standard libraries&rdquo; to create them.
+          </p>
+        )}
+        <div className="rounded-[14px] border border-[#e5e7eb] overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Library</TableHead>
+                <TableHead>Version</TableHead>
+                <TableHead className="text-right">Factor rows</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {factorLibraries.map((lib) => (
+                <TableRow key={lib.id}>
+                  <TableCell className="font-normal text-[#0f3e17] tracking-[-0.42px]">
+                    {lib.name}
+                  </TableCell>
+                  <TableCell className="text-sm text-[#333333]">{lib.version}</TableCell>
+                  <TableCell className="text-right text-sm text-[#333333] tabular-nums">
+                    {lib._count.factors.toLocaleString("en-GB")}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {factorLibraries.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center text-sm text-[#333333] py-6">
+                    No factor libraries yet. Seed them above.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

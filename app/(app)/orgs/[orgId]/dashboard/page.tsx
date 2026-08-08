@@ -450,6 +450,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
     dataQualityBatch;
 
+  const approvedCountsByPeriod = await prisma.activityRecord.groupBy({
+    by: ["reportingPeriodId"],
+    where: { organizationId: orgId, reviewStatus: "approved" },
+    _count: { _all: true },
+  });
+  const approvedCountByPeriod: Record<string, number> = Object.fromEntries(
+    approvedCountsByPeriod.map((row) => [row.reportingPeriodId, row._count._all]),
+  );
+
   const totalCalcCo2e = Number(totalCo2eAgg._sum.totalCo2e ?? 0);
   const approvedCalcCo2e = Number(approvedCo2eAgg._sum.totalCo2e ?? 0);
   const dataConfidencePct =
@@ -1618,6 +1627,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           <CalculationControls
             orgId={orgId}
             periods={reportingPeriods}
+            approvedCountByPeriod={approvedCountByPeriod}
             methodologies={methodologies.map((item) => ({
               id: item.id,
               label: `${item.name} (${item.gwpVersion})`,
