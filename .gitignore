@@ -48,4 +48,4 @@ npm-debug.log*
 .mcp.json
 
 # Graphify knowledge-graph cache (local dev tool output)
-graphify-out/
+# graphify-out/ — committed so the graph persists across sessions
