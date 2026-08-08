@@ -141,7 +141,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     // (ready_to_commit / needs_attention / failed) not the stale "parsing" snapshot.
     const finalBatch = await prisma.importBatch.findUnique({
       where: { id: batch.id },
-      select: { id: true, state: true, errorMessage: true },
+      select: { id: true, state: true, errorCount: true },
     });
 
     return NextResponse.json(finalBatch ?? updatedBatch, { status: 202 });

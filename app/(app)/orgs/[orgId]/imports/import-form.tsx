@@ -67,7 +67,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
       const state: string = data.state ?? "parsing";
 
       if (state === "failed") {
-        setError(data.errorMessage ?? "Import failed during processing.");
+        setError("Import failed during processing. Check the import details for errors.");
         setPhase("error");
         return;
       }
