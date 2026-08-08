@@ -24,6 +24,8 @@ import {
   Menu,
   X,
   Layers,
+  Leaf,
+  ShieldCheck,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -138,8 +140,10 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     {
       label: "Planning",
       items: [
-        { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target, roles: CORE_ROLES },
-        { label: "Social Value", href: `/orgs/${orgId}/social-value`, icon: Heart,  roles: EXTENDED_VIEW_ROLES },
+        { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
+        { label: "Offsets",      href: `/orgs/${orgId}/offsets`,      icon: Leaf,         roles: CORE_ROLES },
+        { label: "Compliance",   href: `/orgs/${orgId}/compliance`,   icon: ShieldCheck,  roles: CORE_ROLES },
+        { label: "Social Value", href: `/orgs/${orgId}/social-value`, icon: Heart,        roles: EXTENDED_VIEW_ROLES },
       ],
     },
     {

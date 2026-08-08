@@ -150,6 +150,8 @@ model Organization {
   apiKeys             ApiKey[]
   billingSubscription BillingSubscription?
   usageEvents         UsageEvent[]
+  carbonOffsets       CarbonOffset[]
+  complianceRecords   ComplianceRecord[]
 
   @@map("organizations")
 }
@@ -1585,6 +1587,53 @@ model UsageEvent {
 
   @@index([organizationId, eventType, recordedAt])
   @@map("usage_events")
+}
+
+// ─── Carbon Offsets ──────────────────────────────────────────────────────────
+
+model CarbonOffset {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  provider       String
+  projectName    String    @map("project_name")
+  projectType    String    @map("project_type")
+  standard       String    @default("VCS")
+  vintage        Int
+  quantityTonnes Decimal   @map("quantity_tonnes") @db.Decimal(12, 4)
+  pricePerTonne  Decimal?  @map("price_per_tonne") @db.Decimal(10, 2)
+  currency       String    @default("GBP")
+  purchasedAt    DateTime  @map("purchased_at")
+  serialNumbers  String?   @map("serial_numbers")
+  retirementRef  String?   @map("retirement_ref")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, purchasedAt])
+  @@map("carbon_offsets")
+}
+
+// ─── Compliance ───────────────────────────────────────────────────────────────
+
+model ComplianceRecord {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  framework      String
+  reportingYear  Int       @map("reporting_year")
+  status         String    @default("draft")
+  dueDate        DateTime? @map("due_date")
+  submittedAt    DateTime? @map("submitted_at")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, framework, reportingYear])
+  @@index([organizationId, reportingYear])
+  @@map("compliance_records")
 }
 
 // Zero-cost storage driver: evidence/report bytes persisted in Postgres when
