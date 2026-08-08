@@ -45,9 +45,6 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
-  /** Roles that can open the target page (mirrors its requireOrgMember
-   *  call). Omitted = any org member. Items the current role cannot open
-   *  are hidden — a nav link to an Access Denied page is a dead end. */
   roles?: string[];
 }
 
@@ -56,7 +53,6 @@ interface NavGroup {
   items: NavItem[];
 }
 
-// Core review/reporting roles shared by most data pages.
 const CORE_ROLES = ["admin", "editor", "reviewer", "viewer", "auditor"];
 const EXTENDED_VIEW_ROLES = [
   ...CORE_ROLES,
@@ -73,7 +69,6 @@ interface OrgSidebarProps {
     name?: string | null;
     email: string;
   };
-  /** Current member's role — drives which nav items render. */
   role?: string;
 }
 
@@ -125,9 +120,9 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     {
       label: "Data",
       items: [
-        { label: "Imports",     href: `/orgs/${orgId}/imports`,     icon: Upload,  roles: CORE_ROLES },
-        { label: "Records",     href: `/orgs/${orgId}/records`,     icon: FileText, roles: CORE_ROLES },
-        { label: "Submissions", href: `/orgs/${orgId}/submissions`, icon: Inbox,   roles: ["admin", "editor", "reviewer"] },
+        { label: "Imports",     href: `/orgs/${orgId}/imports`,     icon: Upload,     roles: CORE_ROLES },
+        { label: "Records",     href: `/orgs/${orgId}/records`,     icon: FileText,   roles: CORE_ROLES },
+        { label: "Submissions", href: `/orgs/${orgId}/submissions`, icon: Inbox,      roles: ["admin", "editor", "reviewer"] },
         { label: "Tasks",       href: `/orgs/${orgId}/tasks`,       icon: ListChecks },
       ],
     },
@@ -154,9 +149,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     {
       label: "Admin",
       items: [
-        { label: "Audit",    href: `/orgs/${orgId}/audit`,    icon: Clock, roles: CORE_ROLES },
-        // Editors manage operational setup (periods, factors, facilities);
-        // the members tab inside settings stays admin-only.
+        { label: "Audit", href: `/orgs/${orgId}/audit`, icon: Clock, roles: CORE_ROLES },
         {
           label: "Settings",
           href: role === "admin" ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/settings/operations`,
@@ -167,8 +160,6 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     },
   ];
 
-  // Hide items the current role cannot open (unknown role = show member-wide
-  // items only). Groups with no visible items disappear entirely.
   const navGroups: NavGroup[] = allGroups
     .map((group) => ({
       ...group,
@@ -178,7 +169,6 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     }))
     .filter((group) => group.items.length > 0);
 
-  // Flat list for mobile drawer (preserves order)
   const navItems: NavItem[] = navGroups.flatMap((g) => g.items);
 
   async function handleSignOut() {
@@ -193,51 +183,47 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
   return (
     <TooltipProvider delayDuration={200}>
       {/* ── Mobile top bar ────────────────────────────────────────────────── */}
-      <header className="flex md:hidden sticky top-0 z-30 items-center h-14 px-4 bg-[#fffefc] border-b border-[#e5e7eb] shrink-0">
+      <header className="flex md:hidden sticky top-0 z-30 items-center h-14 px-4 bg-[#091910] border-b border-emerald-900/20 shrink-0">
         <button
           aria-label="Open menu"
           onClick={() => setMobileOpen(true)}
-          className="flex items-center justify-center h-9 w-9 rounded-[7px] hover:bg-[#e1f4df] transition-colors"
+          className="flex items-center justify-center h-9 w-9 rounded-[7px] hover:bg-white/5 transition-colors"
         >
-          <Menu className="h-5 w-5 text-[#0f3e17]" aria-hidden="true" />
+          <Menu className="h-5 w-5 text-emerald-400" aria-hidden="true" />
         </button>
-        <span className="ml-3 text-base font-semibold tracking-tight text-[#0f3e17]">
+        <span className="ml-3 text-base font-semibold tracking-tight text-white">
           CarbonSite
         </span>
-        <span className="ml-2 text-xs text-[#555] truncate max-w-[140px]">/ {orgName}</span>
+        <span className="ml-2 text-xs text-zinc-500 truncate max-w-[140px]">/ {orgName}</span>
       </header>
 
       {/* ── Mobile drawer overlay ─────────────────────────────────────────── */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/30"
+            className="absolute inset-0 bg-black/50"
             aria-hidden="true"
             onClick={() => setMobileOpen(false)}
           />
-          {/* Drawer */}
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#fffefc] shadow-xl flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-[#e5e7eb]">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#091910] shadow-xl flex flex-col border-r border-emerald-900/20">
+            <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-emerald-900/20">
               <div className="min-w-0">
-                <span className="block text-base font-semibold tracking-tight text-[#0f3e17]">
+                <span className="block text-base font-semibold tracking-tight text-white">
                   CarbonSite
                 </span>
-                <span className="text-xs text-[#222222] font-normal mt-1 block truncate tracking-[-0.36px]">
+                <span className="text-xs text-zinc-500 font-normal mt-1 block truncate tracking-[-0.36px]">
                   {orgName}
                 </span>
               </div>
               <button
                 aria-label="Close menu"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center h-8 w-8 rounded-[7px] hover:bg-[#e1f4df] transition-colors ml-2 shrink-0"
+                className="flex items-center justify-center h-8 w-8 rounded-[7px] hover:bg-white/5 transition-colors ml-2 shrink-0"
               >
-                <X className="h-4 w-4 text-[#0f3e17]" aria-hidden="true" />
+                <X className="h-4 w-4 text-zinc-400" aria-hidden="true" />
               </button>
             </div>
 
-            {/* Nav */}
             <nav className="flex-1 px-2 py-4 flex flex-col gap-0.5 overflow-y-auto" aria-label="Organisation navigation">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -250,13 +236,13 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                     className={cn(
                       "flex items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm font-normal tracking-[-0.42px] transition-colors",
                       isActive
-                        ? "bg-[#e1f4df] text-[#0f3e17]"
-                        : "text-[#222222] hover:bg-[#e1f4df] hover:text-[#0f3e17]",
+                        ? "bg-emerald-900/50 text-emerald-300"
+                        : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200",
                     )}
                   >
                     <Icon
                       aria-hidden="true"
-                      className={cn("h-4 w-4 shrink-0", isActive ? "text-[#0f3e17]" : "text-[#333333]")}
+                      className={cn("h-4 w-4 shrink-0", isActive ? "text-emerald-400" : "text-zinc-500")}
                     />
                     {item.label}
                   </Link>
@@ -264,40 +250,39 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               })}
             </nav>
 
-            {/* User footer */}
-            <div className="border-t border-[#e5e7eb] px-2 py-3">
+            <div className="border-t border-emerald-900/20 px-2 py-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-[#e1f4df] transition-colors text-left">
+                  <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-white/5 transition-colors text-left">
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                      <AvatarFallback className="bg-[#b1dbb8] text-[#0f3e17] text-xs font-normal">
+                      <AvatarFallback className="bg-emerald-900 text-emerald-300 text-xs font-normal">
                         {getInitials(user.name, user.email)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       {user.name && (
-                        <p className="text-sm font-normal tracking-[-0.42px] text-black truncate">{user.name}</p>
+                        <p className="text-sm font-normal tracking-[-0.42px] text-zinc-200 truncate">{user.name}</p>
                       )}
-                      <p className="text-xs text-[#222222] tracking-[-0.36px] truncate">{user.email}</p>
+                      <p className="text-xs text-zinc-500 tracking-[-0.36px] truncate">{user.email}</p>
                     </div>
-                    <ChevronDown aria-hidden="true" className="h-4 w-4 text-[#333333] shrink-0" />
+                    <ChevronDown aria-hidden="true" className="h-4 w-4 text-zinc-600 shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="top" className="w-52 rounded-[14px] border-[#e5e7eb] bg-[#fffefc]">
+                <DropdownMenuContent align="end" side="top" className="w-52 rounded-[14px] border-emerald-900/30 bg-[#091910]">
                   <DropdownMenuItem asChild>
                     <Link
                       href={`/orgs/${orgId}/settings/members`}
                       onClick={handleMobileNavClick}
-                      className="rounded-[7px] text-[#222222] focus:bg-[#e1f4df] focus:text-[#0f3e17]"
+                      className="rounded-[7px] text-zinc-300 focus:bg-white/5 focus:text-white"
                     >
                       <Users aria-hidden="true" className="h-4 w-4 mr-2" />
                       Members &amp; Settings
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-[#e5e7eb]" />
+                  <DropdownMenuSeparator className="bg-emerald-900/30" />
                   <DropdownMenuItem
-                    className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-[7px]"
+                    className="text-red-400 focus:text-red-300 focus:bg-red-900/20 cursor-pointer rounded-[7px]"
                     onClick={handleSignOut}
                   >
                     <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
@@ -313,31 +298,31 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
       <aside
         className={cn(
-          "relative hidden md:flex flex-col min-h-screen bg-[#fffefc] border-r border-[#e5e7eb] shrink-0 transition-[width] duration-200",
+          "relative hidden md:flex flex-col min-h-screen bg-[#091910] border-r border-emerald-900/20 shrink-0 transition-[width] duration-200",
           collapsed ? "w-[60px]" : "w-60",
         )}
       >
         {/* Logo + Org */}
         <div
           className={cn(
-            "flex items-center border-b border-[#e5e7eb] overflow-hidden",
+            "flex items-center border-b border-emerald-900/20 overflow-hidden",
             collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-5 pt-6 pb-4",
           )}
         >
           {collapsed ? (
             <span
-              className="text-[#0f3e17] font-bold text-base select-none"
+              className="text-emerald-400 font-bold text-base select-none"
               title={orgName}
             >
               C
             </span>
           ) : (
             <div className="min-w-0">
-              <span className="block text-base font-semibold tracking-tight text-[#0f3e17]">
+              <span className="block text-base font-semibold tracking-tight text-white">
                 CarbonSite
               </span>
               <span
-                className="text-xs text-[#222222] font-normal mt-1 block truncate tracking-[-0.36px]"
+                className="text-xs text-zinc-500 font-normal mt-1 block truncate tracking-[-0.36px]"
                 title={orgName}
               >
                 {orgName}
@@ -357,7 +342,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               className={cn(groupIdx > 0 && "mt-3")}
             >
               {group.label && !collapsed && (
-                <p className="px-3 mb-1 text-[10px] uppercase tracking-widest font-medium text-zinc-500">
+                <p className="px-3 mb-1 text-[10px] uppercase tracking-widest font-medium text-zinc-600">
                   {group.label}
                 </p>
               )}
@@ -374,15 +359,15 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                         "flex items-center gap-3 rounded-[7px] text-sm font-normal tracking-[-0.42px] transition-colors",
                         collapsed ? "px-0 py-2 justify-center" : "px-3 py-2",
                         isActive
-                          ? "bg-[#e1f4df] text-[#0f3e17]"
-                          : "text-[#222222] hover:bg-[#e1f4df] hover:text-[#0f3e17]",
+                          ? "bg-emerald-900/50 text-emerald-300"
+                          : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200",
                       )}
                     >
                       <Icon
                         aria-hidden="true"
                         className={cn(
                           "h-4 w-4 shrink-0",
-                          isActive ? "text-[#0f3e17]" : "text-[#333333]",
+                          isActive ? "text-emerald-400" : "text-zinc-500",
                         )}
                       />
                       {!collapsed && item.label}
@@ -408,18 +393,18 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         </nav>
 
         {/* User footer */}
-        <div className={cn("border-t border-[#e5e7eb] px-2 py-3", collapsed && "flex justify-center")}>
+        <div className={cn("border-t border-emerald-900/20 px-2 py-3", collapsed && "flex justify-center")}>
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  className="flex items-center justify-center w-9 h-9 rounded-[7px] hover:bg-[#e1f4df] transition-colors"
+                  className="flex items-center justify-center w-9 h-9 rounded-[7px] hover:bg-white/5 transition-colors"
                   onClick={handleSignOut}
                   title="Sign out"
                 >
                   <Avatar className="h-7 w-7 shrink-0">
                     <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                    <AvatarFallback className="bg-[#b1dbb8] text-[#0f3e17] text-[10px] font-normal">
+                    <AvatarFallback className="bg-emerald-900 text-emerald-300 text-[10px] font-normal">
                       {getInitials(user.name, user.email)}
                     </AvatarFallback>
                   </Avatar>
@@ -434,43 +419,43 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-[#e1f4df] transition-colors text-left">
+                <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-white/5 transition-colors text-left">
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                    <AvatarFallback className="bg-[#b1dbb8] text-[#0f3e17] text-xs font-normal">
+                    <AvatarFallback className="bg-emerald-900 text-emerald-300 text-xs font-normal">
                       {getInitials(user.name, user.email)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     {user.name && (
-                      <p className="text-sm font-normal tracking-[-0.42px] text-black truncate">
+                      <p className="text-sm font-normal tracking-[-0.42px] text-zinc-200 truncate">
                         {user.name}
                       </p>
                     )}
-                    <p className="text-xs text-[#222222] tracking-[-0.36px] truncate">
+                    <p className="text-xs text-zinc-500 tracking-[-0.36px] truncate">
                       {user.email}
                     </p>
                   </div>
-                  <ChevronDown aria-hidden="true" className="h-4 w-4 text-[#333333] shrink-0" />
+                  <ChevronDown aria-hidden="true" className="h-4 w-4 text-zinc-600 shrink-0" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
                 side="top"
-                className="w-52 rounded-[14px] border-[#e5e7eb] bg-[#fffefc]"
+                className="w-52 rounded-[14px] border-emerald-900/30 bg-[#091910]"
               >
                 <DropdownMenuItem asChild>
                   <Link
                     href={`/orgs/${orgId}/settings/members`}
-                    className="rounded-[7px] text-[#222222] focus:bg-[#e1f4df] focus:text-[#0f3e17]"
+                    className="rounded-[7px] text-zinc-300 focus:bg-white/5 focus:text-white"
                   >
                     <Users aria-hidden="true" className="h-4 w-4 mr-2" />
                     Members &amp; Settings
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-[#e5e7eb]" />
+                <DropdownMenuSeparator className="bg-emerald-900/30" />
                 <DropdownMenuItem
-                  className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-[7px]"
+                  className="text-red-400 focus:text-red-300 focus:bg-red-900/20 cursor-pointer rounded-[7px]"
                   onClick={handleSignOut}
                 >
                   <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
@@ -481,20 +466,20 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           )}
         </div>
 
-        {/* Collapse toggle — floats at the right edge */}
+        {/* Collapse toggle */}
         <button
           onClick={toggleCollapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={cn(
             "absolute -right-3 top-[72px] z-10 flex h-6 w-6 items-center justify-center rounded-full",
-            "border border-[#e5e7eb] bg-[#fffefc] shadow-sm",
-            "hover:bg-[#e1f4df] hover:border-[#b1dbb8] transition-colors",
+            "border border-emerald-900/30 bg-[#091910] shadow-sm",
+            "hover:bg-emerald-900/40 hover:border-emerald-800/50 transition-colors",
           )}
         >
           {collapsed ? (
-            <ChevronRight className="h-3 w-3 text-[#0f3e17]" />
+            <ChevronRight className="h-3 w-3 text-emerald-500" />
           ) : (
-            <ChevronLeft className="h-3 w-3 text-[#0f3e17]" />
+            <ChevronLeft className="h-3 w-3 text-emerald-500" />
           )}
         </button>
       </aside>
