@@ -7,7 +7,9 @@ import { createCalculationRunSchema } from "@/lib/validation/records";
 import { dispatchCalculation } from "@/lib/jobs/dispatch";
 import { createHash } from "crypto";
 
-// Inline job mode processes the run inside this request — allow time for it.
+// Allow up to 60s for Pro plans; Hobby plan caps at 10s regardless.
+// In inline mode the entire calculation runs inside this request.
+// If your plan caps functions at 10s, switch to JOB_PROCESSING_MODE=worker.
 export const maxDuration = 60;
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -141,7 +143,15 @@ export async function POST(req: NextRequest, { params }: Params) {
       metadata: { reportingPeriodId: body.reportingPeriodId },
     });
 
-    return NextResponse.json(run, { status: 202 });
+    // Re-fetch the run so the response reflects the final status.
+    // In inline mode the calculation is already done by this point;
+    // in worker mode it will still be "queued" and the client polls.
+    const finalRun = await prisma.calculationRun.findUnique({
+      where: { id: run.id },
+      select: { id: true, status: true, errorMessage: true, finishedAt: true },
+    });
+
+    return NextResponse.json(finalRun ?? run, { status: 202 });
   } catch (err) {
     return handleRouteError(err);
   }

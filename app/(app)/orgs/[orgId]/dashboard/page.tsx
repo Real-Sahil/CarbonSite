@@ -42,6 +42,7 @@ import { ScopeDonut } from "@/components/charts/scope-donut";
 import { CategoryBar } from "@/components/charts/category-bar";
 import { TrendLine, type TrendLineDatum } from "@/components/charts/trend-line";
 import { OnboardingChecklist } from "./onboarding-checklist";
+import { CalculationRunsLive } from "./calculation-runs-live";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -1610,20 +1611,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
-          {calculationRuns.some((run) => run.status === "queued" || run.status === "running") && (
-            <div className="flex items-center gap-3 rounded-[14px] border border-[#b6ced5] bg-[#b6ced5]/20 px-4 py-3">
-              <div className="h-2 w-2 rounded-full bg-[#0f3e17] animate-pulse" />
-              <div>
-                <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
-                  Calculation in progress
-                </p>
-                <p className="text-xs text-[#333333] tracking-[-0.36px]">
-                  {calculationRuns.filter((run) => run.status === "queued" || run.status === "running").length} run
-                  {calculationRuns.filter((run) => run.status === "queued" || run.status === "running").length !== 1 ? "s" : ""} queued or running — refresh to check for results.
-                </p>
-              </div>
-            </div>
-          )}
           <CalculationControls
             orgId={orgId}
             periods={reportingPeriods}
@@ -1644,38 +1631,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 label: `${run.reportingPeriod.label} - ${run.factorLibrary.name} ${run.factorLibrary.version}`,
               }))}
           />
-          {calculationRuns.length > 0 && (
-            <div className="grid gap-2">
-              {calculationRuns.map((run) => (
-                <div
-                  key={run.id}
-                  className="flex flex-col gap-2 rounded-[14px] border border-[#e5e7eb] p-3 md:flex-row md:items-center md:justify-between"
-                >
-                  <div>
-                    <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
-                      {run.reportingPeriod.label}
-                    </p>
-                    <p className="text-xs text-[#333333] tracking-[-0.36px]">
-                      {run.factorLibrary.name} {run.factorLibrary.version}
-                    </p>
-                    {run.status === "failed" && run.errorMessage && (
-                      <p className="mt-1 text-xs text-red-700 tracking-[-0.36px]">
-                        {run.errorMessage}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {(run.status === "queued" || run.status === "running") && (
-                      <div className="h-1.5 w-1.5 rounded-full bg-[#0f3e17] animate-pulse" />
-                    )}
-                    <Badge variant={run.status === "succeeded" ? "default" : run.status === "failed" ? "destructive" : "outline"}>
-                      {run.status.replaceAll("_", " ")}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <CalculationRunsLive orgId={orgId} initialRuns={calculationRuns} />
         </CardContent>
       </Card>
 
