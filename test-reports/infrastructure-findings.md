@@ -15,7 +15,9 @@ The platform has a well-structured security foundation: every org-scoped route c
 **High issues: 0**  
 **Medium issues: 3**  
 **Low issues: 4**  
-**Informational: 2**
+**Informational: 2**  
+
+**Last updated:** 2026-08-08 — Workstream 1 additions (CBAM XML, GHG Protocol, CDP report types).
 
 ---
 

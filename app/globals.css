@@ -25,6 +25,11 @@
   --color-scope-1: #0f766e;
   --color-scope-2: #0ea5e9;
   --color-scope-3: #84cc16;
+
+  /* Brand palette — UK construction green identity */
+  --color-brand-forest: #228B22;
+  --color-sky-blue:     #87CEEB;
+  --color-cta-orange:   #FFA500;
 }
 
 @layer base {

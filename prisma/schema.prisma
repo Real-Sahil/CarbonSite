@@ -988,6 +988,9 @@ enum ReportType {
   national_toms
   csrd_esrs_e1
   contract_carbon
+  ghg_protocol
+  cdp
+  cbam
 
   @@map("report_type")
 }
@@ -1011,8 +1014,10 @@ model Report {
   version           Int          @default(1)
   pdfStorageKey     String?      @map("pdf_storage_key")
   csvStorageKey     String?      @map("csv_storage_key")
+  xmlStorageKey     String?      @map("xml_storage_key")
   pdfChecksum       String?      @map("pdf_checksum")
   csvChecksum       String?      @map("csv_checksum")
+  xmlChecksum       String?      @map("xml_checksum")
   options           Json         @default("{}")
   requestHash       String?      @unique @map("request_hash")
   contractId        String?      @map("contract_id")

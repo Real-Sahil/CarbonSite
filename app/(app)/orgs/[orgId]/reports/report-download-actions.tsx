@@ -9,18 +9,20 @@ export function ReportDownloadActions({
   reportId,
   hasPdf,
   hasCsv,
+  hasXml,
   ready,
 }: {
   orgId: string;
   reportId: string;
   hasPdf: boolean;
   hasCsv: boolean;
+  hasXml: boolean;
   ready: boolean;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function download(artifact: "pdf" | "csv") {
+  function download(artifact: "pdf" | "csv" | "xml") {
     setError(null);
     startTransition(async () => {
       const res = await fetch(
@@ -59,6 +61,18 @@ export function ReportDownloadActions({
           <Download className="h-4 w-4" />
           CSV
         </Button>
+        {hasXml && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={!ready || isPending}
+            onClick={() => download("xml")}
+          >
+            <Download className="h-4 w-4" />
+            XML
+          </Button>
+        )}
       </div>
       {error && <p className="max-w-48 text-xs text-red-600">{error}</p>}
     </div>

@@ -85,6 +85,8 @@ export const keys = {
     `org/${orgId}/reports/${reportId}/report.pdf`,
   reportCsv: (orgId: string, reportId: string) =>
     `org/${orgId}/reports/${reportId}/report.csv`,
+  reportXml: (orgId: string, reportId: string) =>
+    `org/${orgId}/reports/${reportId}/report.xml`,
   brandingLogo: (orgId: string, filename: string) =>
     `org/${orgId}/branding/${filename}`,
 };
