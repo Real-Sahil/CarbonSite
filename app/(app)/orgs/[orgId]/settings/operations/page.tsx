@@ -28,7 +28,11 @@ export default async function OperationsSettingsPage({
     throw err;
   }
 
-  const [periods, facilities, businessUnits, factorLibraries] = await Promise.all([
+  const [org, periods, facilities, businessUnits, factorLibraries] = await Promise.all([
+    prisma.organization.findUniqueOrThrow({
+      where: { id: orgId },
+      select: { name: true, industry: true, hqCountry: true, reportingCurrency: true },
+    }),
     prisma.reportingPeriod.findMany({
       where: { organizationId: orgId },
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
@@ -51,6 +55,12 @@ export default async function OperationsSettingsPage({
     <div className="flex flex-col gap-[28px]">
       <OperationsSetup
         orgId={orgId}
+        orgProfile={{
+          name: org.name,
+          industry: org.industry ?? "",
+          hqCountry: org.hqCountry ?? "",
+          reportingCurrency: org.reportingCurrency,
+        }}
         periods={periods.map((period) => ({
           id: period.id,
           label: period.label,

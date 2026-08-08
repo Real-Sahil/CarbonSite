@@ -38,6 +38,22 @@ type FactorLibrary = {
 const PERIOD_TYPES = ["month", "quarter", "year", "custom"] as const;
 const PERIOD_STATUSES = ["draft", "published", "locked"] as const;
 
+const INDUSTRY_OPTIONS = [
+  { value: "", label: "General / not specified" },
+  { value: "construction", label: "Construction" },
+  { value: "logistics", label: "Logistics and transport" },
+  { value: "facilities_management", label: "Facilities management" },
+  { value: "public_procurement", label: "Public procurement (PPN 006)" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "retail", label: "Retail and wholesale" },
+  { value: "financial_services", label: "Financial services" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "hospitality", label: "Hospitality and leisure" },
+  { value: "professional_services", label: "Professional services" },
+] as const;
+
+const CURRENCY_OPTIONS = ["GBP", "USD", "EUR", "AUD", "CAD", "SGD"] as const;
+
 async function requestJson(
   url: string,
   method: "POST" | "PATCH" | "DELETE",
@@ -55,14 +71,23 @@ async function requestJson(
   }
 }
 
+type OrgProfile = {
+  name: string;
+  industry: string;
+  hqCountry: string;
+  reportingCurrency: string;
+};
+
 export function OperationsSetup({
   orgId,
+  orgProfile,
   periods,
   facilities,
   businessUnits,
   factorLibraries,
 }: {
   orgId: string;
+  orgProfile: OrgProfile;
   periods: ReportingPeriod[];
   facilities: Facility[];
   businessUnits: BusinessUnit[];
@@ -71,6 +96,9 @@ export function OperationsSetup({
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       <section className="xl:col-span-2">
+        <OrgProfilePanel orgId={orgId} profile={orgProfile} />
+      </section>
+      <section className="xl:col-span-2">
         <ReportingPeriodsPanel orgId={orgId} periods={periods} />
       </section>
       <FacilitiesPanel orgId={orgId} facilities={facilities} />
@@ -78,6 +106,99 @@ export function OperationsSetup({
       <section className="xl:col-span-2">
         <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} />
       </section>
+    </div>
+  );
+}
+
+function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfile }) {
+  const router = useRouter();
+  const [name, setName] = useState(profile.name);
+  const [industry, setIndustry] = useState(profile.industry);
+  const [hqCountry, setHqCountry] = useState(profile.hqCountry);
+  const [currency, setCurrency] = useState(profile.reportingCurrency);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const changed =
+    name !== profile.name ||
+    industry !== profile.industry ||
+    hqCountry !== profile.hqCountry ||
+    currency !== profile.reportingCurrency;
+
+  function save() {
+    setError(null);
+    setSuccess(null);
+    startTransition(async () => {
+      try {
+        await requestJson(`/api/orgs/${orgId}`, "PATCH", {
+          name: name.trim() || undefined,
+          industry: industry || null,
+          hqCountry: hqCountry.trim() || null,
+          reportingCurrency: currency || undefined,
+        });
+        setSuccess("Organisation profile saved.");
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not save profile");
+      }
+    });
+  }
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white">
+      <PanelHeader
+        title="Organisation profile"
+        description="Industry classification drives sector-specific dashboard widgets and report defaults."
+      />
+      <div className="grid gap-3 border-t border-slate-100 p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Field label="Organisation name">
+          <Input value={name} disabled={isPending} onChange={(e) => setName(e.target.value)} maxLength={200} />
+        </Field>
+        <Field label="Industry">
+          <select
+            value={industry}
+            disabled={isPending}
+            onChange={(e) => setIndustry(e.target.value)}
+            className={selectClass}
+          >
+            {INDUSTRY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="HQ country">
+          <Input
+            value={hqCountry}
+            disabled={isPending}
+            onChange={(e) => setHqCountry(e.target.value)}
+            maxLength={100}
+            placeholder="e.g. United Kingdom"
+          />
+        </Field>
+        <Field label="Reporting currency">
+          <select
+            value={currency}
+            disabled={isPending}
+            onChange={(e) => setCurrency(e.target.value)}
+            className={selectClass}
+          >
+            {CURRENCY_OPTIONS.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </Field>
+      </div>
+      <div className="flex items-center gap-3 border-t border-slate-100 px-4 py-3">
+        <Button type="button" disabled={isPending || !changed} onClick={save}>
+          <Save className="h-4 w-4" />
+          Save profile
+        </Button>
+        {success && <p className="text-sm text-green-700">{success}</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
+      </div>
     </div>
   );
 }
