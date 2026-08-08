@@ -10,6 +10,7 @@ const TABS = [
   { label: "Branding",   segment: "branding" },
   { label: "Audit Log",  segment: "audit" },
   { label: "API Keys",   segment: "api-keys" },
+  { label: "Billing",    segment: "billing" },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
