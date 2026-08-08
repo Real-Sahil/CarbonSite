@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload } from "lucide-react";
+import { Upload, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 const TEMPLATE_KEYS = [
   { value: "ghg_protocol_v1", label: "GHG Protocol v1 (default)" },
@@ -23,12 +24,16 @@ interface CreateImportFormProps {
   periods: { id: string; label: string }[];
 }
 
+type Phase = "idle" | "uploading" | "processing" | "done" | "error";
+
 export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
+  const router = useRouter();
   const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
   const [templateKey, setTemplateKey] = useState(TEMPLATE_KEYS[0].value);
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [resultState, setResultState] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,28 +41,52 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
       setError("Select a file and reporting period.");
       return;
     }
-    setLoading(true);
+    setPhase("uploading");
     setError(null);
+    setResultState(null);
     try {
       const form = new FormData();
       form.append("file", file);
       form.append("reportingPeriodId", periodId);
       form.append("templateKey", templateKey);
+
+      setPhase("processing");
       const res = await fetch(`/api/orgs/${orgId}/imports`, {
         method: "POST",
         body: form,
       });
+
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         setError(data.message ?? "Upload failed.");
-      } else {
-        window.location.reload();
+        setPhase("error");
+        return;
       }
+
+      const state: string = data.state ?? "parsing";
+
+      if (state === "failed") {
+        setError(data.errorMessage ?? "Import failed during processing.");
+        setPhase("error");
+        return;
+      }
+
+      setResultState(state);
+      setPhase("done");
+      // Refresh the server component list so the new batch appears
+      router.refresh();
     } catch {
       setError("Network error — try again.");
-    } finally {
-      setLoading(false);
+      setPhase("error");
     }
+  }
+
+  function reset() {
+    setPhase("idle");
+    setError(null);
+    setResultState(null);
+    setFile(null);
   }
 
   if (periods.length === 0) {
@@ -68,11 +97,38 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
     );
   }
 
+  if (phase === "done") {
+    const label =
+      resultState === "ready_to_commit"
+        ? "Import processed — rows are staged and ready to review."
+        : resultState === "needs_attention"
+        ? "Import processed with validation issues — review errors before committing."
+        : "Import submitted — processing in the background.";
+    return (
+      <div className="flex items-start gap-2 rounded-[14px] border border-emerald-200 bg-emerald-50 px-4 py-3">
+        <CheckCircle2 className="h-4 w-4 mt-0.5 text-emerald-600 shrink-0" />
+        <div className="flex flex-col gap-1">
+          <p className="text-sm text-emerald-800 tracking-[-0.42px]">{label}</p>
+          <button
+            type="button"
+            onClick={reset}
+            className="text-xs text-emerald-700 underline underline-offset-2 text-left"
+          >
+            Import another file
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const busy = phase === "uploading" || phase === "processing";
+  const buttonLabel = phase === "uploading" ? "Uploading…" : phase === "processing" ? "Processing…" : "Upload";
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1">
         <label className="text-xs text-[#333333] tracking-[-0.36px]">Reporting period</label>
-        <Select value={periodId} onValueChange={setPeriodId}>
+        <Select value={periodId} onValueChange={setPeriodId} disabled={busy}>
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Select period" />
           </SelectTrigger>
@@ -85,7 +141,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-[#333333] tracking-[-0.36px]">Template</label>
-        <Select value={templateKey} onValueChange={setTemplateKey}>
+        <Select value={templateKey} onValueChange={setTemplateKey} disabled={busy}>
           <SelectTrigger className="w-52">
             <SelectValue placeholder="Select template" />
           </SelectTrigger>
@@ -103,13 +159,23 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
           accept=".csv,.xlsx,.xls"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           className="w-56 text-sm"
+          disabled={busy}
         />
       </div>
-      <Button type="submit" disabled={loading || !file} size="sm" className="gap-1.5">
-        <Upload aria-hidden="true" className="h-3.5 w-3.5" />
-        {loading ? "Uploading…" : "Upload"}
+      <Button type="submit" disabled={busy || !file} size="sm" className="gap-1.5">
+        {busy ? (
+          <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Upload aria-hidden="true" className="h-3.5 w-3.5" />
+        )}
+        {buttonLabel}
       </Button>
-      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+      {phase === "error" && error && (
+        <div className="w-full flex items-start gap-1.5">
+          <AlertCircle className="h-4 w-4 mt-0.5 text-red-500 shrink-0" />
+          <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>
+        </div>
+      )}
     </form>
   );
 }
