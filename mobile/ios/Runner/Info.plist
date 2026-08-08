@@ -25,11 +25,41 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>CarbonSite uses the camera to capture delivery, waste, haulage, and evidence documents.</string>
+	<string>CarbonSite uses the camera to capture delivery notes, waste tickets, fuel receipts, and evidence documents.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>CarbonSite records field location context for auditable site evidence.</string>
+	<string>CarbonSite records site location for auditable field evidence submissions.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>CarbonSite records site location for auditable field evidence submissions.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>CarbonSite lets field users attach existing evidence photos and documents from the photo library.</string>
+	<string>CarbonSite lets you attach existing photos and documents from your photo library.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>CarbonSite saves captured evidence photos to your photo library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>CarbonSite may use the microphone when recording video evidence.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>CarbonSite uses Face ID to secure your account and protect submission data.</string>
+	<!-- Deep links: carbonsite:// scheme for invite links -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>carbonsite</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>io.carbonsite.app</string>
+		</dict>
+	</array>
+	<!-- Background fetch for offline sync -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+		<string>processing</string>
+	</array>
+	<!-- App Store export compliance -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
