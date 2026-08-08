@@ -821,8 +821,73 @@ async function main() {
     });
   }
 
+  // ── Embodied carbon material library (ICE Database v3.0 / CarboLifeCalc)
+  // GWP factors in kgCO2e per kg (A1-A3 cradle-to-gate) unless noted.
+  // Sources: ICE v3.0 (Bath), RICS Professional Statement 2017, CIBSE TM65.
+  const embodiedMaterials = [
+    // Concrete & cement
+    { name: "General Purpose Cement (CEM I)", category: "concrete", gwpA1A3: 0.82,  gwpA4: 0.008, declaredUnit: "kg", source: "ICE v3.0" },
+    { name: "Ready Mix Concrete (25 MPa, 300 kg/m3 cement)", category: "concrete", gwpA1A3: 0.11,  gwpA4: 0.006, declaredUnit: "kg", density: 2400, source: "ICE v3.0" },
+    { name: "Precast Concrete Panel", category: "concrete", gwpA1A3: 0.16,  gwpA4: 0.010, declaredUnit: "kg", density: 2400, source: "ICE v3.0" },
+    { name: "Reinforced Concrete (slab, 250mm)", category: "concrete", gwpA1A3: 0.132, gwpA4: 0.007, declaredUnit: "kg", density: 2500, source: "ICE v3.0" },
+    // Steel
+    { name: "Structural Steel (virgin, UK EAF)", category: "steel", gwpA1A3: 1.77,  gwpA4: 0.020, declaredUnit: "kg", source: "ICE v3.0" },
+    { name: "Structural Steel (recycled content, UK EAF)", category: "steel", gwpA1A3: 0.51,  gwpA4: 0.020, declaredUnit: "kg", source: "ICE v3.0" },
+    { name: "Reinforcing Bar (rebar, recycled)", category: "steel", gwpA1A3: 0.55,  gwpA4: 0.018, declaredUnit: "kg", source: "ICE v3.0" },
+    { name: "Cold-Rolled Steel Sheet", category: "steel", gwpA1A3: 2.11,  gwpA4: 0.021, declaredUnit: "kg", source: "ICE v3.0" },
+    { name: "Stainless Steel 304", category: "steel", gwpA1A3: 6.15,  gwpA4: 0.025, declaredUnit: "kg", source: "ICE v3.0" },
+    // Timber
+    { name: "Sawn Softwood Timber (kiln dried)", category: "timber", gwpA1A3: 0.263, gwpA4: 0.015, declaredUnit: "kg", density: 470, source: "ICE v3.0" },
+    { name: "Glued Laminated Timber (Glulam)", category: "timber", gwpA1A3: 0.512, gwpA4: 0.015, declaredUnit: "kg", density: 480, source: "ICE v3.0" },
+    { name: "Cross-Laminated Timber (CLT)", category: "timber", gwpA1A3: 0.437, gwpA4: 0.015, declaredUnit: "kg", density: 490, source: "ICE v3.0" },
+    { name: "Plywood", category: "timber", gwpA1A3: 0.72,  gwpA4: 0.018, declaredUnit: "kg", density: 530, source: "ICE v3.0" },
+    { name: "Oriented Strand Board (OSB)", category: "timber", gwpA1A3: 0.45,  gwpA4: 0.015, declaredUnit: "kg", density: 600, source: "ICE v3.0" },
+    // Masonry
+    { name: "Dense Aggregate Block", category: "masonry", gwpA1A3: 0.073, gwpA4: 0.010, declaredUnit: "kg", density: 2100, source: "ICE v3.0" },
+    { name: "Aerated Concrete Block (AAC)", category: "masonry", gwpA1A3: 0.38,  gwpA4: 0.009, declaredUnit: "kg", density: 650, source: "ICE v3.0" },
+    { name: "Facing Brick", category: "masonry", gwpA1A3: 0.22,  gwpA4: 0.010, declaredUnit: "kg", density: 1900, source: "ICE v3.0" },
+    { name: "Concrete Roof Tile", category: "masonry", gwpA1A3: 0.096, gwpA4: 0.008, declaredUnit: "kg", density: 2000, source: "ICE v3.0" },
+    // Insulation
+    { name: "Mineral Wool (glass)", category: "insulation", gwpA1A3: 1.28,  gwpA4: 0.018, declaredUnit: "kg", density: 25, source: "ICE v3.0" },
+    { name: "Mineral Wool (rock)", category: "insulation", gwpA1A3: 1.12,  gwpA4: 0.018, declaredUnit: "kg", density: 40, source: "ICE v3.0" },
+    { name: "Expanded Polystyrene (EPS)", category: "insulation", gwpA1A3: 3.29,  gwpA4: 0.012, declaredUnit: "kg", density: 20, source: "ICE v3.0" },
+    { name: "Extruded Polystyrene (XPS)", category: "insulation", gwpA1A3: 4.66,  gwpA4: 0.012, declaredUnit: "kg", density: 35, source: "ICE v3.0" },
+    { name: "Rigid PIR / PUR Board", category: "insulation", gwpA1A3: 4.49,  gwpA4: 0.011, declaredUnit: "kg", density: 32, source: "ICE v3.0" },
+    // Glass & glazing
+    { name: "Float Glass", category: "glass", gwpA1A3: 0.91,  gwpA4: 0.025, declaredUnit: "kg", density: 2500, source: "ICE v3.0" },
+    { name: "Double-Glazed Unit (standard low-e)", category: "glass", gwpA1A3: 28.0, gwpA4: 0.900, declaredUnit: "m2", source: "ICE v3.0" },
+    // Aluminium
+    { name: "Aluminium (primary, smelted)", category: "aluminium", gwpA1A3: 11.46, gwpA4: 0.025, declaredUnit: "kg", density: 2700, source: "ICE v3.0" },
+    { name: "Aluminium (recycled, UK)", category: "aluminium", gwpA1A3: 1.69,  gwpA4: 0.025, declaredUnit: "kg", density: 2700, source: "ICE v3.0" },
+    { name: "Aluminium Curtain Walling", category: "aluminium", gwpA1A3: 52.0, gwpA4: 1.200, declaredUnit: "m2", source: "ICE v3.0" },
+    // Cladding & finishes
+    { name: "Plasterboard (standard)", category: "finishes", gwpA1A3: 0.39,  gwpA4: 0.010, declaredUnit: "kg", density: 800, source: "ICE v3.0" },
+    { name: "Gypsum Plaster", category: "finishes", gwpA1A3: 0.12,  gwpA4: 0.009, declaredUnit: "kg", source: "ICE v3.0" },
+    { name: "Ceramic Floor Tile", category: "finishes", gwpA1A3: 0.73,  gwpA4: 0.012, declaredUnit: "kg", density: 2000, source: "ICE v3.0" },
+    { name: "Carpet (nylon, broadloom)", category: "finishes", gwpA1A3: 5.30,  gwpA4: 0.032, declaredUnit: "kg", density: 2, source: "ICE v3.0" },
+    // Services & MEP
+    { name: "Copper Pipe", category: "services", gwpA1A3: 3.77,  gwpA4: 0.020, declaredUnit: "kg", density: 8900, source: "ICE v3.0" },
+    { name: "PVC-U Pipe", category: "services", gwpA1A3: 2.41,  gwpA4: 0.018, declaredUnit: "kg", density: 1400, source: "ICE v3.0" },
+    { name: "HDPE Pipe", category: "services", gwpA1A3: 2.12,  gwpA4: 0.016, declaredUnit: "kg", density: 950, source: "ICE v3.0" },
+  ];
+
+  let createdMaterials = 0;
+  for (const m of embodiedMaterials) {
+    const { gwpA4, density, ...core } = m;
+    await prisma.embodiedMaterial.upsert({
+      where: { name: m.name },
+      update: {},
+      create: {
+        ...core,
+        gwpA4: gwpA4 ?? null,
+        density: density ?? null,
+      },
+    });
+    createdMaterials++;
+  }
+
   console.log(
-    `Seed complete: methodology version, emission categories, factor libraries, ${createdFactors} new emission factors, ${themes.length} TOMS themes, ${measures.length} TOMS measures.`,
+    `Seed complete: methodology version, emission categories, factor libraries, ${createdFactors} new emission factors, ${themes.length} TOMS themes, ${measures.length} TOMS measures, ${createdMaterials} embodied materials.`,
   );
 }
 

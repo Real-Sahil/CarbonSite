@@ -70,6 +70,7 @@ const REPORT_TYPE_OPTIONS = [
   { value: "cbam",             label: "CBAM Embedded Emissions (EU/UK)" },
   { value: "secr",             label: "SECR (Streamlined Energy & Carbon)" },
   { value: "ppn_06_21",        label: "PPN 06/21 Carbon Reduction Plan" },
+  { value: "ppn_006_crp",      label: "PPN 006 CRP (Procurement Compliance)" },
   { value: "nhs_evergreen",    label: "NHS Evergreen Level 1" },
   { value: "breeam_evidence",  label: "BREEAM Evidence Pack" },
   { value: "national_toms",    label: "National TOMS Social Value" },

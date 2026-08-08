@@ -49,6 +49,7 @@ model User {
   deviceTokens              DeviceToken[]
   webhooks                  Webhook[]                @relation("WebhookCreator")
   snapshotVerifications     PublishedSnapshot[]      @relation("SnapshotVerifiedBy")
+  embodiedCarbonRecords     EmbodiedCarbonRecord[]
 
   platformMembership PlatformMembership?
 
@@ -144,6 +145,8 @@ model Organization {
   projects            Project[]           @relation("OrgProjects")
   branding            TenantBranding?
   webhooks            Webhook[]
+  epdRecords          EpdRecord[]
+  embodiedCarbonRecords EmbodiedCarbonRecord[]
 
   @@map("organizations")
 }
@@ -355,6 +358,7 @@ model ReportingPeriod {
   fieldWorkerAssignments FieldWorkerAssignment[]
   socialValueRecords SocialValueRecord[]
   socialValueTargets SocialValueTarget[]
+  embodiedCarbonRecords EmbodiedCarbonRecord[]
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -983,6 +987,7 @@ enum ReportType {
   audit_package
   secr
   ppn_06_21
+  ppn_006_crp
   nhs_evergreen
   breeam_evidence
   national_toms
@@ -1191,6 +1196,7 @@ model Project {
   contract     Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
   organization Organization @relation("OrgProjects", fields: [organizationId], references: [id], onDelete: Cascade)
   sites        Site[]
+  embodiedCarbonRecords EmbodiedCarbonRecord[]
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -1432,6 +1438,97 @@ model RateLimitBucket {
   resetAt DateTime @map("reset_at")
 
   @@map("rate_limit_buckets")
+}
+
+// ─── Embodied Carbon ─────────────────────────────────────────────────────────
+
+// Global material library — seeded from ICE/CarboLifeCalc/RICS data.
+// GWP values in kgCO2e per kg unless unit specified otherwise.
+model EmbodiedMaterial {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  category        String   // e.g. "concrete", "steel", "timber", "insulation"
+  description     String?
+  // Lifecycle stage GWP factors (kgCO2e / declared unit)
+  gwpA1A3         Float    @map("gwp_a1_a3")  // cradle to gate (required)
+  gwpA4           Float?   @map("gwp_a4")     // transport to site
+  gwpA5           Float?   @map("gwp_a5")     // installation
+  gwpC1C4         Float?   @map("gwp_c1_c4")  // end of life
+  gwpD            Float?   @map("gwp_d")      // beyond system boundary (reuse/recycling)
+  declaredUnit    String   @default("kg") @map("declared_unit") // kg | m3 | m2
+  density         Float?   // kg/m3 — used to convert volume → mass
+  source          String   @default("ICE v3.0") // data source
+  sourceUrl       String?  @map("source_url")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  epdRecords    EpdRecord[]
+  carbonRecords EmbodiedCarbonRecord[]
+
+  @@map("embodied_materials")
+}
+
+// Organisation-specific EPD (Environmental Product Declaration) uploads.
+// Overrides the global material factor for that org.
+model EpdRecord {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  materialId      String?  @map("material_id")   // null = custom material not in global lib
+  productName     String   @map("product_name")
+  manufacturer    String?
+  validFrom       DateTime? @map("valid_from")
+  validUntil      DateTime? @map("valid_until")
+  gwpA1A3         Float    @map("gwp_a1_a3")
+  gwpA4           Float?   @map("gwp_a4")
+  gwpA5           Float?   @map("gwp_a5")
+  gwpC1C4         Float?   @map("gwp_c1_c4")
+  gwpD            Float?   @map("gwp_d")
+  declaredUnit    String   @default("kg") @map("declared_unit")
+  storageKey      String?  @map("storage_key")   // PDF stored in R2/db
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization  Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  material      EmbodiedMaterial? @relation(fields: [materialId], references: [id])
+  carbonRecords EmbodiedCarbonRecord[]
+
+  @@index([organizationId])
+  @@map("epd_records")
+}
+
+// Per-project embodied carbon record — each material quantity on a project.
+model EmbodiedCarbonRecord {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  projectId        String?  @map("project_id")
+  reportingPeriodId String? @map("reporting_period_id")
+  materialId       String?  @map("material_id")
+  epdId            String?  @map("epd_id")        // EPD overrides global material
+  description      String?
+  quantity         Float
+  unit             String   @default("kg")
+  // Computed outputs (stored for audit trail)
+  gwpA1A3Used      Float    @map("gwp_a1_a3_used")
+  gwpA4Used        Float?   @map("gwp_a4_used")
+  totalKgCo2e      Float    @map("total_kg_co2e")
+  lifecycleStages  String[] @map("lifecycle_stages") // ["A1-A3","A4","A5"]
+  source           String   @default("manual") // manual | ocr | import
+  fieldSubmissionId String? @map("field_submission_id")
+  notes            String?
+  createdByUserId  String   @map("created_by_user_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project         Project?          @relation(fields: [projectId], references: [id])
+  reportingPeriod ReportingPeriod?  @relation(fields: [reportingPeriodId], references: [id])
+  material        EmbodiedMaterial? @relation(fields: [materialId], references: [id])
+  epd             EpdRecord?        @relation(fields: [epdId], references: [id])
+  createdBy       User              @relation(fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, projectId])
+  @@index([organizationId, reportingPeriodId])
+  @@map("embodied_carbon_records")
 }
 
 // Zero-cost storage driver: evidence/report bytes persisted in Postgres when
