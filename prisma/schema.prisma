@@ -147,6 +147,7 @@ model Organization {
   webhooks            Webhook[]
   epdRecords          EpdRecord[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
+  apiKeys             ApiKey[]
 
   @@map("organizations")
 }
@@ -1529,6 +1530,27 @@ model EmbodiedCarbonRecord {
   @@index([organizationId, projectId])
   @@index([organizationId, reportingPeriodId])
   @@map("embodied_carbon_records")
+}
+
+// ─── API Keys ────────────────────────────────────────────────────────────────
+
+// Org-scoped API keys for BI tools and integrations.
+// The raw key is shown once on creation and never stored — only a SHA-256 hash
+// is persisted so that even DB read access cannot recover active credentials.
+model ApiKey {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  name           String
+  keyHash        String    @unique @map("key_hash")
+  prefix         String
+  lastUsedAt     DateTime? @map("last_used_at")
+  expiresAt      DateTime? @map("expires_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("api_keys")
 }
 
 // Zero-cost storage driver: evidence/report bytes persisted in Postgres when

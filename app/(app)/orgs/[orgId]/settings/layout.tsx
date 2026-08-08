@@ -8,6 +8,8 @@ const TABS = [
   { label: "Members",    segment: "members" },
   { label: "Operations", segment: "operations" },
   { label: "Branding",   segment: "branding" },
+  { label: "Audit Log",  segment: "audit" },
+  { label: "API Keys",   segment: "api-keys" },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
