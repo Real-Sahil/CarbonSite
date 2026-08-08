@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { PlanSelector } from "./plan-selector";
+import { ResetOrgButton } from "./reset-org-button";
 import {
   Table,
   TableBody,
@@ -84,6 +85,17 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
           <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">Plan</p>
           <PlanSelector orgId={orgId} currentPlan={org.plan} />
         </div>
+      </div>
+
+      {/* Danger zone */}
+      <div className="rounded-[14px] border border-red-200 p-[21px] flex flex-col gap-3">
+        <div>
+          <p className="text-sm font-semibold text-red-900">Danger zone</p>
+          <p className="text-xs text-red-700 mt-0.5">
+            Permanently deletes all activity data for this org. Structure (members, periods, sites) is kept.
+          </p>
+        </div>
+        <ResetOrgButton orgId={orgId} orgName={org.name} />
       </div>
 
       {/* Stats */}

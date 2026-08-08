@@ -184,14 +184,24 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
     // A run over zero approved records would wipe the live dashboard
     // aggregates and silently show zeros — fail loudly instead.
     if (records.length === 0) {
+      // Surface which periods DO have approved records so the user can pick the right one.
+      const periodsWithRecords = await prisma.activityRecord.findMany({
+        where: { organizationId: orgId, reviewStatus: "approved" },
+        select: { reportingPeriod: { select: { label: true } } },
+        distinct: ["reportingPeriodId"],
+        take: 5,
+      });
+      const hint =
+        periodsWithRecords.length > 0
+          ? ` Approved records exist in: ${periodsWithRecords.map((r) => r.reportingPeriod.label).join(", ")}.`
+          : " No approved records exist in any period — approve records or commit an import first.";
       await prisma.calculationRun.update({
         where: { id: calculationRunId },
         data: {
           status: "failed",
           finishedAt: new Date(),
           errorMessage:
-            "No approved activity records found for this reporting period. " +
-            "Approve records (or commit an import) before running a calculation.",
+            "No approved activity records found for this reporting period." + hint,
         },
       });
       return;
