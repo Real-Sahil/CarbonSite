@@ -137,7 +137,14 @@ export async function POST(req: NextRequest, { params }: Params) {
       metadata: { filename: file.name, templateKey },
     });
 
-    return NextResponse.json(updatedBatch, { status: 202 });
+    // Re-fetch after dispatch so inline-mode callers get the final state
+    // (ready_to_commit / needs_attention / failed) not the stale "parsing" snapshot.
+    const finalBatch = await prisma.importBatch.findUnique({
+      where: { id: batch.id },
+      select: { id: true, state: true, errorMessage: true },
+    });
+
+    return NextResponse.json(finalBatch ?? updatedBatch, { status: 202 });
   } catch (err) {
     return handleRouteError(err);
   }
