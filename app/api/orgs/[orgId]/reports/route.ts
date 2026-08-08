@@ -25,6 +25,9 @@ const createReportSchema = z.object({
     "national_toms",
     "csrd_esrs_e1",
     "contract_carbon",
+    "ghg_protocol",
+    "cdp",
+    "cbam",
   ]),
   options: z.record(z.any()).optional(),
 });

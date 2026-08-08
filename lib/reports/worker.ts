@@ -16,6 +16,10 @@ import { renderNationalTomsHtml, type NationalTomsData, type TomsThemeSummary } 
 import { renderBreeamEvidenceHtml, type BreeamData } from "./templates/breeam-evidence";
 import { renderCsrdEsrsE1Html, type CsrdEsrsE1Data } from "./templates/csrd-esrs-e1";
 import { renderContractCarbonHtml, type ContractCarbonData } from "./templates/contract-carbon";
+import { renderGhgProtocolHtml, type GhgProtocolData } from "./templates/ghg-protocol";
+import { renderCdpHtml, type CdpData } from "./templates/cdp";
+import { renderCbamHtml, type CbamHtmlData } from "./templates/cbam";
+import { generateCbamXml, type CbamReportData, type CbamGoodsItem, MATERIAL_TO_CN, CONSTRUCTION_CBAM_CN_CODES } from "./cbam-xml";
 
 const REPORT_INCLUDE = {
   organization: {
@@ -60,11 +64,11 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
   await prisma.report.update({ where: { id: reportId }, data: { status: "generating" } });
 
   try {
-    const html = await renderForType(report);
+    const { html, xmlBuffer } = await renderForType(report);
 
-    // CSV only for carbon-based reports (not TOMS)
+    // CSV only for carbon-based reports (not TOMS or CBAM)
     let csvBuffer: Buffer | null = null;
-    if (report.type !== "national_toms") {
+    if (report.type !== "national_toms" && report.type !== "cbam") {
       const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
       csvBuffer = buildCsv(calculations, report);
     }
@@ -82,14 +86,24 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       await putObject(csvKey, csvBuffer, "text/csv");
     }
 
+    let xmlKey: string | undefined;
+    let xmlChecksum: string | undefined;
+    if (xmlBuffer) {
+      xmlKey = keys.reportXml(orgId, reportId);
+      xmlChecksum = createHash("sha256").update(xmlBuffer).digest("hex");
+      await putObject(xmlKey, xmlBuffer, "application/xml");
+    }
+
     const updated = await prisma.report.update({
       where: { id: reportId },
       data: {
         status: "ready",
         pdfStorageKey: pdfKey,
         csvStorageKey: csvKey ?? null,
+        xmlStorageKey: xmlKey ?? null,
         pdfChecksum,
         csvChecksum: csvChecksum ?? null,
+        xmlChecksum: xmlChecksum ?? null,
         publishedAt: new Date(),
       },
       select: { createdByUserId: true, type: true },
@@ -132,7 +146,7 @@ async function loadLogoDataUri(logoKey: string | null | undefined): Promise<stri
   }
 }
 
-async function renderForType(report: ReportWithIncludes): Promise<string> {
+async function renderForType(report: ReportWithIncludes): Promise<{ html: string; xmlBuffer?: Buffer }> {
   const orgId = report.organizationId;
   const runId = report.snapshot.calculationRunId;
   const opts = (report.options ?? {}) as Record<string, unknown>;
@@ -178,6 +192,12 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
   const s1kg = scopeKg.get(1) ?? 0;
   const s2kg = scopeKg.get(2) ?? 0;
   const s3kg = scopeKg.get(3) ?? 0;
+
+  // Category name → code lookup (built once, used by GHG Protocol and CDP handlers)
+  const catCodeMap = new Map<string, string>();
+  for (const calc of calcs) {
+    catCodeMap.set(calc.activityRecord.emissionCategory.name, calc.activityRecord.emissionCategory.code);
+  }
   const factorLibrary = `${report.snapshot.calculationRun.factorLibrary.name} ${report.snapshot.calculationRun.factorLibrary.version}`;
   const methodology = report.snapshot.calculationRun.methodologyVersion.name;
   const gwpVersion = report.snapshot.calculationRun.methodologyVersion.gwpVersion;
@@ -209,7 +229,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       efficiencyMeasures: Array.isArray(opts.efficiencyMeasures) ? opts.efficiencyMeasures as string[] : [],
       recordCount: calcs.length,
     };
-    return renderSecrHtml(data);
+    return { html: renderSecrHtml(data) };
   }
 
   // ── PPN 06/21 ─────────────────────────────────────────────────────────────
@@ -246,7 +266,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       scopesReported: ["Scope 1", "Scope 2", s3kg > 0 ? "Scope 3" : null].filter(Boolean) as string[],
       recordCount: calcs.length,
     };
-    return renderPpn0621Html(data);
+    return { html: renderPpn0621Html(data) };
   }
 
   // ── NHS Evergreen ─────────────────────────────────────────────────────────
@@ -275,7 +295,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       initiatives: initiatives.map((i) => ({ name: i.name, status: i.status })),
       recordCount: calcs.length,
     };
-    return renderNhsEvergreenHtml(data);
+    return { html: renderNhsEvergreenHtml(data) };
   }
 
   // ── National TOMS ─────────────────────────────────────────────────────────
@@ -333,7 +353,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       grandTotalPounds,
       totalRecords: svRecords.length,
     };
-    return renderNationalTomsHtml(data);
+    return { html: renderNationalTomsHtml(data) };
   }
 
   // ── BREEAM Evidence Pack ─────────────────────────────────────────────────────
@@ -355,7 +375,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       recordCount: calcs.length,
       categories: [...catTotals.values()],
     };
-    return renderBreeamEvidenceHtml(data);
+    return { html: renderBreeamEvidenceHtml(data) };
   }
 
   // ── CSRD ESRS E1 ─────────────────────────────────────────────────────────────
@@ -396,7 +416,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       interimReductionPct: opts.interimReductionPct !== undefined ? Number(opts.interimReductionPct) : undefined,
       categories: [...catTotals.values()],
     };
-    return renderCsrdEsrsE1Html(data);
+    return { html: renderCsrdEsrsE1Html(data) };
   }
 
   // ── Contract Carbon ───────────────────────────────────────────────────────────
@@ -421,7 +441,179 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       contractValueGbp: opts.contractValueGbp !== undefined ? Number(opts.contractValueGbp) : undefined,
       categories: [...catTotals.values()],
     };
-    return renderContractCarbonHtml(data);
+    return { html: renderContractCarbonHtml(data) };
+  }
+
+  // ── GHG Protocol ──────────────────────────────────────────────────────────────
+  if (report.type === "ghg_protocol") {
+    // Separate S2 location vs market by category code
+    let s2lbKg = 0;
+    let s2mbKg = 0;
+    for (const calc of calcs) {
+      const code = calc.activityRecord.emissionCategory.code;
+      if (code === "s2-electricity-lb") s2lbKg += Number(calc.totalCo2e);
+      else if (code === "s2-electricity-mb") s2mbKg += Number(calc.totalCo2e);
+    }
+
+    // Build per-category rows for GHG Protocol template
+    const ghgCategoryRows = [...catTotals.values()].map((c) => ({
+      code: catCodeMap.get(c.name) ?? "",
+      name: c.name,
+      scope: c.scope,
+      totalKg: c.totalKg,
+    }));
+
+    const baselineTonnes = opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined;
+    const reductionPct =
+      baselineTonnes !== undefined && baselineTonnes > 0
+        ? ((baselineTonnes - grandKg / 1000) / baselineTonnes) * 100
+        : undefined;
+
+    const data: GhgProtocolData = {
+      orgName: report.organization.name,
+      logoDataUri,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      snapshotVersion: report.snapshot.version,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      factorLibrary, methodology, gwpVersion,
+      scope1Kg: s1kg,
+      scope2LocationKg: s2lbKg,
+      scope2MarketKg: s2mbKg,
+      scope3Kg: s3kg,
+      totalKg: grandKg,
+      co2Kg: hasCo2 ? totalCo2Kg : undefined,
+      ch4Kg: hasCh4 ? totalCh4Kg : undefined,
+      n2oKg: hasN2o ? totalN2oKg : undefined,
+      biogenicCo2Kg: hasBiogenic ? totalBiogenicKg : undefined,
+      recordCount: calcs.length,
+      categories: ghgCategoryRows,
+      baselineYear: opts.baselineYear as string | undefined,
+      baselineTonnes,
+      reductionPct,
+    };
+    return { html: renderGhgProtocolHtml(data) };
+  }
+
+  // ── CDP ────────────────────────────────────────────────────────────────────────
+  if (report.type === "cdp") {
+    let s2lbKg = 0;
+    let s2mbKg = 0;
+    for (const calc of calcs) {
+      const code = calc.activityRecord.emissionCategory.code;
+      if (code === "s2-electricity-lb") s2lbKg += Number(calc.totalCo2e);
+      else if (code === "s2-electricity-mb") s2mbKg += Number(calc.totalCo2e);
+    }
+
+    const cdpCategoryRows = [...catTotals.values()].map((c) => ({
+      code: catCodeMap.get(c.name) ?? "",
+      name: c.name,
+      scope: c.scope,
+      totalKg: c.totalKg,
+    }));
+
+    const data: CdpData = {
+      orgName: report.organization.name,
+      logoDataUri,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      snapshotVersion: report.snapshot.version,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      factorLibrary, methodology, gwpVersion,
+      scope1Tonnes: s1kg / 1000,
+      scope2LocationTonnes: s2lbKg / 1000,
+      scope2MarketTonnes: s2mbKg / 1000,
+      scope3Tonnes: s3kg / 1000,
+      totalTonnes: grandKg / 1000,
+      co2Tonnes: hasCo2 ? totalCo2Kg / 1000 : undefined,
+      ch4Tonnes: hasCh4 ? totalCh4Kg / 1000 : undefined,
+      n2oTonnes: hasN2o ? totalN2oKg / 1000 : undefined,
+      biogenicCo2Tonnes: hasBiogenic ? totalBiogenicKg / 1000 : undefined,
+      recordCount: calcs.length,
+      categories: cdpCategoryRows,
+      netZeroTargetYear: opts.netZeroTargetYear !== undefined ? Number(opts.netZeroTargetYear) : undefined,
+      baselineYear: opts.baselineYear as string | undefined,
+      baselineTonnes: opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined,
+      revenueGbp: opts.revenueGbp !== undefined ? Number(opts.revenueGbp) : undefined,
+      employeeCount: opts.employeeCount !== undefined ? Number(opts.employeeCount) : undefined,
+    };
+    return { html: renderCdpHtml(data) };
+  }
+
+  // ── CBAM ───────────────────────────────────────────────────────────────────────
+  if (report.type === "cbam") {
+    // Fetch Scope 3 purchased-goods activity records for org + period to build CBAM goods items.
+    // We group by source description + material metadata to infer CN codes.
+    const purchasedGoodsCalcs = calcs.filter(
+      (c) => c.activityRecord.emissionCategory.code === "s3-purchased-goods"
+    );
+
+    // Build CbamGoodsItem list — one item per distinct description/facility pairing.
+    // In production this would use dedicated CBAM material metadata; here we infer from
+    // category + facility as a starting point users can refine.
+    const cbamItemMap = new Map<string, CbamGoodsItem>();
+    for (const calc of purchasedGoodsCalcs) {
+      const desc = calc.activityRecord.sourceDescription ?? "Imported goods";
+      const facilityName = calc.activityRecord.facility?.name ?? "";
+      const key = `${desc}:${facilityName}`;
+      const kg = Number(calc.totalCo2e);
+      if (!cbamItemMap.has(key)) {
+        // Default: steel (most common CBAM good in construction)
+        const cnCode = MATERIAL_TO_CN["steel"];
+        const cnDesc = CONSTRUCTION_CBAM_CN_CODES[cnCode];
+        cbamItemMap.set(key, {
+          cnCode,
+          description: desc,
+          quantityTonnes: 0,
+          directEmbeddedCo2eTonnes: 0,
+          indirectEmbeddedCo2eTonnes: 0,
+          carbonPricePaidGbp: 0,
+          installation: facilityName
+            ? { name: facilityName, country: "XX" }
+            : undefined,
+        });
+      }
+      const item = cbamItemMap.get(key)!;
+      // Allocate 70% to direct (process), 30% to indirect (electricity) — default split
+      item.directEmbeddedCo2eTonnes += (kg / 1000) * 0.7;
+      item.indirectEmbeddedCo2eTonnes += (kg / 1000) * 0.3;
+      // Quantity: estimate based on typical steel emission factor ~2 tCO2e/tonne
+      item.quantityTonnes += kg / 1000 / 2;
+    }
+
+    const goodsItems: CbamGoodsItem[] = [...cbamItemMap.values()];
+
+    const cbamReportData: CbamReportData = {
+      declarantName: report.organization.name,
+      declarantEori: opts.declarantEori as string | undefined,
+      reportingPeriodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      submissionDate: report.snapshot.publishedAt,
+      goodsItems,
+    };
+
+    const cbamHtmlData: CbamHtmlData = {
+      orgName: report.organization.name,
+      logoDataUri,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      declarantEori: opts.declarantEori as string | undefined,
+      goodsItems,
+      factorLibrary, methodology, gwpVersion,
+    };
+
+    const xmlString = generateCbamXml(cbamReportData);
+    const xmlBuffer = Buffer.from(xmlString, "utf-8");
+    const html = renderCbamHtml(cbamHtmlData);
+    return { html, xmlBuffer };
   }
 
   // ── Inventory / monthly_snapshot / audit_package ──────────────────────────────
@@ -458,7 +650,7 @@ async function renderForType(report: ReportWithIncludes): Promise<string> {
       .sort((a, b) => b.totalKg - a.totalKg),
     biogenicCo2eTonnes: biogenicTotal > 0 ? biogenicTotal / 1000 : undefined,
   };
-  return renderReportHtml(data);
+  return { html: renderReportHtml(data) };
 }
 
 // ── Data helpers ──────────────────────────────────────────────────────────────

@@ -38,6 +38,9 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   national_toms:   "National TOMS",
   csrd_esrs_e1:    "CSRD ESRS E1",
   contract_carbon: "Contract Carbon",
+  ghg_protocol:    "GHG Protocol",
+  cdp:             "CDP Climate",
+  cbam:            "CBAM",
 };
 
 function statusConfig(status: string) {
@@ -318,6 +321,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                               reportId={report.id}
                               hasPdf={!!report.pdfStorageKey}
                               hasCsv={!!report.csvStorageKey}
+                              hasXml={!!report.xmlStorageKey}
                               ready={report.status === "ready"}
                             />
                           </TableCell>

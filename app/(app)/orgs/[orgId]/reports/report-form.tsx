@@ -65,6 +65,9 @@ const REPORT_TYPE_OPTIONS = [
   { value: "inventory",        label: "Inventory" },
   { value: "monthly_snapshot", label: "Monthly snapshot" },
   { value: "audit_package",    label: "Audit package" },
+  { value: "ghg_protocol",     label: "GHG Protocol Corporate Standard" },
+  { value: "cdp",              label: "CDP Climate Change (C5, C6, C7)" },
+  { value: "cbam",             label: "CBAM Embedded Emissions (EU/UK)" },
   { value: "secr",             label: "SECR (Streamlined Energy & Carbon)" },
   { value: "ppn_06_21",        label: "PPN 06/21 Carbon Reduction Plan" },
   { value: "nhs_evergreen",    label: "NHS Evergreen Level 1" },
@@ -91,6 +94,8 @@ export function CreateReportForm({
   const [secrOpen, setSecrOpen] = useState(false);
   const [intensityMetricLabel, setIntensityMetricLabel] = useState("");
   const [intensityMetricValue, setIntensityMetricValue] = useState("");
+  const [cbamOpen, setCbamOpen] = useState(false);
+  const [cbamEori, setCbamEori] = useState("");
 
   // Validation state
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -166,12 +171,16 @@ export function CreateReportForm({
                 ...(intensityMetricValue !== "" ? { intensityMetricValue: Number(intensityMetricValue) } : {}),
               }
             : {};
+        const cbamOptions =
+          reportType === "cbam"
+            ? { ...(cbamEori.trim() ? { declarantEori: cbamEori.trim() } : {}) }
+            : {};
         await postJson(`/api/orgs/${orgId}/reports`, {
           snapshotId: sid,
           reportingPeriodId: snapshot?.reportingPeriodId,
           type: reportType,
           ...(contractId && contractId !== "" ? { contractId } : {}),
-          options: { ...secrOptions },
+          options: { ...secrOptions, ...cbamOptions },
         });
         formEl.reset();
         setReportType("inventory");
@@ -333,6 +342,41 @@ export function CreateReportForm({
                   className="h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm placeholder:text-[#999]"
                 />
               </Field>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* CBAM EORI collapsible */}
+      {reportType === "cbam" && (
+        <div className="rounded-[14px] border border-[#e5e7eb]">
+          <button
+            type="button"
+            onClick={() => setCbamOpen((v) => !v)}
+            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-normal text-[#0f3e17] tracking-[-0.42px] hover:bg-[#f9fafb] rounded-[14px]"
+          >
+            <span>CBAM declarant details (optional)</span>
+            {cbamOpen ? (
+              <ChevronUp className="h-4 w-4 text-[#333333]" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-[#333333]" />
+            )}
+          </button>
+          {cbamOpen && (
+            <div className="border-t border-[#e5e7eb] px-4 pb-4 pt-4">
+              <Field label="Declarant EORI number">
+                <input
+                  type="text"
+                  value={cbamEori}
+                  onChange={(e) => setCbamEori(e.target.value)}
+                  placeholder="e.g. GB123456789000"
+                  maxLength={17}
+                  className="h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm placeholder:text-[#999] max-w-xs"
+                />
+              </Field>
+              <p className="mt-2 text-xs text-[#999]">
+                EORI is required for final EU CBAM submission. The report generates without it — add it when ready.
+              </p>
             </div>
           )}
         </div>

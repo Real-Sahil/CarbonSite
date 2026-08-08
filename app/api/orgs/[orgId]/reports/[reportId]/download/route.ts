@@ -28,8 +28,8 @@ export async function GET(
     if (limited) return limited;
     const artifact = req.nextUrl.searchParams.get("artifact") ?? "pdf";
 
-    if (artifact !== "pdf" && artifact !== "csv") {
-      return apiError("INVALID_ARTIFACT", "Artifact must be pdf or csv.", 422);
+    if (artifact !== "pdf" && artifact !== "csv" && artifact !== "xml") {
+      return apiError("INVALID_ARTIFACT", "Artifact must be pdf, csv, or xml.", 422);
     }
 
     const report = await prisma.report.findFirst({
@@ -42,7 +42,10 @@ export async function GET(
       return apiError("REPORT_NOT_READY", "Report artefacts are not ready yet.", 422);
     }
 
-    const storageKey = artifact === "pdf" ? report.pdfStorageKey : report.csvStorageKey;
+    const storageKey =
+      artifact === "pdf" ? report.pdfStorageKey
+      : artifact === "xml" ? report.xmlStorageKey
+      : report.csvStorageKey;
     if (!storageKey) {
       return apiError("ARTIFACT_MISSING", "Requested report artefact is missing.", 404);
     }
