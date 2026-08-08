@@ -46,3 +46,6 @@ npm-debug.log*
 
 # MCP server config (contains API keys)
 .mcp.json
+
+# Graphify knowledge-graph cache (local dev tool output)
+graphify-out/
