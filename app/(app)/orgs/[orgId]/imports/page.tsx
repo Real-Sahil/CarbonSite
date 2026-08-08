@@ -54,7 +54,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
     throw err;
   }
 
-  const imports = await prisma.importBatch.findMany({
+  const importsQuery = prisma.importBatch.findMany({
     where: { organizationId: orgId },
     include: {
       createdBy: { select: { name: true, email: true } },
@@ -74,6 +74,22 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
     orderBy: { createdAt: "desc" },
     take: 50,
   });
+
+  type ImportsResult = Awaited<typeof importsQuery>;
+
+  let imports: ImportsResult;
+  try {
+    imports = await importsQuery;
+  } catch (dbErr) {
+    const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);
+    console.error("[imports] query failed:", msg);
+    return (
+      <div className="p-8">
+        <p className="text-sm font-medium text-red-700">Failed to load imports</p>
+        <pre className="mt-2 text-xs text-red-600 whitespace-pre-wrap break-all max-w-2xl">{msg}</pre>
+      </div>
+    );
+  }
 
   const periodIds = [...new Set(imports.map((batch) => batch.reportingPeriodId))];
   const [periods, allPeriods] = await Promise.all([
