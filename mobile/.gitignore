@@ -9,7 +9,8 @@ build/
 android/.gradle/
 android/local.properties
 android/key.properties
-android/app/google-services.json
+# google-services.json is intentionally committed as a stub (no real Firebase credentials).
+# Replace with a real Firebase config when FCM push notifications are needed.
 
 # iOS
 ios/.symlinks/
@@ -33,5 +34,4 @@ lib/**/*.gr.dart
 
 # Secrets
 .env
-google-services.json
 GoogleService-Info.plist

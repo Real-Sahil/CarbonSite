@@ -64,6 +64,16 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Inject google-services.json
+        working-directory: mobile
+        env:
+          CARBONSITE_GOOGLE_SERVICES_JSON: ${{ secrets.CARBONSITE_GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$CARBONSITE_GOOGLE_SERVICES_JSON" ]; then
+            echo "$CARBONSITE_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          fi
+          # If the file is still missing (no secret set), the committed stub is used automatically.
+
       - name: Install dependencies
         working-directory: mobile
         run: flutter pub get
