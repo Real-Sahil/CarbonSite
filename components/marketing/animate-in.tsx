@@ -10,8 +10,9 @@ interface AnimateInProps {
   y?: number;
 }
 
-// Fade-up entrance triggered when the element enters the viewport.
-// Communicates: this content is new and worth reading.
+// Slide-up entrance triggered when the element enters the viewport.
+// Only animates `transform` (never opacity) so SSR HTML is always visible —
+// content is never invisible during the JS-loading window.
 // Collapses to instant under prefers-reduced-motion.
 export function AnimateIn({ children, className, delay = 0, y = 24 }: AnimateInProps) {
   const prefersReduced = useReducedMotion();
@@ -19,8 +20,8 @@ export function AnimateIn({ children, className, delay = 0, y = 24 }: AnimateInP
   return (
     <motion.div
       className={className}
-      initial={prefersReduced ? {} : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={prefersReduced ? {} : { y }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay, ease: "easeOut" }}
     >
@@ -45,8 +46,8 @@ export function AnimateInStagger({
       {children.map((child, i) => (
         <motion.div
           key={i}
-          initial={prefersReduced ? {} : { opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={prefersReduced ? {} : { y: 20 }}
+          whileInView={{ y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.45, delay: i * stagger, ease: "easeOut" }}
         >
