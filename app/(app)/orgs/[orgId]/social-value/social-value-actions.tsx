@@ -166,12 +166,12 @@ export function CreateSocialValueRecordForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-[14px] border border-[#E2E8F0] p-4"
+      className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] p-4"
     >
       <div className="flex flex-wrap items-end gap-3">
         {/* Contract */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#475569] tracking-[-0.36px]">Contract</label>
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Contract</label>
           <Select value={contractId} onValueChange={setContractId}>
             <SelectTrigger className="w-52">
               <SelectValue placeholder="Select contract" />
@@ -188,7 +188,7 @@ export function CreateSocialValueRecordForm({
 
         {/* Reporting period */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#475569] tracking-[-0.36px]">Period</label>
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Period</label>
           <Select value={reportingPeriodId} onValueChange={setReportingPeriodId}>
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Select period" />
@@ -205,7 +205,7 @@ export function CreateSocialValueRecordForm({
 
         {/* Theme picker (local state only) */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#475569] tracking-[-0.36px]">Theme</label>
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Theme</label>
           <Select value={selectedThemeCode} onValueChange={handleThemeChange}>
             <SelectTrigger className="w-44">
               <SelectValue placeholder="Select theme" />
@@ -222,7 +222,7 @@ export function CreateSocialValueRecordForm({
 
         {/* Measure picker */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#475569] tracking-[-0.36px]">Measure</label>
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Measure</label>
           <Select value={measureId} onValueChange={setMeasureId} disabled={!selectedTheme}>
             <SelectTrigger className="w-64">
               <SelectValue placeholder="Select measure" />
@@ -244,7 +244,7 @@ export function CreateSocialValueRecordForm({
 
         {/* Quantity */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#475569] tracking-[-0.36px]">Quantity</label>
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Quantity</label>
           <Input
             type="number"
             min="0.0001"
@@ -255,7 +255,7 @@ export function CreateSocialValueRecordForm({
             className="w-28"
           />
           {computedValue !== null && (
-            <p className="text-xs text-[#0F172A] tracking-[-0.36px] font-medium">
+            <p className="text-xs text-[#111827] tracking-[-0.36px] font-medium">
               {"≈"} {formatGbp(computedValue)}
             </p>
           )}
@@ -264,7 +264,7 @@ export function CreateSocialValueRecordForm({
 
       {/* Notes */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Notes (optional)</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Notes (optional)</label>
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

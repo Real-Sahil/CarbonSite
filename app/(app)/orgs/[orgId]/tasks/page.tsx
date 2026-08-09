@@ -117,24 +117,24 @@ export default async function TasksPage({ params }: Props) {
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0F172A] bg-[#EEF2FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Operations
         </p>
         <h1
-          className="text-2xl font-bold tracking-tight text-[#0F172A]"
+          className="text-2xl font-bold tracking-tight text-[#111827]"
           
         >
           Review queue
         </h1>
-        <p className="text-sm text-[#475569] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
           All review tasks across imports, records, and reports for this organisation.
         </p>
       </div>
 
       {tasks.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-[42px] text-center">
-            <p className="text-sm text-[#475569] tracking-[-0.42px]">No review tasks yet.</p>
+          <CardContent className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[42px] text-center">
+            <p className="text-sm text-[#374151] tracking-[-0.42px]">No review tasks yet.</p>
           </CardContent>
         </Card>
       ) : (
@@ -156,25 +156,25 @@ export default async function TasksPage({ params }: Props) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="rounded-[14px] border border-[#E2E8F0] overflow-hidden">
+                  <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-[#f9fafb]">
-                          <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Type</TableHead>
-                          <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Target</TableHead>
-                          <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Assigned to</TableHead>
-                          <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Created by</TableHead>
-                          <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Age</TableHead>
-                          <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Status</TableHead>
+                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Type</TableHead>
+                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Target</TableHead>
+                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Assigned to</TableHead>
+                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Created by</TableHead>
+                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Age</TableHead>
+                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {bucket.map((task) => (
                           <TableRow key={task.id} className="hover:bg-[#f9fafb]">
-                            <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
+                            <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
                               {typeLabel(task.type)}
                             </TableCell>
-                            <TableCell className="font-normal text-[#0F172A] tracking-[-0.42px]">
+                            <TableCell className="font-normal text-[#111827] tracking-[-0.42px]">
                               <Link
                                 href={targetLink(orgId, task.type, task.targetId)}
                                 className="hover:underline"
@@ -182,13 +182,13 @@ export default async function TasksPage({ params }: Props) {
                                 {task.targetId.slice(0, 8)}…
                               </Link>
                             </TableCell>
-                            <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
+                            <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
                               {task.assignee.name ?? task.assignee.email}
                             </TableCell>
-                            <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
+                            <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
                               {task.createdBy.name ?? "—"}
                             </TableCell>
-                            <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
+                            <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
                               {formatAge(task.createdAt)}
                             </TableCell>
                             <TableCell>
@@ -214,12 +214,12 @@ function AccessDenied() {
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
         <h1
-          className="text-2xl font-bold tracking-tight text-[#0F172A] mb-1"
+          className="text-2xl font-bold tracking-tight text-[#111827] mb-1"
           
         >
           Access denied
         </h1>
-        <p className="text-sm text-[#475569] tracking-[-0.42px]">
+        <p className="text-sm text-[#374151] tracking-[-0.42px]">
           You do not have permission to view the review queue.
         </p>
       </div>

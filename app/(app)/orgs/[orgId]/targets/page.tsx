@@ -119,16 +119,16 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0F172A] bg-[#EEF2FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Strategy
         </p>
         <h1
-          className="text-2xl font-bold tracking-tight text-[#0F172A]"
+          className="text-2xl font-bold tracking-tight text-[#111827]"
           
         >
           Targets
         </h1>
-        <p className="text-sm text-[#475569] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
           Reduction targets and initiatives connected to reporting periods.
         </p>
       </div>
@@ -139,7 +139,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
         <CardHeader>
           <CardTitle className="text-base">
             Reduction targets{" "}
-            <span className="text-sm font-normal text-[#475569]">({targets.length})</span>
+            <span className="text-sm font-normal text-[#374151]">({targets.length})</span>
           </CardTitle>
           <CardDescription>
             Targets compare a baseline period with a target period.
@@ -174,12 +174,12 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                     <TableCell className="font-normal text-[#000000] capitalize">
                       {target.targetType}
                     </TableCell>
-                    <TableCell className="text-[#475569]">{target.baselinePeriod.label}</TableCell>
-                    <TableCell className="text-[#475569]">{target.targetPeriod.label}</TableCell>
-                    <TableCell className="text-[#475569]">
+                    <TableCell className="text-[#374151]">{target.baselinePeriod.label}</TableCell>
+                    <TableCell className="text-[#374151]">{target.targetPeriod.label}</TableCell>
+                    <TableCell className="text-[#374151]">
                       {Number(target.reductionAmount).toLocaleString("en-GB")} kgCO2e
                     </TableCell>
-                    <TableCell className="text-[#475569]">
+                    <TableCell className="text-[#374151]">
                       {target.createdBy.name ?? target.createdBy.email}
                     </TableCell>
                     {canEdit && (
@@ -203,7 +203,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
         <CardHeader>
           <CardTitle className="text-base">
             Reduction initiatives{" "}
-            <span className="text-sm font-normal text-[#475569]">({initiatives.length})</span>
+            <span className="text-sm font-normal text-[#374151]">({initiatives.length})</span>
           </CardTitle>
           <CardDescription>
             Operational actions planned or underway to reduce emissions.
@@ -241,15 +241,15 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                         {initiative.status.replaceAll("_", " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-[#475569]">
+                    <TableCell className="text-[#374151]">
                       {initiative.owner?.name ?? initiative.owner?.email ?? "Unassigned"}
                     </TableCell>
-                    <TableCell className="text-[#475569]">
+                    <TableCell className="text-[#374151]">
                       {initiative.expectedImpactCo2e
                         ? `${Number(initiative.expectedImpactCo2e).toLocaleString("en-GB")} kgCO2e`
                         : "Not estimated"}
                     </TableCell>
-                    <TableCell className="text-[#475569]">
+                    <TableCell className="text-[#374151]">
                       {initiative.costAmount
                         ? `${initiative.costCurrency ?? "GBP"} ${Number(initiative.costAmount).toLocaleString("en-GB")}`
                         : "Not set"}
@@ -277,7 +277,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
 function AccessDenied() {
   return (
     <div className="p-[42px]">
-      <p className="text-sm text-[#475569] tracking-[-0.42px]">
+      <p className="text-sm text-[#374151] tracking-[-0.42px]">
         You do not have permission to view targets.
       </p>
     </div>
@@ -287,12 +287,12 @@ function AccessDenied() {
 function EmptyState({ title, description }: { title: string; description: string }) {
   return (
     <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#EEF2FF]">
-        <Target className="h-7 w-7 text-[#0F172A]" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F0F9FF]">
+        <Target className="h-7 w-7 text-[#111827]" />
       </div>
       <div>
-        <p className="font-normal text-[#0F172A] tracking-[-0.42px]">{title}</p>
-        <p className="text-sm text-[#475569] tracking-[-0.42px] mt-[7px] max-w-sm">{description}</p>
+        <p className="font-normal text-[#111827] tracking-[-0.42px]">{title}</p>
+        <p className="text-sm text-[#374151] tracking-[-0.42px] mt-[7px] max-w-sm">{description}</p>
       </div>
     </div>
   );

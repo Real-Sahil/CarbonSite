@@ -21,11 +21,11 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
   const nextStep = steps.find((s) => !s.done);
 
   return (
-    <div className="mb-8 rounded-[14px] border border-[#C7D2FE] bg-[#f0faf0] p-5">
+    <div className="mb-8 rounded-[14px] border border-[#BAE6FD] bg-[#f0faf0] p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2
-            className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]"
+            className="text-sm font-normal text-[#111827] tracking-[-0.42px]"
             style={{  fontWeight: 300, fontSize: "1rem" }}
           >
             Getting started
@@ -34,7 +34,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
             {completedCount} of {steps.length} steps complete
             {nextStep && (
               <> — up next:{" "}
-                <Link href={nextStep.href} className="font-medium underline underline-offset-2 hover:text-[#0F172A]">
+                <Link href={nextStep.href} className="font-medium underline underline-offset-2 hover:text-[#111827]">
                   {nextStep.label}
                 </Link>
               </>
@@ -45,7 +45,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
           {steps.map((step, i) => (
             <div
               key={i}
-              className={`h-1.5 w-6 rounded-full transition-colors ${step.done ? "bg-[#4F46E5]" : "bg-[#EEF2FF]"}`}
+              className={`h-1.5 w-6 rounded-full transition-colors ${step.done ? "bg-[#0EA5E9]" : "bg-[#F0F9FF]"}`}
             />
           ))}
         </div>
@@ -58,18 +58,18 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
             className={`flex items-start gap-2.5 rounded-[10px] px-3 py-2.5 text-left transition-colors ${
               step.done
                 ? "cursor-default opacity-60"
-                : "hover:bg-[#EEF2FF] bg-white border border-[#d0ecce]"
+                : "hover:bg-[#F0F9FF] bg-white border border-[#d0ecce]"
             }`}
             tabIndex={step.done ? -1 : undefined}
             aria-disabled={step.done}
           >
             {step.done ? (
-              <CheckCircle2 className="h-4 w-4 text-[#0F172A] mt-0.5 shrink-0" aria-hidden="true" />
+              <CheckCircle2 className="h-4 w-4 text-[#111827] mt-0.5 shrink-0" aria-hidden="true" />
             ) : (
               <Circle className="h-4 w-4 text-[#9ab8a0] mt-0.5 shrink-0" aria-hidden="true" />
             )}
             <div>
-              <p className={`text-xs font-medium tracking-[-0.36px] ${step.done ? "text-[#0F172A]" : "text-[#0F172A]"}`}>
+              <p className={`text-xs font-medium tracking-[-0.36px] ${step.done ? "text-[#111827]" : "text-[#111827]"}`}>
                 {step.label}
               </p>
               <p className="text-[11px] text-[#4a7c59] tracking-[-0.33px] mt-0.5 leading-snug">

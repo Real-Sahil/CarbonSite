@@ -8,6 +8,30 @@ import { ArrowRight, Building2 } from "lucide-react";
 
 type Step = "account" | "org";
 
+/** Map Better Auth error codes to user-readable sign-up messages. */
+function mapSignUpError(err: { code?: string; message?: string } | null | undefined): string {
+  if (!err) return "Could not create account. Please try again.";
+  switch (err.code) {
+    case "USER_ALREADY_EXISTS":
+    case "EMAIL_ALREADY_EXISTS":
+    case "EMAIL_TAKEN":
+      return "An account with this email already exists. Sign in instead, or reset your password.";
+    case "INVALID_EMAIL":
+      return "That doesn't look like a valid email address.";
+    case "INVALID_PASSWORD":
+    case "PASSWORD_TOO_SHORT":
+      return "Password must be at least 8 characters.";
+    case "TOO_MANY_REQUESTS":
+    case "RATE_LIMIT_EXCEEDED":
+      return "Too many attempts. Please wait a moment and try again.";
+    default:
+      return err.message || "Could not create account. Please try again.";
+  }
+}
+
+const INPUT_CLS =
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15 disabled:opacity-50 transition-colors";
+
 export default function SignUpPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("account");
@@ -59,18 +83,19 @@ export default function SignUpPage() {
       });
 
       if (result.error) {
+        // Return to account step so they can correct email/password
         setStep("account");
-        setError(result.error.message ?? "Could not create account. Please try again.");
+        setError(mapSignUpError(result.error));
         return;
       }
 
-      // Email verification flow — account created but not yet active
+      // Email verification flow — account created but session not active yet
       if (result.data?.token === null) {
         setError("Check your email to verify your account, then sign in.");
         return;
       }
 
-      // Create org immediately after signup so the user lands in a working dashboard
+      // Create org immediately after signup
       const orgRes = await fetch("/api/orgs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -81,7 +106,7 @@ export default function SignUpPage() {
       });
 
       if (!orgRes.ok) {
-        // Account created but org failed — still redirect to /orgs/new so they can retry
+        // Account created but org failed — redirect so they can retry
         router.push("/orgs/new");
         return;
       }
@@ -95,20 +120,21 @@ export default function SignUpPage() {
     }
   }
 
-  const inputCls =
-    "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/15 disabled:opacity-50 transition-colors";
-
   if (step === "org") {
     return (
       <div>
         <div className="mb-7">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 rounded-lg bg-[#EEF2FF] flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-[#4F46E5]" />
+            <div className="h-8 w-8 rounded-lg bg-[#F0F9FF] flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-[#0EA5E9]" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4F46E5]">Step 2 of 2</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#0EA5E9]">Step 2 of 2</p>
             </div>
+          </div>
+          <div className="flex gap-1 mb-4">
+            <div className="h-1 w-8 rounded-full bg-[#0EA5E9]" />
+            <div className="h-1 w-8 rounded-full bg-[#0EA5E9]" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Set up your organisation</h1>
           <p className="text-sm text-zinc-500 mt-1.5">
@@ -130,7 +156,7 @@ export default function SignUpPage() {
               autoFocus
               disabled={loading}
               placeholder="Acme Construction Ltd"
-              className={inputCls}
+              className={INPUT_CLS}
             />
           </div>
 
@@ -145,20 +171,21 @@ export default function SignUpPage() {
               onChange={(e) => setIndustry(e.target.value)}
               disabled={loading}
               placeholder="Construction, Logistics, Manufacturing..."
-              className={inputCls}
+              className={INPUT_CLS}
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2" role="alert">
-              {error}
-            </p>
+            <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5" role="alert">
+              <span className="mt-0.5 shrink-0 text-red-500" aria-hidden="true">⚠</span>
+              <span>{error}</span>
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="mt-1 w-full rounded-lg bg-[#4F46E5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4338CA] active:scale-[0.98] disabled:opacity-60 transition-all"
+            className="mt-1 w-full rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] active:scale-[0.98] disabled:opacity-60 transition-all"
           >
             {loading ? "Creating your workspace..." : "Create organisation"}
           </button>
@@ -182,7 +209,7 @@ export default function SignUpPage() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Step 1 of 2</p>
           <div className="flex gap-1">
-            <div className="h-1 w-8 rounded-full bg-[#4F46E5]" />
+            <div className="h-1 w-8 rounded-full bg-[#0EA5E9]" />
             <div className="h-1 w-8 rounded-full bg-zinc-200" />
           </div>
         </div>
@@ -204,7 +231,7 @@ export default function SignUpPage() {
             autoComplete="name"
             disabled={loading}
             placeholder="Jane Smith"
-            className={inputCls}
+            className={INPUT_CLS}
           />
         </div>
 
@@ -221,7 +248,7 @@ export default function SignUpPage() {
             autoComplete="email"
             disabled={loading}
             placeholder="you@company.com"
-            className={inputCls}
+            className={INPUT_CLS}
           />
         </div>
 
@@ -240,20 +267,21 @@ export default function SignUpPage() {
             autoComplete="new-password"
             disabled={loading}
             placeholder="8+ characters"
-            className={inputCls}
+            className={INPUT_CLS}
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2" role="alert">
-            {error}
-          </p>
+          <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5" role="alert">
+            <span className="mt-0.5 shrink-0 text-red-500" aria-hidden="true">⚠</span>
+            <span>{error}</span>
+          </div>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full rounded-lg bg-[#4F46E5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4338CA] active:scale-[0.98] disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+          className="mt-1 w-full rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] active:scale-[0.98] disabled:opacity-60 transition-all flex items-center justify-center gap-2"
         >
           Continue
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -262,7 +290,7 @@ export default function SignUpPage() {
 
       <p className="mt-6 text-center text-sm text-zinc-500">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-[#4F46E5] hover:text-[#4F46E5] transition-colors">
+        <Link href="/sign-in" className="text-[#0EA5E9] hover:text-[#0284C7] transition-colors">
           Sign in
         </Link>
       </p>

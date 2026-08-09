@@ -30,8 +30,8 @@ const STATE_CONFIG: Record<string, { label: string; className: string }> = {
   uploaded:        { label: "Uploaded",         className: "bg-zinc-100 text-zinc-600 border-transparent" },
   parsing:         { label: "Parsing",           className: "bg-blue-50 text-blue-700 border-transparent animate-pulse" },
   needs_attention: { label: "Needs attention",   className: "bg-amber-50 text-amber-700 border-transparent" },
-  ready_to_commit: { label: "Ready to commit",   className: "bg-[#EEF2FF] text-[#0F172A] border-transparent" },
-  committed:       { label: "Committed",         className: "bg-[#4F46E5] text-white border-transparent" },
+  ready_to_commit: { label: "Ready to commit",   className: "bg-[#F0F9FF] text-[#111827] border-transparent" },
+  committed:       { label: "Committed",         className: "bg-[#0EA5E9] text-white border-transparent" },
   failed:          { label: "Failed",            className: "bg-red-50 text-red-700 border-transparent" },
 };
 
@@ -136,15 +136,15 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   return (
     <div className="min-h-[100dvh] bg-[#f9fafb]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E2E8F0]">
+      <div className="bg-white border-b border-[#E5E7EB]">
         <div className="max-w-[1200px] mx-auto px-8 py-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF2FF]">
-                  <Upload className="h-4 w-4 text-[#0F172A]" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+                  <Upload className="h-4 w-4 text-[#111827]" />
                 </div>
-                <span className="text-xs font-medium tracking-wide text-[#0F172A] uppercase">
+                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
                   Data intake
                 </span>
               </div>
@@ -172,8 +172,8 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
         {/* Upload card */}
-        <Card className="border-[#E2E8F0] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E2E8F0]">
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-zinc-900">Upload a file</CardTitle>
             <CardDescription className="text-xs text-zinc-400 mt-0.5">
               Select a reporting period and template, then drop or browse for your data file.
@@ -188,8 +188,8 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         {imports.length === 0 ? (
           <EmptyState />
         ) : (
-          <Card className="border-[#E2E8F0] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E2E8F0]">
+          <Card className="border-[#E5E7EB] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
               <CardTitle className="text-sm font-semibold text-zinc-900">
                 Import batches
                 <span className="ml-2 text-xs font-normal text-zinc-400">({imports.length})</span>
@@ -202,7 +202,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#E2E8F0]">
+                    <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
                       <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">File</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Template</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Period</TableHead>
@@ -322,11 +322,11 @@ function StatPill({
   accent?: "green" | "amber" | "red";
 }) {
   const colors = {
-    green: "bg-[#EEF2FF] text-[#0F172A]",
+    green: "bg-[#F0F9FF] text-[#111827]",
     amber: "bg-amber-50 text-amber-700",
     red: "bg-red-50 text-red-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E2E8F0]";
+  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E5E7EB]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>
       <span className="tabular-nums font-semibold">{value}</span>
@@ -338,8 +338,8 @@ function StatPill({
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF2FF] mb-5">
-        <Upload className="h-7 w-7 text-[#0F172A]" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-5">
+        <Upload className="h-7 w-7 text-[#111827]" />
       </div>
       <h3 className="text-base font-semibold text-zinc-900 mb-2">No import batches yet</h3>
       <p className="text-sm text-zinc-500 max-w-sm">

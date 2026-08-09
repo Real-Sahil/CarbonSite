@@ -123,13 +123,13 @@ export default async function SubmissionsPage({
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto">
       <div className="mb-[28px]">
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0F172A] bg-[#EEF2FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Review
         </p>
-        <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
+        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
           Field submissions
         </h1>
-        <p className="text-sm text-[#475569] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
           Review incoming submissions from field workers before approving them
           as activity records.
         </p>
@@ -147,12 +147,12 @@ export default async function SubmissionsPage({
               href={filterHref(filter.value)}
               className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                 active
-                  ? "bg-[#4F46E5] text-white"
-                  : "border border-[#E2E8F0] text-[#475569] hover:border-[#C7D2FE] hover:bg-[#EEF2FF]"
+                  ? "bg-[#0EA5E9] text-white"
+                  : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
               }`}
             >
               {filter.label}
-              <span className={`ml-1.5 ${active ? "text-[#C7D2FE]" : "text-[#999]"}`}>
+              <span className={`ml-1.5 ${active ? "text-[#BAE6FD]" : "text-[#999]"}`}>
                 {count.toLocaleString("en-GB")}
               </span>
             </Link>
@@ -166,7 +166,7 @@ export default async function SubmissionsPage({
         <div className="mt-4 flex justify-center">
           <Link
             href={filterHref(statusFilter, limit + PAGE_SIZE)}
-            className="rounded-full border border-[#E2E8F0] px-4 py-2 text-sm text-[#475569] hover:border-[#C7D2FE] hover:bg-[#EEF2FF] transition-colors"
+            className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF] transition-colors"
           >
             Show more ({initialSubmissions.length.toLocaleString("en-GB")} of{" "}
             {(statusFilter === "all"

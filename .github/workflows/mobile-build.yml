@@ -44,6 +44,17 @@ jobs:
           flutter-version: "3.44.0"
           channel: stable
           cache: true
+      - name: Inject google-services.json
+        env:
+          CARBONSITE_GOOGLE_SERVICES_JSON: ${{ secrets.CARBONSITE_GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$CARBONSITE_GOOGLE_SERVICES_JSON" ]; then
+            echo "$CARBONSITE_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "google-services.json injected from CARBONSITE_GOOGLE_SERVICES_JSON secret."
+          else
+            echo "::warning::CARBONSITE_GOOGLE_SERVICES_JSON secret is not set. FCM push notifications will not work. Add the secret in GitHub repo Settings > Secrets."
+            echo '{"project_info":{"project_number":"000000000000","project_id":"carbonsite-stub","storage_bucket":"carbonsite-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.carbonsite.carbonsite_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+          fi
       - run: flutter pub get
       - name: Generate code (drift)
         run: dart run build_runner build --delete-conflicting-outputs
@@ -106,6 +117,15 @@ jobs:
           flutter-version: "3.44.0"
           channel: stable
           cache: true
+      - name: Inject google-services.json
+        env:
+          CARBONSITE_GOOGLE_SERVICES_JSON: ${{ secrets.CARBONSITE_GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$CARBONSITE_GOOGLE_SERVICES_JSON" ]; then
+            echo "$CARBONSITE_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          else
+            echo '{"project_info":{"project_number":"000000000000","project_id":"carbonsite-stub","storage_bucket":"carbonsite-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.carbonsite.carbonsite_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+          fi
       - run: flutter pub get
       - name: Generate code (drift)
         run: dart run build_runner build --delete-conflicting-outputs

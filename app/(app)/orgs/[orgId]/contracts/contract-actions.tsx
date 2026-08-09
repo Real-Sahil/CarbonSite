@@ -45,23 +45,23 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E2E8F0] p-[21px] flex flex-col gap-4">
-      <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">New contract</p>
+    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E5E7EB] p-[21px] flex flex-col gap-4">
+      <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">New contract</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-name" className="text-xs text-[#475569] tracking-[-0.36px]">Name <span aria-hidden="true" className="text-red-500">*</span></Label>
+          <Label htmlFor="contract-name" className="text-xs text-[#374151] tracking-[-0.36px]">Name <span aria-hidden="true" className="text-red-500">*</span></Label>
           <Input id="contract-name" name="name" required placeholder="Contract name" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-client" className="text-xs text-[#475569] tracking-[-0.36px]">Client name</Label>
+          <Label htmlFor="contract-client" className="text-xs text-[#374151] tracking-[-0.36px]">Client name</Label>
           <Input id="contract-client" name="clientName" placeholder="Client organisation" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-ref" className="text-xs text-[#475569] tracking-[-0.36px]">Contract reference</Label>
+          <Label htmlFor="contract-ref" className="text-xs text-[#374151] tracking-[-0.36px]">Contract reference</Label>
           <Input id="contract-ref" name="contractReference" placeholder="REF-001" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-status" className="text-xs text-[#475569] tracking-[-0.36px]">Status</Label>
+          <Label htmlFor="contract-status" className="text-xs text-[#374151] tracking-[-0.36px]">Status</Label>
           <select
             id="contract-status"
             name="status"
@@ -75,24 +75,24 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-start" className="text-xs text-[#475569] tracking-[-0.36px]">Start date</Label>
+          <Label htmlFor="contract-start" className="text-xs text-[#374151] tracking-[-0.36px]">Start date</Label>
           <Input id="contract-start" name="startDate" type="date" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-end" className="text-xs text-[#475569] tracking-[-0.36px]">End date</Label>
+          <Label htmlFor="contract-end" className="text-xs text-[#374151] tracking-[-0.36px]">End date</Label>
           <Input id="contract-end" name="endDate" type="date" className="h-9 text-sm" />
         </div>
       </div>
       <div className="flex flex-wrap gap-5">
-        <label className="flex items-center gap-2 text-sm text-[#475569] tracking-[-0.42px] cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
           <input type="checkbox" name="ppn0621Required" className="h-4 w-4 rounded border-gray-300" />
           PPN 06/21 required
         </label>
-        <label className="flex items-center gap-2 text-sm text-[#475569] tracking-[-0.42px] cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
           <input type="checkbox" name="nhsEvergreenRequired" className="h-4 w-4 rounded border-gray-300" />
           NHS Evergreen required
         </label>
-        <label className="flex items-center gap-2 text-sm text-[#475569] tracking-[-0.42px] cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
           <input type="checkbox" name="breeamRequired" className="h-4 w-4 rounded border-gray-300" />
           BREEAM required
         </label>

@@ -133,7 +133,7 @@ export function ImportBatchEvidenceActions({
         <a
           key={f.id}
           href={`/api/orgs/${orgId}/evidence/${f.id}/download`}
-          className="inline-flex items-center gap-1 text-xs text-[#0F172A] hover:underline underline-offset-2 tracking-[-0.36px]"
+          className="inline-flex items-center gap-1 text-xs text-[#111827] hover:underline underline-offset-2 tracking-[-0.36px]"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -141,7 +141,7 @@ export function ImportBatchEvidenceActions({
           {f.filename}
         </a>
       ))}
-      <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-[#475569] hover:text-[#0F172A] transition-colors tracking-[-0.36px]">
+      <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-[#374151] hover:text-[#111827] transition-colors tracking-[-0.36px]">
         <Trash2 aria-hidden="true" className="h-3 w-3 sr-only" />
         <input
           type="file"

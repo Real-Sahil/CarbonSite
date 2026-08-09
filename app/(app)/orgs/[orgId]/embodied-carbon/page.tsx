@@ -88,15 +88,15 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
   return (
     <div className="min-h-[100dvh] bg-[#f9fafb]">
       {/* Header */}
-      <div className="bg-white border-b border-[#E2E8F0]">
+      <div className="bg-white border-b border-[#E5E7EB]">
         <div className="max-w-[1200px] mx-auto px-8 py-8">
           <div className="flex items-start gap-3 mb-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF2FF] shrink-0 mt-0.5">
-              <Layers className="h-4 w-4 text-[#0F172A]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF] shrink-0 mt-0.5">
+              <Layers className="h-4 w-4 text-[#111827]" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium tracking-wide text-[#0F172A] uppercase">Carbon Accounting</span>
+                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Carbon Accounting</span>
               </div>
               <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Embodied Carbon</h1>
               <p className="mt-1 text-sm text-zinc-500 max-w-[65ch]">
@@ -118,8 +118,8 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
 
         {/* Category breakdown */}
         {categoryBreakdown.length > 0 && (
-          <Card className="border-[#E2E8F0] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E2E8F0]">
+          <Card className="border-[#E5E7EB] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
               <CardTitle className="text-sm font-semibold text-zinc-900">Breakdown by material category</CardTitle>
               <CardDescription className="text-xs text-zinc-400 mt-0.5">kgCO2e A1-A3 cradle-to-gate</CardDescription>
             </CardHeader>
@@ -147,8 +147,8 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
         )}
 
         {/* Add record form */}
-        <Card className="border-[#E2E8F0] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E2E8F0]">
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <Plus className="h-4 w-4 text-zinc-400" />
               <CardTitle className="text-sm font-semibold text-zinc-900">Add material record</CardTitle>
@@ -174,8 +174,8 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
         </Card>
 
         {/* Records table */}
-        <Card className="border-[#E2E8F0] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E2E8F0]">
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-zinc-400" />
               <CardTitle className="text-sm font-semibold text-zinc-900">
@@ -187,8 +187,8 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
           <CardContent className="p-0">
             {records.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEF2FF] mb-4">
-                  <Package className="h-6 w-6 text-[#0F172A]" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-4">
+                  <Package className="h-6 w-6 text-[#111827]" />
                 </div>
                 <h3 className="text-sm font-semibold text-zinc-900 mb-1">No embodied carbon records yet</h3>
                 <p className="text-sm text-zinc-500 max-w-sm">
@@ -199,7 +199,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#E2E8F0]">
+                    <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
                       <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">Material</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Category</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Quantity</TableHead>
@@ -238,7 +238,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
                           <span className="text-xs text-zinc-500 capitalize">{record.source}</span>
                         </TableCell>
                         <TableCell className="py-3.5 pr-6 text-right tabular-nums">
-                          <span className="text-sm font-semibold text-[#0F172A]">
+                          <span className="text-sm font-semibold text-[#111827]">
                             {fmtKgCo2e(record.totalKgCo2e)}
                           </span>
                         </TableCell>
@@ -264,8 +264,8 @@ function StatPill({
   value: string;
   accent?: "green";
 }) {
-  const colors = { green: "bg-[#EEF2FF] text-[#0F172A]" };
-  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E2E8F0]";
+  const colors = { green: "bg-[#F0F9FF] text-[#111827]" };
+  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E5E7EB]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>
       <span className="tabular-nums font-semibold">{value}</span>
