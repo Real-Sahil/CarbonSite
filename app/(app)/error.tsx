@@ -18,30 +18,29 @@ export default function AppError({
       <div className="text-center max-w-md">
         <h1
           className="text-[32px] leading-tight text-[#111827] mb-3"
-          
         >
           Something went wrong
         </h1>
-        <p className="text-sm text-[#555] mb-6 leading-relaxed">
-          There was a problem. Please try signing in again.
-          {error.digest && (
-            <span className="block mt-1 text-xs text-[#888]">
-              Reference: <code className="bg-[#f0f0f0] px-1.5 py-0.5 rounded text-[11px]">{error.digest}</code>
-            </span>
-          )}
+        <p className="text-sm text-[#555] mb-2 leading-relaxed">
+          There was a problem loading this page. This is usually a temporary issue.
         </p>
+        {error.digest && (
+          <p className="text-xs text-[#888] mb-6">
+            Reference: <code className="bg-[#f0f0f0] px-1.5 py-0.5 rounded text-[11px]">{error.digest}</code>
+          </p>
+        )}
         <div className="flex gap-3 justify-center">
           <button
             onClick={reset}
-            className="px-5 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-sm font-medium hover:bg-[#0d3514] transition-colors"
+            className="px-5 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-sm font-medium hover:bg-[#0284C7] transition-colors"
           >
             Try again
           </button>
           <a
-            href="/sign-in"
-            className="px-5 py-2.5 bg-[#F0F9FF] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#d0ecce] transition-colors"
+            href="/"
+            className="px-5 py-2.5 bg-[#F0F9FF] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#E0F2FE] transition-colors"
           >
-            Sign in
+            Go home
           </a>
         </div>
       </div>

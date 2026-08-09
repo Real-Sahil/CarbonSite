@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BarChart3, ClipboardCheck, FileCheck, Lock, Smartphone, Users } from "lucide-react";
 import { HeroSection } from "@/components/hero-section";
+import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { StandardsMarquee } from "@/components/marketing/standards-marquee";
 import { AnimateIn } from "@/components/marketing/animate-in";
@@ -85,6 +86,7 @@ const STATS = [
 export default function RootPage() {
   return (
     <main className="min-h-[100dvh] overflow-hidden">
+      <SiteNav theme="dark" />
       <HeroSection />
 
       {/* Standards marquee */}
