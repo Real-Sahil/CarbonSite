@@ -91,22 +91,29 @@ async function rateLimitPg(
   // Atomic fixed-window upsert. ON CONFLICT resets the window when it has
   // elapsed; otherwise increments count and returns the current value.
   const windowSecs = windowMs / 1000;
-  const rows = await prisma.$queryRaw<Array<{ count: number; reset_at: Date }>>`
-    INSERT INTO rate_limit_buckets (key, count, reset_at)
-    VALUES (${key}, 1, NOW() + (${windowSecs} * interval '1 second'))
-    ON CONFLICT (key) DO UPDATE
-      SET
-        count    = CASE
-                     WHEN rate_limit_buckets.reset_at <= NOW() THEN 1
-                     ELSE rate_limit_buckets.count + 1
-                   END,
-        reset_at = CASE
-                     WHEN rate_limit_buckets.reset_at <= NOW()
-                       THEN NOW() + (${windowSecs} * interval '1 second')
-                     ELSE rate_limit_buckets.reset_at
-                   END
-    RETURNING count, reset_at
-  `;
+  let rows: Array<{ count: number; reset_at: Date }>;
+  try {
+    rows = await prisma.$queryRaw<Array<{ count: number; reset_at: Date }>>`
+      INSERT INTO rate_limit_buckets (key, count, reset_at)
+      VALUES (${key}, 1, NOW() + (${windowSecs} * interval '1 second'))
+      ON CONFLICT (key) DO UPDATE
+        SET
+          count    = CASE
+                       WHEN rate_limit_buckets.reset_at <= NOW() THEN 1
+                       ELSE rate_limit_buckets.count + 1
+                     END,
+          reset_at = CASE
+                       WHEN rate_limit_buckets.reset_at <= NOW()
+                         THEN NOW() + (${windowSecs} * interval '1 second')
+                       ELSE rate_limit_buckets.reset_at
+                     END
+      RETURNING count, reset_at
+    `;
+  } catch {
+    // Table may not exist yet (migration pending). Degrade to allow-all so
+    // legitimate traffic is never blocked by a missing schema.
+    return { allowed: true, remaining: limit - 1, retryAfterSeconds: 0 };
+  }
 
   const row = rows[0];
   if (!row) {
