@@ -12,6 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Upload, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { ColumnMapper } from "@/components/import/column-mapper";
+import type { CanonicalField, MappedColumn } from "@/lib/imports/column-mapper";
 
 const TEMPLATE_KEYS = [
   { value: "ghg_protocol_v1", label: "GHG Protocol v1 (default)" },
@@ -24,7 +26,18 @@ interface CreateImportFormProps {
   periods: { id: string; label: string }[];
 }
 
-type Phase = "idle" | "uploading" | "processing" | "done" | "error";
+type PreviewData = {
+  headers: string[];
+  previewRows: Record<string, string>[];
+  mapping: {
+    mapped: MappedColumn[];
+    unmapped: string[];
+    missingRequired: string[];
+  };
+  fields: CanonicalField[];
+};
+
+type Phase = "idle" | "previewing" | "mapping" | "uploading" | "processing" | "done" | "error";
 
 export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
   const router = useRouter();
@@ -34,28 +47,66 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [resultState, setResultState] = useState<string | null>(null);
+  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const busy = phase === "previewing" || phase === "uploading" || phase === "processing";
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0] ?? null;
+    setFile(selected);
+    setError(null);
+    setPreviewData(null);
+    if (phase !== "idle") setPhase("idle");
+  }
+
+  async function handleUploadClick(e: React.FormEvent) {
     e.preventDefault();
     if (!file || !periodId) {
       setError("Select a file and reporting period.");
       return;
     }
+    setError(null);
+    setPhase("previewing");
+
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch(`/api/orgs/${orgId}/imports/preview`, {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.message ?? "Could not read file.");
+        setPhase("error");
+        return;
+      }
+      setPreviewData(data as PreviewData);
+      setPhase("mapping");
+    } catch {
+      setError("Network error — try again.");
+      setPhase("error");
+    }
+  }
+
+  async function handleMappingConfirmed(confirmedMapping: Record<string, string>) {
+    if (!file || !periodId) return;
     setPhase("uploading");
     setError(null);
-    setResultState(null);
+
     try {
       const form = new FormData();
       form.append("file", file);
       form.append("reportingPeriodId", periodId);
       form.append("templateKey", templateKey);
+      // Send confirmed mapping as JSON so the worker can use it directly.
+      form.append("columnMapping", JSON.stringify(confirmedMapping));
 
       setPhase("processing");
       const res = await fetch(`/api/orgs/${orgId}/imports`, {
         method: "POST",
         body: form,
       });
-
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
@@ -65,7 +116,6 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
       }
 
       const state: string = data.state ?? "parsing";
-
       if (state === "failed") {
         setError("Import failed during processing. Check the import details for errors.");
         setPhase("error");
@@ -74,7 +124,6 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
 
       setResultState(state);
       setPhase("done");
-      // Refresh the server component list so the new batch appears
       router.refresh();
     } catch {
       setError("Network error — try again.");
@@ -87,6 +136,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
     setError(null);
     setResultState(null);
     setFile(null);
+    setPreviewData(null);
   }
 
   if (periods.length === 0) {
@@ -121,11 +171,32 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
     );
   }
 
-  const busy = phase === "uploading" || phase === "processing";
-  const buttonLabel = phase === "uploading" ? "Uploading…" : phase === "processing" ? "Processing…" : "Upload";
+  // Mapping review step
+  if (phase === "mapping" && previewData) {
+    return (
+      <div className="rounded-xl border border-[#E5E7EB] bg-white p-5">
+        <ColumnMapper
+          headers={previewData.headers}
+          previewRows={previewData.previewRows}
+          initialMapping={previewData.mapping}
+          fields={previewData.fields}
+          onConfirm={handleMappingConfirmed}
+          onCancel={reset}
+          busy={busy}
+        />
+      </div>
+    );
+  }
+
+  const buttonLabel =
+    phase === "previewing"
+      ? "Reading…"
+      : phase === "uploading" || phase === "processing"
+      ? "Processing…"
+      : "Next: review columns";
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
+    <form onSubmit={handleUploadClick} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1">
         <label className="text-xs text-[#374151] tracking-[-0.36px]">Reporting period</label>
         <Select value={periodId} onValueChange={setPeriodId} disabled={busy}>
@@ -157,7 +228,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
         <Input
           type="file"
           accept=".csv,.xlsx,.xls"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          onChange={handleFileSelect}
           className="w-56 text-sm"
           disabled={busy}
         />

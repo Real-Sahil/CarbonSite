@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { putObject, getObject, keys } from "@/lib/storage";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { renderReportHtml, type ReportData } from "./template";
+import { generateReportPdf } from "./pdf-generator";
 import { renderSecrHtml, type SecrData } from "./templates/secr";
 import { renderPpn0621Html, type Ppn0621Data } from "./templates/ppn-0621";
 import { renderNhsEvergreenHtml, type NhsEvergreenData } from "./templates/nhs-evergreen";
@@ -65,7 +66,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
   await prisma.report.update({ where: { id: reportId }, data: { status: "generating" } });
 
   try {
-    const { html, xmlBuffer } = await renderForType(report);
+    const { html, pdfkitData, xmlBuffer } = await renderForType(report);
 
     // CSV only for carbon-based reports (not TOMS or CBAM)
     let csvBuffer: Buffer | null = null;
@@ -74,7 +75,11 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       csvBuffer = buildCsv(calculations, report);
     }
 
-    const pdfBuffer = await renderPdf(html);
+    // Use pdfkit for base inventory/snapshot types — faster, no Chromium required.
+    // Fall back to Puppeteer for specialised regulatory templates with complex layouts.
+    const pdfBuffer = pdfkitData
+      ? await generateReportPdf(pdfkitData)
+      : await renderPdf(html);
     const pdfKey = keys.reportPdf(orgId, reportId);
     const pdfChecksum = createHash("sha256").update(pdfBuffer).digest("hex");
     await putObject(pdfKey, pdfBuffer, "application/pdf");
@@ -147,7 +152,7 @@ async function loadLogoDataUri(logoKey: string | null | undefined): Promise<stri
   }
 }
 
-async function renderForType(report: ReportWithIncludes): Promise<{ html: string; xmlBuffer?: Buffer }> {
+async function renderForType(report: ReportWithIncludes): Promise<{ html: string; pdfkitData?: ReportData; xmlBuffer?: Buffer }> {
   const orgId = report.organizationId;
   const runId = report.snapshot.calculationRunId;
   const opts = (report.options ?? {}) as Record<string, unknown>;
@@ -699,7 +704,9 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       .sort((a, b) => b.totalKg - a.totalKg),
     biogenicCo2eTonnes: biogenicTotal > 0 ? biogenicTotal / 1000 : undefined,
   };
-  return { html: renderReportHtml(data) };
+  // Base report types use pdfkit (no Chromium). The HTML is still rendered so
+  // downstream code that reads `html` doesn't need to change.
+  return { html: renderReportHtml(data), pdfkitData: data };
 }
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
