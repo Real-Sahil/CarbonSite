@@ -296,7 +296,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         where: { organizationId: orgId },
         _sum: { valuePounds: true },
         _count: { _all: true },
-      }),
+      }).catch(() => ({ _sum: { valuePounds: null }, _count: { _all: 0 } })),
       prisma.site.count({ where: { organizationId: orgId } }),
       prisma.organizationMembership.count({
         where: { organizationId: orgId, role: "field_worker" },
@@ -461,19 +461,21 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const [industryData] = await Promise.all([
     (async () => {
       if (industry === "construction") {
-        const agg = await prisma.embodiedCarbonRecord.aggregate({
-          where: { organizationId: orgId },
-          _sum: { totalKgCo2e: true },
-          _count: { _all: true },
-        });
-        const byCategory = await prisma.embodiedCarbonRecord.groupBy({
-          by: ["materialId"],
-          where: { organizationId: orgId },
-          _sum: { totalKgCo2e: true },
-          _count: { _all: true },
-          orderBy: { _sum: { totalKgCo2e: "desc" } },
-          take: 5,
-        });
+        const [agg, byCategory] = await Promise.all([
+          prisma.embodiedCarbonRecord.aggregate({
+            where: { organizationId: orgId },
+            _sum: { totalKgCo2e: true },
+            _count: { _all: true },
+          }).catch(() => ({ _sum: { totalKgCo2e: null }, _count: { _all: 0 } })),
+          prisma.embodiedCarbonRecord.groupBy({
+            by: ["materialId"],
+            where: { organizationId: orgId },
+            _sum: { totalKgCo2e: true },
+            _count: { _all: true },
+            orderBy: { _sum: { totalKgCo2e: "desc" } },
+            take: 5,
+          }).catch(() => [] as { materialId: string; _sum: { totalKgCo2e: string | null }; _count: { _all: number } }[]),
+        ]);
         return {
           type: "construction" as const,
           totalKgCo2e: Number(agg._sum.totalKgCo2e ?? 0),
@@ -524,7 +526,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           where: { organizationId: orgId, type: "ppn_006_crp" },
           orderBy: { createdAt: "desc" },
           select: { id: true, status: true, createdAt: true },
-        });
+        }).catch(() => null);
         return {
           type: "public_procurement" as const,
           crpStatus: latestCrp?.status ?? null,
