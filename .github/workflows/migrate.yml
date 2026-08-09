@@ -24,6 +24,9 @@ jobs:
             echo "::error::It looks like: postgresql://postgres.PROJECTREF:PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres"
             exit 1
           fi
+          # Log host only (no credentials) to confirm pooler vs direct connection.
+          DB_HOST=$(echo "$DATABASE_URL" | sed -E 's|.*@([^:/]+).*|\1|')
+          echo "Connecting via host: $DB_HOST"
 
       - uses: actions/checkout@v4
 
