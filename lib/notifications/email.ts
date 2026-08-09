@@ -20,9 +20,10 @@ export async function sendTransactionalEmail(
 ): Promise<TransactionalEmailResult> {
   if (DRIVER === "console") {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("Transactional email is not configured");
+      console.warn("[email] RESEND_API_KEY not set — email skipped:", { to: payload.to, subject: payload.subject });
+    } else {
+      console.log("[email:console]", { to: payload.to, subject: payload.subject });
     }
-    console.log("[email:console]", { to: payload.to, subject: payload.subject });
     return { provider: "console", messageId: null };
   }
 
