@@ -82,7 +82,7 @@ export function ResetOrgButton({ orgId, orgName }: Props) {
 
   if (phase === "loading") {
     return (
-      <p className="text-sm text-[#333333] tracking-[-0.42px] animate-pulse">
+      <p className="text-sm text-[#475569] tracking-[-0.42px] animate-pulse">
         Deleting org data…
       </p>
     );

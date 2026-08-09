@@ -178,7 +178,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                     <TableCell className="font-medium">
                       <Link
                         href={`/orgs/${orgId}/records/${record.id}`}
-                        className="hover:underline underline-offset-2 text-[#0f3e17]"
+                        className="hover:underline underline-offset-2 text-[#0F172A]"
                       >
                         {record.sourceDescription ?? record.supplierName ?? "Activity record"}
                       </Link>

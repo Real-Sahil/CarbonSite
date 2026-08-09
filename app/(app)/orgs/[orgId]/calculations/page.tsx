@@ -45,7 +45,7 @@ function statusConfig(status: string) {
     case "succeeded":
       return {
         label: "Succeeded",
-        className: "bg-[#e1f4df] text-[#0f3e17] border-transparent",
+        className: "bg-[#EEF2FF] text-[#0F172A] border-transparent",
         icon: CheckCircle2,
       };
     case "failed":
@@ -122,15 +122,15 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
       <StatusPoller active={hasInFlight} intervalMs={4000} />
 
       {/* Page header */}
-      <div className="bg-white border-b border-[#e5e7eb]">
+      <div className="bg-white border-b border-[#E2E8F0]">
         <div className="max-w-[1200px] mx-auto px-8 py-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e1f4df]">
-                  <Calculator className="h-4 w-4 text-[#0f3e17]" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF2FF]">
+                  <Calculator className="h-4 w-4 text-[#0F172A]" />
                 </div>
-                <span className="text-xs font-medium tracking-wide text-[#0f3e17] uppercase">
+                <span className="text-xs font-medium tracking-wide text-[#0F172A] uppercase">
                   Calculations
                 </span>
               </div>
@@ -141,7 +141,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                 Deterministic emission calculations from approved activity records. Results are immutable per run.
               </p>
             </div>
-            <Button asChild size="sm" className="bg-[#0f3e17] hover:bg-[#1a5c26] text-white shrink-0">
+            <Button asChild size="sm" className="bg-[#4F46E5] hover:bg-[#1a5c26] text-white shrink-0">
               <Link href={`/orgs/${orgId}/dashboard#run-calculation`}>
                 <Play className="h-3.5 w-3.5 mr-1.5" />
                 Run calculation
@@ -170,8 +170,8 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
         {runs.length === 0 ? (
           <EmptyState orgId={orgId} />
         ) : (
-          <Card className="border-[#e5e7eb] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#e5e7eb]">
+          <Card className="border-[#E2E8F0] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E2E8F0]">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-semibold text-zinc-900">
                   All runs
@@ -197,7 +197,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#e5e7eb]">
+                    <TableRow className="bg-[#f9fafb] border-b border-[#E2E8F0]">
                       <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">Period</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Factor library</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Methodology</TableHead>
@@ -218,7 +218,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                           <TableCell className="py-3.5 pl-6">
                             <Link
                               href={`/orgs/${orgId}/calculations/${run.id}`}
-                              className="font-medium text-[#0f3e17] hover:underline underline-offset-2 text-sm"
+                              className="font-medium text-[#0F172A] hover:underline underline-offset-2 text-sm"
                             >
                               {run.reportingPeriod.label}
                             </Link>
@@ -301,11 +301,11 @@ function StatPill({
   pulse?: boolean;
 }) {
   const colors = {
-    green: "bg-[#e1f4df] text-[#0f3e17]",
+    green: "bg-[#EEF2FF] text-[#0F172A]",
     blue: "bg-blue-50 text-blue-700",
     red: "bg-red-50 text-red-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#e5e7eb]";
+  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E2E8F0]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base} ${pulse ? "animate-pulse" : ""}`}>
       <span className="tabular-nums font-semibold">{value}</span>
@@ -317,14 +317,14 @@ function StatPill({
 function EmptyState({ orgId }: { orgId: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e1f4df] mb-5">
-        <Calculator className="h-7 w-7 text-[#0f3e17]" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF2FF] mb-5">
+        <Calculator className="h-7 w-7 text-[#0F172A]" />
       </div>
       <h3 className="text-base font-semibold text-zinc-900 mb-2">No calculation runs yet</h3>
       <p className="text-sm text-zinc-500 max-w-sm mb-6">
         Approve activity records, then trigger a calculation from the dashboard to compute scope 1, 2, and 3 emissions.
       </p>
-      <Button asChild size="sm" className="bg-[#0f3e17] hover:bg-[#1a5c26] text-white">
+      <Button asChild size="sm" className="bg-[#4F46E5] hover:bg-[#1a5c26] text-white">
         <Link href={`/orgs/${orgId}/dashboard#run-calculation`}>
           <Play className="h-3.5 w-3.5 mr-1.5" />
           Go to dashboard

@@ -166,7 +166,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
       <div className="mb-8">
         <Link
           href={`/orgs/${orgId}/calculations`}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#0f3e17] mb-3"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#0F172A] mb-3"
         >
           <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           All calculation runs

@@ -17,11 +17,11 @@ export default function OrgError({
   const router = useRouter();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fffefc] p-6">
+    <div className="min-h-screen flex items-center justify-center bg-white p-6">
       <div className="text-center max-w-md">
         <h1
-          className="text-[32px] leading-tight text-[#0f3e17] mb-3"
-          style={{ fontFamily: "var(--font-fraunces, Georgia, serif)", fontWeight: 300 }}
+          className="text-[32px] leading-tight text-[#0F172A] mb-3"
+          
         >
           Something went wrong
         </h1>
@@ -36,13 +36,13 @@ export default function OrgError({
         <div className="flex gap-3 justify-center">
           <button
             onClick={reset}
-            className="px-5 py-2.5 bg-[#0f3e17] text-white rounded-lg text-sm font-medium hover:bg-[#0d3514] transition-colors"
+            className="px-5 py-2.5 bg-[#4F46E5] text-white rounded-lg text-sm font-medium hover:bg-[#0d3514] transition-colors"
           >
             Try again
           </button>
           <button
             onClick={() => router.push("/")}
-            className="px-5 py-2.5 bg-[#e1f4df] text-[#0f3e17] rounded-lg text-sm font-medium hover:bg-[#d0ecce] transition-colors"
+            className="px-5 py-2.5 bg-[#EEF2FF] text-[#0F172A] rounded-lg text-sm font-medium hover:bg-[#d0ecce] transition-colors"
           >
             Go home
           </button>

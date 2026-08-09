@@ -21,18 +21,18 @@ export default async function AppEntryPage() {
   const nonFieldMembership = memberships.find((m) => m.role !== "field_worker");
   if (!nonFieldMembership && memberships.length > 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fffefc] p-8">
+      <div className="min-h-screen flex items-center justify-center bg-white p-8">
         <div className="max-w-md text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#e1f4df]">
-            <Smartphone aria-hidden="true" className="h-7 w-7 text-[#0f3e17]" />
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#EEF2FF]">
+            <Smartphone aria-hidden="true" className="h-7 w-7 text-[#0F172A]" />
           </div>
           <h1
-            className="text-[28px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
-            style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+            className="text-[28px] leading-[1.35] tracking-[-0.4px] text-[#0F172A]"
+            
           >
             Use the CarbonSite mobile app
           </h1>
-          <p className="mt-3 text-sm text-[#222222] tracking-[-0.42px]">
+          <p className="mt-3 text-sm text-[#475569] tracking-[-0.42px]">
             Your account is a field worker account — submissions, photos, and
             statuses live in the mobile app. Open the invite link from your
             administrator on your phone to get set up.

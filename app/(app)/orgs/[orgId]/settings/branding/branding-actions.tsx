@@ -146,12 +146,12 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {/* Report logo (white-label) */}
       <div className="flex flex-col gap-2">
-        <Label className="text-sm text-[#0f3e17] tracking-[-0.42px]">
+        <Label className="text-sm text-[#0F172A] tracking-[-0.42px]">
           Report logo{" "}
-          <span className="text-[#333333] font-normal">(appears on every PDF export)</span>
+          <span className="text-[#475569] font-normal">(appears on every PDF export)</span>
         </Label>
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-32 items-center justify-center rounded-[10px] border border-dashed border-[#cbd5e1] bg-[#fffefc] overflow-hidden shrink-0">
+          <div className="flex h-16 w-32 items-center justify-center rounded-[10px] border border-dashed border-[#cbd5e1] bg-white overflow-hidden shrink-0">
             {logoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -170,11 +170,11 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
               onChange={handleLogoChange}
               disabled={uploadingLogo || isPending}
-              className="text-sm file:mr-3 file:rounded-md file:border file:border-[#e5e7eb] file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
+              className="text-sm file:mr-3 file:rounded-md file:border file:border-[#E2E8F0] file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
             />
             <div className="flex items-center gap-3">
               {uploadingLogo && (
-                <span className="text-xs text-[#333333]">Uploading…</span>
+                <span className="text-xs text-[#475569]">Uploading…</span>
               )}
               {logoPreview && !uploadingLogo && (
                 <button
@@ -186,7 +186,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
                 </button>
               )}
             </div>
-            <p className="text-xs text-[#333333] tracking-[-0.36px]">
+            <p className="text-xs text-[#475569] tracking-[-0.36px]">
               PNG, JPEG, WEBP or SVG · up to 2 MB. A transparent PNG looks best.
             </p>
           </div>
@@ -195,7 +195,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
 
       {/* Subdomain */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="subdomain" className="text-sm text-[#0f3e17] tracking-[-0.42px]">
+        <Label htmlFor="subdomain" className="text-sm text-[#0F172A] tracking-[-0.42px]">
           Subdomain
         </Label>
         <Input
@@ -211,21 +211,21 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
           className="max-w-sm"
         />
         {subdomainPreview && (
-          <p className="text-xs text-[#333333] tracking-[-0.36px]">
+          <p className="text-xs text-[#475569] tracking-[-0.36px]">
             Preview URL:{" "}
-            <span className="text-[#0f3e17] font-normal">{subdomainPreview}</span>
+            <span className="text-[#0F172A] font-normal">{subdomainPreview}</span>
           </p>
         )}
       </div>
 
       {/* Primary colour */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="primaryHex" className="text-sm text-[#0f3e17] tracking-[-0.42px]">
+        <Label htmlFor="primaryHex" className="text-sm text-[#0F172A] tracking-[-0.42px]">
           Primary colour
         </Label>
         <div className="flex items-center gap-3">
           <div
-            className="h-9 w-9 rounded-[7px] border border-[#e5e7eb] shrink-0"
+            className="h-9 w-9 rounded-[7px] border border-[#E2E8F0] shrink-0"
             style={{ backgroundColor: primaryHex }}
             aria-hidden="true"
           />
@@ -233,7 +233,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={primaryHex}
             onChange={(e) => handlePrimaryHexChange(e.target.value)}
-            className="h-9 w-9 cursor-pointer rounded-[7px] border border-[#e5e7eb] bg-transparent p-0"
+            className="h-9 w-9 cursor-pointer rounded-[7px] border border-[#E2E8F0] bg-transparent p-0"
             aria-label="Primary colour picker"
           />
           <Input
@@ -249,12 +249,12 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
 
       {/* Accent colour */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="accentHex" className="text-sm text-[#0f3e17] tracking-[-0.42px]">
+        <Label htmlFor="accentHex" className="text-sm text-[#0F172A] tracking-[-0.42px]">
           Accent colour
         </Label>
         <div className="flex items-center gap-3">
           <div
-            className="h-9 w-9 rounded-[7px] border border-[#e5e7eb] shrink-0"
+            className="h-9 w-9 rounded-[7px] border border-[#E2E8F0] shrink-0"
             style={{ backgroundColor: accentHex }}
             aria-hidden="true"
           />
@@ -262,7 +262,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={accentHex}
             onChange={(e) => handleAccentHexChange(e.target.value)}
-            className="h-9 w-9 cursor-pointer rounded-[7px] border border-[#e5e7eb] bg-transparent p-0"
+            className="h-9 w-9 cursor-pointer rounded-[7px] border border-[#E2E8F0] bg-transparent p-0"
             aria-label="Accent colour picker"
           />
           <Input
@@ -278,9 +278,9 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
 
       {/* Email from name */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="emailFromName" className="text-sm text-[#0f3e17] tracking-[-0.42px]">
+        <Label htmlFor="emailFromName" className="text-sm text-[#0F172A] tracking-[-0.42px]">
           Email from name{" "}
-          <span className="text-[#333333] font-normal">(optional)</span>
+          <span className="text-[#475569] font-normal">(optional)</span>
         </Label>
         <Input
           id="emailFromName"
@@ -297,7 +297,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
 
       {/* Font family */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="fontFamily" className="text-sm text-[#0f3e17] tracking-[-0.42px]">
+        <Label htmlFor="fontFamily" className="text-sm text-[#0F172A] tracking-[-0.42px]">
           Font family
         </Label>
         <Select
@@ -326,7 +326,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
         <button
           type="button"
           onClick={() => setShowAdvanced((prev) => !prev)}
-          className="flex items-center gap-1.5 text-xs text-[#333333] hover:text-[#0f3e17] tracking-[-0.36px] w-fit transition-colors"
+          className="flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#0F172A] tracking-[-0.36px] w-fit transition-colors"
         >
           <span>{showAdvanced ? "Hide" : "Show"} advanced</span>
           <svg
@@ -340,10 +340,10 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
         </button>
 
         {showAdvanced && (
-          <div className="flex flex-col gap-2 rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] p-4">
-            <Label htmlFor="customDomain" className="text-sm text-[#0f3e17] tracking-[-0.42px]">
+          <div className="flex flex-col gap-2 rounded-[14px] border border-[#E2E8F0] bg-white p-4">
+            <Label htmlFor="customDomain" className="text-sm text-[#0F172A] tracking-[-0.42px]">
               Custom domain{" "}
-              <span className="text-[#333333] font-normal">(optional)</span>
+              <span className="text-[#475569] font-normal">(optional)</span>
             </Label>
             <Input
               id="customDomain"
@@ -356,8 +356,8 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
               placeholder="carbon.yourcompany.com"
               className="max-w-sm"
             />
-            <p className="text-xs text-[#333333] tracking-[-0.36px]">
-              Point your DNS CNAME to <code className="font-mono bg-[#e1f4df] px-1 rounded">cname.carbonsite.app</code>, then enter your domain here.
+            <p className="text-xs text-[#475569] tracking-[-0.36px]">
+              Point your DNS CNAME to <code className="font-mono bg-[#EEF2FF] px-1 rounded">cname.carbonsite.app</code>, then enter your domain here.
             </p>
           </div>
         )}
@@ -365,7 +365,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
 
       {/* Feedback */}
       {successMessage && (
-        <p className="text-sm font-normal text-[#0f3e17] bg-[#e1f4df] rounded-[10px] px-4 py-2.5 tracking-[-0.42px]">
+        <p className="text-sm font-normal text-[#0F172A] bg-[#EEF2FF] rounded-[10px] px-4 py-2.5 tracking-[-0.42px]">
           {successMessage}
         </p>
       )}

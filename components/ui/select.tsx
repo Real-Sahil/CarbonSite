@@ -16,8 +16,8 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] px-[14px] py-[7px] text-sm font-normal tracking-[-0.42px] text-black",
-      "placeholder:text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#0f3e17] focus:ring-offset-0",
+      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-[14px] border border-[#E2E8F0] bg-white px-[14px] py-[7px] text-sm font-normal tracking-[-0.42px] text-black",
+      "placeholder:text-[#475569] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0",
       "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className
     )}
@@ -67,7 +67,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] text-black",
+        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[14px] border border-[#E2E8F0] bg-white text-black",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         position === "popper" &&
@@ -99,7 +99,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn("px-2 py-1.5 text-xs font-normal tracking-[-0.36px] text-[#222222]", className)}
+    className={cn("px-2 py-1.5 text-xs font-normal tracking-[-0.36px] text-[#475569]", className)}
     {...props}
   />
 ));
@@ -113,7 +113,7 @@ const SelectItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex w-full cursor-default select-none items-center rounded-[7px] py-1.5 pl-2 pr-8 text-sm font-normal tracking-[-0.42px] outline-none",
-      "focus:bg-[#e1f4df] focus:text-[#0f3e17]",
+      "focus:bg-[#EEF2FF] focus:text-[#0F172A]",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
@@ -121,7 +121,7 @@ const SelectItem = React.forwardRef<
   >
     <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-[#0f3e17]" />
+        <Check className="h-4 w-4 text-[#0F172A]" />
       </SelectPrimitive.ItemIndicator>
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

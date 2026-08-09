@@ -199,7 +199,7 @@ export function CreateReportForm({
     <div className="flex flex-col gap-4">
       <form
         onSubmit={handleSubmit}
-        className="grid gap-4 rounded-[14px] border border-[#e5e7eb] p-4 lg:grid-cols-[1fr_1fr_1fr_auto_auto]"
+        className="grid gap-4 rounded-[14px] border border-[#E2E8F0] p-4 lg:grid-cols-[1fr_1fr_1fr_auto_auto]"
       >
         <Field label="Snapshot" className="lg:col-span-1">
           <select
@@ -289,17 +289,17 @@ export function CreateReportForm({
         </div>
 
         {!canCreate && (
-          <p className="text-sm text-[#222222] lg:col-span-5">
+          <p className="text-sm text-[#475569] lg:col-span-5">
             Publish a calculation snapshot before requesting a report.
           </p>
         )}
         {needsContract && contracts.length === 0 && (
-          <p className="text-sm text-[#222222] lg:col-span-5">
+          <p className="text-sm text-[#475569] lg:col-span-5">
             Create contracts first to generate National TOMS or Contract Carbon reports.
           </p>
         )}
         {needsValidation && !validationFresh && !isValidating && (
-          <p className="text-sm text-[#222222] lg:col-span-5">
+          <p className="text-sm text-[#475569] lg:col-span-5">
             Click <strong>Validate</strong> to check framework requirements before generating.
           </p>
         )}
@@ -308,28 +308,28 @@ export function CreateReportForm({
 
       {/* SECR intensity metrics collapsible */}
       {reportType === "secr" && (
-        <div className="rounded-[14px] border border-[#e5e7eb]">
+        <div className="rounded-[14px] border border-[#E2E8F0]">
           <button
             type="button"
             onClick={() => setSecrOpen((v) => !v)}
-            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-normal text-[#0f3e17] tracking-[-0.42px] hover:bg-[#f9fafb] rounded-[14px]"
+            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-normal text-[#0F172A] tracking-[-0.42px] hover:bg-[#f9fafb] rounded-[14px]"
           >
             <span>SECR intensity metrics</span>
             {secrOpen ? (
-              <ChevronUp className="h-4 w-4 text-[#333333]" />
+              <ChevronUp className="h-4 w-4 text-[#475569]" />
             ) : (
-              <ChevronDown className="h-4 w-4 text-[#333333]" />
+              <ChevronDown className="h-4 w-4 text-[#475569]" />
             )}
           </button>
           {secrOpen && (
-            <div className="grid gap-4 border-t border-[#e5e7eb] px-4 pb-4 pt-4 sm:grid-cols-2">
+            <div className="grid gap-4 border-t border-[#E2E8F0] px-4 pb-4 pt-4 sm:grid-cols-2">
               <Field label="Intensity metric label">
                 <input
                   type="text"
                   value={intensityMetricLabel}
                   onChange={(e) => setIntensityMetricLabel(e.target.value)}
                   placeholder="e.g. per £m revenue, per FTE, per tonne output"
-                  className="h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm placeholder:text-[#999]"
+                  className="h-9 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm shadow-sm placeholder:text-[#999]"
                 />
               </Field>
               <Field label="Intensity ratio (tCO₂e per unit)">
@@ -340,7 +340,7 @@ export function CreateReportForm({
                   value={intensityMetricValue}
                   onChange={(e) => setIntensityMetricValue(e.target.value)}
                   placeholder="0.00"
-                  className="h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm placeholder:text-[#999]"
+                  className="h-9 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm shadow-sm placeholder:text-[#999]"
                 />
               </Field>
             </div>
@@ -350,21 +350,21 @@ export function CreateReportForm({
 
       {/* CBAM EORI collapsible */}
       {reportType === "cbam" && (
-        <div className="rounded-[14px] border border-[#e5e7eb]">
+        <div className="rounded-[14px] border border-[#E2E8F0]">
           <button
             type="button"
             onClick={() => setCbamOpen((v) => !v)}
-            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-normal text-[#0f3e17] tracking-[-0.42px] hover:bg-[#f9fafb] rounded-[14px]"
+            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-normal text-[#0F172A] tracking-[-0.42px] hover:bg-[#f9fafb] rounded-[14px]"
           >
             <span>CBAM declarant details (optional)</span>
             {cbamOpen ? (
-              <ChevronUp className="h-4 w-4 text-[#333333]" />
+              <ChevronUp className="h-4 w-4 text-[#475569]" />
             ) : (
-              <ChevronDown className="h-4 w-4 text-[#333333]" />
+              <ChevronDown className="h-4 w-4 text-[#475569]" />
             )}
           </button>
           {cbamOpen && (
-            <div className="border-t border-[#e5e7eb] px-4 pb-4 pt-4">
+            <div className="border-t border-[#E2E8F0] px-4 pb-4 pt-4">
               <Field label="Declarant EORI number">
                 <input
                   type="text"
@@ -372,7 +372,7 @@ export function CreateReportForm({
                   onChange={(e) => setCbamEori(e.target.value)}
                   placeholder="e.g. GB123456789000"
                   maxLength={17}
-                  className="h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm placeholder:text-[#999] max-w-xs"
+                  className="h-9 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm shadow-sm placeholder:text-[#999] max-w-xs"
                 />
               </Field>
               <p className="mt-2 text-xs text-[#999]">
@@ -416,15 +416,15 @@ function ValidationResults({
     <div
       className={`rounded-[14px] border p-4 ${
         result.valid
-          ? "border-[#b6ced5] bg-[#e1f4df]"
+          ? "border-[#C7D2FE] bg-[#EEF2FF]"
           : "border-red-200 bg-red-50"
       }`}
     >
       <div className="flex items-center gap-2 mb-3">
         {result.valid ? (
           <>
-            <CheckCircle className="h-4 w-4 text-[#0f3e17] shrink-0" />
-            <p className="text-sm font-medium text-[#0f3e17]">
+            <CheckCircle className="h-4 w-4 text-[#0F172A] shrink-0" />
+            <p className="text-sm font-medium text-[#0F172A]">
               All required checks passed — ready to generate
             </p>
           </>
@@ -443,7 +443,7 @@ function ValidationResults({
         {result.checks.map((item) => (
           <li key={item.check.id} className="flex items-start gap-2 text-sm">
             {item.passed ? (
-              <CheckCircle className="h-4 w-4 text-[#0f3e17] shrink-0 mt-0.5" />
+              <CheckCircle className="h-4 w-4 text-[#0F172A] shrink-0 mt-0.5" />
             ) : item.check.required ? (
               <XCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
             ) : (
@@ -453,7 +453,7 @@ function ValidationResults({
               <span
                 className={
                   item.passed
-                    ? "text-[#0f3e17]"
+                    ? "text-[#0F172A]"
                     : item.check.required
                       ? "text-red-700"
                       : "text-amber-700"
@@ -462,10 +462,10 @@ function ValidationResults({
                 {item.check.description}
               </span>
               {item.message && !item.passed && (
-                <p className="mt-0.5 text-xs text-[#333333]">{item.message}</p>
+                <p className="mt-0.5 text-xs text-[#475569]">{item.message}</p>
               )}
               {item.message && item.passed && !item.check.required && (
-                <p className="mt-0.5 text-xs text-[#333333]">{item.message}</p>
+                <p className="mt-0.5 text-xs text-[#475569]">{item.message}</p>
               )}
             </div>
           </li>
@@ -486,7 +486,7 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <Label className="mb-1.5 block text-xs font-normal text-[#333333] tracking-[-0.36px]">
+      <Label className="mb-1.5 block text-xs font-normal text-[#475569] tracking-[-0.36px]">
         {label}
       </Label>
       <div className="flex flex-col">{children}</div>
@@ -495,4 +495,4 @@ function Field({
 }
 
 const selectClass =
-  "h-9 w-full rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";

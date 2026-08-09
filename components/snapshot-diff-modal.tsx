@@ -61,7 +61,7 @@ function DeltaCell({ delta, deltaPercent }: { delta: number; deltaPercent: numbe
   // Negative delta = fewer emissions = good (green). Positive = more = bad (red).
   const isZero = Math.abs(delta) < 0.001;
   const colorClass = isZero
-    ? "text-[#222222]"
+    ? "text-[#475569]"
     : delta < 0
       ? "text-green-700"
       : "text-red-600";
@@ -131,7 +131,7 @@ export function SnapshotDiffModal({
         </DialogHeader>
 
         {loading && (
-          <div className="py-10 text-center text-sm text-[#222222]">Loading diff…</div>
+          <div className="py-10 text-center text-sm text-[#475569]">Loading diff…</div>
         )}
 
         {error && (
@@ -151,24 +151,24 @@ export function SnapshotDiffModal({
             <TableBody>
               {diff.scopeDiffs.map((row) => (
                 <TableRow key={row.scope}>
-                  <TableCell className="font-medium text-[#0f3e17]">
+                  <TableCell className="font-medium text-[#0F172A]">
                     Scope {row.scope}
                   </TableCell>
-                  <TableCell className="text-right text-[#222222]">
+                  <TableCell className="text-right text-[#475569]">
                     {formatTonnes(row.fromCo2e)}
                   </TableCell>
-                  <TableCell className="text-right text-[#222222]">
+                  <TableCell className="text-right text-[#475569]">
                     {formatTonnes(row.toCo2e)}
                   </TableCell>
                   <DeltaCell delta={row.delta} deltaPercent={row.deltaPercent} />
                 </TableRow>
               ))}
-              <TableRow className="border-t-2 border-[#e5e7eb]">
-                <TableCell className="font-semibold text-[#0f3e17]">Total</TableCell>
-                <TableCell className="text-right font-semibold text-[#0f3e17]">
+              <TableRow className="border-t-2 border-[#E2E8F0]">
+                <TableCell className="font-semibold text-[#0F172A]">Total</TableCell>
+                <TableCell className="text-right font-semibold text-[#0F172A]">
                   {formatTonnes(diff.totalFrom)}
                 </TableCell>
-                <TableCell className="text-right font-semibold text-[#0f3e17]">
+                <TableCell className="text-right font-semibold text-[#0F172A]">
                   {formatTonnes(diff.totalTo)}
                 </TableCell>
                 <DeltaCell delta={diff.totalDelta} deltaPercent={diff.totalDeltaPercent} />
@@ -184,7 +184,7 @@ export function SnapshotDiffModal({
           <Button
             onClick={onConfirm}
             disabled={loading || !!error}
-            className="bg-[#0f3e17] text-white hover:bg-[#0f3e17]/90"
+            className="bg-[#4F46E5] text-white hover:bg-[#4F46E5]/90"
           >
             Publish new snapshot
           </Button>

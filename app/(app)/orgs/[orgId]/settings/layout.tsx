@@ -21,18 +21,15 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[28px]">
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-          Settings
-        </p>
-        <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-        >
+        <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
           Settings
         </h1>
+        <p className="mt-1 text-sm text-[#475569]">
+          Manage your organisation, members, and configuration.
+        </p>
       </div>
 
-      <nav className="flex gap-1 border-b border-[#e5e7eb]" aria-label="Settings sections">
+      <nav className="flex gap-1 border-b border-[#E2E8F0]" aria-label="Settings sections">
         {TABS.map((tab) => {
           const href = `/orgs/${orgId}/settings/${tab.segment}`;
           const isActive = pathname.includes(`/settings/${tab.segment}`);
@@ -43,8 +40,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
               className={cn(
                 "px-4 py-2 text-sm font-normal tracking-[-0.42px] rounded-t-[7px] border-b-2 -mb-px transition-colors",
                 isActive
-                  ? "border-[#0f3e17] text-[#0f3e17] bg-[#e1f4df]"
-                  : "border-transparent text-[#222222] hover:text-[#0f3e17] hover:bg-[#e1f4df]",
+                  ? "border-[#4F46E5] text-[#0F172A] bg-[#EEF2FF]"
+                  : "border-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#EEF2FF]",
               )}
             >
               {tab.label}

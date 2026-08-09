@@ -47,15 +47,12 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
       }
       // 403 - not a member
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[#fffefc]">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC]">
           <div className="text-center">
-            <h1
-              className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17] mb-[7px]"
-              style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-            >
+            <h1 className="text-3xl font-semibold tracking-tight text-[#0F172A] mb-2">
               Access denied
             </h1>
-            <p className="text-sm text-[#222222] tracking-[-0.42px]">
+            <p className="text-sm text-[#475569]">
               You are not a member of this organisation.
             </p>
           </div>
@@ -89,7 +86,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const cssVars = buildBrandingCssVars(branding);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#fffefc]">
+    <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F8FAFC]">
       {cssVars && <style>{`:root { ${cssVars} }`}</style>}
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership.role} />
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">{children}</main>

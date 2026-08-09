@@ -158,16 +158,16 @@ export default async function ContractsPage({ params }: Props) {
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0F172A] bg-[#EEF2FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Contracts
         </p>
         <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+          className="text-2xl font-bold tracking-tight text-[#0F172A]"
+          
         >
           Contracts
         </h1>
-        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#475569] font-normal tracking-[-0.42px] mt-[7px]">
           Manage contracts, projects, and sites for your organisation.
         </p>
       </div>
@@ -185,25 +185,25 @@ export default async function ContractsPage({ params }: Props) {
           {contracts.length === 0 ? (
             <EmptyState message="No contracts yet. Create one above to get started." />
           ) : (
-            <div className="rounded-[14px] border border-[#e5e7eb] overflow-hidden">
+            <div className="rounded-[14px] border border-[#E2E8F0] overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#f9fafb]">
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Name</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Status</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Client</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Value</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Start</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">End</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Projects</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">CO₂e</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Name</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Status</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Client</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Value</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Start</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">End</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Projects</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">CO₂e</TableHead>
                     <TableHead className="w-[80px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {contracts.map((contract) => (
                     <TableRow key={contract.id} className="hover:bg-[#f9fafb]">
-                      <TableCell className="font-normal text-[#0f3e17] tracking-[-0.42px]">
+                      <TableCell className="font-normal text-[#0F172A] tracking-[-0.42px]">
                         <Link
                           href={`/orgs/${orgId}/contracts/${contract.id}`}
                           className="hover:underline"
@@ -212,22 +212,22 @@ export default async function ContractsPage({ params }: Props) {
                         </Link>
                       </TableCell>
                       <TableCell>{contractStatusBadge(contract.status)}</TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {contract.clientName ?? "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {formatCurrency(contract.contractValue)}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {formatDate(contract.startDate)}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {formatDate(contract.endDate)}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {contract._count.projects}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {formatTco2e(co2eByContract.get(contract.id) ?? 0)}
                       </TableCell>
                       <TableCell>
@@ -258,15 +258,15 @@ export default async function ContractsPage({ params }: Props) {
 
 function AccessDenied() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fffefc]">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
         <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17] mb-[7px]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+          className="text-2xl font-bold tracking-tight text-[#0F172A] mb-1"
+          
         >
           Access denied
         </h1>
-        <p className="text-sm text-[#222222] tracking-[-0.42px]">
+        <p className="text-sm text-[#475569] tracking-[-0.42px]">
           You do not have permission to view contracts.
         </p>
       </div>
@@ -276,9 +276,9 @@ function AccessDenied() {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[42px] text-center">
-      <Building2 className="h-8 w-8 text-[#0f3e17] opacity-40" />
-      <p className="text-sm text-[#222222] tracking-[-0.42px]">{message}</p>
+    <div className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-[42px] text-center">
+      <Building2 className="h-8 w-8 text-[#0F172A] opacity-40" />
+      <p className="text-sm text-[#475569] tracking-[-0.42px]">{message}</p>
     </div>
   );
 }

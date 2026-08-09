@@ -65,13 +65,13 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
   return (
     <div className="grid gap-2">
       {hasInFlight && (
-        <div className="flex items-center gap-3 rounded-[14px] border border-[#b6ced5] bg-[#b6ced5]/20 px-4 py-3">
-          <Loader2 className="h-4 w-4 text-[#0f3e17] animate-spin shrink-0" />
+        <div className="flex items-center gap-3 rounded-[14px] border border-[#C7D2FE] bg-[#EEF2FF]/20 px-4 py-3">
+          <Loader2 className="h-4 w-4 text-[#0F172A] animate-spin shrink-0" />
           <div>
-            <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+            <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">
               Calculation in progress
             </p>
-            <p className="text-xs text-[#333333] tracking-[-0.36px]">
+            <p className="text-xs text-[#475569] tracking-[-0.36px]">
               Updating automatically — no need to refresh.
             </p>
           </div>
@@ -80,13 +80,13 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
       {runs.map((run) => (
         <div
           key={run.id}
-          className="flex flex-col gap-2 rounded-[14px] border border-[#e5e7eb] p-3 md:flex-row md:items-center md:justify-between"
+          className="flex flex-col gap-2 rounded-[14px] border border-[#E2E8F0] p-3 md:flex-row md:items-center md:justify-between"
         >
           <div>
-            <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+            <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">
               {run.reportingPeriod.label}
             </p>
-            <p className="text-xs text-[#333333] tracking-[-0.36px]">
+            <p className="text-xs text-[#475569] tracking-[-0.36px]">
               {run.factorLibrary.name} {run.factorLibrary.version}
             </p>
             {run.status === "failed" && run.errorMessage && (
@@ -97,7 +97,7 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
           </div>
           <div className="flex items-center gap-2">
             {(run.status === "queued" || run.status === "running") && (
-              <Loader2 className="h-3.5 w-3.5 text-[#0f3e17] animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 text-[#0F172A] animate-spin" />
             )}
             <Badge
               variant={

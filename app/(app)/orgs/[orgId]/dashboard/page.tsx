@@ -733,16 +733,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     <div className="p-[42px] max-w-[1200px] mx-auto">
       <div className="mb-[42px] flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-            Overview
-          </p>
-          <h1
-            className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
-            style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
-          >
+          <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
             Dashboard
           </h1>
-          <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
+          <p className="text-sm text-[#475569] font-normal tracking-[-0.42px] mt-[7px]">
             Live emissions operations for {organization.name}.
           </p>
         </div>
@@ -800,26 +794,26 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       {activeContracts.length > 0 && (
         <div className="flex flex-col gap-3">
           {selectedContract && (
-            <div className="flex items-center gap-2 rounded-[14px] border border-[#b6ced5] bg-[#b6ced5]/20 px-4 py-3">
-              <span className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+            <div className="flex items-center gap-2 rounded-[14px] border border-[#C7D2FE] bg-[#EEF2FF]/20 px-4 py-3">
+              <span className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">
                 Filtering by contract: <strong>{selectedContract.name}</strong>
               </span>
               <Link
                 href={`/orgs/${orgId}/dashboard`}
-                className="ml-auto text-xs text-[#333333] underline hover:text-[#0f3e17]"
+                className="ml-auto text-xs text-[#475569] underline hover:text-[#0F172A]"
               >
                 Clear
               </Link>
             </div>
           )}
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs font-normal text-[#333333] tracking-[-0.36px] mr-1">Filter by contract:</span>
+            <span className="text-xs font-normal text-[#475569] tracking-[-0.36px] mr-1">Filter by contract:</span>
             <Link
               href={`/orgs/${orgId}/dashboard`}
               className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                 !selectedContractId
-                  ? "bg-[#0f3e17] text-[#fffefc]"
-                  : "border border-[#e5e7eb] text-[#333333] hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+                  ? "bg-[#4F46E5] text-white"
+                  : "border border-[#E2E8F0] text-[#475569] hover:border-[#C7D2FE] hover:bg-[#EEF2FF]"
               }`}
             >
               All
@@ -830,8 +824,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 href={`/orgs/${orgId}/dashboard?contractId=${contract.id}`}
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
-                    ? "bg-[#0f3e17] text-[#fffefc]"
-                    : "border border-[#e5e7eb] text-[#333333] hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+                    ? "bg-[#4F46E5] text-white"
+                    : "border border-[#E2E8F0] text-[#475569] hover:border-[#C7D2FE] hover:bg-[#EEF2FF]"
                 }`}
               >
                 {contract.name}
@@ -846,17 +840,17 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         aria-label="Carbon footprint summary"
         className="mt-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
       >
-        <div className="rounded-[14px] border border-[#0f3e17] bg-[#0f3e17] p-[21px] text-[#fffefc] md:col-span-2 xl:col-span-1">
+        <div className="rounded-[14px] border border-[#4F46E5] bg-[#4F46E5] p-[21px] text-white md:col-span-2 xl:col-span-1">
           <div className="flex items-center gap-2">
-            <Leaf aria-hidden="true" className="h-4 w-4 text-[#b1dbb8]" />
-            <p className="text-xs font-normal uppercase tracking-wide text-[#b1dbb8]">
+            <Leaf aria-hidden="true" className="h-4 w-4 text-[#C7D2FE]" />
+            <p className="text-xs font-normal uppercase tracking-wide text-[#C7D2FE]">
               Total footprint
             </p>
           </div>
           <p className="mt-3 text-4xl font-normal tracking-[-0.4px]">
             {currentFootprint > 0 ? formatKgCo2e(currentFootprint) : "—"}
           </p>
-          <p className="mt-1 text-xs text-[#b1dbb8] tracking-[-0.36px]">
+          <p className="mt-1 text-xs text-[#C7D2FE] tracking-[-0.36px]">
             {currentFootprint > 0
               ? `Scopes 1–3 · ${currentPeriod?.label ?? "current period"}`
               : "Run a calculation to populate your footprint"}
@@ -899,19 +893,19 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         ) : (
           <Link
             href={`/orgs/${orgId}/targets`}
-            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px] transition-colors hover:bg-[#d4efd2]"
+            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-[21px] transition-colors hover:bg-[#E0E7FF]"
           >
             <div className="flex items-center gap-2">
-              <Target aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
-              <p className="text-xs font-normal uppercase tracking-wide text-[#0f3e17]">
+              <Target aria-hidden="true" className="h-4 w-4 text-[#0F172A]" />
+              <p className="text-xs font-normal uppercase tracking-wide text-[#0F172A]">
                 Reduction target
               </p>
             </div>
             <div className="mt-3">
-              <p className="text-base font-normal text-[#0f3e17] tracking-[-0.42px]">
+              <p className="text-base font-normal text-[#0F172A] tracking-[-0.42px]">
                 Set your first target
               </p>
-              <p className="mt-1 inline-flex items-center gap-1 text-xs text-[#333333] tracking-[-0.36px]">
+              <p className="mt-1 inline-flex items-center gap-1 text-xs text-[#475569] tracking-[-0.36px]">
                 Define a baseline and goal
                 <ArrowRight aria-hidden="true" className="h-3 w-3" />
               </p>
@@ -961,15 +955,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/records?scope=3`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px] transition-colors hover:bg-[#d4efd2]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-[21px] transition-colors hover:bg-[#E0E7FF]"
                 >
                   <div className="flex items-center gap-2">
-                    <Scale aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
-                    <p className="text-xs font-normal uppercase tracking-wide text-[#0f3e17]">tCO2e/tonne-km</p>
+                    <Scale aria-hidden="true" className="h-4 w-4 text-[#0F172A]" />
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#0F172A]">tCO2e/tonne-km</p>
                   </div>
                   <div className="mt-3">
-                    <p className="text-base font-normal text-[#0f3e17] tracking-[-0.42px]">Add transport data</p>
-                    <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                    <p className="text-base font-normal text-[#0F172A] tracking-[-0.42px]">Add transport data</p>
+                    <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                       Import freight records to calculate intensity
                     </p>
                   </div>
@@ -988,15 +982,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/records?scope=2`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px] transition-colors hover:bg-[#d4efd2]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-[21px] transition-colors hover:bg-[#E0E7FF]"
                 >
                   <div className="flex items-center gap-2">
-                    <LineChart aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
-                    <p className="text-xs font-normal uppercase tracking-wide text-[#0f3e17]">Energy intensity</p>
+                    <LineChart aria-hidden="true" className="h-4 w-4 text-[#0F172A]" />
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#0F172A]">Energy intensity</p>
                   </div>
                   <div className="mt-3">
-                    <p className="text-base font-normal text-[#0f3e17] tracking-[-0.42px]">Add floor area</p>
-                    <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                    <p className="text-base font-normal text-[#0F172A] tracking-[-0.42px]">Add floor area</p>
+                    <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                       Import m² data to compute kgCO2e/m²
                     </p>
                   </div>
@@ -1015,15 +1009,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/reports`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px] transition-colors hover:bg-[#d4efd2]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-[21px] transition-colors hover:bg-[#E0E7FF]"
                 >
                   <div className="flex items-center gap-2">
-                    <Handshake aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
-                    <p className="text-xs font-normal uppercase tracking-wide text-[#0f3e17]">Procurement</p>
+                    <Handshake aria-hidden="true" className="h-4 w-4 text-[#0F172A]" />
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#0F172A]">Procurement</p>
                   </div>
                   <div className="mt-3">
-                    <p className="text-base font-normal text-[#0f3e17] tracking-[-0.42px]">Generate CRP report</p>
-                    <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                    <p className="text-base font-normal text-[#0F172A] tracking-[-0.42px]">Generate CRP report</p>
+                    <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                       PPN 006/21 compliant Carbon Reduction Plan
                     </p>
                   </div>
@@ -1116,13 +1110,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <Building2 aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+                  <Building2 aria-hidden="true" className="h-4 w-4 text-[#0F172A]" />
                   <CardTitle className="text-base">By facility</CardTitle>
                 </div>
                 <CardDescription className="mt-1">
                   CO₂e breakdown by facility for the current reporting period.
                   {activeFacility && (
-                    <span className="ml-1 font-normal text-[#0f3e17]">
+                    <span className="ml-1 font-normal text-[#0F172A]">
                       Filtered: {activeFacility.name}
                     </span>
                   )}
@@ -1133,8 +1127,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   href={`/orgs/${orgId}/dashboard`}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     !selectedFacilityId
-                      ? "bg-[#0f3e17] text-[#fffefc]"
-                      : "border border-[#e5e7eb] text-[#333333] hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+                      ? "bg-[#4F46E5] text-white"
+                      : "border border-[#E2E8F0] text-[#475569] hover:border-[#C7D2FE] hover:bg-[#EEF2FF]"
                   }`}
                 >
                   All
@@ -1145,8 +1139,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     href={`/orgs/${orgId}/dashboard?facilityId=${fac.id}`}
                     className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                       selectedFacilityId === fac.id
-                        ? "bg-[#0f3e17] text-[#fffefc]"
-                        : "border border-[#e5e7eb] text-[#333333] hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+                        ? "bg-[#4F46E5] text-white"
+                        : "border border-[#E2E8F0] text-[#475569] hover:border-[#C7D2FE] hover:bg-[#EEF2FF]"
                     }`}
                   >
                     {fac.name}
@@ -1156,20 +1150,20 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-[14px] border border-[#e5e7eb]">
+            <div className="overflow-hidden rounded-[14px] border border-[#E2E8F0]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
-                    <th className="px-4 py-3 text-left text-xs font-normal uppercase tracking-wide text-[#333333]">
+                  <tr className="border-b border-[#E2E8F0] bg-[#f9fafb]">
+                    <th className="px-4 py-3 text-left text-xs font-normal uppercase tracking-wide text-[#475569]">
                       Facility
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#333333]">
+                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#475569]">
                       Total CO₂e
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#333333]">
+                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#475569]">
                       Share
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#333333]">
+                    <th className="px-4 py-3 text-right text-xs font-normal uppercase tracking-wide text-[#475569]">
                       Records
                     </th>
                   </tr>
@@ -1184,29 +1178,29 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                       <tr
                         key={fac.id}
                         className={
-                          selectedFacilityId === fac.id ? "bg-[#e1f4df]/40" : "hover:bg-[#f9fafb]"
+                          selectedFacilityId === fac.id ? "bg-[#EEF2FF]/60" : "hover:bg-[#f9fafb]"
                         }
                       >
-                        <td className="px-4 py-3 font-normal text-[#0f3e17] tracking-[-0.42px]">
+                        <td className="px-4 py-3 font-normal text-[#0F172A] tracking-[-0.42px]">
                           {fac.name}
                         </td>
-                        <td className="px-4 py-3 text-right font-normal text-[#0f3e17] tracking-[-0.42px]">
+                        <td className="px-4 py-3 text-right font-normal text-[#0F172A] tracking-[-0.42px]">
                           {formatKgCo2e(fac.totalCo2e)}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#e1f4df]">
+                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#EEF2FF]">
                               <div
-                                className="h-full rounded-full bg-[#0f3e17]"
+                                className="h-full rounded-full bg-[#4F46E5]"
                                 style={{ width: `${share}%` }}
                               />
                             </div>
-                            <span className="w-8 text-right text-xs text-[#333333] tracking-[-0.36px]">
+                            <span className="w-8 text-right text-xs text-[#475569] tracking-[-0.36px]">
                               {share}%
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-right text-xs text-[#333333] tracking-[-0.36px]">
+                        <td className="px-4 py-3 text-right text-xs text-[#475569] tracking-[-0.36px]">
                           {fac.recordCount.toLocaleString("en-GB")}
                         </td>
                       </tr>
@@ -1226,7 +1220,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             <CardDescription>
               Aggregates rebuilt from immutable calculation runs.
               {activeFacility && (
-                <span className="ml-1 font-normal text-[#0f3e17]">
+                <span className="ml-1 font-normal text-[#0F172A]">
                   Showing all scopes — facility filter applies to the breakdown table above.
                 </span>
               )}
@@ -1236,14 +1230,14 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {hasAggregates ? (
               <div className="grid gap-3 md:grid-cols-3">
                 {scopeRows.map((row) => (
-                  <div key={row.scope} className="rounded-[14px] border border-[#e5e7eb] p-[21px]">
-                    <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">
+                  <div key={row.scope} className="rounded-[14px] border border-[#E2E8F0] p-[21px]">
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#475569]">
                       Scope {row.scope}
                     </p>
-                    <p className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#0f3e17]">
+                    <p className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#0F172A]">
                       {formatKgCo2e(row.total)}
                     </p>
-                    <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                    <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                       {Number(row.records).toLocaleString("en-GB")} calculated records
                     </p>
                   </div>
@@ -1305,7 +1299,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <ShieldCheck aria-hidden="true" className="h-4 w-4 text-[#0f3e17]" />
+                <ShieldCheck aria-hidden="true" className="h-4 w-4 text-[#0F172A]" />
                 <CardTitle className="text-base">Data quality</CardTitle>
               </div>
               <CardDescription className="mt-1">
@@ -1316,16 +1310,16 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardHeader>
         <CardContent>
           <dl className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-[14px] border border-[#e5e7eb] p-[21px]">
-              <dt className="text-xs font-normal uppercase tracking-wide text-[#333333]">
+            <div className="rounded-[14px] border border-[#E2E8F0] p-[21px]">
+              <dt className="text-xs font-normal uppercase tracking-wide text-[#475569]">
                 Emissions from reviewed records
               </dt>
               {dataConfidencePct !== null ? (
                 <>
-                  <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#0f3e17]">
+                  <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#0F172A]">
                     {dataConfidencePct}%
                   </dd>
-                  <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                  <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                     of calculated CO₂e from approved records
                   </p>
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e5e7eb]">
@@ -1343,44 +1337,44 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 </>
               ) : (
                 <>
-                  <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#333333]">
+                  <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#475569]">
                     —
                   </dd>
-                  <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+                  <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                     Run a calculation to see confidence
                   </p>
                 </>
               )}
             </div>
 
-            <div className="rounded-[14px] border border-[#e5e7eb] p-[21px]">
-              <dt className="text-xs font-normal uppercase tracking-wide text-[#333333]">
+            <div className="rounded-[14px] border border-[#E2E8F0] p-[21px]">
+              <dt className="text-xs font-normal uppercase tracking-wide text-[#475569]">
                 Approved records missing evidence
               </dt>
               <dd
                 className={`mt-2 text-2xl font-normal tracking-[-0.4px] ${
-                  missingEvidenceCount > 0 ? "text-amber-600" : "text-[#0f3e17]"
+                  missingEvidenceCount > 0 ? "text-amber-600" : "text-[#0F172A]"
                 }`}
               >
                 {missingEvidenceCount.toLocaleString("en-GB")}
               </dd>
-              <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+              <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                 Approved records with no linked evidence files
               </p>
             </div>
 
-            <div className="rounded-[14px] border border-[#e5e7eb] p-[21px]">
-              <dt className="text-xs font-normal uppercase tracking-wide text-[#333333]">
+            <div className="rounded-[14px] border border-[#E2E8F0] p-[21px]">
+              <dt className="text-xs font-normal uppercase tracking-wide text-[#475569]">
                 Records pending attention
               </dt>
               <dd
                 className={`mt-2 text-2xl font-normal tracking-[-0.4px] ${
-                  pendingAttentionCount > 0 ? "text-amber-600" : "text-[#0f3e17]"
+                  pendingAttentionCount > 0 ? "text-amber-600" : "text-[#0F172A]"
                 }`}
               >
                 {pendingAttentionCount.toLocaleString("en-GB")}
               </dd>
-              <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+              <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                 Records in draft or in review status
               </p>
               {pendingAttentionCount > 0 && (
@@ -1422,15 +1416,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
-          <CardHeader className="border-b border-[#e5e7eb] bg-[#0f3e17] text-[#fffefc]">
+          <CardHeader className="border-b border-[#E2E8F0] bg-[#4F46E5] text-white">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle className="text-base text-[#fffefc]">Analytics workbench</CardTitle>
-                <CardDescription className="text-[#b1dbb8]">
+                <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
+                <CardDescription className="text-[#C7D2FE]">
                   Category concentration and scope movement for the active reporting period.
                 </CardDescription>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-white/10 text-[#b1dbb8]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-white/10 text-[#C7D2FE]">
                 <LineChart aria-hidden="true" className="h-5 w-5" />
               </div>
             </div>
@@ -1439,8 +1433,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             <div>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">Top emission categories</p>
-                  <p className="text-xs text-[#333333] tracking-[-0.36px]">
+                  <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">Top emission categories</p>
+                  <p className="text-xs text-[#475569] tracking-[-0.36px]">
                     Ranked from current calculation aggregates.
                   </p>
                 </div>
@@ -1557,7 +1551,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   Track decarbonisation work, route-efficiency signals, and target ambition from live records.
                 </CardDescription>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#e1f4df] text-[#0f3e17]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#EEF2FF] text-[#0F172A]">
                 <Handshake aria-hidden="true" className="h-5 w-5" />
               </div>
             </div>
@@ -1595,16 +1589,16 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 detail="Awaiting review from field workers"
               />
             </div>
-            <div className="rounded-[14px] border border-[#e5e7eb]">
+            <div className="rounded-[14px] border border-[#E2E8F0]">
               {initiativeStatusRows.length > 0 ? (
                 <div className="divide-y divide-[#e5e7eb]">
                   {initiativeStatusRows.map((row) => (
                     <div key={row.status} className="flex items-center justify-between gap-4 p-3">
                       <div>
-                        <p className="text-sm font-normal capitalize text-[#0f3e17] tracking-[-0.42px]">
+                        <p className="text-sm font-normal capitalize text-[#0F172A] tracking-[-0.42px]">
                           {row.status.replaceAll("_", " ")}
                         </p>
-                        <p className="text-xs text-[#333333] tracking-[-0.36px]">
+                        <p className="text-xs text-[#475569] tracking-[-0.36px]">
                           {formatKgCo2e(row._sum.expectedImpactCo2e)} expected impact
                         </p>
                       </div>
@@ -1643,7 +1637,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </CardHeader>
           <CardContent className="grid gap-5 lg:grid-cols-2">
             <div>
-              <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">Capture status</p>
+              <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">Capture status</p>
               <div className="mt-3 space-y-3">
                 {submissionStatusRows.length > 0 ? (
                   submissionStatusRows.map((row) => (
@@ -1665,7 +1659,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </div>
             </div>
             <div>
-              <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">Document mix</p>
+              <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">Document mix</p>
               <div className="mt-3 space-y-3">
                 {submissionDocumentRows.length > 0 ? (
                   submissionDocumentRows.map((row) => (
@@ -1677,7 +1671,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     />
                   ))
                 ) : (
-                  <div className="rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-5 text-sm text-[#222222] tracking-[-0.42px]">
+                  <div className="rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-5 text-sm text-[#475569] tracking-[-0.42px]">
                     Document type analytics appear when field submissions are received.
                   </div>
                 )}
@@ -1726,12 +1720,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               value={failedCalculationCount}
             />
           </div>
-          <div className="rounded-[14px] border border-[#e5e7eb]">
+          <div className="rounded-[14px] border border-[#E2E8F0]">
             {recentAuditLogs.length === 0 ? (
               <div className="flex min-h-32 flex-col items-center justify-center p-6 text-center">
-                <Clock aria-hidden="true" className="h-6 w-6 text-[#333333]" />
-                <p className="mt-2 text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">No audit events yet</p>
-                <p className="mt-1 text-xs text-[#222222] tracking-[-0.36px]">
+                <Clock aria-hidden="true" className="h-6 w-6 text-[#475569]" />
+                <p className="mt-2 text-sm font-normal text-[#0F172A] tracking-[-0.42px]">No audit events yet</p>
+                <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
                   Operational events appear here after users create, review, calculate, or publish data.
                 </p>
               </div>
@@ -1740,14 +1734,14 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 {recentAuditLogs.map((log) => (
                   <div key={log.id} className="flex items-start justify-between gap-4 p-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">
+                      <p className="truncate text-sm font-normal text-[#0F172A] tracking-[-0.42px]">
                         {log.action.replaceAll("_", " ")}
                       </p>
-                      <p className="mt-0.5 text-xs text-[#333333] tracking-[-0.36px]">
+                      <p className="mt-0.5 text-xs text-[#475569] tracking-[-0.36px]">
                         {log.resourceType} - {log.actor?.name ?? log.actor?.email ?? "System"}
                       </p>
                     </div>
-                    <time className="shrink-0 text-xs text-[#333333] tracking-[-0.36px]">
+                    <time className="shrink-0 text-xs text-[#475569] tracking-[-0.36px]">
                       {log.createdAt.toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -1858,29 +1852,29 @@ function HeroStat({
   href?: string;
 }) {
   const valueColor =
-    tone === "good" ? "text-emerald-600" : tone === "bad" ? "text-red-600" : "text-[#0f3e17]";
+    tone === "good" ? "text-emerald-600" : tone === "bad" ? "text-red-600" : "text-[#0F172A]";
   const inner = (
     <>
       <div className="flex items-center gap-2">
-        <Icon aria-hidden="true" className="h-4 w-4 text-[#333333]" />
-        <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">{label}</p>
+        <Icon aria-hidden="true" className="h-4 w-4 text-[#475569]" />
+        <p className="text-xs font-normal uppercase tracking-wide text-[#475569]">{label}</p>
       </div>
       <p className={`mt-3 text-3xl font-normal tracking-[-0.4px] ${valueColor}`}>{value}</p>
-      <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">{detail}</p>
+      <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">{detail}</p>
     </>
   );
   if (href) {
     return (
       <Link
         href={href}
-        className="block rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] p-[21px] transition-colors hover:border-[#b1dbb8] hover:bg-[#e1f4df]"
+        className="block rounded-[14px] border border-[#E2E8F0] bg-white p-[21px] transition-colors hover:border-[#C7D2FE] hover:bg-[#EEF2FF]"
       >
         {inner}
       </Link>
     );
   }
   return (
-    <div className="rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] p-[21px]">{inner}</div>
+    <div className="rounded-[14px] border border-[#E2E8F0] bg-white p-[21px]">{inner}</div>
   );
 }
 
@@ -1896,14 +1890,14 @@ function InsightCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] p-[21px]">
+    <div className="rounded-[14px] border border-[#E2E8F0] bg-white p-[21px]">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">{label}</p>
-          <p className="mt-2 text-xl font-normal tracking-[-0.4px] text-[#0f3e17]">{value}</p>
-          <p className="mt-1 text-xs leading-5 text-[#333333] tracking-[-0.36px]">{detail}</p>
+          <p className="text-xs font-normal uppercase tracking-wide text-[#475569]">{label}</p>
+          <p className="mt-2 text-xl font-normal tracking-[-0.4px] text-[#0F172A]">{value}</p>
+          <p className="mt-1 text-xs leading-5 text-[#475569] tracking-[-0.36px]">{detail}</p>
         </div>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-[#e1f4df] text-[#0f3e17]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-[#EEF2FF] text-[#0F172A]">
           <Icon aria-hidden="true" className="h-4 w-4" />
         </div>
       </div>
@@ -1924,16 +1918,16 @@ function ProgressRow({
 }) {
   const width = `${Math.max(2, Math.min(100, percent))}%`;
   return (
-    <div className="rounded-[14px] border border-[#e5e7eb] p-3">
+    <div className="rounded-[14px] border border-[#E2E8F0] p-3">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="truncate text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{label}</p>
-          <p className="mt-0.5 text-xs text-[#333333] tracking-[-0.36px]">{meta}</p>
+          <p className="truncate text-sm font-normal text-[#0F172A] tracking-[-0.42px]">{label}</p>
+          <p className="mt-0.5 text-xs text-[#475569] tracking-[-0.36px]">{meta}</p>
         </div>
-        <p className="shrink-0 text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{value}</p>
+        <p className="shrink-0 text-sm font-normal text-[#0F172A] tracking-[-0.42px]">{value}</p>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e1f4df]">
-        <div className="h-full rounded-full bg-[#0f3e17]" style={{ width }} />
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#EEF2FF]">
+        <div className="h-full rounded-full bg-[#4F46E5]" style={{ width }} />
       </div>
     </div>
   );
@@ -1951,13 +1945,13 @@ function PipelineRow({
   const percent = total > 0 ? (count / total) * 100 : 0;
   const width = `${Math.max(2, Math.min(100, percent))}%`;
   return (
-    <div className="rounded-[14px] border border-[#e5e7eb] p-3">
+    <div className="rounded-[14px] border border-[#E2E8F0] p-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-normal capitalize text-[#222222] tracking-[-0.42px]">{label}</span>
-        <span className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{count.toLocaleString("en-GB")}</span>
+        <span className="text-sm font-normal capitalize text-[#475569] tracking-[-0.42px]">{label}</span>
+        <span className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">{count.toLocaleString("en-GB")}</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e1f4df]">
-        <div className="h-full rounded-full bg-[#0f3e17]" style={{ width }} />
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#EEF2FF]">
+        <div className="h-full rounded-full bg-[#4F46E5]" style={{ width }} />
       </div>
     </div>
   );
@@ -1976,11 +1970,11 @@ function HealthSignal({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-[14px] border border-[#e5e7eb] p-[21px] transition-colors hover:bg-[#e1f4df]"
+      className="flex items-center justify-between rounded-[14px] border border-[#E2E8F0] p-[21px] transition-colors hover:bg-[#EEF2FF]"
     >
       <div>
-        <p className="text-sm font-normal text-[#222222] tracking-[-0.42px]">{label}</p>
-        <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">
+        <p className="text-sm font-normal text-[#475569] tracking-[-0.42px]">{label}</p>
+        <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">
           {hasIssue ? "Open the workflow to resolve" : "No failures recorded"}
         </p>
       </div>
@@ -2008,17 +2002,17 @@ function MetricCard({
   tone?: "neutral" | "good" | "bad";
 }) {
   const valueColor =
-    tone === "good" ? "text-[#0f7a2a]" : tone === "bad" ? "text-red-700" : "text-[#0f3e17]";
+    tone === "good" ? "text-[#059669]" : tone === "bad" ? "text-red-700" : "text-[#0F172A]";
   const content = (
     <Card className={href ? "transition-shadow hover:shadow-md" : undefined}>
       <CardContent className="p-[21px]">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-normal text-[#333333] tracking-[-0.42px]">{label}</p>
+            <p className="text-sm font-normal text-[#475569] tracking-[-0.42px]">{label}</p>
             <p className={`mt-2 text-3xl font-normal tracking-[-0.4px] ${valueColor}`}>{value}</p>
-            <p className="mt-1 text-xs text-[#333333] tracking-[-0.36px]">{detail}</p>
+            <p className="mt-1 text-xs text-[#475569] tracking-[-0.36px]">{detail}</p>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#e1f4df] text-[#0f3e17]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#EEF2FF] text-[#0F172A]">
             <Icon aria-hidden="true" className="h-5 w-5" />
           </div>
         </div>
@@ -2039,12 +2033,12 @@ function ReadinessRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#e5e7eb] p-3">
+    <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#E2E8F0] p-3">
       <div className="flex items-center gap-3">
-        <Icon aria-hidden="true" className="h-4 w-4 text-[#333333]" />
-        <span className="text-sm text-[#222222] tracking-[-0.42px]">{label}</span>
+        <Icon aria-hidden="true" className="h-4 w-4 text-[#475569]" />
+        <span className="text-sm text-[#475569] tracking-[-0.42px]">{label}</span>
       </div>
-      <span className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">{value}</span>
+      <span className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">{value}</span>
     </div>
   );
 }
@@ -2061,9 +2055,9 @@ function EmptyPanel({
   action: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[21px]">
-      <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">{title}</p>
-      <p className="mt-1 max-w-xl text-sm text-[#222222] tracking-[-0.42px]">{description}</p>
+    <div className="rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-[21px]">
+      <p className="font-normal text-[#0F172A] tracking-[-0.42px]">{title}</p>
+      <p className="mt-1 max-w-xl text-sm text-[#475569] tracking-[-0.42px]">{description}</p>
       <Button asChild size="sm" className="mt-4">
         <Link href={href}>{action}</Link>
       </Button>
@@ -2082,7 +2076,7 @@ function ActionCard({
 }) {
   return (
     <Link href={href} className="group block">
-      <Card className="h-full transition-colors group-hover:border-[#b1dbb8] group-hover:bg-[#e1f4df]">
+      <Card className="h-full transition-colors group-hover:border-[#C7D2FE] group-hover:bg-[#EEF2FF]">
         <CardHeader>
           <CardTitle className="text-base">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
