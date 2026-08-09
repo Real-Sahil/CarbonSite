@@ -16,7 +16,7 @@ jobs:
       DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL || secrets.DATABASE_URL }}
       NO_COLOR: "1"
     steps:
-      - name: Validate DATABASE_URL secret
+      - name: Validate MIGRATION_DATABASE_URL secret
         run: |
           if [ -z "$DATABASE_URL" ]; then
             echo "::error::Add MIGRATION_DATABASE_URL to GitHub Actions secrets."
