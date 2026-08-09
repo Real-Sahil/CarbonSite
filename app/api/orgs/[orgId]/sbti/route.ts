@@ -30,7 +30,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     // Build trajectory data: from baseYear to netZeroYear
     // Linear reduction from base to near-term, then to net-zero
-    let trajectory: Array<{ year: number; targetTco2e: number; pathway: string }> = [];
+    const trajectory: Array<{ year: number; targetTco2e: number; pathway: string }> = [];
     if (target) {
       const baseTotal =
         Number(target.baselineScope1Tco2e) +

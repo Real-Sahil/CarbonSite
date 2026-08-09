@@ -55,6 +55,7 @@ export default function CompliancePage() {
     setLoading(false);
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [orgId]);
 
   async function handleSave(e: React.FormEvent) {

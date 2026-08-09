@@ -197,6 +197,7 @@ export default function SbtiPage() {
     setLoading(false);
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [orgId]);
 
   const baseTotal = target
