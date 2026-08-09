@@ -133,16 +133,8 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
     attention: imports.filter((b) => b.state === "needs_attention" || b.state === "failed").length,
   };
 
-  const dbHost = (() => {
-    try { return new URL(process.env.DATABASE_URL ?? "").hostname; } catch { return "unknown"; }
-  })();
-
   return (
     <div className="min-h-[100dvh] bg-[#f9fafb]">
-      {/* Temporary diagnostic — remove once DB is confirmed */}
-      <div className="bg-yellow-50 border-b border-yellow-200 px-8 py-2 text-xs text-yellow-800">
-        DB host: <span className="font-mono font-medium">{dbHost}</span>
-      </div>
       {/* Page header */}
       <div className="bg-white border-b border-[#e5e7eb]">
         <div className="max-w-[1200px] mx-auto px-8 py-8">
