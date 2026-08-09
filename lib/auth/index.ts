@@ -4,8 +4,9 @@ import { prisma } from "@/lib/db";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
 
 const isNextBuild = process.env.NEXT_PHASE === "phase-production-build";
-const requireEmailVerification =
-  process.env.BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION === "true";
+// Email verification disabled until a sending domain is configured.
+// Re-enable by setting BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=true once Resend is set up.
+const requireEmailVerification = false;
 const trustedOrigins = Array.from(
   new Set(
     [
