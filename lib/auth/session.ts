@@ -20,8 +20,11 @@ export async function getSession() {
   //
   // The signed cookie format is "{rawToken}.{44-char-base64-hmac}".
   // We extract the raw token (the part before the trailing signature), look it
-  // up in the DB, and validate expiry + revocation ourselves — same checks
-  // auth.api.getSession() would perform after signature verification.
+  // up in the DB, and validate expiry ourselves.
+  //
+  // We use an explicit `select` (no `include`) so the query works even when
+  // the revoked_at column has not yet been added by the migration — SELECT *
+  // would fail with "column does not exist" on an outdated schema.
   const cookieHeader = requestHeaders.get("cookie");
   if (cookieHeader) {
     // Better Auth uses "__Secure-" prefix in production (secure:true), plain name otherwise.
@@ -33,10 +36,30 @@ export async function getSession() {
       const token = extractTokenFromSignedCookie(signedValue);
       if (token) {
         const dbSession = await prisma.session
-          .findUnique({ where: { token }, include: { user: true } })
+          .findUnique({
+            where: { token },
+            select: {
+              id: true,
+              token: true,
+              expiresAt: true,
+              userId: true,
+              createdAt: true,
+              updatedAt: true,
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  emailVerifiedAt: true,
+                  name: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
+            },
+          })
           .catch(() => null);
 
-        if (dbSession && dbSession.expiresAt > new Date() && dbSession.revokedAt === null) {
+        if (dbSession && dbSession.expiresAt > new Date()) {
           return buildSessionResult(dbSession);
         }
       }
@@ -47,11 +70,30 @@ export async function getSession() {
   const bearerToken = extractBearerToken(requestHeaders.get("authorization"));
   if (!bearerToken) return null;
 
-  const session = await prisma.session.findUnique({
-    where: { token: bearerToken },
-    include: { user: true },
-  });
-  if (!session || session.expiresAt <= new Date() || session.revokedAt !== null) return null;
+  const session = await prisma.session
+    .findUnique({
+      where: { token: bearerToken },
+      select: {
+        id: true,
+        token: true,
+        expiresAt: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            emailVerifiedAt: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    })
+    .catch(() => null);
+  if (!session || session.expiresAt <= new Date()) return null;
 
   return buildSessionResult(session);
 }
