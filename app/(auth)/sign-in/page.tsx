@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 
@@ -30,7 +29,6 @@ const INPUT_CLS =
   "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15 disabled:opacity-50 transition-colors";
 
 export default function SignInPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -49,8 +47,10 @@ export default function SignInPage() {
         setError(mapSignInError(result.error));
         return;
       }
-      router.push("/app");
-      router.refresh();
+      // Hard navigation after sign-in so the server receives a fresh request
+      // with the new session cookie instead of potentially serving a cached
+      // pre-auth render from the Next.js router.
+      window.location.href = "/app";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed. Please try again.");
     } finally {

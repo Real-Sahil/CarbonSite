@@ -3,6 +3,8 @@ import { Smartphone } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export default async function AppEntryPage() {
   const session = await getSession();
 
