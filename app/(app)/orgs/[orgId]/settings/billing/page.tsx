@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2 } from "lucide-react";
 import { getLimits, PLAN_LABELS, PLAN_PRICES, usagePercent } from "@/lib/billing/limits";
@@ -83,9 +83,13 @@ export default function BillingPage() {
   }, [orgId]);
 
   const plan = (data?.plan ?? "trial") as Plan;
-  const trialDaysLeft = data?.subscription?.trialEndsAt
-    ? Math.max(0, Math.ceil((new Date(data.subscription.trialEndsAt).getTime() - Date.now()) / 86_400_000))
-    : null;
+  const trialDaysLeft = useMemo(
+    () =>
+      data?.subscription?.trialEndsAt
+        ? Math.max(0, Math.ceil((new Date(data.subscription.trialEndsAt).getTime() - Date.now()) / 86_400_000))
+        : null,
+    [data?.subscription?.trialEndsAt],
+  );
 
   return (
     <div className="max-w-2xl space-y-8">

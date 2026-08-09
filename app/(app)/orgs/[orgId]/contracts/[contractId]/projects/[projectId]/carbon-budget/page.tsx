@@ -199,6 +199,7 @@ export default function CarbonBudgetPage() {
     setLoading(false);
   }, [orgId, contractId, projectId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const budgetTco2e = budget ? Number(budget.totalBudgetTco2e) : 0;
