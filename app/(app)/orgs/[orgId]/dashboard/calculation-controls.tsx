@@ -94,6 +94,10 @@ export function CalculationControls({
             factorLibraryId,
           }),
         });
+        if (res.status === 401) {
+          window.location.href = "/sign-in";
+          return;
+        }
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           setRun({ id: "", status: "failed", errorMessage: data.message ?? "Failed to start calculation." });

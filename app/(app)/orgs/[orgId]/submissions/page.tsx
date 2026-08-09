@@ -112,7 +112,13 @@ export default async function SubmissionsPage({
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load submissions. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const filterHref = (value: string, nextLimit = PAGE_SIZE) =>
