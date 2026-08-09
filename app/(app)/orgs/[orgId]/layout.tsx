@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { OrgSidebar } from "@/components/org-sidebar";
+import { PageTransition } from "@/components/page-transition";
 import React from "react";
 
 function buildBrandingCssVars(branding: {
@@ -89,7 +90,9 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F9FAFB]">
       {cssVars && <style>{`:root { ${cssVars} }`}</style>}
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership.role} />
-      <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">{children}</main>
+      <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
+        <PageTransition>{children}</PageTransition>
+      </main>
     </div>
   );
 }
