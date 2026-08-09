@@ -6,14 +6,6 @@ import { motion, useReducedMotion } from "motion/react";
 import { OrbitalNetworkGraphic } from "@/components/marketing/orbital-network";
 import { ArrowRight, Shield, Zap } from "lucide-react";
 
-const NAV_LINKS = [
-  { href: "/product",                   label: "Product" },
-  { href: "/solutions/construction",    label: "Construction" },
-  { href: "/solutions/waste-haulage",   label: "Waste & Haulage" },
-  { href: "/field-app",                 label: "Field App" },
-  { href: "/security",                  label: "Security" },
-];
-
 const WORDS = ["construction", "haulage", "supply chains", "your sector"];
 
 function CyclingWord() {
@@ -114,39 +106,8 @@ export function HeroSection() {
       <div className="absolute top-20 right-1/4 w-[300px] h-[300px] bg-emerald-800/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-emerald-950/30 blur-[80px] rounded-full pointer-events-none" />
 
-      {/* Nav */}
-      <div className="relative z-10 px-5 md:px-10 pt-5">
-        <nav
-          className="liquid-glass rounded-xl px-5 py-3 flex items-center justify-between"
-          style={{ maxHeight: 56 }}
-        >
-          <Link href="/" className="text-lg font-semibold tracking-tight text-white">
-            CarbonSite
-          </Link>
-          <div className="hidden lg:flex items-center gap-6 text-sm text-zinc-400">
-            {NAV_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-white transition-colors">
-                {link.label}
-              </Link>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href="/sign-in" className="hidden md:inline-flex text-sm text-zinc-400 hover:text-white px-3 py-1.5 transition-colors">
-              Sign in
-            </Link>
-            <Link
-              href="/sign-up"
-              className="text-sm px-4 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors active:scale-[0.97] inline-flex items-center gap-1.5"
-            >
-              Start free
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </nav>
-      </div>
-
-      {/* Main content */}
-      <div className="relative z-10 flex-1 flex items-center">
+      {/* Main content — offset by SiteNav height (64px) */}
+      <div className="relative z-10 flex-1 flex items-center pt-16">
         <div className="mx-auto max-w-7xl w-full px-5 md:px-10 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
           {/* Left: headline + sub + CTAs */}
