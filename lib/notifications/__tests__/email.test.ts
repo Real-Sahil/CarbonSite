@@ -26,9 +26,10 @@ describe("transactional email driver", () => {
     );
   });
 
-  test("rejects console email in production so invites do not look delivered", async () => {
+  test("skips sending in production when no email provider is configured", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("EMAIL_DRIVER", "console");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
     await expect(
       sendTransactionalEmail({
@@ -36,6 +37,11 @@ describe("transactional email driver", () => {
         subject: "Invite",
         text: "Open your invite link.",
       }),
-    ).rejects.toThrow("Transactional email is not configured");
+    ).resolves.toEqual({ provider: "console", messageId: null });
+
+    expect(warn).toHaveBeenCalledWith(
+      "[email] RESEND_API_KEY not set — email skipped:",
+      expect.objectContaining({ to: "worker@example.com" }),
+    );
   });
 });

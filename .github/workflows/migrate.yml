@@ -10,13 +10,18 @@ jobs:
     name: prisma migrate deploy
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Use MIGRATION_DATABASE_URL (Supabase session-mode pooler, port 5432 on pooler.supabase.com)
+      # when the direct connection is blocked from GitHub Actions (IPv4 restriction on Supabase free tier).
+      # Falls back to DATABASE_URL if MIGRATION_DATABASE_URL is not set.
+      DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL || secrets.DATABASE_URL }}
       NO_COLOR: "1"
     steps:
       - name: Validate DATABASE_URL secret
         run: |
           if [ -z "$DATABASE_URL" ]; then
-            echo "::error::Add your Supabase connection string as a GitHub Actions secret named DATABASE_URL (Settings → Secrets → Actions)."
+            echo "::error::Add MIGRATION_DATABASE_URL to GitHub Actions secrets."
+            echo "::error::Use the Supabase Session Mode pooler URL (Settings → Database → Connection Pooling → Session mode)."
+            echo "::error::It looks like: postgresql://postgres.PROJECTREF:PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres"
             exit 1
           fi
 
@@ -40,7 +45,7 @@ jobs:
       - name: Baseline existing schema
         run: |
           # The Supabase DB was set up without Prisma migration history (_prisma_migrations table).
-          # Mark each migration that was already applied manually as "applied" so that
+          # Mark each migration that was already applied as "applied" so that
           # prisma migrate deploy only runs the genuinely new migrations.
           # prisma migrate resolve --applied creates _prisma_migrations if it doesn't exist.
           for migration in \
