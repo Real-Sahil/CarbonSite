@@ -102,9 +102,9 @@ export function CreateRecordForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E2E8F0] p-4">
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Period</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Period</label>
         <Select value={periodId} onValueChange={setPeriodId}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Period" />
@@ -115,7 +115,7 @@ export function CreateRecordForm({
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Category</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Category</label>
         <Select value={categoryId} onValueChange={setCategoryId}>
           <SelectTrigger className="w-52">
             <SelectValue placeholder="Category" />
@@ -126,7 +126,7 @@ export function CreateRecordForm({
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Amount</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Amount</label>
         <Input
           type="number"
           min="0"
@@ -138,7 +138,7 @@ export function CreateRecordForm({
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Unit</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Unit</label>
         <Input
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
@@ -148,7 +148,7 @@ export function CreateRecordForm({
       </div>
       {facilities.length > 0 && (
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#475569] tracking-[-0.36px]">Facility</label>
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Facility</label>
           <Select value={facilityId} onValueChange={setFacilityId}>
             <SelectTrigger className="w-36">
               <SelectValue placeholder="Optional" />
@@ -160,7 +160,7 @@ export function CreateRecordForm({
         </div>
       )}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Description</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Description</label>
         <Input
           value={sourceDescription}
           onChange={(e) => setSourceDescription(e.target.value)}

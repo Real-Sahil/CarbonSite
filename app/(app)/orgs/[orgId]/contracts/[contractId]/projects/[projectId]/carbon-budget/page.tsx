@@ -39,7 +39,7 @@ function alertLevel(actualTco2e: number, budgetTco2e: number) {
 
 function ProgressBar({ actual, budget }: { actual: number; budget: number }) {
   const pct = budget > 0 ? Math.min((actual / budget) * 100, 130) : 0;
-  const color = pct >= 120 ? "bg-red-500" : pct >= 100 ? "bg-orange-500" : pct >= 80 ? "bg-amber-400" : "bg-[#4F46E5]";
+  const color = pct >= 120 ? "bg-red-500" : pct >= 100 ? "bg-orange-500" : pct >= 80 ? "bg-amber-400" : "bg-[#0EA5E9]";
   return (
     <div className="relative h-2.5 rounded-full bg-gray-100 overflow-hidden">
       <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
@@ -105,7 +105,7 @@ function SetBudgetModal({
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/15 disabled:opacity-50";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15 disabled:opacity-50";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -142,7 +142,7 @@ function SetBudgetModal({
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-medium text-gray-600">Budget by phase</p>
               <button type="button" onClick={() => setPhases([...phases, { name: "", budgetTco2e: "", notes: "" }])}
-                className="text-xs text-[#4F46E5] hover:text-[#4F46E5] font-medium">+ Add phase</button>
+                className="text-xs text-[#0EA5E9] hover:text-[#0EA5E9] font-medium">+ Add phase</button>
             </div>
             <div className="space-y-2">
               {phases.map((phase, i) => (
@@ -152,7 +152,7 @@ function SetBudgetModal({
                     className={`${inputCls} flex-1`} />
                   <input type="number" min="0" step="0.01" value={phase.budgetTco2e} placeholder="tCO2e"
                     onChange={(e) => setPhases(phases.map((p, j) => j === i ? { ...p, budgetTco2e: e.target.value } : p))}
-                    className="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/15" />
+                    className="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15" />
                   <button type="button" onClick={() => setPhases(phases.filter((_, j) => j !== i))}
                     className="h-8 w-8 rounded-lg hover:bg-red-50 flex items-center justify-center flex-shrink-0">
                     <X className="h-3.5 w-3.5 text-gray-300 hover:text-red-500" />
@@ -171,7 +171,7 @@ function SetBudgetModal({
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
           <button type="submit" disabled={loading}
-            className="w-full rounded-lg bg-[#4F46E5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4338CA] disabled:opacity-60 transition-colors">
+            className="w-full rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : existing ? "Update budget" : "Set budget"}
           </button>
         </form>
@@ -223,7 +223,7 @@ export default function CarbonBudgetPage() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#4F46E5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4338CA] transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] transition-colors"
         >
           {budget ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           {budget ? "Edit budget" : "Set budget"}
@@ -234,8 +234,8 @@ export default function CarbonBudgetPage() {
         <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
       ) : !budget ? (
         <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
-          <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#EEF2FF] flex items-center justify-center">
-            <Target className="h-5 w-5 text-[#4F46E5]" />
+          <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#F0F9FF] flex items-center justify-center">
+            <Target className="h-5 w-5 text-[#0EA5E9]" />
           </div>
           <p className="text-sm font-medium text-gray-700">No carbon budget set</p>
           <p className="text-xs text-gray-400 mt-1">Set a tCO2e limit to track project emissions against your budget.</p>
@@ -286,7 +286,7 @@ export default function CarbonBudgetPage() {
               {intensityPerM2 && (
                 <div className="rounded-xl border border-gray-200 bg-white p-5">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-[#4F46E5]" />
+                    <TrendingUp className="h-4 w-4 text-[#0EA5E9]" />
                     <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Budget intensity</span>
                   </div>
                   <div className="text-xl font-semibold text-gray-900 tabular-nums">{intensityPerM2}</div>
@@ -296,7 +296,7 @@ export default function CarbonBudgetPage() {
               {intensityPerMGbp && (
                 <div className="rounded-xl border border-gray-200 bg-white p-5">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-[#4F46E5]" />
+                    <TrendingUp className="h-4 w-4 text-[#0EA5E9]" />
                     <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Spend intensity</span>
                   </div>
                   <div className="text-xl font-semibold text-gray-900 tabular-nums">{intensityPerMGbp}</div>

@@ -37,7 +37,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
       if (err.status === 401) redirect("/sign-in");
       return (
         <div className="p-[42px]">
-          <p className="text-sm text-[#475569] tracking-[-0.42px]">
+          <p className="text-sm text-[#374151] tracking-[-0.42px]">
             You do not have permission to view activity records.
           </p>
         </div>
@@ -101,16 +101,16 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
       <div className="mb-[42px]">
         <Link
           href={`/orgs/${orgId}/records`}
-          className="inline-flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#0F172A] tracking-[-0.36px] mb-[14px] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-[#374151] hover:text-[#111827] tracking-[-0.36px] mb-[14px] transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to records
         </Link>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0F172A] bg-[#EEF2FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
           Records
         </p>
         <h1
-          className="text-2xl font-bold tracking-tight text-[#0F172A]"
+          className="text-2xl font-bold tracking-tight text-[#111827]"
           
         >
           {record.sourceDescription ?? record.supplierName ?? "Activity record"}
@@ -119,7 +119,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
           <Badge variant={record.reviewStatus === "approved" ? "default" : "outline"}>
             {REVIEW_LABELS[record.reviewStatus] ?? record.reviewStatus}
           </Badge>
-          <p className="text-sm text-[#475569] font-normal tracking-[-0.42px]">
+          <p className="text-sm text-[#374151] font-normal tracking-[-0.42px]">
             Scope {record.emissionCategory.scope}: {record.emissionCategory.name}
           </p>
         </div>
@@ -185,7 +185,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
                   )}
                 </>
               ) : (
-                <p className="text-sm text-[#475569] italic tracking-[-0.42px]">No route information</p>
+                <p className="text-sm text-[#374151] italic tracking-[-0.42px]">No route information</p>
               )}
             </CardContent>
           </Card>
@@ -195,12 +195,12 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
           <CardHeader>
             <CardTitle className="text-base">
               Evidence files{" "}
-              <span className="text-sm font-normal text-[#475569]">({record.evidence.length})</span>
+              <span className="text-sm font-normal text-[#374151]">({record.evidence.length})</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {record.evidence.length === 0 ? (
-              <p className="text-sm text-[#475569] italic tracking-[-0.42px]">No evidence files attached</p>
+              <p className="text-sm text-[#374151] italic tracking-[-0.42px]">No evidence files attached</p>
             ) : (
               <RecordEvidenceActions
                 orgId={orgId}
@@ -220,31 +220,31 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
             <CardHeader>
               <CardTitle className="text-base">
                 Emission calculations{" "}
-                <span className="text-sm font-normal text-[#475569]">({record._count.calculations})</span>
+                <span className="text-sm font-normal text-[#374151]">({record._count.calculations})</span>
               </CardTitle>
               <CardDescription>
                 Immutable calculation results from approved runs. Most recent shown first.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E2E8F0]">
+              <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E5E7EB]">
                 {record.calculations.map((calc) => (
                   <div key={calc.id} className="flex items-start justify-between gap-4 p-4">
                     <div className="min-w-0">
-                      <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">
+                      <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
                         {Number(calc.totalCo2e).toLocaleString("en-GB", { maximumFractionDigits: 4 })} kgCO2e
                       </p>
-                      <p className="mt-0.5 text-xs text-[#475569] tracking-[-0.36px]">
+                      <p className="mt-0.5 text-xs text-[#374151] tracking-[-0.36px]">
                         {calc.methodologyVersionName} · {calc.factorLibraryVersion}
                       </p>
-                      <p className="mt-0.5 text-xs text-[#475569] tracking-[-0.36px]">
+                      <p className="mt-0.5 text-xs text-[#374151] tracking-[-0.36px]">
                         {calc.calculationRun.factorLibrary.name} {calc.calculationRun.factorLibrary.version}
                       </p>
                       {calc.formula && (
-                        <p className="mt-1 font-mono text-xs text-[#475569]">{calc.formula}</p>
+                        <p className="mt-1 font-mono text-xs text-[#374151]">{calc.formula}</p>
                       )}
                     </div>
-                    <time className="shrink-0 text-xs text-[#475569] tracking-[-0.36px]">
+                    <time className="shrink-0 text-xs text-[#374151] tracking-[-0.36px]">
                       {calc.createdAt.toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -268,31 +268,31 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
             </CardHeader>
             <CardContent className="space-y-3">
               {fieldSubmission && (
-                <div className="rounded-[14px] border border-[#E2E8F0] p-4">
-                  <p className="text-xs font-normal text-[#475569] tracking-[-0.36px] mb-1">
+                <div className="rounded-[14px] border border-[#E5E7EB] p-4">
+                  <p className="text-xs font-normal text-[#374151] tracking-[-0.36px] mb-1">
                     From field submission
                   </p>
-                  <p className="text-sm text-[#0F172A] tracking-[-0.42px]">
+                  <p className="text-sm text-[#111827] tracking-[-0.42px]">
                     {fieldSubmission.documentType.replaceAll("_", " ")} by{" "}
                     {fieldSubmission.submittedBy.name ?? fieldSubmission.submittedBy.email}
                   </p>
                   <Link
                     href={`/orgs/${orgId}/submissions/${fieldSubmission.id}`}
-                    className="mt-2 inline-flex text-xs text-[#0F172A] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
+                    className="mt-2 inline-flex text-xs text-[#111827] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
                   >
                     View submission
                   </Link>
                 </div>
               )}
               {record.importBatch && (
-                <div className="rounded-[14px] border border-[#E2E8F0] p-4">
-                  <p className="text-xs font-normal text-[#475569] tracking-[-0.36px] mb-1">
+                <div className="rounded-[14px] border border-[#E5E7EB] p-4">
+                  <p className="text-xs font-normal text-[#374151] tracking-[-0.36px] mb-1">
                     From import batch
                   </p>
-                  <p className="text-sm text-[#0F172A] tracking-[-0.42px]">
+                  <p className="text-sm text-[#111827] tracking-[-0.42px]">
                     {record.importBatch.sourceFilename}
                   </p>
-                  <p className="mt-0.5 text-xs text-[#475569] tracking-[-0.36px]">
+                  <p className="mt-0.5 text-xs text-[#374151] tracking-[-0.36px]">
                     {record.importBatch.state.replaceAll("_", " ")}
                   </p>
                 </div>
@@ -308,8 +308,8 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
-      <p className="text-xs font-normal text-[#475569] tracking-[-0.36px] sm:w-36 shrink-0 capitalize">{label}</p>
-      <p className="text-sm text-[#0F172A] tracking-[-0.42px]">{value}</p>
+      <p className="text-xs font-normal text-[#374151] tracking-[-0.36px] sm:w-36 shrink-0 capitalize">{label}</p>
+      <p className="text-sm text-[#111827] tracking-[-0.42px]">{value}</p>
     </div>
   );
 }

@@ -1,0 +1,9 @@
+# Copy this file to local.properties and fill in your local paths.
+# local.properties is git-ignored and must NOT be committed.
+#
+# In CI/CD, generate this file as a build step:
+#   echo "flutter.sdk=/opt/flutter" >> android/local.properties
+#   echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
+
+flutter.sdk=/path/to/flutter
+sdk.dir=/path/to/android/sdk

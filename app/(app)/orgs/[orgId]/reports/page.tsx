@@ -51,7 +51,7 @@ function statusConfig(status: string) {
     case "generating":
       return { label: "Generating", className: "bg-blue-50 text-blue-700 border-transparent animate-pulse", icon: Loader2 };
     case "ready":
-      return { label: "Ready", className: "bg-[#EEF2FF] text-[#0F172A] border-transparent", icon: CheckCircle2 };
+      return { label: "Ready", className: "bg-[#F0F9FF] text-[#111827] border-transparent", icon: CheckCircle2 };
     case "failed":
       return { label: "Failed", className: "bg-red-50 text-red-700 border-transparent", icon: AlertTriangle };
     default:
@@ -127,15 +127,15 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
       <StatusPoller active={hasInFlight} intervalMs={5000} />
 
       {/* Page header */}
-      <div className="bg-white border-b border-[#E2E8F0]">
+      <div className="bg-white border-b border-[#E5E7EB]">
         <div className="max-w-[1200px] mx-auto px-8 py-8">
           <div className="flex items-start gap-3 mb-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF2FF] shrink-0 mt-0.5">
-              <FileText className="h-4 w-4 text-[#0F172A]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF] shrink-0 mt-0.5">
+              <FileText className="h-4 w-4 text-[#111827]" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium tracking-wide text-[#0F172A] uppercase">Reporting</span>
+                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Reporting</span>
               </div>
               <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Reports</h1>
               <p className="mt-1 text-sm text-zinc-500 max-w-[65ch]">
@@ -159,8 +159,8 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
         {/* Snapshots */}
-        <Card className="border-[#E2E8F0] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E2E8F0]">
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-zinc-400" />
               <CardTitle className="text-sm font-semibold text-zinc-900">
@@ -183,7 +183,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#E2E8F0]">
+                    <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
                       <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">Version</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Period</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Published by</TableHead>
@@ -196,7 +196,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                     {snapshots.map((snapshot) => (
                       <TableRow key={snapshot.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition-colors">
                         <TableCell className="py-3.5 pl-6">
-                          <span className="font-semibold text-sm text-[#0F172A]">v{snapshot.version}</span>
+                          <span className="font-semibold text-sm text-[#111827]">v{snapshot.version}</span>
                         </TableCell>
                         <TableCell className="text-sm text-zinc-700 py-3.5">
                           {snapshot.reportingPeriod.label}
@@ -210,7 +210,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                         <TableCell className="py-3.5">
                           <Link
                             href={`/orgs/${orgId}/calculations/${snapshot.calculationRunId}`}
-                            className="text-sm text-[#0F172A] hover:underline underline-offset-2"
+                            className="text-sm text-[#111827] hover:underline underline-offset-2"
                           >
                             View run
                           </Link>
@@ -228,8 +228,8 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
         </Card>
 
         {/* Reports */}
-        <Card className="border-[#E2E8F0] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E2E8F0]">
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-zinc-400" />
@@ -274,7 +274,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#E2E8F0]">
+                    <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
                       <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">Type</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Period</TableHead>
                       <TableHead className="text-xs font-medium text-zinc-500 py-3">Snapshot</TableHead>
@@ -352,10 +352,10 @@ function StatPill({
   pulse?: boolean;
 }) {
   const colors = {
-    green: "bg-[#EEF2FF] text-[#0F172A]",
+    green: "bg-[#F0F9FF] text-[#111827]",
     blue: "bg-blue-50 text-blue-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E2E8F0]";
+  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E5E7EB]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base} ${pulse ? "animate-pulse" : ""}`}>
       <span className="tabular-nums font-semibold">{value}</span>
@@ -375,8 +375,8 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEF2FF] mb-4">
-        <Icon className="h-6 w-6 text-[#0F172A]" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-4">
+        <Icon className="h-6 w-6 text-[#111827]" />
       </div>
       <h3 className="text-sm font-semibold text-zinc-900 mb-1">{title}</h3>
       <p className="text-sm text-zinc-500 max-w-sm">{description}</p>

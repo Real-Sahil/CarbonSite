@@ -93,9 +93,9 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E2E8F0] p-4">
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Type</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Type</label>
         <Select value={targetType} onValueChange={setTargetType}>
           <SelectTrigger className="w-44">
             <SelectValue />
@@ -106,7 +106,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Baseline period</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Baseline period</label>
         <Select value={baselinePeriodId} onValueChange={setBaselinePeriodId}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Select" />
@@ -117,7 +117,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Target period</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Target period</label>
         <Select value={targetPeriodId} onValueChange={setTargetPeriodId}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Select" />
@@ -128,7 +128,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Reduction (kgCO2e)</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Reduction (kgCO2e)</label>
         <Input
           type="number"
           min="0"
@@ -216,13 +216,13 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E2E8F0] p-4">
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Name</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Name</label>
         <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Switch to EVs" className="w-52" />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Status</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Status</label>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className="w-36">
             <SelectValue />
@@ -234,7 +234,7 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
       </div>
       {members.length > 0 && (
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#475569] tracking-[-0.36px]">Owner</label>
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Owner</label>
           <Select value={ownerId} onValueChange={setOwnerId}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Optional" />
@@ -246,11 +246,11 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
         </div>
       )}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Expected impact (kgCO2e)</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Expected impact (kgCO2e)</label>
         <Input type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} placeholder="Optional" className="w-36" />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Cost (GBP)</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Cost (GBP)</label>
         <Input type="number" min="0" step="any" value={costAmount} onChange={(e) => setCostAmount(e.target.value)} placeholder="Optional" className="w-28" />
       </div>
       <div className="flex gap-2">

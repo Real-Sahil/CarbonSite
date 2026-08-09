@@ -73,7 +73,7 @@ export function SubmissionReviewActions({
       {emissionCategories.length > 0 && (
         <div className="flex flex-wrap gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#475569] tracking-[-0.36px]">Emission category</label>
+            <label className="text-xs text-[#374151] tracking-[-0.36px]">Emission category</label>
             <Select value={emissionCategoryId} onValueChange={setEmissionCategoryId} disabled={disabled}>
               <SelectTrigger className="w-56">
                 <SelectValue placeholder="Select category" />
@@ -87,7 +87,7 @@ export function SubmissionReviewActions({
           </div>
           {facilities.length > 0 && (
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-[#475569] tracking-[-0.36px]">Facility (optional)</label>
+              <label className="text-xs text-[#374151] tracking-[-0.36px]">Facility (optional)</label>
               <Select value={facilityId} onValueChange={setFacilityId} disabled={disabled}>
                 <SelectTrigger className="w-44">
                   <SelectValue placeholder="Optional" />
@@ -103,7 +103,7 @@ export function SubmissionReviewActions({
         </div>
       )}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#475569] tracking-[-0.36px]">Review note (optional)</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Review note (optional)</label>
         <Textarea
           value={reviewNote}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReviewNote(e.target.value)}

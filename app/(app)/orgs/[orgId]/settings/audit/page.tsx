@@ -120,7 +120,7 @@ export default function AuditLogPage() {
     <div className="flex flex-col gap-[28px]">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#0F172A]">
+          <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#111827]">
             Audit Log
           </h2>
           <p className="text-sm text-zinc-500 mt-0.5">
@@ -189,10 +189,10 @@ export default function AuditLogPage() {
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-[10px] border border-[#E2E8F0]">
+      <div className="overflow-x-auto rounded-[10px] border border-[#E5E7EB]">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#E2E8F0] bg-[#f9fafb]">
+            <tr className="border-b border-[#E5E7EB] bg-[#f9fafb]">
               <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500 tracking-wider">
                 Time
               </th>

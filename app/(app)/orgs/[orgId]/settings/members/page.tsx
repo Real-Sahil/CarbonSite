@@ -155,7 +155,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
     <div className="flex flex-col gap-[28px]">
       {/* Plan badge */}
       <div className="flex items-center gap-3">
-        <p className="text-sm font-normal text-[#475569] tracking-[-0.42px]">
+        <p className="text-sm font-normal text-[#374151] tracking-[-0.42px]">
           {org.name}
         </p>
         <span
@@ -189,13 +189,13 @@ export default async function MembersPage({ params }: MembersPageProps) {
                 <TableRow key={m.id}>
                   <TableCell className="font-normal text-[#000000]">
                     {m.user.name ?? (
-                      <span className="text-[#475569] italic">No name</span>
+                      <span className="text-[#374151] italic">No name</span>
                     )}
                     {m.user.id === currentUserId && (
-                      <span className="ml-2 text-xs text-[#475569]">(you)</span>
+                      <span className="ml-2 text-xs text-[#374151]">(you)</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-[#475569]">
+                  <TableCell className="text-[#374151]">
                     {m.user.email}
                   </TableCell>
                   <TableCell>
@@ -231,12 +231,12 @@ export default async function MembersPage({ params }: MembersPageProps) {
         <CardContent>
           <InviteMemberForm orgId={orgId} />
           {pendingTeamInvites.length > 0 && (
-            <div className="mt-5 rounded-[14px] border border-[#E2E8F0]">
-              <div className="border-b border-[#E2E8F0] px-4 py-3 flex items-center justify-between">
-                <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">
+            <div className="mt-5 rounded-[14px] border border-[#E5E7EB]">
+              <div className="border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
+                <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
                   Pending email invites
                 </p>
-                <p className="text-xs text-[#475569]">
+                <p className="text-xs text-[#374151]">
                   {pendingTeamInvites.length} pending
                 </p>
               </div>
@@ -247,10 +247,10 @@ export default async function MembersPage({ params }: MembersPageProps) {
                     className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">
+                      <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
                         {invite.email}
                       </p>
-                      <p className="text-xs text-[#475569] tracking-[-0.36px]">
+                      <p className="text-xs text-[#374151] tracking-[-0.36px]">
                         {ROLE_LABELS[invite.role] ?? invite.role}
                         {" · "}Expires{" "}
                         {invite.expiresAt.toLocaleDateString("en-GB", {

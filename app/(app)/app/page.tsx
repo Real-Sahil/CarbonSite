@@ -23,16 +23,16 @@ export default async function AppEntryPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white p-8">
         <div className="max-w-md text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#EEF2FF]">
-            <Smartphone aria-hidden="true" className="h-7 w-7 text-[#0F172A]" />
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#F0F9FF]">
+            <Smartphone aria-hidden="true" className="h-7 w-7 text-[#111827]" />
           </div>
           <h1
-            className="text-[28px] leading-[1.35] tracking-[-0.4px] text-[#0F172A]"
+            className="text-[28px] leading-[1.35] tracking-[-0.4px] text-[#111827]"
             
           >
             Use the CarbonSite mobile app
           </h1>
-          <p className="mt-3 text-sm text-[#475569] tracking-[-0.42px]">
+          <p className="mt-3 text-sm text-[#374151] tracking-[-0.42px]">
             Your account is a field worker account — submissions, photos, and
             statuses live in the mobile app. Open the invite link from your
             administrator on your phone to get set up.

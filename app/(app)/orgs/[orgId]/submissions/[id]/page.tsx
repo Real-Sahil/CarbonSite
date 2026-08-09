@@ -30,12 +30,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  pending: "border-[#E2E8F0] bg-[#EEF2FF] text-[#0F172A]",
-  submitted: "border-[#C7D2FE] bg-[#EEF2FF]/30 text-[#0F172A]",
-  under_review: "border-[#C7D2FE] bg-[#EEF2FF]/50 text-[#0F172A]",
-  approved: "border-[#C7D2FE] bg-[#cfe7d3] text-[#0F172A]",
-  rejected: "border-[#E2E8F0] bg-[#e5e7eb] text-[#475569]",
-  needs_info: "border-[#C7D2FE] bg-[#EEF2FF]/20 text-[#0F172A]",
+  pending: "border-[#E5E7EB] bg-[#F0F9FF] text-[#111827]",
+  submitted: "border-[#BAE6FD] bg-[#F0F9FF]/30 text-[#111827]",
+  under_review: "border-[#BAE6FD] bg-[#F0F9FF]/50 text-[#111827]",
+  approved: "border-[#BAE6FD] bg-[#cfe7d3] text-[#111827]",
+  rejected: "border-[#E5E7EB] bg-[#e5e7eb] text-[#374151]",
+  needs_info: "border-[#BAE6FD] bg-[#F0F9FF]/20 text-[#111827]",
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -55,7 +55,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
       if (err.status === 401) redirect("/sign-in");
       return (
         <div className="p-[42px]">
-          <p className="text-sm text-[#475569] tracking-[-0.42px]">
+          <p className="text-sm text-[#374151] tracking-[-0.42px]">
             You do not have permission to view submissions.
           </p>
         </div>
@@ -213,27 +213,27 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
       <div className="mb-[42px]">
         <Link
           href={`/orgs/${orgId}/submissions`}
-          className="inline-flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#0F172A] tracking-[-0.36px] mb-[14px] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-[#374151] hover:text-[#111827] tracking-[-0.36px] mb-[14px] transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to submissions
         </Link>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0F172A] bg-[#EEF2FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
           Review
         </p>
-        <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
+        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
           {DOC_TYPE_LABELS[submission.documentType] ?? submission.documentType}
         </h1>
         <div className="flex flex-wrap items-center gap-3 mt-[7px]">
           <span
             className={cn(
               "inline-flex items-center rounded-full border px-[14px] py-[7px] text-xs font-normal tracking-[-0.36px]",
-              STATUS_CLASSES[submission.status] ?? "border-[#E2E8F0] bg-[#EEF2FF] text-[#475569]",
+              STATUS_CLASSES[submission.status] ?? "border-[#E5E7EB] bg-[#F0F9FF] text-[#374151]",
             )}
           >
             {STATUS_LABELS[submission.status] ?? submission.status}
           </span>
-          <p className="text-sm text-[#475569] font-normal tracking-[-0.42px]">
+          <p className="text-sm text-[#374151] font-normal tracking-[-0.42px]">
             Submitted by {submission.submittedBy.name ?? submission.submittedBy.email} on{" "}
             {submission.createdAt.toLocaleDateString("en-GB", {
               day: "numeric",
@@ -242,7 +242,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             })}
           </p>
           {isResolved && submission.reviewedAt && (
-            <p className="text-sm text-[#475569] font-normal tracking-[-0.42px]">
+            <p className="text-sm text-[#374151] font-normal tracking-[-0.42px]">
               Reviewed by {reviewer?.name ?? "Unknown reviewer"} at{" "}
               {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(submission.reviewedAt))}
             </p>
@@ -348,7 +348,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 />
               )}
               {submission.gpsLat == null && submission.pickupLat == null && (
-                <p className="text-sm text-[#475569] italic tracking-[-0.42px]">No location captured</p>
+                <p className="text-sm text-[#374151] italic tracking-[-0.42px]">No location captured</p>
               )}
             </CardContent>
           </Card>
@@ -371,25 +371,25 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="overflow-hidden rounded-[10px] border border-[#E2E8F0]">
+              <div className="overflow-hidden rounded-[10px] border border-[#E5E7EB]">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[#E2E8F0] bg-[#f9fafb]">
-                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#475569]">Field</th>
-                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#475569]">Read from photo</th>
-                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#475569]">Submitted</th>
+                    <tr className="border-b border-[#E5E7EB] bg-[#f9fafb]">
+                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#374151]">Field</th>
+                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#374151]">Read from photo</th>
+                      <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#374151]">Submitted</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#e5e7eb]">
                     {comparisonRows.map((row) => (
                       <tr key={row.key} className={row.mismatch ? "bg-amber-50" : undefined}>
-                        <td className="px-3 py-2 text-xs text-[#475569] tracking-[-0.36px] capitalize">
+                        <td className="px-3 py-2 text-xs text-[#374151] tracking-[-0.36px] capitalize">
                           {row.key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
                         </td>
-                        <td className="px-3 py-2 text-[#475569] tracking-[-0.42px]">
+                        <td className="px-3 py-2 text-[#374151] tracking-[-0.42px]">
                           {row.ocrText ?? <span className="text-[#999] italic">not read</span>}
                         </td>
-                        <td className={`px-3 py-2 tracking-[-0.42px] ${row.mismatch ? "font-medium text-amber-900" : "text-[#475569]"}`}>
+                        <td className={`px-3 py-2 tracking-[-0.42px] ${row.mismatch ? "font-medium text-amber-900" : "text-[#374151]"}`}>
                           {row.formText ?? <span className="text-[#999] italic">not provided</span>}
                         </td>
                       </tr>
@@ -405,7 +405,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           <CardHeader>
             <CardTitle className="text-base">
               Evidence files{" "}
-              <span className="text-sm font-normal text-[#475569]">({submission.files.length})</span>
+              <span className="text-sm font-normal text-[#374151]">({submission.files.length})</span>
             </CardTitle>
             <CardDescription>
               Photos and documents captured in the field or uploaded by the submitter.
@@ -413,7 +413,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           </CardHeader>
           <CardContent>
             {submission.files.length === 0 ? (
-              <p className="text-sm text-[#475569] italic tracking-[-0.42px]">No evidence files attached</p>
+              <p className="text-sm text-[#374151] italic tracking-[-0.42px]">No evidence files attached</p>
             ) : (
               <div className="space-y-3">
                 {/* Inline previews so reviewers verify against the actual
@@ -429,7 +429,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                           href={`/api/orgs/${orgId}/evidence/${file.evidenceFile.id}/download`}
                           target="_blank"
                           rel="noreferrer"
-                          className="group block overflow-hidden rounded-[10px] border border-[#E2E8F0]"
+                          className="group block overflow-hidden rounded-[10px] border border-[#E5E7EB]"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -438,7 +438,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                             className="h-56 w-full object-cover transition-transform group-hover:scale-[1.02]"
                             loading="lazy"
                           />
-                          <p className="truncate border-t border-[#E2E8F0] bg-[#f9fafb] px-3 py-1.5 text-xs text-[#475569] tracking-[-0.36px]">
+                          <p className="truncate border-t border-[#E5E7EB] bg-[#f9fafb] px-3 py-1.5 text-xs text-[#374151] tracking-[-0.36px]">
                             {file.evidenceFile.filename}
                           </p>
                         </a>
@@ -453,18 +453,18 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                   }))}
                 />
                 {submission.files.some((f) => f.evidenceFile.classifications.length > 0) && (
-                  <div className="divide-y divide-[#e5e7eb] rounded-[10px] border border-[#E2E8F0] mt-3">
+                  <div className="divide-y divide-[#e5e7eb] rounded-[10px] border border-[#E5E7EB] mt-3">
                     {submission.files.map((file) => {
                       const cls = file.evidenceFile.classifications[0];
                       if (!cls) return null;
                       const score = cls.confidenceScore;
                       const scoreColor =
-                        score >= 80 ? "text-[#0F172A]" : score >= 50 ? "text-amber-700" : "text-red-600";
+                        score >= 80 ? "text-[#111827]" : score >= 50 ? "text-amber-700" : "text-red-600";
                       const scoreBg =
-                        score >= 80 ? "bg-[#EEF2FF]" : score >= 50 ? "bg-amber-50" : "bg-red-50";
+                        score >= 80 ? "bg-[#F0F9FF]" : score >= 50 ? "bg-amber-50" : "bg-red-50";
                       return (
                         <div key={file.evidenceFile.id} className="flex items-center justify-between px-3 py-2.5 gap-3">
-                          <p className="text-xs text-[#475569] tracking-[-0.36px] truncate flex-1">
+                          <p className="text-xs text-[#374151] tracking-[-0.36px] truncate flex-1">
                             {file.evidenceFile.filename}
                           </p>
                           <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${scoreBg}`}>
@@ -495,20 +495,20 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
-                <code className="text-xs bg-[#EEF2FF] text-[#0F172A] px-2 py-1 rounded-[7px]">
+                <code className="text-xs bg-[#F0F9FF] text-[#111827] px-2 py-1 rounded-[7px]">
                   {submission.activityRecordId}
                 </code>
                 <Link
                   href={`/orgs/${orgId}/records/${submission.activityRecordId}`}
-                  className="text-xs text-[#0F172A] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
+                  className="text-xs text-[#111827] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
                 >
                   View record
                 </Link>
               </div>
               {submission.status === "approved" && activityRecord?.calculations[0] && (
-                <p className="mt-3 text-sm text-[#475569] tracking-[-0.42px]">
+                <p className="mt-3 text-sm text-[#374151] tracking-[-0.42px]">
                   Calculated CO₂e:{" "}
-                  <span className="font-medium text-[#0F172A]">
+                  <span className="font-medium text-[#111827]">
                     {Number(activityRecord.calculations[0].totalCo2e).toFixed(2)} tCO₂e
                   </span>
                 </p>
@@ -527,10 +527,10 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-[#475569] tracking-[-0.36px]">Original submission:</span>
+                <span className="text-xs text-[#374151] tracking-[-0.36px]">Original submission:</span>
                 <Link
                   href={`/orgs/${orgId}/submissions/${submission.resubmittedFrom.id}`}
-                  className="text-xs text-[#0F172A] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
+                  className="text-xs text-[#111827] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
                 >
                   {DOC_TYPE_LABELS[submission.resubmittedFrom.documentType] ?? submission.resubmittedFrom.documentType}
                   {" · "}
@@ -558,14 +558,14 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 <span
                   className={cn(
                     "inline-flex items-center rounded-full border px-[10px] py-[5px] text-xs tracking-[-0.36px]",
-                    STATUS_CLASSES[submission.resubmissions[0].status] ?? "border-[#E2E8F0] bg-[#e5e7eb] text-[#475569]",
+                    STATUS_CLASSES[submission.resubmissions[0].status] ?? "border-[#E5E7EB] bg-[#e5e7eb] text-[#374151]",
                   )}
                 >
                   {STATUS_LABELS[submission.resubmissions[0].status] ?? submission.resubmissions[0].status}
                 </span>
                 <Link
                   href={`/orgs/${orgId}/submissions/${submission.resubmissions[0].id}`}
-                  className="text-xs text-[#0F172A] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
+                  className="text-xs text-[#111827] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
                 >
                   Review resubmission
                 </Link>
@@ -583,14 +583,14 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           </CardHeader>
           <CardContent>
             {comments.length > 0 && (
-              <div className="mb-4 divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E2E8F0]">
+              <div className="mb-4 divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E5E7EB]">
                 {comments.map((comment) => (
                   <div key={comment.id} className="px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">
+                      <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
                         {comment.author.name ?? comment.author.email}
                       </p>
-                      <time className="text-xs text-[#475569] tracking-[-0.36px]">
+                      <time className="text-xs text-[#374151] tracking-[-0.36px]">
                         {comment.createdAt.toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short",
@@ -598,7 +598,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                         })}
                       </time>
                     </div>
-                    <p className="mt-1 text-sm text-[#475569] tracking-[-0.42px]">{comment.body}</p>
+                    <p className="mt-1 text-sm text-[#374151] tracking-[-0.42px]">{comment.body}</p>
                   </div>
                 ))}
               </div>
@@ -677,8 +677,8 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
-      <p className="text-xs font-normal text-[#475569] tracking-[-0.36px] sm:w-32 shrink-0 capitalize">{label}</p>
-      <p className="text-sm text-[#0F172A] tracking-[-0.42px]">{value}</p>
+      <p className="text-xs font-normal text-[#374151] tracking-[-0.36px] sm:w-32 shrink-0 capitalize">{label}</p>
+      <p className="text-sm text-[#111827] tracking-[-0.42px]">{value}</p>
     </div>
   );
 }

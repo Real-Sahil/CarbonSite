@@ -85,7 +85,7 @@ export default function CompliancePage() {
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/15 disabled:opacity-50";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15 disabled:opacity-50";
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -96,7 +96,7 @@ export default function CompliancePage() {
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#4F46E5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4338CA] transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add framework
@@ -137,7 +137,7 @@ export default function CompliancePage() {
             {error && <p className="col-span-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
             <div className="col-span-2 flex gap-3">
               <button type="submit" disabled={saving}
-                className="rounded-lg bg-[#4F46E5] px-4 py-2 text-sm font-medium text-white hover:bg-[#4338CA] disabled:opacity-60 transition-colors">
+                className="rounded-lg bg-[#0EA5E9] px-4 py-2 text-sm font-medium text-white hover:bg-[#0284C7] disabled:opacity-60 transition-colors">
                 {saving ? "Saving..." : "Save"}
               </button>
               <button type="button" onClick={() => setShowAdd(false)}
@@ -155,8 +155,8 @@ export default function CompliancePage() {
           <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#EEF2FF] flex items-center justify-center">
-              <ShieldCheck className="h-5 w-5 text-[#4F46E5]" />
+            <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#F0F9FF] flex items-center justify-center">
+              <ShieldCheck className="h-5 w-5 text-[#0EA5E9]" />
             </div>
             <p className="text-sm font-medium text-gray-700">No compliance records</p>
             <p className="text-xs text-gray-400 mt-1">Add your first regulatory framework to start tracking obligations.</p>

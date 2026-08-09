@@ -85,7 +85,7 @@ function ResetPasswordForm() {
           </CardDescription>
         </CardHeader>
         <CardFooter className="justify-center">
-          <Link href="/sign-in" className="text-sm text-[#0F172A] hover:underline">
+          <Link href="/sign-in" className="text-sm text-[#111827] hover:underline">
             Sign in now
           </Link>
         </CardFooter>
@@ -103,7 +103,7 @@ function ResetPasswordForm() {
           </CardDescription>
         </CardHeader>
         <CardFooter className="justify-center">
-          <Link href="/forgot-password" className="text-sm text-[#0F172A] hover:underline">
+          <Link href="/forgot-password" className="text-sm text-[#111827] hover:underline">
             Request a new link
           </Link>
         </CardFooter>
@@ -162,7 +162,7 @@ function ResetPasswordForm() {
           {tokenError && (
             <Link
               href="/forgot-password"
-              className="text-sm text-center text-[#0F172A] hover:underline"
+              className="text-sm text-center text-[#111827] hover:underline"
             >
               Request a new reset link
             </Link>
@@ -170,7 +170,7 @@ function ResetPasswordForm() {
         </form>
       </CardContent>
       <CardFooter className="justify-center">
-        <Link href="/sign-in" className="text-sm text-[#0F172A] hover:underline">
+        <Link href="/sign-in" className="text-sm text-[#111827] hover:underline">
           Back to sign in
         </Link>
       </CardFooter>

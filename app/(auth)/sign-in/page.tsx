@@ -5,6 +5,30 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 
+/** Map Better Auth error codes to user-readable messages. */
+function mapSignInError(err: { code?: string; message?: string } | null | undefined): string {
+  if (!err) return "Sign in failed. Please try again.";
+  switch (err.code) {
+    case "INVALID_EMAIL_OR_PASSWORD":
+    case "INVALID_CREDENTIALS":
+      return "Incorrect email or password. Please try again.";
+    case "USER_NOT_FOUND":
+      return "No account found with that email. Check the address or create an account.";
+    case "TOO_MANY_REQUESTS":
+    case "RATE_LIMIT_EXCEEDED":
+      return "Too many attempts. Please wait a moment and try again.";
+    case "EMAIL_NOT_VERIFIED":
+      return "Please verify your email address before signing in. Check your inbox for the verification link.";
+    case "ACCOUNT_LOCKED":
+      return "Your account has been locked. Contact support for help.";
+    default:
+      return err.message || "Sign in failed. Please check your credentials and try again.";
+  }
+}
+
+const INPUT_CLS =
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15 disabled:opacity-50 transition-colors";
+
 export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -22,13 +46,13 @@ export default function SignInPage() {
         password,
       });
       if (result.error) {
-        setError(result.error.message ?? "Sign in failed. Please check your credentials.");
+        setError(mapSignInError(result.error));
         return;
       }
       router.push("/app");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed. Please check your credentials.");
+      setError(err instanceof Error ? err.message : "Sign in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -55,7 +79,7 @@ export default function SignInPage() {
             autoComplete="email"
             disabled={loading}
             placeholder="you@company.com"
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/15 disabled:opacity-50 transition-colors"
+            className={INPUT_CLS}
           />
         </div>
 
@@ -66,7 +90,7 @@ export default function SignInPage() {
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs text-[#4F46E5] hover:text-[#4338CA] transition-colors"
+              className="text-xs text-[#0EA5E9] hover:text-[#0284C7] transition-colors"
               tabIndex={-1}
             >
               Forgot password?
@@ -82,20 +106,21 @@ export default function SignInPage() {
             autoComplete="current-password"
             disabled={loading}
             placeholder="••••••••"
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/15 disabled:opacity-50 transition-colors"
+            className={INPUT_CLS}
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2" role="alert">
-            {error}
-          </p>
+          <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5" role="alert">
+            <span className="mt-0.5 h-4 w-4 shrink-0 text-red-500" aria-hidden="true">⚠</span>
+            <span>{error}</span>
+          </div>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full rounded-[10px] bg-[#4F46E5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4338CA] active:scale-[0.98] disabled:opacity-60 transition-all"
+          className="mt-1 w-full rounded-[10px] bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] active:scale-[0.98] disabled:opacity-60 transition-all"
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
@@ -103,7 +128,7 @@ export default function SignInPage() {
 
       <p className="mt-6 text-center text-sm text-zinc-500">
         Don&apos;t have an account?{" "}
-        <Link href="/sign-up" className="text-[#4F46E5] hover:text-[#4338CA] transition-colors">
+        <Link href="/sign-up" className="text-[#0EA5E9] hover:text-[#0284C7] transition-colors">
           Create account
         </Link>
       </p>
