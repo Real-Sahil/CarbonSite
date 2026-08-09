@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CheckSquare } from "lucide-react";
 import type { ReviewTaskStatus, ReviewTaskType } from "@prisma/client";
 
 interface Props {
@@ -115,114 +116,122 @@ export default async function TasksPage({ params }: Props) {
   }
 
   return (
-    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
-      <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-          Operations
-        </p>
-        <h1
-          className="text-2xl font-bold tracking-tight text-[#111827]"
-          
-        >
-          Review queue
-        </h1>
-        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
-          All review tasks across imports, records, and reports for this organisation.
-        </p>
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+              <CheckSquare className="h-4 w-4 text-[#111827]" />
+            </div>
+            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+              Operations
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+            Review queue
+          </h1>
+          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+            All review tasks across imports, records, and reports for this organisation.
+          </p>
+        </div>
       </div>
 
-      {tasks.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[42px] text-center">
-            <p className="text-sm text-[#374151] tracking-[-0.42px]">No review tasks yet.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {STATUS_ORDER.map((status) => {
-            const bucket = grouped.get(status) ?? [];
-            if (bucket.length === 0) return null;
-            return (
-              <Card key={status}>
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <CardTitle className="text-base capitalize">{status.replace("_", " ")}</CardTitle>
-                    <Badge variant="outline">{bucket.length}</Badge>
-                  </div>
-                  <CardDescription>
-                    {status === "open" && "Tasks awaiting action."}
-                    {status === "completed" && "Tasks that have been resolved."}
-                    {status === "blocked" && "Tasks blocked pending external input."}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-[#f9fafb]">
-                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Type</TableHead>
-                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Target</TableHead>
-                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Assigned to</TableHead>
-                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Created by</TableHead>
-                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Age</TableHead>
-                          <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {bucket.map((task) => (
-                          <TableRow key={task.id} className="hover:bg-[#f9fafb]">
-                            <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                              {typeLabel(task.type)}
-                            </TableCell>
-                            <TableCell className="font-normal text-[#111827] tracking-[-0.42px]">
-                              <Link
-                                href={targetLink(orgId, task.type, task.targetId)}
-                                className="hover:underline"
-                              >
-                                {task.targetId.slice(0, 8)}…
-                              </Link>
-                            </TableCell>
-                            <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                              {task.assignee.name ?? task.assignee.email}
-                            </TableCell>
-                            <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                              {task.createdBy.name ?? "—"}
-                            </TableCell>
-                            <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                              {formatAge(task.createdAt)}
-                            </TableCell>
-                            <TableCell>
-                              {statusBadge(task.status)}
-                            </TableCell>
+      {/* Content */}
+      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+        {tasks.length === 0 ? (
+          <Card className="border-[#E5E7EB] shadow-none">
+            <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-5">
+                <CheckSquare className="h-7 w-7 text-[#111827]" />
+              </div>
+              <p className="text-base font-semibold text-[#111827] mb-2">No review tasks yet</p>
+              <p className="text-sm text-[#374151] max-w-sm">
+                Tasks are created automatically when imports, records, or reports require review.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {STATUS_ORDER.map((status) => {
+              const bucket = grouped.get(status) ?? [];
+              if (bucket.length === 0) return null;
+              return (
+                <Card key={status} className="border-[#E5E7EB] shadow-none">
+                  <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-sm font-semibold text-[#111827] capitalize">
+                        {status.replace("_", " ")}
+                      </CardTitle>
+                      <Badge variant="outline" className="text-xs font-normal text-[#9CA3AF] border-[#E5E7EB]">
+                        {bucket.length}
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+                      {status === "open" && "Tasks awaiting action."}
+                      {status === "completed" && "Tasks that have been resolved."}
+                      {status === "blocked" && "Tasks blocked pending external input."}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Type</TableHead>
+                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Target</TableHead>
+                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Assigned to</TableHead>
+                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Created by</TableHead>
+                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Age</TableHead>
+                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Status</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </>
-      )}
+                        </TableHeader>
+                        <TableBody>
+                          {bucket.map((task) => (
+                            <TableRow key={task.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                              <TableCell className="text-sm text-[#374151] py-3.5 pl-6">
+                                {typeLabel(task.type)}
+                              </TableCell>
+                              <TableCell className="text-sm font-medium text-[#111827] py-3.5">
+                                <Link
+                                  href={targetLink(orgId, task.type, task.targetId)}
+                                  className="hover:underline underline-offset-2"
+                                >
+                                  {task.targetId.slice(0, 8)}...
+                                </Link>
+                              </TableCell>
+                              <TableCell className="text-sm text-[#374151] py-3.5">
+                                {task.assignee.name ?? task.assignee.email}
+                              </TableCell>
+                              <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                                {task.createdBy.name ?? "-"}
+                              </TableCell>
+                              <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                                {formatAge(task.createdAt)}
+                              </TableCell>
+                              <TableCell className="py-3.5 pr-6">
+                                {statusBadge(task.status)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </>
+        )}
+      </div>
     </div>
   );
 }
 
 function AccessDenied() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="text-center">
-        <h1
-          className="text-2xl font-bold tracking-tight text-[#111827] mb-1"
-          
-        >
-          Access denied
-        </h1>
-        <p className="text-sm text-[#374151] tracking-[-0.42px]">
-          You do not have permission to view the review queue.
-        </p>
-      </div>
+    <div className="p-8">
+      <p className="text-sm text-red-600">You do not have permission to view the review queue.</p>
     </div>
   );
 }

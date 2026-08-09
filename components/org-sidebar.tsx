@@ -382,7 +382,8 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                       href={item.href}
                       className={cn(
                         "flex items-center gap-3 rounded-[7px] text-sm font-normal tracking-[-0.42px] transition-colors",
-                        collapsed ? "px-0 py-2 justify-center" : "px-3 py-2",
+                        collapsed ? "px-0 py-2 justify-center" : "py-2",
+                        !collapsed && isActive ? "pl-2.5 pr-3 border-l-[3px] border-[#0EA5E9] rounded-l-none" : !collapsed ? "px-3" : "",
                         isActive
                           ? "bg-[#F0F9FF] text-[#0EA5E9]"
                           : "text-[#374151] hover:bg-[#F9FAFB] hover:text-[#111827]",

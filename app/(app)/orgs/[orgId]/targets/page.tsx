@@ -117,169 +117,179 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
   }));
 
   return (
-    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
-      <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-          Strategy
-        </p>
-        <h1
-          className="text-2xl font-bold tracking-tight text-[#111827]"
-          
-        >
-          Targets
-        </h1>
-        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
-          Reduction targets and initiatives connected to reporting periods.
-        </p>
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+              <Target className="h-4 w-4 text-[#111827]" />
+            </div>
+            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+              Strategy
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+            Targets
+          </h1>
+          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+            Reduction targets and initiatives connected to reporting periods.
+          </p>
+        </div>
       </div>
 
-      <TargetProgressSection targets={targetsWithProgress} />
+      {/* Content */}
+      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+        <TargetProgressSection targets={targetsWithProgress} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Reduction targets{" "}
-            <span className="text-sm font-normal text-[#374151]">({targets.length})</span>
-          </CardTitle>
-          <CardDescription>
-            Targets compare a baseline period with a target period.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className={targets.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          {canEdit && (
-            <div className="px-6 pb-5">
-              <CreateTargetForm orgId={orgId} periods={periods} />
-            </div>
-          )}
-          {targets.length === 0 ? (
-            <EmptyState
-              title="No reduction targets yet"
-              description="Create targets after reporting periods and calculation snapshots are available."
-            />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Baseline</TableHead>
-                  <TableHead>Target period</TableHead>
-                  <TableHead>Reduction</TableHead>
-                  <TableHead>Created by</TableHead>
-                  {canEdit && <TableHead>Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {targets.map((target) => (
-                  <TableRow key={target.id}>
-                    <TableCell className="font-normal text-[#000000] capitalize">
-                      {target.targetType}
-                    </TableCell>
-                    <TableCell className="text-[#374151]">{target.baselinePeriod.label}</TableCell>
-                    <TableCell className="text-[#374151]">{target.targetPeriod.label}</TableCell>
-                    <TableCell className="text-[#374151]">
-                      {Number(target.reductionAmount).toLocaleString("en-GB")} kgCO2e
-                    </TableCell>
-                    <TableCell className="text-[#374151]">
-                      {target.createdBy.name ?? target.createdBy.email}
-                    </TableCell>
-                    {canEdit && (
-                      <TableCell>
-                        <DeleteTargetButton
-                          orgId={orgId}
-                          targetId={target.id}
-                          label={`${target.targetType} — ${target.baselinePeriod.label} to ${target.targetPeriod.label}`}
-                        />
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <CardTitle className="text-sm font-semibold text-[#111827]">
+              Reduction targets{" "}
+              <span className="ml-1 text-xs font-normal text-[#9CA3AF]">({targets.length})</span>
+            </CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              Targets compare a baseline period with a target period.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={targets.length === 0 ? "pb-8" : "p-0 pb-2"}>
+            {canEdit && (
+              <div className="px-6 py-5 border-b border-[#E5E7EB]">
+                <CreateTargetForm orgId={orgId} periods={periods} />
+              </div>
+            )}
+            {targets.length === 0 ? (
+              <EmptyState
+                title="No reduction targets yet"
+                description="Create targets after reporting periods and calculation snapshots are available."
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Baseline</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Target period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Reduction</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Created by</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {targets.map((target) => (
+                      <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                        <TableCell className="text-sm font-medium text-[#111827] capitalize py-3.5 pl-6">
+                          {target.targetType}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">{target.baselinePeriod.label}</TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">{target.targetPeriod.label}</TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {Number(target.reductionAmount).toLocaleString("en-GB")} kgCO2e
+                        </TableCell>
+                        <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                          {target.createdBy.name ?? target.createdBy.email}
+                        </TableCell>
+                        {canEdit && (
+                          <TableCell className="py-3.5 pr-6">
+                            <DeleteTargetButton
+                              orgId={orgId}
+                              targetId={target.id}
+                              label={`${target.targetType} - ${target.baselinePeriod.label} to ${target.targetPeriod.label}`}
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Reduction initiatives{" "}
-            <span className="text-sm font-normal text-[#374151]">({initiatives.length})</span>
-          </CardTitle>
-          <CardDescription>
-            Operational actions planned or underway to reduce emissions.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className={initiatives.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          {canEdit && (
-            <div className="px-6 pb-5">
-              <CreateInitiativeForm orgId={orgId} members={memberOptions} />
-            </div>
-          )}
-          {initiatives.length === 0 ? (
-            <EmptyState
-              title="No initiatives yet"
-              description="Add initiatives once owners, costs, expected dates, and estimated impact are known."
-            />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Expected impact</TableHead>
-                  <TableHead>Cost</TableHead>
-                  {canEdit && <TableHead>Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {initiatives.map((initiative) => (
-                  <TableRow key={initiative.id}>
-                    <TableCell className="font-normal text-[#000000]">{initiative.name}</TableCell>
-                    <TableCell>
-                      <Badge variant={initiative.status === "complete" ? "default" : "outline"}>
-                        {initiative.status.replaceAll("_", " ")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-[#374151]">
-                      {initiative.owner?.name ?? initiative.owner?.email ?? "Unassigned"}
-                    </TableCell>
-                    <TableCell className="text-[#374151]">
-                      {initiative.expectedImpactCo2e
-                        ? `${Number(initiative.expectedImpactCo2e).toLocaleString("en-GB")} kgCO2e`
-                        : "Not estimated"}
-                    </TableCell>
-                    <TableCell className="text-[#374151]">
-                      {initiative.costAmount
-                        ? `${initiative.costCurrency ?? "GBP"} ${Number(initiative.costAmount).toLocaleString("en-GB")}`
-                        : "Not set"}
-                    </TableCell>
-                    {canEdit && (
-                      <TableCell>
-                        <DeleteInitiativeButton
-                          orgId={orgId}
-                          initiativeId={initiative.id}
-                          label={initiative.name}
-                        />
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <CardTitle className="text-sm font-semibold text-[#111827]">
+              Reduction initiatives{" "}
+              <span className="ml-1 text-xs font-normal text-[#9CA3AF]">({initiatives.length})</span>
+            </CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              Operational actions planned or underway to reduce emissions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={initiatives.length === 0 ? "pb-8" : "p-0 pb-2"}>
+            {canEdit && (
+              <div className="px-6 py-5 border-b border-[#E5E7EB]">
+                <CreateInitiativeForm orgId={orgId} members={memberOptions} />
+              </div>
+            )}
+            {initiatives.length === 0 ? (
+              <EmptyState
+                title="No initiatives yet"
+                description="Add initiatives once owners, costs, expected dates, and estimated impact are known."
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Name</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Owner</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Expected impact</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Cost</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {initiatives.map((initiative) => (
+                      <TableRow key={initiative.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                        <TableCell className="text-sm font-medium text-[#111827] py-3.5 pl-6">{initiative.name}</TableCell>
+                        <TableCell className="py-3.5">
+                          <Badge variant={initiative.status === "complete" ? "default" : "outline"}>
+                            {initiative.status.replaceAll("_", " ")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">
+                          {initiative.owner?.name ?? initiative.owner?.email ?? "Unassigned"}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {initiative.expectedImpactCo2e
+                            ? `${Number(initiative.expectedImpactCo2e).toLocaleString("en-GB")} kgCO2e`
+                            : "Not estimated"}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {initiative.costAmount
+                            ? `${initiative.costCurrency ?? "GBP"} ${Number(initiative.costAmount).toLocaleString("en-GB")}`
+                            : "Not set"}
+                        </TableCell>
+                        {canEdit && (
+                          <TableCell className="py-3.5 pr-6">
+                            <DeleteInitiativeButton
+                              orgId={orgId}
+                              initiativeId={initiative.id}
+                              label={initiative.name}
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
 
 function AccessDenied() {
   return (
-    <div className="p-[42px]">
-      <p className="text-sm text-[#374151] tracking-[-0.42px]">
-        You do not have permission to view targets.
-      </p>
+    <div className="p-8">
+      <p className="text-sm text-red-600">You do not have permission to view targets.</p>
     </div>
   );
 }

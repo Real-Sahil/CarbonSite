@@ -12,6 +12,7 @@ import {
   Handshake,
   Inbox,
   Layers,
+  LayoutDashboard,
   Leaf,
   LineChart,
   ListChecks,
@@ -730,24 +731,38 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     session.user.id;
 
   return (
-    <div className="p-[42px] max-w-[1200px] mx-auto">
-      <div className="mb-[42px] flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
-            Dashboard
-          </h1>
-          <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
-            Live emissions operations for {organization.name}.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">
-            {currentPeriod ? currentPeriod.label : "No reporting period"}
-          </Badge>
-          {currentPeriod && <Badge variant="secondary">{currentPeriod.status}</Badge>}
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+                  <LayoutDashboard className="h-4 w-4 text-[#111827]" />
+                </div>
+                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+                  Overview
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+                Dashboard
+              </h1>
+              <p className="text-sm text-[#374151] font-normal mt-1">
+                Live emissions operations for {organization.name}.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {currentPeriod ? currentPeriod.label : "No reporting period"}
+              </Badge>
+              {currentPeriod && <Badge variant="secondary">{currentPeriod.status}</Badge>}
+            </div>
+          </div>
         </div>
       </div>
 
+      <div className="max-w-[1200px] mx-auto px-8 py-8">
       <OnboardingChecklist
         orgId={orgId}
         steps={[
@@ -916,7 +931,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       {industryData && (
         <section aria-label="Industry insights" className="mt-8">
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-zinc-500">
+          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
             {industryData.type === "construction" && "Embodied carbon"}
             {industryData.type === "logistics" && "Logistics insights"}
             {industryData.type === "facilities_management" && "Building energy"}
@@ -1028,7 +1043,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </section>
       )}
 
-      <p className="mt-8 mb-3 text-[10px] font-medium uppercase tracking-widest text-zinc-500">
+      <p className="mt-8 mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
         Operations
       </p>
 
@@ -1831,6 +1846,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <ActionCard title="Imports" description="Upload, validate, and commit activity data batches." href={`/orgs/${orgId}/imports`} />
         <ActionCard title="Reports" description="Track report requests and signed output artefacts." href={`/orgs/${orgId}/reports`} />
         <ActionCard title="Targets" description="Manage reduction targets and operational initiatives." href={`/orgs/${orgId}/targets`} />
+      </div>
       </div>
     </div>
   );

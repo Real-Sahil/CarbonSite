@@ -73,133 +73,145 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   ]);
 
   return (
-    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-            Compliance
-          </p>
-          <h1
-            className="text-2xl font-bold tracking-tight text-[#111827]"
-            
-          >
-            Audit trail
-          </h1>
-          <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
-            Tenant-scoped event history for operational, evidence, review, calculation, and report activity.
-          </p>
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+                  <Clock className="h-4 w-4 text-[#111827]" />
+                </div>
+                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+                  Compliance
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+                Audit trail
+              </h1>
+              <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+                Tenant-scoped event history for operational, evidence, review, calculation, and report activity.
+              </p>
+            </div>
+            <Badge variant="outline" className="shrink-0 self-start text-[#374151] border-[#E5E7EB]">
+              {totalCount.toLocaleString("en-GB")} matching events
+            </Badge>
+          </div>
         </div>
-        <Badge variant="outline">
-          {totalCount.toLocaleString("en-GB")} matching events
-        </Badge>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Event filters</CardTitle>
-          <CardDescription>
-            Filter directly against stored audit rows. Results show the newest {PAGE_SIZE} matching events.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" method="get">
-            <Field label="Action">
-              <select name="action" defaultValue={filters.action ?? ""} className={selectClass}>
-                <option value="">All actions</option>
-                {actionOptions.map((item) => (
-                  <option key={item.action} value={item.action}>
-                    {formatLabel(item.action)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Resource">
-              <select name="resource" defaultValue={filters.resource ?? ""} className={selectClass}>
-                <option value="">All resources</option>
-                {resourceOptions.map((item) => (
-                  <option key={item.resourceType} value={item.resourceType}>
-                    {formatLabel(item.resourceType)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Actor contains">
-              <Input name="actor" defaultValue={filters.actor ?? ""} placeholder="Name or email" />
-            </Field>
-            <Field label="Since">
-              <Input name="since" type="date" defaultValue={validDate(filters.since) ?? ""} />
-            </Field>
-            <div className="flex items-end gap-2">
-              <Button type="submit" className="w-full lg:w-auto">Apply</Button>
-              <Button asChild variant="outline" className="w-full lg:w-auto">
-                <a href={`/orgs/${orgId}/audit`}>Clear</a>
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      {/* Content */}
+      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <CardTitle className="text-sm font-semibold text-[#111827]">Event filters</CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              Filter directly against stored audit rows. Results show the newest {PAGE_SIZE} matching events.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-6 py-5">
+            <form className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" method="get">
+              <Field label="Action">
+                <select name="action" defaultValue={filters.action ?? ""} className={selectClass}>
+                  <option value="">All actions</option>
+                  {actionOptions.map((item) => (
+                    <option key={item.action} value={item.action}>
+                      {formatLabel(item.action)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Resource">
+                <select name="resource" defaultValue={filters.resource ?? ""} className={selectClass}>
+                  <option value="">All resources</option>
+                  {resourceOptions.map((item) => (
+                    <option key={item.resourceType} value={item.resourceType}>
+                      {formatLabel(item.resourceType)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Actor contains">
+                <Input name="actor" defaultValue={filters.actor ?? ""} placeholder="Name or email" />
+              </Field>
+              <Field label="Since">
+                <Input name="since" type="date" defaultValue={validDate(filters.since) ?? ""} />
+              </Field>
+              <div className="flex items-end gap-2">
+                <Button type="submit" className="w-full lg:w-auto bg-[#0EA5E9] hover:bg-[#0284C7] text-white">Apply</Button>
+                <Button asChild variant="outline" className="w-full lg:w-auto border-[#E5E7EB] text-[#374151]">
+                  <a href={`/orgs/${orgId}/audit`}>Clear</a>
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="text-base">Events</CardTitle>
-          <CardDescription>
-            Audit entries are append-only records created by server-side workflows.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className={logs.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          {logs.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Actor</TableHead>
-                  <TableHead>Resource</TableHead>
-                  <TableHead>Metadata</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {logs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="whitespace-nowrap text-slate-600">
-                      <time dateTime={log.createdAt.toISOString()}>
-                        {log.createdAt.toLocaleString("en-GB", {
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </time>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={badgeVariant(log.action)}>{formatLabel(log.action)}</Badge>
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {log.actor?.name ?? log.actor?.email ?? "System"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="max-w-64">
-                        <p className="font-medium text-slate-900">{formatLabel(log.resourceType)}</p>
-                        <p className="truncate text-xs text-slate-500" title={log.resourceId}>
-                          {log.resourceId}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <pre className="max-h-28 max-w-xl overflow-auto rounded-md bg-slate-50 p-2 text-xs leading-5 text-slate-600">
-                        {formatMetadata(log.metadata)}
-                      </pre>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <CardTitle className="text-sm font-semibold text-[#111827]">Events</CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              Audit entries are append-only records created by server-side workflows.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={logs.length === 0 ? "pb-8" : "p-0"}>
+            {logs.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Time</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Action</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Actor</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Resource</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Metadata</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {logs.map((log) => (
+                      <TableRow key={log.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                        <TableCell className="whitespace-nowrap text-sm text-[#9CA3AF] tabular-nums py-3.5 pl-6">
+                          <time dateTime={log.createdAt.toISOString()}>
+                            {log.createdAt.toLocaleString("en-GB", {
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </time>
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          <Badge variant={badgeVariant(log.action)}>{formatLabel(log.action)}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">
+                          {log.actor?.name ?? log.actor?.email ?? "System"}
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          <div className="max-w-64">
+                            <p className="text-sm font-medium text-[#111827]">{formatLabel(log.resourceType)}</p>
+                            <p className="truncate text-xs text-[#9CA3AF]" title={log.resourceId}>
+                              {log.resourceId}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3.5 pr-6">
+                          <pre className="max-h-28 max-w-xl overflow-auto rounded-md bg-[#F9FAFB] border border-[#E5E7EB] p-2 text-xs leading-5 text-[#374151]">
+                            {formatMetadata(log.metadata)}
+                          </pre>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -252,7 +264,7 @@ function badgeVariant(action: string) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <Label className="mb-1.5 block text-xs font-medium text-slate-600">{label}</Label>
+      <Label className="mb-1.5 block text-xs font-medium text-[#374151]">{label}</Label>
       {children}
     </div>
   );
@@ -276,8 +288,8 @@ function EmptyState() {
 
 function AccessDenied() {
   return (
-    <div className="p-[42px]">
-      <p className="text-sm text-[#374151] tracking-[-0.42px]">You do not have permission to view the audit trail.</p>
+    <div className="p-8">
+      <p className="text-sm text-red-600">You do not have permission to view the audit trail.</p>
     </div>
   );
 }

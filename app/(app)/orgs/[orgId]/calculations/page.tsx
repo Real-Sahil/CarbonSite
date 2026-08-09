@@ -33,7 +33,7 @@ function statusConfig(status: string) {
     case "queued":
       return {
         label: "Queued",
-        className: "bg-zinc-100 text-zinc-600 border-transparent",
+        className: "bg-zinc-100 text-[#374151] border-transparent",
         icon: Clock,
       };
     case "running":
@@ -88,7 +88,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-zinc-500">
+        <div className="p-8 text-sm text-[#9CA3AF]">
           You do not have permission to view calculation runs.
         </div>
       );
@@ -134,14 +134,14 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                   Calculations
                 </span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
                 Calculation runs
               </h1>
-              <p className="mt-1 text-sm text-zinc-500 max-w-[65ch]">
+              <p className="mt-1 text-sm text-[#9CA3AF] max-w-[65ch]">
                 Deterministic emission calculations from approved activity records. Results are immutable per run.
               </p>
             </div>
-            <Button asChild size="sm" className="bg-[#0EA5E9] hover:bg-[#1a5c26] text-white shrink-0">
+            <Button asChild size="sm" className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white shrink-0">
               <Link href={`/orgs/${orgId}/dashboard#run-calculation`}>
                 <Play className="h-3.5 w-3.5 mr-1.5" />
                 Run calculation
@@ -173,9 +173,9 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
           <Card className="border-[#E5E7EB] shadow-none">
             <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-zinc-900">
+                <CardTitle className="text-sm font-semibold text-[#111827]">
                   All runs
-                  <span className="ml-2 text-xs font-normal text-zinc-400">
+                  <span className="ml-2 text-xs font-normal text-[#9CA3AF]">
                     ({runs.length})
                   </span>
                 </CardTitle>
@@ -189,7 +189,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                   </div>
                 )}
               </div>
-              <CardDescription className="text-xs text-zinc-400 mt-0.5">
+              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
                 Each run applies one factor library and methodology version to a reporting period.
               </CardDescription>
             </CardHeader>
@@ -198,15 +198,15 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Factor library</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Methodology</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Triggered by</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Started</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Duration</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3 text-right">Records</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3 pr-6" />
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Factor library</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Methodology</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Triggered by</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Started</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Duration</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Records</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -223,11 +223,11 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                               {run.reportingPeriod.label}
                             </Link>
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-600 py-3.5">
+                          <TableCell className="text-sm text-[#374151] py-3.5">
                             {run.factorLibrary.name}{" "}
-                            <span className="text-zinc-400">{run.factorLibrary.version}</span>
+                            <span className="text-[#9CA3AF]">{run.factorLibrary.version}</span>
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-600 py-3.5">
+                          <TableCell className="text-sm text-[#374151] py-3.5">
                             {run.methodologyVersion.name}
                           </TableCell>
                           <TableCell className="py-3.5">
@@ -247,19 +247,19 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-500 py-3.5">
+                          <TableCell className="text-sm text-[#9CA3AF] py-3.5">
                             {run.triggeredBy.name ?? run.triggeredBy.email}
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-500 py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#9CA3AF] py-3.5 tabular-nums">
                             {formatTimestamp(run.startedAt)}
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-500 py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#9CA3AF] py-3.5 tabular-nums">
                             {run.status === "running"
                               ? <span className="text-blue-600">{formatDuration(run.startedAt, null)}</span>
                               : formatDuration(run.startedAt, run.finishedAt)
                             }
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-500 py-3.5 text-right tabular-nums">
+                          <TableCell className="text-sm text-[#9CA3AF] py-3.5 text-right tabular-nums">
                             {run._count.calculations.toLocaleString("en-GB")}
                           </TableCell>
                           <TableCell className="py-3.5 pr-6">
@@ -305,7 +305,7 @@ function StatPill({
     blue: "bg-blue-50 text-blue-700",
     red: "bg-red-50 text-red-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E5E7EB]";
+  const base = accent ? colors[accent] : "bg-white text-[#374151] border border-[#E5E7EB]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base} ${pulse ? "animate-pulse" : ""}`}>
       <span className="tabular-nums font-semibold">{value}</span>
@@ -320,8 +320,8 @@ function EmptyState({ orgId }: { orgId: string }) {
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-5">
         <Calculator className="h-7 w-7 text-[#111827]" />
       </div>
-      <h3 className="text-base font-semibold text-zinc-900 mb-2">No calculation runs yet</h3>
-      <p className="text-sm text-zinc-500 max-w-sm mb-6">
+      <h3 className="text-base font-semibold text-[#111827] mb-2">No calculation runs yet</h3>
+      <p className="text-sm text-[#9CA3AF] max-w-sm mb-6">
         Approve activity records, then trigger a calculation from the dashboard to compute scope 1, 2, and 3 emissions.
       </p>
       <Button asChild size="sm" className="bg-[#0EA5E9] hover:bg-[#1a5c26] text-white">

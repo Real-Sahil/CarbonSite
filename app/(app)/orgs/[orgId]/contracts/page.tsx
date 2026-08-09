@@ -156,120 +156,127 @@ export default async function ContractsPage({ params }: Props) {
   }
 
   return (
-    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
-      <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-          Contracts
-        </p>
-        <h1
-          className="text-2xl font-bold tracking-tight text-[#111827]"
-          
-        >
-          Contracts
-        </h1>
-        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
-          Manage contracts, projects, and sites for your organisation.
-        </p>
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+              <Building2 className="h-4 w-4 text-[#111827]" />
+            </div>
+            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+              Contracts
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+            Contracts
+          </h1>
+          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+            Manage contracts, projects, and sites for your organisation.
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">All contracts</CardTitle>
-          <CardDescription>
-            {contracts.length} contract{contracts.length !== 1 ? "s" : ""} in this organisation.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-6">
-          {canEdit && <CreateContractForm orgId={orgId} />}
+      {/* Content */}
+      <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <CardTitle className="text-sm font-semibold text-[#111827]">
+              All contracts
+              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">
+                ({contracts.length})
+              </span>
+            </CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              {contracts.length} contract{contracts.length !== 1 ? "s" : ""} in this organisation.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-0 p-0">
+            {canEdit && (
+              <div className="px-6 py-5 border-b border-[#E5E7EB]">
+                <CreateContractForm orgId={orgId} />
+              </div>
+            )}
 
-          {contracts.length === 0 ? (
-            <EmptyState message="No contracts yet. Create one above to get started." />
-          ) : (
-            <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-[#f9fafb]">
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Name</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Status</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Client</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Value</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Start</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">End</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Projects</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">CO₂e</TableHead>
-                    <TableHead className="w-[80px]" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {contracts.map((contract) => (
-                    <TableRow key={contract.id} className="hover:bg-[#f9fafb]">
-                      <TableCell className="font-normal text-[#111827] tracking-[-0.42px]">
-                        <Link
-                          href={`/orgs/${orgId}/contracts/${contract.id}`}
-                          className="hover:underline"
-                        >
-                          {contract.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{contractStatusBadge(contract.status)}</TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                        {contract.clientName ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                        {formatCurrency(contract.contractValue)}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                        {formatDate(contract.startDate)}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                        {formatDate(contract.endDate)}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                        {contract._count.projects}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
-                        {formatTco2e(co2eByContract.get(contract.id) ?? 0)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button asChild size="sm" variant="outline">
-                            <Link href={`/orgs/${orgId}/contracts/${contract.id}`}>View</Link>
-                          </Button>
-                          {canEdit && (
-                            <DeleteContractButton
-                              orgId={orgId}
-                              contractId={contract.id}
-                              name={contract.name}
-                            />
-                          )}
-                        </div>
-                      </TableCell>
+            {contracts.length === 0 ? (
+              <EmptyState message="No contracts yet. Create one above to get started." />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Name</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Client</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Value</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Start</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">End</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Projects</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">CO2e</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {contracts.map((contract) => (
+                      <TableRow key={contract.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                        <TableCell className="text-sm font-medium text-[#111827] py-3.5 pl-6">
+                          <Link
+                            href={`/orgs/${orgId}/contracts/${contract.id}`}
+                            className="hover:underline underline-offset-2"
+                          >
+                            {contract.name}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="py-3.5">{contractStatusBadge(contract.status)}</TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">
+                          {contract.clientName ?? "-"}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {formatCurrency(contract.contractValue)}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {formatDate(contract.startDate)}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {formatDate(contract.endDate)}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {contract._count.projects}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {formatTco2e(co2eByContract.get(contract.id) ?? 0)}
+                        </TableCell>
+                        <TableCell className="py-3.5 pr-6">
+                          <div className="flex items-center gap-2">
+                            <Button asChild size="sm" variant="outline" className="border-[#E5E7EB] text-[#374151] hover:bg-[#F9FAFB]">
+                              <Link href={`/orgs/${orgId}/contracts/${contract.id}`}>View</Link>
+                            </Button>
+                            {canEdit && (
+                              <DeleteContractButton
+                                orgId={orgId}
+                                contractId={contract.id}
+                                name={contract.name}
+                              />
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
 
 function AccessDenied() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="text-center">
-        <h1
-          className="text-2xl font-bold tracking-tight text-[#111827] mb-1"
-          
-        >
-          Access denied
-        </h1>
-        <p className="text-sm text-[#374151] tracking-[-0.42px]">
-          You do not have permission to view contracts.
-        </p>
-      </div>
+    <div className="p-8">
+      <p className="text-sm text-red-600">You do not have permission to view contracts.</p>
     </div>
   );
 }
