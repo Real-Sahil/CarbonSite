@@ -37,9 +37,30 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
-      - name: Show migration status
-        continue-on-error: true
-        run: pnpm prisma migrate status
+      - name: Baseline existing schema
+        run: |
+          # The Supabase DB was set up without Prisma migration history (_prisma_migrations table).
+          # Mark each migration that was already applied manually as "applied" so that
+          # prisma migrate deploy only runs the genuinely new migrations.
+          # prisma migrate resolve --applied creates _prisma_migrations if it doesn't exist.
+          for migration in \
+            "20260607223000_init" \
+            "20260608013500_field_submission_idempotency" \
+            "20260608022000_email_invite_links" \
+            "20260609213000_membership_updated_at" \
+            "20260610103000_align_better_auth_schema" \
+            "20260611093000_field_worker_assignments" \
+            "20260614120000_device_tokens" \
+            "20260614150000_add_missing_tables" \
+            "20260614170000_biogenic_and_snapshot_review" \
+            "20260614180000_gap_items_schema" \
+            "20260614190000_gap_items_2" \
+            "20260615120000_field_worker_site_assignments" \
+            "20260709120000_review_task_field_submission_type" \
+            "20260717100000_calc_no_factor_and_run_error" \
+            "20260717110000_storage_objects"; do
+            pnpm prisma migrate resolve --applied "$migration"
+          done
 
-      - name: Apply migrations
+      - name: Apply new migrations
         run: pnpm prisma migrate deploy

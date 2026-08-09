@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2 } from "lucide-react";
 import { getLimits, PLAN_LABELS, PLAN_PRICES, usagePercent } from "@/lib/billing/limits";
+
+// Captured once at module load — pure constant, safe for React Compiler.
+const PAGE_LOAD_TIME = Date.now();
 
 type Plan = "trial" | "starter" | "growth" | "enterprise";
 
@@ -83,13 +86,9 @@ export default function BillingPage() {
   }, [orgId]);
 
   const plan = (data?.plan ?? "trial") as Plan;
-  const trialDaysLeft = useMemo(
-    () =>
-      data?.subscription?.trialEndsAt
-        ? Math.max(0, Math.ceil((new Date(data.subscription.trialEndsAt).getTime() - Date.now()) / 86_400_000))
-        : null,
-    [data?.subscription?.trialEndsAt],
-  );
+  const trialDaysLeft = data?.subscription?.trialEndsAt
+    ? Math.max(0, Math.ceil((new Date(data.subscription.trialEndsAt).getTime() - PAGE_LOAD_TIME) / 86_400_000))
+    : null;
 
   return (
     <div className="max-w-2xl space-y-8">
