@@ -5,7 +5,10 @@ import type { OrgRole } from "@prisma/client";
 
 export async function getSession() {
   const requestHeaders = await headers();
-  const browserSession = await auth.api.getSession({ headers: requestHeaders });
+  const browserSession = await auth.api.getSession({ headers: requestHeaders }).catch((err: unknown) => {
+    console.error("[getSession] auth.api.getSession threw:", err);
+    return null;
+  });
   if (browserSession) return browserSession;
 
   const bearerToken = extractBearerToken(requestHeaders.get("authorization"));
