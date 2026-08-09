@@ -67,7 +67,7 @@ export default async function SocialValuePage({ params }: Props) {
 
   const canEdit = EDIT_ROLES.includes(role);
 
-  const [themes, records, contracts, periods] = await Promise.all([
+  const queryResult = await Promise.all([
     prisma.socialValueTheme.findMany({
       orderBy: { code: "asc" },
       include: {
@@ -96,7 +96,16 @@ export default async function SocialValuePage({ params }: Props) {
       select: { id: true, label: true },
       orderBy: [{ startDate: "desc" }],
     }),
-  ]);
+  ]).catch((dbErr: unknown) => {
+    console.error("[SocialValuePage] DB error:", dbErr);
+    return null;
+  });
+
+  if (!queryResult) {
+    return <DbErrorState />;
+  }
+
+  const [themes, records, contracts, periods] = queryResult;
 
   // Compute totals
   const totalPounds = records.reduce((sum, r) => sum + Number(r.valuePounds), 0);
@@ -270,6 +279,25 @@ export default async function SocialValuePage({ params }: Props) {
             )}
           </CardContent>
         </Card>
+      </div>
+    </div>
+  );
+}
+
+function DbErrorState() {
+  return (
+    <div className="min-h-[100dvh] bg-[#F9FAFB] flex items-center justify-center p-8">
+      <div className="text-center max-w-sm">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 mx-auto mb-4">
+          <Heart className="h-6 w-6 text-red-400" />
+        </div>
+        <p className="font-medium text-[#111827] tracking-[-0.42px]">Could not load Social Value data</p>
+        <p className="text-sm text-[#374151] tracking-[-0.42px] mt-2">
+          There was a problem reading from the database. This may mean the social value tables need to be set up.
+          Run <code className="bg-[#F3F4F6] px-1.5 py-0.5 rounded text-xs">pnpm prisma migrate deploy</code> then{" "}
+          <code className="bg-[#F3F4F6] px-1.5 py-0.5 rounded text-xs">pnpm prisma db seed</code> to initialise TOMS data,
+          then refresh the page.
+        </p>
       </div>
     </div>
   );

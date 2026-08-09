@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export default function OrgError({
   error,
@@ -14,15 +13,10 @@ export default function OrgError({
     console.error("[CarbonSite] Org page error:", error);
   }, [error]);
 
-  const router = useRouter();
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-6">
       <div className="text-center max-w-md">
-        <h1
-          className="text-[32px] leading-tight text-[#111827] mb-3"
-          
-        >
+        <h1 className="text-[32px] leading-tight text-[#111827] mb-3">
           Something went wrong
         </h1>
         <p className="text-sm text-[#555] mb-2 leading-relaxed">
@@ -41,8 +35,8 @@ export default function OrgError({
             Try again
           </button>
           <button
-            onClick={() => router.push("/")}
-            className="px-5 py-2.5 bg-[#F0F9FF] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#d0ecce] transition-colors"
+            onClick={() => { window.location.href = "/"; }}
+            className="px-5 py-2.5 bg-[#F0F9FF] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#E0F2FE] transition-colors"
           >
             Go home
           </button>
