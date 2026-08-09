@@ -11,13 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
       NO_COLOR: "1"
     steps:
       - name: Validate DATABASE_URL secret
         run: |
           if [ -z "$DATABASE_URL" ]; then
-            echo "::error::Add the Neon Postgres connection string as a GitHub Actions secret named DATABASE_URL (Settings → Secrets → Actions)."
+            echo "::error::Add your Supabase connection string as a GitHub Actions secret named DATABASE_URL (Settings → Secrets → Actions)."
             exit 1
           fi
 
