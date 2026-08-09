@@ -93,7 +93,13 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load calculation runs. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const runs = await prisma.calculationRun.findMany({
@@ -107,7 +113,17 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
     },
     orderBy: { createdAt: "desc" },
     take: 50,
-  });
+  }).catch(() => null);
+
+  if (runs === null) {
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load calculation runs. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
+  }
 
   const hasInFlight = runs.some((r) => r.status === "queued" || r.status === "running");
   const stats = {
