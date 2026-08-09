@@ -1,7 +1,9 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Shield, Zap, CheckCircle } from "lucide-react";
 import { OrbitalNetworkGraphic } from "@/components/marketing/orbital-network";
+import { getSession } from "@/lib/auth/session";
 
 const TRUST_ITEMS = [
   { icon: Shield,       text: "Audit-grade evidence trail" },
@@ -9,11 +11,14 @@ const TRUST_ITEMS = [
   { icon: CheckCircle,  text: "Scope 1, 2 and 3 from one platform" },
 ];
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+  if (session) redirect("/app");
+
   return (
     <div className="min-h-[100dvh] flex">
       {/* ── Left panel (dark) ─────────────────────────────────────────────── */}

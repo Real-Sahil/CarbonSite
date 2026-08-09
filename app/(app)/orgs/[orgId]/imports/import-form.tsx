@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Upload, Loader2, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { ColumnMapper } from "@/components/import/column-mapper";
 import type { CanonicalField, MappedColumn } from "@/lib/imports/column-mapper";
 
@@ -75,6 +75,10 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
         method: "POST",
         body: form,
       });
+      if (res.status === 401) {
+        window.location.href = "/sign-in";
+        return;
+      }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.message ?? "Could not read file.");
@@ -107,6 +111,10 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
         method: "POST",
         body: form,
       });
+      if (res.status === 401) {
+        window.location.href = "/sign-in";
+        return;
+      }
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
@@ -224,7 +232,18 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">CSV / XLSX file</label>
+        <div className="flex items-center justify-between">
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">CSV / XLSX file</label>
+          <a
+            href={`/api/orgs/${orgId}/imports/template`}
+            download="carbonsite-import-template.xlsx"
+            className="flex items-center gap-1 text-xs text-[#0EA5E9] hover:text-[#0284C7] transition-colors"
+            tabIndex={busy ? -1 : 0}
+          >
+            <Download aria-hidden="true" className="h-3 w-3" />
+            Template
+          </a>
+        </div>
         <Input
           type="file"
           accept=".csv,.xlsx,.xls"
