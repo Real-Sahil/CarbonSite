@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import type { FieldSubmissionStatus } from "@prisma/client";
 import { SubmissionsTable } from "./submissions-table";
+import { ClipboardList } from "lucide-react";
 
 interface SubmissionsPageProps {
   params: Promise<{ orgId: string }>;
@@ -121,62 +122,72 @@ export default async function SubmissionsPage({
     }).toString()}`.replace(/\?$/, "");
 
   return (
-    <div className="p-[42px] max-w-[1200px] mx-auto">
-      <div className="mb-[28px]">
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-          Review
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
-          Field submissions
-        </h1>
-        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
-          Review incoming submissions from field workers before approving them
-          as activity records.
-        </p>
-      </div>
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+              <ClipboardList className="h-4 w-4 text-[#111827]" />
+            </div>
+            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+              Review
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+            Field submissions
+          </h1>
+          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+            Review incoming submissions from field workers before approving them as activity records.
+          </p>
 
-      {/* Status filter tabs */}
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        {STATUS_FILTERS.map((filter) => {
-          const count =
-            filter.value === "all" ? total : statusCounts.get(filter.value) ?? 0;
-          const active = statusFilter === filter.value;
-          return (
-            <Link
-              key={filter.value}
-              href={filterHref(filter.value)}
-              className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
-                active
-                  ? "bg-[#0EA5E9] text-white"
-                  : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
-              }`}
-            >
-              {filter.label}
-              <span className={`ml-1.5 ${active ? "text-[#BAE6FD]" : "text-[#999]"}`}>
-                {count.toLocaleString("en-GB")}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-
-      <SubmissionsTable orgId={orgId} members={members} initialSubmissions={initialSubmissions} />
-
-      {hasMore && (
-        <div className="mt-4 flex justify-center">
-          <Link
-            href={filterHref(statusFilter, limit + PAGE_SIZE)}
-            className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF] transition-colors"
-          >
-            Show more ({initialSubmissions.length.toLocaleString("en-GB")} of{" "}
-            {(statusFilter === "all"
-              ? total
-              : statusCounts.get(statusFilter) ?? 0
-            ).toLocaleString("en-GB")}
-            )
-          </Link>
+          {/* Status filter tabs */}
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            {STATUS_FILTERS.map((filter) => {
+              const count =
+                filter.value === "all" ? total : statusCounts.get(filter.value) ?? 0;
+              const active = statusFilter === filter.value;
+              return (
+                <Link
+                  key={filter.value}
+                  href={filterHref(filter.value)}
+                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                    active
+                      ? "bg-[#0EA5E9] text-white"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
+                  }`}
+                >
+                  {filter.label}
+                  <span className={`ml-1.5 ${active ? "text-[#BAE6FD]" : "text-[#9CA3AF]"}`}>
+                    {count.toLocaleString("en-GB")}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Content */}
+      <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <SubmissionsTable orgId={orgId} members={members} initialSubmissions={initialSubmissions} />
+
+        {hasMore && (
+          <div className="mt-4 flex justify-center">
+            <Link
+              href={filterHref(statusFilter, limit + PAGE_SIZE)}
+              className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF] transition-colors"
+            >
+              Show more ({initialSubmissions.length.toLocaleString("en-GB")} of{" "}
+              {(statusFilter === "all"
+                ? total
+                : statusCounts.get(statusFilter) ?? 0
+              ).toLocaleString("en-GB")}
+              )
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

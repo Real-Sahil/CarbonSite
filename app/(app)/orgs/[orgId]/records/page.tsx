@@ -101,37 +101,71 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
   const periodLabelById = new Map(periods.map((period) => [period.id, period.label]));
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Activity records</h1>
-        <p className="text-slate-500 mt-1">
-          Committed emissions activity data scoped to this organisation.
-        </p>
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+                  <FileText className="h-4 w-4 text-[#111827]" />
+                </div>
+                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+                  Data
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+                Activity records
+              </h1>
+              <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+                Committed emissions activity data scoped to this organisation.
+              </p>
+            </div>
+          </div>
+
+          {records.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-6">
+              <StatPill label="Total records" value={records.length} />
+              <StatPill
+                label="Approved"
+                value={records.filter((r) => r.reviewStatus === "approved").length}
+                accent="green"
+              />
+              {records.filter((r) => r.reviewStatus === "draft").length > 0 && (
+                <StatPill
+                  label="Draft"
+                  value={records.filter((r) => r.reviewStatus === "draft").length}
+                  accent="amber"
+                />
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {canManageRecords && (
-        <BulkRecordActions
-          orgId={orgId}
-          draftGroups={draftGroups.map((group) => ({
-            reportingPeriodId: group.reportingPeriodId,
-            periodLabel: periodLabelById.get(group.reportingPeriodId) ?? "Unknown period",
-            count: group._count._all,
-          }))}
-        />
-      )}
+      {/* Content */}
+      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+        {canManageRecords && (
+          <BulkRecordActions
+            orgId={orgId}
+            draftGroups={draftGroups.map((group) => ({
+              reportingPeriodId: group.reportingPeriodId,
+              periodLabel: periodLabelById.get(group.reportingPeriodId) ?? "Unknown period",
+              count: group._count._all,
+            }))}
+          />
+        )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Records <span className="text-sm font-normal text-slate-500">({records.length})</span>
-          </CardTitle>
-          <CardDescription>
-            Records are created from imports, manual entry, or approved field submissions.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className={records.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          {canCreateRecords && (
-            <div className="px-6 pb-5">
+        {canCreateRecords && (
+          <Card className="border-[#E5E7EB] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+              <CardTitle className="text-sm font-semibold text-[#111827]">Add a record</CardTitle>
+              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+                Manually create an activity record with unit, period, and category.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6 py-5">
               <CreateRecordForm
                 orgId={orgId}
                 periods={periods}
@@ -149,102 +183,118 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                   label: businessUnit.name,
                 }))}
               />
-            </div>
-          )}
-          {records.length === 0 ? (
-            <EmptyState
-              icon={FileText}
-              title="No activity records yet"
-              description="Import activity data or approve field submissions to create auditable records."
-            />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Distance</TableHead>
-                  <TableHead>Evidence</TableHead>
-                  <TableHead>Status</TableHead>
-                  {canManageRecords && <TableHead>Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {records.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/orgs/${orgId}/records/${record.id}`}
-                        className="hover:underline underline-offset-2 text-[#111827]"
-                      >
-                        {record.sourceDescription ?? record.supplierName ?? "Activity record"}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium text-slate-900">
-                        Scope {record.emissionCategory.scope}
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {record.emissionCategory.name}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {Number(record.amount).toLocaleString("en-GB")} {record.unit}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {record.reportingPeriod.label}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {record.facility?.name ?? record.businessUnit?.name ?? record.country ?? "Not assigned"}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {record.distanceAmount
-                        ? `${Number(record.distanceAmount).toLocaleString("en-GB", {
-                            maximumFractionDigits: 2,
-                          })} ${record.distanceUnit ?? "km"}`
-                        : "Not set"}
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      <RecordEvidenceActions
-                        orgId={orgId}
-                        recordId={record.id}
-                        files={record.evidence.map((item) => ({
-                          id: item.evidenceFile.id,
-                          filename: item.evidenceFile.filename,
-                        }))}
-                        canManage={canManageRecords}
-                      />
-                      <div className="text-xs text-slate-500">
-                        {record.evidenceStatus.replaceAll("_", " ")}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={record.reviewStatus === "approved" ? "default" : "outline"}>
-                        {REVIEW_LABELS[record.reviewStatus] ?? record.reviewStatus}
-                      </Badge>
-                    </TableCell>
-                    {canManageRecords && (
-                      <TableCell>
-                        <RecordActions
-                          orgId={orgId}
-                          recordId={record.id}
-                          label={record.sourceDescription ?? record.supplierName ?? record.id}
-                          reviewStatus={record.reviewStatus}
-                          evidenceStatus={record.evidenceStatus}
-                          canDelete={record._count.calculations === 0}
-                        />
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <CardTitle className="text-sm font-semibold text-[#111827]">
+              Records
+              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({records.length})</span>
+            </CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              Records are created from imports, manual entry, or approved field submissions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            {records.length === 0 ? (
+              <EmptyState
+                icon={FileText}
+                title="No activity records yet"
+                description="Import activity data or approve field submissions to create auditable records."
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Source</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Category</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Amount</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Location</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Distance</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Evidence</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
+                      {canManageRecords && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {records.map((record) => (
+                      <TableRow key={record.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                        <TableCell className="py-3.5 pl-6">
+                          <Link
+                            href={`/orgs/${orgId}/records/${record.id}`}
+                            className="font-medium text-sm text-[#111827] hover:underline underline-offset-2"
+                          >
+                            {record.sourceDescription ?? record.supplierName ?? "Activity record"}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          <div className="text-sm font-medium text-[#111827]">
+                            Scope {record.emissionCategory.scope}
+                          </div>
+                          <div className="text-xs text-[#9CA3AF]">
+                            {record.emissionCategory.name}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {Number(record.amount).toLocaleString("en-GB")} {record.unit}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">
+                          {record.reportingPeriod.label}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">
+                          {record.facility?.name ?? record.businessUnit?.name ?? record.country ?? "Not assigned"}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {record.distanceAmount
+                            ? `${Number(record.distanceAmount).toLocaleString("en-GB", {
+                                maximumFractionDigits: 2,
+                              })} ${record.distanceUnit ?? "km"}`
+                            : "Not set"}
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          <RecordEvidenceActions
+                            orgId={orgId}
+                            recordId={record.id}
+                            files={record.evidence.map((item) => ({
+                              id: item.evidenceFile.id,
+                              filename: item.evidenceFile.filename,
+                            }))}
+                            canManage={canManageRecords}
+                          />
+                          <div className="text-xs text-[#9CA3AF]">
+                            {record.evidenceStatus.replaceAll("_", " ")}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          <Badge variant={record.reviewStatus === "approved" ? "default" : "outline"}>
+                            {REVIEW_LABELS[record.reviewStatus] ?? record.reviewStatus}
+                          </Badge>
+                        </TableCell>
+                        {canManageRecords && (
+                          <TableCell className="py-3.5 pr-6">
+                            <RecordActions
+                              orgId={orgId}
+                              recordId={record.id}
+                              label={record.sourceDescription ?? record.supplierName ?? record.id}
+                              reviewStatus={record.reviewStatus}
+                              evidenceStatus={record.evidenceStatus}
+                              canDelete={record._count.calculations === 0}
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -253,7 +303,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
 function AccessDenied({ label }: { label: string }) {
   return (
     <div className="p-8">
-      <p className="text-red-600">You do not have permission to view {label}.</p>
+      <p className="text-sm text-red-600">You do not have permission to view {label}.</p>
     </div>
   );
 }
@@ -268,14 +318,35 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
-        <Icon className="h-7 w-7 text-slate-400" />
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-5">
+        <Icon className="h-7 w-7 text-[#111827]" />
       </div>
-      <div>
-        <p className="font-medium text-slate-700">{title}</p>
-        <p className="text-sm text-slate-500 mt-1 max-w-sm">{description}</p>
-      </div>
+      <p className="text-base font-semibold text-[#111827] mb-2">{title}</p>
+      <p className="text-sm text-[#374151] max-w-sm">{description}</p>
+    </div>
+  );
+}
+
+function StatPill({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent?: "green" | "amber" | "red";
+}) {
+  const colors = {
+    green: "bg-[#F0F9FF] text-[#111827]",
+    amber: "bg-amber-50 text-amber-700",
+    red: "bg-red-50 text-red-700",
+  };
+  const base = accent ? colors[accent] : "bg-white text-[#374151] border border-[#E5E7EB]";
+  return (
+    <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>
+      <span className="tabular-nums font-semibold">{value}</span>
+      <span>{label}</span>
     </div>
   );
 }

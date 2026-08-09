@@ -122,170 +122,163 @@ export default async function SocialValuePage({ params }: Props) {
   }));
 
   return (
-    <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
       {/* Page header */}
-      <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
-          Social Value
-        </p>
-        <h1
-          className="text-2xl font-bold tracking-tight text-[#111827]"
-          style={{
-            
-            fontWeight: 300,
-          }}
-        >
-          National TOMS Social Value
-        </h1>
-        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
-          Track and report social value delivered across contracts using the National TOMs framework.
-        </p>
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-8 py-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+              <Heart className="h-4 w-4 text-[#111827]" />
+            </div>
+            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+              Social Value
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+            National TOMS Social Value
+          </h1>
+          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+            Track and report social value delivered across contracts using the National TOMs framework.
+          </p>
+
+          {/* Summary stats */}
+          {records.length > 0 && (
+            <div className="mt-6 flex flex-col gap-4">
+              <div className="inline-flex items-baseline gap-2">
+                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Total social value delivered</span>
+                <span className="text-2xl font-bold text-[#111827] tabular-nums">{formatGbp(totalPounds)}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {themes.map((theme) => {
+                  const themePounds = themetotals[theme.code] ?? 0;
+                  return (
+                    <div
+                      key={theme.code}
+                      className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1"
+                    >
+                      <span className="text-xs font-semibold text-[#0EA5E9]">
+                        {theme.code}
+                      </span>
+                      <span className="text-xs text-[#9CA3AF] leading-[1.4]">
+                        {theme.name}
+                      </span>
+                      <span className="text-sm font-semibold text-[#111827] tabular-nums mt-1">
+                        {formatGbp(themePounds)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Summary stats */}
-      {records.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <div className="rounded-[14px] border border-[#E5E7EB] bg-[#F0F9FF] px-6 py-4">
-            <p className="text-xs text-[#111827] tracking-[-0.36px] font-normal">
-              Total social value delivered
-            </p>
-            <p
-              className="text-[32px] leading-[1.2] tracking-[-0.4px] text-[#111827] mt-1"
-              style={{
-                
-                fontWeight: 300,
-              }}
-            >
-              {formatGbp(totalPounds)}
-            </p>
-          </div>
+      {/* Content */}
+      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+        {/* Add record card */}
+        {canEdit && (
+          <Card className="border-[#E5E7EB] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+              <CardTitle className="text-sm font-semibold text-[#111827]">Add social value record</CardTitle>
+              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+                Record the social value delivered against a TOMS measure for a contract and reporting period.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6 py-5">
+              <CreateSocialValueRecordForm
+                orgId={orgId}
+                themes={themesForClient}
+                contracts={contracts}
+                periods={periods}
+              />
+            </CardContent>
+          </Card>
+        )}
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {themes.map((theme) => {
-              const themePounds = themetotals[theme.code] ?? 0;
-              return (
-                <div
-                  key={theme.code}
-                  className="rounded-[14px] border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1"
-                >
-                  <span className="text-xs font-medium text-[#111827] tracking-[-0.36px]">
-                    {theme.code}
-                  </span>
-                  <span className="text-xs text-[#374151] tracking-[-0.36px] leading-[1.4]">
-                    {theme.name}
-                  </span>
-                  <span className="text-base font-medium text-[#111827] tracking-[-0.4px] mt-1">
-                    {formatGbp(themePounds)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Add record card */}
-      {canEdit && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Add social value record</CardTitle>
-            <CardDescription>
-              Record the social value delivered against a TOMS measure for a contract and reporting period.
+        {/* Records table card */}
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <CardTitle className="text-sm font-semibold text-[#111827]">
+              Records
+              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({records.length})</span>
+            </CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              Social value records submitted for this organisation. Up to 200 most recent shown.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <CreateSocialValueRecordForm
-              orgId={orgId}
-              themes={themesForClient}
-              contracts={contracts}
-              periods={periods}
-            />
+          <CardContent className={records.length === 0 ? "pb-8" : "p-0"}>
+            {records.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Date added</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Contract</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Theme</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Measure</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Quantity</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Value</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {records.map((record) => (
+                      <TableRow key={record.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                        <TableCell className="text-sm text-[#9CA3AF] tabular-nums py-3.5 pl-6">
+                          {record.createdAt.toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">{record.contract.name}</TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">{record.reportingPeriod.label}</TableCell>
+                        <TableCell className="py-3.5">
+                          <span className="text-sm font-medium text-[#111827]">{record.measure.theme.code}</span>
+                          {" "}
+                          <span className="text-xs text-[#9CA3AF]">{record.measure.theme.name}</span>
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          <span className="text-sm font-medium text-[#374151]">{record.measure.tomsCode}</span>
+                          {" - "}
+                          <span className="text-sm text-[#374151]">{record.measure.name}</span>
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] tabular-nums py-3.5">
+                          {Number(record.quantity).toLocaleString("en-GB")} {record.measure.unit}
+                        </TableCell>
+                        <TableCell className="text-right text-sm font-semibold text-[#111827] tabular-nums py-3.5">
+                          {formatGbp(Number(record.valuePounds))}
+                        </TableCell>
+                        {canEdit && (
+                          <TableCell className="py-3.5 pr-6">
+                            <DeleteSocialValueRecordButton
+                              orgId={orgId}
+                              recordId={record.id}
+                              label={`${record.measure.tomsCode} - ${record.contract.name}`}
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
-      )}
-
-      {/* Records table card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Records{" "}
-            <span className="text-sm font-normal text-[#374151]">({records.length})</span>
-          </CardTitle>
-          <CardDescription>
-            Social value records submitted for this organisation. Up to 200 most recent shown.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className={records.length === 0 ? "pb-8" : "p-0 pb-2"}>
-          {records.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date added</TableHead>
-                  <TableHead>Contract</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Theme</TableHead>
-                  <TableHead>Measure</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead className="text-right">Value</TableHead>
-                  {canEdit && <TableHead />}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {records.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell className="text-[#374151] tabular-nums">
-                      {record.createdAt.toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </TableCell>
-                    <TableCell className="text-[#374151]">{record.contract.name}</TableCell>
-                    <TableCell className="text-[#374151]">{record.reportingPeriod.label}</TableCell>
-                    <TableCell className="text-[#374151]">
-                      <span className="font-medium text-[#111827]">{record.measure.theme.code}</span>
-                      {" "}
-                      <span className="text-xs">{record.measure.theme.name}</span>
-                    </TableCell>
-                    <TableCell className="text-[#374151]">
-                      <span className="font-medium">{record.measure.tomsCode}</span>
-                      {" — "}
-                      {record.measure.name}
-                    </TableCell>
-                    <TableCell className="text-[#374151] tabular-nums">
-                      {Number(record.quantity).toLocaleString("en-GB")} {record.measure.unit}
-                    </TableCell>
-                    <TableCell className="text-right text-[#111827] font-medium tabular-nums">
-                      {formatGbp(Number(record.valuePounds))}
-                    </TableCell>
-                    {canEdit && (
-                      <TableCell>
-                        <DeleteSocialValueRecordButton
-                          orgId={orgId}
-                          recordId={record.id}
-                          label={`${record.measure.tomsCode} — ${record.contract.name}`}
-                        />
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }
 
 function AccessDenied() {
   return (
-    <div className="p-[42px]">
-      <p className="text-sm text-[#374151] tracking-[-0.42px]">
-        You do not have permission to view social value records.
-      </p>
+    <div className="p-8">
+      <p className="text-sm text-red-600">You do not have permission to view social value records.</p>
     </div>
   );
 }

@@ -27,7 +27,7 @@ interface ImportsPageProps {
 }
 
 const STATE_CONFIG: Record<string, { label: string; className: string }> = {
-  uploaded:        { label: "Uploaded",         className: "bg-zinc-100 text-zinc-600 border-transparent" },
+  uploaded:        { label: "Uploaded",         className: "bg-zinc-100 text-[#374151] border-transparent" },
   parsing:         { label: "Parsing",           className: "bg-blue-50 text-blue-700 border-transparent animate-pulse" },
   needs_attention: { label: "Needs attention",   className: "bg-amber-50 text-amber-700 border-transparent" },
   ready_to_commit: { label: "Ready to commit",   className: "bg-[#F0F9FF] text-[#111827] border-transparent" },
@@ -46,7 +46,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-zinc-500">
+        <div className="p-8 text-sm text-[#9CA3AF]">
           You do not have permission to view imports.
         </div>
       );
@@ -148,10 +148,10 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                   Data intake
                 </span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
                 Imports
               </h1>
-              <p className="mt-1 text-sm text-zinc-500 max-w-[65ch]">
+              <p className="mt-1 text-sm text-[#9CA3AF] max-w-[65ch]">
                 Upload, validate, and commit activity data. CSV and XLSX templates accepted up to 50 MB.
               </p>
             </div>
@@ -174,8 +174,8 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         {/* Upload card */}
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-zinc-900">Upload a file</CardTitle>
-            <CardDescription className="text-xs text-zinc-400 mt-0.5">
+            <CardTitle className="text-sm font-semibold text-[#111827]">Upload a file</CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
               Select a reporting period and template, then drop or browse for your data file.
             </CardDescription>
           </CardHeader>
@@ -190,11 +190,11 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         ) : (
           <Card className="border-[#E5E7EB] shadow-none">
             <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-              <CardTitle className="text-sm font-semibold text-zinc-900">
+              <CardTitle className="text-sm font-semibold text-[#111827]">
                 Import batches
-                <span className="ml-2 text-xs font-normal text-zinc-400">({imports.length})</span>
+                <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({imports.length})</span>
               </CardTitle>
-              <CardDescription className="text-xs text-zinc-400 mt-0.5">
+              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
                 Source files and validation exports stored using organisation-scoped keys.
               </CardDescription>
             </CardHeader>
@@ -203,15 +203,15 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">File</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Template</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Rows</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Issues</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Evidence</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Uploaded by</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3 pr-6">Actions</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">File</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Template</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Rows</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Issues</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Evidence</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Uploaded by</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -231,17 +231,17 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                       return (
                         <TableRow key={batch.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition-colors">
                           <TableCell className="py-3.5 pl-6">
-                            <span className="text-sm font-medium text-zinc-900">{batch.sourceFilename}</span>
+                            <span className="text-sm font-medium text-[#111827]">{batch.sourceFilename}</span>
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-500 py-3.5">{batch.templateKey}</TableCell>
-                          <TableCell className="text-sm text-zinc-600 py-3.5">
+                          <TableCell className="text-sm text-[#9CA3AF] py-3.5">{batch.templateKey}</TableCell>
+                          <TableCell className="text-sm text-[#374151] py-3.5">
                             {periodLabelById.get(batch.reportingPeriodId) ?? batch.reportingPeriodId}
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-500 py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#9CA3AF] py-3.5 tabular-nums">
                             {(batch.rowCount ?? batch._count.stagedRecords).toLocaleString("en-GB")}
                           </TableCell>
                           <TableCell className="py-3.5">
-                            <div className="text-sm text-zinc-500">
+                            <div className="text-sm text-[#9CA3AF]">
                               {batch.errorCount > 0 && (
                                 <span className="text-red-600">{batch.errorCount} error{batch.errorCount !== 1 ? "s" : ""}</span>
                               )}
@@ -250,14 +250,14 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                                 <span className="text-amber-600">{batch.warningCount} warning{batch.warningCount !== 1 ? "s" : ""}</span>
                               )}
                               {batch.errorCount === 0 && batch.warningCount === 0 && (
-                                <span className="text-zinc-400">None</span>
+                                <span className="text-[#9CA3AF]">None</span>
                               )}
                             </div>
                             {inlineErrors.length > 0 && (
                               <ul className="mt-1.5 space-y-0.5">
                                 {inlineErrors.map((err, i) => (
-                                  <li key={i} className="text-xs text-zinc-400">
-                                    <span className="font-medium text-zinc-600">Row {err.row}:</span>{" "}
+                                  <li key={i} className="text-xs text-[#9CA3AF]">
+                                    <span className="font-medium text-[#374151]">Row {err.row}:</span>{" "}
                                     {err.msg}
                                   </li>
                                 ))}
@@ -274,7 +274,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                               }))}
                             />
                           </TableCell>
-                          <TableCell className="text-sm text-zinc-500 py-3.5">
+                          <TableCell className="text-sm text-[#9CA3AF] py-3.5">
                             {batch.createdBy.name ?? batch.createdBy.email}
                           </TableCell>
                           <TableCell className="py-3.5">
@@ -326,7 +326,7 @@ function StatPill({
     amber: "bg-amber-50 text-amber-700",
     red: "bg-red-50 text-red-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E5E7EB]";
+  const base = accent ? colors[accent] : "bg-white text-[#374151] border border-[#E5E7EB]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>
       <span className="tabular-nums font-semibold">{value}</span>
@@ -341,8 +341,8 @@ function EmptyState() {
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-5">
         <Upload className="h-7 w-7 text-[#111827]" />
       </div>
-      <h3 className="text-base font-semibold text-zinc-900 mb-2">No import batches yet</h3>
-      <p className="text-sm text-zinc-500 max-w-sm">
+      <h3 className="text-base font-semibold text-[#111827] mb-2">No import batches yet</h3>
+      <p className="text-sm text-[#9CA3AF] max-w-sm">
         Upload a CSV or Excel file above to begin importing activity data for validation and review.
       </p>
     </div>
