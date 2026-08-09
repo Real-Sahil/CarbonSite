@@ -120,7 +120,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
                   <input type="number" min={0} step="0.01" value={form[key as keyof typeof form]}
                     onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                     required={key !== "baselineScope3Tco2e"}
-                    className="w-full rounded-lg border border-sky-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-sky-400" placeholder="0" />
+                    className="w-full rounded-lg border border-[#E2E8F0] bg-white px-2 py-1.5 text-sm text-[#0F172A] outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5]/20" placeholder="0" />
                 </div>
               ))}
             </div>
@@ -342,7 +342,7 @@ export default function SbtiPage() {
             <div className="flex items-start gap-3">
               <Info className="h-4 w-4 text-[#4F46E5] mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-sky-800 mb-1">About SBTi alignment</p>
+                <p className="text-sm font-medium text-[#3730A3] mb-1">About SBTi alignment</p>
                 <p className="text-xs text-[#4F46E5] leading-relaxed">
                   The 1.5°C pathway requires approximately 50% reduction in Scope 1+2 emissions by 2030 from a 2020 base year.
                   Net-zero targets require at least 90% reduction and the neutralisation of residual emissions.

@@ -65,7 +65,7 @@ function MeterBar({ used, limit, label, icon: Icon }: { used: number; limit: num
           />
         )}
         {isUnlimited && (
-          <div className="h-full rounded-full bg-sky-200 w-full" />
+          <div className="h-full rounded-full bg-[#C7D2FE] w-full" />
         )}
       </div>
     </div>
