@@ -70,10 +70,11 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
       where: { id: orgId },
       select: { id: true, name: true },
     }),
+    // Graceful fallback: tenant_branding table may not exist during DB migrations.
     prisma.tenantBranding.findUnique({
       where: { organizationId: orgId },
       select: { primaryHex: true, accentHex: true, fontFamily: true, logoStorageKey: true },
-    }),
+    }).catch(() => null),
   ]);
 
   if (!org) {
