@@ -200,7 +200,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       }),
       prisma.report.findMany({
         where: { organizationId: orgId, status: "failed" },
-        include: {
+        select: {
+          id: true,
+          type: true,
+          status: true,
           reportingPeriod: { select: { label: true } },
         },
         orderBy: { updatedAt: "desc" },
