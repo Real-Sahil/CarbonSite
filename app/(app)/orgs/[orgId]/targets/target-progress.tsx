@@ -70,9 +70,9 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
       : null;
 
   return (
-    <div className="rounded-[10px] border border-[#e5e7eb] bg-white p-5 flex flex-col gap-4">
+    <div className="rounded-[10px] border border-[#E2E8F0] bg-white p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-medium text-sm text-[#0f3e17] capitalize">{target.targetType} target</span>
+        <span className="font-medium text-sm text-[#0F172A] capitalize">{target.targetType} target</span>
         {hasData && progressPercent !== null && (
           <span
             className={`text-xs font-medium px-2 py-0.5 rounded-full ${
@@ -92,8 +92,8 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-0.5">
           <p className="text-xs text-[#6b7280] tracking-[-0.3px]">Baseline</p>
-          <p className="text-sm font-medium text-[#0f3e17]">{target.baselinePeriodLabel}</p>
-          <p className="text-sm text-[#222222]">
+          <p className="text-sm font-medium text-[#0F172A]">{target.baselinePeriodLabel}</p>
+          <p className="text-sm text-[#475569]">
             {target.baselineTonnes !== null
               ? `${formatTonnes(target.baselineTonnes)} tCO₂e`
               : <span className="text-[#9ca3af] text-xs">No data</span>}
@@ -101,8 +101,8 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
         </div>
         <div className="flex flex-col gap-0.5">
           <p className="text-xs text-[#6b7280] tracking-[-0.3px]">Target period</p>
-          <p className="text-sm font-medium text-[#0f3e17]">{target.targetPeriodLabel}</p>
-          <p className="text-sm text-[#222222]">
+          <p className="text-sm font-medium text-[#0F172A]">{target.targetPeriodLabel}</p>
+          <p className="text-sm text-[#475569]">
             {target.currentTonnes !== null
               ? `${formatTonnes(target.currentTonnes)} tCO₂e`
               : <span className="text-[#9ca3af] text-xs">No data yet</span>}

@@ -1,16 +1,67 @@
 @import "tailwindcss";
 
 @theme {
-  /* CarbonSite design tokens */
-  --color-forest-ink:    #0f3e17;
-  --color-sage-wash:     #b1dbb8;
-  --color-mist-blue:     #b6ced5;
-  --color-mint-veil:     #cfe7d3;
-  --color-linen:         #e1f4df;
-  --color-linen-white:   #fffefc;
-  --color-hairline-gray: #e5e7eb;
-  --color-charcoal:      #222222;
-  --color-graphite:      #333333;
+  /* ── CarbonSite design tokens v2 — modern B2B SaaS ────────────────────── */
+
+  /* Primary: vibrant indigo for actions, active states, brand */
+  --color-primary:        #4F46E5;
+  --color-primary-hover:  #4338CA;
+  --color-primary-light:  #EEF2FF;
+  --color-primary-border: #C7D2FE;
+
+  /* Eco: clean emerald for sustainability signals */
+  --color-eco:            #059669;
+  --color-eco-hover:      #047857;
+  --color-eco-light:      #ECFDF5;
+  --color-eco-border:     #A7F3D0;
+  --color-eco-muted:      #6EE7B7;
+
+  /* Surfaces */
+  --color-surface:        #FFFFFF;
+  --color-surface-subtle: #F8FAFC;
+  --color-surface-muted:  #F1F5F9;
+
+  /* Borders */
+  --color-border:         #E2E8F0;
+  --color-border-strong:  #CBD5E1;
+
+  /* Text */
+  --color-text-primary:   #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted:     #94A3B8;
+
+  /* Sidebar */
+  --color-sidebar-bg:           #FFFFFF;
+  --color-sidebar-border:       #E2E8F0;
+  --color-sidebar-text:         #64748B;
+  --color-sidebar-text-active:  #4F46E5;
+  --color-sidebar-bg-active:    #EEF2FF;
+  --color-sidebar-label:        #94A3B8;
+
+  /* Scope colours (GHG Protocol convention) */
+  --color-scope-1: #0F766E;
+  --color-scope-2: #0EA5E9;
+  --color-scope-3: #059669;
+
+  /* Legacy aliases (keeps old var() references working) */
+  --color-forest-ink:    #4F46E5;
+  --color-sage-wash:     #A7F3D0;
+  --color-mist-blue:     #C7D2FE;
+  --color-mint-veil:     #D1FAE5;
+  --color-linen:         #EEF2FF;
+  --color-linen-white:   #FFFFFF;
+  --color-hairline-gray: #E2E8F0;
+  --color-charcoal:      #1E293B;
+  --color-graphite:      #475569;
+  --color-brand-primary: #4F46E5;
+  --color-brand-accent:  #059669;
+
+  /* Brand palette */
+  --color-brand-forest: #059669;
+  --color-sky-blue:     #0EA5E9;
+  --color-sky-light:    #E0F2FE;
+  --color-cta-orange:   #F97316;
+  --color-surface-var:  #F8FAFC;
 
   /* Font */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -19,30 +70,18 @@
   --radius-nav:    8px;
   --radius-card:   12px;
   --radius-badge:  999px;
-  --radius-button: 12px;
-
-  /* Scope colours (GHG Protocol convention) */
-  --color-scope-1: #0f766e;
-  --color-scope-2: #0ea5e9;
-  --color-scope-3: #84cc16;
-
-  /* Brand palette */
-  --color-brand-forest: #228B22;
-  --color-sky-blue:     #0EA5E9;
-  --color-sky-light:    #E0F2FE;
-  --color-cta-orange:   #F97316;
-  --color-surface:      #F9FAFB;
+  --radius-button: 10px;
 }
 
 @layer base {
   * {
     @apply box-border;
-    border-color: #e5e7eb;
+    border-color: #E2E8F0;
   }
 
   html, body {
-    background-color: #f8fafc;
-    color: #09090b;
+    background-color: #F8FAFC;
+    color: #0F172A;
     font-family: var(--font-sans);
     font-weight: 400;
     letter-spacing: -0.015em;
@@ -50,14 +89,13 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Headings use tight tracking */
   h1, h2, h3, h4 {
     letter-spacing: -0.03em;
     font-weight: 600;
   }
 }
 
-/* ── Liquid glass (nav overlays on dark hero) ──────────────────────────────── */
+/* ── Liquid glass (nav overlays on dark hero) ─────────────────────────────── */
 .liquid-glass {
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(12px);
@@ -86,7 +124,7 @@
   pointer-events: none;
 }
 
-/* ── Orbital animation keyframes ───────────────────────────────────────────── */
+/* ── Orbital animation keyframes ─────────────────────────────────────────── */
 @keyframes orbit-cw {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
@@ -112,14 +150,14 @@
   100% { background-position: 200% center; }
 }
 
-/* ── Shimmer text utility ───────────────────────────────────────────────────── */
+/* ── Shimmer text utility ─────────────────────────────────────────────────── */
 .text-shimmer {
   background: linear-gradient(
     110deg,
-    #22c55e 20%,
-    #86efac 40%,
-    #22c55e 60%,
-    #86efac 80%
+    #4F46E5 20%,
+    #818CF8 40%,
+    #4F46E5 60%,
+    #818CF8 80%
   );
   background-size: 200% auto;
   background-clip: text;
@@ -128,13 +166,13 @@
   animation: shimmer-bg 3s linear infinite;
 }
 
-/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
 .sidebar-light {
   background-color: #ffffff;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid #E2E8F0;
 }
 
-/* ── Reduced motion (belt + suspenders alongside MotionConfig) ─────────────── */
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

@@ -91,7 +91,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
 
   if (periods.length === 0) {
     return (
-      <p className="text-sm text-[#333333] tracking-[-0.42px]">
+      <p className="text-sm text-[#475569] tracking-[-0.42px]">
         Create a reporting period before importing data.
       </p>
     );
@@ -127,7 +127,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#333333] tracking-[-0.36px]">Reporting period</label>
+        <label className="text-xs text-[#475569] tracking-[-0.36px]">Reporting period</label>
         <Select value={periodId} onValueChange={setPeriodId} disabled={busy}>
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Select period" />
@@ -140,7 +140,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#333333] tracking-[-0.36px]">Template</label>
+        <label className="text-xs text-[#475569] tracking-[-0.36px]">Template</label>
         <Select value={templateKey} onValueChange={setTemplateKey} disabled={busy}>
           <SelectTrigger className="w-52">
             <SelectValue placeholder="Select template" />
@@ -153,7 +153,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#333333] tracking-[-0.36px]">CSV / XLSX file</label>
+        <label className="text-xs text-[#475569] tracking-[-0.36px]">CSV / XLSX file</label>
         <Input
           type="file"
           accept=".csv,.xlsx,.xls"

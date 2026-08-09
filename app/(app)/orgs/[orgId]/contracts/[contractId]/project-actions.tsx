@@ -47,21 +47,21 @@ export function CreateProjectForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#e5e7eb] p-[21px] flex flex-col gap-4">
-      <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">New project</p>
+    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E2E8F0] p-[21px] flex flex-col gap-4">
+      <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">New project</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-name" className="text-xs text-[#222222] tracking-[-0.36px]">
+          <Label htmlFor="project-name" className="text-xs text-[#475569] tracking-[-0.36px]">
             Name <span aria-hidden="true" className="text-red-500">*</span>
           </Label>
           <Input id="project-name" name="name" required placeholder="Project name" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-code" className="text-xs text-[#222222] tracking-[-0.36px]">Project code</Label>
+          <Label htmlFor="project-code" className="text-xs text-[#475569] tracking-[-0.36px]">Project code</Label>
           <Input id="project-code" name="projectCode" placeholder="PRJ-001" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-status" className="text-xs text-[#222222] tracking-[-0.36px]">Status</Label>
+          <Label htmlFor="project-status" className="text-xs text-[#475569] tracking-[-0.36px]">Status</Label>
           <select
             id="project-status"
             name="status"
@@ -75,11 +75,11 @@ export function CreateProjectForm({
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-start" className="text-xs text-[#222222] tracking-[-0.36px]">Start date</Label>
+          <Label htmlFor="project-start" className="text-xs text-[#475569] tracking-[-0.36px]">Start date</Label>
           <Input id="project-start" name="startDate" type="date" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-end" className="text-xs text-[#222222] tracking-[-0.36px]">End date</Label>
+          <Label htmlFor="project-end" className="text-xs text-[#475569] tracking-[-0.36px]">End date</Label>
           <Input id="project-end" name="endDate" type="date" className="h-9 text-sm" />
         </div>
       </div>

@@ -120,7 +120,7 @@ export function CalculationControls({
 
   if (periods.length === 0 || methodologies.length === 0 || factorLibraries.length === 0) {
     return (
-      <p className="text-sm text-[#333333] tracking-[-0.42px]">
+      <p className="text-sm text-[#475569] tracking-[-0.42px]">
         A reporting period, methodology version, and factor library are required before running a calculation.
       </p>
     );
@@ -133,7 +133,7 @@ export function CalculationControls({
   return (
     <div className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#333333] tracking-[-0.36px]">Reporting period</label>
+        <label className="text-xs text-[#475569] tracking-[-0.36px]">Reporting period</label>
         <Select value={periodId} onValueChange={setPeriodId} disabled={isLoading}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Select period" />
@@ -146,7 +146,7 @@ export function CalculationControls({
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#333333] tracking-[-0.36px]">Methodology</label>
+        <label className="text-xs text-[#475569] tracking-[-0.36px]">Methodology</label>
         <Select value={methodologyId} onValueChange={setMethodologyId} disabled={isLoading}>
           <SelectTrigger className="w-56">
             <SelectValue placeholder="Select methodology" />
@@ -159,7 +159,7 @@ export function CalculationControls({
         </Select>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#333333] tracking-[-0.36px]">Factor library</label>
+        <label className="text-xs text-[#475569] tracking-[-0.36px]">Factor library</label>
         <Select value={factorLibraryId} onValueChange={setFactorLibraryId} disabled={isLoading}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Select library" />
@@ -206,7 +206,7 @@ export function CalculationControls({
 
       {/* Approved record count */}
       {periodId && approvedCount > 0 && !run && (
-        <p className="w-full flex items-center gap-1.5 text-xs text-[#0f3e17] tracking-[-0.36px]">
+        <p className="w-full flex items-center gap-1.5 text-xs text-[#0F172A] tracking-[-0.36px]">
           <CheckCircle2 className="h-3.5 w-3.5" />
           {approvedCount.toLocaleString("en-GB")} approved record{approvedCount !== 1 ? "s" : ""} ready for this period.
         </p>
@@ -214,9 +214,9 @@ export function CalculationControls({
 
       {/* In-flight indicator */}
       {isInFlight && (
-        <div className="w-full flex items-center gap-2 rounded-lg border border-[#b6ced5] bg-[#b6ced5]/20 px-3 py-2.5">
-          <Loader2 className="h-4 w-4 text-[#0f3e17] animate-spin shrink-0" />
-          <div className="text-xs text-[#0f3e17] leading-relaxed">
+        <div className="w-full flex items-center gap-2 rounded-lg border border-[#C7D2FE] bg-[#EEF2FF]/20 px-3 py-2.5">
+          <Loader2 className="h-4 w-4 text-[#0F172A] animate-spin shrink-0" />
+          <div className="text-xs text-[#0F172A] leading-relaxed">
             <span className="font-medium">Calculating emissions…</span>{" "}
             This may take up to a minute. Results will update automatically.
           </div>

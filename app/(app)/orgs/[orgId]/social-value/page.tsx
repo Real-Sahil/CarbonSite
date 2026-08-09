@@ -125,19 +125,19 @@ export default async function SocialValuePage({ params }: Props) {
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       {/* Page header */}
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0F172A] bg-[#EEF2FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Social Value
         </p>
         <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
+          className="text-2xl font-bold tracking-tight text-[#0F172A]"
           style={{
-            fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)",
+            
             fontWeight: 300,
           }}
         >
           National TOMS Social Value
         </h1>
-        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#475569] font-normal tracking-[-0.42px] mt-[7px]">
           Track and report social value delivered across contracts using the National TOMs framework.
         </p>
       </div>
@@ -145,14 +145,14 @@ export default async function SocialValuePage({ params }: Props) {
       {/* Summary stats */}
       {records.length > 0 && (
         <div className="flex flex-col gap-4">
-          <div className="rounded-[14px] border border-[#e5e7eb] bg-[#e1f4df] px-6 py-4">
-            <p className="text-xs text-[#0f3e17] tracking-[-0.36px] font-normal">
+          <div className="rounded-[14px] border border-[#E2E8F0] bg-[#EEF2FF] px-6 py-4">
+            <p className="text-xs text-[#0F172A] tracking-[-0.36px] font-normal">
               Total social value delivered
             </p>
             <p
-              className="text-[32px] leading-[1.2] tracking-[-0.4px] text-[#0f3e17] mt-1"
+              className="text-[32px] leading-[1.2] tracking-[-0.4px] text-[#0F172A] mt-1"
               style={{
-                fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)",
+                
                 fontWeight: 300,
               }}
             >
@@ -166,15 +166,15 @@ export default async function SocialValuePage({ params }: Props) {
               return (
                 <div
                   key={theme.code}
-                  className="rounded-[14px] border border-[#e5e7eb] bg-[#fffefc] px-4 py-4 flex flex-col gap-1"
+                  className="rounded-[14px] border border-[#E2E8F0] bg-white px-4 py-4 flex flex-col gap-1"
                 >
-                  <span className="text-xs font-medium text-[#0f3e17] tracking-[-0.36px]">
+                  <span className="text-xs font-medium text-[#0F172A] tracking-[-0.36px]">
                     {theme.code}
                   </span>
-                  <span className="text-xs text-[#222222] tracking-[-0.36px] leading-[1.4]">
+                  <span className="text-xs text-[#475569] tracking-[-0.36px] leading-[1.4]">
                     {theme.name}
                   </span>
-                  <span className="text-base font-medium text-[#0f3e17] tracking-[-0.4px] mt-1">
+                  <span className="text-base font-medium text-[#0F172A] tracking-[-0.4px] mt-1">
                     {formatGbp(themePounds)}
                   </span>
                 </div>
@@ -209,7 +209,7 @@ export default async function SocialValuePage({ params }: Props) {
         <CardHeader>
           <CardTitle className="text-base">
             Records{" "}
-            <span className="text-sm font-normal text-[#333333]">({records.length})</span>
+            <span className="text-sm font-normal text-[#475569]">({records.length})</span>
           </CardTitle>
           <CardDescription>
             Social value records submitted for this organisation. Up to 200 most recent shown.
@@ -235,29 +235,29 @@ export default async function SocialValuePage({ params }: Props) {
               <TableBody>
                 {records.map((record) => (
                   <TableRow key={record.id}>
-                    <TableCell className="text-[#222222] tabular-nums">
+                    <TableCell className="text-[#475569] tabular-nums">
                       {record.createdAt.toLocaleDateString("en-GB", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
                       })}
                     </TableCell>
-                    <TableCell className="text-[#222222]">{record.contract.name}</TableCell>
-                    <TableCell className="text-[#222222]">{record.reportingPeriod.label}</TableCell>
-                    <TableCell className="text-[#222222]">
-                      <span className="font-medium text-[#0f3e17]">{record.measure.theme.code}</span>
+                    <TableCell className="text-[#475569]">{record.contract.name}</TableCell>
+                    <TableCell className="text-[#475569]">{record.reportingPeriod.label}</TableCell>
+                    <TableCell className="text-[#475569]">
+                      <span className="font-medium text-[#0F172A]">{record.measure.theme.code}</span>
                       {" "}
                       <span className="text-xs">{record.measure.theme.name}</span>
                     </TableCell>
-                    <TableCell className="text-[#222222]">
+                    <TableCell className="text-[#475569]">
                       <span className="font-medium">{record.measure.tomsCode}</span>
                       {" — "}
                       {record.measure.name}
                     </TableCell>
-                    <TableCell className="text-[#222222] tabular-nums">
+                    <TableCell className="text-[#475569] tabular-nums">
                       {Number(record.quantity).toLocaleString("en-GB")} {record.measure.unit}
                     </TableCell>
-                    <TableCell className="text-right text-[#0f3e17] font-medium tabular-nums">
+                    <TableCell className="text-right text-[#0F172A] font-medium tabular-nums">
                       {formatGbp(Number(record.valuePounds))}
                     </TableCell>
                     {canEdit && (
@@ -283,7 +283,7 @@ export default async function SocialValuePage({ params }: Props) {
 function AccessDenied() {
   return (
     <div className="p-[42px]">
-      <p className="text-sm text-[#222222] tracking-[-0.42px]">
+      <p className="text-sm text-[#475569] tracking-[-0.42px]">
         You do not have permission to view social value records.
       </p>
     </div>
@@ -293,12 +293,12 @@ function AccessDenied() {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
-        <Heart className="h-7 w-7 text-[#0f3e17]" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#EEF2FF]">
+        <Heart className="h-7 w-7 text-[#0F172A]" />
       </div>
       <div>
-        <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">No social value records yet</p>
-        <p className="text-sm text-[#222222] tracking-[-0.42px] mt-[7px] max-w-sm">
+        <p className="font-normal text-[#0F172A] tracking-[-0.42px]">No social value records yet</p>
+        <p className="text-sm text-[#475569] tracking-[-0.42px] mt-[7px] max-w-sm">
           Add your first record to begin tracking TOMS social value delivered across your contracts.
         </p>
       </div>

@@ -192,23 +192,25 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      {/* ── Mobile top bar ────────────────────────────────────────────────── */}
-      <header className="flex md:hidden sticky top-0 z-30 items-center h-14 px-4 bg-white border-b border-gray-200 shrink-0 shadow-sm">
+      {/* ── Mobile top bar (fixed so it always stays visible) ─────────────── */}
+      <header className="flex md:hidden fixed top-0 left-0 right-0 z-40 items-center h-14 px-4 bg-white border-b border-[#E2E8F0] shrink-0 shadow-sm">
         <button
           aria-label="Open menu"
           onClick={() => setMobileOpen(true)}
-          className="flex items-center justify-center h-9 w-9 rounded-[7px] hover:bg-gray-100 transition-colors"
+          className="flex items-center justify-center h-9 w-9 rounded-[7px] hover:bg-[#F8FAFC] transition-colors"
         >
-          <Menu className="h-5 w-5 text-gray-600" aria-hidden="true" />
+          <Menu className="h-5 w-5 text-[#475569]" aria-hidden="true" />
         </button>
         <div className="ml-3 flex items-center gap-2 min-w-0">
-          <span className="h-6 w-6 rounded-md bg-sky-500 flex items-center justify-center shrink-0">
+          <span className="h-6 w-6 rounded-md bg-[#4F46E5] flex items-center justify-center shrink-0">
             <span className="text-white font-bold text-xs">C</span>
           </span>
-          <span className="text-sm font-semibold tracking-tight text-gray-900">CarbonSite</span>
-          <span className="text-xs text-gray-400 truncate max-w-[120px]">/ {orgName}</span>
+          <span className="text-sm font-semibold tracking-tight text-[#0F172A]">CarbonSite</span>
+          <span className="text-xs text-[#94A3B8] truncate max-w-[120px]">/ {orgName}</span>
         </div>
       </header>
+      {/* Spacer that pushes content below the fixed mobile header */}
+      <div className="h-14 md:hidden shrink-0" aria-hidden="true" />
 
       {/* ── Mobile drawer overlay ─────────────────────────────────────────── */}
       {mobileOpen && (
@@ -218,17 +220,17 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
             aria-hidden="true"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl flex flex-col border-r border-gray-200">
-            <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-gray-100">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl flex flex-col border-r border-[#E2E8F0]">
+            <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-[#F1F5F9]">
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className="h-7 w-7 rounded-lg bg-sky-500 flex items-center justify-center shrink-0">
+                <span className="h-7 w-7 rounded-lg bg-[#4F46E5] flex items-center justify-center shrink-0">
                   <span className="text-white font-bold text-sm">C</span>
                 </span>
                 <div className="min-w-0">
-                  <span className="block text-sm font-semibold tracking-tight text-gray-900">
+                  <span className="block text-sm font-semibold tracking-tight text-[#0F172A]">
                     CarbonSite
                   </span>
-                  <span className="text-xs text-gray-400 font-normal block truncate">
+                  <span className="text-xs text-[#94A3B8] font-normal block truncate">
                     {orgName}
                   </span>
                 </div>
@@ -236,9 +238,9 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <button
                 aria-label="Close menu"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center h-8 w-8 rounded-[7px] hover:bg-gray-100 transition-colors ml-2 shrink-0"
+                className="flex items-center justify-center h-8 w-8 rounded-[7px] hover:bg-[#F8FAFC] transition-colors ml-2 shrink-0"
               >
-                <X className="h-4 w-4 text-gray-400" aria-hidden="true" />
+                <X className="h-4 w-4 text-[#94A3B8]" aria-hidden="true" />
               </button>
             </div>
 
@@ -254,13 +256,13 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                     className={cn(
                       "flex items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm font-normal tracking-[-0.42px] transition-colors",
                       isActive
-                        ? "bg-sky-50 text-sky-700"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                        ? "bg-[#EEF2FF] text-[#4F46E5]"
+                        : "text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]",
                     )}
                   >
                     <Icon
                       aria-hidden="true"
-                      className={cn("h-4 w-4 shrink-0", isActive ? "text-sky-600" : "text-gray-400")}
+                      className={cn("h-4 w-4 shrink-0", isActive ? "text-[#4F46E5]" : "text-[#94A3B8]")}
                     />
                     {item.label}
                   </Link>
@@ -268,23 +270,23 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               })}
             </nav>
 
-            <div className="border-t border-gray-100 px-2 py-3">
+            <div className="border-t border-[#F1F5F9] px-2 py-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-gray-50 transition-colors text-left">
+                  <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-[#F8FAFC] transition-colors text-left">
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                      <AvatarFallback className="bg-sky-100 text-sky-700 text-xs font-medium">
+                      <AvatarFallback className="bg-[#EEF2FF] text-[#4F46E5] text-xs font-medium">
                         {getInitials(user.name, user.email)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       {user.name && (
-                        <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
+                        <p className="text-sm font-medium text-[#0F172A] truncate">{user.name}</p>
                       )}
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      <p className="text-xs text-[#475569] truncate">{user.email}</p>
                     </div>
-                    <ChevronDown aria-hidden="true" className="h-4 w-4 text-gray-400 shrink-0" />
+                    <ChevronDown aria-hidden="true" className="h-4 w-4 text-[#94A3B8] shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="top" className="w-52 rounded-[14px]">
@@ -316,35 +318,35 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
       <aside
         className={cn(
-          "relative hidden md:flex flex-col min-h-screen bg-white border-r border-gray-200 shrink-0 transition-[width] duration-200",
+          "relative hidden md:flex flex-col min-h-screen bg-white border-r border-[#E2E8F0] shrink-0 transition-[width] duration-200",
           collapsed ? "w-[60px]" : "w-60",
         )}
       >
         {/* Logo + Org */}
         <div
           className={cn(
-            "flex items-center border-b border-gray-100 overflow-hidden",
+            "flex items-center border-b border-[#F1F5F9] overflow-hidden",
             collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-4 pt-5 pb-4",
           )}
         >
           {collapsed ? (
             <span
-              className="h-7 w-7 rounded-lg bg-sky-500 flex items-center justify-center shrink-0"
+              className="h-7 w-7 rounded-lg bg-[#4F46E5] flex items-center justify-center shrink-0"
               title={orgName}
             >
               <span className="text-white font-bold text-sm">C</span>
             </span>
           ) : (
             <div className="flex items-center gap-2.5 min-w-0">
-              <span className="h-7 w-7 rounded-lg bg-sky-500 flex items-center justify-center shrink-0">
+              <span className="h-7 w-7 rounded-lg bg-[#4F46E5] flex items-center justify-center shrink-0">
                 <span className="text-white font-bold text-sm">C</span>
               </span>
               <div className="min-w-0">
-                <span className="block text-sm font-semibold tracking-tight text-gray-900">
+                <span className="block text-sm font-semibold tracking-tight text-[#0F172A]">
                   CarbonSite
                 </span>
                 <span
-                  className="text-xs text-gray-400 font-normal block truncate"
+                  className="text-xs text-[#94A3B8] font-normal block truncate"
                   title={orgName}
                 >
                   {orgName}
@@ -365,7 +367,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               className={cn(groupIdx > 0 && "mt-4")}
             >
               {group.label && !collapsed && (
-                <p className="px-3 mb-1 text-[10px] uppercase tracking-widest font-semibold text-gray-400">
+                <p className="px-3 mb-1 text-[10px] uppercase tracking-widest font-semibold text-[#94A3B8]">
                   {group.label}
                 </p>
               )}
@@ -382,15 +384,15 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                         "flex items-center gap-3 rounded-[7px] text-sm font-normal tracking-[-0.42px] transition-colors",
                         collapsed ? "px-0 py-2 justify-center" : "px-3 py-2",
                         isActive
-                          ? "bg-sky-50 text-sky-700"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                          ? "bg-[#EEF2FF] text-[#4F46E5]"
+                          : "text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]",
                       )}
                     >
                       <Icon
                         aria-hidden="true"
                         className={cn(
                           "h-4 w-4 shrink-0",
-                          isActive ? "text-sky-600" : "text-gray-400",
+                          isActive ? "text-[#4F46E5]" : "text-[#94A3B8]",
                         )}
                       />
                       {!collapsed && item.label}
@@ -416,18 +418,18 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         </nav>
 
         {/* User footer */}
-        <div className={cn("border-t border-gray-100 px-2 py-3", collapsed && "flex justify-center")}>
+        <div className={cn("border-t border-[#F1F5F9] px-2 py-3", collapsed && "flex justify-center")}>
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  className="flex items-center justify-center w-9 h-9 rounded-[7px] hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-center w-9 h-9 rounded-[7px] hover:bg-[#F8FAFC] transition-colors"
                   onClick={handleSignOut}
                   title="Sign out"
                 >
                   <Avatar className="h-7 w-7 shrink-0">
                     <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                    <AvatarFallback className="bg-sky-100 text-sky-700 text-[10px] font-medium">
+                    <AvatarFallback className="bg-[#EEF2FF] text-[#4F46E5] text-[10px] font-medium">
                       {getInitials(user.name, user.email)}
                     </AvatarFallback>
                   </Avatar>
@@ -436,30 +438,30 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <TooltipContent side="right" className="text-xs">
                 {user.name ?? user.email}
                 <br />
-                <span className="text-gray-400">Click to sign out</span>
+                <span className="text-[#94A3B8]">Click to sign out</span>
               </TooltipContent>
             </Tooltip>
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-gray-50 transition-colors text-left">
+                <button className="flex items-center gap-3 w-full px-2 py-2 rounded-[7px] hover:bg-[#F8FAFC] transition-colors text-left">
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                    <AvatarFallback className="bg-sky-100 text-sky-700 text-xs font-medium">
+                    <AvatarFallback className="bg-[#EEF2FF] text-[#4F46E5] text-xs font-medium">
                       {getInitials(user.name, user.email)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     {user.name && (
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-[#0F172A] truncate">
                         {user.name}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-[#475569] truncate">
                       {user.email}
                     </p>
                   </div>
-                  <ChevronDown aria-hidden="true" className="h-4 w-4 text-gray-400 shrink-0" />
+                  <ChevronDown aria-hidden="true" className="h-4 w-4 text-[#94A3B8] shrink-0" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -495,14 +497,14 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={cn(
             "absolute -right-3 top-[72px] z-10 flex h-6 w-6 items-center justify-center rounded-full",
-            "border border-gray-200 bg-white shadow-sm",
-            "hover:bg-gray-50 hover:border-gray-300 transition-colors",
+            "border border-[#E2E8F0] bg-white shadow-sm",
+            "hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-colors",
           )}
         >
           {collapsed ? (
-            <ChevronRight className="h-3 w-3 text-gray-500" />
+            <ChevronRight className="h-3 w-3 text-[#475569]" />
           ) : (
-            <ChevronLeft className="h-3 w-3 text-gray-500" />
+            <ChevronLeft className="h-3 w-3 text-[#475569]" />
           )}
         </button>
       </aside>

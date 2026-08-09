@@ -50,7 +50,7 @@ export function ScopeDonut({ data, height = 260 }: ScopeDonutProps) {
             outerRadius="85%"
             paddingAngle={2}
             strokeWidth={1}
-            stroke="#fffefc"
+            stroke="#ffffff"
           >
             {rows.map((row) => (
               <Cell key={row.scope} fill={scopeColor(row.scope)} />

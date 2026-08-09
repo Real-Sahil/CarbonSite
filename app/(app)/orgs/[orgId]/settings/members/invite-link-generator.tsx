@@ -130,7 +130,7 @@ export function InviteLinkGenerator({
       <div className="flex flex-col gap-2">
         <label
           htmlFor="invite-site"
-          className="text-xs font-medium text-[#333333] uppercase tracking-wide"
+          className="text-xs font-medium text-[#475569] uppercase tracking-wide"
         >
           Assign to site
         </label>
@@ -140,7 +140,7 @@ export function InviteLinkGenerator({
             value={selectedSiteId}
             onChange={(e) => setSelectedSiteId(e.target.value)}
             disabled={loading}
-            className="h-9 rounded-md border border-[#e5e7eb] bg-[#fffefc] px-3 text-sm min-w-[16rem]"
+            className="h-9 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm min-w-[16rem]"
           >
             <option value="">No specific site (org-wide)</option>
             {sites.map((s) => (
@@ -179,7 +179,7 @@ export function InviteLinkGenerator({
 
       {links.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-medium text-[#333333] uppercase tracking-wide">
+          <p className="text-xs font-medium text-[#475569] uppercase tracking-wide">
             Active invite links
           </p>
           <p className="text-xs text-[#555555]">
@@ -194,10 +194,10 @@ export function InviteLinkGenerator({
             return (
               <div
                 key={link.id}
-                className="flex items-center gap-2 p-[9px] rounded-[7px] border border-[#e5e7eb] bg-[#e1f4df]"
+                className="flex items-center gap-2 p-[9px] rounded-[7px] border border-[#E2E8F0] bg-[#EEF2FF]"
               >
                 {link.site && (
-                  <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#cfe7d3] px-2 py-1 text-xs text-[#0f3e17] whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#cfe7d3] px-2 py-1 text-xs text-[#0F172A] whitespace-nowrap">
                     <MapPin className="h-3 w-3" />
                     {link.site.project ? `${link.site.project.name} · ` : ""}
                     {link.site.name}
@@ -206,7 +206,7 @@ export function InviteLinkGenerator({
                 <Input
                   readOnly
                   value={url}
-                  className="text-xs h-7 bg-[#fffefc] text-[#222222] font-mono border-[#e5e7eb]"
+                  className="text-xs h-7 bg-white text-[#475569] font-mono border-[#E2E8F0]"
                   onFocus={(e) => e.target.select()}
                 />
                 <Button
@@ -217,12 +217,12 @@ export function InviteLinkGenerator({
                   title="Copy link"
                 >
                   {isCopied ? (
-                    <Check className="h-3.5 w-3.5 text-[#0f3e17]" />
+                    <Check className="h-3.5 w-3.5 text-[#0F172A]" />
                   ) : (
                     <Copy className="h-3.5 w-3.5" />
                   )}
                 </Button>
-                <span className="text-xs text-[#333333] shrink-0 whitespace-nowrap tracking-[-0.36px]">
+                <span className="text-xs text-[#475569] shrink-0 whitespace-nowrap tracking-[-0.36px]">
                   Expires{" "}
                   {expiresAt.toLocaleDateString("en-GB", {
                     day: "numeric",

@@ -96,18 +96,18 @@ export default function SignUpPage() {
   }
 
   const inputCls =
-    "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15 disabled:opacity-50 transition-colors";
+    "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-[#4F46E5] focus:ring-2 focus:ring-[#4F46E5]/15 disabled:opacity-50 transition-colors";
 
   if (step === "org") {
     return (
       <div>
         <div className="mb-7">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 rounded-lg bg-sky-100 flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-sky-600" />
+            <div className="h-8 w-8 rounded-lg bg-[#EEF2FF] flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-[#4F46E5]" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-sky-600">Step 2 of 2</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#4F46E5]">Step 2 of 2</p>
             </div>
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Set up your organisation</h1>
@@ -158,7 +158,7 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-1 w-full rounded-lg bg-sky-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-600 active:scale-[0.98] disabled:opacity-60 transition-all"
+            className="mt-1 w-full rounded-lg bg-[#4F46E5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4338CA] active:scale-[0.98] disabled:opacity-60 transition-all"
           >
             {loading ? "Creating your workspace..." : "Create organisation"}
           </button>
@@ -182,7 +182,7 @@ export default function SignUpPage() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Step 1 of 2</p>
           <div className="flex gap-1">
-            <div className="h-1 w-8 rounded-full bg-sky-500" />
+            <div className="h-1 w-8 rounded-full bg-[#4F46E5]" />
             <div className="h-1 w-8 rounded-full bg-zinc-200" />
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function SignUpPage() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full rounded-lg bg-sky-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-600 active:scale-[0.98] disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+          className="mt-1 w-full rounded-lg bg-[#4F46E5] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#4338CA] active:scale-[0.98] disabled:opacity-60 transition-all flex items-center justify-center gap-2"
         >
           Continue
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -262,7 +262,7 @@ export default function SignUpPage() {
 
       <p className="mt-6 text-center text-sm text-zinc-500">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-sky-600 hover:text-sky-500 transition-colors">
+        <Link href="/sign-in" className="text-[#4F46E5] hover:text-[#4F46E5] transition-colors">
           Sign in
         </Link>
       </p>

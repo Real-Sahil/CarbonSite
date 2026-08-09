@@ -53,33 +53,33 @@ export function CreateSiteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#e5e7eb] p-[21px] flex flex-col gap-4">
-      <p className="text-sm font-normal text-[#0f3e17] tracking-[-0.42px]">New site</p>
+    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E2E8F0] p-[21px] flex flex-col gap-4">
+      <p className="text-sm font-normal text-[#0F172A] tracking-[-0.42px]">New site</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="site-name" className="text-xs text-[#222222] tracking-[-0.36px]">
+          <Label htmlFor="site-name" className="text-xs text-[#475569] tracking-[-0.36px]">
             Name <span aria-hidden="true" className="text-red-500">*</span>
           </Label>
           <Input id="site-name" name="name" required placeholder="Site name" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="site-code" className="text-xs text-[#222222] tracking-[-0.36px]">Site code</Label>
+          <Label htmlFor="site-code" className="text-xs text-[#475569] tracking-[-0.36px]">Site code</Label>
           <Input id="site-code" name="siteCode" placeholder="SITE-001" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="site-postcode" className="text-xs text-[#222222] tracking-[-0.36px]">Postcode</Label>
+          <Label htmlFor="site-postcode" className="text-xs text-[#475569] tracking-[-0.36px]">Postcode</Label>
           <Input id="site-postcode" name="postcode" placeholder="SW1A 1AA" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5 sm:col-span-2">
-          <Label htmlFor="site-address" className="text-xs text-[#222222] tracking-[-0.36px]">Address line 1</Label>
+          <Label htmlFor="site-address" className="text-xs text-[#475569] tracking-[-0.36px]">Address line 1</Label>
           <Input id="site-address" name="addressLine1" placeholder="1 Example Street" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="site-city" className="text-xs text-[#222222] tracking-[-0.36px]">City</Label>
+          <Label htmlFor="site-city" className="text-xs text-[#475569] tracking-[-0.36px]">City</Label>
           <Input id="site-city" name="city" placeholder="London" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="site-country" className="text-xs text-[#222222] tracking-[-0.36px]">Country</Label>
+          <Label htmlFor="site-country" className="text-xs text-[#475569] tracking-[-0.36px]">Country</Label>
           <Input id="site-country" name="country" defaultValue="GB" placeholder="GB" className="h-9 text-sm" />
         </div>
       </div>

@@ -73,10 +73,10 @@ export default function AuthLayout({
       </div>
 
       {/* ── Right panel (light) ───────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#fafaf9] px-6 py-12 min-h-[100dvh]">
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#F8FAFC] px-6 py-12 min-h-[100dvh]">
         {/* Mobile brand (hidden on lg+) */}
         <div className="lg:hidden mb-8 text-center">
-          <span className="text-xl font-semibold tracking-tight text-[#0f3e17]">CarbonSite</span>
+          <span className="text-xl font-semibold tracking-tight text-[#4F46E5]">CarbonSite</span>
           <p className="text-xs text-zinc-500 mt-1">GHG Emissions Tracking</p>
         </div>
 

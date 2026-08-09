@@ -56,12 +56,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  pending: "border-[#e5e7eb] bg-[#e1f4df] text-[#0f3e17]",
-  submitted: "border-[#b6ced5] bg-[#b6ced5]/30 text-[#0f3e17]",
-  under_review: "border-[#b6ced5] bg-[#b6ced5]/50 text-[#0f3e17]",
-  approved: "border-[#b1dbb8] bg-[#cfe7d3] text-[#0f3e17]",
-  rejected: "border-[#e5e7eb] bg-[#e5e7eb] text-[#333333]",
-  needs_info: "border-[#b6ced5] bg-[#b6ced5]/20 text-[#0f3e17]",
+  pending: "border-[#E2E8F0] bg-[#EEF2FF] text-[#0F172A]",
+  submitted: "border-[#C7D2FE] bg-[#EEF2FF]/30 text-[#0F172A]",
+  under_review: "border-[#C7D2FE] bg-[#EEF2FF]/50 text-[#0F172A]",
+  approved: "border-[#C7D2FE] bg-[#cfe7d3] text-[#0F172A]",
+  rejected: "border-[#E2E8F0] bg-[#e5e7eb] text-[#475569]",
+  needs_info: "border-[#C7D2FE] bg-[#EEF2FF]/20 text-[#0F172A]",
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -175,7 +175,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
           <div>
             <CardTitle className="text-base">
               Submissions
-              <span className="ml-2 text-sm font-normal text-[#333333]">
+              <span className="ml-2 text-sm font-normal text-[#475569]">
                 ({list.length})
               </span>
             </CardTitle>
@@ -211,7 +211,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
                   <select
                     value={assigneeUserId}
                     onChange={(e) => setAssigneeUserId(e.target.value)}
-                    className="h-8 rounded-md border border-[#e5e7eb] bg-[#fffefc] px-2 text-sm"
+                    className="h-8 rounded-md border border-[#E2E8F0] bg-white px-2 text-sm"
                   >
                     {members.map((m) => (
                       <option key={m.id} value={m.id}>
@@ -250,14 +250,14 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
 
         {list.length === 0 && (
           <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e1f4df]">
-              <Inbox aria-hidden="true" className="h-7 w-7 text-[#0f3e17]" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#EEF2FF]">
+              <Inbox aria-hidden="true" className="h-7 w-7 text-[#0F172A]" />
             </div>
             <div>
-              <p className="font-normal text-[#0f3e17] tracking-[-0.42px]">
+              <p className="font-normal text-[#0F172A] tracking-[-0.42px]">
                 No field submissions yet
               </p>
-              <p className="text-sm text-[#222222] tracking-[-0.42px] mt-[7px] max-w-sm">
+              <p className="text-sm text-[#475569] tracking-[-0.42px] mt-[7px] max-w-sm">
                 Share an invite link with your field workers to get started.
                 Field workers photograph waste tickets, delivery notes, and fuel
                 receipts directly from the mobile app.
@@ -310,7 +310,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
                     <TableCell className="font-medium">
                       <Link
                         href={`/orgs/${orgId}/submissions/${s.id}`}
-                        className="hover:underline underline-offset-2 text-[#0f3e17]"
+                        className="hover:underline underline-offset-2 text-[#0F172A]"
                       >
                         {DOC_TYPE_LABELS[s.documentType] ?? s.documentType}
                       </Link>
@@ -320,7 +320,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
                         className={cn(
                           "inline-flex items-center rounded-full border px-[14px] py-[7px] text-xs font-normal tracking-[-0.36px]",
                           STATUS_CLASSES[s.status] ??
-                            "border-[#e5e7eb] bg-[#e1f4df] text-[#333333]",
+                            "border-[#E2E8F0] bg-[#EEF2FF] text-[#475569]",
                         )}
                       >
                         {STATUS_LABELS[s.status] ?? s.status}
@@ -339,18 +339,18 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
                         </Link>
                       )}
                     </TableCell>
-                    <TableCell className="text-[#222222]">
+                    <TableCell className="text-[#475569]">
                       {s.submittedBy.name ?? s.submittedBy.email}
                     </TableCell>
-                    <TableCell className="text-[#222222]">
+                    <TableCell className="text-[#475569]">
                       {s.reportingPeriod.label}
                     </TableCell>
-                    <TableCell className="text-[#222222]">
+                    <TableCell className="text-[#475569]">
                       {s.facility?.name ?? (
-                        <span className="text-[#333333] italic">None</span>
+                        <span className="text-[#475569] italic">None</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-[#333333] text-sm tracking-[-0.36px]">
+                    <TableCell className="text-[#475569] text-sm tracking-[-0.36px]">
                       {new Date(s.createdAt).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",

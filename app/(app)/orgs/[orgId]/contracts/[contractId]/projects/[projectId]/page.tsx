@@ -104,33 +104,33 @@ export default async function ProjectDetailPage({ params }: Props) {
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-[#333333] tracking-[-0.42px]">
-        <Link href={`/orgs/${orgId}/contracts`} className="hover:text-[#0f3e17] hover:underline">
+      <nav className="flex items-center gap-2 text-sm text-[#475569] tracking-[-0.42px]">
+        <Link href={`/orgs/${orgId}/contracts`} className="hover:text-[#0F172A] hover:underline">
           Contracts
         </Link>
         <span>/</span>
         <Link
           href={`/orgs/${orgId}/contracts/${contractId}`}
-          className="hover:text-[#0f3e17] hover:underline"
+          className="hover:text-[#0F172A] hover:underline"
         >
           {contract.name}
         </Link>
         <span>/</span>
-        <span className="text-[#0f3e17]">{project.name}</span>
+        <span className="text-[#0F172A]">{project.name}</span>
       </nav>
 
       {/* Header */}
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#0f3e17] bg-[#b6ced5] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#0F172A] bg-[#EEF2FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Contracts
         </p>
         <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+          className="text-2xl font-bold tracking-tight text-[#0F172A]"
+          
         >
           {project.name}
         </h1>
-        <p className="text-sm text-[#222222] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#475569] font-normal tracking-[-0.42px] mt-[7px]">
           Project details and associated sites.
         </p>
       </div>
@@ -149,16 +149,16 @@ export default async function ProjectDetailPage({ params }: Props) {
         <CardContent>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">Project code</p>
-              <p className="mt-1 text-sm text-[#0f3e17] tracking-[-0.42px]">{project.projectCode ?? "—"}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#475569]">Project code</p>
+              <p className="mt-1 text-sm text-[#0F172A] tracking-[-0.42px]">{project.projectCode ?? "—"}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">Start date</p>
-              <p className="mt-1 text-sm text-[#0f3e17] tracking-[-0.42px]">{formatDate(project.startDate)}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#475569]">Start date</p>
+              <p className="mt-1 text-sm text-[#0F172A] tracking-[-0.42px]">{formatDate(project.startDate)}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#333333]">End date</p>
-              <p className="mt-1 text-sm text-[#0f3e17] tracking-[-0.42px]">{formatDate(project.endDate)}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#475569]">End date</p>
+              <p className="mt-1 text-sm text-[#0F172A] tracking-[-0.42px]">{formatDate(project.endDate)}</p>
             </div>
           </div>
         </CardContent>
@@ -184,34 +184,34 @@ export default async function ProjectDetailPage({ params }: Props) {
           {sites.length === 0 ? (
             <EmptyState message="No sites yet. Create one above to get started." />
           ) : (
-            <div className="rounded-[14px] border border-[#e5e7eb] overflow-hidden">
+            <div className="rounded-[14px] border border-[#E2E8F0] overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#f9fafb]">
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Name</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Site code</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Postcode</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">City</TableHead>
-                    <TableHead className="text-xs font-normal text-[#333333] tracking-[-0.36px]">Country</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Name</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Site code</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Postcode</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">City</TableHead>
+                    <TableHead className="text-xs font-normal text-[#475569] tracking-[-0.36px]">Country</TableHead>
                     <TableHead className="w-[60px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sites.map((site) => (
                     <TableRow key={site.id} className="hover:bg-[#f9fafb]">
-                      <TableCell className="font-normal text-[#0f3e17] tracking-[-0.42px]">
+                      <TableCell className="font-normal text-[#0F172A] tracking-[-0.42px]">
                         {site.name}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {site.siteCode ?? "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {site.postcode ?? "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {site.city ?? "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-[#222222] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#475569] tracking-[-0.42px]">
                         {site.country ?? "—"}
                       </TableCell>
                       <TableCell>
@@ -239,15 +239,15 @@ export default async function ProjectDetailPage({ params }: Props) {
 
 function AccessDenied() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fffefc]">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
         <h1
-          className="text-[40px] leading-[1.35] tracking-[-0.4px] text-[#0f3e17] mb-[7px]"
-          style={{ fontFamily: "var(--font-fraunces, Fraunces, Georgia, serif)", fontWeight: 300 }}
+          className="text-2xl font-bold tracking-tight text-[#0F172A] mb-1"
+          
         >
           Access denied
         </h1>
-        <p className="text-sm text-[#222222] tracking-[-0.42px]">
+        <p className="text-sm text-[#475569] tracking-[-0.42px]">
           You do not have permission to view this project.
         </p>
       </div>
@@ -257,9 +257,9 @@ function AccessDenied() {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#b1dbb8] bg-[#e1f4df] p-[42px] text-center">
-      <Building2 className="h-8 w-8 text-[#0f3e17] opacity-40" />
-      <p className="text-sm text-[#222222] tracking-[-0.42px]">{message}</p>
+    <div className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#C7D2FE] bg-[#EEF2FF] p-[42px] text-center">
+      <Building2 className="h-8 w-8 text-[#0F172A] opacity-40" />
+      <p className="text-sm text-[#475569] tracking-[-0.42px]">{message}</p>
     </div>
   );
 }
