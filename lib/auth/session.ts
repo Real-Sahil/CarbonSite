@@ -5,12 +5,45 @@ import type { OrgRole } from "@prisma/client";
 
 export async function getSession() {
   const requestHeaders = await headers();
+
+  // Primary: let Better Auth verify the signed session cookie with its secret.
   const browserSession = await auth.api.getSession({ headers: requestHeaders }).catch((err: unknown) => {
     console.error("[getSession] auth.api.getSession threw:", err);
     return null;
   });
   if (browserSession) return browserSession;
 
+  // Cookie fallback: Better Auth signs session cookies with BETTER_AUTH_SECRET.
+  // If that env var is absent the library generates a random per-process secret.
+  // On serverless platforms (Vercel) every cold start is a new process with a
+  // new secret, so getSignedCookie() always returns null even for valid sessions.
+  //
+  // The signed cookie format is "{rawToken}.{44-char-base64-hmac}".
+  // We extract the raw token (the part before the trailing signature), look it
+  // up in the DB, and validate expiry + revocation ourselves — same checks
+  // auth.api.getSession() would perform after signature verification.
+  const cookieHeader = requestHeaders.get("cookie");
+  if (cookieHeader) {
+    // Better Auth uses "__Secure-" prefix in production (secure:true), plain name otherwise.
+    const signedValue =
+      readRawCookie(cookieHeader, "__Secure-better-auth.session_token") ??
+      readRawCookie(cookieHeader, "better-auth.session_token");
+
+    if (signedValue) {
+      const token = extractTokenFromSignedCookie(signedValue);
+      if (token) {
+        const dbSession = await prisma.session
+          .findUnique({ where: { token }, include: { user: true } })
+          .catch(() => null);
+
+        if (dbSession && dbSession.expiresAt > new Date() && dbSession.revokedAt === null) {
+          return buildSessionResult(dbSession);
+        }
+      }
+    }
+  }
+
+  // Bearer token fallback (mobile / API clients).
   const bearerToken = extractBearerToken(requestHeaders.get("authorization"));
   if (!bearerToken) return null;
 
@@ -20,6 +53,29 @@ export async function getSession() {
   });
   if (!session || session.expiresAt <= new Date() || session.revokedAt !== null) return null;
 
+  return buildSessionResult(session);
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+type DbSession = {
+  createdAt: Date;
+  expiresAt: Date;
+  id: string;
+  token: string;
+  updatedAt: Date;
+  userId: string;
+  user: {
+    createdAt: Date;
+    email: string;
+    emailVerifiedAt: Date | null;
+    id: string;
+    name: string | null;
+    updatedAt: Date;
+  };
+};
+
+function buildSessionResult(session: DbSession) {
   return {
     session: {
       createdAt: session.createdAt,
@@ -38,6 +94,30 @@ export async function getSession() {
       updatedAt: session.user.updatedAt,
     },
   };
+}
+
+function readRawCookie(cookieHeader: string, name: string): string | null {
+  for (const part of cookieHeader.split(";")) {
+    const trimmed = part.trim();
+    if (trimmed.startsWith(`${name}=`)) {
+      try {
+        return decodeURIComponent(trimmed.slice(name.length + 1));
+      } catch {
+        return trimmed.slice(name.length + 1);
+      }
+    }
+  }
+  return null;
+}
+
+function extractTokenFromSignedCookie(value: string): string | null {
+  // Format: "{token}.{signature}" where signature is always exactly 44 base64
+  // chars ending with "=" (from better-call's serializeSignedCookie).
+  const lastDot = value.lastIndexOf(".");
+  if (lastDot < 1) return value; // no signature present, use whole value
+  const sig = value.substring(lastDot + 1);
+  if (sig.length !== 44 || !sig.endsWith("=")) return value; // doesn't look signed
+  return value.substring(0, lastDot);
 }
 
 function extractBearerToken(header: string | null) {
