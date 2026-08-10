@@ -21,6 +21,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { ScopeDonut } from "@/components/charts/scope-donut";
 import { CategoryBar } from "@/components/charts/category-bar";
+import { PublishSnapshotButton } from "./publish-snapshot-button";
 
 interface CalculationRunPageProps {
   params: Promise<{ orgId: string; runId: string }>;
@@ -93,6 +94,16 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
   }).catch(() => null);
 
   if (!run) notFound();
+
+  // Check whether a snapshot already exists for this reporting period so the
+  // publish button can show a diff before overwriting it.
+  const existingSnapshot = await prisma.publishedSnapshot
+    .findFirst({
+      where: { organizationId: orgId, reportingPeriodId: run.reportingPeriodId },
+      orderBy: { version: "desc" },
+      select: { id: true },
+    })
+    .catch(() => null);
 
   const [groupRows, largestCalculations] = await Promise.all([
     prisma.emissionCalculation.findMany({
@@ -187,12 +198,21 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
               ({run.methodologyVersion.gwpVersion})
             </p>
           </div>
-          <Badge
-            variant="outline"
-            className={STATUS_CLASSES[run.status] ?? STATUS_CLASSES.queued}
-          >
-            {STATUS_LABELS[run.status] ?? run.status}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge
+              variant="outline"
+              className={STATUS_CLASSES[run.status] ?? STATUS_CLASSES.queued}
+            >
+              {STATUS_LABELS[run.status] ?? run.status}
+            </Badge>
+            {run.status === "succeeded" && (
+              <PublishSnapshotButton
+                orgId={orgId}
+                runId={runId}
+                existingSnapshotId={existingSnapshot?.id ?? null}
+              />
+            )}
+          </div>
         </div>
       </div>
 
