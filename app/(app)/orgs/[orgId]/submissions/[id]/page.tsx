@@ -647,6 +647,8 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 formData={(submission.formData ?? {}) as Record<string, unknown>}
                 emissionCategoryId={submission.emissionCategoryId}
                 facilityId={submission.facilityId}
+                pickupPostcode={submission.pickupPostcode}
+                deliveryPostcode={submission.deliveryPostcode}
                 pickupLat={submission.pickupLat !== null ? Number(submission.pickupLat) : null}
                 pickupLng={submission.pickupLng !== null ? Number(submission.pickupLng) : null}
                 deliveryLat={submission.deliveryLat !== null ? Number(submission.deliveryLat) : null}

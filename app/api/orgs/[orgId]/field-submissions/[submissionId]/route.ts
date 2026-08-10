@@ -121,6 +121,8 @@ export async function PATCH(
         id: true,
         status: true,
         formData: true,
+        pickupPostcode: true,
+        deliveryPostcode: true,
         pickupLat: true,
         pickupLng: true,
         deliveryLat: true,
@@ -182,6 +184,12 @@ export async function PATCH(
           : {}),
         ...(body.data.facilityId !== undefined
           ? { facilityId: body.data.facilityId }
+          : {}),
+        ...(body.data.pickupPostcode !== undefined
+          ? { pickupPostcode: body.data.pickupPostcode }
+          : {}),
+        ...(body.data.deliveryPostcode !== undefined
+          ? { deliveryPostcode: body.data.deliveryPostcode }
           : {}),
         ...(body.data.pickupLat !== undefined ? { pickupLat: body.data.pickupLat } : {}),
         ...(body.data.pickupLng !== undefined ? { pickupLng: body.data.pickupLng } : {}),

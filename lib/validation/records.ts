@@ -98,6 +98,8 @@ export const updateFieldSubmissionSchema = z.object({
   formData: z.record(z.any()).optional(),
   emissionCategoryId: z.string().nullable().optional(),
   facilityId: z.string().nullable().optional(),
+  pickupPostcode: z.string().max(20).optional(),
+  deliveryPostcode: z.string().max(20).optional(),
   pickupLat: z.number().min(-90).max(90).nullable().optional(),
   pickupLng: z.number().min(-180).max(180).nullable().optional(),
   deliveryLat: z.number().min(-90).max(90).nullable().optional(),
