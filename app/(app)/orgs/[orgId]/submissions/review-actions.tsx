@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -12,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CheckCircle2, XCircle, MessageCircle } from "lucide-react";
-import { handleSupabaseError } from "@/lib/utils/supabase-error-handler";
+import { useSafeMutation } from "@/lib/hooks/use-safe-mutation";
 
 interface SubmissionReviewActionsProps {
   orgId: string;
@@ -33,12 +32,11 @@ export function SubmissionReviewActions({
   facilities,
   disabled,
 }: SubmissionReviewActionsProps) {
-  const router = useRouter();
+  const { execute, error, isPending, setError } = useSafeMutation();
   const [emissionCategoryId, setEmissionCategoryId] = useState(currentEmissionCategoryId ?? "");
   const [facilityId, setFacilityId] = useState(currentFacilityId ?? "");
   const [reviewNote, setReviewNote] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleAction(action: "approved" | "rejected" | "needs_info") {
     if (action === "approved" && !emissionCategoryId) {
@@ -46,8 +44,8 @@ export function SubmissionReviewActions({
       return;
     }
     setLoading(action);
-    setError(null);
-    try {
+
+    const result = await execute(async () => {
       const res = await fetch(`/api/orgs/${orgId}/field-submissions/${submissionId}/review`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -58,26 +56,22 @@ export function SubmissionReviewActions({
           reviewNote: reviewNote || undefined,
         }),
       });
+
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        const error = new Error(data.message ?? "Review failed.");
-        (error as any).status = res.status;
-        const { action: errorAction, message } = handleSupabaseError(error);
-
-        if (errorAction === "logout") {
-          localStorage.removeItem("session");
-          router.push("/auth/sign-in");
-          return;
-        }
-
-        setError(message);
-      } else {
-        router.refresh();
+        const err = new Error(data.message ?? "Review failed.");
+        (err as any).status = res.status;
+        throw err;
       }
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(null);
+
+      return res.json();
+    });
+
+    setLoading(null);
+
+    if (result.success) {
+      // Refresh the page to show updated status
+      window.location.reload();
     }
   }
 

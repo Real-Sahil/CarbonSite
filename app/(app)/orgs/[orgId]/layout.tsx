@@ -82,17 +82,47 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     );
   }
 
-  const [org, branding] = await Promise.all([
-    prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { id: true, name: true },
-    }),
-    // Graceful fallback: tenant_branding table may not exist during DB migrations.
-    prisma.tenantBranding.findUnique({
-      where: { organizationId: orgId },
-      select: { primaryHex: true, accentHex: true, fontFamily: true, logoStorageKey: true },
-    }).catch(() => null),
-  ]);
+  let org: { id: string; name: string } | null = null;
+  let branding: { primaryHex: string | null; accentHex: string | null; fontFamily: string | null } | null = null;
+  let dataFetchError: string | null = null;
+
+  try {
+    [org, branding] = await Promise.all([
+      prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { id: true, name: true },
+      }),
+      // Graceful fallback: tenant_branding table may not exist during DB migrations.
+      prisma.tenantBranding.findUnique({
+        where: { organizationId: orgId },
+        select: { primaryHex: true, accentHex: true, fontFamily: true, logoStorageKey: true },
+      }).catch(() => null),
+    ]);
+  } catch (err) {
+    console.error("[OrgLayout] Failed to load org/branding:", err);
+    dataFetchError = "Failed to load organization data. Please refresh the page.";
+  }
+
+  if (dataFetchError) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#F9FAFB]">
+        <div className="text-center max-w-sm px-6">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#111827] mb-2">
+            Temporary error
+          </h1>
+          <p className="text-sm text-[#374151] mb-4">
+            {dataFetchError}
+          </p>
+          <a
+            href=""
+            className="inline-block rounded-lg bg-[#0EA5E9] px-4 py-2 text-sm text-white hover:bg-[#0284C7]"
+          >
+            Refresh
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   if (!org) {
     redirect("/");

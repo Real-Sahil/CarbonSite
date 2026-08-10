@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function OrgError({
   error,
@@ -9,9 +9,26 @@ export default function OrgError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [resetCount, setResetCount] = useState(0);
+
   useEffect(() => {
-    console.error("[CarbonSite] Org page error:", error);
-  }, [error]);
+    console.error("[CarbonSite] Org page error:", {
+      message: error.message,
+      digest: error.digest,
+      stack: error.stack,
+      resetCount,
+    });
+  }, [error, resetCount]);
+
+  const handleReset = () => {
+    setResetCount(prev => prev + 1);
+    if (resetCount > 2) {
+      // After 3 failed attempts, redirect home instead of looping
+      window.location.href = "/";
+      return;
+    }
+    reset();
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-6">
@@ -20,7 +37,7 @@ export default function OrgError({
           Something went wrong
         </h1>
         <p className="text-sm text-[#555] mb-2 leading-relaxed">
-          There was a problem loading this page. This is usually a temporary issue.
+          There was an unexpected error. Please try refreshing or go back to the home page.
         </p>
         {error.digest && (
           <p className="text-xs text-[#888] mb-6">
@@ -29,10 +46,11 @@ export default function OrgError({
         )}
         <div className="flex gap-3 justify-center">
           <button
-            onClick={reset}
-            className="px-5 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-sm font-medium hover:bg-[#0284C7] transition-colors"
+            onClick={handleReset}
+            disabled={resetCount > 2}
+            className="px-5 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-sm font-medium hover:bg-[#0284C7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Try again
+            {resetCount > 2 ? "Please refresh page" : "Try again"}
           </button>
           <button
             onClick={() => { window.location.href = "/"; }}
