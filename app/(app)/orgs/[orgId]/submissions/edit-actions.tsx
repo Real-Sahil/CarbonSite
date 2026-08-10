@@ -23,6 +23,8 @@ interface SubmissionEditActionsProps {
   formData: Record<string, unknown>;
   emissionCategoryId: string | null;
   facilityId: string | null;
+  pickupPostcode: string | null;
+  deliveryPostcode: string | null;
   pickupLat: number | null;
   pickupLng: number | null;
   deliveryLat: number | null;
@@ -45,6 +47,8 @@ export function SubmissionEditActions({
   formData,
   emissionCategoryId: initialCategoryId,
   facilityId: initialFacilityId,
+  pickupPostcode: initialPickupPostcode,
+  deliveryPostcode: initialDeliveryPostcode,
   pickupLat: initialPickupLat,
   pickupLng: initialPickupLng,
   deliveryLat: initialDeliveryLat,
@@ -62,6 +66,8 @@ export function SubmissionEditActions({
   );
   const [categoryId, setCategoryId] = useState(initialCategoryId ?? "");
   const [facilityId, setFacilityId] = useState(initialFacilityId ?? "");
+  const [pickupPostcode, setPickupPostcode] = useState(initialPickupPostcode ?? "");
+  const [deliveryPostcode, setDeliveryPostcode] = useState(initialDeliveryPostcode ?? "");
   const [pickupLat, setPickupLat] = useState(initialPickupLat?.toString() ?? "");
   const [pickupLng, setPickupLng] = useState(initialPickupLng?.toString() ?? "");
   const [deliveryLat, setDeliveryLat] = useState(initialDeliveryLat?.toString() ?? "");
@@ -87,6 +93,9 @@ export function SubmissionEditActions({
       emissionCategoryId: categoryId || null,
       facilityId: facilityId || null,
     };
+
+    if (pickupPostcode.trim()) body.pickupPostcode = pickupPostcode.trim();
+    if (deliveryPostcode.trim()) body.deliveryPostcode = deliveryPostcode.trim();
 
     const pLat = pickupLat ? parseFloat(pickupLat) : null;
     const pLng = pickupLng ? parseFloat(pickupLng) : null;
@@ -178,6 +187,32 @@ export function SubmissionEditActions({
             />
           </div>
         ))}
+      </div>
+
+      <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
+        <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+          Dispatch/Delivery postcodes (used for carbon calculation)
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-xs text-[#374151] tracking-[-0.36px]">Pickup postcode</label>
+            <Input
+              value={pickupPostcode}
+              onChange={(e) => setPickupPostcode(e.target.value)}
+              placeholder="SW1A 1AA"
+              className="h-8 text-sm mt-0.5"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-[#374151] tracking-[-0.36px]">Delivery postcode</label>
+            <Input
+              value={deliveryPostcode}
+              onChange={(e) => setDeliveryPostcode(e.target.value)}
+              placeholder="M1 1AE"
+              className="h-8 text-sm mt-0.5"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">

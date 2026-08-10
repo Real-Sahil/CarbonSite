@@ -34,6 +34,8 @@ class ExtractedFields {
   final String? volume;
   final String? volumeUnit;
   final String? postcode;
+  final String? pickupPostcode;
+  final String? deliveryPostcode;
 
   /// Per-field confidence scores.
   /// Keys match [toMap()] keys.  Values are in [0.0, 1.0]:
@@ -57,6 +59,8 @@ class ExtractedFields {
     this.volume,
     this.volumeUnit,
     this.postcode,
+    this.pickupPostcode,
+    this.deliveryPostcode,
     this.fieldConfidence = const {},
   });
 
@@ -77,6 +81,8 @@ class ExtractedFields {
       if (volume != null) 'volume': volume!,
       if (volumeUnit != null) 'volumeUnit': volumeUnit!,
       if (postcode != null) 'postcode': postcode!,
+      if (pickupPostcode != null) 'pickupPostcode': pickupPostcode!,
+      if (deliveryPostcode != null) 'deliveryPostcode': deliveryPostcode!,
       'fieldConfidence': fieldConfidence,
     };
   }
@@ -237,9 +243,14 @@ class OcrExtractor {
     final supplierName = supplierResult.$1;
     final supplierConfidence = supplierResult.$2;
 
-    // 7. UK postcode (pickup/delivery site — feeds transport distance calc).
+    // 7. UK postcodes (pickup/delivery sites — feed transport distance calc).
     final postcode = _extractPostcode(working);
     final postcodeConfidence = postcode != null ? _exactMatch : _notFound;
+    final postcodeResult = _extractPickupDeliveryPostcodes(working);
+    final pickupPostcode = postcodeResult.$1;
+    final deliveryPostcode = postcodeResult.$2;
+    final pickupPostcodeConfidence = pickupPostcode != null ? _exactMatch : _notFound;
+    final deliveryPostcodeConfidence = deliveryPostcode != null ? _exactMatch : _notFound;
 
     // 8. Material / product type (delivery notes).
     final materialResult = _extractMaterialWithConfidence(lines);
@@ -257,6 +268,8 @@ class OcrExtractor {
       'volume': volumeConfidence,
       'volumeUnit': volumeMatch != null ? _exactMatch : _notFound,
       'postcode': postcodeConfidence,
+      'pickupPostcode': pickupPostcodeConfidence,
+      'deliveryPostcode': deliveryPostcodeConfidence,
       'materialType': materialConfidence,
     };
 
@@ -283,6 +296,8 @@ class OcrExtractor {
           ? null
           : _normalizeVolumeUnit(volumeMatch.group(2)!),
       postcode: postcode,
+      pickupPostcode: pickupPostcode,
+      deliveryPostcode: deliveryPostcode,
       fieldConfidence: confidence,
     );
   }
@@ -292,6 +307,18 @@ class OcrExtractor {
     final m = _postcodePattern.firstMatch(text);
     if (m == null) return null;
     return '${m.group(1)!.toUpperCase()} ${m.group(2)!.toUpperCase()}';
+  }
+
+  /// Extract all postcodes from text, normalised to "OUTWARD INWARD" upper case.
+  /// Returns (pickupPostcode, deliveryPostcode) — typically dispatch and delivery locations.
+  static (String?, String?) _extractPickupDeliveryPostcodes(String text) {
+    final matches = _postcodePattern.allMatches(text).toList();
+    if (matches.isEmpty) return (null, null);
+    String normalize(RegExpMatch m) => '${m.group(1)!.toUpperCase()} ${m.group(2)!.toUpperCase()}';
+    if (matches.length == 1) {
+      return (normalize(matches[0]), null);
+    }
+    return (normalize(matches[0]), normalize(matches[1]));
   }
 
   /// Returns (material | null, confidence) from a labelled line.
