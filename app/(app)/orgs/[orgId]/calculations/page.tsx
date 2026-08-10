@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calculator, Play, RefreshCw, AlertTriangle, CheckCircle2, Clock, Loader2 } from "lucide-react";
+import { Calculator, Play, AlertTriangle, CheckCircle2, Clock, Loader2 } from "lucide-react";
 import { StatusPoller } from "@/components/ui/status-poller";
 import { RetryCalculationButton } from "./retry-button";
 import { CancelRunButton } from "./cancel-run-button";
