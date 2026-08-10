@@ -46,11 +46,17 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       if (err.status === 401) redirect("/sign-in");
       return <AccessDenied />;
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const where = buildAuditWhere(orgId, filters);
-  const [logs, actionOptions, resourceOptions, totalCount] = await Promise.all([
+  const dbResult = await Promise.all([
     prisma.auditLog.findMany({
       where,
       include: { actor: { select: { name: true, email: true } } },
@@ -70,7 +76,14 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       orderBy: { resourceType: "asc" },
     }),
     prisma.auditLog.count({ where }),
-  ]);
+  ]).catch(() => null);
+
+  if (!dbResult) {
+    return (
+      <div className="p-8"><p className="text-red-600 text-sm">Failed to load audit logs. The database may be updating — try refreshing in a moment.</p></div>
+    );
+  }
+  const [logs, actionOptions, resourceOptions, totalCount] = dbResult;
 
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFB]">

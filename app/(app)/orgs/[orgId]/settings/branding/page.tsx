@@ -31,7 +31,13 @@ export default async function BrandingPage({ params }: BrandingPageProps) {
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const branding = await prisma.tenantBranding.findUnique({

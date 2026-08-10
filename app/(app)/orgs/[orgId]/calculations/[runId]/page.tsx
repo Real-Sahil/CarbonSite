@@ -72,7 +72,13 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
       if (err.status === 401) redirect("/sign-in");
       return <AccessDenied />;
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const run = await prisma.calculationRun.findFirst({
@@ -84,7 +90,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
       triggeredBy: { select: { name: true, email: true } },
       _count: { select: { calculations: true } },
     },
-  });
+  }).catch(() => null);
 
   if (!run) notFound();
 

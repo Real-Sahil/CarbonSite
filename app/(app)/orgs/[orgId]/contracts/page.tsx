@@ -92,12 +92,18 @@ export default async function ContractsPage({ params }: Props) {
       if (err.status === 401) redirect("/sign-in");
       return <AccessDenied />;
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const canEdit = EDIT_ROLES.includes(role);
 
-  const [contracts, co2eRows] = await Promise.all([
+  const dbResult = await Promise.all([
     prisma.contract.findMany({
       where: { organizationId: orgId },
       include: { _count: { select: { projects: true } } },
@@ -121,7 +127,14 @@ export default async function ContractsPage({ params }: Props) {
       WHERE c.organization_id = ${Prisma.raw(`'${orgId}'`)}
       GROUP BY c.id
     `,
-  ]);
+  ]).catch(() => null);
+
+  if (!dbResult) {
+    return (
+      <div className="p-8"><p className="text-red-600 text-sm">Failed to load contracts. The database may be updating — try refreshing in a moment.</p></div>
+    );
+  }
+  const [contracts, co2eRows] = dbResult;
 
   // Also include CO2e from activity_records linked directly via contractId
   const directCo2eRows = await prisma.$queryRaw<ContractCo2eRow[]>`
@@ -140,7 +153,7 @@ export default async function ContractsPage({ params }: Props) {
       AND ar.contract_id IS NOT NULL
       AND ar.site_id IS NULL
     GROUP BY ar.contract_id
-  `;
+  `.catch(() => []);
 
   const co2eByContract = new Map<string, number>();
   for (const row of co2eRows) {
