@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { handleSupabaseError } from "@/lib/utils/supabase-error-handler";
 
 interface RecordActionsProps {
   orgId: string;
@@ -20,6 +22,7 @@ export function RecordActions({
   reviewStatus,
   canDelete,
 }: RecordActionsProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,12 +37,22 @@ export function RecordActions({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.message ?? "Failed.");
+        const error = new Error(data.message ?? "Failed.");
+        (error as any).status = res.status;
+        const { action, message } = handleSupabaseError(error);
+
+        if (action === "logout") {
+          localStorage.removeItem("session");
+          router.push("/auth/sign-in");
+          return;
+        }
+
+        setError(message);
       } else {
-        window.location.reload();
+        router.refresh();
       }
     } catch {
-      setError("Network error.");
+      setError("Network error. Please try again.");
     } finally {
       setLoading(null);
     }
@@ -55,12 +68,22 @@ export function RecordActions({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.message ?? "Delete failed.");
+        const error = new Error(data.message ?? "Delete failed.");
+        (error as any).status = res.status;
+        const { action, message } = handleSupabaseError(error);
+
+        if (action === "logout") {
+          localStorage.removeItem("session");
+          router.push("/auth/sign-in");
+          return;
+        }
+
+        setError(message);
       } else {
-        window.location.reload();
+        router.refresh();
       }
     } catch {
-      setError("Network error.");
+      setError("Network error. Please try again.");
     } finally {
       setLoading(null);
     }

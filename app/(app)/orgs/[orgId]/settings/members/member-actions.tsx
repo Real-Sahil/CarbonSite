@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { handleSupabaseError } from "@/lib/utils/supabase-error-handler";
 
 const ROLES = [
   { value: "admin", label: "Admin" },
@@ -44,7 +45,17 @@ export function MemberActions({
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not update member role");
+        const error = new Error(body?.message ?? "Could not update member role");
+        (error as any).status = res.status;
+        const { action, message } = handleSupabaseError(error);
+
+        if (action === "logout") {
+          localStorage.removeItem("session");
+          router.push("/auth/sign-in");
+          return;
+        }
+
+        setError(message);
         return;
       }
 
@@ -66,7 +77,17 @@ export function MemberActions({
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Could not remove member");
+        const error = new Error(body?.message ?? "Could not remove member");
+        (error as any).status = res.status;
+        const { action, message } = handleSupabaseError(error);
+
+        if (action === "logout") {
+          localStorage.removeItem("session");
+          router.push("/auth/sign-in");
+          return;
+        }
+
+        setError(message);
         return;
       }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -11,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CheckCircle2, XCircle, MessageCircle } from "lucide-react";
+import { handleSupabaseError } from "@/lib/utils/supabase-error-handler";
 
 interface SubmissionReviewActionsProps {
   orgId: string;
@@ -31,6 +33,7 @@ export function SubmissionReviewActions({
   facilities,
   disabled,
 }: SubmissionReviewActionsProps) {
+  const router = useRouter();
   const [emissionCategoryId, setEmissionCategoryId] = useState(currentEmissionCategoryId ?? "");
   const [facilityId, setFacilityId] = useState(currentFacilityId ?? "");
   const [reviewNote, setReviewNote] = useState("");
@@ -57,12 +60,22 @@ export function SubmissionReviewActions({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.message ?? "Review failed.");
+        const error = new Error(data.message ?? "Review failed.");
+        (error as any).status = res.status;
+        const { action: errorAction, message } = handleSupabaseError(error);
+
+        if (errorAction === "logout") {
+          localStorage.removeItem("session");
+          router.push("/auth/sign-in");
+          return;
+        }
+
+        setError(message);
       } else {
-        window.location.reload();
+        router.refresh();
       }
     } catch {
-      setError("Network error — try again.");
+      setError("Network error. Please try again.");
     } finally {
       setLoading(null);
     }
