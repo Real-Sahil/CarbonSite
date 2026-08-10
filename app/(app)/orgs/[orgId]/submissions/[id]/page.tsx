@@ -61,10 +61,16 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
-  const [submission, emissionCategories, facilities] = await Promise.all([
+  const dbResult = await Promise.all([
     prisma.fieldSubmission.findUnique({
       where: { id },
       include: {
@@ -106,8 +112,14 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
-  ]);
+  ]).catch(() => null);
 
+  if (!dbResult) {
+    return (
+      <div className="p-8"><p className="text-red-600 text-sm">Failed to load submission. The database may be updating — try refreshing in a moment.</p></div>
+    );
+  }
+  const [submission, emissionCategories, facilities] = dbResult;
   const [reviewer, activityRecord] = await Promise.all([
     submission?.reviewedByUserId
       ? prisma.user.findUnique({

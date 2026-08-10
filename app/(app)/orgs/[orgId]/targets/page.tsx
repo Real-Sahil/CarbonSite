@@ -39,12 +39,18 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       if (err.status === 401) redirect("/sign-in");
       return <AccessDenied />;
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const canEdit = role === "admin" || role === "editor";
 
-  const [targets, initiatives, periods, memberships] = await Promise.all([
+  const dbResult = await Promise.all([
     prisma.reductionTarget.findMany({
       where: { organizationId: orgId },
       include: {
@@ -73,7 +79,14 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       include: { user: { select: { id: true, name: true, email: true } } },
       orderBy: { createdAt: "asc" },
     }),
-  ]);
+  ]).catch(() => null);
+
+  if (!dbResult) {
+    return (
+      <div className="p-8"><p className="text-red-600 text-sm">Failed to load targets. The database may be updating — try refreshing in a moment.</p></div>
+    );
+  }
+  const [targets, initiatives, periods, memberships] = dbResult;
 
   // Fetch aggregate totals for all periods referenced by targets
   const periodIds = [

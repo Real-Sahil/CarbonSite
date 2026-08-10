@@ -84,10 +84,16 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
-  const [snapshots, reports, contracts] = await Promise.all([
+  const dbResult = await Promise.all([
     prisma.publishedSnapshot.findMany({
       where: { organizationId: orgId },
       include: {
@@ -113,8 +119,14 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
-  ]);
+  ]).catch(() => null);
 
+  if (!dbResult) {
+    return (
+      <div className="p-8"><p className="text-red-600 text-sm">Failed to load reports. The database may be updating — try refreshing in a moment.</p></div>
+    );
+  }
+  const [snapshots, reports, contracts] = dbResult;
   const hasInFlight = reports.some((r) => r.status === "queued" || r.status === "generating");
   const stats = {
     total: reports.length,

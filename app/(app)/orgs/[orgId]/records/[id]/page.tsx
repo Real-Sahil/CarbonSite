@@ -43,7 +43,13 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const canManage = role === "admin" || role === "editor" || role === "reviewer";
@@ -77,7 +83,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
       },
       _count: { select: { calculations: true } },
     },
-  });
+  }).catch(() => null);
 
   if (!record || record.organizationId !== orgId) {
     notFound();

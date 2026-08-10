@@ -48,12 +48,18 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
       if (err.status === 401) redirect("/sign-in");
       return <AccessDenied label="activity records" />;
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const canCreateRecords = role === "admin" || role === "editor";
   const canManageRecords = canCreateRecords || role === "reviewer";
-  const [records, periods, categories, facilities, businessUnits, draftGroups] = await Promise.all([
+  const dbResult = await Promise.all([
     prisma.activityRecord.findMany({
       where: { organizationId: orgId },
       include: {
@@ -96,8 +102,14 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
       _count: { _all: true },
       orderBy: { reportingPeriodId: "asc" },
     }),
-  ]);
+  ]).catch(() => null);
 
+  if (!dbResult) {
+    return (
+      <div className="p-8"><p className="text-red-600 text-sm">Failed to load records. The database may be updating — try refreshing in a moment.</p></div>
+    );
+  }
+  const [records, periods, categories, facilities, businessUnits, draftGroups] = dbResult;
   const periodLabelById = new Map(periods.map((period) => [period.id, period.label]));
 
   return (

@@ -42,7 +42,13 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load page. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   const [records, materials, projects, reportingPeriods] = await Promise.all([
