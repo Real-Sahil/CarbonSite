@@ -60,6 +60,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       key: rateLimitKey(orgId, "field-worker-site-assignments", session.user.id),
       limit: 60,
       windowMs: 60_000,
+    }).catch((err) => {
+      if (isMissingDatabaseObjectError(err)) return null;
+      throw err;
     });
     if (limited) return limited;
 
