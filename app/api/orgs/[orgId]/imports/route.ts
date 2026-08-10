@@ -57,6 +57,20 @@ export async function POST(req: NextRequest, { params }: Params) {
     const file = formData.get("file");
     const reportingPeriodId = formData.get("reportingPeriodId");
     const templateKey = formData.get("templateKey");
+    // Optional confirmed column mapping from the preview/mapping UI.
+    // Stored as-is; the worker uses it in place of auto-detection.
+    const columnMappingRaw = formData.get("columnMapping");
+    let confirmedMapping: Record<string, string> | null = null;
+    if (typeof columnMappingRaw === "string" && columnMappingRaw) {
+      try {
+        const parsed = JSON.parse(columnMappingRaw);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          confirmedMapping = parsed as Record<string, string>;
+        }
+      } catch {
+        // Ignore malformed mapping — worker falls back to auto-detection.
+      }
+    }
 
     if (!(file instanceof File)) {
       return apiError("BAD_REQUEST", "A file is required.", 400);
@@ -103,6 +117,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         sourceChecksum: checksum,
         state: "uploaded",
         createdByUserId: session.user.id,
+        ...(confirmedMapping ? { mapping: confirmedMapping } : {}),
       },
     });
 

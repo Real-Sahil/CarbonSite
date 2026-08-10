@@ -29,6 +29,59 @@ interface MembersPageProps {
   params: Promise<{ orgId: string }>;
 }
 
+async function fetchPageData(
+  orgId: string,
+  assignmentQuery: Promise<{ assignments: Awaited<ReturnType<typeof prisma.fieldWorkerSiteAssignment.findMany<{ include: { user: { select: { id: true; name: true; email: true } }; site: { select: { id: true; name: true; project: { select: { name: true } } } }; assignedBy: { select: { name: true; email: true } } } }>>>; available: boolean }>,
+) {
+  const [org, members, pendingTeamInvites, inviteLinks, sites, assignmentState] =
+    await Promise.all([
+      prisma.organization.findUniqueOrThrow({
+        where: { id: orgId },
+        select: { name: true, plan: true },
+      }),
+      prisma.organizationMembership.findMany({
+        where: { organizationId: orgId },
+        include: { user: { select: { id: true, name: true, email: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.inviteLink.findMany({
+        where: {
+          organizationId: orgId,
+          email: { not: null },
+          usedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      prisma.inviteLink.findMany({
+        where: {
+          organizationId: orgId,
+          email: null,
+          role: "field_worker",
+          usedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        include: {
+          site: {
+            select: { id: true, name: true, project: { select: { name: true } } },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      prisma.site
+        .findMany({
+          where: { organizationId: orgId },
+          orderBy: { name: "asc" },
+          select: { id: true, name: true, project: { select: { name: true } } },
+        })
+        .catch(() => [] as { id: string; name: string; project: { name: string } | null }[]),
+      assignmentQuery,
+    ]);
+  return { org, members, pendingTeamInvites, inviteLinks, sites, assignmentState };
+}
+
 const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
   editor: "Editor",
@@ -99,52 +152,20 @@ export default async function MembersPage({ params }: MembersPageProps) {
       throw err;
     });
 
-  const [org, members, pendingTeamInvites, inviteLinks, sites, assignmentState] =
-    await Promise.all([
-    prisma.organization.findUniqueOrThrow({
-      where: { id: orgId },
-      select: { name: true, plan: true },
-    }),
-    prisma.organizationMembership.findMany({
-      where: { organizationId: orgId },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-      },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.inviteLink.findMany({
-      where: {
-        organizationId: orgId,
-        email: { not: null },
-        usedAt: null,
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-    prisma.inviteLink.findMany({
-      where: {
-        organizationId: orgId,
-        email: null,
-        role: "field_worker",
-        usedAt: null,
-        expiresAt: { gt: new Date() },
-      },
-      include: {
-        site: {
-          select: { id: true, name: true, project: { select: { name: true } } },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.site.findMany({
-      where: { organizationId: orgId },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, project: { select: { name: true } } },
-    }).catch(() => [] as { id: string; name: string; project: { name: string } | null }[]),
-    assignmentQuery,
-  ]);
+  let pageData: Awaited<ReturnType<typeof fetchPageData>> | null = null;
+  try {
+    pageData = await fetchPageData(orgId, assignmentQuery);
+  } catch (err) {
+    console.error("[members/page] data fetch failed:", err);
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load members data. The database may be updating. Try refreshing in a moment.
+        </p>
+      </div>
+    );
+  }
+  const { org, members, pendingTeamInvites, inviteLinks, sites, assignmentState } = pageData;
   const fieldWorkers = members.filter((member) => member.role === "field_worker");
   const assignments = assignmentState.assignments;
 
