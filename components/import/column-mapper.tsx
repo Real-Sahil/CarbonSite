@@ -105,8 +105,8 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
 
       {/* Mapping table */}
       <div className="border border-[#E5E7EB] rounded-xl overflow-hidden">
-        {/* Table header */}
-        <div className="grid grid-cols-[1fr_28px_1fr] gap-x-2 px-4 py-2.5 bg-[#F9FAFB] border-b border-[#E5E7EB]">
+        {/* Table header — hidden on mobile (stacked layout needs no header) */}
+        <div className="hidden sm:grid grid-cols-[1fr_28px_1fr] gap-x-2 px-4 py-2.5 bg-[#F9FAFB] border-b border-[#E5E7EB]">
           <span className="text-[11px] font-medium text-[#6B7280] uppercase tracking-wide">Your column</span>
           <span />
           <span className="text-[11px] font-medium text-[#6B7280] uppercase tracking-wide">Maps to</span>
@@ -125,82 +125,85 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
             const preview = previewRows[0]?.[header];
 
             return (
-              <div key={header} className="grid grid-cols-[1fr_28px_1fr] gap-x-2 items-center px-4 py-2.5">
-                {/* Source column */}
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-mono text-[#111827] truncate">{header}</span>
-                    {isAutoDetected && isMapped && (
-                      <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+              <div key={header} className="px-4 py-3">
+                {/* Mobile: stacked layout. Desktop: side-by-side grid. */}
+                <div className="flex flex-col gap-2 sm:grid sm:grid-cols-[1fr_20px_1fr] sm:gap-x-2 sm:items-center">
+                  {/* Source column */}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-mono text-[#111827] truncate">{header}</span>
+                      {isAutoDetected && isMapped && (
+                        <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+                      )}
+                    </div>
+                    {preview != null && preview !== "" && (
+                      <span className="text-[10px] text-[#9CA3AF] truncate block mt-0.5">
+                        e.g. {String(preview).slice(0, 40)}
+                      </span>
                     )}
                   </div>
-                  {preview != null && preview !== "" && (
-                    <span className="text-[10px] text-[#9CA3AF] truncate block mt-0.5">
-                      e.g. {String(preview).slice(0, 40)}
-                    </span>
-                  )}
-                </div>
 
-                {/* Arrow */}
-                <ChevronRight className="h-3.5 w-3.5 text-[#D1D5DB] shrink-0" />
+                  {/* Arrow — hidden on mobile */}
+                  <ChevronRight className="hidden sm:block h-3.5 w-3.5 text-[#D1D5DB] shrink-0" />
 
-                {/* Target field dropdown */}
-                <div className="min-w-0">
-                  <Select value={current} onValueChange={(v) => setMapping(header, v)} disabled={busy}>
-                    <SelectTrigger
-                      className={[
-                        "h-7 text-xs w-full",
-                        !isMapped
-                          ? "border-[#E5E7EB] text-[#9CA3AF]"
-                          : isRequired
-                          ? "border-emerald-400 text-[#111827]"
-                          : "border-[#D1D5DB] text-[#111827]",
-                      ].join(" ")}
-                    >
-                      <SelectValue placeholder="Skip column" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={SKIP_VALUE}>
-                        <span className="text-[#9CA3AF] italic">Skip this column</span>
-                      </SelectItem>
-                      {/* Required fields first */}
-                      {fields
-                        .filter((f) => f.required)
-                        .map((f) => (
-                          <SelectItem
-                            key={f.canonical}
-                            value={f.canonical}
-                            disabled={
-                              canonicalByHeader.has(f.canonical) && canonicalByHeader.get(f.canonical) !== header
-                            }
-                          >
-                            <span className="flex items-center gap-1">
+                  {/* Target field dropdown */}
+                  <div className="min-w-0">
+                    <Select value={current} onValueChange={(v) => setMapping(header, v)} disabled={busy}>
+                      <SelectTrigger
+                        className={[
+                          "h-9 sm:h-7 text-xs w-full",
+                          !isMapped
+                            ? "border-[#E5E7EB] text-[#9CA3AF]"
+                            : isRequired
+                            ? "border-emerald-400 text-[#111827]"
+                            : "border-[#D1D5DB] text-[#111827]",
+                        ].join(" ")}
+                      >
+                        <SelectValue placeholder="Skip this column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={SKIP_VALUE}>
+                          <span className="text-[#9CA3AF] italic">Skip this column</span>
+                        </SelectItem>
+                        {/* Required fields first */}
+                        {fields
+                          .filter((f) => f.required)
+                          .map((f) => (
+                            <SelectItem
+                              key={f.canonical}
+                              value={f.canonical}
+                              disabled={
+                                canonicalByHeader.has(f.canonical) && canonicalByHeader.get(f.canonical) !== header
+                              }
+                            >
+                              <span className="flex items-center gap-1">
+                                {f.label}
+                                <span className="text-[10px] text-red-400 font-medium">required</span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        {/* Optional fields */}
+                        {fields
+                          .filter((f) => !f.required)
+                          .map((f) => (
+                            <SelectItem
+                              key={f.canonical}
+                              value={f.canonical}
+                              disabled={
+                                canonicalByHeader.has(f.canonical) && canonicalByHeader.get(f.canonical) !== header
+                              }
+                            >
                               {f.label}
-                              <span className="text-[10px] text-red-400 font-medium">required</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      {/* Optional fields */}
-                      {fields
-                        .filter((f) => !f.required)
-                        .map((f) => (
-                          <SelectItem
-                            key={f.canonical}
-                            value={f.canonical}
-                            disabled={
-                              canonicalByHeader.has(f.canonical) && canonicalByHeader.get(f.canonical) !== header
-                            }
-                          >
-                            {f.label}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  {field && (
-                    <span className="text-[10px] text-[#9CA3AF] mt-0.5 block truncate">
-                      {field.description}
-                    </span>
-                  )}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    {field && (
+                      <span className="text-[10px] text-[#9CA3AF] mt-0.5 block truncate">
+                        {field.description}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
