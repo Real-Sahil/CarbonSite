@@ -14,6 +14,8 @@ const resubmitSchema = z.object({
   documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "other"]).optional(),
   gpsLat: z.number().optional(),
   gpsLng: z.number().optional(),
+  pickupPostcode: z.string().max(20).optional(),
+  deliveryPostcode: z.string().max(20).optional(),
   evidenceFileIds: z.array(z.string()).optional(),
   // Offline sync retries dedupe on this — same semantics as the create route.
   idempotencyKey: z.string().max(128).optional(),
@@ -117,6 +119,8 @@ export async function POST(req: NextRequest, { params }: Params) {
         ocrExtractedData: body.ocrExtractedData as Prisma.InputJsonObject | undefined,
         gpsLat: body.gpsLat,
         gpsLng: body.gpsLng,
+        pickupPostcode: body.pickupPostcode,
+        deliveryPostcode: body.deliveryPostcode,
         idempotencyKey: body.idempotencyKey,
         resubmittedFromId: submissionId,
         ...(body.evidenceFileIds && body.evidenceFileIds.length > 0

@@ -328,6 +328,8 @@ export async function POST(req: NextRequest, { params }: Params) {
           ocrExtractedData: body.ocrExtractedData,
           gpsLat: body.gpsLat,
           gpsLng: body.gpsLng,
+          pickupPostcode: body.pickupPostcode,
+          deliveryPostcode: body.deliveryPostcode,
           pickupLat: body.pickupLat,
           pickupLng: body.pickupLng,
           deliveryLat: body.deliveryLat,
