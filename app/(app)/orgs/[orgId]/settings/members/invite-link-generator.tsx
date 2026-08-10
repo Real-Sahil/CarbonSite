@@ -79,6 +79,7 @@ export function InviteLinkGenerator({
       });
 
       if (!res.ok) {
+        if (res.status === 401) { window.location.href = "/sign-in"; return; }
         const data = await res.json().catch(() => ({}));
         setError(data.message ?? "Failed to generate invite link.");
         return;
@@ -102,6 +103,7 @@ export function InviteLinkGenerator({
         method: "DELETE",
       });
       if (!res.ok) {
+        if (res.status === 401) { window.location.href = "/sign-in"; return; }
         const data = await res.json().catch(() => ({}));
         setError(data.message ?? "Failed to revoke invite link.");
         return;

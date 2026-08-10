@@ -73,6 +73,7 @@ export function FieldWorkerAssignments({
         body: JSON.stringify({ name }),
       });
       if (!response.ok) {
+        if (response.status === 401) { window.location.href = "/sign-in"; return; }
         const body = await response.json().catch(() => null);
         setError(body?.message ?? "Could not create the site.");
         return;
@@ -113,6 +114,7 @@ export function FieldWorkerAssignments({
       });
 
       if (!response.ok) {
+        if (response.status === 401) { window.location.href = "/sign-in"; return; }
         const body = await response.json().catch(() => null);
         setError(body?.message ?? "Could not assign field worker.");
         return;
@@ -138,6 +140,7 @@ export function FieldWorkerAssignments({
       );
 
       if (!response.ok) {
+        if (response.status === 401) { window.location.href = "/sign-in"; return; }
         const body = await response.json().catch(() => null);
         setError(body?.message ?? "Could not remove assignment.");
         return;
