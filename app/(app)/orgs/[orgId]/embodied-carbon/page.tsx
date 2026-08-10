@@ -51,7 +51,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
     );
   }
 
-  const [records, materials, projects, reportingPeriods] = await Promise.all([
+  const dbResult = await Promise.all([
     prisma.embodiedCarbonRecord.findMany({
       where: { organizationId: orgId },
       include: {
@@ -76,7 +76,16 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
       select: { id: true, label: true },
       orderBy: { startDate: "desc" },
     }),
-  ]);
+  ]).catch(() => null);
+
+  if (!dbResult) {
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">Failed to load embodied carbon data. The database may be updating — try refreshing in a moment.</p>
+      </div>
+    );
+  }
+  const [records, materials, projects, reportingPeriods] = dbResult;
 
   const totalKgCo2e = records.reduce((s, r) => s + r.totalKgCo2e, 0);
 

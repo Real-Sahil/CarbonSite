@@ -153,12 +153,12 @@ function readRawCookie(cookieHeader: string, name: string): string | null {
 }
 
 function extractTokenFromSignedCookie(value: string): string | null {
-  // Format: "{token}.{signature}" where signature is always exactly 44 base64
-  // chars ending with "=" (from better-call's serializeSignedCookie).
+  // Better Auth signs cookies as "{token}.{hmac}" using base64url encoding (RFC 4648 §5),
+  // which produces 43 chars without "=" padding — not the 44-char padded base64 the
+  // previous check expected. Removing the strict format check lets the cookie fallback
+  // work regardless of the exact signature encoding the library version produces.
   const lastDot = value.lastIndexOf(".");
-  if (lastDot < 1) return value; // no signature present, use whole value
-  const sig = value.substring(lastDot + 1);
-  if (sig.length !== 44 || !sig.endsWith("=")) return value; // doesn't look signed
+  if (lastDot < 1) return value; // no dot — treat whole value as the token
   return value.substring(0, lastDot);
 }
 
