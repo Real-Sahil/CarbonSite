@@ -60,7 +60,26 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
         </div>
       );
     }
-    throw err;
+    // Non-AuthError from Prisma (e.g. missing DB column) — show a recoverable error
+    // rather than crashing the layout and making every page inaccessible.
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#F9FAFB]">
+        <div className="text-center max-w-sm px-6">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#111827] mb-2">
+            Temporary error
+          </h1>
+          <p className="text-sm text-[#374151] mb-4">
+            The database is updating. Refresh in a moment.
+          </p>
+          <a
+            href=""
+            className="inline-block rounded-lg bg-[#0EA5E9] px-4 py-2 text-sm text-white hover:bg-[#0284C7]"
+          >
+            Refresh
+          </a>
+        </div>
+      </div>
+    );
   }
 
   const [org, branding] = await Promise.all([
