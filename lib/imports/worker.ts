@@ -20,6 +20,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
         sourceFilename: true,
         reportingPeriodId: true,
         organizationId: true,
+        mapping: true,
       },
     });
 
@@ -72,7 +73,21 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
       return;
     }
 
-    const columnMap = mapColumns(headers);
+    // Use a confirmed mapping from the preview UI when available; otherwise
+    // fall back to auto-detection so legacy imports still work.
+    let columnMap: Map<string, string>;
+    const storedMapping = batch.mapping;
+    if (
+      storedMapping &&
+      typeof storedMapping === "object" &&
+      !Array.isArray(storedMapping)
+    ) {
+      columnMap = new Map(
+        Object.entries(storedMapping as Record<string, string>),
+      );
+    } else {
+      columnMap = mapColumns(headers);
+    }
 
     // Validate all rows
     const validatedRows = rows.map((row) =>
