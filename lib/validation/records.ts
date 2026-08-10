@@ -78,7 +78,9 @@ export const createFieldSubmissionSchema = z
     ),
     gpsLat: z.number().min(-90).max(90).optional(),
     gpsLng: z.number().min(-180).max(180).optional(),
-    // Explicit pickup/delivery coordinates for road-distance calculation.
+    // Explicit pickup/delivery coordinates and postcodes for road-distance calculation.
+    pickupPostcode: z.string().max(20).optional(),
+    deliveryPostcode: z.string().max(20).optional(),
     pickupLat: z.number().min(-90).max(90).optional(),
     pickupLng: z.number().min(-180).max(180).optional(),
     deliveryLat: z.number().min(-90).max(90).optional(),

@@ -297,6 +297,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     apply('volume', fields.volume);
     apply('volumeUnit', fields.volumeUnit);
     apply('postcode', fields.postcode);
+    apply('pickupPostcode', fields.pickupPostcode);
+    apply('deliveryPostcode', fields.deliveryPostcode);
   }
 
   // ---------------------------------------------------------------------
