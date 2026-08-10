@@ -63,12 +63,18 @@ export default async function MembersPage({ params }: MembersPageProps) {
       return (
         <div className="p-8">
           <p className="text-red-600">
-          You do not have permission to manage members.
+            You do not have permission to manage members.
           </p>
         </div>
       );
     }
-    throw err;
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load members. The database may be updating — try refreshing in a moment.
+        </p>
+      </div>
+    );
   }
 
   // FieldWorkerSiteAssignment is what the mobile app's /my-sites reads —
@@ -136,7 +142,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
       where: { organizationId: orgId },
       orderBy: { name: "asc" },
       select: { id: true, name: true, project: { select: { name: true } } },
-    }),
+    }).catch(() => [] as { id: string; name: string; project: { name: string } | null }[]),
     assignmentQuery,
   ]);
   const fieldWorkers = members.filter((member) => member.role === "field_worker");
