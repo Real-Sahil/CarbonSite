@@ -57,16 +57,31 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         return apiError("INVALID_EMISSION_CATEGORY", "Emission category does not exist.", 422);
       }
 
-      const result = await prisma.$transaction((tx) =>
-        approveSubmissionInTx(tx, {
+      const submissionWithEdits = {
+        ...submission,
+        ...(body.ocrExtractedData ? { ocrExtractedData: body.ocrExtractedData } : {}),
+        ...(body.formData ? { formData: body.formData } : {}),
+      };
+
+      const result = await prisma.$transaction(async (tx) => {
+        if (body.ocrExtractedData || body.formData) {
+          await tx.fieldSubmission.update({
+            where: { id: submissionId },
+            data: {
+              ...(body.ocrExtractedData ? { ocrExtractedData: body.ocrExtractedData } : {}),
+              ...(body.formData ? { formData: body.formData } : {}),
+            },
+          });
+        }
+        return approveSubmissionInTx(tx, {
           orgId,
-          submission,
+          submission: submissionWithEdits,
           emissionCategoryId: emissionCategoryId!,
           facilityId: body.facilityId,
           reviewerUserId: session.user.id,
           reviewNote: body.reviewNote,
-        }),
-      );
+        });
+      });
       activityRecordId = result.activityRecordId;
       updated = result.submission;
 
@@ -88,6 +103,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           reviewNote: body.reviewNote,
           ...(body.emissionCategoryId ? { emissionCategoryId: body.emissionCategoryId } : {}),
           ...(body.facilityId ? { facilityId: body.facilityId } : {}),
+          ...(body.ocrExtractedData ? { ocrExtractedData: body.ocrExtractedData } : {}),
+          ...(body.formData ? { formData: body.formData } : {}),
         },
       });
     }

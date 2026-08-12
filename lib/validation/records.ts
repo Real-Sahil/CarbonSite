@@ -113,6 +113,8 @@ export const reviewFieldSubmissionSchema = z.object({
   emissionCategoryId: z.string().optional(),
   facilityId: z.string().optional(),
   reviewNote: z.string().max(2000).optional(),
+  ocrExtractedData: z.record(z.any()).optional(),
+  formData: z.record(z.any()).optional(),
 });
 
 export const createReviewTaskSchema = z.object({

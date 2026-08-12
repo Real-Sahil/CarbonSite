@@ -122,6 +122,30 @@ export function CalculationControls({
     });
   }
 
+  async function handlePublishSnapshot(runId: string) {
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/orgs/${orgId}/calculation-runs/${runId}/publish-snapshot`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (res.status === 401) {
+          window.location.href = "/sign-in";
+          return;
+        }
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setRun({ ...run!, errorMessage: data.message ?? "Failed to publish snapshot." });
+          return;
+        }
+        setRun({ ...run!, errorMessage: null });
+        router.refresh();
+      } catch {
+        setRun({ ...run!, errorMessage: "Network error — try again." });
+      }
+    });
+  }
+
   if (periods.length === 0 || methodologies.length === 0 || factorLibraries.length === 0) {
     return (
       <p className="text-sm text-[#374151] tracking-[-0.42px]">
@@ -229,11 +253,19 @@ export function CalculationControls({
 
       {/* Result: succeeded */}
       {run?.status === "succeeded" && (
-        <div className="w-full flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
+        <div className="w-full flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
           <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
           <span className="text-xs text-emerald-800 font-medium">
-            Calculation complete. Dashboard updated.
+            Calculation complete. Publish the snapshot to enable reporting.
           </span>
+          <Button
+            onClick={() => handlePublishSnapshot(run.id)}
+            size="sm"
+            className="ml-auto bg-emerald-600 hover:bg-emerald-700"
+            disabled={isPending}
+          >
+            {isPending ? "Publishing…" : "Publish snapshot"}
+          </Button>
         </div>
       )}
 
