@@ -189,6 +189,26 @@ export function SubmissionEditActions({
         ))}
       </div>
 
+      {ocrFields.length > 0 && (
+        <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
+          <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+            OCR extracted values
+          </p>
+          {ocrFields.map((field, idx) => (
+            <div key={field.key} className="flex items-center gap-2">
+              <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0 capitalize">
+                {field.key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
+              </label>
+              <Input
+                value={field.value}
+                onChange={(e) => updateOcrField(idx, e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
         <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
           Dispatch/Delivery postcodes (used for carbon calculation)
