@@ -64,6 +64,11 @@ export function SubmissionEditActions({
       .filter(([, v]) => v != null && v !== "")
       .map(([key, value]) => ({ key, value: String(value) })),
   );
+  const [ocrFields, setOcrFields] = useState<FormField[]>(
+    Object.entries(ocrExtractedData ?? {})
+      .filter(([, v]) => v != null && v !== "")
+      .map(([key, value]) => ({ key, value: String(value) })),
+  );
   const [categoryId, setCategoryId] = useState(initialCategoryId ?? "");
   const [facilityId, setFacilityId] = useState(initialFacilityId ?? "");
   const [pickupPostcode, setPickupPostcode] = useState(initialPickupPostcode ?? "");
@@ -82,17 +87,23 @@ export function SubmissionEditActions({
     setFields((prev) => prev.map((f, i) => (i === idx ? { ...f, value } : f)));
   }
 
+  function updateOcrField(idx: number, value: string) {
+    setOcrFields((prev) => prev.map((f, i) => (i === idx ? { ...f, value } : f)));
+  }
+
   async function handleSave() {
     setSaving(true);
     setError(null);
     setSaved(false);
 
     const patchFormData = Object.fromEntries(fields.map((f) => [f.key, f.value]));
+    const patchOcrData = ocrFields.length > 0 ? Object.fromEntries(ocrFields.map((f) => [f.key, f.value])) : null;
     const body: Record<string, unknown> = {
       formData: patchFormData,
       emissionCategoryId: categoryId || null,
       facilityId: facilityId || null,
     };
+    if (patchOcrData) body.ocrExtractedData = patchOcrData;
 
     if (pickupPostcode.trim()) body.pickupPostcode = pickupPostcode.trim();
     if (deliveryPostcode.trim()) body.deliveryPostcode = deliveryPostcode.trim();
