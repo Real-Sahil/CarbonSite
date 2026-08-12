@@ -98,6 +98,7 @@ export const createFieldSubmissionSchema = z
 // Only non-immutable fields (formData, GPS coordinates, category, facility).
 export const updateFieldSubmissionSchema = z.object({
   formData: z.record(z.any()).optional(),
+  ocrExtractedData: z.record(z.any()).optional(),
   emissionCategoryId: z.string().nullable().optional(),
   facilityId: z.string().nullable().optional(),
   pickupPostcode: z.string().max(20).optional(),

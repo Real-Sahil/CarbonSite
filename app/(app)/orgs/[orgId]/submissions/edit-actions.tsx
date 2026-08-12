@@ -21,6 +21,7 @@ interface SubmissionEditActionsProps {
   orgId: string;
   submissionId: string;
   formData: Record<string, unknown>;
+  ocrExtractedData?: Record<string, unknown> | null;
   emissionCategoryId: string | null;
   facilityId: string | null;
   pickupPostcode: string | null;
@@ -45,6 +46,7 @@ export function SubmissionEditActions({
   orgId,
   submissionId,
   formData,
+  ocrExtractedData,
   emissionCategoryId: initialCategoryId,
   facilityId: initialFacilityId,
   pickupPostcode: initialPickupPostcode,
@@ -61,6 +63,11 @@ export function SubmissionEditActions({
   const [isEditing, setIsEditing] = useState(false);
   const [fields, setFields] = useState<FormField[]>(
     Object.entries(formData)
+      .filter(([, v]) => v != null && v !== "")
+      .map(([key, value]) => ({ key, value: String(value) })),
+  );
+  const [ocrFields, setOcrFields] = useState<FormField[]>(
+    Object.entries(ocrExtractedData ?? {})
       .filter(([, v]) => v != null && v !== "")
       .map(([key, value]) => ({ key, value: String(value) })),
   );
@@ -82,17 +89,23 @@ export function SubmissionEditActions({
     setFields((prev) => prev.map((f, i) => (i === idx ? { ...f, value } : f)));
   }
 
+  function updateOcrField(idx: number, value: string) {
+    setOcrFields((prev) => prev.map((f, i) => (i === idx ? { ...f, value } : f)));
+  }
+
   async function handleSave() {
     setSaving(true);
     setError(null);
     setSaved(false);
 
     const patchFormData = Object.fromEntries(fields.map((f) => [f.key, f.value]));
+    const patchOcrData = ocrFields.length > 0 ? Object.fromEntries(ocrFields.map((f) => [f.key, f.value])) : null;
     const body: Record<string, unknown> = {
       formData: patchFormData,
       emissionCategoryId: categoryId || null,
       facilityId: facilityId || null,
     };
+    if (patchOcrData) body.ocrExtractedData = patchOcrData;
 
     if (pickupPostcode.trim()) body.pickupPostcode = pickupPostcode.trim();
     if (deliveryPostcode.trim()) body.deliveryPostcode = deliveryPostcode.trim();
@@ -188,6 +201,26 @@ export function SubmissionEditActions({
           </div>
         ))}
       </div>
+
+      {ocrFields.length > 0 && (
+        <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
+          <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+            OCR extracted values
+          </p>
+          {ocrFields.map((field, idx) => (
+            <div key={field.key} className="flex items-center gap-2">
+              <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0 capitalize">
+                {field.key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
+              </label>
+              <Input
+                value={field.value}
+                onChange={(e) => updateOcrField(idx, e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
         <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">

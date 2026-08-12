@@ -179,6 +179,9 @@ export async function PATCH(
         ...(body.data.formData !== undefined
           ? { formData: body.data.formData }
           : {}),
+        ...(body.data.ocrExtractedData !== undefined
+          ? { ocrExtractedData: body.data.ocrExtractedData }
+          : {}),
         ...(body.data.emissionCategoryId !== undefined
           ? { emissionCategoryId: body.data.emissionCategoryId }
           : {}),
