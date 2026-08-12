@@ -68,7 +68,6 @@ export function CalculationControls({
       setRun(found);
       if (found.status === "succeeded" || found.status === "failed") {
         stopPolling();
-        router.refresh();
       }
     } catch {
       // network blip — keep polling

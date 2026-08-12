@@ -645,6 +645,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 orgId={orgId}
                 submissionId={id}
                 formData={(submission.formData ?? {}) as Record<string, unknown>}
+                ocrExtractedData={(submission.ocrExtractedData ?? null) as Record<string, unknown> | null}
                 emissionCategoryId={submission.emissionCategoryId}
                 facilityId={submission.facilityId}
                 pickupPostcode={submission.pickupPostcode}
