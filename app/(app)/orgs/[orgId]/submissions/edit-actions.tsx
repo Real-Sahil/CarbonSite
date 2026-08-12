@@ -45,6 +45,7 @@ export function SubmissionEditActions({
   orgId,
   submissionId,
   formData,
+  ocrExtractedData,
   emissionCategoryId: initialCategoryId,
   facilityId: initialFacilityId,
   pickupPostcode: initialPickupPostcode,
