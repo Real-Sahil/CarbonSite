@@ -21,6 +21,7 @@ interface SubmissionEditActionsProps {
   orgId: string;
   submissionId: string;
   formData: Record<string, unknown>;
+  ocrExtractedData?: Record<string, unknown> | null;
   emissionCategoryId: string | null;
   facilityId: string | null;
   pickupPostcode: string | null;
