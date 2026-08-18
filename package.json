@@ -50,6 +50,7 @@
     "pdf-parse": "^2.4.5",
     "pdfkit": "^0.19.1",
     "pg-boss": "^12.18.2",
+    "postcode": "^5.1.0",
     "puppeteer": "^25.1.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",

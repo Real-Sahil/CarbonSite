@@ -89,6 +89,9 @@ importers:
       pg-boss:
         specifier: ^12.18.2
         version: 12.18.2
+      postcode:
+        specifier: ^5.1.0
+        version: 5.1.0
       puppeteer:
         specifier: ^25.1.0
         version: 25.1.0
@@ -3962,6 +3965,10 @@ packages:
 
   postal-mime@2.7.4:
     resolution: {integrity: sha512-0WdnFQYUrPGGTFu1uOqD2s7omwua8xaeYGdO6rb88oD5yJ/4pPHDA4sdWqfD8wQVfCny563n/HQS7zTFft+f/g==}
+
+  postcode@5.1.0:
+    resolution: {integrity: sha512-rjwIdlQ8UvdOnUVZRCZQA54PmQJeoMBDQb4RsW5z3MVp/u7Gcet1vsjVy/p0+YX+R7cmgU9DEJf0zSx5mWqxAA==}
+    engines: {node: '>= 10.0.0'}
 
   postcss@8.4.31:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
@@ -8682,6 +8689,8 @@ snapshots:
   possible-typed-array-names@1.1.0: {}
 
   postal-mime@2.7.4: {}
+
+  postcode@5.1.0: {}
 
   postcss@8.4.31:
     dependencies:

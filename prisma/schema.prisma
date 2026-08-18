@@ -702,6 +702,10 @@ model FieldSubmission {
   deliveryLng        Decimal?              @map("delivery_lng") @db.Decimal(10, 7)
   calculatedDistanceKm Decimal?            @map("calculated_distance_km") @db.Decimal(18, 4)
   distanceSource     String?               @map("distance_source")
+  // Postcode pipeline — server-side validation and OCR correction results
+  postcodeValidationStatus  String?         @map("postcode_validation_status")
+  deliveryPostcodeOriginal  String?         @map("delivery_postcode_original")
+  postcodeExtractionSource  String?         @map("postcode_extraction_source")
   reviewNote           String?               @map("review_note")
   reviewedByUserId     String?               @map("reviewed_by_user_id")
   reviewedAt           DateTime?             @map("reviewed_at")
