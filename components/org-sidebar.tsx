@@ -252,7 +252,6 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    prefetch={true}
                     onClick={handleMobileNavClick}
                     className={cn(
                       "flex items-center gap-3 rounded-[7px] px-3 py-2.5 text-sm font-normal tracking-[-0.42px] transition-colors",
@@ -381,7 +380,6 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      prefetch={true}
                       className={cn(
                         "flex items-center gap-3 rounded-[7px] text-sm font-normal tracking-[-0.42px] transition-colors",
                         collapsed ? "px-0 py-2 justify-center" : "py-2",

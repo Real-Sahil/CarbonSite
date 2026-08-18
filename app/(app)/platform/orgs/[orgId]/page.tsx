@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { requirePlatformMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";

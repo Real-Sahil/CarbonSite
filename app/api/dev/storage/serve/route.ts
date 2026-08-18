@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getObjectBuffer, isValidStorageKey } from "@/lib/storage";
 import { requireSession } from "@/lib/auth/session";

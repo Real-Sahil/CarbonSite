@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
