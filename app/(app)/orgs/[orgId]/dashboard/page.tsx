@@ -1833,13 +1833,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               id: item.id,
               label: `${item.name} ${item.version}`,
             }))}
-            succeededRuns={calculationRuns
-              .filter((run) => run.status === "succeeded")
-              .map((run) => ({
-                id: run.id,
-                status: run.status,
-                label: `${run.reportingPeriod.label} - ${run.factorLibrary.name} ${run.factorLibrary.version}`,
-              }))}
           />
           <CalculationRunsLive orgId={orgId} initialRuns={calculationRuns} />
         </CardContent>

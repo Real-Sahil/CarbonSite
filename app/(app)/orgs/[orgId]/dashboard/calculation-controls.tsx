@@ -18,7 +18,6 @@ interface CalculationControlsProps {
   periods: { id: string; label: string }[];
   methodologies: { id: string; label: string }[];
   factorLibraries: { id: string; label: string }[];
-  succeededRuns: { id: string; status: string; label: string }[];
   approvedCountByPeriod: Record<string, number>;
 }
 
@@ -58,13 +57,9 @@ export function CalculationControls({
 
   async function pollRunStatus(runId: string) {
     try {
-      const res = await fetch(`/api/orgs/${orgId}/calculation-runs`);
+      const res = await fetch(`/api/orgs/${orgId}/calculation-runs/${runId}`);
       if (!res.ok) return;
-      const data = await res.json();
-      const found: RunResult | undefined = (data.data ?? []).find(
-        (r: RunResult) => r.id === runId,
-      );
-      if (!found) return;
+      const found: RunResult = await res.json();
       setRun(found);
       if (found.status === "succeeded" || found.status === "failed") {
         stopPolling();

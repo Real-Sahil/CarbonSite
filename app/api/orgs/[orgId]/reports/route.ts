@@ -114,9 +114,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     // enqueues to pg-boss when JOB_PROCESSING_MODE=worker. Direct boss.send
     // here previously left every report stuck at "queued" forever in the
     // default deployment. Failures are recorded on the report status.
-    await dispatchReport({ reportId: report.id, orgId, snapshotId: body.snapshotId }).catch(
-      (err) => console.error(`[reports] report ${report.id} failed:`, err),
-    );
+    try {
+      await dispatchReport({ reportId: report.id, orgId, snapshotId: body.snapshotId });
+    } catch (err) {
+      console.error(`[reports] report ${report.id} dispatch failed:`, err);
+      await prisma.report.update({
+        where: { id: report.id },
+        data: { status: "failed" },
+      });
+      return apiError("INTERNAL_ERROR", "Report generation could not be started.", 500);
+    }
 
     await writeAuditLog({
       organizationId: orgId,

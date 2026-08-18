@@ -55,6 +55,7 @@ const SCOPE_LABELS: Record<number, string> = {
 };
 
 export async function processReport(reportId: string, orgId: string): Promise<void> {
+  try {
   const report = await prisma.report.findUniqueOrThrow({
     where: { id: reportId },
     include: REPORT_INCLUDE,
@@ -126,6 +127,13 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
   } catch (err) {
     console.error(`[reports] Error generating report ${reportId}:`, err);
     await prisma.report.update({ where: { id: reportId }, data: { status: "failed" } });
+    throw err;
+  }
+  } catch (err) {
+    // Outer catch handles pre-try failures (findUniqueOrThrow, org mismatch, initial update).
+    // Inner catch above already handles generation failures and re-throws, so this outer
+    // catch also sees those re-throws — idempotent since status is already "failed".
+    await prisma.report.update({ where: { id: reportId }, data: { status: "failed" } }).catch(() => {});
     throw err;
   }
 }
