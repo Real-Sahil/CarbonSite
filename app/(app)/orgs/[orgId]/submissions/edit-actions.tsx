@@ -137,6 +137,10 @@ export function SubmissionEditActions({
         setDistanceSource(updated.distanceSource ?? null);
         setSaved(true);
         setIsEditing(false);
+        // Refresh the page after a short delay to reflect all changes (validation, images, etc.)
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
     } catch {
       setError("Network error — try again.");
