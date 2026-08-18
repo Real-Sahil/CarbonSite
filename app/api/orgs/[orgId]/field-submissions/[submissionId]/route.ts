@@ -7,6 +7,8 @@ import { apiError, handleRouteError } from "@/lib/validation/api";
 import { presignDownload } from "@/lib/storage";
 import { updateFieldSubmissionSchema } from "@/lib/validation/records";
 import { calculateGpsDistanceKm } from "@/lib/geo/gps-distance";
+import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
+import { validatePostcode } from "@/lib/geo/postcode-validator";
 
 type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 
@@ -129,6 +131,8 @@ export async function PATCH(
         pickupLng: true,
         deliveryLat: true,
         deliveryLng: true,
+        postcodeValidationStatus: true,
+        postcodeExtractionSource: true,
       },
     });
     if (!existing) return apiError("NOT_FOUND", "Submission not found.", 404);
@@ -155,22 +159,74 @@ export async function PATCH(
       ? body.data.deliveryLng
       : existing.deliveryLng !== null ? Number(existing.deliveryLng) : null;
 
-    // Re-calculate road distance if we have all four GPS coords and any changed.
+    // Determine final postcodes (admin-supplied overrides existing).
+    const finalPickupPostcode =
+      body.data.pickupPostcode !== undefined
+        ? body.data.pickupPostcode
+        : (existing.pickupPostcode ?? null);
+    const finalDeliveryPostcode =
+      body.data.deliveryPostcode !== undefined
+        ? body.data.deliveryPostcode
+        : (existing.deliveryPostcode ?? null);
+
+    // When the admin has edited either postcode, re-validate and mark as manual.
+    const postcodesEdited =
+      body.data.pickupPostcode !== undefined || body.data.deliveryPostcode !== undefined;
+
+    let postcodeValidationStatus: string | undefined;
+    let postcodeExtractionSource: string | undefined;
+    let resolvedPickupLat = pickupLat;
+    let resolvedPickupLng = pickupLng;
+    let resolvedDeliveryLat = deliveryLat;
+    let resolvedDeliveryLng = deliveryLng;
+
+    if (postcodesEdited && finalDeliveryPostcode) {
+      const validated = validatePostcode(finalDeliveryPostcode);
+      postcodeValidationStatus = validated.status;
+      postcodeExtractionSource = "manual";
+    }
+
+    // Re-calculate road distance.
     let calculatedDistanceKm: number | null | undefined = undefined;
     let distanceSource: string | null | undefined = undefined;
+
     if (
       pickupLat !== null && pickupLng !== null &&
       deliveryLat !== null && deliveryLng !== null
     ) {
+      // GPS coords present — route via lat/lng.
       const gpsResult = await calculateGpsDistanceKm({
         pickupLat, pickupLng, deliveryLat, deliveryLng,
       });
       calculatedDistanceKm = gpsResult.distanceKm;
       distanceSource = gpsResult.source;
-    } else if (
-      (body.data.pickupLat === null || body.data.deliveryLat === null)
-    ) {
-      // Coords were explicitly cleared — remove distance.
+    } else if (finalPickupPostcode && finalDeliveryPostcode) {
+      // No GPS — fall back to postcode-based OSRM routing.
+      try {
+        const routeResult = await getOrCreateRouteDistance({
+          organizationId: orgId,
+          pickupPostcode: finalPickupPostcode,
+          deliveryPostcode: finalDeliveryPostcode,
+        });
+        calculatedDistanceKm = routeResult.distanceKm;
+        distanceSource = "postcode_route";
+        resolvedPickupLat = routeResult.pickupLat;
+        resolvedPickupLng = routeResult.pickupLng;
+        resolvedDeliveryLat = routeResult.deliveryLat;
+        resolvedDeliveryLng = routeResult.deliveryLng;
+      } catch (err) {
+        if (!(err instanceof RouteDistanceError)) throw err;
+        console.warn(
+          `[field-submissions/patch] postcode route failed (${err.code}): ${err.message}`,
+        );
+        // If postcodes changed and routing failed, clear stale distance.
+        if (postcodesEdited) {
+          calculatedDistanceKm = null;
+          distanceSource = null;
+        }
+      }
+    } else if (body.data.pickupLat === null || body.data.deliveryLat === null) {
+      // Coords explicitly cleared — remove distance.
       calculatedDistanceKm = null;
       distanceSource = null;
     }
@@ -196,10 +252,13 @@ export async function PATCH(
         ...(body.data.deliveryPostcode !== undefined
           ? { deliveryPostcode: body.data.deliveryPostcode }
           : {}),
-        ...(body.data.pickupLat !== undefined ? { pickupLat: body.data.pickupLat } : {}),
-        ...(body.data.pickupLng !== undefined ? { pickupLng: body.data.pickupLng } : {}),
-        ...(body.data.deliveryLat !== undefined ? { deliveryLat: body.data.deliveryLat } : {}),
-        ...(body.data.deliveryLng !== undefined ? { deliveryLng: body.data.deliveryLng } : {}),
+        ...(postcodeValidationStatus !== undefined ? { postcodeValidationStatus } : {}),
+        ...(postcodeExtractionSource !== undefined ? { postcodeExtractionSource } : {}),
+        // Update lat/lng with geocoded values from postcode routing if resolved.
+        pickupLat: resolvedPickupLat,
+        pickupLng: resolvedPickupLng,
+        deliveryLat: resolvedDeliveryLat,
+        deliveryLng: resolvedDeliveryLng,
         ...(calculatedDistanceKm !== undefined ? { calculatedDistanceKm } : {}),
         ...(distanceSource !== undefined ? { distanceSource } : {}),
       },
