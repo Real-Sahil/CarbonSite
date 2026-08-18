@@ -9,6 +9,8 @@ import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createFieldSubmissionSchema } from "@/lib/validation/records";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
 import { calculateGpsDistanceKm } from "@/lib/geo/gps-distance";
+import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
+import { identifyDeliveryPostcode, validatePostcode } from "@/lib/geo/postcode-validator";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -296,15 +298,54 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
-    // Calculate road distance from GPS coordinates when both pickup and
-    // delivery points are provided. Stored immediately so reviewers can see
-    // the distance on the ticket detail page without waiting for approval.
+    // --- Postcode pipeline: validate, OCR-correct, identify delivery/pickup ---
+    // Extract raw OCR text if the mobile client sent it, then run the
+    // label-aware delivery postcode identifier. Falls back to fields the
+    // mobile client pre-extracted when raw text is unavailable.
+    const ocrRawText: string | null =
+      typeof (body.ocrExtractedData as Record<string, unknown> | undefined)?.raw === "string"
+        ? (body.ocrExtractedData as Record<string, unknown>).raw as string
+        : null;
+
+    const ocrFields = body.ocrExtractedData as {
+      pickupPostcode?: string | null;
+      deliveryPostcode?: string | null;
+      postcode?: string | null;
+    } | null | undefined;
+
+    const postcodeResult = identifyDeliveryPostcode(ocrRawText, ocrFields);
+
+    // Prefer validated/corrected postcodes from the pipeline over the
+    // client-supplied values. Client values act as final fallback.
+    let resolvedDeliveryPostcode: string | null =
+      postcodeResult.deliveryPostcode ?? body.deliveryPostcode ?? null;
+    let resolvedPickupPostcode: string | null =
+      postcodeResult.pickupPostcode ?? body.pickupPostcode ?? null;
+
+    // If the pipeline produced an "invalid" delivery postcode, attempt
+    // OCR correction on the client-supplied value as a last resort.
+    if (!resolvedDeliveryPostcode && body.deliveryPostcode) {
+      const fallback = validatePostcode(body.deliveryPostcode);
+      resolvedDeliveryPostcode = fallback.normalised ?? body.deliveryPostcode;
+    }
+
+    const postcodeValidationStatus = postcodeResult.postcodeValidationStatus;
+    const deliveryPostcodeOriginal = postcodeResult.deliveryPostcodeOriginal;
+    const postcodeExtractionSource = postcodeResult.postcodeExtractionSource;
+
+    // --- Distance: GPS road route first, postcode road route as fallback ---
     let calculatedDistanceKm: number | undefined;
     let distanceSource: string | undefined;
+    let resolvedPickupLat = body.pickupLat;
+    let resolvedPickupLng = body.pickupLng;
+    let resolvedDeliveryLat = body.deliveryLat;
+    let resolvedDeliveryLng = body.deliveryLng;
+
     if (
       body.pickupLat !== undefined && body.pickupLng !== undefined &&
       body.deliveryLat !== undefined && body.deliveryLng !== undefined
     ) {
+      // GPS coordinates available — use road routing via lat/lng.
       const gpsResult = await calculateGpsDistanceKm({
         pickupLat: body.pickupLat,
         pickupLng: body.pickupLng,
@@ -313,6 +354,28 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
       calculatedDistanceKm = gpsResult.distanceKm;
       distanceSource = gpsResult.source;
+    } else if (resolvedPickupPostcode && resolvedDeliveryPostcode) {
+      // No GPS — attempt postcode-based road routing via postcodes.io + OSRM.
+      try {
+        const routeResult = await getOrCreateRouteDistance({
+          organizationId: orgId,
+          pickupPostcode: resolvedPickupPostcode,
+          deliveryPostcode: resolvedDeliveryPostcode,
+        });
+        calculatedDistanceKm = routeResult.distanceKm;
+        distanceSource = "postcode_route";
+        resolvedPickupLat = routeResult.pickupLat;
+        resolvedPickupLng = routeResult.pickupLng;
+        resolvedDeliveryLat = routeResult.deliveryLat;
+        resolvedDeliveryLng = routeResult.deliveryLng;
+      } catch (err) {
+        if (!(err instanceof RouteDistanceError)) throw err;
+        // Geocoding or routing failed — continue without distance; reviewer
+        // will see NEEDS_REVIEW status and can resolve manually.
+        console.warn(
+          `[field-submissions] postcode route failed (${err.code}): ${err.message}`,
+        );
+      }
     }
 
     let submission;
@@ -330,14 +393,17 @@ export async function POST(req: NextRequest, { params }: Params) {
           ocrExtractedData: body.ocrExtractedData,
           gpsLat: body.gpsLat,
           gpsLng: body.gpsLng,
-          pickupPostcode: body.pickupPostcode,
-          deliveryPostcode: body.deliveryPostcode,
-          pickupLat: body.pickupLat,
-          pickupLng: body.pickupLng,
-          deliveryLat: body.deliveryLat,
-          deliveryLng: body.deliveryLng,
+          pickupPostcode: resolvedPickupPostcode ?? body.pickupPostcode,
+          deliveryPostcode: resolvedDeliveryPostcode ?? body.deliveryPostcode,
+          pickupLat: resolvedPickupLat,
+          pickupLng: resolvedPickupLng,
+          deliveryLat: resolvedDeliveryLat,
+          deliveryLng: resolvedDeliveryLng,
           calculatedDistanceKm,
           distanceSource,
+          postcodeValidationStatus,
+          deliveryPostcodeOriginal,
+          postcodeExtractionSource,
           deviceSubmittedAt: body.deviceSubmittedAt ? new Date(body.deviceSubmittedAt) : undefined,
           idempotencyKey: body.idempotencyKey,
           status: "submitted",

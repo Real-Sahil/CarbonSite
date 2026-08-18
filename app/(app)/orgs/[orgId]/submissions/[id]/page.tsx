@@ -368,6 +368,105 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           </Card>
         </div>
 
+        {/* OCR pipeline card — shows postcode validation, source, and routing detail */}
+        {(submission.deliveryPostcode ||
+          submission.pickupPostcode ||
+          submission.postcodeValidationStatus) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                OCR pipeline
+                {submission.postcodeValidationStatus === "needs_review" && (
+                  <span className="inline-flex items-center rounded-full bg-amber-100 border border-amber-200 px-2 py-0.5 text-xs font-normal text-amber-800">
+                    Needs review
+                  </span>
+                )}
+                {submission.postcodeValidationStatus === "corrected" && (
+                  <span className="inline-flex items-center rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-xs font-normal text-blue-800">
+                    OCR corrected
+                  </span>
+                )}
+                {submission.postcodeValidationStatus === "valid" && (
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-xs font-normal text-emerald-800">
+                    Valid
+                  </span>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Postcode extraction, OCR error correction, geocoding, and road distance pipeline.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {submission.deliveryPostcodeOriginal && (
+                <DetailRow label="OCR raw postcode" value={submission.deliveryPostcodeOriginal} />
+              )}
+              {submission.deliveryPostcode && (
+                <DetailRow
+                  label={submission.postcodeValidationStatus === "corrected" ? "Corrected postcode" : "Delivery postcode"}
+                  value={submission.deliveryPostcode}
+                />
+              )}
+              {submission.pickupPostcode && (
+                <DetailRow label="Pickup postcode" value={submission.pickupPostcode} />
+              )}
+              {submission.postcodeValidationStatus && (
+                <DetailRow
+                  label="Validation"
+                  value={
+                    submission.postcodeValidationStatus === "valid" ? "Valid - exact match"
+                    : submission.postcodeValidationStatus === "corrected" ? "Corrected OCR substitution (0/O, 1/I, 5/S)"
+                    : submission.postcodeValidationStatus === "invalid" ? "Invalid - could not produce a valid UK postcode"
+                    : "Needs review - ambiguous or no postcode found"
+                  }
+                />
+              )}
+              {submission.postcodeExtractionSource && (
+                <DetailRow
+                  label="Identified by"
+                  value={
+                    submission.postcodeExtractionSource === "label_identified" ? "Delivery label context"
+                    : submission.postcodeExtractionSource === "position_heuristic" ? "Position heuristic (last postcode on ticket)"
+                    : submission.postcodeExtractionSource === "only_found" ? "Only postcode on ticket"
+                    : "Manual entry"
+                  }
+                />
+              )}
+              {submission.deliveryLat != null && submission.deliveryLng != null && (
+                <DetailRow
+                  label="Delivery geocode"
+                  value={`${Number(submission.deliveryLat).toFixed(5)}, ${Number(submission.deliveryLng).toFixed(5)} (postcodes.io)`}
+                />
+              )}
+              {submission.pickupLat != null && submission.pickupLng != null && (
+                <DetailRow
+                  label="Pickup geocode"
+                  value={`${Number(submission.pickupLat).toFixed(5)}, ${Number(submission.pickupLng).toFixed(5)} (postcodes.io)`}
+                />
+              )}
+              {submission.calculatedDistanceKm != null && (
+                <DetailRow
+                  label="Road distance"
+                  value={`${Number(submission.calculatedDistanceKm).toFixed(2)} km${
+                    submission.distanceSource === "postcode_route" ? " via OSRM (postcode)"
+                    : submission.distanceSource === "gps_osrm" ? " via OSRM (GPS)"
+                    : submission.distanceSource === "gps_haversine" ? " straight-line (GPS)"
+                    : submission.distanceSource ? ` (${submission.distanceSource})`
+                    : ""
+                  }`}
+                />
+              )}
+              {!submission.calculatedDistanceKm && submission.postcodeValidationStatus !== "needs_review" && (
+                <p className="text-xs text-[#374151] italic tracking-[-0.36px]">
+                  Road distance not yet resolved.
+                  {submission.postcodeValidationStatus === "invalid"
+                    ? " Fix the postcode and re-save to trigger routing."
+                    : " Routing may have failed — check that both postcodes are valid UK postcodes."}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {comparisonRows.length > 0 && (
           <Card>
             <CardHeader>
