@@ -281,6 +281,14 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                             {run._count.calculations.toLocaleString("en-GB")}
                           </TableCell>
                           <TableCell className="py-3.5 pr-6">
+                            {run.status === "succeeded" && (
+                              <Link
+                                href={`/orgs/${orgId}/calculations/${run.id}`}
+                                className="inline-flex items-center gap-1 text-xs font-medium text-[#0EA5E9] hover:text-[#0284C7] hover:underline underline-offset-2"
+                              >
+                                View &amp; publish
+                              </Link>
+                            )}
                             {run.status === "failed" && (
                               <RetryCalculationButton
                                 orgId={orgId}
