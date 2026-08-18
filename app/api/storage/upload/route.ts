@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { isValidStorageKey, dbWrite } from "@/lib/storage";
 import { verifyStorageSignature } from "@/lib/storage/signing";

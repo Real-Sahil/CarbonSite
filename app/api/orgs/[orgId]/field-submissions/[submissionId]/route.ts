@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
@@ -178,6 +180,9 @@ export async function PATCH(
       data: {
         ...(body.data.formData !== undefined
           ? { formData: body.data.formData }
+          : {}),
+        ...(body.data.ocrExtractedData !== undefined
+          ? { ocrExtractedData: body.data.ocrExtractedData }
           : {}),
         ...(body.data.emissionCategoryId !== undefined
           ? { emissionCategoryId: body.data.emissionCategoryId }

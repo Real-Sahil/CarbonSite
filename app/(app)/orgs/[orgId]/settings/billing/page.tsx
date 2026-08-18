@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2 } from "lucide-react";

@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Target, Plus, AlertTriangle, CheckCircle, TrendingUp, X, Pencil } from "lucide-react";

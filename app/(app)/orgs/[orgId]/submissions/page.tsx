@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";

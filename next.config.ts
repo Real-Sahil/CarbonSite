@@ -57,6 +57,17 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      // Prevent browser and CDN caching of all API routes.
+      // Without this, prefetch or repeated requests can serve stale data and
+      // cause "database is updating" false positives when mutations haven't
+      // propagated to a cached response.
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, must-revalidate" },
+          { key: "Pragma", value: "no-cache" },
+        ],
+      },
     ];
   },
 };

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

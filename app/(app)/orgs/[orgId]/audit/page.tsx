@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { redirect } from "next/navigation";
 import { Clock } from "lucide-react";
 import { Prisma } from "@prisma/client";
