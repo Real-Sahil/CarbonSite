@@ -38,7 +38,7 @@ const SCOPE_CATS = [
 
 export default function ConstructionPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0F172A]">
+    <main className="min-h-[100dvh] bg-white">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -52,7 +52,7 @@ export default function ConstructionPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A]/90 via-[#0F172A]/65 to-[#0F172A]/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-[#0F172A]/65 to-[#0F172A]/20" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 to-transparent" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
@@ -109,7 +109,7 @@ export default function ConstructionPage() {
       </section>
 
       {/* Scope coverage */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-14">
@@ -119,7 +119,7 @@ export default function ConstructionPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#1E293B]">
             {SCOPE_CATS.map((s, i) => (
               <AnimateIn key={s.label} delay={i * 0.06}>
-                <div className="bg-[#0F172A] p-8 hover:bg-[#111110] transition-colors">
+                <div className="bg-white p-8 hover:bg-[#111110] transition-colors">
                   <div className="text-[10px] font-medium text-[#06B6D4] tracking-[0.12em] mb-6">{s.label}</div>
                   <ul className="space-y-3">
                     {s.cats.map((cat) => (
@@ -146,7 +146,7 @@ export default function ConstructionPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
               >
                 Create organisation
                 <ArrowUpRight className="h-3.5 w-3.5" />

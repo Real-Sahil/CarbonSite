@@ -29,7 +29,7 @@ const OCR_FIELDS = [
 
 export default function FieldAppPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0F172A]">
+    <main className="min-h-[100dvh] bg-white">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -43,7 +43,7 @@ export default function FieldAppPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/65 to-[#0F172A]/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-[#0F172A]/65 to-[#0F172A]/20" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
@@ -113,7 +113,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* OCR fields */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
@@ -159,7 +159,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">

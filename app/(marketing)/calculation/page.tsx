@@ -41,7 +41,7 @@ export default function CalculationPage() {
       </section>
 
       {/* Audit Trail Section */}
-      <section className="bg-[#0F172A] py-24 px-6">
+      <section className="bg-gradient-to-br from-white to-blue-50 py-24 px-6">
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-6">

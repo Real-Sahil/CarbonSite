@@ -57,7 +57,7 @@ const ROLES = [
 
 export default function ProductPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0F172A]">
+    <main className="min-h-[100dvh] bg-gradient-to-br from-blue-50 to-white">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -100,7 +100,7 @@ export default function ProductPage() {
                     {stage.num}
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-[#0F172A] tracking-[-0.02em] mb-3">{stage.title}</h2>
+                    <h2 className="text-base font-semibold text-white tracking-[-0.02em] mb-3">{stage.title}</h2>
                     <p className="text-sm text-[#64748B] leading-relaxed mb-5 max-w-[65ch]">{stage.text}</p>
                     <div className="flex flex-wrap gap-2">
                       {stage.tags.map((tag) => (
@@ -118,7 +118,7 @@ export default function ProductPage() {
       </section>
 
       {/* Role access control */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-gradient-to-br from-blue-50 to-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
@@ -132,10 +132,10 @@ export default function ProductPage() {
               Role is checked on the organisation membership record — not from client-supplied headers or tokens.
             </p>
           </AnimateIn>
-          <div className="border border-[#1E293B] divide-y divide-[#1E293B] overflow-hidden">
+          <div className="border border-gray-200 divide-y divide-[#1E293B] overflow-hidden">
             {ROLES.map((r) => (
-              <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-[#111110] transition-colors">
-                <div className="px-6 py-4 border-r border-[#1E293B]">
+              <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-blue-100 transition-colors">
+                <div className="px-6 py-4 border-r border-gray-200">
                   <code className="text-xs font-mono text-[#06B6D4]">{r.role}</code>
                 </div>
                 <div className="px-6 py-4">
@@ -158,7 +158,7 @@ export default function ProductPage() {
       <section className="relative overflow-hidden bg-[#F5F4F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
               Start your first reporting period.
             </h2>
             <p className="text-base text-[#64748B] mb-8 max-w-[45ch]">
@@ -166,7 +166,7 @@ export default function ProductPage() {
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-br from-blue-50 to-white text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
             >
               Create organisation
               <ArrowUpRight className="h-3.5 w-3.5" />

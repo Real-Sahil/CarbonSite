@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0F172A]">
+    <main className="min-h-[100dvh] bg-white">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -27,7 +27,7 @@ export default function ContactPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/70 to-[#0F172A]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-[#0F172A]/70 to-[#0F172A]/25" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
@@ -101,7 +101,7 @@ export default function ContactPage() {
       </section>
 
       {/* Pilot scope */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-sm font-medium text-[#64748B] uppercase tracking-[0.1em] mb-8">Pilot scope template</h2>
@@ -134,7 +134,7 @@ export default function ContactPage() {
             </p>
             <a
               href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
             >
               Get in touch
               <ArrowUpRight className="h-3.5 w-3.5" />

@@ -72,7 +72,7 @@ const METHOD_COLORS: Record<string, string> = {
 
 export default function DeveloperPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0F172A]">
+    <main className="min-h-[100dvh] bg-white">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -189,7 +189,7 @@ export default function DeveloperPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">

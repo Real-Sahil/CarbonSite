@@ -51,7 +51,7 @@ const HOW_IT_WORKS = [
 
 export default function RootPage() {
   return (
-    <main className="min-h-[100dvh] overflow-hidden bg-[#0F172A]">
+    <main className="min-h-[100dvh] overflow-hidden bg-white">
       <SiteNav theme="dark" />
       <HeroSection />
 
@@ -105,7 +105,7 @@ export default function RootPage() {
       </ParallaxSection>
 
       {/* ── Capabilities ──────────────────────────────────────────────────── */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-gradient-to-br from-[#fffbf0] to-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-16">
@@ -154,7 +154,7 @@ export default function RootPage() {
       </section>
 
       {/* ── Field app feature ─────────────────────────────────────────────── */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-gradient-to-br from-white to-blue-50">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <AnimateIn>
@@ -211,7 +211,7 @@ export default function RootPage() {
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-[#0F172A]/85" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A]/40 to-[#0F172A]/60" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-32">
           <AnimateIn>

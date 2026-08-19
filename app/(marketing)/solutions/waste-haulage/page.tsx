@@ -47,7 +47,7 @@ const EWC_EXAMPLES = [
 
 export default function WasteHaulagePage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0F172A]">
+    <main className="min-h-[100dvh] bg-white">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -61,7 +61,7 @@ export default function WasteHaulagePage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A]/90 via-[#0F172A]/65 to-[#0F172A]/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-[#0F172A]/65 to-[#0F172A]/20" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 to-transparent" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
@@ -124,7 +124,7 @@ export default function WasteHaulagePage() {
       </section>
 
       {/* EWC codes */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-3">
@@ -137,7 +137,7 @@ export default function WasteHaulagePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#1E293B]">
             {EWC_EXAMPLES.map((e, i) => (
               <AnimateIn key={e.code} delay={i * 0.04}>
-                <div className="bg-[#0F172A] p-5 hover:bg-[#111110] transition-colors">
+                <div className="bg-white p-5 hover:bg-[#111110] transition-colors">
                   <code className="text-sm font-mono font-semibold text-[#0891B2]">{e.code}</code>
                   <p className="text-xs text-[#64748B] mt-1.5 leading-snug">{e.desc}</p>
                 </div>
@@ -187,7 +187,7 @@ export default function WasteHaulagePage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#0F172A]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
