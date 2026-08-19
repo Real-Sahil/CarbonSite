@@ -739,12 +739,25 @@ async function fetchCalculations(orgId: string, runId: string, contractId?: stri
 }
 
 async function renderPdf(html: string): Promise<Buffer> {
-  const puppeteer = (await import("puppeteer")).default;
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-  });
+  let browser: import("puppeteer-core").Browser | import("puppeteer").Browser | null = null;
   try {
+    if (process.env.VERCEL) {
+      // Vercel serverless: use sparticuz/chromium (Lambda-compatible, no system Chromium)
+      const chromium = (await import("@sparticuz/chromium")).default;
+      const puppeteer = (await import("puppeteer-core")).default;
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      });
+    } else {
+      // Local / worker dev: use the full puppeteer bundle which ships its own Chromium
+      const puppeteer = (await import("puppeteer")).default;
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      });
+    }
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });
     const pdf = await page.pdf({
@@ -754,7 +767,7 @@ async function renderPdf(html: string): Promise<Buffer> {
     });
     return Buffer.from(pdf);
   } finally {
-    await browser.close();
+    await browser?.close();
   }
 }
 
