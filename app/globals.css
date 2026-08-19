@@ -1,27 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── CarbonSite design tokens v3 — bright modern B2B SaaS ─────────────── */
+  /* ── CarbonSite design tokens v4 — vibrant gradient brand ─────────────── */
 
-  /* Primary: sky blue — bright, modern, trustworthy */
-  --color-primary:        #0EA5E9;
-  --color-primary-hover:  #0284C7;
-  --color-primary-light:  #F0F9FF;
-  --color-primary-border: #BAE6FD;
-  --color-primary-dark:   #0369A1;
-  --color-primary-mid:    #E0F2FE;
+  /* Vibrant gradient: yellow → orange → red */
+  /* https://grabient.com/_fuAeSTf4rgh8h8xgTKgBlgBhgBfgOxgPlgBThdwOtqgQ */
+  --gradient-y1:          #ffffa8;
+  --gradient-y2:          #ffff8d;
+  --gradient-o1:          #ffdc6e;
+  --gradient-o2:          #ff6b4c;
+  --gradient-r1:          #ff0027;
 
-  /* Eco: emerald for sustainability, scope bars, good signals */
-  --color-eco:            #10B981;
-  --color-eco-hover:      #059669;
-  --color-eco-light:      #ECFDF5;
-  --color-eco-border:     #A7F3D0;
-  --color-eco-muted:      #6EE7B7;
+  /* Primary: vibrant yellow-orange from gradient */
+  --color-primary:        #ffdc6e;
+  --color-primary-hover:  #ff6b4c;
+  --color-primary-light:  #ffffa8;
+  --color-primary-border: #ffff8d;
+  --color-primary-dark:   #ff0027;
+  --color-primary-mid:    #fffbf0;
 
-  /* CTA accent: orange for key call-to-actions */
-  --color-cta:            #F97316;
-  --color-cta-hover:      #EA580C;
-  --color-cta-light:      #FFF7ED;
+  /* Eco: vibrant coral-red for impact & signals */
+  --color-eco:            #ff6b4c;
+  --color-eco-hover:      #ff0027;
+  --color-eco-light:      #fff5f2;
+  --color-eco-border:     #ffb8a3;
+  --color-eco-muted:      #ff8f6e;
+
+  /* CTA accent: deep vibrant red for key call-to-actions */
+  --color-cta:            #ff0027;
+  --color-cta-hover:      #d40021;
+  --color-cta-light:      #fff0f2;
 
   /* Secondary accents */
   --color-warning:        #FBBF24;
