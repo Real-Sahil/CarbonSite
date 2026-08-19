@@ -96,8 +96,8 @@ export default function ResourcesPage() {
       <section className="relative min-h-[55vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1600&q=75"
-            alt="Open book with documentation"
+            src="https://images.unsplash.com/photo-1526628653514-d4c3f4f63bff?w=1600&q=75"
+            alt="Renewable energy resources climate knowledge documentation"
             fill
             priority
             className="object-cover object-center"

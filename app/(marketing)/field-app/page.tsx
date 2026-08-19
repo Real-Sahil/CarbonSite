@@ -36,8 +36,8 @@ export default function FieldAppPage() {
       <section className="relative min-h-[70vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=75"
-            alt="Worker on construction site with mobile phone"
+            src="https://images.unsplash.com/photo-1497440871964-502b150da186?w=1600&q=75"
+            alt="Solar panel installation renewable energy field capture"
             fill
             priority
             className="object-cover object-center"

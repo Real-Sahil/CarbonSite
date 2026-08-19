@@ -95,8 +95,8 @@ export default function RootPage() {
       {/* ── Photo break ───────────────────────────────────────────────────── */}
       <ParallaxSection speed={0.3} className="relative h-[50vw] max-h-[560px] min-h-[300px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=75"
-          alt="Waste haulage trucks at industrial facility"
+          src="https://images.unsplash.com/photo-1497493292307-31c376b9b1b7?w=1600&q=75"
+          alt="CO2 carbon emissions and atmospheric monitoring"
           fill
           className="object-cover object-center"
           sizes="100vw"
@@ -188,8 +188,8 @@ export default function RootPage() {
             <AnimateIn delay={0.12}>
               <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
                 <Image
-                  src="https://images.unsplash.com/photo-1590239926044-4131f5d0654d?w=900&q=80"
-                  alt="Field worker using mobile app on construction site"
+                  src="https://images.unsplash.com/photo-1521737604893-6f3031224c94?w=900&q=80"
+                  alt="Renewable energy solar panels field capturing clean power"
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -205,8 +205,8 @@ export default function RootPage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=75"
-            alt="Aerial industrial landscape"
+            src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1600&q=75"
+            alt="Wind turbines renewable energy climate action sustainability"
             fill
             className="object-cover"
             sizes="100vw"

@@ -54,8 +54,8 @@ export default function WasteHaulagePage() {
       <section className="relative min-h-[65vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=75"
-            alt="Waste haulage trucks at industrial facility"
+            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600&q=75"
+            alt="Waste management recycling circular economy emissions tracking"
             fill
             priority
             className="object-cover object-center"

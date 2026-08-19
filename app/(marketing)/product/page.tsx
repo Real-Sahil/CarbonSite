@@ -63,8 +63,8 @@ export default function ProductPage() {
       <section className="relative min-h-[60vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=75"
-            alt="Modern office with data displays"
+            src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1600&q=75"
+            alt="Climate change monitoring and carbon reduction technology"
             fill
             priority
             className="object-cover object-center"
