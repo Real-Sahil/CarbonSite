@@ -3,6 +3,7 @@
 // Output: Buffer containing a valid PDF/A-compatible document.
 
 import PDFDocument from "pdfkit";
+import type PDFKit from "pdfkit";
 import type { ReportData } from "./template";
 
 const MARGIN = 52;
@@ -31,16 +32,24 @@ function shortDate(d: Date): string {
 export async function generateReportPdf(data: ReportData): Promise<Buffer> {
   const logoDataUri = data.logoDataUri;
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({
-      size: "A4",
-      margin: MARGIN,
-      info: {
-        Title: `${data.orgName} — ${data.periodLabel} GHG Emissions Report`,
-        Author: data.publishedBy,
-        Creator: "CarbonSite",
-        CreationDate: new Date(data.publishedAt),
-      },
-    });
+    let doc: PDFKit.PDFDocument;
+    try {
+      doc = new PDFDocument({
+        size: "A4",
+        margin: MARGIN,
+        info: {
+          Title: `${data.orgName} — ${data.periodLabel} GHG Emissions Report`,
+          Author: data.publishedBy,
+          Creator: "CarbonSite",
+          CreationDate: new Date(data.publishedAt),
+        },
+        bufferPages: true,
+      });
+    } catch (err) {
+      console.error("[pdf-generator] PDFDocument initialization failed:", err);
+      reject(new Error("PDF document initialization failed"));
+      return;
+    }
 
     const chunks: Buffer[] = [];
     doc.on("data", (chunk: Buffer) => chunks.push(chunk));
@@ -60,6 +69,24 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
 
     function fillColor(hex: string) { doc.fillColor(hexToRgb(hex)); }
     function strokeColor(hex: string) { doc.strokeColor(hexToRgb(hex)); }
+
+    function setFont(fontName: string, size?: number) {
+      try {
+        if (size) {
+          doc.fontSize(size).font(fontName);
+        } else {
+          doc.font(fontName);
+        }
+      } catch (err) {
+        console.warn(`[pdf-generator] Font '${fontName}' not available, using Helvetica fallback:`, err);
+        try {
+          if (size) doc.fontSize(size);
+          doc.font("Helvetica");
+        } catch (fallbackErr) {
+          console.warn("[pdf-generator] Helvetica fallback also failed, continuing without font:", fallbackErr);
+        }
+      }
+    }
 
     function rule(y?: number, color = COLOR_LIGHT) {
       const yPos = y ?? doc.y;
@@ -82,22 +109,23 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         } catch {
           // Logo decode failed — render org name instead
           fillColor(COLOR_DARK);
-          doc.fontSize(10).font("Helvetica-Bold").text(data.orgName, MARGIN, top + 6);
+          setFont("Helvetica-Bold", 10);
+          doc.text(data.orgName, MARGIN, top + 6);
         }
       } else {
         fillColor(COLOR_DARK);
-        doc.fontSize(10).font("Helvetica-Bold").text(data.orgName, MARGIN, top + 6);
+        setFont("Helvetica-Bold", 10);
+        doc.text(data.orgName, MARGIN, top + 6);
       }
 
       // Right: report title
       fillColor(COLOR_MID);
-      doc
-        .fontSize(8)
-        .font("Helvetica")
-        .text(`${data.periodLabel} GHG Emissions Report`, MARGIN, top + 10, {
-          width: BODY_W,
-          align: "right",
-        });
+      doc.fontSize(8);
+      setFont("Helvetica");
+      doc.text(`${data.periodLabel} GHG Emissions Report`, MARGIN, top + 10, {
+        width: BODY_W,
+        align: "right",
+      });
 
       // Thin accent line below header
       strokeColor(COLOR_ACCENT);
@@ -112,7 +140,9 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
 
     // Report title block
     fillColor(COLOR_DARK);
-    doc.fontSize(22).font("Helvetica-Bold").text(
+    doc.fontSize(22);
+    setFont("Helvetica-Bold");
+    doc.text(
       data.orgName,
       MARGIN,
       doc.y,
@@ -121,7 +151,9 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     moveDown(6);
 
     fillColor(COLOR_MID);
-    doc.fontSize(13).font("Helvetica").text(
+    doc.fontSize(13);
+    setFont("Helvetica");
+    doc.text(
       `${data.periodLabel} GHG Emissions Report`,
       MARGIN,
       doc.y,
@@ -155,9 +187,13 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         metaX = MARGIN + colW + 16;
       }
       fillColor(COLOR_MID);
-      doc.fontSize(7.5).font("Helvetica").text(label.toUpperCase(), metaX, metaY, { width: colW });
+      doc.fontSize(7.5);
+      setFont("Helvetica");
+      doc.text(label.toUpperCase(), metaX, metaY, { width: colW });
       fillColor(COLOR_DARK);
-      doc.fontSize(9).font("Helvetica-Bold").text(value, metaX, metaY + 9, { width: colW });
+      doc.fontSize(9);
+      setFont("Helvetica-Bold");
+      doc.text(value, metaX, metaY + 9, { width: colW });
     });
 
     doc.y = metaY + 32;
@@ -176,12 +212,16 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     const boxTop = doc.y + 12;
 
     fillColor(COLOR_ACCENT);
-    doc.fontSize(28).font("Helvetica-Bold").text(`${grandTotalTonnes} tCO2e`, MARGIN + 16, boxTop, {
+    doc.fontSize(28);
+    setFont("Helvetica-Bold");
+    doc.text(`${grandTotalTonnes} tCO2e`, MARGIN + 16, boxTop, {
       width: BODY_W - 32,
     });
 
     fillColor(COLOR_MID);
-    doc.fontSize(9).font("Helvetica").text(
+    doc.fontSize(9);
+    setFont("Helvetica");
+    doc.text(
       `Total GHG emissions across ${data.recordCount.toLocaleString()} activity records`,
       MARGIN + 16,
       boxTop + 34,
@@ -195,7 +235,9 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
 
     if (data.scopes.length > 0) {
       fillColor(COLOR_DARK);
-      doc.fontSize(11).font("Helvetica-Bold").text("Emissions by Scope", MARGIN, doc.y);
+      doc.fontSize(11);
+      setFont("Helvetica-Bold");
+      doc.text("Emissions by Scope", MARGIN, doc.y);
       moveDown(10);
 
       // Bar chart (horizontal)
@@ -212,7 +254,9 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         const y = doc.y;
 
         fillColor(COLOR_MID);
-        doc.fontSize(8).font("Helvetica").text(scope.label, MARGIN, y + 3, { width: LABEL_W });
+        doc.fontSize(8);
+        setFont("Helvetica");
+        doc.text(scope.label, MARGIN, y + 3, { width: LABEL_W });
 
         fillColor(color);
         doc.rect(MARGIN + LABEL_W, y, barLen, BAR_H).fill();
@@ -222,7 +266,9 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         doc.rect(MARGIN + LABEL_W + barLen, y, BAR_W - barLen, BAR_H).fill();
 
         fillColor(COLOR_DARK);
-        doc.fontSize(8).font("Helvetica-Bold").text(
+        doc.fontSize(8);
+        setFont("Helvetica-Bold");
+        doc.text(
           `${tonnes(scope.totalKg)} tCO2e`,
           MARGIN + LABEL_W + BAR_W + 6,
           y + 3,
@@ -244,7 +290,9 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       }
 
       fillColor(COLOR_DARK);
-      doc.fontSize(11).font("Helvetica-Bold").text("Emissions by Category", MARGIN, doc.y);
+      doc.fontSize(11);
+      setFont("Helvetica-Bold");
+      doc.text("Emissions by Category", MARGIN, doc.y);
       moveDown(10);
 
       // Table header
@@ -260,7 +308,8 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       doc.rect(MARGIN, doc.y, BODY_W, 18).fill();
 
       fillColor(COLOR_MID);
-      doc.fontSize(7.5).font("Helvetica-Bold");
+      doc.fontSize(7.5);
+      setFont("Helvetica-Bold");
       for (const [key, col] of Object.entries(cols)) {
         const label = { category: "Category", scope: "Scope", records: "Records", total: "Total tCO2e", pct: "% of Total" }[key] ?? key;
         doc.text(label, col.x + 4, doc.y + 5, { width: col.w - 4 });
@@ -277,13 +326,17 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         const rowY = doc.y + 4;
 
         fillColor(COLOR_DARK);
-        doc.fontSize(8).font("Helvetica").text(cat.name, cols.category.x + 4, rowY, { width: cols.category.w - 8 });
+        doc.fontSize(8);
+        setFont("Helvetica");
+        doc.text(cat.name, cols.category.x + 4, rowY, { width: cols.category.w - 8 });
         doc.text(`Scope ${cat.scope}`, cols.scope.x + 4, rowY, { width: cols.scope.w - 4 });
         doc.text(cat.count.toLocaleString(), cols.records.x + 4, rowY, { width: cols.records.w - 4 });
         fillColor(COLOR_DARK);
-        doc.font("Helvetica-Bold").text(tonnes(cat.totalKg), cols.total.x + 4, rowY, { width: cols.total.w - 4 });
+        setFont("Helvetica-Bold");
+        doc.text(tonnes(cat.totalKg), cols.total.x + 4, rowY, { width: cols.total.w - 4 });
         fillColor(COLOR_MID);
-        doc.font("Helvetica").text(`${pct}%`, cols.pct.x + 4, rowY, { width: cols.pct.w - 4 });
+        setFont("Helvetica");
+        doc.text(`${pct}%`, cols.pct.x + 4, rowY, { width: cols.pct.w - 4 });
 
         doc.y += 18;
         rule();
@@ -300,7 +353,9 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       }
 
       fillColor(COLOR_DARK);
-      doc.fontSize(11).font("Helvetica-Bold").text("Emissions by Facility", MARGIN, doc.y);
+      doc.fontSize(11);
+      setFont("Helvetica-Bold");
+      doc.text("Emissions by Facility", MARGIN, doc.y);
       moveDown(10);
 
       const facilCols = {
@@ -313,7 +368,8 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       doc.rect(MARGIN, doc.y, BODY_W, 18).fill();
 
       fillColor(COLOR_MID);
-      doc.fontSize(7.5).font("Helvetica-Bold");
+      doc.fontSize(7.5);
+      setFont("Helvetica-Bold");
       for (const [key, col] of Object.entries(facilCols)) {
         const label = { name: "Facility", records: "Records", total: "Total tCO2e" }[key] ?? key;
         doc.text(label, col.x + 4, doc.y + 5, { width: col.w - 4 });
@@ -328,9 +384,12 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         }
         const rowY = doc.y + 4;
         fillColor(COLOR_DARK);
-        doc.fontSize(8).font("Helvetica").text(fac.name, facilCols.name.x + 4, rowY, { width: facilCols.name.w - 8 });
+        doc.fontSize(8);
+        setFont("Helvetica");
+        doc.text(fac.name, facilCols.name.x + 4, rowY, { width: facilCols.name.w - 8 });
         doc.text(fac.count.toLocaleString(), facilCols.records.x + 4, rowY, { width: facilCols.records.w - 4 });
-        doc.font("Helvetica-Bold").text(tonnes(fac.totalKg), facilCols.total.x + 4, rowY, { width: facilCols.total.w - 4 });
+        setFont("Helvetica-Bold");
+        doc.text(tonnes(fac.totalKg), facilCols.total.x + 4, rowY, { width: facilCols.total.w - 4 });
         doc.y += 18;
         rule();
       }
@@ -349,7 +408,9 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     moveDown(8);
 
     fillColor(COLOR_MID);
-    doc.fontSize(7.5).font("Helvetica").text(
+    doc.fontSize(7.5);
+    setFont("Helvetica");
+    doc.text(
       `Emissions calculated using ${data.factorLibrary} emission factors under ${data.methodology}. ` +
       `GWP values from ${data.gwpVersion} (CH4 = 27.9, N2O = 273). ` +
       `All values reported in tonnes CO2-equivalent (tCO2e). ` +
@@ -377,7 +438,8 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       doc.moveTo(MARGIN, footY - 6).lineTo(MARGIN + BODY_W, footY - 6).lineWidth(0.5).stroke();
 
       fillColor(COLOR_MID);
-      doc.fontSize(7).font("Helvetica");
+      doc.fontSize(7);
+      setFont("Helvetica");
 
       doc.text(
         `${data.orgName} | ${data.periodLabel} | Generated ${shortDate(new Date(data.publishedAt))}`,
