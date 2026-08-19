@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
+import { SiteNav } from "@/components/marketing/site-nav";
+import { SiteFooter } from "@/components/marketing/site-footer";
+import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Resources - CarbonSite",
@@ -68,7 +72,7 @@ const GUIDES = [
       },
       {
         title: "Factor library versioning policy",
-        text: "When DEFRA or EPA update their factor publications, a new FactorLibrary version is created. Existing calculation runs reference their original library version - historical figures do not change when factors are updated. Users see a diff before replacing a published snapshot.",
+        text: "When DEFRA or EPA update their factor publications, a new FactorLibrary version is created. Existing calculation runs reference their original library version, so historical figures do not change when factors are updated.",
       },
     ],
   },
@@ -85,43 +89,52 @@ const EXT_LINKS = [
 
 export default function ResourcesPage() {
   return (
-    <>
+    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+      <SiteNav theme="dark" />
+
       {/* Hero */}
-      <section className="border-b border-zinc-800 py-24 px-5">
-        <div className="mx-auto max-w-7xl">
+      <section className="relative min-h-[55vh] flex items-end overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1600&q=75"
+            alt="Open book with documentation"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B] via-[#0D0D0B]/70 to-[#0D0D0B]/25" />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 mb-6 text-xs text-zinc-400">
-              Resources
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-6 h-px bg-[#3D6B52]" />
+              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Resources</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-semibold tracking-tighter leading-tight max-w-3xl mb-6">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
               Guidance for getting started.
             </h1>
-            <p className="text-lg text-zinc-400 leading-relaxed max-w-[55ch]">
-              Pilot planning, evidence standards, emission factor notes, and
-              methodology references. Grounded in DEFRA 2025, EPA 2025, and
-              GHG Protocol Corporate Standard.
+            <p className="text-base text-white/55 leading-relaxed max-w-[50ch]">
+              Pilot planning, evidence standards, emission factor notes, and methodology references. Grounded in DEFRA 2025, EPA 2025, and GHG Protocol Corporate Standard.
             </p>
           </AnimateIn>
         </div>
       </section>
 
       {/* Guides */}
-      <section className="px-5 py-20">
-        <div className="mx-auto max-w-7xl space-y-16">
+      <section className="bg-[#F5F4F0]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 space-y-20">
           {GUIDES.map((section) => (
             <AnimateIn key={section.category}>
               <div>
-                <div className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-6">
+                <div className="text-[10px] font-medium text-[#9B9A95] uppercase tracking-[0.12em] mb-8">
                   {section.category}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2E1DC]">
                   {section.items.map((item) => (
-                    <div
-                      key={item.title}
-                      className="rounded-xl border border-zinc-800 bg-zinc-900 p-6"
-                    >
-                      <h3 className="text-sm font-semibold text-white mb-3">{item.title}</h3>
-                      <p className="text-sm text-zinc-400 leading-relaxed">{item.text}</p>
+                    <div key={item.title} className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
+                      <h3 className="text-base font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-3">{item.title}</h3>
+                      <p className="text-sm text-[#5C5B57] leading-relaxed">{item.text}</p>
                     </div>
                   ))}
                 </div>
@@ -132,27 +145,33 @@ export default function ResourcesPage() {
       </section>
 
       {/* External references */}
-      <section className="border-t border-zinc-800 px-5 py-16">
-        <div className="mx-auto max-w-7xl">
+      <section className="bg-[#0D0D0B]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-xl font-semibold tracking-tighter text-white mb-6">
-              Primary references.
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-6 h-px bg-[#3D6B52]" />
+              <span className="text-xs text-[#5C5B57] tracking-[0.1em]">Primary references</span>
+            </div>
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-12">
+              Original sources and standards.
             </h2>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#2A2A27]">
             {EXT_LINKS.map((link, i) => (
               <AnimateIn key={link.label} delay={i * 0.04}>
                 <a
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900 hover:border-zinc-700 p-4 transition-colors group"
+                  className="bg-[#0D0D0B] p-8 hover:bg-[#111110] transition-colors flex flex-col justify-between group"
                 >
-                  <div>
-                    <div className="text-sm text-zinc-200 group-hover:text-white transition-colors mb-1">{link.label}</div>
-                    <div className="text-xs text-zinc-500">{link.org}</div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-white tracking-[-0.02em] mb-2 group-hover:text-[#5A9E74] transition-colors">{link.label}</h3>
+                    <p className="text-xs text-[#5C5B57]">{link.org}</p>
                   </div>
-                  <span className="text-zinc-600 group-hover:text-zinc-400 transition-colors mt-0.5 shrink-0">-&gt;</span>
+                  <div className="text-[#3D6B52] group-hover:text-[#5A9E74] transition-colors mt-4 h-5 w-5">
+                    <ArrowUpRight className="h-4 w-4" />
+                  </div>
                 </a>
               </AnimateIn>
             ))}
@@ -161,16 +180,24 @@ export default function ResourcesPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-zinc-800 px-5 py-20 text-center">
-        <AnimateIn>
-          <h2 className="text-3xl font-semibold tracking-tighter text-white mb-4">
-            Ready to run your first calculation?
-          </h2>
-          <Link href="/sign-up" className="inline-flex items-center px-7 py-3 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors active:scale-[0.97]">
-            Create organisation
-          </Link>
-        </AnimateIn>
+      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+          <AnimateIn>
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-4">
+              Ready to run your first calculation?
+            </h2>
+            <Link
+              href="/sign-up"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0D0D0B] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+            >
+              Create organisation
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </AnimateIn>
+        </div>
       </section>
-    </>
+
+      <SiteFooter />
+    </main>
   );
 }

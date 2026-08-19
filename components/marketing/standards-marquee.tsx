@@ -15,27 +15,19 @@ const STANDARDS = [
   "PAS 2080 Carbon",
 ];
 
-// Max one marquee per page. Communicates: platform breadth at a glance.
 export function StandardsMarquee() {
   const prefersReduced = useReducedMotion();
-
-  const items = [...STANDARDS, ...STANDARDS]; // double for seamless loop
+  const items = [...STANDARDS, ...STANDARDS];
 
   return (
-    <div className="overflow-hidden border-y border-zinc-200 bg-slate-50 py-4">
+    <div className="overflow-hidden border-y border-[#2A2A27] bg-[#111110] py-3.5">
       <div
-        className="flex gap-8 whitespace-nowrap"
-        style={
-          prefersReduced
-            ? {}
-            : {
-                animation: "marquee 40s linear infinite",
-              }
-        }
+        className="flex gap-10 whitespace-nowrap"
+        style={prefersReduced ? {} : { animation: "marquee 50s linear infinite" }}
       >
         {items.map((s, i) => (
-          <span key={i} className="flex items-center gap-3 text-sm text-zinc-500 shrink-0">
-            <span className="w-1 h-1 rounded-full bg-emerald-500 inline-block shrink-0" />
+          <span key={i} className="flex items-center gap-3 text-[11px] text-[#3D6B52] tracking-[0.06em] shrink-0">
+            <span className="w-1 h-1 rounded-full bg-[#3D6B52] inline-block shrink-0" />
             {s}
           </span>
         ))}
@@ -44,9 +36,6 @@ export function StandardsMarquee() {
         @keyframes marquee {
           0%   { transform: translateX(0); }
           100% { transform: translateX(-50%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .marquee-inner { animation: none !important; }
         }
       `}</style>
     </div>

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
+import { usePathname } from "next/navigation";
+import { motion, useReducedMotion, AnimatePresence } from "motion/react";
 import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
@@ -17,107 +18,128 @@ const NAV_LINKS = [
 export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const prefersReduced = useReducedMotion();
+  const reduced = useReducedMotion();
+  const pathname = usePathname();
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 24);
+    const handler = () => setScrolled(window.scrollY > 32);
     window.addEventListener("scroll", handler, { passive: true });
     handler();
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  const isDark = theme === "dark";
-  const navBg = scrolled
-    ? "bg-zinc-950/90 backdrop-blur-md border-zinc-800"
-    : isDark
-      ? "bg-transparent border-transparent"
-      : "bg-slate-50/90 backdrop-blur-md border-zinc-200";
+  // Close drawer on route change
+  useEffect(() => { setOpen(false); }, [pathname]);
+
+  const dark = theme === "dark" || scrolled;
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${navBg}`}
-    >
-      <div className="mx-auto max-w-7xl px-5 flex items-center justify-between gap-8" style={{ height: 64 }}>
-        <Link
-          href="/"
-          className={`text-xl font-semibold tracking-tight ${scrolled || isDark ? "text-white" : "text-zinc-900"}`}
-        >
-          CarbonSite
-        </Link>
-
-        <nav className="hidden md:flex items-center gap-6">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-sm transition-colors ${
-                scrolled || isDark
-                  ? "text-zinc-400 hover:text-white"
-                  : "text-zinc-600 hover:text-zinc-900"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden md:flex items-center gap-3">
+    <>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-[#0D0D0B]/92 backdrop-blur-md border-b border-white/6"
+            : dark
+              ? "bg-transparent border-b border-transparent"
+              : "bg-[#F5F4F0]/92 backdrop-blur-md border-b border-[#E2E1DC]"
+        }`}
+        style={{ height: 60 }}
+      >
+        <div className="mx-auto max-w-7xl px-6 md:px-10 flex items-center justify-between h-full">
+          {/* Wordmark */}
           <Link
-            href="/sign-in"
-            className={`text-sm px-4 py-2 rounded-lg transition-colors ${
-              scrolled || isDark
-                ? "text-zinc-400 hover:text-white"
-                : "text-zinc-600 hover:text-zinc-900"
+            href="/"
+            className={`text-[15px] font-semibold tracking-[-0.03em] transition-colors ${
+              dark ? "text-white" : "text-[#0D0D0B]"
             }`}
           >
-            Sign in
+            CarbonSite
           </Link>
-          <Link
-            href="/sign-up"
-            className="text-sm px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors active:scale-[0.97]"
-          >
-            Start free
-          </Link>
-        </div>
 
-        <button
-          className={`md:hidden p-2 rounded-lg transition-colors ${
-            scrolled || isDark
-              ? "text-white hover:bg-white/10"
-              : "text-zinc-900 hover:bg-zinc-100"
-          }`}
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-3 py-1.5 rounded-md text-[13px] transition-colors ${
+                  dark
+                    ? "text-white/50 hover:text-white hover:bg-white/6"
+                    : "text-[#5C5B57] hover:text-[#0D0D0B] hover:bg-[#0D0D0B]/5"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
-      {open && (
-        <motion.div
-          initial={prefersReduced ? {} : { opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
-          className="md:hidden bg-zinc-950 border-t border-zinc-800 px-5 py-4 flex flex-col gap-1"
-        >
-          {NAV_LINKS.map((link) => (
+          {/* Auth actions */}
+          <div className="hidden md:flex items-center gap-2">
             <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="text-sm text-zinc-300 hover:text-white py-2 transition-colors"
+              href="/sign-in"
+              className={`px-3 py-1.5 rounded-md text-[13px] transition-colors ${
+                dark ? "text-white/50 hover:text-white" : "text-[#5C5B57] hover:text-[#0D0D0B]"
+              }`}
             >
-              {link.label}
+              Sign in
             </Link>
-          ))}
-          <div className="pt-3 border-t border-zinc-800 mt-2 flex flex-col gap-2">
-            <Link href="/sign-in" className="text-sm text-zinc-400 py-2">Sign in</Link>
-            <Link href="/sign-up" className="text-sm px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-center">
+            <Link
+              href="/sign-up"
+              className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors active:scale-[0.97] ${
+                dark
+                  ? "bg-white text-[#0D0D0B] hover:bg-white/90"
+                  : "bg-[#0D0D0B] text-white hover:bg-[#1A1A18]"
+              }`}
+            >
               Start free
             </Link>
           </div>
-        </motion.div>
-      )}
-    </header>
+
+          {/* Mobile toggle */}
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className={`md:hidden p-2 rounded-md transition-colors ${
+              dark ? "text-white/70 hover:text-white" : "text-[#5C5B57] hover:text-[#0D0D0B]"
+            }`}
+            aria-label="Toggle menu"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={reduced ? {} : { opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? {} : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="fixed inset-x-0 top-[60px] z-40 bg-[#0D0D0B] border-b border-white/8 px-6 py-6 md:hidden"
+          >
+            <nav className="flex flex-col gap-1 mb-6">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="px-3 py-2.5 rounded-md text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="flex flex-col gap-2 pt-4 border-t border-white/8">
+              <Link href="/sign-in" className="px-3 py-2.5 text-sm text-white/50 hover:text-white transition-colors">
+                Sign in
+              </Link>
+              <Link href="/sign-up" className="px-4 py-2.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium text-center hover:bg-white/90 transition-colors">
+                Start free
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

@@ -1,64 +1,78 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Building2, ClipboardCheck, Mail, MapPinned } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { AnimateIn, AnimateInStagger } from "@/components/marketing/animate-in";
+import { AnimateIn } from "@/components/marketing/animate-in";
+import { SiteNav } from "@/components/marketing/site-nav";
+import { SiteFooter } from "@/components/marketing/site-footer";
+import { ArrowUpRight, Mail, Building2, FileText, MapPin } from "lucide-react";
 
-export const metadata = {
-  title: "Contact — CarbonSite",
+export const metadata: Metadata = {
+  title: "Contact - CarbonSite",
   description: "Plan a CarbonSite pilot around real project data.",
 };
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen">
-      <section className="relative overflow-hidden py-24 md:py-32">
-        <div className="mx-auto max-w-4xl px-5 text-center">
+    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+      <SiteNav theme="dark" />
+
+      {/* Hero */}
+      <section className="relative min-h-[60vh] flex items-end overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=75"
+            alt="Team meeting around table"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B] via-[#0D0D0B]/70 to-[#0D0D0B]/25" />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <p className="text-sm font-semibold uppercase tracking-widest text-emerald-400">
-              Pilot contact
-            </p>
-          </AnimateIn>
-          <AnimateIn delay={0.1}>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-6 h-px bg-[#3D6B52]" />
+              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Pilot contact</span>
+            </div>
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[22ch]">
               Plan a CarbonSite pilot around real project data.
             </h1>
-          </AnimateIn>
-          <AnimateIn delay={0.2}>
-            <p className="mt-6 text-lg leading-8 text-zinc-300">
-              Bring one construction project, one reporting period, field evidence, supplier files,
-              and postcode routes. CarbonSite proves the workflow with live tenant data.
+            <p className="text-base text-white/55 leading-relaxed max-w-[50ch] mb-8">
+              Bring one construction project, one reporting period, field evidence, supplier files, and postcode routes. CarbonSite proves the workflow with live tenant data.
             </p>
-          </AnimateIn>
-          <AnimateIn delay={0.3}>
-            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Button asChild size="lg" className="bg-emerald-500 text-white hover:bg-emerald-400">
-                <a href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Email pilot team
-                </a>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-zinc-700 text-white hover:bg-zinc-800">
-                <Link href="/sign-up">
-                  Create workspace
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#3D6B52] text-white text-sm font-medium hover:bg-[#5A9E74] transition-colors active:scale-[0.97]"
+              >
+                <Mail className="h-4 w-4" />
+                Email pilot team
+              </a>
+              <Link
+                href="/sign-up"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white text-sm font-medium hover:border-white/40 transition-colors"
+              >
+                Create workspace
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
             </div>
           </AnimateIn>
         </div>
       </section>
 
-      <section className="border-y border-zinc-800 bg-zinc-900/50 py-16">
-        <div className="mx-auto max-w-7xl px-5">
+      {/* Preparation guide */}
+      <section className="bg-[#F5F4F0] border-b border-[#E2E1DC]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-2xl font-bold text-white md:text-3xl">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-3">
               What to prepare for a useful pilot.
             </h2>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-400">
+            <p className="text-sm text-[#5C5B57] mb-12 max-w-[55ch]">
               The fastest pilot starts with actual operational records, not synthetic sample data.
             </p>
           </AnimateIn>
-          <AnimateInStagger className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#E2E1DC]">
             {[
               {
                 icon: Building2,
@@ -66,46 +80,70 @@ export default function ContactPage() {
                 text: "Confirm tenant name, admins, reviewers, facilities, business units, and reporting periods.",
               },
               {
-                icon: ClipboardCheck,
+                icon: FileText,
                 title: "Data sources",
                 text: "Bring supplier CSV or XLSX files, evidence PDFs or images, and field workers for mobile capture.",
               },
               {
-                icon: MapPinned,
+                icon: MapPin,
                 title: "Route distance",
                 text: "Identify pickup and delivery postcode pairs for haulage, waste collections, or site deliveries.",
               },
             ].map(({ icon: Icon, title, text }) => (
-              <div key={title} className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-                <Icon className="h-6 w-6 text-emerald-400" />
-                <h3 className="mt-3 text-sm font-semibold text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-400">{text}</p>
+              <div key={title} className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
+                <Icon className="h-6 w-6 text-[#3D6B52] mb-4" />
+                <h3 className="text-sm font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-3">{title}</h3>
+                <p className="text-sm text-[#5C5B57] leading-relaxed">{text}</p>
               </div>
             ))}
-          </AnimateInStagger>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16">
-        <AnimateIn>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-8">
-            <h2 className="text-base font-semibold text-white">Pilot scope template</h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+      {/* Pilot scope */}
+      <section className="bg-[#0D0D0B]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+          <AnimateIn>
+            <h2 className="text-sm font-medium text-[#5C5B57] uppercase tracking-[0.1em] mb-8">Pilot scope template</h2>
+            <div className="border border-[#2A2A27] divide-y divide-[#2A2A27] overflow-hidden">
               {[
                 ["Project", "One active UK construction project with a defined reporting period."],
                 ["Users", "Admin, reviewer, auditor, and field-worker roles invited into the tenant."],
                 ["Records", "Manual records, staged import rows, and mobile submissions approved into activity records."],
                 ["Outputs", "Calculation run, published snapshot, report artefacts, evidence downloads, and audit trail."],
               ].map(([title, text]) => (
-                <div key={title} className="rounded-lg border border-zinc-700 bg-zinc-900 p-4">
-                  <h3 className="text-sm font-semibold text-white">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-zinc-400">{text}</p>
+                <div key={title} className="grid grid-cols-1 md:grid-cols-[140px_1fr] hover:bg-[#111110] transition-colors">
+                  <div className="px-6 py-5 border-r border-[#2A2A27] font-semibold text-white text-sm">{title}</div>
+                  <div className="px-6 py-5 text-sm text-[#5C5B57]">{text}</div>
                 </div>
               ))}
             </div>
-          </div>
-        </AnimateIn>
+          </AnimateIn>
+        </div>
       </section>
-    </div>
+
+      {/* CTA */}
+      <section className="bg-[#F5F4F0]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 text-center">
+          <AnimateIn>
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-4">
+              Ready to start your pilot?
+            </h2>
+            <p className="text-sm text-[#5C5B57] mb-8 max-w-[45ch] mx-auto">
+              Email the pilot team with your project scope or create a free workspace to start exploring.
+            </p>
+            <a
+              href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0D0D0B] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+            >
+              Get in touch
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </a>
+          </AnimateIn>
+        </div>
+      </section>
+
+      <SiteFooter />
+    </main>
   );
 }

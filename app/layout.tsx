@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { MotionProvider } from "@/components/motion-provider";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "CarbonSite | GHG Emissions Tracking",
@@ -22,11 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body
-        className="min-h-full flex flex-col"
-        style={{ fontFamily: "var(--font-inter, Inter, ui-sans-serif, sans-serif)" }}
-      >
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col">
         <MotionProvider>{children}</MotionProvider>
       </body>
     </html>

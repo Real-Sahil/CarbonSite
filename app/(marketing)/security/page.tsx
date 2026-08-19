@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
+import { SiteNav } from "@/components/marketing/site-nav";
+import { SiteFooter } from "@/components/marketing/site-footer";
+import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Security - CarbonSite",
@@ -10,97 +14,111 @@ export const metadata: Metadata = {
 const CONTROLS = [
   {
     area: "Multi-tenant isolation",
+    tag: "P0",
     detail: "Every organisation's data is strictly scoped at the query level. No tenant can access another organisation's records, files, or calculations — isolation is enforced in the data layer, not just in route handlers.",
-    severity: "P0",
   },
   {
     area: "Role-based access control",
+    tag: "Core",
     detail: "Six roles govern what each user can see and do: admin, editor, reviewer, viewer, auditor, and field worker. Role assignment is managed server-side. Client-supplied claims are never trusted for authorisation decisions.",
-    severity: "Core",
   },
   {
     area: "Object storage access",
+    tag: "Core",
     detail: "Evidence files, import data, and generated reports are stored in isolated object storage. Clients never receive raw storage keys or bucket credentials. All download links are short-lived, server-generated signed URLs issued only after authentication and membership verification.",
-    severity: "Core",
   },
   {
     area: "Append-only audit log",
+    tag: "Core",
     detail: "Every authentication event, role change, data import, record mutation, calculation run, snapshot publication, report download, and submission review is permanently recorded. Audit rows are never modified or deleted, providing a tamper-evident trail for SECR and ISO 14064-1 compliance.",
-    severity: "Core",
   },
   {
     area: "Immutable calculation snapshots",
+    tag: "Core",
     detail: "Publishing a snapshot locks the underlying calculation run. Reports produced from that snapshot will always reproduce the same figures. Recalculation produces a new versioned snapshot — prior versions are preserved and unchanged.",
-    severity: "Core",
   },
   {
     area: "Rate limiting",
+    tag: "Defence",
     detail: "Authentication, upload, and mutation endpoints are rate-limited per IP address. Limits are enforced before any route handler executes. Requests that exceed the limit receive a 429 response with a Retry-After header.",
-    severity: "Defence",
   },
   {
     area: "Security headers",
+    tag: "Defence",
     detail: "Every response carries security headers: clickjacking protection, content-type sniffing prevention, strict referrer policy, a permissions policy that restricts access to device APIs, and HSTS in production. Applied globally in middleware.",
-    severity: "Defence",
   },
   {
     area: "Field worker isolation",
-    detail: "External users (subcontractors, suppliers, tipper hires) operate in a strictly limited mode. They can submit evidence for the reporting periods they were invited to and check the status of their own submissions — nothing else. Organisation dashboards, calculations, and other users' data are completely inaccessible.",
-    severity: "Core",
+    tag: "Core",
+    detail: "External users (subcontractors, suppliers, tipper hires) operate in a strictly limited mode. They can submit evidence for the reporting periods they were invited to and check the status of their own submissions — nothing else.",
   },
 ];
 
-const SEVERITY_STYLES: Record<string, string> = {
-  P0: "bg-red-950 text-red-400 border-red-900",
-  Core: "bg-zinc-800 text-zinc-300 border-zinc-700",
-  Defence: "bg-blue-950 text-blue-400 border-blue-900",
+const TAG_STYLE: Record<string, string> = {
+  P0:      "text-[#E05A5A] border-[#E05A5A]/30 bg-[#E05A5A]/8",
+  Core:    "text-[#5C5B57] border-[#3D3D3A] bg-[#1A1A18]",
+  Defence: "text-[#5A9E74] border-[#3D6B52]/30 bg-[#3D6B52]/8",
 };
 
 export default function SecurityPage() {
   return (
-    <>
+    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+      <SiteNav theme="dark" />
+
       {/* Hero */}
-      <section className="border-b border-zinc-800 py-24 px-5">
-        <div className="mx-auto max-w-7xl max-w-3xl">
+      <section className="relative min-h-[55vh] flex items-end overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1600&q=75"
+            alt="Server room infrastructure"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B] via-[#0D0D0B]/70 to-[#0D0D0B]/25" />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 mb-6 text-xs text-zinc-400">
-              Security
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-6 h-px bg-[#3D6B52]" />
+              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Security</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-semibold tracking-tighter leading-tight mb-6">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[18ch]">
               Designed to be audited.
             </h1>
-            <p className="text-lg text-zinc-400 leading-relaxed max-w-[55ch]">
-              Multi-tenant isolation, role-based access control, append-only audit logs,
-              and immutable snapshots. Every control is enforced server-side.
+            <p className="text-base text-white/55 leading-relaxed max-w-[50ch]">
+              Multi-tenant isolation, role-based access control, append-only audit logs, and immutable snapshots. Every control is enforced server-side.
             </p>
           </AnimateIn>
         </div>
       </section>
 
       {/* Controls */}
-      <section className="px-5 py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-4 mb-10">
-            {Object.entries(SEVERITY_STYLES).map(([sev, cls]) => (
-              <span key={sev} className={`text-xs px-2.5 py-1 rounded-full border ${cls}`}>{sev}</span>
-            ))}
-            <span className="text-xs text-zinc-500">classification key</span>
-          </div>
-
-          <div className="space-y-4">
+      <section className="bg-[#0D0D0B]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+          <AnimateIn>
+            <div className="flex items-center gap-4 mb-12">
+              {Object.entries(TAG_STYLE).map(([tag, cls]) => (
+                <span key={tag} className={`text-[10px] px-2.5 py-1 rounded-full border tracking-wide ${cls}`}>{tag}</span>
+              ))}
+              <span className="text-[10px] text-[#3D3D3A]">classification key</span>
+            </div>
+          </AnimateIn>
+          <div className="border border-[#2A2A27] divide-y divide-[#2A2A27] overflow-hidden">
             {CONTROLS.map((control, i) => (
-              <AnimateIn key={control.area} delay={i * 0.05}>
-                <div className="grid grid-cols-1 md:grid-cols-[220px_80px_1fr] gap-0 rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
-                  <div className="p-5 border-r border-zinc-800 flex items-start">
-                    <span className="text-sm font-medium text-zinc-200">{control.area}</span>
+              <AnimateIn key={control.area} delay={i * 0.04}>
+                <div className="grid grid-cols-1 md:grid-cols-[220px_80px_1fr] hover:bg-[#111110] transition-colors">
+                  <div className="px-6 py-5 border-r border-[#2A2A27]">
+                    <span className="text-sm font-medium text-white">{control.area}</span>
                   </div>
-                  <div className="p-5 border-r border-zinc-800 flex items-start justify-center">
-                    <span className={`text-xs px-2 py-0.5 rounded-full border ${SEVERITY_STYLES[control.severity]}`}>
-                      {control.severity}
+                  <div className="px-6 py-5 border-r border-[#2A2A27] flex items-start">
+                    <span className={`text-[10px] px-2.5 py-1 rounded-full border tracking-wide ${TAG_STYLE[control.tag]}`}>
+                      {control.tag}
                     </span>
                   </div>
-                  <div className="p-5">
-                    <p className="text-sm text-zinc-400 leading-relaxed">{control.detail}</p>
+                  <div className="px-6 py-5">
+                    <p className="text-sm text-[#5C5B57] leading-relaxed">{control.detail}</p>
                   </div>
                 </div>
               </AnimateIn>
@@ -110,39 +128,53 @@ export default function SecurityPage() {
       </section>
 
       {/* Architecture note */}
-      <section className="border-t border-zinc-800 px-5 py-20">
-        <div className="mx-auto max-w-7xl">
+      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <div className="max-w-2xl">
-              <h2 className="text-2xl font-semibold tracking-tighter text-white mb-4">
-                No external auth dependencies.
-              </h2>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                Authentication runs entirely on your own infrastructure. Session data lives in your
-                database — not a third-party auth service — so you have full custody of who has access
-                and when. Mobile clients use short-lived tokens with automatic renewal.
-              </p>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                Files are stored in isolated, access-controlled object storage. Each organisation&apos;s
-                content is scoped to its own namespace. Download links expire after a short window
-                and are only issued to authenticated, authorised users.
-              </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+              <div>
+                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-5">
+                  No external auth dependencies.
+                </h2>
+                <p className="text-sm text-[#5C5B57] leading-relaxed mb-4">
+                  Authentication runs entirely on your own infrastructure. Session data lives in your database — not a third-party auth service — so you have full custody of who has access and when. Mobile clients use short-lived tokens with automatic renewal.
+                </p>
+                <p className="text-sm text-[#5C5B57] leading-relaxed">
+                  Files are stored in isolated, access-controlled object storage. Each organisation&apos;s content is scoped to its own namespace. Download links expire after a short window and are only issued to authenticated, authorised users.
+                </p>
+              </div>
+              <div className="space-y-4">
+                {["Cross-tenant access is a P0 security bug — enforced in the data layer.", "Audit rows are append-only. Never updated. Never deleted.", "Calculation results are immutable after publication.", "Field worker scope is zero — no org data, no other users."].map((point) => (
+                  <div key={point} className="flex items-start gap-3">
+                    <div className="mt-1.5 w-1 h-1 rounded-full bg-[#3D6B52] shrink-0" />
+                    <p className="text-sm text-[#5C5B57] leading-relaxed">{point}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </AnimateIn>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="border-t border-zinc-800 px-5 py-20 text-center">
-        <AnimateIn>
-          <h2 className="text-3xl font-semibold tracking-tighter text-white mb-4">
-            Security questions? Talk to the team.
-          </h2>
-          <Link href="/sign-up" className="inline-flex items-center px-7 py-3 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors active:scale-[0.97]">
-            Create organisation
-          </Link>
-        </AnimateIn>
+      <section className="bg-[#0D0D0B]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+          <AnimateIn>
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
+              Security questions? Talk to the team.
+            </h2>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+            >
+              Get in touch
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </AnimateIn>
+        </div>
       </section>
-    </>
+
+      <SiteFooter />
+    </main>
   );
 }

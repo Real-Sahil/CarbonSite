@@ -60,6 +60,7 @@
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
     "firebase-admin": "^13.10.0",
+    "geist": "^1.7.2",
     "kysely": "0.28.8",
     "lucide-react": "^1.17.0",
     "mammoth": "^1.12.0",

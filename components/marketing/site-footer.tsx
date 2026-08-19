@@ -15,7 +15,7 @@ const COLS = [
     links: [
       { href: "/security", label: "Security" },
       { href: "/resources", label: "Resources" },
-      { href: "/sign-up", label: "Start free" },
+      { href: "/contact", label: "Contact" },
       { href: "/sign-in", label: "Sign in" },
     ],
   },
@@ -30,27 +30,26 @@ const COLS = [
   },
 ];
 
-export function SiteFooter({ dark = false }: { dark?: boolean }) {
-  const bg = dark ? "bg-zinc-950 border-zinc-800" : "bg-zinc-950 border-zinc-800";
+export function SiteFooter() {
   return (
-    <footer className={`${bg} border-t`}>
-      <div className="mx-auto max-w-7xl px-5 py-14">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+    <footer className="bg-[#0D0D0B] border-t border-[#2A2A27]">
+      <div className="mx-auto max-w-7xl px-6 md:px-10 pt-16 pb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
           <div>
-            <div className="text-lg font-semibold text-white tracking-tight mb-3">CarbonSite</div>
-            <p className="text-sm text-zinc-400 leading-relaxed max-w-[200px]">
+            <div className="text-[15px] font-semibold text-white tracking-[-0.03em] mb-4">CarbonSite</div>
+            <p className="text-sm text-[#5C5B57] leading-relaxed max-w-[200px]">
               GHG emissions tracking for construction and supply chains. DEFRA 2025. GHG Protocol Corporate Standard.
             </p>
           </div>
           {COLS.map((col) => (
             <div key={col.heading}>
-              <div className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-4">{col.heading}</div>
-              <ul className="flex flex-col gap-2">
+              <div className="text-[10px] font-medium text-[#3D3D3A] uppercase tracking-[0.12em] mb-4">{col.heading}</div>
+              <ul className="flex flex-col gap-2.5">
                 {col.links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-zinc-400 hover:text-white transition-colors"
+                      className="text-sm text-[#5C5B57] hover:text-white transition-colors"
                       {...("external" in link && link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     >
                       {link.label}
@@ -61,13 +60,15 @@ export function SiteFooter({ dark = false }: { dark?: boolean }) {
             </div>
           ))}
         </div>
-        <div className="pt-8 border-t border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm text-zinc-500">
-            &copy; {new Date().getFullYear()} CarbonSite. Calculations follow GHG Protocol Corporate Standard, IPCC AR6 GWPs.
+        <div className="pt-8 border-t border-[#2A2A27] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <span className="text-xs text-[#3D3D3A]">
+            &copy; {new Date().getFullYear()} CarbonSite Ltd. Calculations follow GHG Protocol Corporate Standard, IPCC AR6 GWPs.
           </span>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {["GHG Protocol", "DEFRA 2025", "IPCC AR6", "SECR"].map((s) => (
-              <span key={s} className="text-xs text-zinc-600 border border-zinc-800 rounded px-2 py-0.5">{s}</span>
+              <span key={s} className="text-[10px] text-[#3D3D3A] border border-[#2A2A27] rounded px-2 py-0.5 tracking-wide">
+                {s}
+              </span>
             ))}
           </div>
         </div>

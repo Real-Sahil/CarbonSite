@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
-import { PhoneCaptureMock } from "@/components/marketing/phone-capture-mock";
+import { SiteNav } from "@/components/marketing/site-nav";
+import { SiteFooter } from "@/components/marketing/site-footer";
+import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Field App - CarbonSite",
@@ -9,42 +12,12 @@ export const metadata: Metadata = {
 };
 
 const CAPTURE_STEPS = [
-  {
-    n: "1",
-    title: "Receive invite link",
-    text: "The org admin sends a signed invite link by SMS or email. No App Store account needed first - the link opens in a browser and prompts install on iOS and Android.",
-    color: "#0f766e",
-  },
-  {
-    n: "2",
-    title: "Set a PIN",
-    text: "On first launch, the field worker sets a 6-digit PIN stored in the device secure enclave. No username or password required. Biometric unlock optional.",
-    color: "#0ea5e9",
-  },
-  {
-    n: "3",
-    title: "Select a project",
-    text: "The home screen shows only the reporting periods and organisations this user has been invited to contribute to. No access to any other org data.",
-    color: "#8b5cf6",
-  },
-  {
-    n: "4",
-    title: "Photograph a document",
-    text: "Choose document type (Waste Ticket, Delivery Note, Fuel Receipt, Other). Open camera or pick from gallery. On-device ML Kit OCR runs in 1-2 seconds without any network request.",
-    color: "#f59e0b",
-  },
-  {
-    n: "5",
-    title: "Confirm extracted fields",
-    text: "Auto-extracted fields are highlighted with a sparkle badge. Wrong? Just edit. Empty fields are left blank for manual entry. Add GPS location (optional).",
-    color: "#84cc16",
-  },
-  {
-    n: "6",
-    title: "Submit (works offline)",
-    text: "Submission is saved to local SQLite first. A background sync service drains the queue when connectivity returns. Status moves from pending to syncing to submitted.",
-    color: "#f43f5e",
-  },
+  { n: "01", title: "Receive invite link", text: "Admin sends a signed invite link by SMS or email. The link opens in a browser and prompts install on iOS and Android. No App Store account needed first." },
+  { n: "02", title: "Set a PIN", text: "On first launch the field worker sets a 6-digit PIN stored in the device secure enclave. No username or password. Biometric unlock optional." },
+  { n: "03", title: "Select a project", text: "Home screen shows only the reporting periods and organisations this user was invited to contribute to. Zero access to any other org data." },
+  { n: "04", title: "Photograph a document", text: "Choose document type (Waste Ticket, Delivery Note, Fuel Receipt, Other). Camera or gallery. On-device ML Kit OCR runs in 1-2 seconds without a network request." },
+  { n: "05", title: "Confirm extracted fields", text: "Auto-extracted fields are highlighted. Wrong? Just edit. Empty fields left blank for manual entry. Add GPS location optionally." },
+  { n: "06", title: "Submit (works offline)", text: "Submission is saved to local SQLite first. A background sync service drains the queue when connectivity returns. Status: pending, syncing, submitted." },
 ];
 
 const OCR_FIELDS = [
@@ -56,52 +29,61 @@ const OCR_FIELDS = [
 
 export default function FieldAppPage() {
   return (
-    <>
-      {/* Hero */}
-      <section className="border-b border-zinc-800 py-20 px-5">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <AnimateIn>
-              <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 mb-6 text-xs text-zinc-400">
-                Field app
-              </div>
-              <h1 className="text-5xl md:text-6xl font-semibold tracking-tighter leading-tight mb-6">
-                Evidence capture from the site, not the office.
-              </h1>
-              <p className="text-lg text-zinc-400 leading-relaxed max-w-[50ch] mb-8">
-                Field workers photograph documents on-site. On-device OCR extracts the data.
-                Works without internet. Syncs automatically when connectivity returns.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link href="/sign-up" className="inline-flex items-center px-6 py-3 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors active:scale-[0.97]">
-                  Invite a field worker
-                </Link>
-                <Link href="/solutions/construction" className="inline-flex items-center px-6 py-3 rounded-xl border border-zinc-700 text-zinc-300 text-sm font-medium hover:border-zinc-500 hover:text-white transition-colors">
-                  Construction use cases
-                </Link>
-              </div>
-            </AnimateIn>
+    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+      <SiteNav theme="dark" />
 
-            <AnimateIn delay={0.15}>
-              <PhoneCaptureMock />
-            </AnimateIn>
-          </div>
+      {/* Hero */}
+      <section className="relative min-h-[70vh] flex items-end overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=75"
+            alt="Worker on construction site with mobile phone"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B] via-[#0D0D0B]/65 to-[#0D0D0B]/20" />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
+          <AnimateIn>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-6 h-px bg-[#3D6B52]" />
+              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Mobile field app</span>
+            </div>
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[22ch]">
+              Evidence captured at the point of activity.
+            </h1>
+            <p className="text-base text-white/55 leading-relaxed max-w-[48ch] mb-8">
+              Field workers photograph documents on-site. On-device OCR extracts the data.
+              Works without internet. Syncs automatically when connectivity returns.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/sign-up" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]">
+                Invite a field worker
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+              <Link href="/solutions/construction" className="inline-flex items-center px-6 py-3 rounded-full border border-white/20 text-white/80 text-sm font-medium hover:border-white/40 hover:text-white transition-colors">
+                Construction use cases
+              </Link>
+            </div>
+          </AnimateIn>
         </div>
       </section>
 
-      {/* Offline-first callout */}
-      <section className="border-b border-zinc-800 bg-zinc-900/50 px-5 py-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Stats */}
+      <section className="bg-[#111110] border-b border-[#2A2A27]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#2A2A27]">
             {[
               { stat: "On-device", label: "OCR processing", note: "No server round-trip, no API cost, works in a basement" },
               { stat: "Offline-first", label: "SQLite queue", note: "Every submission drafts locally before any network attempt" },
               { stat: "Auto-sync", label: "Background service", note: "Drains the queue with exponential backoff when online" },
             ].map((item) => (
-              <div key={item.stat} className="text-center p-6 rounded-xl border border-zinc-800">
-                <div className="text-2xl font-semibold text-emerald-400 mb-1">{item.stat}</div>
-                <div className="text-sm font-medium text-white mb-2">{item.label}</div>
-                <div className="text-xs text-zinc-500">{item.note}</div>
+              <div key={item.stat} className="px-0 md:px-8 py-8 md:py-4 first:pl-0 last:pr-0">
+                <div className="text-xl font-semibold text-[#5A9E74] mb-1">{item.stat}</div>
+                <div className="text-sm font-medium text-white mb-1">{item.label}</div>
+                <div className="text-xs text-[#5C5B57]">{item.note}</div>
               </div>
             ))}
           </div>
@@ -109,22 +91,20 @@ export default function FieldAppPage() {
       </section>
 
       {/* Capture steps */}
-      <section className="border-b border-zinc-800 px-5 py-20">
-        <div className="mx-auto max-w-7xl">
+      <section className="bg-[#F5F4F0]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-3xl font-semibold tracking-tighter text-white mb-12">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-16">
               From first launch to first submission.
             </h2>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2E1DC]">
             {CAPTURE_STEPS.map((step, i) => (
-              <AnimateIn key={step.n} delay={i * 0.07}>
-                <div className="h-full rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-                  <div className="text-3xl font-bold tracking-tighter mb-3" style={{ color: step.color }}>
-                    {step.n}
-                  </div>
-                  <h3 className="text-sm font-semibold text-white mb-2">{step.title}</h3>
-                  <p className="text-sm text-zinc-400 leading-relaxed">{step.text}</p>
+              <AnimateIn key={step.n} delay={i * 0.05}>
+                <div className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
+                  <div className="text-xs font-mono text-[#3D6B52] mb-6 tracking-widest">{step.n}</div>
+                  <h3 className="text-base font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-3">{step.title}</h3>
+                  <p className="text-sm text-[#5C5B57] leading-relaxed">{step.text}</p>
                 </div>
               </AnimateIn>
             ))}
@@ -132,47 +112,46 @@ export default function FieldAppPage() {
         </div>
       </section>
 
-      {/* OCR field extraction */}
-      <section className="border-b border-zinc-800 px-5 py-20">
-        <div className="mx-auto max-w-7xl">
+      {/* OCR fields */}
+      <section className="bg-[#0D0D0B]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-3xl font-semibold tracking-tighter text-white mb-2">
-              What OCR extracts.
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-6 h-px bg-[#3D6B52]" />
+              <span className="text-xs text-[#5C5B57] tracking-[0.1em]">OCR extraction</span>
+            </div>
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-3">
+              What the extractor reads.
             </h2>
-            <p className="text-sm text-zinc-400 mb-10 max-w-[55ch]">
-              ML Kit text recognition runs on-device. A regex and heuristic extractor
-              finds structured fields from the raw text blocks. Unrecognised fields are
-              left blank for manual entry.
+            <p className="text-sm text-[#5C5B57] mb-12 max-w-[55ch]">
+              ML Kit text recognition runs on-device. A regex and heuristic extractor finds structured fields from the raw text blocks. Unrecognised fields are left blank for manual entry.
             </p>
           </AnimateIn>
-          <div className="space-y-4">
-            {OCR_FIELDS.map((row, i) => (
-              <AnimateIn key={row.doc} delay={i * 0.06}>
-                <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-0 rounded-xl border border-zinc-800 overflow-hidden">
-                  <div className="bg-zinc-900 p-4 border-r border-zinc-800 flex items-center">
-                    <span className="text-sm font-medium text-zinc-300">{row.doc}</span>
-                  </div>
-                  <div className="bg-zinc-900/40 p-4">
-                    <p className="text-sm text-zinc-400">{row.fields}</p>
-                  </div>
+          <div className="border border-[#2A2A27] divide-y divide-[#2A2A27] overflow-hidden">
+            {OCR_FIELDS.map((row) => (
+              <div key={row.doc} className="grid grid-cols-1 md:grid-cols-[180px_1fr]">
+                <div className="px-6 py-4 border-r border-[#2A2A27]">
+                  <span className="text-sm font-medium text-white">{row.doc}</span>
                 </div>
-              </AnimateIn>
+                <div className="px-6 py-4">
+                  <p className="text-sm text-[#5C5B57]">{row.fields}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Security note */}
-      <section className="border-b border-zinc-800 px-5 py-16">
-        <div className="mx-auto max-w-7xl">
+      {/* Security isolation note */}
+      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-16">
           <AnimateIn>
-            <div className="max-w-xl rounded-xl border border-zinc-800 bg-zinc-900 p-8">
-              <h3 className="text-lg font-semibold text-white mb-3">Field worker data isolation.</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                A field_worker role has zero access to org dashboards, calculations, or other users&apos;
-                submissions. They see only the reporting periods they were invited to and the status
-                of their own submissions. Access is enforced server-side on every API request -
-                not from client-supplied headers.
+            <div className="max-w-xl">
+              <h3 className="text-lg font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-3">Field worker data isolation.</h3>
+              <p className="text-sm text-[#5C5B57] leading-relaxed">
+                A field_worker role has zero access to org dashboards, calculations, or other users&apos; submissions.
+                They see only the reporting periods they were invited to and the status of their own submissions.
+                Access is enforced server-side on every API request, not from client-supplied headers.
               </p>
             </div>
           </AnimateIn>
@@ -180,16 +159,24 @@ export default function FieldAppPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-5 py-20 text-center">
-        <AnimateIn>
-          <h2 className="text-3xl font-semibold tracking-tighter text-white mb-4">
-            Put evidence capture in your team&apos;s pocket.
-          </h2>
-          <Link href="/sign-up" className="inline-flex items-center px-7 py-3 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors active:scale-[0.97]">
-            Create organisation and send first invite
-          </Link>
-        </AnimateIn>
+      <section className="bg-[#0D0D0B]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+          <AnimateIn>
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
+              Put evidence capture in your team&apos;s pocket.
+            </h2>
+            <Link
+              href="/sign-up"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+            >
+              Create organisation and send first invite
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </AnimateIn>
+        </div>
       </section>
-    </>
+
+      <SiteFooter />
+    </main>
   );
 }
