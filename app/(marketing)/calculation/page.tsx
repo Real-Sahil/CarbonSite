@@ -44,10 +44,10 @@ export default function CalculationPage() {
       <section className="bg-gradient-to-br from-white to-blue-50 py-24 px-6">
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-6">
+            <h2 className="text-4xl font-bold text-[#111827] mb-6">
               Built for audit, not just dashboards.
             </h2>
-            <p className="text-lg text-white/60 max-w-3xl mx-auto">
+            <p className="text-lg text-[#64748B] max-w-3xl mx-auto">
               Every calculation run is immutable. Every factor version is recorded. Every formula is stored.
               Your emissions data is audit-ready from day one.
             </p>
@@ -73,11 +73,11 @@ export default function CalculationPage() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="bg-white/10 backdrop-blur rounded-xl p-8 border border-white/20 text-white hover:bg-white/15 transition-colors"
+                className="bg-white/80 rounded-xl p-8 border border-[#ffd8a3] text-[#111827] hover:bg-white hover:shadow-lg transition-all"
               >
                 <div className="text-4xl mb-4">{item.icon}</div>
                 <h3 className="text-lg font-bold mb-3">{item.title}</h3>
-                <p className="text-white/70 leading-relaxed text-sm">{item.description}</p>
+                <p className="text-[#64748B] leading-relaxed text-sm">{item.description}</p>
               </div>
             ))}
           </div>

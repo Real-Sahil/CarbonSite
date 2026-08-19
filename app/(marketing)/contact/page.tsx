@@ -27,7 +27,7 @@ export default function ContactPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-[#0F172A]/70 to-[#0F172A]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-blue-50 via-white to-white" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
@@ -35,23 +35,23 @@ export default function ContactPage() {
               <div className="w-6 h-px bg-[#06B6D4]" />
               <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Pilot contact</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[22ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-6 max-w-[22ch]">
               Plan a CarbonSite pilot around real project data.
             </h1>
-            <p className="text-base text-white/55 leading-relaxed max-w-[50ch] mb-8">
+            <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch] mb-8">
               Bring one construction project, one reporting period, field evidence, supplier files, and postcode routes. CarbonSite proves the workflow with live tenant data.
             </p>
             <div className="flex flex-wrap gap-3">
               <a
                 href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#06B6D4] text-white text-sm font-medium hover:bg-[#0891B2] transition-colors active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#06B6D4] text-[#111827] text-sm font-medium hover:bg-[#0891B2] transition-colors active:scale-[0.97]"
               >
                 <Mail className="h-4 w-4" />
                 Email pilot team
               </a>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white text-sm font-medium hover:border-white/40 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-[#111827] text-sm font-medium hover:border-white/40 transition-colors"
               >
                 Create workspace
                 <ArrowUpRight className="h-3.5 w-3.5" />
@@ -113,7 +113,7 @@ export default function ContactPage() {
                 ["Outputs", "Calculation run, published snapshot, report artefacts, evidence downloads, and audit trail."],
               ].map(([title, text]) => (
                 <div key={title} className="grid grid-cols-1 md:grid-cols-[140px_1fr] hover:bg-[#111110] transition-colors">
-                  <div className="px-6 py-5 border-r border-[#1E293B] font-semibold text-white text-sm">{title}</div>
+                  <div className="px-6 py-5 border-r border-[#1E293B] font-semibold text-[#111827] text-sm">{title}</div>
                   <div className="px-6 py-5 text-sm text-[#64748B]">{text}</div>
                 </div>
               ))}
@@ -134,7 +134,7 @@ export default function ContactPage() {
             </p>
             <a
               href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#111827] text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
             >
               Get in touch
               <ArrowUpRight className="h-3.5 w-3.5" />

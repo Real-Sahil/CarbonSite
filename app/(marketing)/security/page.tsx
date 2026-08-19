@@ -84,10 +84,10 @@ export default function SecurityPage() {
               <div className="w-6 h-px bg-[#06B6D4]" />
               <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Security</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[18ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-6 max-w-[18ch]">
               Designed to be audited.
             </h1>
-            <p className="text-base text-white/55 leading-relaxed max-w-[50ch]">
+            <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch]">
               Multi-tenant isolation, role-based access control, append-only audit logs, and immutable snapshots. Every control is enforced server-side.
             </p>
           </AnimateIn>
@@ -105,14 +105,14 @@ export default function SecurityPage() {
               <span className="text-[10px] text-[#3D3D3A]">classification key</span>
             </div>
           </AnimateIn>
-          <div className="border border-[#1E293B] divide-y divide-[#1E293B] overflow-hidden">
+          <div className="border border-gray-200 divide-y divide-[#1E293B] overflow-hidden">
             {CONTROLS.map((control, i) => (
               <AnimateIn key={control.area} delay={i * 0.04}>
                 <div className="grid grid-cols-1 md:grid-cols-[220px_80px_1fr] hover:bg-[#111110] transition-colors">
-                  <div className="px-6 py-5 border-r border-[#1E293B]">
-                    <span className="text-sm font-medium text-white">{control.area}</span>
+                  <div className="px-6 py-5 border-r border-gray-200">
+                    <span className="text-sm font-medium text-[#111827]">{control.area}</span>
                   </div>
-                  <div className="px-6 py-5 border-r border-[#1E293B] flex items-start">
+                  <div className="px-6 py-5 border-r border-gray-200 flex items-start">
                     <span className={`text-[10px] px-2.5 py-1 rounded-full border tracking-wide ${TAG_STYLE[control.tag]}`}>
                       {control.tag}
                     </span>
@@ -160,7 +160,7 @@ export default function SecurityPage() {
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
               Security questions? Talk to the team.
             </h2>
             <Link

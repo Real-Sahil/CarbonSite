@@ -82,10 +82,10 @@ export default function DeveloperPage() {
             <div className="w-6 h-px bg-[#06B6D4]" />
             <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">REST API v1</span>
           </div>
-          <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-4 max-w-[24ch]">
+          <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-4 max-w-[24ch]">
             Integrate CarbonSite into your workflows.
           </h1>
-          <p className="text-base text-white/55 leading-relaxed max-w-[50ch]">
+          <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch]">
             Build carbon accounting data into your ERP, dashboards, and workflows. All endpoints return JSON and require a bearer token.
           </p>
         </AnimateIn>
@@ -116,13 +116,13 @@ export default function DeveloperPage() {
       {/* Base URL */}
       <section className="mx-auto max-w-7xl px-6 md:px-10 py-20">
         <AnimateIn>
-          <div className="rounded-lg border border-[#1E293B] bg-[#111110] p-6 mb-12">
+          <div className="rounded-lg border border-gray-200 bg-[#111110] p-6 mb-12">
             <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-3">Base URL</p>
             <p className="font-mono text-base text-[#0891B2]">https://app.carbonsite.io</p>
           </div>
 
           {/* Example request */}
-          <div className="rounded-lg border border-[#1E293B] bg-[#111110] p-6 mb-16 overflow-x-auto">
+          <div className="rounded-lg border border-gray-200 bg-[#111110] p-6 mb-16 overflow-x-auto">
             <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-4">Example request</p>
             <pre className="font-mono text-xs text-[#64748B] whitespace-pre">{`curl -X GET "https://app.carbonsite.io/api/orgs/{orgId}/activity-records" \\
   -H "Authorization: Bearer csk_your_api_key_here" \\
@@ -132,7 +132,7 @@ export default function DeveloperPage() {
           {/* Endpoint reference */}
           <div className="flex items-center gap-3 mb-8">
             <BookOpen className="h-5 w-5 text-[#64748B]" />
-            <h2 className="text-lg font-semibold text-white tracking-[-0.02em]">Endpoint reference</h2>
+            <h2 className="text-lg font-semibold text-[#111827] tracking-[-0.02em]">Endpoint reference</h2>
           </div>
         </AnimateIn>
 
@@ -141,16 +141,16 @@ export default function DeveloperPage() {
             <div key={group.group}>
               <AnimateIn>
                 <div className="text-[10px] font-medium text-[#64748B] uppercase tracking-[0.12em] mb-4">{group.group}</div>
-                <div className="border border-[#1E293B] rounded-lg overflow-hidden">
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
                   <div className="divide-y divide-[#1E293B]">
                     {group.endpoints.map((ep) => (
                       <div key={ep.path + ep.method} className="grid grid-cols-1 md:grid-cols-[80px_220px_1fr] hover:bg-[#111110] transition-colors">
-                        <div className="px-6 py-4 border-r border-[#1E293B]">
-                          <span className={`inline-block text-xs font-mono font-semibold px-2.5 py-1 rounded ${METHOD_COLORS[ep.method] ?? "text-[#64748B] bg-[#1A1A18] border border-[#1E293B]"}`}>
+                        <div className="px-6 py-4 border-r border-gray-200">
+                          <span className={`inline-block text-xs font-mono font-semibold px-2.5 py-1 rounded ${METHOD_COLORS[ep.method] ?? "text-[#64748B] bg-[#1A1A18] border border-gray-200"}`}>
                             {ep.method}
                           </span>
                         </div>
-                        <div className="px-6 py-4 border-r border-[#1E293B] font-mono text-xs text-[#0891B2] whitespace-nowrap overflow-x-auto">{ep.path}</div>
+                        <div className="px-6 py-4 border-r border-gray-200 font-mono text-xs text-[#0891B2] whitespace-nowrap overflow-x-auto">{ep.path}</div>
                         <div className="px-6 py-4 text-xs text-[#64748B]">{ep.desc}</div>
                       </div>
                     ))}
@@ -192,7 +192,7 @@ export default function DeveloperPage() {
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
               Ready to build with CarbonSite?
             </h2>
             <Link

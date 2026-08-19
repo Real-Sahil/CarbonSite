@@ -111,10 +111,10 @@ export default function ResourcesPage() {
               <div className="w-6 h-px bg-[#06B6D4]" />
               <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Resources</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-6 max-w-[20ch]">
               Guidance for getting started.
             </h1>
-            <p className="text-base text-white/55 leading-relaxed max-w-[50ch]">
+            <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch]">
               Pilot planning, evidence standards, emission factor notes, and methodology references. Grounded in DEFRA 2025, EPA 2025, and GHG Protocol Corporate Standard.
             </p>
           </AnimateIn>
@@ -122,7 +122,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* Guides */}
-      <section className="bg-[#F5F4F0]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 space-y-20">
           {GUIDES.map((section) => (
             <AnimateIn key={section.category}>
@@ -132,7 +132,7 @@ export default function ResourcesPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2E8F0]">
                   {section.items.map((item) => (
-                    <div key={item.title} className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
+                    <div key={item.title} className="bg-white p-8 hover:bg-white transition-colors">
                       <h3 className="text-base font-semibold text-[#0F172A] tracking-[-0.02em] mb-3">{item.title}</h3>
                       <p className="text-sm text-[#64748B] leading-relaxed">{item.text}</p>
                     </div>
@@ -152,7 +152,7 @@ export default function ResourcesPage() {
               <div className="w-6 h-px bg-[#06B6D4]" />
               <span className="text-xs text-[#64748B] tracking-[0.1em]">Primary references</span>
             </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-12">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-12">
               Original sources and standards.
             </h2>
           </AnimateIn>
@@ -166,7 +166,7 @@ export default function ResourcesPage() {
                   className="bg-white p-8 hover:bg-[#111110] transition-colors flex flex-col justify-between group"
                 >
                   <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-white tracking-[-0.02em] mb-2 group-hover:text-[#0891B2] transition-colors">{link.label}</h3>
+                    <h3 className="text-sm font-semibold text-[#111827] tracking-[-0.02em] mb-2 group-hover:text-[#0891B2] transition-colors">{link.label}</h3>
                     <p className="text-xs text-[#64748B]">{link.org}</p>
                   </div>
                   <div className="text-[#06B6D4] group-hover:text-[#0891B2] transition-colors mt-4 h-5 w-5">
@@ -180,7 +180,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
+      <section className="bg-white border-t border-gray-200">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-4">
@@ -188,7 +188,7 @@ export default function ResourcesPage() {
             </h2>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#111827] text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
             >
               Create organisation
               <ArrowUpRight className="h-3.5 w-3.5" />

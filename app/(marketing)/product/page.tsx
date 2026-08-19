@@ -6,6 +6,7 @@ import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { ScopeComparison } from "@/components/scope-comparison";
+import { ProductGradientBg } from "@/components/gradient-backgrounds";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -62,17 +63,7 @@ export default function ProductPage() {
 
       {/* Hero */}
       <section className="relative min-h-[60vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1600&q=75"
-            alt="Climate change monitoring and carbon reduction technology"
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-white/40 to-white/20" />
-        </div>
+        <ProductGradientBg />
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
