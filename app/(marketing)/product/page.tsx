@@ -5,6 +5,7 @@ import { AnimateIn } from "@/components/marketing/animate-in";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { ScrollReveal } from "@/components/scroll-reveal";
+import { ScopeComparison } from "@/components/scope-comparison";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -143,6 +144,13 @@ export default function ProductPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Scope Comparison */}
+      <section className="bg-gradient-to-br from-white via-blue-50 to-cyan-50 py-24 px-6">
+        <div className="mx-auto max-w-7xl">
+          <ScopeComparison />
         </div>
       </section>
 
