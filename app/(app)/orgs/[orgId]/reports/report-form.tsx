@@ -3,7 +3,7 @@
 import { FormEvent, useState, useTransition } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, CheckCircle, XCircle, AlertCircle, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, CheckCircle, XCircle, AlertCircle, Loader2, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
@@ -48,6 +48,30 @@ async function postJson(url: string, payload: Record<string, unknown>) {
   }
   return res.json();
 }
+
+// Per-check fix actions — keyed by check.id, resolved with orgId at render time
+type FixAction = { label: string; href: (orgId: string) => string };
+const CHECK_FIX_ACTIONS: Record<string, FixAction> = {
+  "ghg-scope1":             { label: "Add Scope 1 records",            href: (o) => `/orgs/${o}/records?scope=1` },
+  "ghg-scope2":             { label: "Add Scope 2 records",            href: (o) => `/orgs/${o}/records?scope=2` },
+  "ghg-approved":           { label: "Review pending records",         href: (o) => `/orgs/${o}/records?status=pending` },
+  "secr-scope1":            { label: "Add Scope 1 records",            href: (o) => `/orgs/${o}/records?scope=1` },
+  "secr-scope2":            { label: "Add Scope 2 records",            href: (o) => `/orgs/${o}/records?scope=2` },
+  "secr-energy":            { label: "Import energy data",             href: (o) => `/orgs/${o}/imports` },
+  "secr-facility":          { label: "Add a facility",                 href: (o) => `/orgs/${o}/settings` },
+  "csrd-scope1":            { label: "Add Scope 1 records",            href: (o) => `/orgs/${o}/records?scope=1` },
+  "csrd-scope2":            { label: "Add Scope 2 records",            href: (o) => `/orgs/${o}/records?scope=2` },
+  "csrd-scope3":            { label: "Add Scope 3 records",            href: (o) => `/orgs/${o}/records?scope=3` },
+  "csrd-scope2-market-based": { label: "Add market-based records",     href: (o) => `/orgs/${o}/records?category=s2-electricity-mb` },
+  "ppn-scope1":             { label: "Add Scope 1 records",            href: (o) => `/orgs/${o}/records?scope=1` },
+  "ppn-scope2":             { label: "Add Scope 2 records",            href: (o) => `/orgs/${o}/records?scope=2` },
+  "ppn-s3-upstream-transport": { label: "Add upstream transport records", href: (o) => `/orgs/${o}/records?category=s3-upstream-transport` },
+  "ppn-s3-business-travel": { label: "Add business travel records",   href: (o) => `/orgs/${o}/records?category=s3-business-travel` },
+  "ppn-s3-commuting":       { label: "Add commuting records",         href: (o) => `/orgs/${o}/records?category=s3-commuting` },
+  "ppn-all-approved":       { label: "Review pending records",         href: (o) => `/orgs/${o}/records?status=pending` },
+  "iso-scope1":             { label: "Add Scope 1 records",            href: (o) => `/orgs/${o}/records?scope=1` },
+  "iso-scope2":             { label: "Add Scope 2 records",            href: (o) => `/orgs/${o}/records?scope=2` },
+};
 
 // Report types that require a contract selection
 const CONTRACT_REQUIRED_TYPES = new Set(["national_toms", "contract_carbon"]);
@@ -388,6 +412,7 @@ export function CreateReportForm({
         <ValidationResults
           result={validationResult}
           error={validationError}
+          orgId={orgId}
         />
       )}
     </div>
@@ -397,9 +422,11 @@ export function CreateReportForm({
 function ValidationResults({
   result,
   error,
+  orgId,
 }: {
   result: ValidationResult | null;
   error: string | null;
+  orgId: string;
 }) {
   if (error) {
     return (
@@ -439,37 +466,53 @@ function ValidationResults({
         )}
       </div>
 
-      <ul className="flex flex-col gap-2">
-        {result.checks.map((item) => (
-          <li key={item.check.id} className="flex items-start gap-2 text-sm">
-            {item.passed ? (
-              <CheckCircle className="h-4 w-4 text-[#111827] shrink-0 mt-0.5" />
-            ) : item.check.required ? (
-              <XCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-            )}
-            <div>
-              <span
-                className={
-                  item.passed
-                    ? "text-[#111827]"
-                    : item.check.required
-                      ? "text-red-700"
-                      : "text-amber-700"
-                }
-              >
-                {item.check.description}
-              </span>
-              {item.message && !item.passed && (
-                <p className="mt-0.5 text-xs text-[#374151]">{item.message}</p>
+      <ul className="flex flex-col gap-2.5">
+        {result.checks.map((item) => {
+          const fix = !item.passed ? CHECK_FIX_ACTIONS[item.check.id] : null;
+          return (
+            <li key={item.check.id} className="flex items-start gap-2 text-sm">
+              {item.passed ? (
+                <CheckCircle className="h-4 w-4 text-[#111827] shrink-0 mt-0.5" />
+              ) : item.check.required ? (
+                <XCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
               )}
-              {item.message && item.passed && !item.check.required && (
-                <p className="mt-0.5 text-xs text-[#374151]">{item.message}</p>
-              )}
-            </div>
-          </li>
-        ))}
+              <div className="min-w-0">
+                <span
+                  className={
+                    item.passed
+                      ? "text-[#111827]"
+                      : item.check.required
+                        ? "text-red-700"
+                        : "text-amber-700"
+                  }
+                >
+                  {item.check.description}
+                </span>
+                {!item.passed && item.message && (
+                  <p className="mt-0.5 text-xs text-[#374151]">{item.message}</p>
+                )}
+                {item.passed && !item.check.required && item.message && (
+                  <p className="mt-0.5 text-xs text-[#374151]">{item.message}</p>
+                )}
+                {fix && (
+                  <a
+                    href={fix.href(orgId)}
+                    className={`mt-1.5 inline-flex items-center gap-1 text-xs font-medium rounded-md px-2 py-1 transition-colors ${
+                      item.check.required
+                        ? "bg-red-100 text-red-700 hover:bg-red-200"
+                        : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                    }`}
+                  >
+                    {fix.label}
+                    <ArrowRight className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
