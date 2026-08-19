@@ -40,8 +40,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
       resourceId: evidenceId,
     });
 
-    // Redirect to presigned URL (works for both R2 and local dev)
-    return NextResponse.redirect(url, { status: 302 });
+    // Make relative URLs absolute so NextResponse.redirect works in local dev
+    // (presignDownload returns "/api/dev/storage/serve?..." for local driver).
+    const absoluteUrl = url.startsWith("/")
+      ? new URL(url, _req.url).toString()
+      : url;
+
+    return NextResponse.redirect(absoluteUrl, { status: 302 });
   } catch (err) {
     return handleRouteError(err);
   }

@@ -22,6 +22,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const submission = await prisma.fieldSubmission.findFirst({
       where: { id: submissionId, organizationId: orgId },
       include: { files: { select: { evidenceFileId: true } } },
+      // ocrExtractedData is included by default (no select exclusion)
     });
     if (!submission) {
       return apiError("NOT_FOUND", "Submission not found.", 404);
@@ -128,7 +129,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       recipientUserId: submission.submittedByUserId,
       orgId,
       resourceId: submissionId,
-      metadata: { orgId, status: body.action, activityRecordId },
+      metadata: { orgId, status: body.action, activityRecordId, reviewNote: body.reviewNote ?? null },
     }).catch((err) =>
       console.error("[field-submissions] Failed to dispatch review notification:", err),
     );

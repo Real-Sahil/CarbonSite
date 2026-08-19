@@ -13,28 +13,32 @@ export type ApprovableSubmission = Prisma.FieldSubmissionGetPayload<{
 // Map document-type-specific formData keys to a canonical amount/unit.
 // Flutter sends: weight/weightUnit (waste), quantity/quantityUnit (delivery),
 // volume/volumeUnit (fuel). Generic amount/unit as fallback.
+// ocrData is checked as a secondary source when formData fields are missing or zero.
 export function extractAmountUnit(
   documentType: string,
   formData: Record<string, unknown>,
+  ocrData?: Record<string, unknown> | null,
 ): { amount: number; unit: string } {
+  // Merge: formData wins, ocrData fills gaps
+  const merged = { ...(ocrData ?? {}), ...formData };
   let amount: number;
   let unit: string;
   switch (documentType) {
     case "waste_ticket":
-      amount = Number(formData["weight"] ?? formData["amount"] ?? 0) || 0;
-      unit = String(formData["weightUnit"] ?? formData["unit"] ?? "kg");
+      amount = Number(merged["weight"] ?? merged["amount"] ?? 0) || 0;
+      unit = String(merged["weightUnit"] ?? merged["unit"] ?? "kg");
       break;
     case "delivery_note":
-      amount = Number(formData["quantity"] ?? formData["weight"] ?? formData["amount"] ?? 0) || 0;
-      unit = String(formData["quantityUnit"] ?? formData["weightUnit"] ?? formData["unit"] ?? "units");
+      amount = Number(merged["quantity"] ?? merged["weight"] ?? merged["amount"] ?? 0) || 0;
+      unit = String(merged["quantityUnit"] ?? merged["weightUnit"] ?? merged["unit"] ?? "units");
       break;
     case "fuel_receipt":
-      amount = Number(formData["volume"] ?? formData["amount"] ?? 0) || 0;
-      unit = String(formData["volumeUnit"] ?? formData["unit"] ?? "litres");
+      amount = Number(merged["volume"] ?? merged["amount"] ?? 0) || 0;
+      unit = String(merged["volumeUnit"] ?? merged["unit"] ?? "litres");
       break;
     default:
-      amount = Number(formData["amount"] ?? 0) || 0;
-      unit = String(formData["unit"] ?? "units");
+      amount = Number(merged["amount"] ?? 0) || 0;
+      unit = String(merged["unit"] ?? "units");
   }
   return { amount, unit };
 }
@@ -82,7 +86,10 @@ export function approvalBlocker(
     };
   }
   const formData = (submission.formData ?? {}) as Record<string, unknown>;
-  const { amount, unit } = extractAmountUnit(submission.documentType, formData);
+  const ocrData = typeof submission.ocrExtractedData === "object" && !Array.isArray(submission.ocrExtractedData)
+    ? (submission.ocrExtractedData as Record<string, unknown>)
+    : null;
+  const { amount, unit } = extractAmountUnit(submission.documentType, formData, ocrData);
   if (!Number.isFinite(amount) || amount <= 0 || !unit) {
     return {
       code: "INVALID_FORM_DATA",
@@ -110,7 +117,10 @@ export async function approveSubmissionInTx(
 }> {
   const { orgId, submission, reviewerUserId } = opts;
   const formData = (submission.formData ?? {}) as Record<string, unknown>;
-  const { amount, unit } = extractAmountUnit(submission.documentType, formData);
+  const ocrData = typeof submission.ocrExtractedData === "object" && !Array.isArray(submission.ocrExtractedData)
+    ? (submission.ocrExtractedData as Record<string, unknown>)
+    : null;
+  const { amount, unit } = extractAmountUnit(submission.documentType, formData, ocrData);
   const evidenceFileIds = submission.files.map((file) => file.evidenceFileId);
   const facilityId =
     opts.facilityId === undefined ? submission.facilityId : opts.facilityId;
