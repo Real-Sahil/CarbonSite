@@ -2,7 +2,7 @@
 // Mandatory for large UK businesses: >250 employees OR >£36m turnover OR >£18m balance sheet
 // Reports must cover a 12-month period aligned to the financial year.
 
-import { esc, brandStyles, brandLogoHtml } from "./shared";
+import { esc, brandStyles, brandLogoHtml, svgDonut, svgHBars, SCOPE_COLORS } from "./shared";
 
 export type SecrData = {
   orgName: string;
@@ -47,6 +47,35 @@ export function renderSecrHtml(d: SecrData): string {
   const now = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   const pStart = d.periodStart.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   const pEnd = d.periodEnd.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+  // ── Analytics charts ───────────────────────────────────────────────────────
+  const emissionsDonut = svgDonut(
+    [
+      { label: "Scope 1 — Direct", value: d.scope1Tonnes * 1000, scope: 1 },
+      { label: "Scope 2 — Electricity", value: d.scope2Tonnes * 1000, scope: 2 },
+    ].filter((s) => s.value > 0),
+    { size: 136, title: "Scope split", unit: "tCO2e" },
+  );
+
+  const energyBars = svgHBars(
+    [
+      { label: "Natural gas & fuels", value: d.gasKwh, color: SCOPE_COLORS[1] },
+      { label: "Purchased electricity", value: d.electricityKwh, color: SCOPE_COLORS[2] },
+      { label: "Transport fuel", value: d.transportFuelKwh, color: "#f59e0b" },
+    ].filter((b) => b.value > 0),
+    { unit: "kWh", formatValue: (v) => Math.round(v / 1000).toLocaleString("en-GB") + " MWh" },
+  );
+
+  const emissionsBarItems = [
+    ...(d.prevYearLabel ? [
+      { label: `Scope 1 — ${d.prevYearLabel}`, value: (d.prevScope1Tonnes ?? 0) * 1000, color: "#d1fae5" },
+      { label: `Scope 2 — ${d.prevYearLabel}`, value: (d.prevScope2Tonnes ?? 0) * 1000, color: "#bae6fd" },
+    ] : []),
+    { label: `Scope 1 — ${d.periodLabel}`, value: d.scope1Tonnes * 1000, scope: 1 as const },
+    { label: `Scope 2 — ${d.periodLabel}`, value: d.scope2Tonnes * 1000, scope: 2 as const },
+  ].filter((b) => b.value > 0);
+
+  const emissionsBarChart = svgHBars(emissionsBarItems, { unit: "tCO2e" });
 
   const prevRow = d.prevYearLabel ? `
     <tr class="prev">
@@ -128,6 +157,12 @@ export function renderSecrHtml(d: SecrData): string {
 </section>
 
 <section>
+  <h2>1a. Energy Consumption Analysis</h2>
+  <p>Energy breakdown for the period ${pStart} to ${pEnd}.</p>
+  ${energyBars}
+</section>
+
+<section>
   <h2>2. GHG Emissions</h2>
   <p>Emissions calculated using <strong>${esc(d.factorLibrary)}</strong> conversion factors under <strong>${esc(d.methodology)}</strong> (GWP ${esc(d.gwpVersion)}).</p>
   <table>
@@ -154,6 +189,16 @@ export function renderSecrHtml(d: SecrData): string {
     </tbody>
   </table>
   <p style="font-size:9pt;color:#6b7280;">Scope 3 (value chain) emissions are reported separately and not included in the mandatory SECR total above.</p>
+  <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;margin-top:20px;">
+    <div style="flex-shrink:0;">
+      <p style="font-size:9pt;font-weight:600;color:#003087;margin-bottom:8px;">Scope distribution</p>
+      ${emissionsDonut}
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <p style="font-size:9pt;font-weight:600;color:#003087;margin-bottom:8px;">${d.prevYearLabel ? "Year-on-year comparison" : "Emissions by scope"}</p>
+      ${emissionsBarChart}
+    </div>
+  </div>
 </section>
 
 <section>

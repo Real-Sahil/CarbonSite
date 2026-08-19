@@ -3,7 +3,7 @@
 // Covers: baseline year, Scope 1/2/3 emissions, net zero commitment, targets.
 // Reference: Procurement Policy Note 06/21, HM Government.
 
-import { esc, brandStyles, brandLogoHtml } from "./shared";
+import { esc, brandStyles, brandLogoHtml, svgDonut, svgHBars, SCOPE_COLORS } from "./shared";
 
 export interface CrpScopeRow {
   scope: 1 | 2 | 3;
@@ -60,6 +60,73 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
   const totalKg = data.scope1Kg + data.scope2Kg + data.scope3Kg;
   const baselineKg = (data.scope1BaselineKg ?? 0) + (data.scope2BaselineKg ?? 0) + (data.scope3BaselineKg ?? 0);
   const hasBaseline = baselineKg > 0;
+
+  // ── Charts ──────────────────────────────────────────────────────────────────
+
+  const donutSlices = [
+    { label: "Scope 1 — Direct", value: data.scope1Kg, scope: 1 as const },
+    { label: "Scope 2 — Electricity", value: data.scope2Kg, scope: 2 as const },
+    { label: "Scope 3 — Value chain", value: data.scope3Kg, scope: 3 as const },
+  ].filter((s) => s.value > 0);
+
+  const donutChart = svgDonut(donutSlices, {
+    size: 148,
+    title: "Scope split",
+    unit: "tCO2e",
+  });
+
+  // Horizontal bars: top categories by scope row (aggregate same-scope rows)
+  const barItems = [
+    { label: "Scope 1 — Direct", value: data.scope1Kg, scope: 1 as const },
+    { label: "Scope 2 — Electricity", value: data.scope2Kg, scope: 2 as const },
+    { label: "Scope 3 — Value chain", value: data.scope3Kg, scope: 3 as const },
+  ].filter((b) => b.value > 0);
+
+  const scopeBarChart = svgHBars(barItems, { unit: "tCO2e" });
+
+  // Per-category bars (from scopeRows)
+  const categoryBars = [...data.scopeRows]
+    .sort((a, b) => b.kgCo2e - a.kgCo2e)
+    .map((r) => ({
+      label: r.category,
+      value: r.kgCo2e,
+      color: SCOPE_COLORS[r.scope] ?? "#6366f1",
+    }));
+  const categoryBarChart = categoryBars.length > 0
+    ? svgHBars(categoryBars, { unit: "tCO2e", barHeight: 14 })
+    : "";
+
+  // ── Baseline comparison bars (if available) ──────────────────────────────────
+  const baselineBars = hasBaseline
+    ? [
+        {
+          label: `Scope 1 — ${data.reportingYear}`,
+          value: data.scope1Kg,
+          color: SCOPE_COLORS[1],
+        },
+        ...(data.scope1BaselineKg
+          ? [{ label: `Scope 1 — ${data.baselineYear} baseline`, value: data.scope1BaselineKg, color: "#d1fae5" }]
+          : []),
+        {
+          label: `Scope 2 — ${data.reportingYear}`,
+          value: data.scope2Kg,
+          color: SCOPE_COLORS[2],
+        },
+        ...(data.scope2BaselineKg
+          ? [{ label: `Scope 2 — ${data.baselineYear} baseline`, value: data.scope2BaselineKg, color: "#bae6fd" }]
+          : []),
+        {
+          label: `Scope 3 — ${data.reportingYear}`,
+          value: data.scope3Kg,
+          color: SCOPE_COLORS[3],
+        },
+        ...(data.scope3BaselineKg
+          ? [{ label: `Scope 3 — ${data.baselineYear} baseline`, value: data.scope3BaselineKg, color: "#d9f99d" }]
+          : []),
+      ]
+    : [];
+
+  // ── Table rows ───────────────────────────────────────────────────────────────
 
   const scopeRowsHtml = data.scopeRows
     .map(
@@ -125,6 +192,7 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
     padding: 56px 48px;
     min-height: 200px;
   }
+  .cover .brand-name-fallback { color: #fff; }
   .cover-eyebrow { font-size: 9pt; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; margin-bottom: 12px; }
   .cover-title { font-size: 28pt; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
   .cover-org { font-size: 15pt; opacity: 0.9; }
@@ -143,6 +211,10 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
   .kpi-value { font-size: 18pt; font-weight: 700; color: #0f3e17; }
   .kpi-sub { font-size: 8pt; color: #888; margin-top: 3px; }
   .kpi-delta { font-size: 9pt; font-weight: 600; margin-top: 4px; color: #228B22; }
+
+  .chart-section { display: flex; gap: 40px; align-items: flex-start; margin: 32px 0 0; flex-wrap: wrap; }
+  .chart-col { flex: 1; min-width: 200px; }
+  .chart-col h3 { font-size: 10pt; font-weight: 700; color: #083b10; margin-bottom: 8px; }
 
   .section { margin-top: 36px; }
   .section h2 {
@@ -219,6 +291,26 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
       ${hasBaseline && data.scope3BaselineKg ? `<div class="kpi-delta">${reductionPct(data.scope3Kg, data.scope3BaselineKg)} vs baseline</div>` : ""}
     </div>
   </div>
+
+  <!-- Analytics charts -->
+  <div class="chart-section">
+    <div class="chart-col">
+      <h3>Scope distribution</h3>
+      ${donutChart}
+    </div>
+    <div class="chart-col">
+      <h3>Emissions by scope</h3>
+      ${scopeBarChart}
+      ${categoryBars.length > 0 ? `<h3 style="margin-top:16px;">By category</h3>${categoryBarChart}` : ""}
+    </div>
+  </div>
+
+  ${hasBaseline && baselineBars.length > 0 ? `
+  <div class="section">
+    <h2>Year-on-year comparison</h2>
+    <p>Reporting year vs ${data.baselineYear} baseline across all scopes.</p>
+    ${svgHBars(baselineBars, { unit: "tCO2e", barHeight: 14 })}
+  </div>` : ""}
 
   <!-- Commitment -->
   <div class="section">
