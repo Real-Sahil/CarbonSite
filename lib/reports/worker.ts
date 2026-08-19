@@ -161,10 +161,12 @@ async function loadLogoDataUri(logoKey: string | null | undefined): Promise<stri
 }
 
 async function renderForType(report: ReportWithIncludes): Promise<{ html: string; pdfkitData?: ReportData; xmlBuffer?: Buffer }> {
-  const orgId = report.organizationId;
-  const runId = report.snapshot.calculationRunId;
-  const opts = (report.options ?? {}) as Record<string, unknown>;
-  const logoDataUri = await loadLogoDataUri(report.organization.branding?.reportHeaderLogoKey);
+  try {
+    const orgId = report.organizationId;
+    const runId = report.snapshot.calculationRunId;
+    const opts = (report.options ?? {}) as Record<string, unknown>;
+    const logoDataUri = await loadLogoDataUri(report.organization.branding?.reportHeaderLogoKey);
+    console.log(`[reports] renderForType starting for report ${report.id}, type: ${report.type}`);
 
   const calcs = report.type !== "national_toms"
     ? await fetchCalculations(orgId, runId, report.contractId ?? undefined)
@@ -717,7 +719,13 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   // ── Inventory / monthly_snapshot / audit_package ──────────────────────────────
   // Base report types use pdfkit (no Chromium). The HTML is still rendered so
   // downstream code that reads `html` doesn't need to change.
-  return { html: renderReportHtml(basePdfData), pdfkitData: basePdfData };
+  const html = renderReportHtml(basePdfData);
+  console.log(`[reports] renderForType completed for report ${report.id}, type: ${report.type}`);
+  return { html, pdfkitData: basePdfData };
+  } catch (err) {
+    console.error(`[reports] renderForType failed for report ${report.id}, type: ${report.type}:`, err);
+    throw err;
+  }
 }
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
