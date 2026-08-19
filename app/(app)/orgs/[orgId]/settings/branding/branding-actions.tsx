@@ -170,22 +170,25 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
               onChange={handleLogoChange}
               disabled={uploadingLogo || isPending}
-              className="text-sm file:mr-3 file:rounded-md file:border file:border-[#E5E7EB] file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium"
+              className="hidden"
             />
-            <div className="flex items-center gap-3">
-              {uploadingLogo && (
-                <span className="text-xs text-[#374151]">Uploading…</span>
-              )}
-              {logoPreview && !uploadingLogo && (
-                <button
-                  type="button"
-                  onClick={handleRemoveLogo}
-                  className="text-xs text-red-600 hover:underline"
-                >
-                  Remove logo
-                </button>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={() => document.getElementById("logo-upload")?.click()}
+              disabled={uploadingLogo || isPending}
+              className="px-3 py-1.5 rounded-md border border-[#E5E7EB] bg-white text-sm font-medium hover:bg-[#f8fafc] disabled:opacity-50 disabled:cursor-not-allowed w-fit"
+            >
+              {uploadingLogo ? "Uploading…" : "Choose File"}
+            </button>
+            {logoPreview && !uploadingLogo && (
+              <button
+                type="button"
+                onClick={handleRemoveLogo}
+                className="text-xs text-red-600 hover:underline w-fit"
+              >
+                Remove logo
+              </button>
+            )}
             <p className="text-xs text-[#374151] tracking-[-0.36px]">
               PNG, JPEG, WEBP or SVG · up to 2 MB. A transparent PNG looks best.
             </p>
