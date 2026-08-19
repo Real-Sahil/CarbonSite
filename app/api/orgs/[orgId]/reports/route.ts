@@ -97,18 +97,34 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json(existing);
     }
 
-    const report = await prisma.report.create({
-      data: {
-        organizationId: orgId,
-        reportingPeriodId: snapshot.reportingPeriodId,
-        snapshotId: body.snapshotId,
-        type: body.type,
-        status: "queued",
-        options: body.options ?? {},
-        requestHash,
-        createdByUserId: session.user.id,
-      },
-    });
+    let report: Awaited<ReturnType<typeof prisma.report.create>>;
+    try {
+      report = await prisma.report.create({
+        data: {
+          organizationId: orgId,
+          reportingPeriodId: snapshot.reportingPeriodId,
+          snapshotId: body.snapshotId,
+          type: body.type,
+          status: "queued",
+          options: body.options ?? {},
+          requestHash,
+          createdByUserId: session.user.id,
+        },
+      });
+    } catch (err) {
+      // Postgres rejects an unrecognised enum value with code 22P02.
+      // This happens when the report_type DB enum is missing a newly-added value.
+      const pgCode = (err as { code?: string }).code;
+      console.error("[reports] report.create failed:", pgCode, err);
+      if (pgCode === "22P02") {
+        return apiError(
+          "DB_ENUM_MISSING",
+          `Report type "${body.type}" is not yet supported by the database. Run the pending Prisma migrations.`,
+          500,
+        );
+      }
+      throw err; // re-throw; outer handler returns generic message
+    }
 
     // Inline-mode aware: renders now when no worker process is deployed,
     // enqueues to pg-boss when JOB_PROCESSING_MODE=worker. Direct boss.send
