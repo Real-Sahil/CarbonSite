@@ -36,7 +36,7 @@ export default function FieldAppPage() {
       <section className="relative min-h-[70vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop
+            src="https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop"
             alt="Solar panel installation renewable energy field capture"
             fill
             priority

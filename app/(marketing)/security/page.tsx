@@ -69,7 +69,7 @@ export default function SecurityPage() {
       <section className="relative min-h-[55vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop
+            src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop"
             alt="Carbon audit and emissions tracking verification"
             fill
             priority
