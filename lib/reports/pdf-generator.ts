@@ -33,6 +33,7 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
   const logoDataUri = data.logoDataUri;
   return new Promise((resolve, reject) => {
     let doc: PDFKit.PDFDocument;
+
     try {
       doc = new PDFDocument({
         size: "A4",
@@ -45,9 +46,15 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         },
         bufferPages: true,
       });
-    } catch (err) {
-      console.error("[pdf-generator] PDFDocument initialization failed:", err);
-      reject(new Error("PDF document initialization failed"));
+    } catch (err: any) {
+      console.error("[pdf-generator] PDFDocument initialization error:", {
+        code: err?.code,
+        errno: err?.errno,
+        syscall: err?.syscall,
+        path: err?.path,
+        message: err?.message,
+      });
+      reject(new Error(`PDF initialization failed: ${err?.message}`));
       return;
     }
 
