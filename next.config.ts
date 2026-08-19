@@ -51,7 +51,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "puppeteer"],
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "puppeteer", "pdfkit"],
   async headers() {
     return [
       {
