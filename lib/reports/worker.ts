@@ -262,6 +262,13 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       .map(([name, v]) => ({ name, ...v }))
       .sort((a, b) => b.totalKg - a.totalKg),
     biogenicCo2eTonnes: biogenicTotal > 0 ? biogenicTotal / 1000 : undefined,
+    auditTrail: {
+      generatedAt: new Date(),
+      generatedBy: publishedBy,
+      calculationRunId: runId,
+      calculationStatus: "completed",
+      totalCalculationsExecuted: calcs.length,
+    },
   };
 
   // ── SECR ─────────────────────────────────────────────────────────────────

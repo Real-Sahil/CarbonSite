@@ -23,6 +23,13 @@ export type ReportData = {
   categories: { name: string; scope: number; totalKg: number; count: number }[];
   facilities: { name: string; totalKg: number; count: number }[];
   biogenicCo2eTonnes?: number;
+  auditTrail?: {
+    generatedAt: Date;
+    generatedBy: string;
+    calculationRunId: string;
+    calculationStatus: string;
+    totalCalculationsExecuted: number;
+  };
 };
 
 const REPORT_TYPE_TITLES: Record<string, string> = {
