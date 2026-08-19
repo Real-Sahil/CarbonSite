@@ -71,18 +71,18 @@ export default function ProductPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/70 to-[#0F172A]/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-white/40 to-white/20" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#06B6D4]" />
-              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Platform overview</span>
+              <div className="w-6 h-px bg-[#ffdc6e]" />
+              <span className="text-xs text-[#ff6b4c] tracking-[0.12em] font-medium">Platform overview</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-6 max-w-[20ch]">
               One platform,<br />end to end.
             </h1>
-            <p className="text-base text-white/55 leading-relaxed max-w-[50ch]">
+            <p className="text-base text-[#374151] leading-relaxed max-w-[50ch]">
               Five stages from field evidence to audit-ready report. Each stage is purpose-built, traceable, and role-controlled.
             </p>
           </AnimateIn>
@@ -90,21 +90,21 @@ export default function ProductPage() {
       </section>
 
       {/* Stages */}
-      <section className="bg-[#F5F4F0]">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <div className="space-y-px bg-[#E2E8F0]">
             {STAGES.map((stage, i) => (
               <ScrollReveal key={stage.num} direction="up" delay={i * 0.08} duration={0.7}>
-                <div className="bg-[#F5F4F0] p-8 md:p-10 grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6 hover:bg-white transition-colors">
-                  <div className="text-[2.5rem] font-semibold text-[#E2E8F0] tracking-[-0.05em] leading-none font-mono">
+                <div className="bg-white p-8 md:p-10 grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6 hover:bg-blue-50 transition-colors">
+                  <div className="text-[2.5rem] font-semibold text-[#ffd8a3] tracking-[-0.05em] leading-none font-mono">
                     {stage.num}
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-white tracking-[-0.02em] mb-3">{stage.title}</h2>
+                    <h2 className="text-base font-semibold text-[#111827] tracking-[-0.02em] mb-3">{stage.title}</h2>
                     <p className="text-sm text-[#64748B] leading-relaxed mb-5 max-w-[65ch]">{stage.text}</p>
                     <div className="flex flex-wrap gap-2">
                       {stage.tags.map((tag) => (
-                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-[#06B6D4]/30 text-[#06B6D4] bg-[#06B6D4]/5 tracking-wide">
+                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-[#ff6b4c]/30 text-[#ff6b4c] bg-[#ff6b4c]/5 tracking-wide">
                           {tag}
                         </span>
                       ))}
@@ -122,21 +122,21 @@ export default function ProductPage() {
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#06B6D4]" />
+              <div className="w-6 h-px bg-[#ffdc6e]" />
               <span className="text-xs text-[#64748B] tracking-[0.1em]">Access control</span>
             </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-3">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
               Six roles, enforced server-side.
             </h2>
             <p className="text-sm text-[#64748B] mb-12 max-w-[55ch]">
               Role is checked on the organisation membership record — not from client-supplied headers or tokens.
             </p>
           </AnimateIn>
-          <div className="border border-gray-200 divide-y divide-[#1E293B] overflow-hidden">
+          <div className="border border-gray-200 divide-y divide-gray-200 overflow-hidden">
             {ROLES.map((r) => (
-              <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-blue-100 transition-colors">
+              <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-orange-50 transition-colors">
                 <div className="px-6 py-4 border-r border-gray-200">
-                  <code className="text-xs font-mono text-[#06B6D4]">{r.role}</code>
+                  <code className="text-xs font-mono text-[#ff6b4c]">{r.role}</code>
                 </div>
                 <div className="px-6 py-4">
                   <p className="text-sm text-[#64748B]">{r.can}</p>
@@ -155,10 +155,10 @@ export default function ProductPage() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-[#F5F4F0]">
+      <section className="relative overflow-hidden bg-white">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
               Start your first reporting period.
             </h2>
             <p className="text-base text-[#64748B] mb-8 max-w-[45ch]">
@@ -166,7 +166,7 @@ export default function ProductPage() {
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-br from-blue-50 to-white text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#ff0027] text-white text-sm font-medium hover:bg-[#d40021] hover:scale-105 transition-all active:scale-[0.97]"
             >
               Create organisation
               <ArrowUpRight className="h-3.5 w-3.5" />
