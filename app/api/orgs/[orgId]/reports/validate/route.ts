@@ -38,10 +38,13 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const { reportingPeriodId } = snapshot;
 
-    // Gather the data needed for framework validation in parallel
-    const [dashboardAggregates, activityRecordStats, energyRecordCount, facilityCount] =
+    // Gather the data needed for framework validation in parallel.
+    // Scope/category presence uses LIVE ActivityRecord counts so that records
+    // added after the snapshot was published are still recognised. CO2e totals
+    // still come from DashboardAggregate (snapshot-bound) for accuracy.
+    const [dashboardAggregates, activityRecordStats, energyRecordCount, facilityCount, liveRecords] =
       await Promise.all([
-        // Scope-level aggregates for this snapshot (no facility/category breakdown)
+        // Snapshot CO2e totals only (scope-level, no breakdown)
         prisma.dashboardAggregate.findMany({
           where: {
             organizationId: orgId,
@@ -53,14 +56,14 @@ export async function POST(req: NextRequest, { params }: Params) {
           select: { scope: true, totalCo2e: true, recordCount: true },
         }),
 
-        // Category-level record counts + review status counts for this period
+        // Review-status counts for the reporting period (live)
         prisma.activityRecord.groupBy({
           by: ["reviewStatus"],
           where: { organizationId: orgId, reportingPeriodId },
           _count: { id: true },
         }),
 
-        // Check for energy records (kWh units)
+        // Energy records (kWh units) — live
         prisma.activityRecord.count({
           where: {
             organizationId: orgId,
@@ -73,45 +76,53 @@ export async function POST(req: NextRequest, { params }: Params) {
         prisma.facility.count({
           where: { organizationId: orgId },
         }),
+
+        // Live records with their emission category (scope + code) for presence checks
+        prisma.activityRecord.findMany({
+          where: { organizationId: orgId, reportingPeriodId },
+          select: {
+            emissionCategoryId: true,
+            emissionCategory: { select: { scope: true, code: true } },
+          },
+        }),
       ]);
 
-    // Also fetch category-level record counts
-    const categoryAggregates = await prisma.activityRecord.groupBy({
-      by: ["emissionCategoryId"],
-      where: { organizationId: orgId, reportingPeriodId },
-      _count: { id: true },
-    });
+    // Build live scope record counts (records present in the period right now)
+    const liveScopeMap = new Map<number, number>();
+    for (const r of liveRecords) {
+      const scope = r.emissionCategory?.scope;
+      if (scope != null) liveScopeMap.set(scope, (liveScopeMap.get(scope) ?? 0) + 1);
+    }
 
-    // Fetch category codes for the grouped records
-    const categoryIds = categoryAggregates
-      .map((r) => r.emissionCategoryId)
-      .filter((id): id is string => id !== null);
+    // Build live category record counts
+    const liveCategoryMap = new Map<string, number>();
+    for (const r of liveRecords) {
+      const code = r.emissionCategory?.code;
+      if (code) liveCategoryMap.set(code, (liveCategoryMap.get(code) ?? 0) + 1);
+    }
 
-    const categories = categoryIds.length
-      ? await prisma.emissionCategory.findMany({
-          where: { id: { in: categoryIds } },
-          select: { id: true, code: true },
-        })
-      : [];
+    const categoryRecordCounts = Array.from(liveCategoryMap.entries()).map(([categoryCode, count]) => ({
+      categoryCode,
+      count,
+    }));
 
-    const categoryIdToCode = new Map(categories.map((c) => [c.id, c.code]));
-
-    const categoryRecordCounts = categoryAggregates
-      .filter((r) => r.emissionCategoryId !== null)
-      .map((r) => ({
-        categoryCode: categoryIdToCode.get(r.emissionCategoryId!) ?? r.emissionCategoryId!,
-        count: r._count.id,
-      }));
-
-    // Compute total and approved record counts
+    // Compute total and approved record counts (live)
     const totalRecords = activityRecordStats.reduce((sum, g) => sum + g._count.id, 0);
     const approvedRecords =
       activityRecordStats.find((g) => g.reviewStatus === "approved")?._count.id ?? 0;
 
-    const scopeTotals = dashboardAggregates.map((agg) => ({
-      scope: agg.scope,
-      totalCo2e: Number(agg.totalCo2e),
-      recordCount: agg.recordCount,
+    // scopeTotals: live recordCount for presence checks, snapshot CO2e for totals
+    const snapshotCo2eByScope = new Map(
+      dashboardAggregates.map((a) => [a.scope, Number(a.totalCo2e)])
+    );
+    const allScopes = new Set([
+      ...Array.from(liveScopeMap.keys()),
+      ...dashboardAggregates.map((a) => a.scope),
+    ]);
+    const scopeTotals = Array.from(allScopes).map((scope) => ({
+      scope,
+      totalCo2e: snapshotCo2eByScope.get(scope) ?? 0,
+      recordCount: liveScopeMap.get(scope) ?? 0,
     }));
 
     const validationInput: ReportValidationInput = {
