@@ -5,6 +5,8 @@ import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { StandardsMarquee } from "@/components/marketing/standards-marquee";
 import { AnimateIn } from "@/components/marketing/animate-in";
+import { ScrollReveal } from "@/components/scroll-reveal";
+import { ParallaxSection } from "@/components/parallax-section";
 import { ArrowUpRight } from "lucide-react";
 
 const CAPABILITIES = [
@@ -91,7 +93,7 @@ export default function RootPage() {
       </section>
 
       {/* ── Photo break ───────────────────────────────────────────────────── */}
-      <div className="relative h-[50vw] max-h-[560px] min-h-[300px] overflow-hidden">
+      <ParallaxSection speed={0.3} className="relative h-[50vw] max-h-[560px] min-h-[300px] overflow-hidden">
         <Image
           src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=75"
           alt="Waste haulage trucks at industrial facility"
@@ -100,7 +102,7 @@ export default function RootPage() {
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#F5F4F0]/30 to-[#0F172A]/60" />
-      </div>
+      </ParallaxSection>
 
       {/* ── Capabilities ──────────────────────────────────────────────────── */}
       <section className="bg-[#0F172A]">

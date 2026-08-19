@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
+import { ScrollReveal } from "@/components/scroll-reveal";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -92,7 +93,7 @@ export default function ProductPage() {
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <div className="space-y-px bg-[#E2E8F0]">
             {STAGES.map((stage, i) => (
-              <AnimateIn key={stage.num} delay={i * 0.05}>
+              <ScrollReveal key={stage.num} direction="up" delay={i * 0.08} duration={0.7}>
                 <div className="bg-[#F5F4F0] p-8 md:p-10 grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6 hover:bg-white transition-colors">
                   <div className="text-[2.5rem] font-semibold text-[#E2E8F0] tracking-[-0.05em] leading-none font-mono">
                     {stage.num}
@@ -109,7 +110,7 @@ export default function ProductPage() {
                     </div>
                   </div>
                 </div>
-              </AnimateIn>
+              </ScrollReveal>
             ))}
           </div>
         </div>
