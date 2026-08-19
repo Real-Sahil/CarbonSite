@@ -224,9 +224,6 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   });
   const biogenicTotal = Number(biogenicAgg._sum.biogenicCo2e ?? 0);
 
-  // Scope labels for reporting
-  const SCOPE_LABELS: Record<number, string> = { 1: "Scope 1 — Direct", 2: "Scope 2 — Electricity", 3: "Scope 3 — Value Chain" };
-
   // Build basePdfData once from shared aggregations for all report types
   const basePdfData: ReportData = {
     orgName: report.organization.name,
