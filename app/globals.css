@@ -81,15 +81,15 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   /* Marketing design tokens */
-  --color-mk-bg:        #0D0D0B;
+  --color-mk-bg:        #0F172A;
   --color-mk-surface:   #F5F4F0;
-  --color-mk-accent:    #3D6B52;
-  --color-mk-accent-hi: #5A9E74;
-  --color-mk-text:      #0D0D0B;
-  --color-mk-muted:     #5C5B57;
-  --color-mk-faint:     #9B9A95;
-  --color-mk-border:    #E2E1DC;
-  --color-mk-line:      #2A2A27;
+  --color-mk-accent:    #06B6D4;
+  --color-mk-accent-hi: #0891B2;
+  --color-mk-text:      #0F172A;
+  --color-mk-muted:     #64748B;
+  --color-mk-faint:     #94A3B8;
+  --color-mk-border:    #E2E8F0;
+  --color-mk-line:      #1E293B;
 
   /* Border radius system (soft) */
   --radius-nav:    8px;

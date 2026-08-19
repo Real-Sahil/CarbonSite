@@ -32,12 +32,12 @@ const COLS = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-[#0D0D0B] border-t border-[#2A2A27]">
+    <footer className="bg-[#0F172A] border-t border-[#1E293B]">
       <div className="mx-auto max-w-7xl px-6 md:px-10 pt-16 pb-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
           <div>
             <div className="text-[15px] font-semibold text-white tracking-[-0.03em] mb-4">CarbonSite</div>
-            <p className="text-sm text-[#5C5B57] leading-relaxed max-w-[200px]">
+            <p className="text-sm text-[#64748B] leading-relaxed max-w-[200px]">
               GHG emissions tracking for construction and supply chains. DEFRA 2025. GHG Protocol Corporate Standard.
             </p>
           </div>
@@ -49,7 +49,7 @@ export function SiteFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[#5C5B57] hover:text-white transition-colors"
+                      className="text-sm text-[#64748B] hover:text-white transition-colors"
                       {...("external" in link && link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     >
                       {link.label}
@@ -60,13 +60,13 @@ export function SiteFooter() {
             </div>
           ))}
         </div>
-        <div className="pt-8 border-t border-[#2A2A27] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="pt-8 border-t border-[#1E293B] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <span className="text-xs text-[#3D3D3A]">
             &copy; {new Date().getFullYear()} CarbonSite Ltd. Calculations follow GHG Protocol Corporate Standard, IPCC AR6 GWPs.
           </span>
           <div className="flex items-center gap-3">
             {["GHG Protocol", "DEFRA 2025", "IPCC AR6", "SECR"].map((s) => (
-              <span key={s} className="text-[10px] text-[#3D3D3A] border border-[#2A2A27] rounded px-2 py-0.5 tracking-wide">
+              <span key={s} className="text-[10px] text-[#3D3D3A] border border-[#1E293B] rounded px-2 py-0.5 tracking-wide">
                 {s}
               </span>
             ))}

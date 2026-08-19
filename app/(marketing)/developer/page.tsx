@@ -64,23 +64,23 @@ const ENDPOINTS = [
 ];
 
 const METHOD_COLORS: Record<string, string> = {
-  GET: "text-[#5A9E74] bg-[#3D6B52]/10 border border-[#3D6B52]/20",
-  POST: "text-[#5A9E74] bg-[#3D6B52]/10 border border-[#3D6B52]/20",
+  GET: "text-[#0891B2] bg-[#06B6D4]/10 border border-[#06B6D4]/20",
+  POST: "text-[#0891B2] bg-[#06B6D4]/10 border border-[#06B6D4]/20",
   PATCH: "text-[#E89B6F] bg-[#E89B6F]/10 border border-[#E89B6F]/20",
   DELETE: "text-[#E05A5A] bg-[#E05A5A]/10 border border-[#E05A5A]/20",
 };
 
 export default function DeveloperPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+    <main className="min-h-[100dvh] bg-[#0F172A]">
       <SiteNav theme="dark" />
 
       {/* Hero */}
       <section className="mx-auto max-w-7xl px-6 md:px-10 py-24">
         <AnimateIn>
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-6 h-px bg-[#3D6B52]" />
-            <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">REST API v1</span>
+            <div className="w-6 h-px bg-[#06B6D4]" />
+            <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">REST API v1</span>
           </div>
           <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-4 max-w-[24ch]">
             Integrate CarbonSite into your workflows.
@@ -92,21 +92,21 @@ export default function DeveloperPage() {
       </section>
 
       {/* Quick start */}
-      <section className="bg-[#F5F4F0] border-y border-[#E2E1DC]">
+      <section className="bg-[#F5F4F0] border-y border-[#E2E8F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-20">
           <AnimateIn>
-            <h2 className="text-lg font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-10">Getting started</h2>
+            <h2 className="text-lg font-semibold text-[#0F172A] tracking-[-0.02em] mb-10">Getting started</h2>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#E2E1DC]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#E2E8F0]">
             {[
               { icon: Key, title: "API Keys", desc: "Generate keys in Settings > API Keys. Keys are prefixed csk_ and shown once." },
               { icon: Lock, title: "Authentication", desc: "Pass Authorization: Bearer csk_... on every request. Keys are org-scoped." },
               { icon: Zap, title: "Rate limits", desc: "Read: 300 req/min. Mutations: 60 req/min. Uploads: 10 req/min per IP." },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
-                <Icon className="h-6 w-6 text-[#3D6B52] mb-4" />
-                <h3 className="text-sm font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-2">{title}</h3>
-                <p className="text-sm text-[#5C5B57] leading-relaxed">{desc}</p>
+                <Icon className="h-6 w-6 text-[#06B6D4] mb-4" />
+                <h3 className="text-sm font-semibold text-[#0F172A] tracking-[-0.02em] mb-2">{title}</h3>
+                <p className="text-sm text-[#64748B] leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -116,22 +116,22 @@ export default function DeveloperPage() {
       {/* Base URL */}
       <section className="mx-auto max-w-7xl px-6 md:px-10 py-20">
         <AnimateIn>
-          <div className="rounded-lg border border-[#2A2A27] bg-[#111110] p-6 mb-12">
-            <p className="text-[10px] text-[#5C5B57] uppercase tracking-[0.1em] mb-3">Base URL</p>
-            <p className="font-mono text-base text-[#5A9E74]">https://app.carbonsite.io</p>
+          <div className="rounded-lg border border-[#1E293B] bg-[#111110] p-6 mb-12">
+            <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-3">Base URL</p>
+            <p className="font-mono text-base text-[#0891B2]">https://app.carbonsite.io</p>
           </div>
 
           {/* Example request */}
-          <div className="rounded-lg border border-[#2A2A27] bg-[#111110] p-6 mb-16 overflow-x-auto">
-            <p className="text-[10px] text-[#5C5B57] uppercase tracking-[0.1em] mb-4">Example request</p>
-            <pre className="font-mono text-xs text-[#5C5B57] whitespace-pre">{`curl -X GET "https://app.carbonsite.io/api/orgs/{orgId}/activity-records" \\
+          <div className="rounded-lg border border-[#1E293B] bg-[#111110] p-6 mb-16 overflow-x-auto">
+            <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-4">Example request</p>
+            <pre className="font-mono text-xs text-[#64748B] whitespace-pre">{`curl -X GET "https://app.carbonsite.io/api/orgs/{orgId}/activity-records" \\
   -H "Authorization: Bearer csk_your_api_key_here" \\
   -H "Content-Type: application/json"`}</pre>
           </div>
 
           {/* Endpoint reference */}
           <div className="flex items-center gap-3 mb-8">
-            <BookOpen className="h-5 w-5 text-[#5C5B57]" />
+            <BookOpen className="h-5 w-5 text-[#64748B]" />
             <h2 className="text-lg font-semibold text-white tracking-[-0.02em]">Endpoint reference</h2>
           </div>
         </AnimateIn>
@@ -140,18 +140,18 @@ export default function DeveloperPage() {
           {ENDPOINTS.map((group) => (
             <div key={group.group}>
               <AnimateIn>
-                <div className="text-[10px] font-medium text-[#5C5B57] uppercase tracking-[0.12em] mb-4">{group.group}</div>
-                <div className="border border-[#2A2A27] rounded-lg overflow-hidden">
-                  <div className="divide-y divide-[#2A2A27]">
+                <div className="text-[10px] font-medium text-[#64748B] uppercase tracking-[0.12em] mb-4">{group.group}</div>
+                <div className="border border-[#1E293B] rounded-lg overflow-hidden">
+                  <div className="divide-y divide-[#1E293B]">
                     {group.endpoints.map((ep) => (
                       <div key={ep.path + ep.method} className="grid grid-cols-1 md:grid-cols-[80px_220px_1fr] hover:bg-[#111110] transition-colors">
-                        <div className="px-6 py-4 border-r border-[#2A2A27]">
-                          <span className={`inline-block text-xs font-mono font-semibold px-2.5 py-1 rounded ${METHOD_COLORS[ep.method] ?? "text-[#5C5B57] bg-[#1A1A18] border border-[#2A2A27]"}`}>
+                        <div className="px-6 py-4 border-r border-[#1E293B]">
+                          <span className={`inline-block text-xs font-mono font-semibold px-2.5 py-1 rounded ${METHOD_COLORS[ep.method] ?? "text-[#64748B] bg-[#1A1A18] border border-[#1E293B]"}`}>
                             {ep.method}
                           </span>
                         </div>
-                        <div className="px-6 py-4 border-r border-[#2A2A27] font-mono text-xs text-[#5A9E74] whitespace-nowrap overflow-x-auto">{ep.path}</div>
-                        <div className="px-6 py-4 text-xs text-[#5C5B57]">{ep.desc}</div>
+                        <div className="px-6 py-4 border-r border-[#1E293B] font-mono text-xs text-[#0891B2] whitespace-nowrap overflow-x-auto">{ep.path}</div>
+                        <div className="px-6 py-4 text-xs text-[#64748B]">{ep.desc}</div>
                       </div>
                     ))}
                   </div>
@@ -163,21 +163,21 @@ export default function DeveloperPage() {
       </section>
 
       {/* Response format */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-20">
           <AnimateIn>
-            <h2 className="text-lg font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-8">Response format</h2>
+            <h2 className="text-lg font-semibold text-[#0F172A] tracking-[-0.02em] mb-8">Response format</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="rounded-lg border border-[#E2E1DC] bg-white p-6">
-                <p className="text-xs text-[#5C5B57] uppercase tracking-[0.1em] mb-4">Success (paginated list)</p>
-                <pre className="text-xs text-[#0D0D0B] bg-[#F5F4F0] rounded p-4 overflow-x-auto font-mono">{`{
+              <div className="rounded-lg border border-[#E2E8F0] bg-white p-6">
+                <p className="text-xs text-[#64748B] uppercase tracking-[0.1em] mb-4">Success (paginated list)</p>
+                <pre className="text-xs text-[#0F172A] bg-[#F5F4F0] rounded p-4 overflow-x-auto font-mono">{`{
   "data": [...],
   "nextCursor": "2026-08-01T00:00:00.000Z"
 }`}</pre>
               </div>
-              <div className="rounded-lg border border-[#E2E1DC] bg-white p-6">
-                <p className="text-xs text-[#5C5B57] uppercase tracking-[0.1em] mb-4">Error</p>
-                <pre className="text-xs text-[#0D0D0B] bg-[#F5F4F0] rounded p-4 overflow-x-auto font-mono">{`{
+              <div className="rounded-lg border border-[#E2E8F0] bg-white p-6">
+                <p className="text-xs text-[#64748B] uppercase tracking-[0.1em] mb-4">Error</p>
+                <pre className="text-xs text-[#0F172A] bg-[#F5F4F0] rounded p-4 overflow-x-auto font-mono">{`{
   "code": "VALIDATION_ERROR",
   "message": "Invalid query parameters",
   "details": { ... }
@@ -189,7 +189,7 @@ export default function DeveloperPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
@@ -197,7 +197,7 @@ export default function DeveloperPage() {
             </h2>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
             >
               Get API key
               <ArrowUpRight className="h-3.5 w-3.5" />

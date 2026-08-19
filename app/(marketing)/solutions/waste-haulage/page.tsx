@@ -47,7 +47,7 @@ const EWC_EXAMPLES = [
 
 export default function WasteHaulagePage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+    <main className="min-h-[100dvh] bg-[#0F172A]">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -61,14 +61,14 @@ export default function WasteHaulagePage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0D0D0B]/90 via-[#0D0D0B]/65 to-[#0D0D0B]/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B]/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A]/90 via-[#0F172A]/65 to-[#0F172A]/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 to-transparent" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Waste and haulage</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Waste and haulage</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
               From waste ticket to Scope 3 calculation.
@@ -78,7 +78,7 @@ export default function WasteHaulagePage() {
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
             >
               Start free
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -91,27 +91,27 @@ export default function WasteHaulagePage() {
       <section className="bg-[#F5F4F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-3">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-3">
               Document types supported.
             </h2>
-            <p className="text-sm text-[#5C5B57] mb-14 max-w-[55ch]">
+            <p className="text-sm text-[#64748B] mb-14 max-w-[55ch]">
               The mobile app recognises each document type and extracts the relevant fields. Web upload handles the same types via CSV or XLSX.
             </p>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#E2E1DC]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#E2E8F0]">
             {DOCUMENT_TYPES.map((doc, i) => (
               <AnimateIn key={doc.type} delay={i * 0.06}>
                 <div className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-semibold text-[#0D0D0B] tracking-[-0.02em]">{doc.type}</h3>
+                    <h3 className="text-sm font-semibold text-[#0F172A] tracking-[-0.02em]">{doc.type}</h3>
                     {doc.ocr && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-[#3D6B52]/30 text-[#3D6B52] tracking-wide">OCR</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-[#06B6D4]/30 text-[#06B6D4] tracking-wide">OCR</span>
                     )}
                   </div>
                   <ul className="space-y-2">
                     {doc.fields.map((field) => (
-                      <li key={field} className="flex items-start gap-2.5 text-xs text-[#5C5B57]">
-                        <span className="mt-1.5 w-1 h-1 rounded-full bg-[#E2E1DC] shrink-0" />
+                      <li key={field} className="flex items-start gap-2.5 text-xs text-[#64748B]">
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-[#E2E8F0] shrink-0" />
                         {field}
                       </li>
                     ))}
@@ -124,22 +124,22 @@ export default function WasteHaulagePage() {
       </section>
 
       {/* EWC codes */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-3">
               EWC code recognition.
             </h2>
-            <p className="text-sm text-[#5C5B57] mb-12 max-w-[55ch]">
+            <p className="text-sm text-[#64748B] mb-12 max-w-[55ch]">
               The OCR extractor recognises the six-digit XX XX XX European Waste Catalogue format from photographed documents. Codes are validated against expected patterns before the form is pre-filled for reviewer confirmation.
             </p>
           </AnimateIn>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#2A2A27]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#1E293B]">
             {EWC_EXAMPLES.map((e, i) => (
               <AnimateIn key={e.code} delay={i * 0.04}>
-                <div className="bg-[#0D0D0B] p-5 hover:bg-[#111110] transition-colors">
-                  <code className="text-sm font-mono font-semibold text-[#5A9E74]">{e.code}</code>
-                  <p className="text-xs text-[#5C5B57] mt-1.5 leading-snug">{e.desc}</p>
+                <div className="bg-[#0F172A] p-5 hover:bg-[#111110] transition-colors">
+                  <code className="text-sm font-mono font-semibold text-[#0891B2]">{e.code}</code>
+                  <p className="text-xs text-[#64748B] mt-1.5 leading-snug">{e.desc}</p>
                 </div>
               </AnimateIn>
             ))}
@@ -148,15 +148,15 @@ export default function WasteHaulagePage() {
       </section>
 
       {/* Calculation note */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
               <div>
-                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-5">
+                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-5">
                   How waste is calculated.
                 </h2>
-                <div className="space-y-4 text-sm text-[#5C5B57] leading-relaxed">
+                <div className="space-y-4 text-sm text-[#64748B] leading-relaxed">
                   <p>
                     Waste disposal is reported under Scope 3 upstream transportation (vehicle movements carrying waste) and where applicable under Scope 1 mobile combustion (fleet diesel for own-operated vehicles).
                   </p>
@@ -175,9 +175,9 @@ export default function WasteHaulagePage() {
                   { label: "GWP CH4 (AR6)", value: "27.9" },
                   { label: "GWP N2O (AR6)", value: "273" },
                 ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between py-3 border-b border-[#E2E1DC] last:border-0">
-                    <span className="text-sm text-[#5C5B57]">{row.label}</span>
-                    <code className="text-sm font-mono text-[#0D0D0B]">{row.value}</code>
+                  <div key={row.label} className="flex items-center justify-between py-3 border-b border-[#E2E8F0] last:border-0">
+                    <span className="text-sm text-[#64748B]">{row.label}</span>
+                    <code className="text-sm font-mono text-[#0F172A]">{row.value}</code>
                   </div>
                 ))}
               </div>
@@ -187,7 +187,7 @@ export default function WasteHaulagePage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
@@ -196,7 +196,7 @@ export default function WasteHaulagePage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
               >
                 Create organisation
                 <ArrowUpRight className="h-3.5 w-3.5" />

@@ -38,10 +38,10 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "bg-[#0D0D0B]/92 backdrop-blur-md border-b border-white/6"
+            ? "bg-[#0F172A]/92 backdrop-blur-md border-b border-white/6"
             : dark
               ? "bg-transparent border-b border-transparent"
-              : "bg-[#F5F4F0]/92 backdrop-blur-md border-b border-[#E2E1DC]"
+              : "bg-[#F5F4F0]/92 backdrop-blur-md border-b border-[#E2E8F0]"
         }`}
         style={{ height: 60 }}
       >
@@ -50,7 +50,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
           <Link
             href="/"
             className={`text-[15px] font-semibold tracking-[-0.03em] transition-colors ${
-              dark ? "text-white" : "text-[#0D0D0B]"
+              dark ? "text-white" : "text-[#0F172A]"
             }`}
           >
             CarbonSite
@@ -65,7 +65,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
                 className={`px-3 py-1.5 rounded-md text-[13px] transition-colors ${
                   dark
                     ? "text-white/50 hover:text-white hover:bg-white/6"
-                    : "text-[#5C5B57] hover:text-[#0D0D0B] hover:bg-[#0D0D0B]/5"
+                    : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#0F172A]/5"
                 }`}
               >
                 {link.label}
@@ -78,7 +78,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
             <Link
               href="/sign-in"
               className={`px-3 py-1.5 rounded-md text-[13px] transition-colors ${
-                dark ? "text-white/50 hover:text-white" : "text-[#5C5B57] hover:text-[#0D0D0B]"
+                dark ? "text-white/50 hover:text-white" : "text-[#64748B] hover:text-[#0F172A]"
               }`}
             >
               Sign in
@@ -87,8 +87,8 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
               href="/sign-up"
               className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors active:scale-[0.97] ${
                 dark
-                  ? "bg-white text-[#0D0D0B] hover:bg-white/90"
-                  : "bg-[#0D0D0B] text-white hover:bg-[#1A1A18]"
+                  ? "bg-white text-[#0F172A] hover:bg-white/90"
+                  : "bg-[#0F172A] text-white hover:bg-[#1A1A18]"
               }`}
             >
               Start free
@@ -99,7 +99,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
           <button
             onClick={() => setOpen((o) => !o)}
             className={`md:hidden p-2 rounded-md transition-colors ${
-              dark ? "text-white/70 hover:text-white" : "text-[#5C5B57] hover:text-[#0D0D0B]"
+              dark ? "text-white/70 hover:text-white" : "text-[#64748B] hover:text-[#0F172A]"
             }`}
             aria-label="Toggle menu"
           >
@@ -116,7 +116,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
             animate={{ opacity: 1, y: 0 }}
             exit={reduced ? {} : { opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="fixed inset-x-0 top-[60px] z-40 bg-[#0D0D0B] border-b border-white/8 px-6 py-6 md:hidden"
+            className="fixed inset-x-0 top-[60px] z-40 bg-[#0F172A] border-b border-white/8 px-6 py-6 md:hidden"
           >
             <nav className="flex flex-col gap-1 mb-6">
               {NAV_LINKS.map((link) => (
@@ -133,7 +133,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
               <Link href="/sign-in" className="px-3 py-2.5 text-sm text-white/50 hover:text-white transition-colors">
                 Sign in
               </Link>
-              <Link href="/sign-up" className="px-4 py-2.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium text-center hover:bg-white/90 transition-colors">
+              <Link href="/sign-up" className="px-4 py-2.5 rounded-full bg-white text-[#0F172A] text-sm font-medium text-center hover:bg-white/90 transition-colors">
                 Start free
               </Link>
             </div>

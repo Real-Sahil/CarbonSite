@@ -49,7 +49,7 @@ const HOW_IT_WORKS = [
 
 export default function RootPage() {
   return (
-    <main className="min-h-[100dvh] overflow-hidden bg-[#0D0D0B]">
+    <main className="min-h-[100dvh] overflow-hidden bg-[#0F172A]">
       <SiteNav theme="dark" />
       <HeroSection />
 
@@ -61,25 +61,25 @@ export default function RootPage() {
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             <AnimateIn>
-              <h2 className="text-[clamp(2rem,4.5vw,3.2rem)] font-semibold tracking-[-0.04em] leading-[1.1] text-[#0D0D0B]">
+              <h2 className="text-[clamp(2rem,4.5vw,3.2rem)] font-semibold tracking-[-0.04em] leading-[1.1] text-[#0F172A]">
                 Carbon data that holds up under audit — not just in the dashboard.
               </h2>
             </AnimateIn>
             <AnimateIn delay={0.1}>
               <div className="space-y-5 pt-2">
-                <p className="text-base text-[#5C5B57] leading-relaxed">
+                <p className="text-base text-[#64748B] leading-relaxed">
                   Most teams manage emissions in spreadsheets. Data lives in email attachments,
                   calculations are manually totalled, and figures change between drafts with
                   no record of why.
                 </p>
-                <p className="text-base text-[#5C5B57] leading-relaxed">
+                <p className="text-base text-[#64748B] leading-relaxed">
                   CarbonSite replaces that with a proper accounting system — field evidence,
                   structured review, deterministic calculation, and immutable publication.
                   Every figure is traceable to a source document and a named emission factor.
                 </p>
                 <Link
                   href="/product"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#3D6B52] hover:text-[#5A9E74] transition-colors mt-2 group"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#06B6D4] hover:text-[#0891B2] transition-colors mt-2 group"
                 >
                   Full platform overview
                   <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -99,26 +99,26 @@ export default function RootPage() {
           className="object-cover object-center"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F5F4F0]/30 to-[#0D0D0B]/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F5F4F0]/30 to-[#0F172A]/60" />
       </div>
 
       {/* ── Capabilities ──────────────────────────────────────────────────── */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-16">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#5C5B57] tracking-[0.1em]">Platform capabilities</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#64748B] tracking-[0.1em]">Platform capabilities</span>
             </div>
           </AnimateIn>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#2A2A27]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#1E293B]">
             {CAPABILITIES.map((cap, i) => (
               <AnimateIn key={cap.n} delay={i * 0.05}>
-                <div className="bg-[#0D0D0B] p-8 hover:bg-[#111110] transition-colors">
-                  <div className="text-xs font-mono text-[#3D6B52] mb-6 tracking-widest">{cap.n}</div>
+                <div className="bg-[#0F172A] p-8 hover:bg-[#111110] transition-colors">
+                  <div className="text-xs font-mono text-[#06B6D4] mb-6 tracking-widest">{cap.n}</div>
                   <h3 className="text-base font-semibold text-white tracking-[-0.02em] mb-3">{cap.title}</h3>
-                  <p className="text-sm text-[#5C5B57] leading-relaxed">{cap.text}</p>
+                  <p className="text-sm text-[#64748B] leading-relaxed">{cap.text}</p>
                 </div>
               </AnimateIn>
             ))}
@@ -127,23 +127,23 @@ export default function RootPage() {
       </section>
 
       {/* ── How it works — horizontal steps ──────────────────────────────── */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-20">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-20">
               Four stages, end to end.
             </h2>
           </AnimateIn>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#E2E1DC]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#E2E8F0]">
             {HOW_IT_WORKS.map((s, i) => (
               <AnimateIn key={s.step} delay={i * 0.08}>
                 <div className="px-0 md:px-8 py-8 md:py-0 first:pl-0 last:pr-0">
-                  <div className="text-[3.5rem] font-semibold text-[#E2E1DC] tracking-[-0.05em] leading-none mb-6">
+                  <div className="text-[3.5rem] font-semibold text-[#E2E8F0] tracking-[-0.05em] leading-none mb-6">
                     {String(i + 1).padStart(2, "0")}
                   </div>
-                  <h3 className="text-base font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-2">{s.step}</h3>
-                  <p className="text-sm text-[#5C5B57] leading-relaxed">{s.text}</p>
+                  <h3 className="text-base font-semibold text-[#0F172A] tracking-[-0.02em] mb-2">{s.step}</h3>
+                  <p className="text-sm text-[#64748B] leading-relaxed">{s.text}</p>
                 </div>
               </AnimateIn>
             ))}
@@ -152,30 +152,30 @@ export default function RootPage() {
       </section>
 
       {/* ── Field app feature ─────────────────────────────────────────────── */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <AnimateIn>
               <div>
                 <div className="flex items-center gap-4 mb-10">
-                  <div className="w-6 h-px bg-[#3D6B52]" />
-                  <span className="text-xs text-[#5C5B57] tracking-[0.1em]">Mobile field app</span>
+                  <div className="w-6 h-px bg-[#06B6D4]" />
+                  <span className="text-xs text-[#64748B] tracking-[0.1em]">Mobile field app</span>
                 </div>
                 <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] leading-[1.1] text-white mb-6">
                   Evidence captured at the point of activity.
                 </h2>
-                <p className="text-base text-[#5C5B57] leading-relaxed mb-6">
+                <p className="text-base text-[#64748B] leading-relaxed mb-6">
                   Field workers photograph waste tickets and delivery notes on-site.
                   On-device ML Kit OCR extracts the data instantly — weight, EWC code,
                   vehicle registration, date. No connectivity required.
                 </p>
-                <p className="text-base text-[#5C5B57] leading-relaxed mb-8">
+                <p className="text-base text-[#64748B] leading-relaxed mb-8">
                   Submissions save locally first and sync in the background when the device
                   has signal. GPS-tagged for route distance calculations and audit trail.
                 </p>
                 <Link
                   href="/field-app"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#3D6B52] hover:text-[#5A9E74] transition-colors group"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#06B6D4] hover:text-[#0891B2] transition-colors group"
                 >
                   About the field app
                   <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -192,7 +192,7 @@ export default function RootPage() {
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B]/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/60 to-transparent" />
               </div>
             </AnimateIn>
           </div>
@@ -209,7 +209,7 @@ export default function RootPage() {
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-[#0D0D0B]/85" />
+          <div className="absolute inset-0 bg-[#0F172A]/85" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-32">
           <AnimateIn>
@@ -224,7 +224,7 @@ export default function RootPage() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/sign-up"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
                 >
                   Create organisation
                   <ArrowUpRight className="h-3.5 w-3.5" />

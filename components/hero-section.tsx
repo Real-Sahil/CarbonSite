@@ -18,7 +18,7 @@ export function HeroSection() {
     reduced ? {} : { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, delay } };
 
   return (
-    <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#0D0D0B]">
+    <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#0F172A]">
       {/* Hero photograph */}
       <div className="absolute inset-0">
         <Image
@@ -30,8 +30,8 @@ export function HeroSection() {
           sizes="100vw"
         />
         {/* Layered overlay: dark left for text legibility, lighter right */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0D0D0B]/95 via-[#0D0D0B]/70 to-[#0D0D0B]/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B]/80 via-transparent to-[#0D0D0B]/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A]/95 via-[#0F172A]/70 to-[#0F172A]/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 via-transparent to-[#0F172A]/40" />
       </div>
 
       {/* Content */}
@@ -41,8 +41,8 @@ export function HeroSection() {
 
             {/* Thin rule + label — editorial device, one per hero */}
             <motion.div {...fade(0.05)} className="flex items-center gap-4 mb-10">
-              <div className="w-8 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">
+              <div className="w-8 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">
                 Carbon accounting infrastructure
               </span>
             </motion.div>
@@ -54,7 +54,7 @@ export function HeroSection() {
             >
               Track emissions.
               <br />
-              <span className="text-[#5A9E74]">Prove the numbers.</span>
+              <span className="text-[#0891B2]">Prove the numbers.</span>
             </motion.h1>
 
             <motion.p
@@ -69,7 +69,7 @@ export function HeroSection() {
             <motion.div {...fade(0.25)} className="flex flex-wrap items-center gap-3">
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
               >
                 Start free
                 <ArrowUpRight className="h-3.5 w-3.5" />

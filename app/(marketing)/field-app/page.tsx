@@ -29,7 +29,7 @@ const OCR_FIELDS = [
 
 export default function FieldAppPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+    <main className="min-h-[100dvh] bg-[#0F172A]">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -43,13 +43,13 @@ export default function FieldAppPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B] via-[#0D0D0B]/65 to-[#0D0D0B]/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/65 to-[#0F172A]/20" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Mobile field app</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Mobile field app</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[22ch]">
               Evidence captured at the point of activity.
@@ -59,7 +59,7 @@ export default function FieldAppPage() {
               Works without internet. Syncs automatically when connectivity returns.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/sign-up" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]">
+              <Link href="/sign-up" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]">
                 Invite a field worker
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
@@ -72,18 +72,18 @@ export default function FieldAppPage() {
       </section>
 
       {/* Stats */}
-      <section className="bg-[#111110] border-b border-[#2A2A27]">
+      <section className="bg-[#111110] border-b border-[#1E293B]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#2A2A27]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#1E293B]">
             {[
               { stat: "On-device", label: "OCR processing", note: "No server round-trip, no API cost, works in a basement" },
               { stat: "Offline-first", label: "SQLite queue", note: "Every submission drafts locally before any network attempt" },
               { stat: "Auto-sync", label: "Background service", note: "Drains the queue with exponential backoff when online" },
             ].map((item) => (
               <div key={item.stat} className="px-0 md:px-8 py-8 md:py-4 first:pl-0 last:pr-0">
-                <div className="text-xl font-semibold text-[#5A9E74] mb-1">{item.stat}</div>
+                <div className="text-xl font-semibold text-[#0891B2] mb-1">{item.stat}</div>
                 <div className="text-sm font-medium text-white mb-1">{item.label}</div>
-                <div className="text-xs text-[#5C5B57]">{item.note}</div>
+                <div className="text-xs text-[#64748B]">{item.note}</div>
               </div>
             ))}
           </div>
@@ -94,17 +94,17 @@ export default function FieldAppPage() {
       <section className="bg-[#F5F4F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-16">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-16">
               From first launch to first submission.
             </h2>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2E1DC]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2E8F0]">
             {CAPTURE_STEPS.map((step, i) => (
               <AnimateIn key={step.n} delay={i * 0.05}>
                 <div className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
-                  <div className="text-xs font-mono text-[#3D6B52] mb-6 tracking-widest">{step.n}</div>
-                  <h3 className="text-base font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-3">{step.title}</h3>
-                  <p className="text-sm text-[#5C5B57] leading-relaxed">{step.text}</p>
+                  <div className="text-xs font-mono text-[#06B6D4] mb-6 tracking-widest">{step.n}</div>
+                  <h3 className="text-base font-semibold text-[#0F172A] tracking-[-0.02em] mb-3">{step.title}</h3>
+                  <p className="text-sm text-[#64748B] leading-relaxed">{step.text}</p>
                 </div>
               </AnimateIn>
             ))}
@@ -113,28 +113,28 @@ export default function FieldAppPage() {
       </section>
 
       {/* OCR fields */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#5C5B57] tracking-[0.1em]">OCR extraction</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#64748B] tracking-[0.1em]">OCR extraction</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-3">
               What the extractor reads.
             </h2>
-            <p className="text-sm text-[#5C5B57] mb-12 max-w-[55ch]">
+            <p className="text-sm text-[#64748B] mb-12 max-w-[55ch]">
               ML Kit text recognition runs on-device. A regex and heuristic extractor finds structured fields from the raw text blocks. Unrecognised fields are left blank for manual entry.
             </p>
           </AnimateIn>
-          <div className="border border-[#2A2A27] divide-y divide-[#2A2A27] overflow-hidden">
+          <div className="border border-[#1E293B] divide-y divide-[#1E293B] overflow-hidden">
             {OCR_FIELDS.map((row) => (
               <div key={row.doc} className="grid grid-cols-1 md:grid-cols-[180px_1fr]">
-                <div className="px-6 py-4 border-r border-[#2A2A27]">
+                <div className="px-6 py-4 border-r border-[#1E293B]">
                   <span className="text-sm font-medium text-white">{row.doc}</span>
                 </div>
                 <div className="px-6 py-4">
-                  <p className="text-sm text-[#5C5B57]">{row.fields}</p>
+                  <p className="text-sm text-[#64748B]">{row.fields}</p>
                 </div>
               </div>
             ))}
@@ -143,12 +143,12 @@ export default function FieldAppPage() {
       </section>
 
       {/* Security isolation note */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-16">
           <AnimateIn>
             <div className="max-w-xl">
-              <h3 className="text-lg font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-3">Field worker data isolation.</h3>
-              <p className="text-sm text-[#5C5B57] leading-relaxed">
+              <h3 className="text-lg font-semibold text-[#0F172A] tracking-[-0.02em] mb-3">Field worker data isolation.</h3>
+              <p className="text-sm text-[#64748B] leading-relaxed">
                 A field_worker role has zero access to org dashboards, calculations, or other users&apos; submissions.
                 They see only the reporting periods they were invited to and the status of their own submissions.
                 Access is enforced server-side on every API request, not from client-supplied headers.
@@ -159,7 +159,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
@@ -167,7 +167,7 @@ export default function FieldAppPage() {
             </h2>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
             >
               Create organisation and send first invite
               <ArrowUpRight className="h-3.5 w-3.5" />

@@ -89,7 +89,7 @@ const EXT_LINKS = [
 
 export default function ResourcesPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+    <main className="min-h-[100dvh] bg-[#0F172A]">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -103,13 +103,13 @@ export default function ResourcesPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B] via-[#0D0D0B]/70 to-[#0D0D0B]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/70 to-[#0F172A]/25" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Resources</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Resources</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
               Guidance for getting started.
@@ -127,14 +127,14 @@ export default function ResourcesPage() {
           {GUIDES.map((section) => (
             <AnimateIn key={section.category}>
               <div>
-                <div className="text-[10px] font-medium text-[#9B9A95] uppercase tracking-[0.12em] mb-8">
+                <div className="text-[10px] font-medium text-[#94A3B8] uppercase tracking-[0.12em] mb-8">
                   {section.category}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2E1DC]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2E8F0]">
                   {section.items.map((item) => (
                     <div key={item.title} className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
-                      <h3 className="text-base font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-3">{item.title}</h3>
-                      <p className="text-sm text-[#5C5B57] leading-relaxed">{item.text}</p>
+                      <h3 className="text-base font-semibold text-[#0F172A] tracking-[-0.02em] mb-3">{item.title}</h3>
+                      <p className="text-sm text-[#64748B] leading-relaxed">{item.text}</p>
                     </div>
                   ))}
                 </div>
@@ -145,31 +145,31 @@ export default function ResourcesPage() {
       </section>
 
       {/* External references */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#5C5B57] tracking-[0.1em]">Primary references</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#64748B] tracking-[0.1em]">Primary references</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-12">
               Original sources and standards.
             </h2>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#2A2A27]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#1E293B]">
             {EXT_LINKS.map((link, i) => (
               <AnimateIn key={link.label} delay={i * 0.04}>
                 <a
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#0D0D0B] p-8 hover:bg-[#111110] transition-colors flex flex-col justify-between group"
+                  className="bg-[#0F172A] p-8 hover:bg-[#111110] transition-colors flex flex-col justify-between group"
                 >
                   <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-white tracking-[-0.02em] mb-2 group-hover:text-[#5A9E74] transition-colors">{link.label}</h3>
-                    <p className="text-xs text-[#5C5B57]">{link.org}</p>
+                    <h3 className="text-sm font-semibold text-white tracking-[-0.02em] mb-2 group-hover:text-[#0891B2] transition-colors">{link.label}</h3>
+                    <p className="text-xs text-[#64748B]">{link.org}</p>
                   </div>
-                  <div className="text-[#3D6B52] group-hover:text-[#5A9E74] transition-colors mt-4 h-5 w-5">
+                  <div className="text-[#06B6D4] group-hover:text-[#0891B2] transition-colors mt-4 h-5 w-5">
                     <ArrowUpRight className="h-4 w-4" />
                   </div>
                 </a>
@@ -180,15 +180,15 @@ export default function ResourcesPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-4">
               Ready to run your first calculation?
             </h2>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0D0D0B] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
             >
               Create organisation
               <ArrowUpRight className="h-3.5 w-3.5" />

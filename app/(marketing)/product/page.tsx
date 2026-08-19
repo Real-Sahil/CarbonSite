@@ -55,7 +55,7 @@ const ROLES = [
 
 export default function ProductPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+    <main className="min-h-[100dvh] bg-[#0F172A]">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -69,13 +69,13 @@ export default function ProductPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B] via-[#0D0D0B]/70 to-[#0D0D0B]/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/70 to-[#0F172A]/30" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Platform overview</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Platform overview</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
               One platform,<br />end to end.
@@ -90,19 +90,19 @@ export default function ProductPage() {
       {/* Stages */}
       <section className="bg-[#F5F4F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <div className="space-y-px bg-[#E2E1DC]">
+          <div className="space-y-px bg-[#E2E8F0]">
             {STAGES.map((stage, i) => (
               <AnimateIn key={stage.num} delay={i * 0.05}>
                 <div className="bg-[#F5F4F0] p-8 md:p-10 grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6 hover:bg-white transition-colors">
-                  <div className="text-[2.5rem] font-semibold text-[#E2E1DC] tracking-[-0.05em] leading-none font-mono">
+                  <div className="text-[2.5rem] font-semibold text-[#E2E8F0] tracking-[-0.05em] leading-none font-mono">
                     {stage.num}
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-[#0D0D0B] tracking-[-0.02em] mb-3">{stage.title}</h2>
-                    <p className="text-sm text-[#5C5B57] leading-relaxed mb-5 max-w-[65ch]">{stage.text}</p>
+                    <h2 className="text-base font-semibold text-[#0F172A] tracking-[-0.02em] mb-3">{stage.title}</h2>
+                    <p className="text-sm text-[#64748B] leading-relaxed mb-5 max-w-[65ch]">{stage.text}</p>
                     <div className="flex flex-wrap gap-2">
                       {stage.tags.map((tag) => (
-                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-[#3D6B52]/30 text-[#3D6B52] bg-[#3D6B52]/5 tracking-wide">
+                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-[#06B6D4]/30 text-[#06B6D4] bg-[#06B6D4]/5 tracking-wide">
                           {tag}
                         </span>
                       ))}
@@ -116,28 +116,28 @@ export default function ProductPage() {
       </section>
 
       {/* Role access control */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#5C5B57] tracking-[0.1em]">Access control</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#64748B] tracking-[0.1em]">Access control</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-3">
               Six roles, enforced server-side.
             </h2>
-            <p className="text-sm text-[#5C5B57] mb-12 max-w-[55ch]">
+            <p className="text-sm text-[#64748B] mb-12 max-w-[55ch]">
               Role is checked on the organisation membership record — not from client-supplied headers or tokens.
             </p>
           </AnimateIn>
-          <div className="border border-[#2A2A27] divide-y divide-[#2A2A27] overflow-hidden">
+          <div className="border border-[#1E293B] divide-y divide-[#1E293B] overflow-hidden">
             {ROLES.map((r) => (
               <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-[#111110] transition-colors">
-                <div className="px-6 py-4 border-r border-[#2A2A27]">
-                  <code className="text-xs font-mono text-[#3D6B52]">{r.role}</code>
+                <div className="px-6 py-4 border-r border-[#1E293B]">
+                  <code className="text-xs font-mono text-[#06B6D4]">{r.role}</code>
                 </div>
                 <div className="px-6 py-4">
-                  <p className="text-sm text-[#5C5B57]">{r.can}</p>
+                  <p className="text-sm text-[#64748B]">{r.can}</p>
                 </div>
               </div>
             ))}
@@ -149,15 +149,15 @@ export default function ProductPage() {
       <section className="relative overflow-hidden bg-[#F5F4F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-4">
               Start your first reporting period.
             </h2>
-            <p className="text-base text-[#5C5B57] mb-8 max-w-[45ch]">
+            <p className="text-base text-[#64748B] mb-8 max-w-[45ch]">
               Create an organisation, add facilities, invite your team. First calculation in under an hour.
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0D0D0B] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
             >
               Create organisation
               <ArrowUpRight className="h-3.5 w-3.5" />

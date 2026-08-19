@@ -56,13 +56,13 @@ const CONTROLS = [
 
 const TAG_STYLE: Record<string, string> = {
   P0:      "text-[#E05A5A] border-[#E05A5A]/30 bg-[#E05A5A]/8",
-  Core:    "text-[#5C5B57] border-[#3D3D3A] bg-[#1A1A18]",
-  Defence: "text-[#5A9E74] border-[#3D6B52]/30 bg-[#3D6B52]/8",
+  Core:    "text-[#64748B] border-[#3D3D3A] bg-[#1A1A18]",
+  Defence: "text-[#0891B2] border-[#06B6D4]/30 bg-[#06B6D4]/8",
 };
 
 export default function SecurityPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#0D0D0B]">
+    <main className="min-h-[100dvh] bg-[#0F172A]">
       <SiteNav theme="dark" />
 
       {/* Hero */}
@@ -76,13 +76,13 @@ export default function SecurityPage() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0B] via-[#0D0D0B]/70 to-[#0D0D0B]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/70 to-[#0F172A]/25" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#3D6B52]" />
-              <span className="text-xs text-[#3D6B52] tracking-[0.12em] font-medium">Security</span>
+              <div className="w-6 h-px bg-[#06B6D4]" />
+              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Security</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[18ch]">
               Designed to be audited.
@@ -95,7 +95,7 @@ export default function SecurityPage() {
       </section>
 
       {/* Controls */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-12">
@@ -105,20 +105,20 @@ export default function SecurityPage() {
               <span className="text-[10px] text-[#3D3D3A]">classification key</span>
             </div>
           </AnimateIn>
-          <div className="border border-[#2A2A27] divide-y divide-[#2A2A27] overflow-hidden">
+          <div className="border border-[#1E293B] divide-y divide-[#1E293B] overflow-hidden">
             {CONTROLS.map((control, i) => (
               <AnimateIn key={control.area} delay={i * 0.04}>
                 <div className="grid grid-cols-1 md:grid-cols-[220px_80px_1fr] hover:bg-[#111110] transition-colors">
-                  <div className="px-6 py-5 border-r border-[#2A2A27]">
+                  <div className="px-6 py-5 border-r border-[#1E293B]">
                     <span className="text-sm font-medium text-white">{control.area}</span>
                   </div>
-                  <div className="px-6 py-5 border-r border-[#2A2A27] flex items-start">
+                  <div className="px-6 py-5 border-r border-[#1E293B] flex items-start">
                     <span className={`text-[10px] px-2.5 py-1 rounded-full border tracking-wide ${TAG_STYLE[control.tag]}`}>
                       {control.tag}
                     </span>
                   </div>
                   <div className="px-6 py-5">
-                    <p className="text-sm text-[#5C5B57] leading-relaxed">{control.detail}</p>
+                    <p className="text-sm text-[#64748B] leading-relaxed">{control.detail}</p>
                   </div>
                 </div>
               </AnimateIn>
@@ -128,26 +128,26 @@ export default function SecurityPage() {
       </section>
 
       {/* Architecture note */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E1DC]">
+      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
               <div>
-                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-[#0D0D0B] mb-5">
+                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-5">
                   No external auth dependencies.
                 </h2>
-                <p className="text-sm text-[#5C5B57] leading-relaxed mb-4">
+                <p className="text-sm text-[#64748B] leading-relaxed mb-4">
                   Authentication runs entirely on your own infrastructure. Session data lives in your database — not a third-party auth service — so you have full custody of who has access and when. Mobile clients use short-lived tokens with automatic renewal.
                 </p>
-                <p className="text-sm text-[#5C5B57] leading-relaxed">
+                <p className="text-sm text-[#64748B] leading-relaxed">
                   Files are stored in isolated, access-controlled object storage. Each organisation&apos;s content is scoped to its own namespace. Download links expire after a short window and are only issued to authenticated, authorised users.
                 </p>
               </div>
               <div className="space-y-4">
                 {["Cross-tenant access is a P0 security bug — enforced in the data layer.", "Audit rows are append-only. Never updated. Never deleted.", "Calculation results are immutable after publication.", "Field worker scope is zero — no org data, no other users."].map((point) => (
                   <div key={point} className="flex items-start gap-3">
-                    <div className="mt-1.5 w-1 h-1 rounded-full bg-[#3D6B52] shrink-0" />
-                    <p className="text-sm text-[#5C5B57] leading-relaxed">{point}</p>
+                    <div className="mt-1.5 w-1 h-1 rounded-full bg-[#06B6D4] shrink-0" />
+                    <p className="text-sm text-[#64748B] leading-relaxed">{point}</p>
                   </div>
                 ))}
               </div>
@@ -157,7 +157,7 @@ export default function SecurityPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#0D0D0B]">
+      <section className="bg-[#0F172A]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
@@ -165,7 +165,7 @@ export default function SecurityPage() {
             </h2>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0D0D0B] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
             >
               Get in touch
               <ArrowUpRight className="h-3.5 w-3.5" />
