@@ -71,8 +71,8 @@ export function SubmissionEditActions({
       .filter(([, v]) => v != null && v !== "")
       .map(([key, value]) => ({ key, value: String(value) })),
   );
-  const [categoryId, setCategoryId] = useState(initialCategoryId ?? "");
-  const [facilityId, setFacilityId] = useState(initialFacilityId ?? "");
+  const [categoryId, setCategoryId] = useState(initialCategoryId ?? "__none__");
+  const [facilityId, setFacilityId] = useState(initialFacilityId ?? "__none__");
   const [pickupPostcode, setPickupPostcode] = useState(initialPickupPostcode ?? "");
   const [deliveryPostcode, setDeliveryPostcode] = useState(initialDeliveryPostcode ?? "");
   const [pickupLat, setPickupLat] = useState(initialPickupLat?.toString() ?? "");
@@ -102,8 +102,8 @@ export function SubmissionEditActions({
     const patchOcrData = ocrFields.length > 0 ? Object.fromEntries(ocrFields.map((f) => [f.key, f.value])) : null;
     const body: Record<string, unknown> = {
       formData: patchFormData,
-      emissionCategoryId: categoryId || null,
-      facilityId: facilityId || null,
+      emissionCategoryId: categoryId === "__none__" ? null : categoryId || null,
+      facilityId: facilityId === "__none__" ? null : facilityId || null,
     };
     if (patchOcrData) body.ocrExtractedData = patchOcrData;
 
@@ -227,9 +227,14 @@ export function SubmissionEditActions({
       )}
 
       <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
-        <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
-          Dispatch/Delivery postcodes (used for carbon calculation)
-        </p>
+        <div>
+          <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+            Ticket postcodes
+          </p>
+          <p className="text-xs text-[#555] tracking-[-0.36px] mt-0.5">
+            Used for route distance only when GPS coordinates are not available from the ticket.
+          </p>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-[#374151] tracking-[-0.36px]">Pickup postcode</label>
@@ -253,9 +258,14 @@ export function SubmissionEditActions({
       </div>
 
       <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
-        <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
-          GPS coordinates (pickup → delivery)
-        </p>
+        <div>
+          <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+            Route coordinates (from ticket OCR)
+          </p>
+          <p className="text-xs text-[#555] tracking-[-0.36px] mt-0.5">
+            Origin and destination coordinates read from the ticket. These are used for carbon calculations. The field worker&apos;s device location is recorded separately for audit trail only.
+          </p>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-[#374151] tracking-[-0.36px]">Pickup lat</label>
@@ -295,7 +305,7 @@ export function SubmissionEditActions({
           </div>
         </div>
         <p className="text-xs text-[#555] tracking-[-0.36px]">
-          Save to recalculate road distance via OSRM.
+          Save to recalculate road distance.
         </p>
       </div>
 
@@ -308,7 +318,7 @@ export function SubmissionEditActions({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {emissionCategories.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     Scope {c.scope}: {c.name}
@@ -326,7 +336,7 @@ export function SubmissionEditActions({
                 <SelectValue placeholder="None" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {facilities.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.name}

@@ -334,48 +334,54 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Location & distance</CardTitle>
+              <CardTitle className="text-base">Route & distance</CardTitle>
+              <CardDescription>
+                Coordinates from the ticket OCR are used for carbon calculations. Field worker location is recorded for audit trail only.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {submission.gpsLat != null && submission.gpsLng != null && (
-                <DetailRow
-                  label="Device GPS"
-                  value={`${Number(submission.gpsLat).toFixed(5)}, ${Number(submission.gpsLng).toFixed(5)}`}
-                />
-              )}
               {submission.pickupLat != null && submission.pickupLng != null && (
                 <DetailRow
-                  label="Pickup"
+                  label="Route origin"
                   value={`${Number(submission.pickupLat).toFixed(5)}, ${Number(submission.pickupLng).toFixed(5)}`}
                 />
               )}
               {submission.deliveryLat != null && submission.deliveryLng != null && (
                 <DetailRow
-                  label="Delivery"
+                  label="Route destination"
                   value={`${Number(submission.deliveryLat).toFixed(5)}, ${Number(submission.deliveryLng).toFixed(5)}`}
                 />
               )}
-              {submission.calculatedDistanceKm != null && (
+              {submission.calculatedDistanceKm != null && submission.distanceSource !== "postcode_route" && (
                 <DetailRow
                   label="Road distance"
-                  value={`${Number(submission.calculatedDistanceKm).toFixed(2)} km${submission.distanceSource ? ` (${submission.distanceSource === "gps_osrm" ? "OSRM" : submission.distanceSource === "gps_haversine" ? "straight-line" : submission.distanceSource})` : ""}`}
+                  value={`${Number(submission.calculatedDistanceKm).toFixed(2)} km${submission.distanceSource === "gps_haversine" ? " (straight-line estimate)" : ""}`}
                 />
               )}
-              {submission.gpsLat == null && submission.pickupLat == null && (
+              {submission.gpsLat != null && submission.gpsLng != null && (
+                <div className="pt-1 border-t border-[#E5E7EB]">
+                  <DetailRow
+                    label="Worker location"
+                    value={`${Number(submission.gpsLat).toFixed(5)}, ${Number(submission.gpsLng).toFixed(5)}`}
+                  />
+                  <p className="text-xs text-[#374151] italic tracking-[-0.36px] mt-0.5 ml-[140px]">Audit trail only — not used in calculations</p>
+                </div>
+              )}
+              {submission.pickupLat == null && submission.deliveryLat == null && submission.gpsLat == null && (
                 <p className="text-sm text-[#374151] italic tracking-[-0.42px]">No location captured</p>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* OCR pipeline card — shows postcode validation, source, and routing detail */}
+        {/* Postcode audit trail card — shows what was on the ticket, not internal pipeline details */}
         {(submission.deliveryPostcode ||
           submission.pickupPostcode ||
           submission.postcodeValidationStatus) && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                OCR pipeline
+                Ticket postcodes
                 {submission.postcodeValidationStatus === "needs_review" && (
                   <span className="inline-flex items-center rounded-full bg-amber-100 border border-amber-200 px-2 py-0.5 text-xs font-normal text-amber-800">
                     Needs review
@@ -393,12 +399,12 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 )}
               </CardTitle>
               <CardDescription>
-                Postcode extraction, OCR error correction, geocoding, and road distance pipeline.
+                Postcodes read from the physical document. Used as fallback for route distance when GPS coordinates are unavailable.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {submission.deliveryPostcodeOriginal && (
-                <DetailRow label="OCR raw postcode" value={submission.deliveryPostcodeOriginal} />
+                <DetailRow label="Raw OCR read" value={submission.deliveryPostcodeOriginal} />
               )}
               {submission.deliveryPostcode && (
                 <DetailRow
@@ -411,56 +417,37 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               )}
               {submission.postcodeValidationStatus && (
                 <DetailRow
-                  label="Validation"
+                  label="Postcode status"
                   value={
-                    submission.postcodeValidationStatus === "valid" ? "Valid - exact match"
-                    : submission.postcodeValidationStatus === "corrected" ? "Corrected OCR substitution (0/O, 1/I, 5/S)"
-                    : submission.postcodeValidationStatus === "invalid" ? "Invalid - could not produce a valid UK postcode"
-                    : "Needs review - ambiguous or no postcode found"
+                    submission.postcodeValidationStatus === "valid" ? "Valid"
+                    : submission.postcodeValidationStatus === "corrected" ? "Corrected (common OCR character substitution)"
+                    : submission.postcodeValidationStatus === "invalid" ? "Invalid — could not extract a valid UK postcode"
+                    : "Needs review — postcode ambiguous or not found on ticket"
                   }
                 />
               )}
-              {submission.postcodeExtractionSource && (
+              {submission.postcodeExtractionSource && submission.postcodeExtractionSource !== "manual" && (
                 <DetailRow
-                  label="Identified by"
+                  label="Found by"
                   value={
-                    submission.postcodeExtractionSource === "label_identified" ? "Delivery label context"
-                    : submission.postcodeExtractionSource === "position_heuristic" ? "Position heuristic (last postcode on ticket)"
-                    : submission.postcodeExtractionSource === "only_found" ? "Only postcode on ticket"
-                    : "Manual entry"
+                    submission.postcodeExtractionSource === "label_identified" ? "Delivery label on ticket"
+                    : submission.postcodeExtractionSource === "position_heuristic" ? "Last postcode on ticket"
+                    : "Only postcode on ticket"
                   }
                 />
               )}
-              {submission.deliveryLat != null && submission.deliveryLng != null && (
+              {submission.calculatedDistanceKm != null && submission.distanceSource === "postcode_route" && (
                 <DetailRow
-                  label="Delivery geocode"
-                  value={`${Number(submission.deliveryLat).toFixed(5)}, ${Number(submission.deliveryLng).toFixed(5)} (postcodes.io)`}
+                  label="Route distance"
+                  value={`${Number(submission.calculatedDistanceKm).toFixed(2)} km (postcode routing)`}
                 />
               )}
-              {submission.pickupLat != null && submission.pickupLng != null && (
-                <DetailRow
-                  label="Pickup geocode"
-                  value={`${Number(submission.pickupLat).toFixed(5)}, ${Number(submission.pickupLng).toFixed(5)} (postcodes.io)`}
-                />
-              )}
-              {submission.calculatedDistanceKm != null && (
-                <DetailRow
-                  label="Road distance"
-                  value={`${Number(submission.calculatedDistanceKm).toFixed(2)} km${
-                    submission.distanceSource === "postcode_route" ? " via OSRM (postcode)"
-                    : submission.distanceSource === "gps_osrm" ? " via OSRM (GPS)"
-                    : submission.distanceSource === "gps_haversine" ? " straight-line (GPS)"
-                    : submission.distanceSource ? ` (${submission.distanceSource})`
-                    : ""
-                  }`}
-                />
-              )}
-              {!submission.calculatedDistanceKm && submission.postcodeValidationStatus !== "needs_review" && (
+              {!submission.calculatedDistanceKm && submission.postcodeValidationStatus !== "needs_review" && submission.pickupLat == null && (
                 <p className="text-xs text-[#374151] italic tracking-[-0.36px]">
-                  Road distance not yet resolved.
+                  Route distance not resolved.
                   {submission.postcodeValidationStatus === "invalid"
-                    ? " Fix the postcode and re-save to trigger routing."
-                    : " Routing may have failed — check that both postcodes are valid UK postcodes."}
+                    ? " Fix the postcode and re-save to recalculate."
+                    : " Check that both postcodes are valid UK postcodes."}
                 </p>
               )}
             </CardContent>
