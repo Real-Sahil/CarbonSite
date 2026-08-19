@@ -96,7 +96,7 @@ export default function ResourcesPage() {
       <section className="relative min-h-[55vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1526628653514-d4c3f4f63bff?w=1600&q=75"
+            src="https://images.pexels.com/photos/4339405/pexels-photo-4339405.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop
             alt="Renewable energy resources climate knowledge documentation"
             fill
             priority

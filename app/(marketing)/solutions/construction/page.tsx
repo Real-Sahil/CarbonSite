@@ -45,7 +45,7 @@ export default function ConstructionPage() {
       <section className="relative min-h-[65vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1560264357-8d9766d24a0f?w=1600&q=75"
+            src="https://images.pexels.com/photos/3808055/pexels-photo-3808055.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop
             alt="Green construction sustainability carbon reduction building"
             fill
             priority

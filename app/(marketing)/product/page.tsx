@@ -63,7 +63,17 @@ export default function ProductPage() {
 
       {/* Hero */}
       <section className="relative min-h-[60vh] flex items-end overflow-hidden">
-        <ProductGradientBg />
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.pexels.com/photos/8566473/pexels-photo-8566473.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop"
+            alt="Carbon tracking analytics dashboard with renewable energy metrics"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-white/40 to-white/20" />
+        </div>
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">

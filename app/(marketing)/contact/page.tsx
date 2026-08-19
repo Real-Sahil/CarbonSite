@@ -20,7 +20,7 @@ export default function ContactPage() {
       <section className="relative min-h-[60vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1559027615-cd2628902d4a?w=1600&q=75"
+            src="https://images.pexels.com/photos/3807517/pexels-photo-3807517.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop
             alt="Sustainability team climate action collaboration"
             fill
             priority
