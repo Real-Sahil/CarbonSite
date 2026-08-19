@@ -93,8 +93,14 @@ export async function POST(req: NextRequest, { params }: Params) {
       where: { requestHash },
       select: { id: true, status: true },
     });
-    if (existing && (existing.status === "queued" || existing.status === "generating")) {
-      return NextResponse.json(existing);
+    if (existing) {
+      // For idempotency: return existing report if queued/generating.
+      // If failed/ready, allow retry by deleting and recreating.
+      if (existing.status === "queued" || existing.status === "generating") {
+        return NextResponse.json(existing);
+      }
+      // Delete the old report so we can retry with a new one
+      await prisma.report.delete({ where: { id: existing.id } });
     }
 
     let report: Awaited<ReturnType<typeof prisma.report.create>>;
