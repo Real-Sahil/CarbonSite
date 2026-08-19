@@ -55,32 +55,41 @@ const SCOPE_LABELS: Record<number, string> = {
 };
 
 export async function processReport(reportId: string, orgId: string): Promise<void> {
+  console.log(`[reports] processReport START: reportId=${reportId}, orgId=${orgId}`);
   try {
   const report = await prisma.report.findUniqueOrThrow({
     where: { id: reportId },
     include: REPORT_INCLUDE,
   });
+  console.log(`[reports] Report loaded: type=${report.type}, status=${report.status}`);
 
   if (report.organizationId !== orgId) throw new Error("Org mismatch on report job.");
   if (report.status === "ready") return;
 
   await prisma.report.update({ where: { id: reportId }, data: { status: "generating" } });
+  console.log(`[reports] Report status set to generating`);
 
   try {
+    console.log(`[reports] Calling renderForType for report ${reportId}`);
     const { html, pdfkitData, xmlBuffer } = await renderForType(report);
+    console.log(`[reports] renderForType returned, pdfkitData=${!!pdfkitData}, xmlBuffer=${!!xmlBuffer}`);
 
     // CSV only for carbon-based reports (not TOMS or CBAM)
     let csvBuffer: Buffer | null = null;
     if (report.type !== "national_toms" && report.type !== "cbam") {
+      console.log(`[reports] Building CSV for report ${reportId}`);
       const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
       csvBuffer = buildCsv(calculations, report);
+      console.log(`[reports] CSV built, size=${csvBuffer?.length ?? 0}`);
     }
 
     // Use pdfkit for base inventory/snapshot types — faster, no Chromium required.
     // Fall back to Puppeteer for specialised regulatory templates with complex layouts.
+    console.log(`[reports] Generating PDF, pdfkitData=${!!pdfkitData}`);
     const pdfBuffer = pdfkitData
       ? await generateReportPdf(pdfkitData)
       : await renderPdf(html);
+    console.log(`[reports] PDF generated, size=${pdfBuffer.length}`);
     const pdfKey = keys.reportPdf(orgId, reportId);
     const pdfChecksum = createHash("sha256").update(pdfBuffer).digest("hex");
     await putObject(pdfKey, pdfBuffer, "application/pdf");
