@@ -42,9 +42,10 @@ import { Badge } from "@/components/ui/badge";
 import { CalculationControls } from "./calculation-controls";
 import { ReviewTaskPanel, type ReviewTaskPanelCandidate } from "./review-task-panel";
 import { resolveReviewTarget } from "@/lib/review-tasks/targets";
-import { ScopeDonut } from "@/components/charts/scope-donut";
-import { CategoryBar } from "@/components/charts/category-bar";
-import { TrendLine, type TrendLineDatum } from "@/components/charts/trend-line";
+import { BklitScopeRing } from "@/components/charts/bklit-scope-ring";
+import { BklitCategoryBar } from "@/components/charts/bklit-category-bar";
+import { BklitTrendArea, type TrendLineDatum } from "@/components/charts/bklit-trend-area";
+import { BklitDataGauge } from "@/components/charts/bklit-data-gauge";
 import { OnboardingChecklist } from "./onboarding-checklist";
 import { CalculationRunsLive } from "./calculation-runs-live";
 
@@ -1090,7 +1091,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ScopeDonut data={scopeDonutData} />
+              <BklitScopeRing data={scopeDonutData} />
             </CardContent>
           </Card>
           <Card>
@@ -1101,7 +1102,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <CategoryBar
+              <BklitCategoryBar
                 data={categoryBarData}
                 ariaLabel="Top emission categories bar chart"
               />
@@ -1116,7 +1117,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TrendLine data={trendData} />
+                <BklitTrendArea data={trendData} />
               </CardContent>
             </Card>
           )}
@@ -1334,26 +1335,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 Emissions from reviewed records
               </dt>
               {dataConfidencePct !== null ? (
-                <>
-                  <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#111827]">
-                    {dataConfidencePct}%
-                  </dd>
-                  <p className="mt-1 text-xs text-[#374151] tracking-[-0.36px]">
+                <div className="mt-2 flex flex-col items-center gap-1">
+                  <BklitDataGauge value={dataConfidencePct} label="Data confidence" size={160} />
+                  <p className="text-xs text-[#374151] tracking-[-0.36px]">
                     of calculated CO₂e from approved records
                   </p>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e5e7eb]">
-                    <div
-                      className={`h-full rounded-full ${
-                        dataConfidencePct >= 90
-                          ? "bg-emerald-600"
-                          : dataConfidencePct >= 50
-                            ? "bg-amber-500"
-                            : "bg-red-500"
-                      }`}
-                      style={{ width: `${dataConfidencePct}%` }}
-                    />
-                  </div>
-                </>
+                </div>
               ) : (
                 <>
                   <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#374151]">
