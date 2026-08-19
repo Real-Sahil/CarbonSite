@@ -171,12 +171,14 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
       };
     } else {
       const fd = (submission.formData ?? {}) as Record<string, unknown>;
+      const ocr = (submission.ocrExtractedData ?? {}) as Record<string, unknown>;
+      const merged = { ...ocr, ...fd }; // formData wins over ocr
       const docType = submission.documentType;
       let amount = 0;
-      if (docType === "waste_ticket") amount = Number(fd.weight ?? fd.amount ?? 0) || 0;
-      else if (docType === "delivery_note") amount = Number(fd.quantity ?? fd.weight ?? fd.amount ?? 0) || 0;
-      else if (docType === "fuel_receipt") amount = Number(fd.volume ?? fd.amount ?? 0) || 0;
-      else amount = Number(fd.amount ?? 0) || 0;
+      if (docType === "waste_ticket") amount = Number(merged.weight ?? merged.amount ?? 0) || 0;
+      else if (docType === "delivery_note") amount = Number(merged.quantity ?? merged.weight ?? merged.amount ?? 0) || 0;
+      else if (docType === "fuel_receipt") amount = Number(merged.volume ?? merged.amount ?? 0) || 0;
+      else amount = Number(merged.amount ?? 0) || 0;
       if (!Number.isFinite(amount) || amount <= 0) {
         preApprovalIssue = {
           code: "INVALID_FORM_DATA",
@@ -732,6 +734,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               <SubmissionEditActions
                 orgId={orgId}
                 submissionId={id}
+                documentType={submission.documentType}
                 formData={(submission.formData ?? {}) as Record<string, unknown>}
                 ocrExtractedData={(submission.ocrExtractedData ?? null) as Record<string, unknown> | null}
                 emissionCategoryId={submission.emissionCategoryId}

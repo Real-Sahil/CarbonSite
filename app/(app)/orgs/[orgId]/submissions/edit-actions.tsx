@@ -20,6 +20,7 @@ interface FormField {
 interface SubmissionEditActionsProps {
   orgId: string;
   submissionId: string;
+  documentType: string;
   formData: Record<string, unknown>;
   ocrExtractedData?: Record<string, unknown> | null;
   emissionCategoryId: string | null;
@@ -36,6 +37,16 @@ interface SubmissionEditActionsProps {
   facilities: { id: string; name: string }[];
 }
 
+// Per-doc-type amount/unit field names and defaults matching extractAmountUnit in approve.ts
+const AMOUNT_CONFIG: Record<string, { amountKey: string; unitKey: string; label: string; unitDefault: string; placeholder: string }> = {
+  waste_ticket:   { amountKey: "weight",   unitKey: "weightUnit",   label: "Weight",   unitDefault: "kg",     placeholder: "e.g. 500" },
+  delivery_note:  { amountKey: "quantity", unitKey: "quantityUnit", label: "Quantity", unitDefault: "units",  placeholder: "e.g. 12" },
+  fuel_receipt:   { amountKey: "volume",   unitKey: "volumeUnit",   label: "Volume",   unitDefault: "litres", placeholder: "e.g. 50" },
+};
+function getAmountConfig(documentType: string) {
+  return AMOUNT_CONFIG[documentType] ?? { amountKey: "amount", unitKey: "unit", label: "Amount", unitDefault: "units", placeholder: "e.g. 100" };
+}
+
 const DISTANCE_SOURCE_LABELS: Record<string, string> = {
   gps_osrm: "Road (OSRM)",
   gps_haversine: "Straight-line estimate",
@@ -45,6 +56,7 @@ const DISTANCE_SOURCE_LABELS: Record<string, string> = {
 export function SubmissionEditActions({
   orgId,
   submissionId,
+  documentType,
   formData,
   ocrExtractedData,
   emissionCategoryId: initialCategoryId,
@@ -60,15 +72,24 @@ export function SubmissionEditActions({
   emissionCategories,
   facilities,
 }: SubmissionEditActionsProps) {
+  const amountCfg = getAmountConfig(documentType);
+
+  // Resolve initial amount/unit from formData, falling back to ocrExtractedData
+  const merged = { ...(ocrExtractedData ?? {}), ...formData };
   const [isEditing, setIsEditing] = useState(false);
+  const [amount, setAmount] = useState(String(merged[amountCfg.amountKey] ?? ""));
+  const [unit, setUnit] = useState(String(merged[amountCfg.unitKey] ?? amountCfg.unitDefault));
+
+  // Other form fields (excluding the amount/unit keys managed above)
+  const amountKeys = new Set([amountCfg.amountKey, amountCfg.unitKey, "amount", "unit"]);
   const [fields, setFields] = useState<FormField[]>(
     Object.entries(formData)
-      .filter(([, v]) => v != null && v !== "")
+      .filter(([k, v]) => !amountKeys.has(k) && v != null && v !== "")
       .map(([key, value]) => ({ key, value: String(value) })),
   );
   const [ocrFields, setOcrFields] = useState<FormField[]>(
     Object.entries(ocrExtractedData ?? {})
-      .filter(([, v]) => v != null && v !== "")
+      .filter(([k, v]) => !amountKeys.has(k) && v != null && v !== "")
       .map(([key, value]) => ({ key, value: String(value) })),
   );
   const [categoryId, setCategoryId] = useState(initialCategoryId ?? "__none__");
@@ -98,7 +119,12 @@ export function SubmissionEditActions({
     setError(null);
     setSaved(false);
 
-    const patchFormData = Object.fromEntries(fields.map((f) => [f.key, f.value]));
+    const patchFormData = {
+      ...Object.fromEntries(fields.map((f) => [f.key, f.value])),
+      // Always write amount/unit back under the doc-type-specific key
+      ...(amount.trim() ? { [amountCfg.amountKey]: amount.trim() } : {}),
+      ...(unit.trim() ? { [amountCfg.unitKey]: unit.trim() } : {}),
+    };
     const patchOcrData = ocrFields.length > 0 ? Object.fromEntries(ocrFields.map((f) => [f.key, f.value])) : null;
     const body: Record<string, unknown> = {
       formData: patchFormData,
@@ -188,10 +214,44 @@ export function SubmissionEditActions({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Amount/unit — always visible, required for approval */}
+      <div className="rounded-[10px] border border-amber-200 bg-amber-50 p-3 space-y-3">
+        <div>
+          <p className="text-xs font-medium text-amber-900 tracking-[-0.36px] uppercase">
+            {amountCfg.label} &amp; unit
+          </p>
+          <p className="text-xs text-amber-700 tracking-[-0.36px] mt-0.5">
+            Required for approval. These are written into the activity record.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0">{amountCfg.label}</label>
+          <Input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder={amountCfg.placeholder}
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0">Unit</label>
+          <Input
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            placeholder={amountCfg.unitDefault}
+            className="h-8 text-sm"
+          />
+        </div>
+      </div>
+
       <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
         <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
           Form values
         </p>
+        {fields.length === 0 && (
+          <p className="text-xs text-[#6B7280] tracking-[-0.36px] italic">No additional form fields.</p>
+        )}
         {fields.map((field, idx) => (
           <div key={field.key} className="flex items-center gap-2">
             <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0 capitalize">
