@@ -217,6 +217,45 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   const gwpVersion = report.snapshot.calculationRun.methodologyVersion.gwpVersion;
   const publishedBy = report.snapshot.publishedBy.name ?? report.snapshot.publishedBy.email;
 
+  // Compute biogenic totals early so all report types can use it in pdfkitData
+  const biogenicAgg = await prisma.emissionCalculation.aggregate({
+    where: { calculationRunId: runId, organizationId: orgId, biogenicCo2e: { not: null } },
+    _sum: { biogenicCo2e: true },
+  });
+  const biogenicTotal = Number(biogenicAgg._sum.biogenicCo2e ?? 0);
+
+  // Scope labels for reporting
+  const SCOPE_LABELS: Record<number, string> = { 1: "Scope 1 — Direct", 2: "Scope 2 — Electricity", 3: "Scope 3 — Value Chain" };
+
+  // Build basePdfData once from shared aggregations for all report types
+  const basePdfData: ReportData = {
+    orgName: report.organization.name,
+    logoDataUri,
+    reportType: report.type,
+    periodLabel: report.reportingPeriod.label,
+    periodStart: report.reportingPeriod.startDate,
+    periodEnd: report.reportingPeriod.endDate,
+    snapshotVersion: report.snapshot.version,
+    publishedAt: report.snapshot.publishedAt,
+    publishedBy,
+    factorLibrary,
+    methodology,
+    gwpVersion,
+    grandTotalKg: grandKg,
+    recordCount: calcs.length,
+    scopes: [1, 2, 3].map((scope) => ({
+      scope,
+      label: SCOPE_LABELS[scope],
+      totalKg: scopeKg.get(scope) ?? 0,
+      count: 0,
+    })),
+    categories: [...catTotals.values()].sort((a, b) => b.totalKg - a.totalKg),
+    facilities: [...facTotals.entries()]
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.totalKg - a.totalKg),
+    biogenicCo2eTonnes: biogenicTotal > 0 ? biogenicTotal / 1000 : undefined,
+  };
+
   // ── SECR ─────────────────────────────────────────────────────────────────
   if (report.type === "secr") {
     const intensityValue = Number(opts.intensityDenominatorValue ?? 1);
@@ -243,7 +282,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       efficiencyMeasures: Array.isArray(opts.efficiencyMeasures) ? opts.efficiencyMeasures as string[] : [],
       recordCount: calcs.length,
     };
-    return { html: renderSecrHtml(data) };
+    return { html: renderSecrHtml(data), pdfkitData: basePdfData };
   }
 
   // ── PPN 06/21 ─────────────────────────────────────────────────────────────
@@ -280,7 +319,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       scopesReported: ["Scope 1", "Scope 2", s3kg > 0 ? "Scope 3" : null].filter(Boolean) as string[],
       recordCount: calcs.length,
     };
-    return { html: renderPpn0621Html(data) };
+    return { html: renderPpn0621Html(data), pdfkitData: basePdfData };
   }
 
   // ── NHS Evergreen ─────────────────────────────────────────────────────────
@@ -309,7 +348,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       initiatives: initiatives.map((i) => ({ name: i.name, status: i.status })),
       recordCount: calcs.length,
     };
-    return { html: renderNhsEvergreenHtml(data) };
+    return { html: renderNhsEvergreenHtml(data), pdfkitData: basePdfData };
   }
 
   // ── National TOMS ─────────────────────────────────────────────────────────
@@ -367,7 +406,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       grandTotalPounds,
       totalRecords: svRecords.length,
     };
-    return { html: renderNationalTomsHtml(data) };
+    return { html: renderNationalTomsHtml(data), pdfkitData: basePdfData };
   }
 
   // ── BREEAM Evidence Pack ─────────────────────────────────────────────────────
@@ -389,7 +428,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       recordCount: calcs.length,
       categories: [...catTotals.values()],
     };
-    return { html: renderBreeamEvidenceHtml(data) };
+    return { html: renderBreeamEvidenceHtml(data), pdfkitData: basePdfData };
   }
 
   // ── CSRD ESRS E1 ─────────────────────────────────────────────────────────────
@@ -430,7 +469,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       interimReductionPct: opts.interimReductionPct !== undefined ? Number(opts.interimReductionPct) : undefined,
       categories: [...catTotals.values()],
     };
-    return { html: renderCsrdEsrsE1Html(data) };
+    return { html: renderCsrdEsrsE1Html(data), pdfkitData: basePdfData };
   }
 
   // ── Contract Carbon ───────────────────────────────────────────────────────────
@@ -455,7 +494,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       contractValueGbp: opts.contractValueGbp !== undefined ? Number(opts.contractValueGbp) : undefined,
       categories: [...catTotals.values()],
     };
-    return { html: renderContractCarbonHtml(data) };
+    return { html: renderContractCarbonHtml(data), pdfkitData: basePdfData };
   }
 
   // ── GHG Protocol ──────────────────────────────────────────────────────────────
@@ -508,7 +547,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       baselineTonnes,
       reductionPct,
     };
-    return { html: renderGhgProtocolHtml(data) };
+    return { html: renderGhgProtocolHtml(data), pdfkitData: basePdfData };
   }
 
   // ── CDP ────────────────────────────────────────────────────────────────────────
@@ -555,7 +594,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       revenueGbp: opts.revenueGbp !== undefined ? Number(opts.revenueGbp) : undefined,
       employeeCount: opts.employeeCount !== undefined ? Number(opts.employeeCount) : undefined,
     };
-    return { html: renderCdpHtml(data) };
+    return { html: renderCdpHtml(data), pdfkitData: basePdfData };
   }
 
   // ── PPN 006 CRP ───────────────────────────────────────────────────────────────
@@ -603,7 +642,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       methodologyNotes: opts.methodologyNotes as string | undefined,
     };
     void initiatives; // available for future use (reduction initiatives list)
-    return { html: renderPpn006CrpHtml(data) };
+    return { html: renderPpn006CrpHtml(data), pdfkitData: basePdfData };
   }
 
   // ── CBAM ───────────────────────────────────────────────────────────────────────
@@ -675,46 +714,13 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
     const xmlString = generateCbamXml(cbamReportData);
     const xmlBuffer = Buffer.from(xmlString, "utf-8");
     const html = renderCbamHtml(cbamHtmlData);
-    return { html, xmlBuffer };
+    return { html, xmlBuffer, pdfkitData: basePdfData };
   }
 
   // ── Inventory / monthly_snapshot / audit_package ──────────────────────────────
-  const biogenicAgg = await prisma.emissionCalculation.aggregate({
-    where: { calculationRunId: runId, organizationId: orgId, biogenicCo2e: { not: null } },
-    _sum: { biogenicCo2e: true },
-  });
-  const biogenicTotal = Number(biogenicAgg._sum.biogenicCo2e ?? 0);
-
-  const data: ReportData = {
-    orgName: report.organization.name,
-      logoDataUri,
-    reportType: report.type,
-    periodLabel: report.reportingPeriod.label,
-    periodStart: report.reportingPeriod.startDate,
-    periodEnd: report.reportingPeriod.endDate,
-    snapshotVersion: report.snapshot.version,
-    publishedAt: report.snapshot.publishedAt,
-    publishedBy,
-    factorLibrary,
-    methodology,
-    gwpVersion,
-    grandTotalKg: grandKg,
-    recordCount: calcs.length,
-    scopes: [1, 2, 3].map((scope) => ({
-      scope,
-      label: SCOPE_LABELS[scope],
-      totalKg: scopeKg.get(scope) ?? 0,
-      count: 0,
-    })),
-    categories: [...catTotals.values()].sort((a, b) => b.totalKg - a.totalKg),
-    facilities: [...facTotals.entries()]
-      .map(([name, v]) => ({ name, ...v }))
-      .sort((a, b) => b.totalKg - a.totalKg),
-    biogenicCo2eTonnes: biogenicTotal > 0 ? biogenicTotal / 1000 : undefined,
-  };
   // Base report types use pdfkit (no Chromium). The HTML is still rendered so
   // downstream code that reads `html` doesn't need to change.
-  return { html: renderReportHtml(data), pdfkitData: data };
+  return { html: renderReportHtml(basePdfData), pdfkitData: basePdfData };
 }
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
