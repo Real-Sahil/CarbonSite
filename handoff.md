@@ -1,9 +1,9 @@
 # CarbonSite Handoff Document
 
-**Date:** 2026-08-21  
+**Date:** 2026-08-24  
 **Session:** Claude Code Remote (claude-haiku-4-5-20251001)  
-**Current Branch:** main  
-**Status:** ✅ Ready for next phase
+**Current Branch:** claude/review-handoff-docs-woi4zm (documentation review & updates)  
+**Status:** ✅ Core features stable | 🔄 Documentation & automation in progress
 
 ---
 
@@ -14,9 +14,9 @@
 ### Current Metrics
 - **Repository:** real-sahil/carbonsite (GitHub)
 - **Main Branch:** Up-to-date with origin/main
-- **Working Tree:** Clean (no uncommitted changes)
-- **Latest Commit:** `1485982` - "Add hand-off documentation and configure routine permissions"
-- **Active Branches:** main only (feature branches cleaned up)
+- **Working Tree:** Active development on `claude/review-handoff-docs-woi4zm`
+- **Latest Commit (main):** `1485982` - "Add hand-off documentation and configure routine permissions"
+- **Active Branches:** main + claude/review-handoff-docs-woi4zm (documentation review)
 
 ---
 
@@ -151,31 +151,116 @@ main (up-to-date with origin/main)
 
 ## Pending Items & Next Steps
 
-### 1. Activate Graphify Daily Routine (User Action Required)
+### Priority 1: Documentation & Knowledge Base (In Progress)
+**Status:** Documentation review branch active  
+**Branch:** `claude/review-handoff-docs-woi4zm`
+
+**Tasks:**
+- [ ] Update handoff.md with current date and status (2026-08-24)
+- [ ] Expand architecture documentation for new developers
+- [ ] Document graphify workflow and knowledge graph usage
+- [ ] Add troubleshooting guides for common issues
+- [ ] Create quick-start guide for feature development workflow
+- [ ] Document RBAC matrix with examples for each role
+- [ ] Add performance tuning guide for large datasets
+
+**Timeline:** This week (documentation focused)
+
+### Priority 2: Activate Graphify Daily Routine (User Action Required)
 **Status:** Configuration complete, awaiting UI approval  
+**Effort:** 5 minutes user interaction
+
 **Action Required:**
 1. Visit claude.ai/code
 2. Approve permission prompt for `mcp__Claude_Code_Remote__create_trigger`
-3. Routine will then fire daily at 2 AM UTC
+3. Routine will fire daily at 2 AM UTC, updating knowledge graph automatically
 
-**Timeline:** Immediate (5 minutes)
+**What it does:** Keeps codebase knowledge graph (4,228 nodes, 8,557 edges) synchronized with code changes, commits to origin/main daily.
 
-### 2. Feature Development
-**Recommended Next:**
-- Field submission UI/UX improvements
-- Dashboard analytics enhancements
-- Report generation optimization
-- Mobile app improvements (Flutter)
+**Dependency:** None — can activate independently
 
-### 3. Testing Coverage
-- Add integration tests for graphify workflow
-- Verify scheduled routine execution
-- Test knowledge graph query performance
+### Priority 3: Feature Development (Next Phase)
+**Recommended Focus Areas:**
+1. **Field submission UI/UX improvements**
+   - Enhanced form validation feedback
+   - Better offline state indication
+   - Improved OCR confidence display
+   
+2. **Dashboard analytics enhancements**
+   - Trend analysis over time
+   - Category-level drilldowns
+   - Scope comparison views
 
-### 4. Documentation
-- Update README with graphify usage examples
-- Document knowledge graph query syntax
-- Add troubleshooting guide for automation
+3. **Report generation optimization**
+   - Async PDF generation improvements
+   - Batch report export capability
+   - Report template customization
+
+4. **Mobile app improvements (Flutter)**
+   - Better offline sync status UI
+   - Enhanced error handling for failed submissions
+   - Improved camera preview UX
+
+**Timeline:** 2-4 weeks (prioritize based on business needs)
+
+### Priority 4: Testing & Quality Assurance
+**Tasks:**
+- [ ] Add integration tests for graphify workflow
+- [ ] Verify scheduled routine execution in staging
+- [ ] Test knowledge graph query performance with large datasets
+- [ ] Add cross-tenant security regression tests
+- [ ] Performance testing: import 25k rows, measure dashboard load time
+- [ ] Mobile app offline sync testing
+
+**Timeline:** Parallel with feature development
+
+### Priority 5: Infrastructure & DevOps (Post-MVP)
+**Tasks:**
+- [ ] Document production deployment checklist
+- [ ] Set up monitoring for graphify routine execution
+- [ ] Configure alerts for job queue failures
+- [ ] Document backup/restore procedures for knowledge graph
+- [ ] Load testing for concurrent dashboard access
+
+**Timeline:** Before production launch
+
+---
+
+## Documentation Improvements Recommended
+
+### For New Developers
+**Missing from current docs:**
+1. **Feature development workflow** — how to propose and implement new features
+2. **RBAC examples** — real scenarios for each of the 6 roles
+3. **Database migration guide** — step-by-step for adding new tables
+4. **API testing guide** — how to test auth flows, org scoping, field submissions
+5. **Performance tuning playbook** — indexes, query optimization, caching strategies
+6. **Emission calculation examples** — walk-through a complete calculation with real data
+
+### For DevOps/Operations
+**Missing from current docs:**
+1. **Production deployment checklist** — pre-flight, deployment, post-flight
+2. **Monitoring & alerts** — what to watch, alert thresholds
+3. **Disaster recovery** — backup strategy, restore procedures
+4. **Scaling guide** — what breaks at 10k orgs, 100k records, 1M calculations
+5. **External service configuration** — Neon, R2, Resend, FCM setup steps
+6. **Routine/automation troubleshooting** — graphify, job queue, email failures
+
+### For Product/Design
+**Missing from current docs:**
+1. **User journey maps** — for each role (admin, editor, viewer, field_worker)
+2. **Key metrics to track** — adoption, calculation accuracy, report utilization
+3. **Feature prioritization framework** — how to decide what's next
+4. **Competitive analysis** — CarbonSite vs. existing tools
+5. **Compliance requirements matrix** — what regulations apply by geography
+
+### Recommended Actions
+- Create `docs/developers.md` with feature development workflow
+- Create `docs/operators.md` with deployment, monitoring, scaling
+- Create `docs/api-examples.md` with cURL/JavaScript examples for each endpoint
+- Create `docs/emissions-walkthrough.md` with real calculation examples
+- Update `README.md` to link to all new docs
+- Add `.github/CONTRIBUTING.md` with code review guidelines
 
 ---
 
@@ -186,11 +271,33 @@ main (up-to-date with origin/main)
 2. **Schedule:** 2 AM UTC daily (off-peak, minimal impact)
 3. **Session Type:** Fresh session per execution (isolated)
 4. **Storage:** Knowledge graph persisted in version control
+5. **Tech Stack:** No Docker, no Redis, no Python services — all npm/PostgreSQL/R2
+6. **Multi-tenancy:** Every query must include org_id; cross-tenant access is P0 security bug
 
-### ⏳ Decisions Pending
+### ⏳ Decisions Pending (Blocking Production)
 1. **Report Format:** Auditor package vs. customer disclosure vs. executive summary
-2. **Billing:** Required before production launch
+   - **Impact:** Affects report schema, data retention, compliance reporting
+   - **Timeline:** Decide before first customer report is generated
+   
+2. **Billing Model:** Freemium, per-org, per-record, usage-based?
+   - **Impact:** Affects pricing, feature gating, org model
+   - **Timeline:** Required before production launch
+   
 3. **Methodology Versioning:** When/how does ghg-protocol-v2026-01 increment?
+   - **Impact:** Affects calculation immutability, audit trail, recalculation policies
+   - **Timeline:** Clarify before publishing first snapshot
+   
+4. **Emission Factor Updates:** Frequency and process for DEFRA/EPA/SustainMetrics updates?
+   - **Impact:** Affects factor import automation, versioning, customer recalculations
+   - **Timeline:** Document before production
+   
+5. **Field Worker Licensing:** Licensing model for Flutter mobile app?
+   - **Impact:** Affects deployment strategy, app store presence, cost
+   - **Timeline:** Decide before first mobile deployment
+   
+6. **Data Retention Policy:** How long to keep audit logs, calculations, reports?
+   - **Impact:** Affects compliance, storage costs, GDPR handling
+   - **Timeline:** Document before first customer data is stored
 
 ---
 
@@ -224,17 +331,102 @@ git revert 5281542
 
 ---
 
-## Verification Checklist
+---
 
-- [x] Main branch is up-to-date with origin/main
-- [x] No uncommitted changes
-- [x] No branches ahead of main
-- [x] All feature branches cleaned up (or merged)
-- [x] Knowledge graph initialized and backed up
-- [x] Configuration updated for automation
-- [x] Documentation complete
-- [x] Ready for next phase
+## Strengths & What's Working Well
+
+✅ **Core Architecture:**
+- Multi-tenancy properly enforced at API layer via `requireOrgMember()`
+- RBAC system with 6 role levels working correctly
+- PostgreSQL-only stack (no external dependencies for core features)
+- Immutable calculations prevent audit trail tampering
+
+✅ **Data Quality:**
+- Prisma schema is comprehensive and well-organized
+- Audit logging is append-only and complete
+- Factor library seeded with DEFRA + EPA + SustainMetrics (zero cost)
+- GWP values (AR6) correctly configured
+
+✅ **Development Experience:**
+- TypeScript throughout eliminates entire classes of bugs
+- Zod validation at API boundaries
+- Knowledge graph provides codebase navigation
+- Skills available for design decisions (taste-skill, emil-design-eng)
+
+✅ **Infrastructure:**
+- No Docker required — runs on plain Postgres + npm
+- Storage via Cloudflare R2 (free tier, no egress costs)
+- Email via Resend (3k/month free)
+- Job queue via pg-boss (PostgreSQL native)
 
 ---
 
-**Session Complete.** Main branch is production-ready. Pending: User approval for scheduled graphify routine.
+## Areas Needing Attention
+
+⚠️ **Before Production Launch:**
+1. **Billing model undefined** — affects feature gating, org creation flow
+2. **Report format undecided** — impacts what data fields reports contain
+3. **Data retention policy missing** — compliance risk
+4. **Methodology versioning unclear** — affects recalculation workflow
+5. **Mobile deployment strategy undefined** — Flutter app testing/distribution
+
+⚠️ **Testing Gaps:**
+1. Cross-tenant security tests need expansion (P0)
+2. Large dataset performance testing (25k+ records)
+3. Concurrent user stress testing
+4. Offline sync reliability for mobile
+5. Factor selection edge cases (geography fallback logic)
+
+⚠️ **Documentation Gaps:**
+1. Feature development workflow undocumented
+2. Production deployment checklist missing
+3. API examples sparse (need real curl/JS examples)
+4. RBAC scenario walkthroughs missing
+5. Calculation engine logic not fully explained
+
+⚠️ **Mobile App (Flutter):**
+1. OCR extractor not fully tested on real waste tickets
+2. Offline sync edge cases (network drops mid-sync)
+3. Camera permission handling needs testing
+4. Deep link auth flow (invite links) needs validation
+
+---
+
+## Verification Checklist (2026-08-24)
+
+- [x] Main branch is up-to-date with origin/main
+- [x] Knowledge graph initialized and backed up
+- [x] Configuration updated for automation
+- [x] Core features working correctly
+- [ ] Documentation refresh complete (in progress)
+- [ ] All pending items triaged and prioritized
+- [ ] Production readiness gaps identified
+- [ ] Next development phase clear
+
+---
+
+## How to Use This Document
+
+**For Next Developer:**
+1. Read "Project Status Overview" first
+2. Review "Strengths & What's Working Well" to understand what's solid
+3. Check "Areas Needing Attention" to see what needs work
+4. Review "Pending Items & Next Steps" sorted by Priority
+5. Reference `.claude/CLAUDE.md` for detailed tech stack info
+6. Use `graphify` to explore codebase structure: `/graphify` (invoke skill)
+
+**For Product Manager:**
+1. Review "Key Decision Points" — these are blocking decisions
+2. Check "Pending Items" Priority 3-5 for feature roadmap input
+3. Use decision points to unblock: billing, report format, retention policy
+
+**For DevOps/Operations:**
+1. Review "Areas Needing Attention" > "Before Production Launch"
+2. Check "Pending Items" Priority 5 for infrastructure prep
+3. Reference external service setup (Neon, R2, Resend, FCM) in CLAUDE.md
+
+---
+
+**Last Updated:** 2026-08-24  
+**Branch:** claude/review-handoff-docs-woi4zm  
+**Status:** Documentation in review and update phase
