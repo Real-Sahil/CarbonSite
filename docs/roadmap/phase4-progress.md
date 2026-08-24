@@ -7,7 +7,7 @@
 | 2 | Advanced Analytics | Pending | PostHog cloud script injection |
 | 3 | User Onboarding | Pending | Guided first-use flows |
 | 4 | White-Label | Partial | TenantBranding model + branding settings already present |
-| 5 | Monitoring | Pending | Health endpoint, Grafana Cloud |
+| 5 | Monitoring | Partial | Health endpoint live (`/api/health`): env, database, auth-schema, storage checks; Grafana Cloud wiring pending |
 | 6 | Data Residency | Pending | Org-level region tagging |
 | 7 | Partner Ecosystem | Pending | Partner portal + revenue share |
 | 8 | SOC 2 / GDPR | Pending | Compliance docs + DPA template |

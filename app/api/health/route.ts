@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyEnvironmentConfiguration } from "@/lib/env/verify";
+import { checkStorageHealth } from "@/lib/storage/health";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const environment = verifyEnvironmentConfiguration();
-  const database = await checkDatabase();
+  const [database, storage] = await Promise.all([
+    checkDatabase(),
+    checkStorageHealth(),
+  ]);
   const authSchema = database.ok ? await checkAuthSchema() : { ok: false, missingColumns: [] };
-  const ok = environment.ok && database.ok && authSchema.ok;
+  const ok = environment.ok && database.ok && authSchema.ok && storage.ok;
 
   return NextResponse.json(
     {
@@ -21,6 +25,7 @@ export async function GET() {
           mode: environment.mode,
           ok: environment.ok,
         },
+        storage,
       },
       ok,
       service: "carbonsite",

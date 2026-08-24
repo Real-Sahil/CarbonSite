@@ -140,7 +140,8 @@ model Organization {
   evidenceFiles    EvidenceFile[]
   fieldSubmissions FieldSubmission[]
   inviteLinks      InviteLink[]
-  supplierInvites  SupplierInvite[]
+  supplierInvites         SupplierInvite[]
+  integrationConnections  IntegrationConnection[]
   fieldWorkerAssignments FieldWorkerAssignment[]
   fieldWorkerSiteAssignments FieldWorkerSiteAssignment[]
   socialValueRecords  SocialValueRecord[]
@@ -1758,6 +1759,29 @@ model SbtiTarget {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("sbti_targets")
+}
+
+// ─── Integrations ────────────────────────────────────────────────────────────
+
+model IntegrationConnection {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  provider            String
+  accessToken         String?   @map("access_token")
+  refreshToken        String?   @map("refresh_token")
+  expiresAt           DateTime? @map("expires_at")
+  scopes              String[]
+  externalAccountId   String?   @map("external_account_id")
+  externalAccountName String?   @map("external_account_name")
+  connectedAt         DateTime? @map("connected_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider], name: "organizationId_provider")
+  @@index([organizationId])
+  @@map("integration_connections")
 }
 
 // no S3-compatible bucket is configured (R2 requires a credit card). Written
