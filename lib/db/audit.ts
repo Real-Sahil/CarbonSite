@@ -84,7 +84,9 @@ type AuditAction =
   | "supplier_invite.accepted"
   | "epd.submitted"
   | "integration.connected"
-  | "integration.disconnected";
+  | "integration.disconnected"
+  | "supplier_data_request.sent"
+  | "supplier_data_request.submitted";
 
 export async function writeAuditLog(params: {
   organizationId: string;

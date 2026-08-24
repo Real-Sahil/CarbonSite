@@ -144,3 +144,56 @@ export function submissionReviewedEmail(params: {
   const html = `<p>Hi ${params.recipientName},</p><p>Your submission in <strong>${params.orgName}</strong> was <strong>${statusLabel}</strong>.</p>${noteHtml}<p><a href="${params.appUrl}">View in CarbonSite</a></p>`;
   return { subject, html, text };
 }
+
+export function supplierDataRequestEmail(params: {
+  recipientName: string;
+  orgName: string;
+  categoryName: string;
+  periodLabel: string;
+  formUrl: string;
+  expiresAt: Date;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const expires = params.expiresAt.toLocaleDateString("en-GB", {
+    day: "numeric", month: "long", year: "numeric",
+  });
+  const subject = `${params.orgName} is requesting your emissions data`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `${params.orgName} is asking you to provide emissions data for the following:`,
+    ``,
+    `  Category: ${params.categoryName}`,
+    `  Reporting period: ${params.periodLabel}`,
+    ``,
+    `Please complete the short data form by ${expires}:`,
+    `${params.formUrl}`,
+    ``,
+    `The form takes about 5 minutes. You will need:`,
+    `  - Annual spend or activity quantity for the above category`,
+    `  - Your preferred unit (kg, tonnes, litres, kWh, or £ spend)`,
+    ``,
+    `If you have questions, reply to this email.`,
+    ``,
+    `Thank you,`,
+    `The CarbonSite team on behalf of ${params.orgName}`,
+  ].join("\n");
+
+  const html = `
+<p>Hi ${params.recipientName},</p>
+<p><strong>${params.orgName}</strong> is requesting your emissions data to support their GHG inventory.</p>
+<table style="border-collapse:collapse;margin:16px 0;">
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Category</td><td style="padding:4px 0;font-weight:600;">${params.categoryName}</td></tr>
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Reporting period</td><td style="padding:4px 0;font-weight:600;">${params.periodLabel}</td></tr>
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Deadline</td><td style="padding:4px 0;font-weight:600;">${expires}</td></tr>
+</table>
+<p>
+  <a href="${params.formUrl}" style="display:inline-block;background:#0ea5e9;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+    Complete data form (5 min)
+  </a>
+</p>
+<p style="color:#6b7280;font-size:13px;">You will need: annual spend or activity quantity, preferred unit (kg / tonnes / kWh / £).</p>
+<p style="color:#6b7280;font-size:13px;">Reply to this email if you have questions.</p>
+`;
+
+  return { subject, html, text };
+}
