@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { resolveClientIp } from "./client-ip";
 
 // ── Sync in-memory (Edge-compatible) ─────────────────────────────────────────
 
@@ -54,31 +55,6 @@ export function rateLimit(
     };
   }
   return { allowed: true, remaining: limit - win.count, retryAfterSeconds: 0 };
-}
-
-// ── Trusted proxy resolution (FIND-008) ───────────────────────────────────────
-
-// Comma-separated list of proxy IPs (or CIDR ranges) that are allowed to set
-// X-Forwarded-For. Read once at startup; deploy env var: TRUSTED_PROXY_IPS.
-// Example: "10.0.0.1,10.0.0.2,172.31.0.0/16"
-const TRUSTED_PROXY_SET: Set<string> = new Set(
-  (process.env.TRUSTED_PROXY_IPS ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean),
-);
-
-function resolveClientIp(req: NextRequest): string {
-  const xForwardedFor = req.headers.get("x-forwarded-for");
-  if (xForwardedFor) {
-    const ips = xForwardedFor.split(",").map((s) => s.trim());
-    // Walk right-to-left: skip known trusted proxies, take the first
-    // untrusted entry. This is the real client IP even behind a proxy chain.
-    for (let i = ips.length - 1; i >= 0; i--) {
-      if (!TRUSTED_PROXY_SET.has(ips[i]!)) return ips[i]!;
-    }
-  }
-  return req.headers.get("x-real-ip") ?? "local";
 }
 
 // ── Async Postgres-backed limiter (Node.js route handlers) ───────────────────
