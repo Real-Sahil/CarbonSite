@@ -9,6 +9,7 @@ const TABS = [
   { label: "Operations", segment: "operations" },
   { label: "Branding",   segment: "branding" },
   { label: "Audit Log",  segment: "audit" },
+  { label: "Suppliers",  segment: "suppliers" },
   { label: "API Keys",   segment: "api-keys" },
   { label: "Billing",    segment: "billing" },
 ];
