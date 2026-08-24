@@ -212,10 +212,10 @@ export const ROLE_GROUPS = {
   reviewers: [
     "admin", "sustainability_director", "sustainability_manager", "reviewer",
   ] as import("@prisma/client").OrgRole[],
-  // SECURITY: field_worker is intentionally absent. Field workers see only their
-  // own submissions via the field-submissions endpoint (own-only WHERE clause).
-  // Adding field_worker here would grant dashboard/calculation access to external
-  // subcontractors — do not add it.
+  // SECURITY: field_worker and supplier are intentionally absent.
+  // field_worker — sees only own submissions via /field-submissions (own-only WHERE clause).
+  // supplier — sees only own EPDs via /supplier-portal/epds (own-only WHERE clause).
+  // Adding either here would grant dashboard/calculation access to external parties — do not.
   anyMember: [
     "admin", "sustainability_director", "sustainability_manager", "operations_manager",
     "editor", "reviewer", "viewer", "auditor", "contract_manager", "project_manager",

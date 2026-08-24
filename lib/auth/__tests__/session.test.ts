@@ -189,13 +189,24 @@ describe("ROLE_GROUPS", () => {
     });
   });
 
-  // ROLE_GROUPS.anyMember — field_worker must NOT be present (security invariant)
+  // ROLE_GROUPS.anyMember — field_worker and supplier must NOT be present (security invariants)
   test("anyMember: field_worker is absent from the group (security invariant)", () => {
     expect(ROLE_GROUPS.anyMember).not.toContain("field_worker");
   });
 
+  test("anyMember: supplier is absent from the group (security invariant)", () => {
+    expect(ROLE_GROUPS.anyMember).not.toContain("supplier");
+  });
+
   test("anyMember: rejects field_worker", async () => {
     mocks.membershipFindUnique.mockResolvedValue(makeMembership("field_worker"));
+    await expect(requireOrgMember("org-1", ...ROLE_GROUPS.anyMember)).rejects.toMatchObject({
+      code: "INSUFFICIENT_ROLE",
+    });
+  });
+
+  test("anyMember: rejects supplier", async () => {
+    mocks.membershipFindUnique.mockResolvedValue(makeMembership("supplier"));
     await expect(requireOrgMember("org-1", ...ROLE_GROUPS.anyMember)).rejects.toMatchObject({
       code: "INSUFFICIENT_ROLE",
     });

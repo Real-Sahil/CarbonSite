@@ -51,6 +51,8 @@ model User {
   webhooks                  Webhook[]                @relation("WebhookCreator")
   snapshotVerifications     PublishedSnapshot[]      @relation("SnapshotVerifiedBy")
   embodiedCarbonRecords     EmbodiedCarbonRecord[]
+  supplierInvitesCreated    SupplierInvite[]         @relation("SupplierInviteCreatedBy")
+  epdRecordsSubmitted       EpdRecord[]              @relation("EpdSubmittedBy")
 
   platformMembership PlatformMembership?
 
@@ -138,6 +140,7 @@ model Organization {
   evidenceFiles    EvidenceFile[]
   fieldSubmissions FieldSubmission[]
   inviteLinks      InviteLink[]
+  supplierInvites  SupplierInvite[]
   fieldWorkerAssignments FieldWorkerAssignment[]
   fieldWorkerSiteAssignments FieldWorkerSiteAssignment[]
   socialValueRecords  SocialValueRecord[]
@@ -181,6 +184,7 @@ enum OrgRole {
   // External
   client_viewer
   field_worker
+  supplier
 
   @@map("org_role")
 }
@@ -266,6 +270,26 @@ model InviteLink {
   @@index([organizationId])
   @@index([organizationId, email])
   @@map("invite_links")
+}
+
+model SupplierInvite {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  email          String
+  companyName    String?   @map("company_name")
+  token          String    @unique @default(cuid())
+  expiresAt      DateTime  @map("expires_at")
+  usedAt         DateTime? @map("used_at")
+  usedByUserId   String?   @map("used_by_user_id")
+  createdByUserId String   @map("created_by_user_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("SupplierInviteCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("supplier_invites")
 }
 
 // ─── Reporting Structure ──────────────────────────────────────────────────────
@@ -1498,13 +1522,15 @@ model EpdRecord {
   gwpA5           Float?   @map("gwp_a5")
   gwpC1C4         Float?   @map("gwp_c1_c4")
   gwpD            Float?   @map("gwp_d")
-  declaredUnit    String   @default("kg") @map("declared_unit")
-  storageKey      String?  @map("storage_key")   // PDF stored in R2/db
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  declaredUnit      String   @default("kg") @map("declared_unit")
+  storageKey        String?  @map("storage_key")   // PDF stored in R2/db
+  submittedByUserId String?  @map("submitted_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   organization  Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   material      EmbodiedMaterial? @relation(fields: [materialId], references: [id])
+  submittedBy   User?            @relation("EpdSubmittedBy", fields: [submittedByUserId], references: [id])
   carbonRecords EmbodiedCarbonRecord[]
 
   @@index([organizationId])
