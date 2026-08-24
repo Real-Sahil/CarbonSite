@@ -42,6 +42,7 @@ export async function getSession() {
               id: true,
               token: true,
               expiresAt: true,
+              revokedAt: true,
               userId: true,
               createdAt: true,
               updatedAt: true,
@@ -59,7 +60,7 @@ export async function getSession() {
           })
           .catch(() => null);
 
-        if (dbSession && dbSession.expiresAt > new Date()) {
+        if (dbSession && dbSession.expiresAt > new Date() && dbSession.revokedAt === null) {
           return buildSessionResult(dbSession);
         }
       }
@@ -77,6 +78,7 @@ export async function getSession() {
         id: true,
         token: true,
         expiresAt: true,
+        revokedAt: true,
         userId: true,
         createdAt: true,
         updatedAt: true,
@@ -93,7 +95,7 @@ export async function getSession() {
       },
     })
     .catch(() => null);
-  if (!session || session.expiresAt <= new Date()) return null;
+  if (!session || session.expiresAt <= new Date() || session.revokedAt !== null) return null;
 
   return buildSessionResult(session);
 }

@@ -16,7 +16,9 @@ import { rateLimitRequest, POLICIES } from "@/lib/security/rate-limit";
 // refresh-token semantics for a single-token client.
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days, matches accept-invite
-const GRACE_MS = 60 * 24 * 60 * 60 * 1000; // rotate up to 60 days after expiry
+// FIND-003: Reduced from 60 days — enough for a field worker whose phone was
+// offline over a weekend, but limits the window if a token is compromised.
+const GRACE_MS = 7 * 24 * 60 * 60 * 1000; // rotate up to 7 days after expiry
 
 function extractBearerToken(header: string | null): string | null {
   if (!header) return null;
