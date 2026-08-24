@@ -1783,6 +1783,7 @@ model SupplierDataRequest {
   submittedAt      DateTime? @map("submitted_at")
   expiresAt        DateTime  @map("expires_at")
   notes            String?
+  submittedData    Json?     @map("submitted_data")
   createdByUserId  String    @map("created_by_user_id")
   createdAt        DateTime  @default(now()) @map("created_at")
 
