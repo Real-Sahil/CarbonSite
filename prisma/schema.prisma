@@ -52,6 +52,7 @@ model User {
   snapshotVerifications     PublishedSnapshot[]      @relation("SnapshotVerifiedBy")
   embodiedCarbonRecords     EmbodiedCarbonRecord[]
   supplierInvitesCreated    SupplierInvite[]         @relation("SupplierInviteCreatedBy")
+  supplierDataRequestsCreated SupplierDataRequest[]  @relation("SupplierDataRequestCreatedBy")
   epdRecordsSubmitted       EpdRecord[]              @relation("EpdSubmittedBy")
 
   platformMembership PlatformMembership?
@@ -141,6 +142,7 @@ model Organization {
   fieldSubmissions FieldSubmission[]
   inviteLinks      InviteLink[]
   supplierInvites         SupplierInvite[]
+  supplierDataRequests    SupplierDataRequest[]
   integrationConnections  IntegrationConnection[]
   fieldWorkerAssignments FieldWorkerAssignment[]
   fieldWorkerSiteAssignments FieldWorkerSiteAssignment[]
@@ -393,6 +395,7 @@ model ReportingPeriod {
   socialValueRecords SocialValueRecord[]
   socialValueTargets SocialValueTarget[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
+  supplierDataRequests  SupplierDataRequest[]
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -1759,6 +1762,37 @@ model SbtiTarget {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("sbti_targets")
+}
+
+// ─── Supplier Data Requests ──────────────────────────────────────────────────
+
+// Scope 3 supply chain data collection campaigns.
+// Each request asks a supplier to self-report spend/activity data for a
+// specific category and period via a pre-filled form link.
+model SupplierDataRequest {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  reportingPeriodId String   @map("reporting_period_id")
+  supplierEmail    String    @map("supplier_email")
+  supplierName     String?   @map("supplier_name")
+  categoryCode     String    @map("category_code")
+  token            String    @unique @default(cuid())
+  status           String    @default("sent") // sent | opened | submitted | expired
+  sentAt           DateTime  @default(now()) @map("sent_at")
+  openedAt         DateTime? @map("opened_at")
+  submittedAt      DateTime? @map("submitted_at")
+  expiresAt        DateTime  @map("expires_at")
+  notes            String?
+  createdByUserId  String    @map("created_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id])
+  createdBy       User            @relation("SupplierDataRequestCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, reportingPeriodId])
+  @@index([organizationId, status])
+  @@map("supplier_data_requests")
 }
 
 // ─── Integrations ────────────────────────────────────────────────────────────
