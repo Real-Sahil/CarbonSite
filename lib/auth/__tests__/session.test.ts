@@ -29,7 +29,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { AuthError, requireOrgMember } from "../session";
+import { AuthError, ROLE_GROUPS, requireOrgMember } from "../session";
 
 const session = {
   session: {
@@ -102,5 +102,120 @@ describe("requireOrgMember", () => {
       code: "INSUFFICIENT_ROLE",
       status: 403,
     } satisfies Partial<AuthError>);
+  });
+
+  test("allows access when no roles are specified (any member)", async () => {
+    mocks.membershipFindUnique.mockResolvedValue({
+      id: "membership-3",
+      organizationId: "org-1",
+      role: "viewer",
+      userId: "user-1",
+    });
+
+    await expect(requireOrgMember("org-1")).resolves.toBeDefined();
+  });
+});
+
+describe("ROLE_GROUPS", () => {
+  beforeEach(() => {
+    mocks.authGetSession.mockReset();
+    mocks.membershipFindUnique.mockReset();
+    mocks.sessionFindUnique.mockReset();
+    mocks.authGetSession.mockResolvedValue(session);
+  });
+
+  const makeMembership = (role: string) => ({
+    id: "m-1",
+    organizationId: "org-1",
+    role,
+    userId: "user-1",
+  });
+
+  // ROLE_GROUPS.admins
+  test("admins: allows admin", async () => {
+    mocks.membershipFindUnique.mockResolvedValue(makeMembership("admin"));
+    await expect(requireOrgMember("org-1", ...ROLE_GROUPS.admins)).resolves.toBeDefined();
+  });
+
+  test("admins: rejects editor", async () => {
+    mocks.membershipFindUnique.mockResolvedValue(makeMembership("editor"));
+    await expect(requireOrgMember("org-1", ...ROLE_GROUPS.admins)).rejects.toMatchObject({
+      code: "INSUFFICIENT_ROLE",
+    });
+  });
+
+  // ROLE_GROUPS.sustainability
+  test("sustainability: allows admin, sustainability_director, sustainability_manager, editor", async () => {
+    for (const role of ROLE_GROUPS.sustainability) {
+      mocks.membershipFindUnique.mockResolvedValue(makeMembership(role));
+      await expect(requireOrgMember("org-1", ...ROLE_GROUPS.sustainability)).resolves.toBeDefined();
+    }
+  });
+
+  test("sustainability: rejects viewer", async () => {
+    mocks.membershipFindUnique.mockResolvedValue(makeMembership("viewer"));
+    await expect(requireOrgMember("org-1", ...ROLE_GROUPS.sustainability)).rejects.toMatchObject({
+      code: "INSUFFICIENT_ROLE",
+    });
+  });
+
+  // ROLE_GROUPS.contractManagers
+  test("contractManagers: allows admin, sustainability_director, contract_manager", async () => {
+    for (const role of ROLE_GROUPS.contractManagers) {
+      mocks.membershipFindUnique.mockResolvedValue(makeMembership(role));
+      await expect(requireOrgMember("org-1", ...ROLE_GROUPS.contractManagers)).resolves.toBeDefined();
+    }
+  });
+
+  test("contractManagers: rejects editor", async () => {
+    mocks.membershipFindUnique.mockResolvedValue(makeMembership("editor"));
+    await expect(requireOrgMember("org-1", ...ROLE_GROUPS.contractManagers)).rejects.toMatchObject({
+      code: "INSUFFICIENT_ROLE",
+    });
+  });
+
+  // ROLE_GROUPS.reviewers
+  test("reviewers: allows admin, sustainability_director, sustainability_manager, reviewer", async () => {
+    for (const role of ROLE_GROUPS.reviewers) {
+      mocks.membershipFindUnique.mockResolvedValue(makeMembership(role));
+      await expect(requireOrgMember("org-1", ...ROLE_GROUPS.reviewers)).resolves.toBeDefined();
+    }
+  });
+
+  test("reviewers: rejects viewer", async () => {
+    mocks.membershipFindUnique.mockResolvedValue(makeMembership("viewer"));
+    await expect(requireOrgMember("org-1", ...ROLE_GROUPS.reviewers)).rejects.toMatchObject({
+      code: "INSUFFICIENT_ROLE",
+    });
+  });
+
+  // ROLE_GROUPS.anyMember — field_worker and supplier must NOT be present (security invariants)
+  test("anyMember: field_worker is absent from the group (security invariant)", () => {
+    expect(ROLE_GROUPS.anyMember).not.toContain("field_worker");
+  });
+
+  test("anyMember: supplier is absent from the group (security invariant)", () => {
+    expect(ROLE_GROUPS.anyMember).not.toContain("supplier");
+  });
+
+  test("anyMember: rejects field_worker", async () => {
+    mocks.membershipFindUnique.mockResolvedValue(makeMembership("field_worker"));
+    await expect(requireOrgMember("org-1", ...ROLE_GROUPS.anyMember)).rejects.toMatchObject({
+      code: "INSUFFICIENT_ROLE",
+    });
+  });
+
+  test("anyMember: rejects supplier", async () => {
+    mocks.membershipFindUnique.mockResolvedValue(makeMembership("supplier"));
+    await expect(requireOrgMember("org-1", ...ROLE_GROUPS.anyMember)).rejects.toMatchObject({
+      code: "INSUFFICIENT_ROLE",
+    });
+  });
+
+  test("anyMember: accepts all listed roles", async () => {
+    for (const role of ROLE_GROUPS.anyMember) {
+      mocks.membershipFindUnique.mockResolvedValue(makeMembership(role));
+      await expect(requireOrgMember("org-1", ...ROLE_GROUPS.anyMember)).resolves.toBeDefined();
+    }
   });
 });

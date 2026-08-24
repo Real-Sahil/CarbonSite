@@ -7,7 +7,7 @@
 | 1 | Field Worker App | P0 | In Progress | OCR validation panel added; barcode scanner & offline sync already shipped |
 | 2 | Audit Trail | P0 | Done | List API, CSV/JSON export, admin UI, auditor RBAC gate |
 | 3 | RBAC | P1 | Partial | 6-role model live; project-level permissions in schema |
-| 4 | Notifications | P1 | Not Started | Resend (email) + FCM (push) scaffolding exists |
+| 4 | Notifications | P1 | Done | Resend (email) + FCM (push) fully wired; `dispatchNotification()` inline-mode-aware |
 | 5 | API Access | P1 | Done | ApiKey model, create/list/delete endpoints, settings UI |
 | 6 | Performance | P2 | Not Started | Indexes on ActivityRecord exist; Readyset requires Docker (out of scope) |
 | 7 | i18n | P2 | Not Started | next-intl to be wired |

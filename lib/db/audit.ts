@@ -78,7 +78,13 @@ type AuditAction =
   | "api_key.created"
   | "api_key.deleted"
   | "notification.sent"
-  | "record.version_snapshot";
+  | "record.version_snapshot"
+  | "supplier_invite.created"
+  | "supplier_invite.revoked"
+  | "supplier_invite.accepted"
+  | "epd.submitted"
+  | "integration.connected"
+  | "integration.disconnected";
 
 export async function writeAuditLog(params: {
   organizationId: string;

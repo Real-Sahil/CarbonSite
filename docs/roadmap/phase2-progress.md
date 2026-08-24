@@ -1,6 +1,6 @@
 # Phase 2 Progress
 
-**Last updated:** 2026-08-08
+**Last updated:** 2026-08-24
 
 ---
 
@@ -60,30 +60,40 @@
 
 ## Workstream 2: Supplier Portal (P0)
 
-**Status: Not started**
+**Status: Complete**
 
-### Planned
+### What was built
 
-- `SupplierInvite` model — magic-link invites scoped to org
-- Supplier auth flow (separate from `field_worker` — no PIN, email-based)
-- EPD upload interface (links to `EpdRecord`)
-- Tenant isolation: suppliers can only access orgs they're explicitly invited to
-- "Suppliers" tab in org admin sidebar
-- Cross-tenant isolation tests
+- **`supplier` OrgRole** — added to Prisma enum; explicitly excluded from `ROLE_GROUPS.anyMember` (security invariant).
+- **`SupplierInvite` model** — magic-link invites scoped to org; token (unique), expiresAt, usedAt, usedByUserId.
+- **Migration `20260824000000_supplier_portal`** — `ALTER TYPE org_role ADD VALUE 'supplier'`; `supplier_invites` table; `submitted_by_user_id` on `epd_records`.
+- **`POST /api/auth/accept-supplier-invite`** — rate-limited (5/15 min); validates token/expiry/usedAt; finds-or-creates user; atomically marks invite used + creates 30-day session via `prisma.$transaction`.
+- **`GET/POST /api/orgs/[orgId]/supplier-invites`** — admin only; list pending/accepted/expired invites; create invite with email + companyName + expiresInDays.
+- **`DELETE /api/orgs/[orgId]/supplier-invites/[inviteId]`** — admin only; 409 if already accepted.
+- **`GET/POST /api/orgs/[orgId]/supplier-portal/epds`** — suppliers see only their own via `submittedByUserId` filter; admins/editors/reviewers see all.
+- **Audit log actions:** `supplier_invite.created`, `supplier_invite.revoked`, `supplier_invite.accepted`, `epd.submitted`.
+- **Tests (`lib/supplier/__tests__/supplier-invite.test.ts`)** — 8 tests: accept valid invite, create new user, reject expired, reject already-used, reject bad token, cross-tenant isolation, `supplier` in OrgRole, `supplier` NOT in `ROLE_GROUPS.anyMember`.
 
 ---
 
 ## Workstream 3: ERP Integration (P1)
 
-**Status: Not started**
+**Status: Scaffold shipped**
 
-### Planned
+### What was built
 
-- Xero UK OAuth2 connect/disconnect (`/api/orgs/[orgId]/integrations/xero`)
-- Sync bills/transactions to `ActivityRecord` via pg-boss job
-- Category mapping UI
-- "Integrations" page with connection status
-- OAuth flow + sync job tests
+- **`IntegrationConnection` model** — stores OAuth tokens, scopes, external account info per org/provider; unique on `(organizationId, provider)`.
+- **Migration `20260824000001_integration_connections`** — `integration_connections` table with cascade-delete.
+- **`GET /api/orgs/[orgId]/integrations/xero`** — returns `{ connected, connectedAt, accountName, scopes, tokenExpired }`.
+- **`POST /api/orgs/[orgId]/integrations/xero`** — builds Xero OAuth2 authorization URL with `state = base64(orgId)`; returns `{ authUrl }` for client redirect.
+- **`DELETE /api/orgs/[orgId]/integrations/xero`** — disconnects; writes `integration.disconnected` audit log.
+- **Audit log actions:** `integration.connected`, `integration.disconnected`.
+
+### Pending (next sprint)
+- OAuth callback route `GET /api/auth/xero/callback` — exchange code for tokens, persist to `IntegrationConnection`.
+- pg-boss sync job — pull Xero bills/purchase orders → `ActivityRecord` staging.
+- Category mapping UI.
+- "Integrations" settings page with connection status widget.
 
 ---
 
