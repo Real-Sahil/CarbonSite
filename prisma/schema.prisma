@@ -53,6 +53,8 @@ model User {
   embodiedCarbonRecords     EmbodiedCarbonRecord[]
   supplierInvitesCreated    SupplierInvite[]         @relation("SupplierInviteCreatedBy")
   epdRecordsSubmitted       EpdRecord[]              @relation("EpdSubmittedBy")
+  projectRoleAssignments    ProjectRoleAssignment[] @relation("ProjectAssignments")
+  createdProjectRoleAssignments ProjectRoleAssignment[] @relation("ProjectAssignmentsCreated")
 
   platformMembership PlatformMembership?
 
@@ -160,6 +162,10 @@ model Organization {
   carbonBudgets       CarbonBudget[]
   wasteRecords        WasteRecord[]
   sbtiTarget          SbtiTarget?
+  bulkOperations      BulkOperation[]
+  calculationSchedules CalculationSchedule[]
+  digestPreferences   DigestPreference[]
+  projectRoleAssignments ProjectRoleAssignment[]
 
   @@map("organizations")
 }
@@ -393,6 +399,7 @@ model ReportingPeriod {
   socialValueRecords SocialValueRecord[]
   socialValueTargets SocialValueTarget[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
+  calculationSchedules  CalculationSchedule[]
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -1795,4 +1802,131 @@ model StorageObject {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("storage_objects")
+}
+
+// ─── Production Features: Bulk Operations, Scheduling, Digests ──────────────
+
+enum BulkOperationType {
+  review
+  categorize
+  export
+  calculate
+  delete
+
+  @@map("bulk_operation_type")
+}
+
+enum BulkOperationStatus {
+  queued
+  processing
+  completed
+  failed
+  cancelled
+
+  @@map("bulk_operation_status")
+}
+
+model BulkOperation {
+  id              String              @id @default(cuid())
+  organizationId  String              @map("organization_id")
+  operationType   BulkOperationType   @map("operation_type")
+  status          BulkOperationStatus @default(queued)
+  totalCount      Int                 @map("total_count")
+  processedCount  Int                 @default(0) @map("processed_count")
+  failedCount     Int                 @default(0) @map("failed_count")
+  recordIds       String[]            @map("record_ids")
+  parameters      Json
+  errors          Json?
+  startedAt       DateTime?           @map("started_at")
+  completedAt     DateTime?           @map("completed_at")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@index([organizationId, operationType])
+  @@index([createdAt])
+  @@map("bulk_operations")
+}
+
+enum CalculationScheduleFrequency {
+  manual
+  weekly
+  monthly
+  quarterly
+  annually
+
+  @@map("calculation_schedule_frequency")
+}
+
+model CalculationSchedule {
+  id                 String                       @id @default(cuid())
+  organizationId     String                       @map("organization_id")
+  reportingPeriodId  String                       @map("reporting_period_id")
+  name               String
+  description        String?
+  frequency          CalculationScheduleFrequency
+  enabled            Boolean                      @default(true)
+  dayOfWeek          Int?                         @map("day_of_week")
+  dayOfMonth         Int?                         @map("day_of_month")
+  quarterMonth       Int?                         @map("quarter_month")
+  nextRunAt          DateTime?                    @map("next_run_at")
+  lastRunAt          DateTime?                    @map("last_run_at")
+  createdAt          DateTime                     @default(now()) @map("created_at")
+  updatedAt          DateTime                     @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id])
+
+  @@index([organizationId, enabled])
+  @@index([organizationId, nextRunAt])
+  @@map("calculation_schedules")
+}
+
+enum DigestFrequency {
+  daily
+  weekly
+  monthly
+
+  @@map("digest_frequency")
+}
+
+model DigestPreference {
+  id             String          @id @default(cuid())
+  organizationId String          @map("organization_id")
+  userId         String          @map("user_id")
+  enabled        Boolean         @default(true)
+  frequency      DigestFrequency @default(weekly)
+  dayOfWeek      Int?            @map("day_of_week") // 0-6 for weekly
+  dayOfMonth     Int?            @map("day_of_month") // 1-31 for monthly
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId, enabled])
+  @@map("digest_preferences")
+}
+
+model ProjectRoleAssignment {
+  id            String   @id @default(cuid())
+  organizationId String  @map("organization_id")
+  userId        String   @map("user_id")
+  projectId     String   @map("project_id")
+  role          String
+  assignedByUserId String @map("assigned_by_user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User @relation("ProjectAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  project        Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedBy     User @relation("ProjectAssignmentsCreated", fields: [assignedByUserId], references: [id])
+
+  @@unique([userId, projectId])
+  @@index([organizationId, projectId])
+  @@index([userId])
+  @@map("project_role_assignments")
 }
