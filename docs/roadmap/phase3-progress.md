@@ -4,7 +4,7 @@
 
 | # | Name | Priority | Status | Notes |
 |---|------|----------|--------|-------|
-| 1 | Field Worker App | P0 | In Progress | OCR validation panel added; barcode scanner & offline sync already shipped |
+| 1 | Field Worker App | P0 | Done | OCR validation panel, debounced format validation, photo hash verification, GPS map preview, offline tile caching |
 | 2 | Audit Trail | P0 | Done | List API, CSV/JSON export, admin UI, auditor RBAC gate |
 | 3 | RBAC | P1 | Partial | 6-role model live; project-level permissions in schema |
 | 4 | Notifications | P1 | Done | Resend (email) + FCM (push) fully wired; `dispatchNotification()` inline-mode-aware |
@@ -32,10 +32,11 @@
   - Red: < 50% (manual entry recommended)
   - Collapses when all fields are high confidence; auto-expands when review needed
 
-**Pending:**
-- Real-time OCR validation on in-flight typing (debounced re-extraction)
-- Photo hash verification to detect document substitution
-- Offline map tile caching for GPS-tagged areas
+**Phase 3 additions (completed):**
+- Debounced format validation (400ms) on in-flight typing for ewcCode, vehicleReg, date, and numeric fields — inline error messages via `_validateFieldFormat`
+- Photo SHA-256 hash computed at capture, re-verified before submit to block substitution — hash included in `formData.__photoHash__`
+- GPS coordinates pre-fetched at capture time to show `GpsLocationMap` preview on review form
+- `flutter_map` + `flutter_map_tile_caching` wired up: cache initialised in `main()`, `GpsLocationMap` widget uses OpenStreetMap tiles with `CacheBehavior.cacheFirst` for offline rendering
 
 ---
 

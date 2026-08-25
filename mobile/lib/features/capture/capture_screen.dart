@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +19,7 @@ import '../../core/api/endpoints.dart';
 import '../../core/storage/app_database.dart';
 import '../sync/sync_service.dart';
 import 'barcode_scan_screen.dart';
+import 'gps_location_map.dart';
 import 'ocr_extractor.dart';
 import 'ocr_validation_panel.dart';
 
@@ -86,6 +89,22 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   /// what OCR read from the photo vs what the field worker confirmed.
   Map<String, String> _ocrExtracted = {};
 
+  /// SHA-256 hex digest of the captured photo bytes, computed immediately
+  /// after capture. Re-verified just before submit to detect substitution.
+  String? _photoHash;
+
+  /// GPS coordinates fetched at photo-capture time to show the map preview
+  /// on the review form. Separate from submit-time position so the map
+  /// renders without waiting for the submit button.
+  double? _capturedLat;
+  double? _capturedLng;
+
+  /// Debounce timer for real-time field format validation.
+  Timer? _validationDebounce;
+
+  /// Per-field validation error messages shown inline (null = no error).
+  final Map<String, String?> _fieldErrors = {};
+
   final Map<String, TextEditingController> _controllers = {};
 
   bool get _isResubmission => widget.resubmittedFromId != null;
@@ -139,10 +158,53 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
   @override
   void dispose() {
+    _validationDebounce?.cancel();
     for (final c in _controllers.values) {
       c.dispose();
     }
     super.dispose();
+  }
+
+  /// Returns an inline format error for the given field value, or null if valid.
+  String? _validateFieldFormat(String key, String value) {
+    if (value.trim().isEmpty) return null; // required check is handled by validator
+    switch (key) {
+      case 'ewcCode':
+        // Accept: 01 01 01 / 010101 / 01*01*01 — chapter 01-20, two sub-codes
+        final clean = value.replaceAll(RegExp(r'[\s*]'), '');
+        if (!RegExp(r'^(0[1-9]|1[0-9]|20)\d{4}$').hasMatch(clean)) {
+          return 'Use format XX XX XX (e.g. 17 04 05)';
+        }
+        break;
+      case 'vehicleReg':
+        // UK plates: current AB12 CDE, prefix P123 XYZ, suffix ABC 123D
+        final reg = value.replaceAll(' ', '').toUpperCase();
+        final current = RegExp(r'^[A-Z]{2}\d{2}[A-Z]{3}$');
+        final prefix = RegExp(r'^[A-Z]\d{1,3}[A-Z]{3}$');
+        final suffix = RegExp(r'^[A-Z]{3}\d{1,3}[A-Z]$');
+        if (!current.hasMatch(reg) && !prefix.hasMatch(reg) && !suffix.hasMatch(reg)) {
+          return 'Check registration format (e.g. AB12 CDE)';
+        }
+        break;
+      case 'date':
+        // Accept dd/mm/yyyy or dd-mm-yyyy or yyyy-mm-dd
+        final datePatterns = [
+          RegExp(r'^\d{1,2}[/\-]\d{1,2}[/\-]\d{4}$'),
+          RegExp(r'^\d{4}[/\-]\d{1,2}[/\-]\d{1,2}$'),
+        ];
+        if (!datePatterns.any((p) => p.hasMatch(value.trim()))) {
+          return 'Use date format dd/mm/yyyy';
+        }
+        break;
+      case 'weight':
+      case 'volume':
+      case 'quantity':
+        if (double.tryParse(value.trim()) == null) {
+          return 'Enter a number';
+        }
+        break;
+    }
+    return null;
   }
 
   TextEditingController _controller(String key) {
@@ -240,6 +302,18 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       savedPath = picked.path;
     }
 
+    // Compute photo hash before OCR so it's available for submit verification.
+    _photoHash = await _computePhotoHash(savedPath);
+
+    // Pre-fetch GPS for the map preview on the review form (best-effort).
+    if (_gpsEnabled) {
+      final pos = await _tryGetPosition();
+      if (pos != null) {
+        _capturedLat = pos.latitude;
+        _capturedLng = pos.longitude;
+      }
+    }
+
     await _runOcr(savedPath);
 
     if (!mounted) return;
@@ -248,6 +322,16 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       _processingPhoto = false;
       _step = _CaptureStep.review;
     });
+  }
+
+  /// SHA-256 of the photo file. Returns null if the file can't be read.
+  Future<String?> _computePhotoHash(String imagePath) async {
+    try {
+      final bytes = await File(imagePath).readAsBytes();
+      return sha256.convert(bytes).toString();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _runOcr(String imagePath) async {
@@ -344,6 +428,25 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     // Include the resubmission link if this is a correction.
     if (widget.resubmittedFromId != null) {
       formData['resubmittedFromId'] = widget.resubmittedFromId;
+    }
+
+    // Verify that the photo on disk still matches the hash computed at capture
+    // time — detects accidental or malicious substitution before upload.
+    if (_photoPath != null && _photoHash != null) {
+      final currentHash = await _computePhotoHash(_photoPath!);
+      if (currentHash != _photoHash) {
+        if (!mounted) return;
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Photo may have been modified. Please retake the photo.',
+            ),
+          ),
+        );
+        return;
+      }
+      formData['__photoHash__'] = _photoHash;
     }
 
     final draftId = _uuid.v4();
@@ -675,6 +778,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
               secondary: const Icon(Icons.location_on_outlined),
               contentPadding: EdgeInsets.zero,
             ),
+            if (_gpsEnabled && _capturedLat != null && _capturedLng != null) ...[
+              const SizedBox(height: 8),
+              GpsLocationMap(lat: _capturedLat!, lng: _capturedLng!),
+            ],
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: _submitting ? null : _submit,
@@ -796,14 +903,24 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         style: isHighConfidence
             ? TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)
             : null,
-        onChanged: (_) {
+        onChanged: (value) {
           // Once the user edits an auto value it is theirs, drop the marker.
           if (auto) setState(() => _autoFilled.remove(key));
+          // Debounced format validation: waits 400ms after the user stops
+          // typing before running the pattern check to avoid jitter.
+          _validationDebounce?.cancel();
+          _validationDebounce = Timer(const Duration(milliseconds: 400), () {
+            final err = _validateFieldFormat(key, value);
+            if (mounted) setState(() => _fieldErrors[key] = err);
+          });
         },
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          helperText: auto ? 'Auto-filled from photo' : null,
+          errorText: _fieldErrors[key],
+          helperText: _fieldErrors[key] == null && auto
+              ? 'Auto-filled from photo'
+              : null,
           suffixIcon: auto
               ? Row(
                   mainAxisSize: MainAxisSize.min,

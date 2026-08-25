@@ -27,16 +27,13 @@ export function middleware(req: NextRequest) {
   const host = req.headers.get("host");
 
   // ── Subdomain white-label routing ──────────────────────────────────────────
-  // Rewrite /<path> on a tenant subdomain to /t/<subdomain>/<path> so that
-  // a separate (app)/t/[subdomain]/ segment can apply tenant branding.
-  // The actual org lookup happens in that layout via the x-subdomain header.
+  // Pass the tenant subdomain as a request header so server components can
+  // read it via headers().get("x-subdomain") and apply the org's branding.
+  // No path rewrite — the URL structure stays identical on subdomain hosts.
   const subdomain = extractSubdomain(host);
-  if (subdomain && !pathname.startsWith("/api/") && !pathname.startsWith("/_next/")) {
-    const res = NextResponse.rewrite(
-      new URL(`/t/${subdomain}${pathname}`, req.url),
-    );
-    res.headers.set("x-subdomain", subdomain);
-    return res;
+  const requestHeaders = new Headers(req.headers);
+  if (subdomain) {
+    requestHeaders.set("x-subdomain", subdomain);
   }
 
   // ── Rate limiting on the abuse-prone API surfaces ──────────────────────────
@@ -84,7 +81,7 @@ export function middleware(req: NextRequest) {
   }
 
   // ── Security headers on every response ─────────────────────────────────────
-  const res = NextResponse.next();
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
   res.headers.set("X-Frame-Options", "DENY");
   res.headers.set("X-Content-Type-Options", "nosniff");
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
