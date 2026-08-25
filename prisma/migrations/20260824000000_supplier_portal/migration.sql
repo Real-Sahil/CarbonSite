@@ -1,5 +1,11 @@
 -- Add supplier role to org_role enum
-ALTER TYPE "org_role" ADD VALUE IF NOT EXISTS 'supplier';
+-- Note: IF NOT EXISTS syntax requires PostgreSQL 14+. If this fails due to
+-- version constraints, it can be safely skipped as the value may already exist.
+DO $$ BEGIN
+  ALTER TYPE "org_role" ADD VALUE 'supplier';
+EXCEPTION WHEN duplicate_object THEN
+  NULL;
+END $$;
 
 -- Supplier invite links (email-based, separate from field_worker InviteLink)
 CREATE TABLE "supplier_invites" (
