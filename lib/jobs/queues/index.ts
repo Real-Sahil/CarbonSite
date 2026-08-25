@@ -21,6 +21,7 @@ export type NotificationJobData = {
   resourceId: string;
   metadata?: Record<string, unknown>;
 };
+export type DsarJobData = { dsarRequestId: string };
 
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
@@ -40,4 +41,14 @@ export async function enqueueReport(data: ReportJobData) {
 export async function enqueueNotification(data: NotificationJobData) {
   await ensureBossStarted();
   await boss.send("notifications", data, retryAggressive);
+}
+
+export async function enqueueDsarExport(data: DsarJobData) {
+  await ensureBossStarted();
+  await boss.send("dsar-export", data, retry);
+}
+
+export async function enqueueDsarErasure(data: DsarJobData) {
+  await ensureBossStarted();
+  await boss.send("dsar-erasure", data, retry);
 }

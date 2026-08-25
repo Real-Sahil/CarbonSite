@@ -129,6 +129,16 @@ export async function POST(req: NextRequest, { params }: Params) {
           500,
         );
       }
+      if (pgCode === "P2002") {
+        // Race condition: two concurrent requests with the same hash both
+        // passed the findUnique check and both tried to create. Return the
+        // winner's row so the client gets an idempotent response.
+        const race = await prisma.report.findUnique({
+          where: { requestHash },
+          select: { id: true, status: true },
+        });
+        if (race) return NextResponse.json(race);
+      }
       throw err; // re-throw; outer handler returns generic message
     }
 

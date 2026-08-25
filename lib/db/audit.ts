@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { createHash } from "crypto";
 import { prisma } from "./index";
 
 type AuditAction =
@@ -74,6 +75,9 @@ type AuditAction =
   | "social_value_target.upserted"
   | "audit.export_downloaded"
   | "audit.data_export_requested"
+  | "dsar.export_completed"
+  | "dsar.erasure_completed"
+  | "dsar.erasure_rejected"
   | "webhook.created"
   | "webhook.deleted"
   | "field_submission.assigned"
@@ -99,15 +103,130 @@ export async function writeAuditLog(params: {
   resourceType: string;
   resourceId: string;
   metadata?: Prisma.InputJsonObject;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }) {
-  await prisma.auditLog.create({
-    data: {
-      organizationId: params.organizationId,
-      actorUserId: params.actorUserId ?? null,
-      action: params.action,
-      resourceType: params.resourceType,
-      resourceId: params.resourceId,
-      metadata: params.metadata ?? Prisma.JsonNull,
+  const metadata = params.metadata ?? Prisma.JsonNull;
+  const { ipAddress, userAgent } =
+    params.ipAddress !== undefined || params.userAgent !== undefined
+      ? { ipAddress: params.ipAddress ?? null, userAgent: params.userAgent ?? null }
+      : await readAmbientRequestContext();
+
+  await prisma.$transaction(async (tx) => {
+    // Serialize hash-chain writes per organization so two concurrent audit
+    // events can't both read the same "previous" row and fork the chain.
+    // hashtext() bucket collisions across orgs just serialize a bit more —
+    // never incorrect, only occasionally more conservative than necessary.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${params.organizationId}))`;
+
+    const previous = await tx.auditLog.findFirst({
+      where: { organizationId: params.organizationId },
+      orderBy: { chainSeq: "desc" },
+      select: { hash: true },
+    });
+    const previousHash = previous?.hash ?? null;
+    const createdAt = new Date();
+
+    const hash = createHash("sha256")
+      .update(
+        [
+          previousHash ?? "",
+          params.organizationId,
+          params.actorUserId ?? "",
+          params.action,
+          params.resourceType,
+          params.resourceId,
+          JSON.stringify(params.metadata ?? {}),
+          createdAt.toISOString(),
+        ].join("|"),
+      )
+      .digest("hex");
+
+    await tx.auditLog.create({
+      data: {
+        organizationId: params.organizationId,
+        actorUserId: params.actorUserId ?? null,
+        action: params.action,
+        resourceType: params.resourceType,
+        resourceId: params.resourceId,
+        metadata,
+        ipAddress,
+        userAgent,
+        previousHash,
+        hash,
+        createdAt,
+      },
+    });
+  });
+}
+
+// Reads the client IP / user agent middleware.ts already resolved onto the
+// current request (x-client-ip is middleware-set, not attacker-suppliable
+// the way a bare X-Forwarded-For read here would be). Lets every route
+// handler call writeAuditLog() without threading IP/UA through by hand.
+// Returns nulls outside a request scope (e.g. pg-boss workers), which is
+// the correct outcome there — those call sites should pass params explicitly
+// if they have a real actor IP to record (see workers/*.ts for the pattern).
+async function readAmbientRequestContext(): Promise<{
+  ipAddress: string | null;
+  userAgent: string | null;
+}> {
+  try {
+    const { headers } = await import("next/headers");
+    const h = await headers();
+    return {
+      ipAddress: h.get("x-client-ip"),
+      userAgent: h.get("user-agent"),
+    };
+  } catch {
+    return { ipAddress: null, userAgent: null };
+  }
+}
+
+// Verifies the hash chain for an organization is intact — no row was
+// altered or deleted out of sequence. Used by admin/audit tooling, not on
+// the write path (recomputing every row's hash on every write would be
+// O(n) per write). Returns the index of the first broken link, or null if
+// the chain is fully intact.
+export async function verifyAuditChain(organizationId: string): Promise<number | null> {
+  const rows = await prisma.auditLog.findMany({
+    where: { organizationId },
+    orderBy: { chainSeq: "asc" },
+    select: {
+      actorUserId: true,
+      action: true,
+      resourceType: true,
+      resourceId: true,
+      metadata: true,
+      createdAt: true,
+      previousHash: true,
+      hash: true,
     },
   });
+
+  let expectedPreviousHash: string | null = null;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]!;
+    // Rows written before this migration have no hash — they predate the
+    // chain and aren't verifiable, but aren't evidence of tampering either.
+    if (row.hash === null) continue;
+    if (row.previousHash !== expectedPreviousHash) return i;
+    const recomputed: string = createHash("sha256")
+      .update(
+        [
+          row.previousHash ?? "",
+          organizationId,
+          row.actorUserId ?? "",
+          row.action,
+          row.resourceType,
+          row.resourceId,
+          JSON.stringify(row.metadata ?? {}),
+          row.createdAt.toISOString(),
+        ].join("|"),
+      )
+      .digest("hex");
+    if (recomputed !== row.hash) return i;
+    expectedPreviousHash = row.hash;
+  }
+  return null;
 }

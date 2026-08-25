@@ -222,9 +222,11 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                       const inlineErrors = batch.stagedRecords
                         .flatMap((record) =>
                           Array.isArray(record.validationErrors)
-                            ? (record.validationErrors as string[]).slice(0, 1).map((msg) => ({
+                            ? (record.validationErrors as Array<unknown>).slice(0, 1).map((e) => ({
                                 row: record.rowNumber,
-                                msg,
+                                msg: typeof e === "string"
+                                  ? e
+                                  : (e as { message?: string })?.message ?? JSON.stringify(e),
                               }))
                             : [],
                         )

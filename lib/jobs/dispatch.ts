@@ -1,9 +1,12 @@
 import {
   enqueueCalculation,
+  enqueueDsarErasure,
+  enqueueDsarExport,
   enqueueImport,
   enqueueNotification,
   enqueueReport,
   type CalculationJobData,
+  type DsarJobData,
   type ImportJobData,
   type NotificationJobData,
   type ReportJobData,
@@ -12,6 +15,8 @@ import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
 import { processNotification } from "@/lib/notifications/worker";
 import { processReport } from "@/lib/reports/worker";
+import { processDsarExport } from "@/workers/dsar-export";
+import { processDsarErasure } from "@/workers/dsar-erasure";
 
 const mode = process.env.JOB_PROCESSING_MODE ?? "inline";
 
@@ -52,5 +57,25 @@ export async function dispatchNotification(data: NotificationJobData) {
   }
 
   await processNotification(data);
+  return "processed" as const;
+}
+
+export async function dispatchDsarExport(data: DsarJobData) {
+  if (mode === "worker") {
+    await enqueueDsarExport(data);
+    return "queued" as const;
+  }
+
+  await processDsarExport(data.dsarRequestId);
+  return "processed" as const;
+}
+
+export async function dispatchDsarErasure(data: DsarJobData) {
+  if (mode === "worker") {
+    await enqueueDsarErasure(data);
+    return "queued" as const;
+  }
+
+  await processDsarErasure(data.dsarRequestId);
   return "processed" as const;
 }

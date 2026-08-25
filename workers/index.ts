@@ -9,11 +9,14 @@ import type {
   CalculationJobData,
   ReportJobData,
   NotificationJobData,
+  DsarJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
 import { processNotification } from "@/lib/notifications/worker";
 import { processReport } from "@/lib/reports/worker";
+import { processDsarExport } from "./dsar-export";
+import { processDsarErasure } from "./dsar-erasure";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -79,7 +82,37 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications)");
+  // ── DSAR export/erasure ──────────────────────────────────────────────────
+  // Concurrency of 1: each job runs many sequential queries across the PII
+  // registry against a pooled client with connection_limit=2 (lib/db/index.ts)
+  // — running these in parallel would just contend for the same two slots.
+  await boss.work<DsarJobData>(
+    "dsar-export",
+    { localConcurrency: 1 },
+    async (jobs: Job<DsarJobData>[]) => {
+      for (const job of jobs) {
+        console.log(`[dsar-export] processing request ${job.data.dsarRequestId}`);
+        await processDsarExport(job.data.dsarRequestId);
+        console.log(`[dsar-export] finished request ${job.data.dsarRequestId}`);
+      }
+    },
+  );
+
+  await boss.work<DsarJobData>(
+    "dsar-erasure",
+    { localConcurrency: 1 },
+    async (jobs: Job<DsarJobData>[]) => {
+      for (const job of jobs) {
+        console.log(`[dsar-erasure] processing request ${job.data.dsarRequestId}`);
+        await processDsarErasure(job.data.dsarRequestId);
+        console.log(`[dsar-erasure] finished request ${job.data.dsarRequestId}`);
+      }
+    },
+  );
+
+  console.log(
+    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure)",
+  );
 }
 
 start().catch((err) => {

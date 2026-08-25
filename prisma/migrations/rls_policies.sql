@@ -2,6 +2,31 @@
 -- Enables secure multi-tenant data access based on organization membership
 
 -- ============================================================================
+-- STATUS: DEFENSE-IN-DEPTH ONLY — NOT AN ENFORCED CONTROL. Read this first.
+-- ============================================================================
+-- These policies key off auth.uid(), a Supabase-style session-variable
+-- convention this application's stack (Better Auth + Prisma) never sets —
+-- no request in this codebase issues `SET LOCAL` / `set_config` to populate
+-- it, and the Prisma connection role is not confirmed to run without
+-- BYPASSRLS. As written, these policies are inert: they neither pass nor
+-- fail queries, they simply never evaluate against real request context.
+--
+-- Do not cite this file as an active access-control layer in any security
+-- questionnaire, audit response, or compliance document. The real and only
+-- enforced authorization layer is application code: requireOrgMember() and
+-- requirePlatformMember() in lib/auth/session.ts, called explicitly on every
+-- org-scoped route handler.
+--
+-- This SQL is kept as-is (not dropped) as a documented starting point should
+-- a future engineering decision be made to wire RLS up properly — that would
+-- require: (1) the app DB role running without BYPASSRLS, and (2) every
+-- request setting the session variable these policies read, inside a
+-- transaction-scoped `SET LOCAL` given the pooled connection client in
+-- lib/db/index.ts. Until both are true, treat this file as inactive.
+-- See CarbonSite UK compliance plan, Track A3 (RLS) for the decision record.
+-- ============================================================================
+
+-- ============================================================================
 -- HELPER: Ensure auth schema exists (Better Auth sessions)
 -- ============================================================================
 

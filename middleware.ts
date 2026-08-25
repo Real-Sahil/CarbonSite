@@ -36,6 +36,12 @@ export function middleware(req: NextRequest) {
     requestHeaders.set("x-subdomain", subdomain);
   }
 
+  // Forward the resolved (proxy-aware) client IP so route handlers — and
+  // writeAuditLog() in particular — don't need to re-derive it or thread it
+  // through every call site. The raw X-Forwarded-For header is untrustworthy
+  // on its own; this is the value that already walked past trusted proxies.
+  requestHeaders.set("x-client-ip", resolveClientIp(req));
+
   // ── Rate limiting on the abuse-prone API surfaces ──────────────────────────
   if (pathname.startsWith("/api/")) {
     const ip = resolveClientIp(req);

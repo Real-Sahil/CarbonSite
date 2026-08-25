@@ -89,6 +89,10 @@ export const keys = {
     `org/${orgId}/reports/${reportId}/report.xml`,
   brandingLogo: (orgId: string, filename: string) =>
     `org/${orgId}/branding/${filename}`,
+  // A DSAR subject's data spans every org they belong to, not one tenant —
+  // scoped under user/, not org/, unlike every other key above.
+  dsarExport: (userId: string, requestId: string) =>
+    `user/${userId}/dsar/${requestId}/export.zip`,
 };
 
 // Legacy exports for backward compat
@@ -108,13 +112,19 @@ export function sanitizeStorageFilename(filename: string) {
 
 export function isValidStorageKey(key: string) {
   if (key.length === 0 || key.length > 1024) return false;
-  if (!key.startsWith("org/")) return false;
   if (key.startsWith("/") || key.includes("\\") || key.includes("//")) return false;
 
   const segments = key.split("/");
   if (segments.length < 4) return false;
-  if (segments[0] !== "org") return false;
-  if (!["evidence", "imports", "reports", "branding"].includes(segments[2])) return false;
+
+  if (segments[0] === "org") {
+    if (!["evidence", "imports", "reports", "branding"].includes(segments[2])) return false;
+  } else if (segments[0] === "user") {
+    // DSAR exports — not tenant-scoped, see keys.dsarExport().
+    if (segments[2] !== "dsar") return false;
+  } else {
+    return false;
+  }
 
   return segments.every((segment) => {
     if (!segment || segment === "." || segment === "..") return false;
