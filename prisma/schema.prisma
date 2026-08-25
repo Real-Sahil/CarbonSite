@@ -322,6 +322,7 @@ model FieldWorkerAssignment {
 model Facility {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
+  projectId      String?  @map("project_id")
   name           String
   country        String?
   region         String?
@@ -329,12 +330,14 @@ model Facility {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project         Project?              @relation(fields: [projectId], references: [id], onDelete: Cascade)
   activityRecords ActivityRecord[]
   aggregates      DashboardAggregate[]
   submissions     FieldSubmission[]
   fieldWorkerAssignments FieldWorkerAssignment[]
 
   @@index([organizationId])
+  @@index([projectId])
   @@map("facilities")
 }
 
@@ -1222,26 +1225,31 @@ enum ProjectStatus {
 }
 
 model Project {
-  id             String        @id @default(cuid())
-  organizationId String        @map("organization_id")
-  contractId     String        @map("contract_id")
-  name           String
-  projectCode    String?       @map("project_code")
-  description    String?
-  startDate      DateTime?     @map("start_date") @db.Date
-  endDate        DateTime?     @map("end_date") @db.Date
-  status         ProjectStatus @default(active)
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  id              String         @id @default(cuid())
+  organizationId  String         @map("organization_id")
+  contractId      String         @map("contract_id")
+  parentProjectId String?        @map("parent_project_id")
+  name            String
+  projectCode     String?        @map("project_code")
+  description     String?
+  startDate       DateTime?      @map("start_date") @db.Date
+  endDate         DateTime?      @map("end_date") @db.Date
+  status          ProjectStatus  @default(active)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
 
-  contract     Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  organization Organization @relation("OrgProjects", fields: [organizationId], references: [id], onDelete: Cascade)
-  sites        Site[]
+  contract        Contract       @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  organization    Organization   @relation("OrgProjects", fields: [organizationId], references: [id], onDelete: Cascade)
+  parentProject   Project?       @relation("ProjectHierarchy", fields: [parentProjectId], references: [id], onDelete: Cascade)
+  childProjects   Project[]      @relation("ProjectHierarchy")
+  sites           Site[]
+  facilities      Facility[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
-  carbonBudget  CarbonBudget?
-  wasteRecords  WasteRecord[]
+  carbonBudget    CarbonBudget?
+  wasteRecords    WasteRecord[]
 
   @@index([organizationId, contractId])
+  @@index([parentProjectId])
   @@map("projects")
 }
 
@@ -1249,6 +1257,7 @@ model Site {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
   projectId      String   @map("project_id")
+  parentSiteId   String?  @map("parent_site_id")
   name           String
   siteCode       String?  @map("site_code")
   postcode       String?
@@ -1258,14 +1267,17 @@ model Site {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  organization     Organization      @relation("OrgSites", fields: [organizationId], references: [id], onDelete: Cascade)
-  activityRecords  ActivityRecord[]
+  project         Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization    Organization      @relation("OrgSites", fields: [organizationId], references: [id], onDelete: Cascade)
+  parentSite      Site?             @relation("SiteHierarchy", fields: [parentSiteId], references: [id], onDelete: Cascade)
+  childSites      Site[]            @relation("SiteHierarchy")
+  activityRecords ActivityRecord[]
   fieldSubmissions FieldSubmission[] @relation("FieldSubmissionSite")
-  inviteLinks      InviteLink[]
+  inviteLinks     InviteLink[]
   workerAssignments FieldWorkerSiteAssignment[]
 
   @@index([organizationId, projectId])
+  @@index([parentSiteId])
   @@map("sites")
 }
 
