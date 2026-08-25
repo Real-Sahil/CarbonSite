@@ -5,7 +5,8 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { keys, presignUpload, sanitizeStorageFilename } from "@/lib/storage";
-import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError } from "@/lib/validation/api";
 import { presignUploadSchema } from "@/lib/validation/org";
 

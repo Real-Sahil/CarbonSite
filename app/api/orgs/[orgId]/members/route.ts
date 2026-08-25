@@ -7,7 +7,8 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { inviteMemberSchema } from "@/lib/validation/org";
-import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { rateLimitKey } from "@/lib/security/rate-limit";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
 
 export async function GET(

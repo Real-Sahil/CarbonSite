@@ -6,7 +6,8 @@ import { prisma } from "@/lib/db";
 import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 // FieldWorkerSiteAssignment is what the mobile app's /my-sites reads — this

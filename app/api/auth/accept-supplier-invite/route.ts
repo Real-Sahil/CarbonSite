@@ -5,7 +5,7 @@ import { randomBytes, randomUUID } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimitRequest } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 
 // Supplier acceptance uses email + name only (no PIN, unlike field workers).

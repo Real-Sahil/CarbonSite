@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { isAccountLocked, recordFailedLogin, clearAccountLockout } from "@/lib/security/rate-limit";
+import { isAccountLocked, recordFailedLogin } from "@/lib/security/rate-limit-async";
+import { clearAccountLockout } from "@/lib/security/rate-limit";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: NextRequest) {

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { rateLimitRequest } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { writeAuditLog } from "@/lib/db/audit";
 
 const UNIT_OPTIONS = ["kg", "tonne", "kWh", "MWh", "litre", "m3", "GBP", "piece"] as const;

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimitRequest } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { acceptInviteSchema } from "@/lib/validation/org";
 

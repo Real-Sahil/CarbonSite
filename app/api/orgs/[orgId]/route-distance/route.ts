@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
 import { getOrCreateRouteDistance } from "@/lib/geo/route-distance";
-import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError } from "@/lib/validation/api";
 import { routeDistanceSchema } from "@/lib/validation/org";
 
