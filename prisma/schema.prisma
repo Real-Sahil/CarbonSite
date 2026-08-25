@@ -151,6 +151,7 @@ model Organization {
   sites               Site[]              @relation("OrgSites")
   projects            Project[]           @relation("OrgProjects")
   branding            TenantBranding?
+  onboarding          OnboardingProgress?
   webhooks            Webhook[]
   epdRecords          EpdRecord[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
@@ -236,6 +237,26 @@ model TenantBranding {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("tenant_branding")
+}
+
+// Onboarding progress tracker for first-time org setup
+model OnboardingProgress {
+  id             String   @id @default(cuid())
+  organizationId String   @unique @map("organization_id")
+
+  // Step completion state (JSON): { "step_key": { completed: bool, skipped: bool, completedAt?: string } }
+  stepState      Json     @default("{}") @map("step_state")
+
+  // Overall flow state: not_started | in_progress | completed
+  state          String   @default("not_started")
+
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("onboarding_progress")
 }
 
 model OrganizationMembership {

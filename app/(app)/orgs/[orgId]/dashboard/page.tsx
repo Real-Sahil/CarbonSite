@@ -131,6 +131,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     select: { id: true, finishedAt: true, reportingPeriodId: true },
   });
 
+  // Fetch onboarding progress
+  const onboardingProgress = await prisma.onboardingProgress.findUnique({
+    where: { organizationId: orgId },
+  });
+
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
   const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch] = await Promise.all([
     Promise.all([
@@ -768,47 +773,43 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       </div>
 
       <div className="max-w-[1200px] mx-auto px-8 py-8">
-      <OnboardingChecklist
-        orgId={orgId}
-        steps={[
-          {
-            label: "Reporting periods",
-            description: "Define your inventory years or quarters",
-            href: `/orgs/${orgId}/settings/operations`,
-            done: reportingPeriods.length > 0,
-          },
-          {
-            label: "Emission factors",
-            description: "Import DEFRA, EPA, or SustainMetrics factors",
-            href: `/orgs/${orgId}/settings/operations`,
-            done: factorLibraries.length > 0,
-          },
-          {
-            label: "Sites & field workers",
-            description: "Create sites, invite workers to capture evidence",
-            href: siteCount > 0 ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/contracts`,
-            done: siteCount > 0 && fieldWorkerCount > 0,
-          },
-          {
-            label: "Activity data",
-            description: "Import CSV or add records manually",
-            href: `/orgs/${orgId}/imports`,
-            done: recordCount > 0 || importCount > 0 || submissionTotal > 0,
-          },
-          {
-            label: "Run calculation",
-            description: "Convert activity data to CO2e",
-            href: `/orgs/${orgId}/calculations`,
-            done: calculationRuns.some((r) => r.status === "succeeded"),
-          },
-          {
-            label: "Generate report",
-            description: "Publish a snapshot and export",
-            href: `/orgs/${orgId}/reports`,
-            done: readyReportCount > 0,
-          },
-        ]}
-      />
+      {onboardingProgress?.state !== "completed" && (
+        <OnboardingChecklist
+          orgId={orgId}
+          steps={[
+            {
+              label: "Invite your team",
+              description: "Add team members who will help manage emissions data",
+              href: `/orgs/${orgId}/settings/members`,
+              done: isStepCompleted(onboardingProgress?.stepState, "invite_team"),
+            },
+            {
+              label: "Set reporting period",
+              description: "Define the time frame for your emissions inventory",
+              href: `/orgs/${orgId}/settings/operations`,
+              done: isStepCompleted(onboardingProgress?.stepState, "set_reporting_period"),
+            },
+            {
+              label: "Add emission categories",
+              description: "Select which scopes and categories apply to your business",
+              href: `/orgs/${orgId}/settings/operations`,
+              done: isStepCompleted(onboardingProgress?.stepState, "add_emission_categories"),
+            },
+            {
+              label: "Import activity data",
+              description: "Upload CSV or connect to your data source",
+              href: `/orgs/${orgId}/imports`,
+              done: isStepCompleted(onboardingProgress?.stepState, "import_activity_data"),
+            },
+            {
+              label: "Run calculations",
+              description: "Generate your first emissions report",
+              href: `/orgs/${orgId}/calculations`,
+              done: isStepCompleted(onboardingProgress?.stepState, "review_calculations"),
+            },
+          ]}
+        />
+      )}
 
       {/* Contract filter */}
       {activeContracts.length > 0 && (
@@ -2084,4 +2085,11 @@ function ActionCard({
       </Card>
     </Link>
   );
+}
+
+function isStepCompleted(stepState: unknown, stepKey: string): boolean {
+  if (!stepState || typeof stepState !== "object") return false;
+  const step = (stepState as Record<string, unknown>)[stepKey];
+  if (!step || typeof step !== "object") return false;
+  return (step as Record<string, unknown>).completed === true;
 }
