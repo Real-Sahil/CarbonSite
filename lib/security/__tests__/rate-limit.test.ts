@@ -14,7 +14,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 import { prisma } from "@/lib/db";
-import { rateLimitRequest } from "../rate-limit";
+import { rateLimitRequest } from "../rate-limit-async";
 
 describe("rateLimit (sync in-memory — Edge middleware path)", () => {
   beforeEach(() => resetRateLimitBucketsForTests());

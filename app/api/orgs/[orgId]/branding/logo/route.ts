@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { rateLimitKey } from "@/lib/security/rate-limit";
 import { putObject, presignDownload, keys } from "@/lib/storage";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 

@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { rateLimitRequest, POLICIES } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { POLICIES } from "@/lib/security/rate-limit";
 
 // POST /api/auth/token — mobile bearer-token refresh.
 //

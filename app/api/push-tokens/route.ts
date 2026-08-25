@@ -5,7 +5,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { rateLimitKey } from "@/lib/security/rate-limit";
 
 const RegisterSchema = z.object({
   token: z.string().min(1).max(4096),

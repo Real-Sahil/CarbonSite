@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requirePlatformMember } from "@/lib/auth/session";
-import { rateLimitRequest, rateLimitKey } from "@/lib/security/rate-limit";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError } from "@/lib/validation/api";
 
 export async function GET(req: NextRequest) {
