@@ -18,6 +18,7 @@
     "audit": "pnpm audit --prod",
     "verify:env": "tsx scripts/verify-env.ts",
     "vercel:env": "tsx scripts/apply-vercel-env.ts",
+    "check:rls-bypass": "tsx scripts/check-rls-bypass.ts",
     "worker": "tsx workers/index.ts",
     "prisma": "prisma"
   },
