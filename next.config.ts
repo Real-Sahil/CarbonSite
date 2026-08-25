@@ -56,10 +56,7 @@ const nextConfig: NextConfig = {
   // output file tracer misses. Include them explicitly so font calls like
   // doc.font("Helvetica") work inside serverless functions.
   outputFileTracingIncludes: {
-    "/api/**": [
-      "./node_modules/pdfkit/js/data/**",
-      "./node_modules/.pnpm/**/pdfkit/js/data/**",
-    ],
+    "/api/**": ["./node_modules/pdfkit/js/data/**"],
   },
   images: {
     remotePatterns: [
