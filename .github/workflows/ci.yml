@@ -26,6 +26,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma generate
+      # Non-blocking until known advisories are triaged; tighten once the
+      # dependency tree is clean (Cyber Essentials patch-management control).
+      - run: pnpm audit --prod
+        continue-on-error: true
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

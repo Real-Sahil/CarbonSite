@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "audit": "pnpm audit --prod",
     "verify:env": "tsx scripts/verify-env.ts",
     "vercel:env": "tsx scripts/apply-vercel-env.ts",
     "worker": "tsx workers/index.ts",

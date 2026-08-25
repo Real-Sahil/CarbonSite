@@ -1,4 +1,8 @@
 -- Add RLS policies for organization-scoped tables
+--
+-- STATUS: defense-in-depth only, not an enforced control — see the header
+-- of rls_policies.sql in this same directory for the full explanation.
+-- These policies also key off auth.uid(), which this app never populates.
 
 -- ============================================================================
 -- api_keys: org members can access their org's API keys

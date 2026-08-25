@@ -1164,6 +1164,16 @@ model AuditLog {
   resourceType   String   @map("resource_type")
   resourceId     String   @map("resource_id")
   metadata       Json     @default("{}")
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  // Hash chain: previousHash links to the prior row's hash within the same
+  // organization, and hash covers this row's own fields. Writes are
+  // serialized per-organization (pg advisory lock in writeAuditLog()) so the
+  // chain can't fork under concurrent writes. chainSeq gives a deterministic
+  // "latest row" ordering that doesn't depend on createdAt tie-breaking.
+  previousHash   String?  @map("previous_hash")
+  hash           String?  @map("hash")
+  chainSeq       BigInt   @default(autoincrement()) @map("chain_seq")
   createdAt      DateTime @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -1171,6 +1181,7 @@ model AuditLog {
 
   @@index([organizationId, resourceType, resourceId])
   @@index([organizationId, createdAt])
+  @@index([organizationId, chainSeq])
   @@map("audit_logs")
 }
 
