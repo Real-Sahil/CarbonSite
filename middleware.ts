@@ -89,7 +89,8 @@ export function middleware(req: NextRequest) {
   // ── Content Security Policy with nonce ──────────────────────────────────────
   // Generate a random nonce for this request's inline scripts.
   // Passed to client via CSP header and meta tag so Next.js can use it.
-  const randomBytes = crypto.getRandomValues(new Uint8Array(16));
+  const randomBytes = globalThis.crypto?.getRandomValues(new Uint8Array(16)) ??
+    new Uint8Array(16).map(() => Math.floor(Math.random() * 256));
   const nonce = btoa(String.fromCharCode(...randomBytes));
   const cspHeader = [
     "default-src 'self'",
