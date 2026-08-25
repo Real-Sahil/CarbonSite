@@ -35,6 +35,8 @@ model User {
   calculationRuns  CalculationRun[]
   reports          Report[]
   snapshots        PublishedSnapshot[]
+  dsarRequestsAsSubject DsarRequest[] @relation("DsarSubject")
+  dsarRequestsCreated   DsarRequest[] @relation("DsarRequestedBy")
   targets              ReductionTarget[]
   ownedInitiatives     ReductionInitiative[] @relation("InitiativeOwner")
   createdInitiatives   ReductionInitiative[] @relation("InitiativeCreator")
@@ -138,6 +140,7 @@ model Organization {
   reviewTasks      ReviewTask[]
   comments         Comment[]
   auditLogs        AuditLog[]
+  dsarRequests     DsarRequest[]
   targets          ReductionTarget[]
   initiatives      ReductionInitiative[]
   evidenceFiles    EvidenceFile[]
@@ -1153,6 +1156,54 @@ model Comment {
 
   @@index([organizationId, targetType, targetId])
   @@map("comments")
+}
+
+enum DsarRequestType {
+  export
+  erasure
+
+  @@map("dsar_request_type")
+}
+
+enum DsarRequestStatus {
+  pending
+  processing
+  completed
+  failed
+  rejected
+
+  @@map("dsar_request_status")
+}
+
+// Data Subject Access Requests (UK GDPR Art. 15 export / Art. 17 erasure).
+// Not organization-scoped in the usual multi-tenant sense — a subject's
+// data can span multiple orgs they're a member of, so organizationId is
+// optional context (e.g. an org-admin-initiated request on a field
+// worker's behalf), not the primary scope. See lib/compliance/pii-registry.ts.
+model DsarRequest {
+  id                 String             @id @default(cuid())
+  userId             String             @map("user_id")
+  organizationId     String?            @map("organization_id")
+  type               DsarRequestType
+  status             DsarRequestStatus  @default(pending)
+  requestedAt        DateTime           @default(now()) @map("requested_at")
+  // One calendar month from requestedAt (Art. 12(3) GDPR SLA), computed at
+  // creation time — see app/api/account/dsar/route.ts.
+  dueBy              DateTime           @map("due_by")
+  completedAt        DateTime?          @map("completed_at")
+  resultStorageKey   String?            @map("result_storage_key")
+  requestedByUserId  String             @map("requested_by_user_id")
+  notes              String?
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  user            User          @relation("DsarSubject", fields: [userId], references: [id])
+  requestedByUser User          @relation("DsarRequestedBy", fields: [requestedByUserId], references: [id])
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([status, dueBy])
+  @@index([userId])
+  @@map("dsar_requests")
 }
 
 // Append-only — never update or delete rows

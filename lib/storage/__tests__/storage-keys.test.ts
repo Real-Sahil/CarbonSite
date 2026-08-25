@@ -15,6 +15,11 @@ describe("storage key policy", () => {
     expect(isValidStorageKey(keys.reportCsv("org_123", "rep_123"))).toBe(true);
   });
 
+  test("accepts DSAR export keys under the user/ namespace", () => {
+    expect(isValidStorageKey(keys.dsarExport("user_123", "dsar_123"))).toBe(true);
+    expect(isValidStorageKey("user/user_123/other/dsar_123/export.zip")).toBe(false);
+  });
+
   test("rejects path traversal and unscoped object keys", () => {
     expect(isValidStorageKey("../secret.txt")).toBe(false);
     expect(isValidStorageKey("/org/org_123/evidence/ev_123/file.pdf")).toBe(false);
