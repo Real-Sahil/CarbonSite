@@ -3,6 +3,7 @@ import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
+import type { Scope2Method } from "@prisma/client";
 
 export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<void> {
   try {
@@ -292,8 +293,14 @@ async function rebuildDashboardAggregates(
     },
   });
 
-  // Group by scope, category, facility, business unit
-  type AggKey = { scope: number; emissionCategoryId: string | null; facilityId: string | null; businessUnitId: string | null };
+  // Group by scope, category, facility, business unit, and scope2Method for Scope 2
+  type AggKey = {
+    scope: number;
+    scope2Method: Scope2Method | null | undefined;
+    emissionCategoryId: string | null;
+    facilityId: string | null;
+    businessUnitId: string | null;
+  };
   const groups = new Map<string, { key: AggKey; totalCo2e: number; count: number }>();
 
   const add = (key: AggKey, co2e: number) => {
@@ -311,21 +318,23 @@ async function rebuildDashboardAggregates(
     const record = calc.activityRecord;
     const scope = record.emissionCategory.scope;
     const co2e = Number(calc.totalCo2e);
+    // For Scope 2, track both location-based and market-based separately
+    const scope2Method = scope === 2 ? (record.scope2Method ?? "location_based") : undefined;
 
     // Scope-only aggregate
-    add({ scope, emissionCategoryId: null, facilityId: null, businessUnitId: null }, co2e);
+    add({ scope, scope2Method, emissionCategoryId: null, facilityId: null, businessUnitId: null }, co2e);
 
     // By category
-    add({ scope, emissionCategoryId: record.emissionCategoryId, facilityId: null, businessUnitId: null }, co2e);
+    add({ scope, scope2Method, emissionCategoryId: record.emissionCategoryId, facilityId: null, businessUnitId: null }, co2e);
 
     // By facility (if set)
     if (record.facilityId) {
-      add({ scope, emissionCategoryId: null, facilityId: record.facilityId, businessUnitId: null }, co2e);
+      add({ scope, scope2Method, emissionCategoryId: null, facilityId: record.facilityId, businessUnitId: null }, co2e);
     }
 
     // By business unit (if set)
     if (record.businessUnitId) {
-      add({ scope, emissionCategoryId: null, facilityId: null, businessUnitId: record.businessUnitId }, co2e);
+      add({ scope, scope2Method, emissionCategoryId: null, facilityId: null, businessUnitId: record.businessUnitId }, co2e);
     }
   }
 
@@ -337,6 +346,7 @@ async function rebuildDashboardAggregates(
       reportingPeriodId,
       snapshotId: null,
       scope: key.scope,
+      scope2Method: key.scope2Method,
       emissionCategoryId: key.emissionCategoryId,
       facilityId: key.facilityId,
       businessUnitId: key.businessUnitId,

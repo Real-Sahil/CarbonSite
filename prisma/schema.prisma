@@ -1009,6 +1009,7 @@ model DashboardAggregate {
   emissionCategoryId String?  @map("emission_category_id")
   facilityId         String?  @map("facility_id")
   businessUnitId     String?  @map("business_unit_id")
+  scope2Method       Scope2Method? @map("scope2_method")
   totalCo2e          Decimal  @map("total_co2e") @db.Decimal(18, 8)
   recordCount        Int      @map("record_count")
   createdAt          DateTime @default(now()) @map("created_at")
