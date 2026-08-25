@@ -144,10 +144,7 @@ model Organization {
   fieldSubmissions FieldSubmission[]
   inviteLinks      InviteLink[]
   supplierInvites         SupplierInvite[]
-<<<<<<< HEAD
   supplierDataRequests    SupplierDataRequest[]
-=======
->>>>>>> claude/review-handoff-docs-woi4zm
   integrationConnections  IntegrationConnection[]
   fieldWorkerAssignments FieldWorkerAssignment[]
   fieldWorkerSiteAssignments FieldWorkerSiteAssignment[]
@@ -404,11 +401,8 @@ model ReportingPeriod {
   socialValueRecords SocialValueRecord[]
   socialValueTargets SocialValueTarget[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
-<<<<<<< HEAD
   supplierDataRequests  SupplierDataRequest[]
-=======
   calculationSchedules  CalculationSchedule[]
->>>>>>> claude/review-handoff-docs-woi4zm
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -1778,7 +1772,6 @@ model SbtiTarget {
   @@map("sbti_targets")
 }
 
-<<<<<<< HEAD
 // ─── Supplier Data Requests ──────────────────────────────────────────────────
 
 // Scope 3 supply chain data collection campaigns.
@@ -1811,8 +1804,6 @@ model SupplierDataRequest {
   @@map("supplier_data_requests")
 }
 
-=======
->>>>>>> claude/review-handoff-docs-woi4zm
 // ─── Integrations ────────────────────────────────────────────────────────────
 
 model IntegrationConnection {
