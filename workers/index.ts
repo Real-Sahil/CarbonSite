@@ -10,6 +10,7 @@ import type {
   ReportJobData,
   NotificationJobData,
   DsarJobData,
+  UptimeMonitoringJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -17,6 +18,7 @@ import { processNotification } from "@/lib/notifications/worker";
 import { processReport } from "@/lib/reports/worker";
 import { processDsarExport } from "./dsar-export";
 import { processDsarErasure } from "./dsar-erasure";
+import { processUptimeMonitoring } from "./uptime-monitoring";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -110,8 +112,26 @@ async function start() {
     },
   );
 
+  // ── Uptime Monitoring ────────────────────────────────────────────────────
+  await boss.work<UptimeMonitoringJobData>(
+    "uptime-monitoring",
+    { localConcurrency: 1 },
+    async () => {
+      console.log("[uptime-monitoring] running health check");
+      await processUptimeMonitoring();
+    },
+  );
+
+  // Schedule the recurring health check: every 5 minutes (cron: */5 * * * *)
+  // pg-boss schedules run at the worker's local timezone
+  await boss.schedule(
+    "uptime-monitoring",
+    "*/5 * * * *", // every 5 minutes
+    {},
+  );
+
   console.log(
-    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure)",
+    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring)",
   );
 }
 

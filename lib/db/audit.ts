@@ -100,7 +100,9 @@ type AuditAction =
   | "security.alert_mass_export"
   | "security.alert_bulk_data_mutation"
   | "security.alert_bulk_submission_review"
-  | "security.alert_suspicious_location_jump";
+  | "security.alert_suspicious_location_jump"
+  | "monitoring.health_check_failed"
+  | "monitoring.health_check_error";
 
 export async function writeAuditLog(params: {
   organizationId: string;

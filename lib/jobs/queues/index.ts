@@ -22,6 +22,7 @@ export type NotificationJobData = {
   metadata?: Record<string, unknown>;
 };
 export type DsarJobData = { dsarRequestId: string };
+export type UptimeMonitoringJobData = { checkId?: string };
 
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
