@@ -48,12 +48,12 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
       }
       // 403 - not a member
       return (
-        <div className="min-h-[100dvh] flex items-center justify-center bg-[#F9FAFB]">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-[#060612]">
           <div className="text-center">
-            <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mb-2">
+            <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">
               Access denied
             </h1>
-            <p className="text-sm text-[#374151]">
+            <p className="text-sm text-white/50">
               You are not a member of this organisation.
             </p>
           </div>
@@ -63,17 +63,17 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     // Non-AuthError from Prisma (e.g. missing DB column) — show a recoverable error
     // rather than crashing the layout and making every page inaccessible.
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-[#F9FAFB]">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#060612]">
         <div className="text-center max-w-sm px-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#111827] mb-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-white mb-2">
             Temporary error
           </h1>
-          <p className="text-sm text-[#374151] mb-4">
+          <p className="text-sm text-white/50 mb-4">
             The database is updating. Refresh in a moment.
           </p>
           <a
             href=""
-            className="inline-block rounded-lg bg-[#0EA5E9] px-4 py-2 text-sm text-white hover:bg-[#0284C7]"
+            className="inline-block rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-2 text-sm text-white hover:from-teal-400 hover:to-cyan-400 transition-all"
           >
             Refresh
           </a>
@@ -105,17 +105,17 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
 
   if (dataFetchError) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-[#F9FAFB]">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#060612]">
         <div className="text-center max-w-sm px-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#111827] mb-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-white mb-2">
             Temporary error
           </h1>
-          <p className="text-sm text-[#374151] mb-4">
+          <p className="text-sm text-white/50 mb-4">
             {dataFetchError}
           </p>
           <a
             href=""
-            className="inline-block rounded-lg bg-[#0EA5E9] px-4 py-2 text-sm text-white hover:bg-[#0284C7]"
+            className="inline-block rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-2 text-sm text-white hover:from-teal-400 hover:to-cyan-400 transition-all"
           >
             Refresh
           </a>
@@ -136,7 +136,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const cssVars = buildBrandingCssVars(branding);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#060612]">
       {cssVars && <style>{`:root { ${cssVars} }`}</style>}
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership.role} />
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
