@@ -5,7 +5,7 @@ import {
   getFailedJobsForOrg,
   getFailedJobStats,
   recordFailedJob,
-} from "@/lib/jobs/failed-job-manager";
+} from "@/lib/operations/failed-job-manager";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -23,7 +23,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, ...ROLE_GROUPS.admin);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const query = querySchema.parse({
       status: request.nextUrl.searchParams.get("status") ?? undefined,

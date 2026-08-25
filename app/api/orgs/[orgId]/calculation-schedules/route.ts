@@ -34,7 +34,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.sustainability);
 
     const schedules = await getCalculationSchedules(orgId);
     const stats = await getScheduleStats(orgId);
@@ -72,7 +72,7 @@ export async function POST(
       return apiError("UNAUTHORIZED", "Not authenticated", 401);
     }
 
-    await requireOrgMember(orgId, ...ROLE_GROUPS.admin);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const body = createScheduleSchema.parse(await request.json());
 

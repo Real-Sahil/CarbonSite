@@ -40,8 +40,15 @@ export async function calculateDataQualityScore(
   // Get all activity records for the org/period
   const records = await prisma.activityRecord.findMany({
     where: whereClause,
-    include: {
-      category: true,
+    select: {
+      id: true,
+      createdAt: true,
+      description: true,
+      quantity: true,
+      unit: true,
+      emissionCategoryId: true,
+      reviewStatus: true,
+      emissionCategory: true,
       facility: true,
       businessUnit: true,
       evidence: {
@@ -92,7 +99,7 @@ export async function calculateDataQualityScore(
       record.description?.trim().length > 0 &&
       record.quantity !== null &&
       record.unit !== null &&
-      record.categoryId !== null;
+      record.emissionCategoryId !== null;
 
     if (isComplete) completeCount++;
     if (!record.description || record.description.trim().length === 0) missingDescriptionCount++;
@@ -164,7 +171,7 @@ export async function calculateDataQualityScore(
   // 4. Consistency: standardized categories
   let withStandardCategory = 0;
   for (const record of records) {
-    if (record.category) {
+    if (record.emissionCategory) {
       withStandardCategory++;
     }
   }
@@ -184,7 +191,7 @@ export async function calculateDataQualityScore(
 
   // 5. Review status
   const pendingReview = records.filter(
-    (r) => r.reviewStatus === "pending_review"
+    (r) => r.reviewStatus === "in_review"
   ).length;
   if (pendingReview > 0) {
     issues.push({
@@ -345,7 +352,7 @@ export async function identifyHighRiskRecords(
     }
 
     // No category
-    if (!record.category) {
+    if (!record.emissionCategory) {
       risks.push("Uncategorized");
       riskScore += 20;
     }

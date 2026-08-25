@@ -63,7 +63,7 @@ export async function GET(
         reportingPeriodId: period.id,
       },
       include: {
-        category: true,
+        emissionCategory: true,
         facility: true,
         businessUnit: true,
         importBatch: true,
@@ -79,7 +79,7 @@ export async function GET(
     const formattedRecords = activityRecords.map((record) => ({
       id: record.id,
       createdAt: record.createdAt,
-      category: record.category,
+      emissionCategory: record.emissionCategory,
       description: record.description,
       quantity: record.quantity,
       unit: record.unit,
@@ -108,30 +108,44 @@ export async function GET(
     });
 
     // Calculate category breakdown
-    const categoryBreakdown = await prisma.emissionCalculation.groupBy({
-      by: ["emissionCategoryId"],
+    const calculations = await prisma.emissionCalculation.findMany({
       where: {
         activityRecord: {
           organizationId: orgId,
           reportingPeriodId: period.id,
         },
       },
-      _sum: {
-        totalCo2e: true,
+      include: {
+        activityRecord: {
+          select: {
+            emissionCategoryId: true,
+          },
+        },
       },
-      _count: true,
     });
+
+    // Group by category
+    const categoryMap = new Map<string, { count: number; total: number }>();
+    for (const calc of calculations) {
+      const categoryId = calc.activityRecord.emissionCategoryId;
+      if (!categoryMap.has(categoryId)) {
+        categoryMap.set(categoryId, { count: 0, total: 0 });
+      }
+      const entry = categoryMap.get(categoryId)!;
+      entry.count++;
+      entry.total += Number(calc.totalCo2e ?? 0);
+    }
 
     // Map category IDs to names
     const categoryData = await Promise.all(
-      categoryBreakdown.map(async (cat) => {
+      Array.from(categoryMap.entries()).map(async ([categoryId, data]) => {
         const category = await prisma.emissionCategory.findUnique({
-          where: { id: cat.emissionCategoryId },
+          where: { id: categoryId },
         });
         return {
           category,
-          totalCo2e: Number(cat._sum.totalCo2e ?? 0),
-          recordCount: cat._count,
+          totalCo2e: data.total,
+          recordCount: data.count,
         };
       })
     );
@@ -148,7 +162,7 @@ export async function GET(
     if (query.type === "full") {
       buffer = await generateComplianceReportWorkbook(
         org.name,
-        period.name,
+        period.label,
         formattedRecords,
         dashboardData,
         categoryData,
@@ -185,7 +199,7 @@ export async function GET(
             data: [
               {
                 "Organization": org.name,
-                "Reporting Period": period.name,
+                "Reporting Period": period.label,
                 "Total Emissions (kg CO₂e)": Math.round(totalEmissions),
                 "Record Count": formattedRecords.length,
                 "Report Generated": new Date().toLocaleString(),

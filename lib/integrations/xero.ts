@@ -23,7 +23,6 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
       accessToken: true,
       refreshToken: true,
       expiresAt: true,
-      externalTenantId: true,
       metadata: true,
     },
   });
@@ -32,18 +31,22 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
     return null;
   }
 
+  // Extract tenant ID from metadata
+  const metadata = (connection.metadata as Record<string, unknown>) ?? {};
+  const tenantId = metadata.tenantId as string | undefined;
+
   // Check if token is still valid (refresh if expiring within 5 minutes)
   const now = new Date();
   const refreshThreshold = new Date(now.getTime() + 5 * 60 * 1000);
 
   if (connection.expiresAt && connection.expiresAt > refreshThreshold) {
     // Token is still valid
-    if (!connection.accessToken || !connection.externalTenantId) {
+    if (!connection.accessToken || !tenantId) {
       return null;
     }
     return {
       accessToken: connection.accessToken,
-      tenantId: connection.externalTenantId,
+      tenantId,
     };
   }
 
@@ -101,13 +104,13 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
       },
     });
 
-    if (!connection.externalTenantId) {
+    if (!tenantId) {
       return null;
     }
 
     return {
       accessToken: newTokens.access_token,
-      tenantId: connection.externalTenantId,
+      tenantId,
     };
   } catch (error) {
     console.error(`[Xero Token Refresh] Error:`, error);
@@ -228,7 +231,9 @@ export async function syncXeroBillsToActivityRecords(
       reportingPeriod = await prisma.reportingPeriod.create({
         data: {
           organizationId,
-          name: `${now.getFullYear()} Calendar Year`,
+          label: `${now.getFullYear()} Calendar Year`,
+          type: "calendar_year",
+          status: "open",
           startDate: periodStart,
           endDate: periodEnd,
         },
@@ -245,12 +250,19 @@ export async function syncXeroBillsToActivityRecords(
             continue;
           }
 
-          // Check for existing record (deduplication by external ID)
-          const existing = await prisma.activityRecord.findFirst({
+          // Check for existing record (deduplication by metadata)
+          // Search through records with matching metadata
+          const allRecords = await prisma.activityRecord.findMany({
             where: {
               organizationId,
-              externalId: `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`,
             },
+            select: { id: true, metadata: true },
+          });
+
+          const xeroId = `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`;
+          const existing = allRecords.find((r) => {
+            const meta = (r.metadata as Record<string, unknown>) ?? {};
+            return meta.xeroId === xeroId;
           });
 
           if (existing) {
@@ -276,15 +288,15 @@ export async function syncXeroBillsToActivityRecords(
               quantity: lineItem.Quantity,
               unit: "unitless",
               emissionValue: lineItem.LineAmount.toString(),
-              reviewStatus: "pending_review",
-              evidenceStatus: "not_provided",
-              createdBy: "xero-sync",
-              externalId: `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`,
+              reviewStatus: "draft",
+              evidenceStatus: "missing",
               metadata: {
+                xeroId: `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`,
                 xeroInvoiceNumber: invoice.InvoiceNumber,
                 xeroInvoiceId: invoice.InvoiceID,
                 xeroDate: invoice.Date,
                 xeroTotal: invoice.Total,
+                source: "xero-sync",
               } as Record<string, unknown>,
             },
           });

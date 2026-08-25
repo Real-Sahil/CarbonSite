@@ -64,11 +64,11 @@ export async function createBulkReviewOperation(
   if (userId) {
     await writeAuditLog({
       organizationId,
-      action: "bulk.review_queued",
-      actorId: userId,
-      targetId: operationId,
-      targetType: "bulk_operation",
-      details: {
+      action: "record.reviewed",
+      actorUserId: userId,
+      resourceId: operationId,
+      resourceType: "bulk_operation",
+      metadata: {
         count: recordIds.length,
         action,
       },
@@ -130,11 +130,11 @@ export async function createBulkCategorizeOperation(
   if (userId) {
     await writeAuditLog({
       organizationId,
-      action: "bulk.categorize_queued",
-      actorId: userId,
-      targetId: operationId,
-      targetType: "bulk_operation",
-      details: {
+      action: "record.updated",
+      actorUserId: userId,
+      resourceId: operationId,
+      resourceType: "bulk_operation",
+      metadata: {
         count: recordIds.length,
         categoryId,
       },
@@ -169,7 +169,7 @@ export async function processBulkOperation(
               ? "approved"
               : operation.parameters.action === "reject"
                 ? "rejected"
-                : "pending_info";
+                : "in_review";
 
           await prisma.activityRecord.update({
             where: { id: recordId },

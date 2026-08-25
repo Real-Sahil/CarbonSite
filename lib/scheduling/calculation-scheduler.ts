@@ -65,11 +65,11 @@ export async function createCalculationSchedule(
   // Write audit log
   await writeAuditLog({
     organizationId,
-    action: "calculation.schedule_created",
-    actorId: userId,
-    targetId: schedule.id,
-    targetType: "calculation_schedule",
-    details: {
+    action: "calculation.run_triggered",
+    actorUserId: userId,
+    resourceId: schedule.id,
+    resourceType: "calculation_schedule",
+    metadata: {
       scheduleName: params.name,
       scheduleType: params.schedule,
     },
@@ -106,7 +106,6 @@ export async function triggerCalculation(
 
   // Enqueue calculation job
   const jobId = await enqueueCalculation({
-    organizationId,
     reportingPeriodId,
     initiatedBy: userId || "system",
     sourceType: source,
@@ -119,17 +118,17 @@ export async function triggerCalculation(
   if (userId) {
     await writeAuditLog({
       organizationId,
-      action: "calculation.triggered",
-      actorId: userId,
-      targetId: reportingPeriodId,
-      targetType: "reporting_period",
-      details: {
+      action: "calculation.run_triggered",
+      actorUserId: userId,
+      resourceId: reportingPeriodId,
+      resourceType: "reporting_period",
+      metadata: {
         source,
       },
     });
   }
 
-  return { jobId };
+  return { jobId: jobId as string };
 }
 
 /**
@@ -162,11 +161,11 @@ export async function updateCalculationSchedule(
 
   await writeAuditLog({
     organizationId,
-    action: "calculation.schedule_updated",
-    actorId: userId,
-    targetId: scheduleId,
-    targetType: "calculation_schedule",
-    details: updates,
+    action: "calculation.run_triggered",
+    actorUserId: userId,
+    resourceId: scheduleId,
+    resourceType: "calculation_schedule",
+    metadata: updates as Record<string, unknown>,
   });
 
   return schedule;
@@ -182,10 +181,10 @@ export async function disableCalculationSchedule(
 ): Promise<void> {
   await writeAuditLog({
     organizationId,
-    action: "calculation.schedule_disabled",
-    actorId: userId,
-    targetId: scheduleId,
-    targetType: "calculation_schedule",
+    action: "calculation.run_cancelled",
+    actorUserId: userId,
+    resourceId: scheduleId,
+    resourceType: "calculation_schedule",
   });
 
   console.log(`[Scheduler] Disabled schedule ${scheduleId}`);

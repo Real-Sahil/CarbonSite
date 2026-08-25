@@ -30,7 +30,6 @@ export function generateExcelWorkbook(
 
   for (const sheet of sheets) {
     const worksheet = XLSX.utils.json_to_sheet(sheet.data, {
-      header: 1,
       defval: "",
     });
 
@@ -125,14 +124,14 @@ export function formatActivityRecordsForExport(
   return records.map((record) => ({
     "Record ID": record.id,
     "Creation Date": new Date(record.createdAt).toLocaleDateString(),
-    "Category": record.category?.name || "Unknown",
+    "Category": record.emissionCategory?.name || "Unknown",
     "Description": record.description || "",
     "Quantity": record.quantity || 0,
     "Unit": record.unit || "",
     "Review Status": record.reviewStatus?.replace(/_/g, " ") || "Unknown",
     "Evidence Status": record.evidenceStatus?.replace(/_/g, " ") || "Unknown",
     "Total CO₂e (kg)": record.totalCo2e || 0,
-    "Scope": record.category?.code?.split("-")[0]?.toUpperCase() || "Unknown",
+    "Scope": record.emissionCategory?.code?.split("-")[0]?.toUpperCase() || "Unknown",
     "Facility": record.facility?.name || null,
     "Business Unit": record.businessUnit?.name || null,
     "Source": record.importBatch ? "Import" : "Manual Entry",
@@ -190,9 +189,9 @@ export function formatCategoryBreakdownForExport(
   totalEmissions: number
 ): CategoryExportRow[] {
   return categories.map((cat) => ({
-    "Category": cat.category?.name || "Unknown",
-    "Category Code": cat.category?.code || "",
-    "Scope": cat.category?.code?.split("-")[0]?.toUpperCase() || "Unknown",
+    "Category": cat.emissionCategory?.name || "Unknown",
+    "Category Code": cat.emissionCategory?.code || "",
+    "Scope": cat.emissionCategory?.code?.split("-")[0]?.toUpperCase() || "Unknown",
     "Total CO₂e (kg)": cat.totalCo2e || 0,
     "Record Count": cat.recordCount || 0,
     "Average per Record (kg)":
