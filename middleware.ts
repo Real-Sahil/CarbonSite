@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { rateLimit, POLICIES } from "@/lib/security/rate-limit";
 import { resolveClientIp } from "@/lib/security/client-ip";
 
@@ -86,8 +87,27 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // ── Content Security Policy with nonce ──────────────────────────────────────
+  // Generate a random nonce for this request's inline scripts.
+  // Passed to client via CSP header and meta tag so Next.js can use it.
+  const nonce = crypto.randomBytes(16).toString("base64");
+  const cspHeader = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' https://cdn.jsdelivr.net`, // nonce for Next.js inline scripts + CDN for trusted libraries
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // unsafe-inline: Tailwind + shadcn; Google Fonts
+    "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://images.unsplash.com",
+    "connect-src 'self' https://*.r2.cloudflarestorage.com https://api.postcodes.io",
+    "font-src 'self' https://fonts.gstatic.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+    "report-uri /api/csp-report",
+  ].join("; ");
+
   // ── Security headers on every response ─────────────────────────────────────
   const res = NextResponse.next({ request: { headers: requestHeaders } });
+  res.headers.set("Content-Security-Policy", cspHeader);
   res.headers.set("X-Frame-Options", "DENY");
   res.headers.set("X-Content-Type-Options", "nosniff");
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -95,6 +115,13 @@ export function middleware(req: NextRequest) {
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), payment=()",
   );
+  res.headers.set("X-DNS-Prefetch-Control", "off");
+  res.headers.set("X-Permitted-Cross-Domain-Policies", "none");
+  res.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+
+  // Pass nonce to client via response header (for Next.js script tag generation)
+  res.headers.set("X-CSP-Nonce", nonce);
+
   if (process.env.NODE_ENV === "production") {
     res.headers.set(
       "Strict-Transport-Security",
