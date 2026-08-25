@@ -29,9 +29,7 @@ export function generateExcelWorkbook(
   const workbook = XLSX.utils.book_new();
 
   for (const sheet of sheets) {
-    const worksheet = XLSX.utils.json_to_sheet(sheet.data, {
-      defval: "",
-    });
+    const worksheet = XLSX.utils.json_to_sheet(sheet.data);
 
     // Set column widths if autoWidth is enabled
     if (sheet.autoWidth && sheet.data.length > 0) {
@@ -125,8 +123,8 @@ export function formatActivityRecordsForExport(
     "Record ID": record.id,
     "Creation Date": new Date(record.createdAt).toLocaleDateString(),
     "Category": record.emissionCategory?.name || "Unknown",
-    "Description": record.description || "",
-    "Quantity": record.quantity || 0,
+    "Description": record.sourceDescription || "",
+    "Quantity": typeof record.amount === 'number' ? record.amount : Number(record.amount) || 0,
     "Unit": record.unit || "",
     "Review Status": record.reviewStatus?.replace(/_/g, " ") || "Unknown",
     "Evidence Status": record.evidenceStatus?.replace(/_/g, " ") || "Unknown",
@@ -188,21 +186,24 @@ export function formatCategoryBreakdownForExport(
   categories: any[],
   totalEmissions: number
 ): CategoryExportRow[] {
-  return categories.map((cat) => ({
-    "Category": cat.emissionCategory?.name || "Unknown",
-    "Category Code": cat.emissionCategory?.code || "",
-    "Scope": cat.emissionCategory?.code?.split("-")[0]?.toUpperCase() || "Unknown",
-    "Total CO₂e (kg)": cat.totalCo2e || 0,
-    "Record Count": cat.recordCount || 0,
-    "Average per Record (kg)":
-      (cat.recordCount || 0) > 0
-        ? (cat.totalCo2e || 0) / (cat.recordCount || 1)
-        : 0,
-    "% of Total":
-      totalEmissions > 0
-        ? Math.round(((cat.totalCo2e || 0) / totalEmissions) * 100 * 100) / 100
-        : 0,
-  }));
+  return categories.map((cat) => {
+    const totalCo2e = typeof cat.totalCo2e === 'number' ? cat.totalCo2e : Number(cat.totalCo2e) || 0;
+    return {
+      "Category": cat.category?.name || cat.emissionCategory?.name || "Unknown",
+      "Category Code": cat.category?.code || cat.emissionCategory?.code || "",
+      "Scope": (cat.category?.code || cat.emissionCategory?.code)?.split("-")[0]?.toUpperCase() || "Unknown",
+      "Total CO₂e (kg)": totalCo2e,
+      "Record Count": cat.recordCount || 0,
+      "Average per Record (kg)":
+        (cat.recordCount || 0) > 0
+          ? totalCo2e / (cat.recordCount || 1)
+          : 0,
+      "% of Total":
+        totalEmissions > 0
+          ? Math.round((totalCo2e / totalEmissions) * 100 * 100) / 100
+          : 0,
+    };
+  });
 }
 
 /**

@@ -256,8 +256,7 @@ async function getMonthlyEmissions(
     const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
     const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-    const result = await prisma.dashboardAggregate.groupBy({
-      by: [],
+    const result = await prisma.dashboardAggregate.aggregate({
       where: {
         organizationId,
         reportingPeriod: {
@@ -270,7 +269,7 @@ async function getMonthlyEmissions(
       },
     });
 
-    const total = result.length > 0 ? Number(result[0]._sum.totalCo2e ?? 0) : 0;
+    const total = Number(result._sum.totalCo2e ?? 0);
     data.push({ month: monthStart, total });
   }
 

@@ -43,11 +43,12 @@ export async function calculateDataQualityScore(
     select: {
       id: true,
       createdAt: true,
-      description: true,
-      quantity: true,
+      sourceDescription: true,
+      amount: true,
       unit: true,
       emissionCategoryId: true,
       reviewStatus: true,
+      evidenceStatus: true,
       emissionCategory: true,
       facility: true,
       businessUnit: true,
@@ -96,13 +97,13 @@ export async function calculateDataQualityScore(
 
   for (const record of records) {
     const isComplete =
-      record.description?.trim().length > 0 &&
-      record.quantity !== null &&
+      (record.sourceDescription?.trim()?.length ?? 0) > 0 &&
+      record.amount !== null &&
       record.unit !== null &&
       record.emissionCategoryId !== null;
 
     if (isComplete) completeCount++;
-    if (!record.description || record.description.trim().length === 0) missingDescriptionCount++;
+    if (!record.sourceDescription || record.sourceDescription.trim().length === 0) missingDescriptionCount++;
     if (!record.unit) missingUnitCount++;
   }
 
@@ -191,7 +192,7 @@ export async function calculateDataQualityScore(
 
   // 5. Review status
   const pendingReview = records.filter(
-    (r) => r.reviewStatus === "in_review"
+    (r) => r.reviewStatus === "draft"
   ).length;
   if (pendingReview > 0) {
     issues.push({
@@ -261,10 +262,10 @@ export async function getDataQualityTrend(
       },
       select: {
         id: true,
-        description: true,
+        sourceDescription: true,
         unit: true,
-        quantity: true,
-        categoryId: true,
+        amount: true,
+        emissionCategoryId: true,
         evidence: { select: { id: true } },
         reviewStatus: true,
       },
@@ -273,7 +274,7 @@ export async function getDataQualityTrend(
     if (records.length > 0) {
       // Quick score calculation for trend
       const withEvidence = records.filter((r) => r.evidence && r.evidence.length > 0).length;
-      const withCategory = records.filter((r) => r.categoryId).length;
+      const withCategory = records.filter((r) => r.emissionCategoryId).length;
       const reviewed = records.filter((r) => r.reviewStatus === "approved").length;
 
       const score = Math.round(
@@ -317,7 +318,7 @@ export async function identifyHighRiskRecords(
     where: { organizationId },
     include: {
       evidence: { select: { id: true } },
-      category: true,
+      emissionCategory: true,
       calculations: { select: { id: true }, take: 1 },
     },
     take: limit * 2,
@@ -333,8 +334,8 @@ export async function identifyHighRiskRecords(
       riskScore += 25;
     }
 
-    // Pending review
-    if (record.reviewStatus === "pending_review") {
+    // Draft/pending review
+    if (record.reviewStatus === "draft") {
       risks.push("Pending review");
       riskScore += 15;
     }
@@ -357,15 +358,15 @@ export async function identifyHighRiskRecords(
       riskScore += 20;
     }
 
-    // Large quantity (potential outlier)
-    if (record.quantity && record.quantity > 10000) {
-      risks.push("Unusually large quantity");
+    // Large amount (potential outlier)
+    if (record.amount && record.amount.toNumber && record.amount.toNumber() > 10000) {
+      risks.push("Unusually large amount");
       riskScore += 10;
     }
 
     return {
       id: record.id,
-      description: record.description || "(No description)",
+      description: record.sourceDescription || "(No description)",
       riskScore: Math.min(riskScore, 100),
       risks,
     };

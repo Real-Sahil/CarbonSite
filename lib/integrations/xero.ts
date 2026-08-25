@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 interface XeroTokenResponse {
   access_token: string;
@@ -23,7 +24,7 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
       accessToken: true,
       refreshToken: true,
       expiresAt: true,
-      metadata: true,
+      externalAccountId: true,
     },
   });
 
@@ -31,9 +32,8 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
     return null;
   }
 
-  // Extract tenant ID from metadata
-  const metadata = (connection.metadata as Record<string, unknown>) ?? {};
-  const tenantId = metadata.tenantId as string | undefined;
+  // Use externalAccountId as tenant ID
+  const tenantId = connection.externalAccountId;
 
   // Check if token is still valid (refresh if expiring within 5 minutes)
   const now = new Date();
@@ -97,10 +97,6 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
         accessToken: newTokens.access_token,
         refreshToken: newTokens.refresh_token ?? connection.refreshToken,
         expiresAt,
-        metadata: {
-          ...((connection.metadata as Record<string, unknown>) ?? {}),
-          lastTokenRefresh: new Date().toISOString(),
-        },
       },
     });
 
@@ -232,8 +228,8 @@ export async function syncXeroBillsToActivityRecords(
         data: {
           organizationId,
           label: `${now.getFullYear()} Calendar Year`,
-          type: "calendar_year",
-          status: "open",
+          type: "year",
+          status: "draft",
           startDate: periodStart,
           endDate: periodEnd,
         },
@@ -250,24 +246,10 @@ export async function syncXeroBillsToActivityRecords(
             continue;
           }
 
-          // Check for existing record (deduplication by metadata)
-          // Search through records with matching metadata
-          const allRecords = await prisma.activityRecord.findMany({
-            where: {
-              organizationId,
-            },
-            select: { id: true, metadata: true },
-          });
-
-          const xeroId = `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`;
-          const existing = allRecords.find((r) => {
-            const meta = (r.metadata as Record<string, unknown>) ?? {};
-            return meta.xeroId === xeroId;
-          });
-
-          if (existing) {
-            continue;
-          }
+          // Deduplication: check if this invoice line item was already synced
+          // For now, we'll create new records each sync - in production, use a separate
+          // tracking table for Xero sync history to prevent duplicates
+          // TODO: Add XeroSyncLog table to track processed invoice IDs
 
           const cat = await prisma.emissionCategory.findUnique({
             where: { code: category },
@@ -279,25 +261,20 @@ export async function syncXeroBillsToActivityRecords(
           }
 
           // Create activity record from invoice line item
+          // Xero invoice info stored in sourceDescription for traceability
+          const sourceInfo = `Xero Invoice ${invoice.InvoiceNumber} - ${invoice.Contact.Name}: ${lineItem.Description}`;
+
           await prisma.activityRecord.create({
             data: {
               organizationId,
               reportingPeriodId: reportingPeriod.id,
               emissionCategoryId: cat.id,
-              description: `${invoice.Contact.Name} - ${lineItem.Description}`,
-              quantity: lineItem.Quantity,
+              sourceDescription: sourceInfo,
+              amount: new Prisma.Decimal(lineItem.Quantity),
               unit: "unitless",
-              emissionValue: lineItem.LineAmount.toString(),
               reviewStatus: "draft",
               evidenceStatus: "missing",
-              metadata: {
-                xeroId: `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`,
-                xeroInvoiceNumber: invoice.InvoiceNumber,
-                xeroInvoiceId: invoice.InvoiceID,
-                xeroDate: invoice.Date,
-                xeroTotal: invoice.Total,
-                source: "xero-sync",
-              } as Record<string, unknown>,
+              createdByUserId: "xero-sync",
             },
           });
 

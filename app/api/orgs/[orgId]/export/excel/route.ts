@@ -80,8 +80,8 @@ export async function GET(
       id: record.id,
       createdAt: record.createdAt,
       emissionCategory: record.emissionCategory,
-      description: record.description,
-      quantity: record.quantity,
+      sourceDescription: record.sourceDescription,
+      amount: typeof record.amount === 'number' ? record.amount : Number(record.amount),
       unit: record.unit,
       reviewStatus: record.reviewStatus,
       evidenceStatus: record.evidenceStatus,
@@ -151,10 +151,10 @@ export async function GET(
     );
 
     // Calculate total emissions
-    const totalEmissions = categoryBreakdown.reduce(
-      (sum, cat) => sum + Number(cat._sum.totalCo2e ?? 0),
-      0
-    );
+    let totalEmissions = 0;
+    for (const cat of categoryData) {
+      totalEmissions += cat.totalCo2e || 0;
+    }
 
     // Generate Excel file based on type
     let buffer: Buffer;
@@ -227,9 +227,9 @@ export async function GET(
       .digest("hex");
 
     // Return Excel file
-    const fileName = `${org.name}_${period.name}_${new Date().getTime()}.xlsx`;
+    const fileName = `${org.name}_${period.label}_${new Date().getTime()}.xlsx`;
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         "Content-Type":

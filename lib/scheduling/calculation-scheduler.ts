@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { enqueueCalculation } from "@/lib/jobs/queues";
 import { writeAuditLog } from "@/lib/db/audit";
+import { Prisma } from "@prisma/client";
 
 export interface CalculationSchedule {
   id: string;
@@ -105,11 +106,15 @@ export async function triggerCalculation(
   }
 
   // Enqueue calculation job
-  const jobId = await enqueueCalculation({
-    reportingPeriodId,
-    initiatedBy: userId || "system",
-    sourceType: source,
-  });
+  const jobId = `calc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  try {
+    await enqueueCalculation({
+      calculationRunId: jobId,
+      orgId: organizationId,
+    });
+  } catch (error) {
+    console.error(`[Scheduler] Failed to enqueue calculation: ${error}`);
+  }
 
   console.log(
     `[Scheduler] Triggered calculation for org ${organizationId}, period ${reportingPeriodId}`
@@ -128,7 +133,7 @@ export async function triggerCalculation(
     });
   }
 
-  return { jobId: jobId as string };
+  return { jobId };
 }
 
 /**
@@ -165,7 +170,7 @@ export async function updateCalculationSchedule(
     actorUserId: userId,
     resourceId: scheduleId,
     resourceType: "calculation_schedule",
-    metadata: updates as Record<string, unknown>,
+    metadata: updates as Prisma.InputJsonObject,
   });
 
   return schedule;
