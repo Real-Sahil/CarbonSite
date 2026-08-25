@@ -1,9 +1,14 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
 
 // Security headers are now generated dynamically in middleware.ts with CSP nonces.
 // See middleware.ts for the CSP header generation logic (nonce per request).
-// This config file only handles non-CSP headers and Sentry integration.
+// This config file only handles non-CSP headers.
+//
+// NOTE: Sentry wrapper removed from this config because it adds ~1.06 MB to the
+// middleware Edge Function bundle, exceeding Vercel's 1 MB free tier limit.
+// Middleware doesn't need instrumentation (it's deterministic: rate limiting,
+// CSP generation). Error tracking is handled manually in API routes via
+// Sentry.captureException() calls instead.
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "puppeteer", "pdfkit"],
@@ -29,26 +34,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
-
-  org: process.env.SENTRY_ORG || "carbonsite",
-  project: process.env.SENTRY_PROJECT || "next-js",
-
-  // Only print logs for uploading source maps related errors
-  silent: true,
-
-  // Transpile SDK to ensure compatibility
-  widenClientFileUpload: true,
-
-  // Hides source maps from generated client bundles
-  sourcemaps: {
-    disable: true,
-  },
-
-  // Disable automatic monitoring to reduce middleware bundle size
-  // Middleware doesn't need Sentry instrumentation—it's deterministic code
-  // (rate limiting, CSP generation). Error tracking is handled in API routes.
-  automaticVercelMonitors: false,
-});
+export default nextConfig;
