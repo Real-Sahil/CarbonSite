@@ -1832,10 +1832,13 @@ model IntegrationConnection {
   accessToken         String?   @map("access_token")
   refreshToken        String?   @map("refresh_token")
   expiresAt           DateTime? @map("expires_at")
+  tokenType           String?   @map("token_type")
   scopes              String[]
   externalAccountId   String?   @map("external_account_id")
   externalAccountName String?   @map("external_account_name")
+  externalTenantId    String?   @map("external_tenant_id")
   connectedAt         DateTime? @map("connected_at")
+  metadata            Json?     @map("metadata")
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
 

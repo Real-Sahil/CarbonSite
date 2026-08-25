@@ -22,6 +22,11 @@ export type NotificationJobData = {
   metadata?: Record<string, unknown>;
 };
 
+export type XeroSyncJobData = {
+  orgId: string;
+  fromDate?: string;
+};
+
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
   await boss.send("imports", data, retry);
@@ -40,4 +45,9 @@ export async function enqueueReport(data: ReportJobData) {
 export async function enqueueNotification(data: NotificationJobData) {
   await ensureBossStarted();
   await boss.send("notifications", data, retryAggressive);
+}
+
+export async function enqueueXeroSync(data: XeroSyncJobData) {
+  await ensureBossStarted();
+  await boss.send("xero-sync", data, retry);
 }
