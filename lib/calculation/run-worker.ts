@@ -289,6 +289,17 @@ async function rebuildDashboardAggregates(
     where: { organizationId: orgId, reportingPeriodId, snapshotId: null },
   });
 
+  // Load reporting period for intensity metric calculations
+  const reportingPeriod = await prisma.reportingPeriod.findFirst({
+    where: { id: reportingPeriodId, organizationId: orgId },
+    select: {
+      revenueAmount: true,
+      revenueCurrency: true,
+      fteCount: true,
+      facilityAreaM2: true,
+    },
+  });
+
   // Load all calculations for this run joined with their records
   const calculations = await prisma.emissionCalculation.findMany({
     where: { calculationRunId },
@@ -348,6 +359,21 @@ async function rebuildDashboardAggregates(
 
   if (groups.size === 0) return;
 
+  // Feature 5: Compute intensity metrics for multi-year trend analysis
+  const computeIntensity = (totalCo2e: number) => {
+    return {
+      intensityPerRevenueUnit: reportingPeriod?.revenueAmount
+        ? toDecimal(Number(totalCo2e) / Number(reportingPeriod.revenueAmount))
+        : null,
+      intensityPerFte: reportingPeriod?.fteCount
+        ? toDecimal(Number(totalCo2e) / Number(reportingPeriod.fteCount))
+        : null,
+      intensityPerM2: reportingPeriod?.facilityAreaM2
+        ? toDecimal(Number(totalCo2e) / Number(reportingPeriod.facilityAreaM2))
+        : null,
+    };
+  };
+
   await prisma.dashboardAggregate.createMany({
     data: Array.from(groups.values()).map(({ key, totalCo2e, count }) => ({
       organizationId: orgId,
@@ -360,6 +386,7 @@ async function rebuildDashboardAggregates(
       businessUnitId: key.businessUnitId,
       totalCo2e,
       recordCount: count,
+      ...computeIntensity(Number(totalCo2e)),
     })),
   });
 }

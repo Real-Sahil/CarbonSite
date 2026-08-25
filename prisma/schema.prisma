@@ -387,6 +387,11 @@ model ReportingPeriod {
   endDate        DateTime              @map("end_date") @db.Date
   label          String
   status         ReportingPeriodStatus @default(draft)
+  /// Reference values for carbon intensity calculations
+  revenueAmount  Decimal?              @map("revenue_amount") @db.Decimal(18, 2)
+  revenueCurrency String?              @map("revenue_currency")
+  fteCount       Decimal?              @map("fte_count") @db.Decimal(10, 2)
+  facilityAreaM2 Decimal?              @map("facility_area_m2") @db.Decimal(15, 2)
   createdAt      DateTime              @default(now()) @map("created_at")
   updatedAt      DateTime              @updatedAt @map("updated_at")
 
@@ -1012,6 +1017,10 @@ model DashboardAggregate {
   scope2Method       Scope2Method? @map("scope2_method")
   totalCo2e          Decimal  @map("total_co2e") @db.Decimal(18, 8)
   recordCount        Int      @map("record_count")
+  /// Carbon intensity metrics: CO2e per unit of reference value
+  intensityPerRevenueUnit Decimal? @map("intensity_per_revenue_unit") @db.Decimal(18, 8)
+  intensityPerFte Decimal?          @map("intensity_per_fte") @db.Decimal(18, 8)
+  intensityPerM2  Decimal?          @map("intensity_per_m2") @db.Decimal(18, 8)
   createdAt          DateTime @default(now()) @map("created_at")
 
   organization     Organization      @relation(fields: [organizationId], references: [id])
