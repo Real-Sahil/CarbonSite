@@ -33,6 +33,7 @@ model User {
   uploadedEvidence EvidenceFile[]
   auditLogs        AuditLog[]
   calculationRuns  CalculationRun[]
+  scenarioRunsCreated ScenarioRun[] @relation("ScenarioRunsCreated")
   reports          Report[]
   snapshots        PublishedSnapshot[]
   targets              ReductionTarget[]
@@ -133,6 +134,7 @@ model Organization {
   calculationRuns  CalculationRun[]
   snapshots        PublishedSnapshot[]
   aggregates       DashboardAggregate[]
+  scenarioRuns     ScenarioRun[]
   routeDistances   RouteDistance[]
   reports          Report[]
   reviewTasks      ReviewTask[]
@@ -591,6 +593,7 @@ model ActivityRecord {
   createdBy        User                  @relation("CreatedByUser", fields: [createdByUserId], references: [id])
   calculations EmissionCalculation[]
   evidence     ActivityRecordEvidence[]
+  scenarioDrafts ScenarioDraft[]        @relation("ScenarioDraftActivityRecord")
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
   @@index([organizationId, routeDistanceId])
@@ -869,6 +872,7 @@ model CalculationRun {
   triggeredBy        User                  @relation(fields: [triggeredByUserId], references: [id])
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
+  scenarioRuns       ScenarioRun[]
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -937,6 +941,60 @@ model PublishedSnapshot {
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, verificationStatus])
   @@map("published_snapshots")
+}
+
+// ─── Scenario / What-If Modeling ──────────────────────────────────────────────
+// Ephemeral calculation runs with hypothetical data modifications.
+// Never persist to committed EmissionCalculation — only to ScenarioDraft for preview.
+
+model ScenarioRun {
+  id                   String   @id @default(cuid())
+  organizationId       String   @map("organization_id")
+  calculationRunId     String   @map("calculation_run_id")
+  createdByUserId      String   @map("created_by_user_id")
+  /// Expiration timestamp — scenarios older than 1 hour are auto-purged
+  expiresAt            DateTime @map("expires_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  calculationRun  CalculationRun  @relation(fields: [calculationRunId], references: [id])
+  createdBy       User            @relation("ScenarioRunsCreated", fields: [createdByUserId], references: [id])
+  drafts          ScenarioDraft[]
+
+  @@index([organizationId, expiresAt])
+  @@map("scenario_runs")
+}
+
+// Hypothetical calculation result — mirrors EmissionCalculation shape but never persisted
+model ScenarioDraft {
+  id                     String  @id @default(cuid())
+  organizationId         String  @map("organization_id")
+  scenarioRunId          String  @map("scenario_run_id")
+  activityRecordId       String  @map("activity_record_id")
+  emissionFactorId       String? @map("emission_factor_id")
+  originalAmount         Decimal @map("original_amount") @db.Decimal(18, 6)
+  originalUnit           String  @map("original_unit")
+  normalizedAmount       Decimal @map("normalized_amount") @db.Decimal(18, 6)
+  normalizedUnit         String  @map("normalized_unit")
+  co2                    Decimal? @db.Decimal(18, 8)
+  ch4                    Decimal? @db.Decimal(18, 8)
+  n2o                    Decimal? @db.Decimal(18, 8)
+  totalCo2e              Decimal @map("total_co2e") @db.Decimal(18, 8)
+  selectionReason        String? @map("selection_reason")
+  factorValue            Decimal? @map("factor_value") @db.Decimal(18, 8)
+  formula                String
+  warnings               Json    @default("[]")
+  dataQualityScore       Int     @default(50) @map("data_quality_score")
+  confidenceIntervalLower Decimal? @map("confidence_interval_lower") @db.Decimal(18, 8)
+  confidenceIntervalUpper Decimal? @map("confidence_interval_upper") @db.Decimal(18, 8)
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  scenarioRun    ScenarioRun   @relation(fields: [scenarioRunId], references: [id], onDelete: Cascade)
+  activityRecord ActivityRecord @relation("ScenarioDraftActivityRecord", fields: [activityRecordId], references: [id])
+
+  @@index([scenarioRunId])
+  @@index([organizationId])
+  @@map("scenario_drafts")
 }
 
 // ─── Dashboard Aggregates ─────────────────────────────────────────────────────
