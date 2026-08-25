@@ -54,6 +54,8 @@ model User {
   supplierInvitesCreated    SupplierInvite[]         @relation("SupplierInviteCreatedBy")
   supplierDataRequestsCreated SupplierDataRequest[]  @relation("SupplierDataRequestCreatedBy")
   epdRecordsSubmitted       EpdRecord[]              @relation("EpdSubmittedBy")
+  projectRoleAssignments ProjectRoleAssignment[] @relation("ProjectRoleAssignments")
+  createdProjectRoleAssignments ProjectRoleAssignment[] @relation("ProjectRoleAssignmentCreator")
 
   platformMembership PlatformMembership?
 
@@ -162,6 +164,7 @@ model Organization {
   carbonBudgets       CarbonBudget[]
   wasteRecords        WasteRecord[]
   sbtiTarget          SbtiTarget?
+  projectRoleAssignments ProjectRoleAssignment[] @relation("ProjectRoleAssignments")
 
   @@map("organizations")
 }
@@ -1240,6 +1243,7 @@ model Project {
   embodiedCarbonRecords EmbodiedCarbonRecord[]
   carbonBudget  CarbonBudget?
   wasteRecords  WasteRecord[]
+  projectRoleAssignments ProjectRoleAssignment[]
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -1267,6 +1271,29 @@ model Site {
 
   @@index([organizationId, projectId])
   @@map("sites")
+}
+
+model ProjectRoleAssignment {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  userId          String   @map("user_id")
+  projectId       String   @map("project_id")
+  role            String
+  assignedByUserId String  @map("assigned_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization  Organization @relation("ProjectRoleAssignments", fields: [organizationId], references: [id], onDelete: Cascade)
+  user          User          @relation("ProjectRoleAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedBy    User          @relation("ProjectRoleAssignmentCreator", fields: [assignedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, projectId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([assignedByUserId])
+  @@map("project_role_assignments")
 }
 
 model FieldWorkerSiteAssignment {

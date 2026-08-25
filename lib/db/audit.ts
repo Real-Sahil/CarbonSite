@@ -86,7 +86,10 @@ type AuditAction =
   | "integration.connected"
   | "integration.disconnected"
   | "supplier_data_request.sent"
-  | "supplier_data_request.submitted";
+  | "supplier_data_request.submitted"
+  | "project.member.added"
+  | "project.member.removed"
+  | "project.member.role_change";
 
 export async function writeAuditLog(params: {
   organizationId: string;
