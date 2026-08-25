@@ -94,7 +94,13 @@ type AuditAction =
   | "integration.connected"
   | "integration.disconnected"
   | "supplier_data_request.sent"
-  | "supplier_data_request.submitted";
+  | "supplier_data_request.submitted"
+  | "security.alert_repeated_failed_logins"
+  | "security.alert_privilege_escalation"
+  | "security.alert_mass_export"
+  | "security.alert_bulk_data_mutation"
+  | "security.alert_bulk_submission_review"
+  | "security.alert_suspicious_location_jump";
 
 export async function writeAuditLog(params: {
   organizationId: string;

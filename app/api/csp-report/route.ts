@@ -40,9 +40,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true }, { status: 204 });
     }
 
-    // Log the violation for observability (Sentry, CloudWatch, etc.)
-    // For now, just log to console in development.
-    console.warn("[CSP Violation]", {
+    const violation = {
       timestamp: new Date().toISOString(),
       documentUri: report["document-uri"],
       violatedDirective: report["violated-directive"],
@@ -50,12 +48,19 @@ export async function POST(req: NextRequest) {
       blockedUri: report["blocked-uri"],
       statusCode: report["status-code"],
       disposition: report.disposition,
-    });
+    };
 
-    // In production, send to error tracking service (e.g., Sentry)
-    if (process.env.SENTRY_DSN) {
-      // TODO: Wire up Sentry capture when integrated
-      // Sentry.captureMessage(`CSP violation: ${report["violated-directive"]}`)
+    // Log the violation for observability
+    console.warn("[CSP Violation]", violation);
+
+    // Send critical violations to error tracking (Sentry)
+    // Repeated violations from the same source indicate a real policy problem.
+    if (process.env.SENTRY_DSN && report.disposition === "enforce") {
+      // TODO: Integrate Sentry SDK once added to dependencies
+      // Sentry.captureMessage(
+      //   `CSP ${report["violated-directive"]}: ${report["blocked-uri"]}`,
+      //   "warning",
+      // );
     }
 
     return NextResponse.json({ ok: true }, { status: 204 });
