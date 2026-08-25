@@ -21,6 +21,8 @@ export type CalculationResult = {
   totalCo2e: number;
   formula: string;
   warnings: string[];
+  confidenceIntervalLower?: number;
+  confidenceIntervalUpper?: number;
 };
 
 export function computeCo2e(

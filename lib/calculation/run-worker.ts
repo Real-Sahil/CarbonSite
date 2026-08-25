@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
+import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
+import type { Scope2Method } from "@prisma/client";
 
 export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<void> {
   try {
@@ -29,7 +31,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         reviewStatus: "approved",
       },
       include: {
-        emissionCategory: { select: { id: true, code: true, activityType: true } },
+        emissionCategory: { select: { id: true, code: true, activityType: true, scope: true } },
       },
     });
 
@@ -73,6 +75,15 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         // No factor found — include the record with zero CO2e and a warning
         // instead of failing. (A fake "no-factor" FK value here used to
         // violate the foreign key and abort the entire run.)
+        const qualityScore = calculateDataQualityScore({
+          record: record as any,
+          factorSelection: null,
+          unitConverted: false,
+          unitConversionComplex: false,
+        });
+
+        const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+
         await prisma.emissionCalculation.create({
           data: {
             organizationId: orgId,
@@ -92,6 +103,9 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
               ...unitWarnings,
               `No emission factor found for category ${record.emissionCategory.code}`,
             ],
+            dataQualityScore: qualityScore.score,
+            confidenceIntervalLower: confidenceInterval.lower,
+            confidenceIntervalUpper: confidenceInterval.upper,
           },
         });
         continue;
@@ -104,9 +118,20 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       // factor) silently overstates by 1000× — refusing with a visible zero
       // is always safer than a wrong number.
       let amountForFactor = normalized.amount;
+      let unitWasConverted = false;
+      let unitConversionWasComplex = false;
+
       if (normalized.unit !== factor.inputUnit) {
         const converted = convertBetween(normalized.amount, normalized.unit, factor.inputUnit);
         if (converted == null) {
+          const qualityScore = calculateDataQualityScore({
+            record: record as any,
+            factorSelection,
+            unitConverted: true,
+            unitConversionComplex: true,
+          });
+          const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+
           await prisma.emissionCalculation.create({
             data: {
               organizationId: orgId,
@@ -127,11 +152,17 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
                 ...unitWarnings,
                 `Record unit "${normalized.unit}" is incompatible with factor input unit "${factor.inputUnit}". Correct the record's unit or import a matching factor.`,
               ],
+              dataQualityScore: qualityScore.score,
+              confidenceIntervalLower: confidenceInterval.lower,
+              confidenceIntervalUpper: confidenceInterval.upper,
             },
           });
           continue;
         }
         amountForFactor = converted;
+        unitWasConverted = true;
+        unitConversionWasComplex = !["kg", "tonnes", "t"].includes(normalized.unit) ||
+          !["kg", "tonnes", "t"].includes(factor.inputUnit);
         unitWarnings.push(
           `Converted ${normalized.amount} ${normalized.unit} to ${converted} ${factor.inputUnit} to match the factor.`,
         );
@@ -156,6 +187,18 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 
       const factorValue = factor.co2e ?? factor.co2;
 
+      const qualityScore = calculateDataQualityScore({
+        record: record as any,
+        factorSelection,
+        unitConverted: unitWasConverted,
+        unitConversionComplex: unitConversionWasComplex,
+      });
+
+      const confidenceInterval = calculateConfidenceInterval(
+        result.totalCo2e,
+        qualityScore.score,
+      );
+
       await prisma.emissionCalculation.create({
         data: {
           organizationId: orgId,
@@ -177,6 +220,9 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
           factorValue: factorValue != null ? toDecimal(Number(factorValue)) : null,
           formula: result.formula,
           warnings: result.warnings,
+          dataQualityScore: qualityScore.score,
+          confidenceIntervalLower: toDecimal(confidenceInterval.lower),
+          confidenceIntervalUpper: toDecimal(confidenceInterval.upper),
         },
       });
     }
@@ -210,6 +256,14 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
     // Rebuild DashboardAggregate for this period (live, snapshotId = null)
     await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId);
 
+    // Feature 4: Auto-create supplier data requests for high-uncertainty Scope 3 records
+    await autoCreateSupplierDataRequests(
+      orgId,
+      run.reportingPeriodId,
+      calculationRunId,
+      run.triggeredByUserId,
+    );
+
     await prisma.calculationRun.update({
       where: { id: calculationRunId },
       data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
@@ -235,6 +289,17 @@ async function rebuildDashboardAggregates(
     where: { organizationId: orgId, reportingPeriodId, snapshotId: null },
   });
 
+  // Load reporting period for intensity metric calculations
+  const reportingPeriod = await prisma.reportingPeriod.findFirst({
+    where: { id: reportingPeriodId, organizationId: orgId },
+    select: {
+      revenueAmount: true,
+      revenueCurrency: true,
+      fteCount: true,
+      facilityAreaM2: true,
+    },
+  });
+
   // Load all calculations for this run joined with their records
   const calculations = await prisma.emissionCalculation.findMany({
     where: { calculationRunId },
@@ -247,8 +312,14 @@ async function rebuildDashboardAggregates(
     },
   });
 
-  // Group by scope, category, facility, business unit
-  type AggKey = { scope: number; emissionCategoryId: string | null; facilityId: string | null; businessUnitId: string | null };
+  // Group by scope, category, facility, business unit, and scope2Method for Scope 2
+  type AggKey = {
+    scope: number;
+    scope2Method: Scope2Method | null | undefined;
+    emissionCategoryId: string | null;
+    facilityId: string | null;
+    businessUnitId: string | null;
+  };
   const groups = new Map<string, { key: AggKey; totalCo2e: number; count: number }>();
 
   const add = (key: AggKey, co2e: number) => {
@@ -266,25 +337,42 @@ async function rebuildDashboardAggregates(
     const record = calc.activityRecord;
     const scope = record.emissionCategory.scope;
     const co2e = Number(calc.totalCo2e);
+    // For Scope 2, track both location-based and market-based separately
+    const scope2Method = scope === 2 ? (record.scope2Method ?? "location_based") : undefined;
 
     // Scope-only aggregate
-    add({ scope, emissionCategoryId: null, facilityId: null, businessUnitId: null }, co2e);
+    add({ scope, scope2Method, emissionCategoryId: null, facilityId: null, businessUnitId: null }, co2e);
 
     // By category
-    add({ scope, emissionCategoryId: record.emissionCategoryId, facilityId: null, businessUnitId: null }, co2e);
+    add({ scope, scope2Method, emissionCategoryId: record.emissionCategoryId, facilityId: null, businessUnitId: null }, co2e);
 
     // By facility (if set)
     if (record.facilityId) {
-      add({ scope, emissionCategoryId: null, facilityId: record.facilityId, businessUnitId: null }, co2e);
+      add({ scope, scope2Method, emissionCategoryId: null, facilityId: record.facilityId, businessUnitId: null }, co2e);
     }
 
     // By business unit (if set)
     if (record.businessUnitId) {
-      add({ scope, emissionCategoryId: null, facilityId: null, businessUnitId: record.businessUnitId }, co2e);
+      add({ scope, scope2Method, emissionCategoryId: null, facilityId: null, businessUnitId: record.businessUnitId }, co2e);
     }
   }
 
   if (groups.size === 0) return;
+
+  // Feature 5: Compute intensity metrics for multi-year trend analysis
+  const computeIntensity = (totalCo2e: number) => {
+    return {
+      intensityPerRevenueUnit: reportingPeriod?.revenueAmount
+        ? toDecimal(Number(totalCo2e) / Number(reportingPeriod.revenueAmount))
+        : null,
+      intensityPerFte: reportingPeriod?.fteCount
+        ? toDecimal(Number(totalCo2e) / Number(reportingPeriod.fteCount))
+        : null,
+      intensityPerM2: reportingPeriod?.facilityAreaM2
+        ? toDecimal(Number(totalCo2e) / Number(reportingPeriod.facilityAreaM2))
+        : null,
+    };
+  };
 
   await prisma.dashboardAggregate.createMany({
     data: Array.from(groups.values()).map(({ key, totalCo2e, count }) => ({
@@ -292,11 +380,117 @@ async function rebuildDashboardAggregates(
       reportingPeriodId,
       snapshotId: null,
       scope: key.scope,
+      scope2Method: key.scope2Method,
       emissionCategoryId: key.emissionCategoryId,
       facilityId: key.facilityId,
       businessUnitId: key.businessUnitId,
       totalCo2e,
       recordCount: count,
+      ...computeIntensity(Number(totalCo2e)),
     })),
   });
+}
+
+async function autoCreateSupplierDataRequests(
+  orgId: string,
+  reportingPeriodId: string,
+  calculationRunId: string,
+  triggeredByUserId: string,
+): Promise<void> {
+  // Feature 4: Spend-based → Activity-based upgrade suggestions
+  // Identify Scope 3 records with high uncertainty (data_quality_score < 40)
+  // and auto-create SupplierDataRequest for supplier engagement
+
+  const highUncertaintyRecords = await prisma.emissionCalculation.findMany({
+    where: {
+      calculationRunId,
+      activityRecord: {
+        emissionCategory: { scope: 3 },
+      },
+      dataQualityScore: { lt: 40 }, // High uncertainty threshold
+    },
+    include: {
+      activityRecord: {
+        include: {
+          emissionCategory: { select: { code: true } },
+        },
+      },
+    },
+  });
+
+  if (highUncertaintyRecords.length === 0) return;
+
+  // Group by supplier and category to avoid duplicate requests
+  type UpgradeKey = { supplierName: string | null; categoryCode: string };
+  const upgrades = new Map<string, { supplierName: string | null; categoryCode: string }>();
+
+  for (const record of highUncertaintyRecords) {
+    const key: UpgradeKey = {
+      supplierName: record.activityRecord.supplierName,
+      categoryCode: record.activityRecord.emissionCategory.code,
+    };
+    const k = JSON.stringify(key);
+    if (!upgrades.has(k)) {
+      upgrades.set(k, key);
+    }
+  }
+
+  // For each supplier/category combination, check if request already exists
+  // and create if needed. Only create if we can match supplier email.
+  for (const { supplierName, categoryCode } of upgrades.values()) {
+    // Skip if no supplier name — can't send to an unknown party
+    if (!supplierName) continue;
+
+    // Check if request already exists for this supplier/category/period
+    const existing = await prisma.supplierDataRequest.findFirst({
+      where: {
+        organizationId: orgId,
+        reportingPeriodId,
+        categoryCode,
+        supplierName,
+        status: { in: ["sent", "opened"] }, // Only check active requests
+      },
+    });
+
+    if (existing) continue; // Already requested, skip
+
+    // Try to find supplier email from SupplierInvite
+    const supplierInvite = await prisma.supplierInvite.findFirst({
+      where: {
+        organizationId: orgId,
+        companyName: supplierName,
+      },
+      select: { email: true, companyName: true },
+    });
+
+    if (!supplierInvite) continue; // Can't auto-request without email
+
+    // Create SupplierDataRequest
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    try {
+      await prisma.supplierDataRequest.create({
+        data: {
+          organizationId: orgId,
+          reportingPeriodId,
+          supplierEmail: supplierInvite.email,
+          supplierName: supplierInvite.companyName ?? undefined,
+          categoryCode,
+          expiresAt,
+          notes:
+            "Auto-generated request: High-uncertainty spend-based data detected. Please provide activity-based details.",
+          createdByUserId: triggeredByUserId,
+        },
+      });
+
+      // Note: Email sending would happen here in production, but omitted to avoid
+      // hard dependency on Resend during calc runs. Dashboard UI can prompt admins
+      // to send emails manually or integrate async email job.
+    } catch (err) {
+      // Log but don't fail the calculation run if request creation fails
+      console.warn(
+        `[calculations] Failed to create SupplierDataRequest for ${supplierName}/${categoryCode}:`,
+        err,
+      );
+    }
+  }
 }

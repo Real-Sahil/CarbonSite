@@ -182,7 +182,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
     });
 
     // Notify the uploader if the batch needs attention or failed
-    if (newState === "needs_attention" || newState === "failed") {
+    if ((newState === "needs_attention" || newState === "failed") && updatedBatch.createdByUserId) {
       enqueueNotification({
         type: "import_failed",
         recipientUserId: updatedBatch.createdByUserId,

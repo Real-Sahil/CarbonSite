@@ -147,3 +147,34 @@ export const POLICIES = {
   mutation: { limit: 120, windowMs: 60_000 },
   read: { limit: 600, windowMs: 60_000 },
 } as const;
+
+// ── Per-account login lockout (closes distributed-IP bypass gap) ─────────────
+
+export async function recordFailedLogin(email: string): Promise<boolean> {
+  const windowMs = 30 * 60_000; // 30-minute lockout window
+  const maxAttempts = 5;
+  const key = `login:${email.toLowerCase()}`;
+  const result = await rateLimitPg(key, maxAttempts, windowMs);
+  return !result.allowed;
+}
+
+export async function isAccountLocked(email: string): Promise<boolean> {
+  const windowMs = 30 * 60_000;
+  const maxAttempts = 5;
+  const key = `login:${email.toLowerCase()}`;
+  try {
+    const rows = await prisma.$queryRaw<Array<{ count: number; reset_at: Date }>>`
+      SELECT count, reset_at FROM rate_limit_buckets WHERE key = ${key} AND reset_at > NOW()
+    `;
+    if (!rows.length) return false;
+    const row = rows[0]!;
+    return Number(row.count) > maxAttempts;
+  } catch {
+    return false;
+  }
+}
+
+export function clearAccountLockout(email: string) {
+  const key = `login:${email.toLowerCase()}`;
+  store.delete(key);
+}

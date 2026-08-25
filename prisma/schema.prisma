@@ -21,6 +21,9 @@ model User {
   emailVerified   Boolean   @default(false) @map("email_verified")
   emailVerifiedAt DateTime? @map("email_verified_at")
   image           String?
+  twoFactorSecret String?   @map("two_factor_secret")
+  twoFactorEnabled Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorBackupCodes String? @map("two_factor_backed_up_codes")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
@@ -33,6 +36,7 @@ model User {
   uploadedEvidence EvidenceFile[]
   auditLogs        AuditLog[]
   calculationRuns  CalculationRun[]
+  scenarioRunsCreated ScenarioRun[] @relation("ScenarioRunsCreated")
   reports          Report[]
   snapshots        PublishedSnapshot[]
   dsarRequestsAsSubject DsarRequest[] @relation("DsarSubject")
@@ -49,6 +53,7 @@ model User {
   socialValueRecordsCreated SocialValueRecord[]      @relation("SocialValueCreator")
   classificationReviews     EvidenceClassification[] @relation("ClassificationReviewer")
   ocrCorrections            OcrCorrection[]          @relation("OcrCorrectionBy")
+  snapshotAssurances        SnapshotAssurance[]      @relation("SnapshotAuditor")
   deviceTokens              DeviceToken[]
   webhooks                  Webhook[]                @relation("WebhookCreator")
   snapshotVerifications     PublishedSnapshot[]      @relation("SnapshotVerifiedBy")
@@ -135,6 +140,7 @@ model Organization {
   calculationRuns  CalculationRun[]
   snapshots        PublishedSnapshot[]
   aggregates       DashboardAggregate[]
+  scenarioRuns     ScenarioRun[]
   routeDistances   RouteDistance[]
   reports          Report[]
   reviewTasks      ReviewTask[]
@@ -171,6 +177,7 @@ model Organization {
   calculationSchedules CalculationSchedule[]
   digestPreferences   DigestPreference[]
   projectRoleAssignments ProjectRoleAssignment[]
+  snapshotAssurances  SnapshotAssurance[]
 
   @@map("organizations")
 }
@@ -388,6 +395,11 @@ model ReportingPeriod {
   endDate        DateTime              @map("end_date") @db.Date
   label          String
   status         ReportingPeriodStatus @default(draft)
+  /// Reference values for carbon intensity calculations
+  revenueAmount  Decimal?              @map("revenue_amount") @db.Decimal(18, 2)
+  revenueCurrency String?              @map("revenue_currency")
+  fteCount       Decimal?              @map("fte_count") @db.Decimal(10, 2)
+  facilityAreaM2 Decimal?              @map("facility_area_m2") @db.Decimal(15, 2)
   createdAt      DateTime              @default(now()) @map("created_at")
   updatedAt      DateTime              @updatedAt @map("updated_at")
 
@@ -472,12 +484,12 @@ model ImportBatch {
   errorCsvStorageKey  String?     @map("error_csv_storage_key")
   idempotencyKey           String?     @unique @map("idempotency_key")
   lastProcessedRowIndex    Int?        @map("last_processed_row_index")
-  createdByUserId          String      @map("created_by_user_id")
+  createdByUserId          String?     @map("created_by_user_id")
   createdAt                DateTime    @default(now()) @map("created_at")
   updatedAt                DateTime    @updatedAt @map("updated_at")
 
   organization    Organization         @relation(fields: [organizationId], references: [id])
-  createdBy       User                 @relation(fields: [createdByUserId], references: [id])
+  createdBy       User?                @relation(fields: [createdByUserId], references: [id])
   stagedRecords   StagedActivityRecord[]
   activityRecords ActivityRecord[]
   evidence        ImportBatchEvidence[]
@@ -594,6 +606,7 @@ model ActivityRecord {
   createdBy        User                  @relation("CreatedByUser", fields: [createdByUserId], references: [id])
   calculations EmissionCalculation[]
   evidence     ActivityRecordEvidence[]
+  scenarioDrafts ScenarioDraft[]        @relation("ScenarioDraftActivityRecord")
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
   @@index([organizationId, routeDistanceId])
@@ -872,6 +885,7 @@ model CalculationRun {
   triggeredBy        User                  @relation(fields: [triggeredByUserId], references: [id])
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
+  scenarioRuns       ScenarioRun[]
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -902,6 +916,9 @@ model EmissionCalculation {
   factorValue            Decimal? @map("factor_value") @db.Decimal(18, 8)
   formula                String
   warnings               Json     @default("[]")
+  dataQualityScore       Int      @default(50) @map("data_quality_score")
+  confidenceIntervalLower Decimal? @map("confidence_interval_lower") @db.Decimal(18, 8)
+  confidenceIntervalUpper Decimal? @map("confidence_interval_upper") @db.Decimal(18, 8)
   createdAt              DateTime @default(now()) @map("created_at")
 
   activityRecord  ActivityRecord     @relation(fields: [activityRecordId], references: [id])
@@ -937,6 +954,92 @@ model PublishedSnapshot {
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, verificationStatus])
   @@map("published_snapshots")
+  assurance SnapshotAssurance?
+}
+
+// ─── Auditor Assurance & Sign-Off ─────────────────────────────────────────────
+
+model SnapshotAssurance {
+  id                   String   @id @default(cuid())
+  organizationId       String   @map("organization_id")
+  snapshotId           String   @unique @map("snapshot_id")
+  auditorUserId        String   @map("auditor_user_id")
+  status               AssuranceStatus @default(pending) // pending | approved | rejected
+  notes                String?
+  signatureBase64      String?  @map("signature_base64") // Optional e-signature data
+  signedAt             DateTime? @map("signed_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  snapshot     PublishedSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  auditor      User              @relation("SnapshotAuditor", fields: [auditorUserId], references: [id])
+
+  @@index([organizationId, status])
+  @@index([auditorUserId, status])
+  @@map("snapshot_assurances")
+}
+
+enum AssuranceStatus {
+  pending
+  approved
+  rejected
+
+  @@map("assurance_status")
+}
+
+// ─── Scenario / What-If Modeling ──────────────────────────────────────────────
+// Ephemeral calculation runs with hypothetical data modifications.
+// Never persist to committed EmissionCalculation — only to ScenarioDraft for preview.
+
+model ScenarioRun {
+  id                   String   @id @default(cuid())
+  organizationId       String   @map("organization_id")
+  calculationRunId     String   @map("calculation_run_id")
+  createdByUserId      String   @map("created_by_user_id")
+  /// Expiration timestamp — scenarios older than 1 hour are auto-purged
+  expiresAt            DateTime @map("expires_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  calculationRun  CalculationRun  @relation(fields: [calculationRunId], references: [id])
+  createdBy       User            @relation("ScenarioRunsCreated", fields: [createdByUserId], references: [id])
+  drafts          ScenarioDraft[]
+
+  @@index([organizationId, expiresAt])
+  @@map("scenario_runs")
+}
+
+// Hypothetical calculation result — mirrors EmissionCalculation shape but never persisted
+model ScenarioDraft {
+  id                     String  @id @default(cuid())
+  organizationId         String  @map("organization_id")
+  scenarioRunId          String  @map("scenario_run_id")
+  activityRecordId       String  @map("activity_record_id")
+  emissionFactorId       String? @map("emission_factor_id")
+  originalAmount         Decimal @map("original_amount") @db.Decimal(18, 6)
+  originalUnit           String  @map("original_unit")
+  normalizedAmount       Decimal @map("normalized_amount") @db.Decimal(18, 6)
+  normalizedUnit         String  @map("normalized_unit")
+  co2                    Decimal? @db.Decimal(18, 8)
+  ch4                    Decimal? @db.Decimal(18, 8)
+  n2o                    Decimal? @db.Decimal(18, 8)
+  totalCo2e              Decimal @map("total_co2e") @db.Decimal(18, 8)
+  selectionReason        String? @map("selection_reason")
+  factorValue            Decimal? @map("factor_value") @db.Decimal(18, 8)
+  formula                String
+  warnings               Json    @default("[]")
+  dataQualityScore       Int     @default(50) @map("data_quality_score")
+  confidenceIntervalLower Decimal? @map("confidence_interval_lower") @db.Decimal(18, 8)
+  confidenceIntervalUpper Decimal? @map("confidence_interval_upper") @db.Decimal(18, 8)
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  scenarioRun    ScenarioRun   @relation(fields: [scenarioRunId], references: [id], onDelete: Cascade)
+  activityRecord ActivityRecord @relation("ScenarioDraftActivityRecord", fields: [activityRecordId], references: [id])
+
+  @@index([scenarioRunId])
+  @@index([organizationId])
+  @@map("scenario_drafts")
 }
 
 // ─── Dashboard Aggregates ─────────────────────────────────────────────────────
@@ -951,8 +1054,13 @@ model DashboardAggregate {
   emissionCategoryId String?  @map("emission_category_id")
   facilityId         String?  @map("facility_id")
   businessUnitId     String?  @map("business_unit_id")
+  scope2Method       Scope2Method? @map("scope2_method")
   totalCo2e          Decimal  @map("total_co2e") @db.Decimal(18, 8)
   recordCount        Int      @map("record_count")
+  /// Carbon intensity metrics: CO2e per unit of reference value
+  intensityPerRevenueUnit Decimal? @map("intensity_per_revenue_unit") @db.Decimal(18, 8)
+  intensityPerFte Decimal?          @map("intensity_per_fte") @db.Decimal(18, 8)
+  intensityPerM2  Decimal?          @map("intensity_per_m2") @db.Decimal(18, 8)
   createdAt          DateTime @default(now()) @map("created_at")
 
   organization     Organization      @relation(fields: [organizationId], references: [id])

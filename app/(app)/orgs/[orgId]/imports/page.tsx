@@ -279,7 +279,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                             />
                           </TableCell>
                           <TableCell className="text-sm text-[#9CA3AF] py-3.5">
-                            {batch.createdBy.name ?? batch.createdBy.email}
+                            {batch.createdBy ? (batch.createdBy.name ?? batch.createdBy.email) : "System"}
                           </TableCell>
                           <TableCell className="py-3.5">
                             <Badge

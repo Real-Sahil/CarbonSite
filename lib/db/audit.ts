@@ -5,6 +5,8 @@ import { prisma } from "./index";
 type AuditAction =
   | "auth.sign_in"
   | "auth.sign_out"
+  | "auth.mfa_enabled"
+  | "auth.mfa_disabled"
   | "org.created"
   | "org.updated"
   | "org.member.invite"
@@ -51,6 +53,8 @@ type AuditAction =
   | "field_submission.resubmitted"
   | "snapshot.approved"
   | "snapshot.changes_requested"
+  | "snapshot.assured"
+  | "snapshot.assurance_retracted"
   | "field_worker.assignment_created"
   | "field_worker.assignment_deleted"
   | "field_worker.site_assigned"
@@ -90,7 +94,13 @@ type AuditAction =
   | "integration.connected"
   | "integration.disconnected"
   | "supplier_data_request.sent"
-  | "supplier_data_request.submitted";
+  | "supplier_data_request.submitted"
+  | "security.alert_repeated_failed_logins"
+  | "security.alert_privilege_escalation"
+  | "security.alert_mass_export"
+  | "security.alert_bulk_data_mutation"
+  | "security.alert_bulk_submission_review"
+  | "security.alert_suspicious_location_jump";
 
 export async function writeAuditLog(params: {
   organizationId: string;
