@@ -95,10 +95,10 @@ export function middleware(req: NextRequest) {
     const nonce = btoa(String.fromCharCode(...randomBytes));
     const cspHeader = [
       "default-src 'self'",
-      `script-src 'self' 'nonce-${nonce}' https://cdn.jsdelivr.net`, // nonce for Next.js inline scripts + CDN for trusted libraries
+      `script-src 'self' 'unsafe-inline' 'nonce-${nonce}' https://cdn.jsdelivr.net`, // nonce for Next.js inline scripts + CDN for trusted libraries; unsafe-inline for inline event handlers
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // unsafe-inline: Tailwind + shadcn; Google Fonts
-      "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://images.unsplash.com",
-      "connect-src 'self' https://*.r2.cloudflarestorage.com https://api.postcodes.io",
+      "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://images.unsplash.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
+      "connect-src 'self' https://*.r2.cloudflarestorage.com https://api.postcodes.io https://api.github.com",
       "font-src 'self' https://fonts.gstatic.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
