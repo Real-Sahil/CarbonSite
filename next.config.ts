@@ -42,11 +42,12 @@ export default withSentryConfig(nextConfig, {
   // Transpile SDK to ensure compatibility
   widenClientFileUpload: true,
 
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
-  tunnelRoute: "/monitoring",
-
   // Hides source maps from generated client bundles
   sourcemaps: {
     disable: true,
   },
+
+  // Disable tunnelRoute to reduce Edge Function bundle size (less critical for free tier)
+  // Browser errors will report directly to Sentry instead of through a proxy
+  tunnelRoute: undefined,
 });
