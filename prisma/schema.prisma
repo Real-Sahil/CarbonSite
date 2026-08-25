@@ -476,12 +476,12 @@ model ImportBatch {
   errorCsvStorageKey  String?     @map("error_csv_storage_key")
   idempotencyKey           String?     @unique @map("idempotency_key")
   lastProcessedRowIndex    Int?        @map("last_processed_row_index")
-  createdByUserId          String      @map("created_by_user_id")
+  createdByUserId          String?     @map("created_by_user_id")
   createdAt                DateTime    @default(now()) @map("created_at")
   updatedAt                DateTime    @updatedAt @map("updated_at")
 
   organization    Organization         @relation(fields: [organizationId], references: [id])
-  createdBy       User                 @relation(fields: [createdByUserId], references: [id])
+  createdBy       User?                @relation(fields: [createdByUserId], references: [id])
   stagedRecords   StagedActivityRecord[]
   activityRecords ActivityRecord[]
   evidence        ImportBatchEvidence[]
