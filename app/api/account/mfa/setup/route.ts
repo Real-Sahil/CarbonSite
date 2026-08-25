@@ -2,10 +2,9 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { TOTP } from "otplib";
+import speakeasy from "speakeasy";
 import QRCode from "qrcode";
 
 const MFASetupSchema = z.object({
@@ -23,23 +22,22 @@ export async function POST(req: NextRequest) {
   try {
     const { user } = await requireSession();
 
-    const totp = new TOTP();
-
     // Generate a new secret
-    const secret = totp.generateSecret();
-
-    // Build the otpauth URL for QR code
-    const otpauthUrl = totp.toURI({
-      label: user.email,
+    const secret = speakeasy.generateSecret({
+      name: `CarbonSite (${user.email})`,
       issuer: "CarbonSite",
-      secret,
+      length: 32,
     });
 
+    if (!secret.otpauth_url) {
+      return apiError("INTERNAL_ERROR", "Failed to generate TOTP setup", 500);
+    }
+
     // Generate QR code as data URL
-    const qrCode = await QRCode.toDataURL(otpauthUrl);
+    const qrCode = await QRCode.toDataURL(secret.otpauth_url);
 
     return NextResponse.json({
-      secret,
+      secret: secret.base32,
       qrCode,
       backupUrl: `/api/account/mfa/verify?method=backup`,
       message: "Scan with authenticator app or use backup codes. Call POST /api/account/mfa/verify with the code to confirm.",

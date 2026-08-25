@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { TOTP } from "otplib";
+import speakeasy from "speakeasy";
 import crypto from "crypto";
 
 const MFAVerifySchema = z.object({
@@ -38,9 +38,14 @@ export async function POST(req: NextRequest) {
 
     const { secret, code } = parsed.data;
 
-    const totp = new TOTP({ secret });
-    // Verify the code matches the secret
-    const isValidCode = totp.verify({ token: code });
+    // Verify the code matches the secret (window=2 allows some clock skew)
+    const isValidCode = speakeasy.totp.verify({
+      secret,
+      encoding: "base32",
+      token: code,
+      window: 2,
+    });
+
     if (!isValidCode) {
       return apiError(
         "INVALID_CODE",
@@ -55,9 +60,8 @@ export async function POST(req: NextRequest) {
     );
 
     // Enable MFA on user account
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: user.id },
-      select: { id: true, email: true, twoFactorEnabled: true },
       data: {
         twoFactorSecret: secret,
         twoFactorEnabled: true,
@@ -68,7 +72,7 @@ export async function POST(req: NextRequest) {
 
     // Audit log
     await writeAuditLog({
-      organizationId: "", // MFA is account-level, not org-level
+      organizationId: "",
       actorUserId: user.id,
       action: "auth.mfa_enabled",
       resourceType: "User",

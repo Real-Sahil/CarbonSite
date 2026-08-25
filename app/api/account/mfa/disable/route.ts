@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { TOTP } from "otplib";
+import speakeasy from "speakeasy";
 
 const MFADisableSchema = z.object({
   code: z.string().regex(/^[\dA-F]{6,8}$/).describe("6-digit TOTP code or 8-char backup code"),
@@ -53,8 +53,13 @@ export async function POST(req: NextRequest) {
 
     // Try TOTP code first
     if (code.length === 6) {
-      const totp = new TOTP({ secret: userData.twoFactorSecret || "" });
-      const isValidCode = totp.verify({ token: code });
+      const isValidCode = speakeasy.totp.verify({
+        secret: userData.twoFactorSecret || "",
+        encoding: "base32",
+        token: code,
+        window: 2,
+      });
+
       if (!isValidCode) {
         return apiError("INVALID_CODE", "The code is incorrect or has expired.", 400);
       }
