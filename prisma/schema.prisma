@@ -1244,6 +1244,7 @@ model Project {
   embodiedCarbonRecords EmbodiedCarbonRecord[]
   carbonBudget  CarbonBudget?
   wasteRecords  WasteRecord[]
+  roleAssignments ProjectRoleAssignment[]
 
   @@index([organizationId, contractId])
   @@map("projects")
