@@ -4,6 +4,8 @@ import { prisma } from "./index";
 type AuditAction =
   | "auth.sign_in"
   | "auth.sign_out"
+  | "auth.mfa_enabled"
+  | "auth.mfa_disabled"
   | "org.created"
   | "org.updated"
   | "org.member.invite"
