@@ -7,8 +7,8 @@ export async function register() {
     initializeSentry();
   }
 
-  if (process.env.NEXT_RUNTIME === "edge") {
-    const { initializeSentry } = await import("./sentry.edge.config");
-    initializeSentry();
-  }
+  // Edge Runtime middleware doesn't need Sentry instrumentation.
+  // Middleware is deterministic (rate limiting, CSP nonce generation) and doesn't involve
+  // business logic that would benefit from error tracking. Skipping Sentry here keeps
+  // the Edge Function size under 1 MB limit.
 }
