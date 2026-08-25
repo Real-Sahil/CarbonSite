@@ -23,8 +23,9 @@ function extractSubdomain(host: string | null): string | null {
 }
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const host = req.headers.get("host");
+  try {
+    const { pathname } = req.nextUrl;
+    const host = req.headers.get("host");
 
   // ── Subdomain white-label routing ──────────────────────────────────────────
   // Pass the tenant subdomain as a request header so server components can
@@ -123,13 +124,18 @@ export function middleware(req: NextRequest) {
   // Pass nonce to client via response header (for Next.js script tag generation)
   res.headers.set("X-CSP-Nonce", nonce);
 
-  if (process.env.NODE_ENV === "production") {
-    res.headers.set(
-      "Strict-Transport-Security",
-      "max-age=63072000; includeSubDomains; preload",
-    );
+    if (process.env.NODE_ENV === "production") {
+      res.headers.set(
+        "Strict-Transport-Security",
+        "max-age=63072000; includeSubDomains; preload",
+      );
+    }
+    return res;
+  } catch (error) {
+    // Fail open: if middleware crashes, continue without security headers
+    // rather than blocking all traffic
+    return NextResponse.next();
   }
-  return res;
 }
 
 export const config = {
