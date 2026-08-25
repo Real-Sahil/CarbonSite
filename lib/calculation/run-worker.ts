@@ -256,6 +256,14 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
     // Rebuild DashboardAggregate for this period (live, snapshotId = null)
     await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId);
 
+    // Feature 4: Auto-create supplier data requests for high-uncertainty Scope 3 records
+    await autoCreateSupplierDataRequests(
+      orgId,
+      run.reportingPeriodId,
+      calculationRunId,
+      run.triggeredByUserId,
+    );
+
     await prisma.calculationRun.update({
       where: { id: calculationRunId },
       data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
@@ -354,4 +362,108 @@ async function rebuildDashboardAggregates(
       recordCount: count,
     })),
   });
+}
+
+async function autoCreateSupplierDataRequests(
+  orgId: string,
+  reportingPeriodId: string,
+  calculationRunId: string,
+  triggeredByUserId: string,
+): Promise<void> {
+  // Feature 4: Spend-based → Activity-based upgrade suggestions
+  // Identify Scope 3 records with high uncertainty (data_quality_score < 40)
+  // and auto-create SupplierDataRequest for supplier engagement
+
+  const highUncertaintyRecords = await prisma.emissionCalculation.findMany({
+    where: {
+      calculationRunId,
+      activityRecord: {
+        emissionCategory: { scope: 3 },
+      },
+      dataQualityScore: { lt: 40 }, // High uncertainty threshold
+    },
+    include: {
+      activityRecord: {
+        include: {
+          emissionCategory: { select: { code: true } },
+        },
+      },
+    },
+  });
+
+  if (highUncertaintyRecords.length === 0) return;
+
+  // Group by supplier and category to avoid duplicate requests
+  type UpgradeKey = { supplierName: string | null; categoryCode: string };
+  const upgrades = new Map<string, { supplierName: string | null; categoryCode: string }>();
+
+  for (const record of highUncertaintyRecords) {
+    const key: UpgradeKey = {
+      supplierName: record.activityRecord.supplierName,
+      categoryCode: record.activityRecord.emissionCategory.code,
+    };
+    const k = JSON.stringify(key);
+    if (!upgrades.has(k)) {
+      upgrades.set(k, key);
+    }
+  }
+
+  // For each supplier/category combination, check if request already exists
+  // and create if needed. Only create if we can match supplier email.
+  for (const { supplierName, categoryCode } of upgrades.values()) {
+    // Skip if no supplier name — can't send to an unknown party
+    if (!supplierName) continue;
+
+    // Check if request already exists for this supplier/category/period
+    const existing = await prisma.supplierDataRequest.findFirst({
+      where: {
+        organizationId: orgId,
+        reportingPeriodId,
+        categoryCode,
+        supplierName,
+        status: { in: ["sent", "opened"] }, // Only check active requests
+      },
+    });
+
+    if (existing) continue; // Already requested, skip
+
+    // Try to find supplier email from SupplierInvite
+    const supplierInvite = await prisma.supplierInvite.findFirst({
+      where: {
+        organizationId: orgId,
+        companyName: supplierName,
+      },
+      select: { email: true, companyName: true },
+    });
+
+    if (!supplierInvite) continue; // Can't auto-request without email
+
+    // Create SupplierDataRequest
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    try {
+      await prisma.supplierDataRequest.create({
+        data: {
+          organizationId: orgId,
+          reportingPeriodId,
+          supplierEmail: supplierInvite.email,
+          supplierName: supplierInvite.companyName ?? undefined,
+          categoryCode,
+          expiresAt,
+          notes:
+            "Auto-generated request: High-uncertainty spend-based data detected. Please provide activity-based details.",
+          createdByUserId: triggeredByUserId,
+        },
+      });
+
+      // Note: Email sending would happen here in production, but omitted to avoid
+      // hard dependency on Resend during calc runs. Dashboard UI can prompt admins
+      // to send emails manually or integrate async email job.
+    } catch (err) {
+      // Log but don't fail the calculation run if request creation fails
+      console.warn(
+        `[calculations] Failed to create SupplierDataRequest for ${supplierName}/${categoryCode}:`,
+        err,
+      );
+    }
+  }
 }
