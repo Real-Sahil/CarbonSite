@@ -25,7 +25,6 @@ export async function POST(req: NextRequest) {
           );
         }
       } catch (lockoutError) {
-        // Log but don't block - account lockout check shouldn't break login
         console.error("Account lockout check failed:", lockoutError);
       }
     }
@@ -58,8 +57,6 @@ export async function POST(req: NextRequest) {
     // If auth failed and we have an email, record the failed attempt
     if (response.status >= 400 && email) {
       try {
-        // Only record failures for existing accounts (not "user not found")
-        // We check this by looking up the email
         const user = await prisma.user.findUnique({
           where: { email },
           select: { id: true },
@@ -92,4 +89,8 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+export async function GET(req: NextRequest) {
+  return auth.handler(req);
 }
