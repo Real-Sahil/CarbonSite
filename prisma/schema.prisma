@@ -899,6 +899,9 @@ model EmissionCalculation {
   factorValue            Decimal? @map("factor_value") @db.Decimal(18, 8)
   formula                String
   warnings               Json     @default("[]")
+  dataQualityScore       Int      @default(50) @map("data_quality_score")
+  confidenceIntervalLower Decimal? @map("confidence_interval_lower") @db.Decimal(18, 8)
+  confidenceIntervalUpper Decimal? @map("confidence_interval_upper") @db.Decimal(18, 8)
   createdAt              DateTime @default(now()) @map("created_at")
 
   activityRecord  ActivityRecord     @relation(fields: [activityRecordId], references: [id])

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
+import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
 
 export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<void> {
   try {
@@ -29,7 +30,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         reviewStatus: "approved",
       },
       include: {
-        emissionCategory: { select: { id: true, code: true, activityType: true } },
+        emissionCategory: { select: { id: true, code: true, activityType: true, scope: true } },
       },
     });
 
@@ -73,6 +74,15 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         // No factor found — include the record with zero CO2e and a warning
         // instead of failing. (A fake "no-factor" FK value here used to
         // violate the foreign key and abort the entire run.)
+        const qualityScore = calculateDataQualityScore({
+          record: record as any,
+          factorSelection: null,
+          unitConverted: false,
+          unitConversionComplex: false,
+        });
+
+        const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+
         await prisma.emissionCalculation.create({
           data: {
             organizationId: orgId,
@@ -92,6 +102,9 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
               ...unitWarnings,
               `No emission factor found for category ${record.emissionCategory.code}`,
             ],
+            dataQualityScore: qualityScore.score,
+            confidenceIntervalLower: confidenceInterval.lower,
+            confidenceIntervalUpper: confidenceInterval.upper,
           },
         });
         continue;
@@ -104,9 +117,20 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       // factor) silently overstates by 1000× — refusing with a visible zero
       // is always safer than a wrong number.
       let amountForFactor = normalized.amount;
+      let unitWasConverted = false;
+      let unitConversionWasComplex = false;
+
       if (normalized.unit !== factor.inputUnit) {
         const converted = convertBetween(normalized.amount, normalized.unit, factor.inputUnit);
         if (converted == null) {
+          const qualityScore = calculateDataQualityScore({
+            record: record as any,
+            factorSelection,
+            unitConverted: true,
+            unitConversionComplex: true,
+          });
+          const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+
           await prisma.emissionCalculation.create({
             data: {
               organizationId: orgId,
@@ -127,11 +151,17 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
                 ...unitWarnings,
                 `Record unit "${normalized.unit}" is incompatible with factor input unit "${factor.inputUnit}". Correct the record's unit or import a matching factor.`,
               ],
+              dataQualityScore: qualityScore.score,
+              confidenceIntervalLower: confidenceInterval.lower,
+              confidenceIntervalUpper: confidenceInterval.upper,
             },
           });
           continue;
         }
         amountForFactor = converted;
+        unitWasConverted = true;
+        unitConversionWasComplex = !["kg", "tonnes", "t"].includes(normalized.unit) ||
+          !["kg", "tonnes", "t"].includes(factor.inputUnit);
         unitWarnings.push(
           `Converted ${normalized.amount} ${normalized.unit} to ${converted} ${factor.inputUnit} to match the factor.`,
         );
@@ -156,6 +186,18 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 
       const factorValue = factor.co2e ?? factor.co2;
 
+      const qualityScore = calculateDataQualityScore({
+        record: record as any,
+        factorSelection,
+        unitConverted: unitWasConverted,
+        unitConversionComplex: unitConversionWasComplex,
+      });
+
+      const confidenceInterval = calculateConfidenceInterval(
+        result.totalCo2e,
+        qualityScore.score,
+      );
+
       await prisma.emissionCalculation.create({
         data: {
           organizationId: orgId,
@@ -177,6 +219,9 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
           factorValue: factorValue != null ? toDecimal(Number(factorValue)) : null,
           formula: result.formula,
           warnings: result.warnings,
+          dataQualityScore: qualityScore.score,
+          confidenceIntervalLower: toDecimal(confidenceInterval.lower),
+          confidenceIntervalUpper: toDecimal(confidenceInterval.upper),
         },
       });
     }
