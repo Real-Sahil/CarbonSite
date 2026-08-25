@@ -87,15 +87,12 @@ export function middleware(req: NextRequest) {
       }
     }
 
-    // ── Content Security Policy with nonce ──────────────────────────────────────
-    // Generate a random nonce for this request's inline scripts.
-    // Passed to client via CSP header and meta tag so Next.js can use it.
-    const randomBytes = globalThis.crypto?.getRandomValues(new Uint8Array(16)) ??
-      new Uint8Array(16).map(() => Math.floor(Math.random() * 256));
-    const nonce = btoa(String.fromCharCode(...randomBytes));
+    // ── Content Security Policy ─────────────────────────────────────────────────
+    // Simplified CSP to ensure JavaScript and event handlers work properly.
+    // Using 'unsafe-inline' for scripts and styles since the app uses React with inline handlers.
     const cspHeader = [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline' 'nonce-${nonce}' https://cdn.jsdelivr.net`, // nonce for Next.js inline scripts + CDN for trusted libraries; unsafe-inline for inline event handlers
+      "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://analytics.google.com https://www.googletagmanager.com", // Allow inline scripts for React event handlers
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // unsafe-inline: Tailwind + shadcn; Google Fonts
       "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://images.unsplash.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
       "connect-src 'self' https://*.r2.cloudflarestorage.com https://api.postcodes.io https://api.github.com",
@@ -104,7 +101,6 @@ export function middleware(req: NextRequest) {
       "base-uri 'self'",
       "form-action 'self'",
       "object-src 'none'",
-      "report-uri /api/csp-report",
     ].join("; ");
 
     // ── Security headers on every response ─────────────────────────────────────
@@ -120,9 +116,6 @@ export function middleware(req: NextRequest) {
     res.headers.set("X-DNS-Prefetch-Control", "off");
     res.headers.set("X-Permitted-Cross-Domain-Policies", "none");
     res.headers.set("Cross-Origin-Opener-Policy", "same-origin");
-
-    // Pass nonce to client via response header (for Next.js script tag generation)
-    res.headers.set("X-CSP-Nonce", nonce);
 
     if (process.env.NODE_ENV === "production") {
       res.headers.set(
