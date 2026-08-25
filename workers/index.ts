@@ -11,6 +11,7 @@ import type {
   NotificationJobData,
   DsarJobData,
   UptimeMonitoringJobData,
+  DsarSlaMonitoringJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -19,6 +20,7 @@ import { processReport } from "@/lib/reports/worker";
 import { processDsarExport } from "./dsar-export";
 import { processDsarErasure } from "./dsar-erasure";
 import { processUptimeMonitoring } from "./uptime-monitoring";
+import { processDsarSlaMonitoring } from "./dsar-sla-monitoring";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -130,8 +132,25 @@ async function start() {
     {},
   );
 
+  // ── DSAR SLA Monitoring ──────────────────────────────────────────────────
+  await boss.work<DsarSlaMonitoringJobData>(
+    "dsar-sla-monitoring",
+    { localConcurrency: 1 },
+    async () => {
+      console.log("[dsar-sla-monitoring] checking DSAR request SLAs");
+      await processDsarSlaMonitoring();
+    },
+  );
+
+  // Schedule daily DSAR SLA check: 2 AM UTC (cron: 0 2 * * *)
+  await boss.schedule(
+    "dsar-sla-monitoring",
+    "0 2 * * *", // daily at 2 AM UTC
+    {},
+  );
+
   console.log(
-    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring)",
+    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring, dsar-sla-monitoring)",
   );
 }
 

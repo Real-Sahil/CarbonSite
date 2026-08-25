@@ -78,6 +78,7 @@ type AuditAction =
   | "dsar.export_completed"
   | "dsar.erasure_completed"
   | "dsar.erasure_rejected"
+  | "dsar.sla_approaching"
   | "webhook.created"
   | "webhook.deleted"
   | "field_submission.assigned"

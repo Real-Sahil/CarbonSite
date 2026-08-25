@@ -17,7 +17,7 @@ describe("processUptimeMonitoring", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await processUptimeMonitoring({});
+    await processUptimeMonitoring();
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/api/health"),
@@ -34,7 +34,7 @@ describe("processUptimeMonitoring", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(processUptimeMonitoring({})).rejects.toThrow(
+    await expect(processUptimeMonitoring()).rejects.toThrow(
       "Health check failed",
     );
   });
@@ -46,7 +46,7 @@ describe("processUptimeMonitoring", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(processUptimeMonitoring({})).rejects.toThrow(
+    await expect(processUptimeMonitoring()).rejects.toThrow(
       "Health check failed",
     );
   });
@@ -55,7 +55,7 @@ describe("processUptimeMonitoring", () => {
     const fetchMock = vi.fn().mockRejectedValue(new Error("Network timeout"));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(processUptimeMonitoring({})).rejects.toThrow("Network timeout");
+    await expect(processUptimeMonitoring()).rejects.toThrow("Network timeout");
   });
 
   it("should log warning for slow response", async () => {
@@ -77,7 +77,7 @@ describe("processUptimeMonitoring", () => {
       return { status: 200, json: async () => ({ ok: true }) };
     });
 
-    await processUptimeMonitoring({});
+    await processUptimeMonitoring();
 
     expect(consoleWarnSpy).toHaveBeenCalledWith(
       expect.stringContaining("[uptime-monitoring] Slow health check"),
