@@ -47,7 +47,8 @@ export default withSentryConfig(nextConfig, {
     disable: true,
   },
 
-  // Disable tunnelRoute to reduce Edge Function bundle size (less critical for free tier)
-  // Browser errors will report directly to Sentry instead of through a proxy
-  tunnelRoute: undefined,
+  // Disable automatic monitoring to reduce middleware bundle size
+  // Middleware doesn't need Sentry instrumentation—it's deterministic code
+  // (rate limiting, CSP generation). Error tracking is handled in API routes.
+  automaticVercelMonitors: false,
 });
