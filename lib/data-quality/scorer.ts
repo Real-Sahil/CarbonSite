@@ -31,7 +31,7 @@ export async function calculateDataQualityScore(
   organizationId: string,
   reportingPeriodId?: string
 ): Promise<DataQualityMetrics> {
-  let whereClause: any = { organizationId };
+  const whereClause: any = { organizationId };
 
   if (reportingPeriodId) {
     whereClause.reportingPeriodId = reportingPeriodId;

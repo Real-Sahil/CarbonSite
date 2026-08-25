@@ -239,7 +239,7 @@ export async function compileDigestData(
 ): Promise<Partial<DigestTemplate["data"]> | null> {
   // Get time range based on digest type
   const now = new Date();
-  let startDate = new Date();
+  const startDate = new Date();
 
   if (timeframe === "daily") {
     startDate.setDate(startDate.getDate() - 1);
