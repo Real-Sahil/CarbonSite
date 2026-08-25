@@ -5,9 +5,6 @@
 // Async Postgres-backed rate limiting is in rate-limit-async.ts (so Prisma
 // doesn't get bundled into the middleware Edge Function).
 
-import { NextRequest, NextResponse } from "next/server";
-import { resolveClientIp } from "./client-ip";
-
 // ── Sync in-memory (Edge-compatible) ─────────────────────────────────────────
 
 type Window = { count: number; resetAt: number };
