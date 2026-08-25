@@ -50,6 +50,8 @@ type AuditAction =
   | "field_submission.resubmitted"
   | "snapshot.approved"
   | "snapshot.changes_requested"
+  | "snapshot.assured"
+  | "snapshot.assurance_retracted"
   | "field_worker.assignment_created"
   | "field_worker.assignment_deleted"
   | "field_worker.site_assigned"

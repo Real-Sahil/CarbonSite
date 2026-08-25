@@ -48,6 +48,7 @@ model User {
   socialValueRecordsCreated SocialValueRecord[]      @relation("SocialValueCreator")
   classificationReviews     EvidenceClassification[] @relation("ClassificationReviewer")
   ocrCorrections            OcrCorrection[]          @relation("OcrCorrectionBy")
+  snapshotAssurances        SnapshotAssurance[]      @relation("SnapshotAuditor")
   deviceTokens              DeviceToken[]
   webhooks                  Webhook[]                @relation("WebhookCreator")
   snapshotVerifications     PublishedSnapshot[]      @relation("SnapshotVerifiedBy")
@@ -170,6 +171,7 @@ model Organization {
   calculationSchedules CalculationSchedule[]
   digestPreferences   DigestPreference[]
   projectRoleAssignments ProjectRoleAssignment[]
+  snapshotAssurances  SnapshotAssurance[]
 
   @@map("organizations")
 }
@@ -946,6 +948,38 @@ model PublishedSnapshot {
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, verificationStatus])
   @@map("published_snapshots")
+  assurance SnapshotAssurance?
+}
+
+// ─── Auditor Assurance & Sign-Off ─────────────────────────────────────────────
+
+model SnapshotAssurance {
+  id                   String   @id @default(cuid())
+  organizationId       String   @map("organization_id")
+  snapshotId           String   @unique @map("snapshot_id")
+  auditorUserId        String   @map("auditor_user_id")
+  status               AssuranceStatus @default(pending) // pending | approved | rejected
+  notes                String?
+  signatureBase64      String?  @map("signature_base64") // Optional e-signature data
+  signedAt             DateTime? @map("signed_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  snapshot     PublishedSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  auditor      User              @relation("SnapshotAuditor", fields: [auditorUserId], references: [id])
+
+  @@index([organizationId, status])
+  @@index([auditorUserId, status])
+  @@map("snapshot_assurances")
+}
+
+enum AssuranceStatus {
+  pending
+  approved
+  rejected
+
+  @@map("assurance_status")
 }
 
 // ─── Scenario / What-If Modeling ──────────────────────────────────────────────
