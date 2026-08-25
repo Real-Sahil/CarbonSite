@@ -6,7 +6,7 @@
 | 1 | Billing | DONE | BillingSubscription + UsageEvent models. Migration. lib/billing/usage.ts + limits.ts. GET /api/orgs/[orgId]/billing/usage. Settings page with usage meters + plan comparison table. |
 | 2 | Advanced Analytics | Pending | PostHog cloud script injection |
 | 3 | User Onboarding | Pending | Guided first-use flows |
-| 4 | White-Label | Partial | TenantBranding model + branding settings already present |
+| 4 | White-Label | Done | Middleware passes x-subdomain header; (app) layout injects --brand-primary/--brand-accent/--brand-font CSS vars; public /api/platform/branding/[subdomain] endpoint |
 | 5 | Monitoring | Partial | Health endpoint live (`/api/health`): env, database, auth-schema, storage checks; Grafana Cloud wiring pending |
 | 6 | Data Residency | Pending | Org-level region tagging |
 | 7 | Partner Ecosystem | Pending | Partner portal + revenue share |

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/notifications/fcm_handler.dart';
 import 'core/router/router.dart';
@@ -19,6 +20,16 @@ void main() async {
     FcmHandler.setupBackgroundMessageHandler();
   } catch (e) {
     debugPrint('[FCM] Firebase initialisation skipped: $e');
+  }
+
+  // Initialise the offline map tile cache. A single persistent store covers
+  // all areas — tiles are cached on first online view and served from disk
+  // on subsequent visits regardless of connectivity.
+  try {
+    await FlutterMapTileCaching.initialise();
+    await const FMTCStore('mainStore').manage.create();
+  } catch (e) {
+    debugPrint('[FMTC] Map tile cache initialisation skipped: $e');
   }
 
   runApp(const ProviderScope(child: CarbonSiteApp()));
