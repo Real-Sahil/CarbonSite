@@ -3,6 +3,7 @@
 // produce a calculation-ready ActivityRecord with evidence carried over.
 
 import { Prisma } from "@prisma/client";
+import { isValid as isValidUkPostcode } from "postcode";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -159,6 +160,11 @@ export async function approveSubmissionInTx(
         distanceAmount: submission.calculatedDistanceKm,
         distanceUnit: submission.calculatedDistanceKm ? "km" : undefined,
         routeDistanceSource: submission.distanceSource,
+        country:
+          (submission.pickupPostcode != null && isValidUkPostcode(submission.pickupPostcode)) ||
+          (submission.deliveryPostcode != null && isValidUkPostcode(submission.deliveryPostcode))
+            ? "GB"
+            : undefined,
       },
     });
     activityRecordId = record.id;

@@ -449,6 +449,9 @@ Future<FieldSubmission> resubmitFieldSubmission({
   double? gpsLng,
 }) async {
   final client = await getClient();
+  final _resubPickupPostcode = formData['pickupPostcode'] as String?;
+  final _resubDeliveryPostcode =
+      (formData['deliveryPostcode'] ?? formData['postcode']) as String?;
   final response = await client.post(
     '/api/orgs/$orgId/field-submissions/$originalSubmissionId/resubmit',
     data: {
@@ -459,6 +462,10 @@ Future<FieldSubmission> resubmitFieldSubmission({
       if (evidenceFileIds.isNotEmpty) 'evidenceFileIds': evidenceFileIds,
       if (gpsLat != null) 'gpsLat': gpsLat,
       if (gpsLng != null) 'gpsLng': gpsLng,
+      if (_resubPickupPostcode != null && _resubPickupPostcode.isNotEmpty)
+        'pickupPostcode': _resubPickupPostcode,
+      if (_resubDeliveryPostcode != null && _resubDeliveryPostcode.isNotEmpty)
+        'deliveryPostcode': _resubDeliveryPostcode,
     },
   );
   final raw = response.data;
@@ -501,6 +508,12 @@ Future<FieldSubmission> submitFieldSubmission({
 }) async {
   final client = await getClient();
 
+  // Promote postcodes from formData to top-level so the server's postcode
+  // pipeline can resolve route distances and set country = "GB".
+  final _pickupPostcode = formData['pickupPostcode'] as String?;
+  final _deliveryPostcode =
+      (formData['deliveryPostcode'] ?? formData['postcode']) as String?;
+
   final body = <String, dynamic>{
     if (siteId.isNotEmpty) 'siteId': siteId,
     'documentType': documentType,
@@ -514,6 +527,10 @@ Future<FieldSubmission> submitFieldSubmission({
     if (ocrExtractedData != null) 'ocrExtractedData': ocrExtractedData,
     if (deviceSubmittedAt != null)
       'deviceSubmittedAt': deviceSubmittedAt.toUtc().toIso8601String(),
+    if (_pickupPostcode != null && _pickupPostcode.isNotEmpty)
+      'pickupPostcode': _pickupPostcode,
+    if (_deliveryPostcode != null && _deliveryPostcode.isNotEmpty)
+      'deliveryPostcode': _deliveryPostcode,
   };
 
   final response = await client.post(

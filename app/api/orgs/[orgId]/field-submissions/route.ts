@@ -329,6 +329,25 @@ export async function POST(req: NextRequest, { params }: Params) {
       resolvedDeliveryPostcode = fallback.normalised ?? body.deliveryPostcode;
     }
 
+    // Flutter sends the "Site postcode" field (and pickup/delivery postcodes)
+    // inside formData rather than as top-level body fields. Check formData as
+    // a final fallback so waste-ticket submissions don't lose their postcode.
+    const formDataRaw = body.formData as Record<string, unknown>;
+    if (!resolvedDeliveryPostcode) {
+      const raw = formDataRaw["deliveryPostcode"] ?? formDataRaw["postcode"];
+      if (typeof raw === "string" && raw.trim()) {
+        const fb = validatePostcode(raw.trim());
+        resolvedDeliveryPostcode = fb.normalised ?? raw.trim();
+      }
+    }
+    if (!resolvedPickupPostcode) {
+      const raw = formDataRaw["pickupPostcode"];
+      if (typeof raw === "string" && raw.trim()) {
+        const fb = validatePostcode(raw.trim());
+        resolvedPickupPostcode = fb.normalised ?? raw.trim();
+      }
+    }
+
     const postcodeValidationStatus = postcodeResult.postcodeValidationStatus;
     const deliveryPostcodeOriginal = postcodeResult.deliveryPostcodeOriginal;
     const postcodeExtractionSource = postcodeResult.postcodeExtractionSource;
