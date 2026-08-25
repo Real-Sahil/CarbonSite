@@ -8,13 +8,18 @@ import { prisma } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
-    // Check if account is locked before attempting auth
-    const body = await req.json().catch(() => ({}));
+    console.log("[sign-in] Request URL:", req.nextUrl.pathname);
+
+    // Clone request before reading body so we can pass a fresh copy to auth.handler()
+    const clonedReq = req.clone();
+    const body = await clonedReq.json().catch(() => ({}));
     const email = typeof body?.email === "string" ? body.email.toLowerCase() : "";
+    console.log("[sign-in] Email from body:", email ? email.substring(0, 5) + "..." : "none");
 
     if (email) {
       try {
         const locked = await isAccountLocked(email);
+        console.log("[sign-in] Account locked check:", locked);
         if (locked) {
           return NextResponse.json(
             {
@@ -32,9 +37,22 @@ export async function POST(req: NextRequest) {
     // Delegate to Better Auth handler
     let response: Response;
     try {
+      console.log("[sign-in] Calling auth.handler()");
       response = await auth.handler(req);
+      console.log("[sign-in] Auth handler response status:", response.status);
+
+      // Read and log response body for debugging
+      const responseText = await response.text();
+      console.log("[sign-in] Auth handler response body:", responseText.substring(0, 200));
+
+      // Re-create response since we consumed the body
+      response = new Response(responseText, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      });
     } catch (authError) {
-      console.error("Auth handler error:", authError);
+      console.error("[sign-in] Auth handler error:", authError);
       return NextResponse.json(
         {
           code: "AUTH_ERROR",
@@ -48,6 +66,7 @@ export async function POST(req: NextRequest) {
     if (response.status === 200 && email) {
       try {
         clearAccountLockout(email);
+        console.log("[sign-in] Cleared account lockout for:", email);
       } catch (clearError) {
         console.error("Failed to clear account lockout:", clearError);
       }
@@ -62,6 +81,7 @@ export async function POST(req: NextRequest) {
           select: { id: true },
         });
         if (user) {
+          console.log("[sign-in] User found, recording failed login");
           const nowLocked = await recordFailedLogin(email);
           if (nowLocked) {
             return NextResponse.json(
@@ -72,15 +92,18 @@ export async function POST(req: NextRequest) {
               { status: 429 },
             );
           }
+        } else {
+          console.log("[sign-in] User not found for email");
         }
       } catch (failureRecordError) {
         console.error("Failed to record login failure:", failureRecordError);
       }
     }
 
+    console.log("[sign-in] Returning response with status:", response.status);
     return response;
   } catch (error) {
-    console.error("Sign-in route error:", error);
+    console.error("[sign-in] Route error:", error);
     return NextResponse.json(
       {
         code: "SERVER_ERROR",
