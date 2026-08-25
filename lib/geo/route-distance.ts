@@ -162,10 +162,30 @@ async function getOrCreatePostcodeGeocode(normalizedPostcode: string) {
     );
   }
 
+  const displayPostcode = result.postcode ?? displayUkPostcode(normalizedPostcode);
+
+  // Encrypt postcodes for at-rest data protection (GDPR compliance)
+  const { encryptField } = await import("@/lib/security/field-encryption");
+  let normalizedEncrypted: Record<string, unknown> | undefined;
+  let displayEncrypted: Record<string, unknown> | undefined;
+  try {
+    normalizedEncrypted = encryptField(normalizedPostcode) as Record<string, unknown>;
+    displayEncrypted = encryptField(displayPostcode) as Record<string, unknown>;
+  } catch (err) {
+    // If encryption fails, continue without encrypted fields (graceful degradation)
+    console.warn(
+      `[postcode-geocoding] Encryption failed, storing unencrypted: ${err}`,
+    );
+  }
+
   return prisma.postcodeGeocode.create({
     data: {
       normalizedPostcode,
-      displayPostcode: result.postcode ?? displayUkPostcode(normalizedPostcode),
+      displayPostcode,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      normalizedPostcodeEncrypted: (normalizedEncrypted || null) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      displayPostcodeEncrypted: (displayEncrypted || null) as any,
       latitude: result.latitude,
       longitude: result.longitude,
       provider: POSTCODE_PROVIDER,
