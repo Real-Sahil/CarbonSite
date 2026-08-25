@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm prisma migrate resolve --rolled-back 20260825160300_add_scenario_modeling; pnpm prisma migrate deploy && pnpm build",
+  "buildCommand": "pnpm prisma migrate resolve --rolled-back 20260825160300_add_scenario_modeling; pnpm prisma migrate resolve --rolled-back 20260825182334_add_encrypted_postcode_fields; pnpm prisma migrate deploy && pnpm build",
   "devCommand": "pnpm dev"
 }
