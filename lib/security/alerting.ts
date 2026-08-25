@@ -136,14 +136,31 @@ export async function checkBulkSubmissionReview(
 // Queue an alert for admin notification.
 // In MVP, alerts are logged; in production, they enqueue a notification job.
 export async function raiseAlert(alert: AuditAlert): Promise<void> {
-  console.warn("[SECURITY ALERT]", {
+  const logEntry = {
     timestamp: new Date().toISOString(),
     type: alert.type,
     severity: alert.severity,
     organizationId: alert.organizationId,
     message: alert.message,
     metadata: alert.metadata,
-  });
+  };
+
+  console.warn("[SECURITY ALERT]", logEntry);
+
+  // Send to Sentry for error tracking and monitoring
+  if (process.env.SENTRY_DSN) {
+    try {
+      const { captureMessage, setContext } = await import("@sentry/nextjs");
+      setContext("security_alert", {
+        type: alert.type,
+        severity: alert.severity,
+        organizationId: alert.organizationId,
+      });
+      captureMessage(alert.message, alert.severity === "critical" ? "error" : "warning");
+    } catch {
+      // Sentry not available or failed — continue
+    }
+  }
 
   // TODO: In production, enqueue a notification job for admins:
   // await enqueueJob('notifications', {
