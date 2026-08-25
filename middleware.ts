@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { rateLimit, POLICIES } from "@/lib/security/rate-limit";
 import { resolveClientIp } from "@/lib/security/client-ip";
 
@@ -90,7 +89,8 @@ export function middleware(req: NextRequest) {
   // ── Content Security Policy with nonce ──────────────────────────────────────
   // Generate a random nonce for this request's inline scripts.
   // Passed to client via CSP header and meta tag so Next.js can use it.
-  const nonce = crypto.randomBytes(16).toString("base64");
+  const randomBytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  const nonce = btoa(String.fromCharCode(...randomBytes));
   const cspHeader = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' https://cdn.jsdelivr.net`, // nonce for Next.js inline scripts + CDN for trusted libraries
