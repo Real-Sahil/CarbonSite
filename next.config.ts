@@ -52,16 +52,14 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "puppeteer", "pdfkit"],
-  experimental: {
-    // PDFKit's built-in fonts (.afm files) are non-JS assets that Vercel's
-    // output file tracer misses. Include them explicitly so font calls like
-    // doc.font("Helvetica") work inside serverless functions.
-    outputFileTracingIncludes: {
-      "/api/**": [
-        "./node_modules/pdfkit/js/data/**",
-        "./node_modules/.pnpm/**/pdfkit/js/data/**",
-      ],
-    },
+  // PDFKit's built-in fonts (.afm files) are non-JS assets that Vercel's
+  // output file tracer misses. Include them explicitly so font calls like
+  // doc.font("Helvetica") work inside serverless functions.
+  outputFileTracingIncludes: {
+    "/api/**": [
+      "./node_modules/pdfkit/js/data/**",
+      "./node_modules/.pnpm/**/pdfkit/js/data/**",
+    ],
   },
   images: {
     remotePatterns: [
