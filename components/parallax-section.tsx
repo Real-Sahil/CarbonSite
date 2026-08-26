@@ -24,7 +24,7 @@ export function ParallaxSection({ children, speed = 0.5, className = '' }: Paral
         trigger: ref.current,
         start: 'top center',
         end: 'bottom center',
-        scrub: 1,
+        scrub: 0.5,
         markers: false,
       },
     });
