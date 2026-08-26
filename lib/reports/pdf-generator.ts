@@ -5,7 +5,6 @@
 import PDFDocument from "pdfkit";
 import type PDFKit from "pdfkit";
 import { PDFDocument as PdfLib, StandardFonts, rgb } from "pdf-lib";
-import QRCode from "qrcode";
 import type { ReportData } from "./template";
 
 const MARGIN = 52;
@@ -601,13 +600,21 @@ interface QrMeta {
 export async function addQrCodeToFooter(pdfBytes: Buffer, meta: QrMeta): Promise<Buffer> {
   const doc = await PdfLib.load(pdfBytes);
 
-  // Generate QR code as PNG data URL
-  const qrDataUrl = await QRCode.toDataURL(meta.verificationUrl, {
-    errorCorrectionLevel: "M",
-    type: "image/png",
-    width: 300,
-    margin: 0,
-  });
+  // Lazy-load QRCode to avoid DOMMatrix errors in serverless
+  let qrDataUrl: string;
+  try {
+    const QRCode = (await import("qrcode")).default;
+    qrDataUrl = await QRCode.toDataURL(meta.verificationUrl, {
+      errorCorrectionLevel: "M",
+      type: "image/png",
+      width: 300,
+      margin: 0,
+    });
+  } catch (err) {
+    console.warn("[PDF] QR code generation failed, skipping QR code:", err);
+    // Return PDF without QR code if generation fails
+    return pdfBytes;
+  }
 
   // Convert data URL to PNG bytes
   const base64Data = qrDataUrl.split(",")[1];

@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const report = body["csp-report"];
 
     if (!report) {
-      return NextResponse.json({ ok: true }, { status: 204 });
+      return NextResponse.json({ ok: true });
     }
 
     const violation = {
@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ ok: true }, { status: 204 });
+    return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[CSP Report Error]", err);
-    return NextResponse.json({ ok: true }, { status: 204 });
+    return NextResponse.json({ ok: true });
   }
 }
