@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/marketing/site-footer";
 import { StandardsMarquee } from "@/components/marketing/standards-marquee";
 import { AnimateIn } from "@/components/marketing/animate-in";
 import { ArrowUpRight, Smartphone, ClipboardCheck, Calculator, FileText, ShieldCheck, Users } from "lucide-react";
+import { CapabilitiesBg, HowItWorksBg, CtaBg } from "@/components/marketing/section-backgrounds";
 
 const CAPABILITIES = [
   {
@@ -105,9 +106,7 @@ export default function RootPage() {
 
       {/* ── Capabilities ──────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#060612]">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)", backgroundSize: "56px 56px" }} />
-        <div className="absolute top-1/2 left-0 w-[600px] h-[600px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.10)_0%,transparent_70%)] pointer-events-none -translate-y-1/2" />
+        <CapabilitiesBg />
 
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
@@ -144,7 +143,7 @@ export default function RootPage() {
 
       {/* ── How it works — horizontal steps ──────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#060612]">
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.10)_0%,transparent_70%)] pointer-events-none" />
+        <HowItWorksBg />
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
@@ -257,13 +256,7 @@ export default function RootPage() {
 
       {/* ── CTA ── dark mesh gradient ─────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#060612]">
-        {/* Blobs */}
-        <div className="absolute -top-24 left-1/4 w-[500px] h-[500px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.35)_0%,transparent_65%)] pointer-events-none" />
-        <div className="absolute bottom-0 right-1/3 w-[400px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.20)_0%,transparent_70%)] pointer-events-none" />
-        <div className="absolute top-1/2 right-0 w-[350px] h-[350px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.12)_0%,transparent_70%)] pointer-events-none" />
-        {/* Grid overlay */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
+        <CtaBg />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-32">
           <AnimateIn>

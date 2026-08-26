@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ShieldCheck } from "lucide-react";
+import { SecurityHeroBg, SecurityCtaBg } from "@/components/marketing/section-backgrounds";
 
 export const metadata: Metadata = {
   title: "Security - CarbonSite",
@@ -55,70 +55,63 @@ const CONTROLS = [
 ];
 
 const TAG_STYLE: Record<string, string> = {
-  P0:      "text-[#E05A5A] border-[#E05A5A]/30 bg-[#E05A5A]/8",
-  Core:    "text-[#64748B] border-[#3D3D3A] bg-[#1A1A18]",
-  Defence: "text-[#0891B2] border-[#06B6D4]/30 bg-[#06B6D4]/8",
+  P0:      "text-red-400 border-red-500/30 bg-red-500/8",
+  Core:    "text-white/50 border-white/15 bg-white/5",
+  Defence: "text-cyan-400 border-cyan-500/30 bg-cyan-500/8",
 };
 
 export default function SecurityPage() {
   return (
-    <main className="min-h-[100dvh] bg-white">
+    <main className="min-h-[100dvh] bg-[#060612]">
       <SiteNav theme="dark" />
 
-      {/* Hero */}
-      <section className="relative min-h-[55vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop"
-            alt="Carbon audit and emissions tracking verification"
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-[#0F172A]/70 to-[#0F172A]/25" />
-        </div>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#060612]">
+        <SecurityHeroBg />
+        {/* Bottom fade into page */}
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#060612] to-transparent pointer-events-none" />
+
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#06B6D4]" />
-              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Security</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-500/20 bg-teal-500/8 mb-8">
+              <ShieldCheck className="h-3.5 w-3.5 text-teal-400" />
+              <span className="text-xs text-teal-400 tracking-[0.1em] font-medium">Security</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-6 max-w-[18ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[18ch]">
               Designed to be audited.
             </h1>
-            <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch]">
+            <p className="text-base text-white/40 leading-relaxed max-w-[50ch]">
               Multi-tenant isolation, role-based access control, append-only audit logs, and immutable snapshots. Every control is enforced server-side.
             </p>
           </AnimateIn>
         </div>
       </section>
 
-      {/* Controls */}
-      <section className="bg-white">
+      {/* ── Controls ─────────────────────────────────────────────────────── */}
+      <section className="bg-[#060612]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <div className="flex items-center gap-4 mb-12">
+            <div className="flex items-center gap-3 mb-12 flex-wrap">
               {Object.entries(TAG_STYLE).map(([tag, cls]) => (
                 <span key={tag} className={`text-[10px] px-2.5 py-1 rounded-full border tracking-wide ${cls}`}>{tag}</span>
               ))}
-              <span className="text-[10px] text-[#3D3D3A]">classification key</span>
+              <span className="text-[10px] text-white/25">classification key</span>
             </div>
           </AnimateIn>
-          <div className="border border-gray-200 divide-y divide-[#1E293B] overflow-hidden">
+          <div className="border border-white/8 divide-y divide-white/6 rounded-2xl overflow-hidden">
             {CONTROLS.map((control, i) => (
               <AnimateIn key={control.area} delay={i * 0.04}>
-                <div className="grid grid-cols-1 md:grid-cols-[220px_80px_1fr] hover:bg-[#111110] transition-colors">
-                  <div className="px-6 py-5 border-r border-gray-200">
-                    <span className="text-sm font-medium text-[#111827]">{control.area}</span>
+                <div className="grid grid-cols-1 md:grid-cols-[220px_80px_1fr] hover:bg-white/3 transition-colors">
+                  <div className="px-6 py-5 border-r border-white/6">
+                    <span className="text-sm font-medium text-white/80">{control.area}</span>
                   </div>
-                  <div className="px-6 py-5 border-r border-gray-200 flex items-start">
+                  <div className="px-6 py-5 border-r border-white/6 flex items-start">
                     <span className={`text-[10px] px-2.5 py-1 rounded-full border tracking-wide ${TAG_STYLE[control.tag]}`}>
                       {control.tag}
                     </span>
                   </div>
                   <div className="px-6 py-5">
-                    <p className="text-sm text-[#64748B] leading-relaxed">{control.detail}</p>
+                    <p className="text-sm text-white/35 leading-relaxed">{control.detail}</p>
                   </div>
                 </div>
               </AnimateIn>
@@ -127,27 +120,36 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* Architecture note */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+      {/* ── Architecture note ─────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#060612] border-t border-white/6">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.014) 1px,transparent 1px)", backgroundSize: "56px 56px" }} />
+        <div className="absolute top-0 right-0 w-[500px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.09)_0%,transparent_70%)] pointer-events-none" />
+
+        <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
               <div>
-                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-5">
+                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-white mb-5">
                   No external auth dependencies.
                 </h2>
-                <p className="text-sm text-[#64748B] leading-relaxed mb-4">
+                <p className="text-sm text-white/40 leading-relaxed mb-4">
                   Authentication runs entirely on your own infrastructure. Session data lives in your database — not a third-party auth service — so you have full custody of who has access and when. Mobile clients use short-lived tokens with automatic renewal.
                 </p>
-                <p className="text-sm text-[#64748B] leading-relaxed">
+                <p className="text-sm text-white/40 leading-relaxed">
                   Files are stored in isolated, access-controlled object storage. Each organisation&apos;s content is scoped to its own namespace. Download links expire after a short window and are only issued to authenticated, authorised users.
                 </p>
               </div>
               <div className="space-y-4">
-                {["Cross-tenant access is a P0 security bug — enforced in the data layer.", "Audit rows are append-only. Never updated. Never deleted.", "Calculation results are immutable after publication.", "Field worker scope is zero — no org data, no other users."].map((point) => (
-                  <div key={point} className="flex items-start gap-3">
-                    <div className="mt-1.5 w-1 h-1 rounded-full bg-[#06B6D4] shrink-0" />
-                    <p className="text-sm text-[#64748B] leading-relaxed">{point}</p>
+                {[
+                  "Cross-tenant access is a P0 security bug — enforced in the data layer.",
+                  "Audit rows are append-only. Never updated. Never deleted.",
+                  "Calculation results are immutable after publication.",
+                  "Field worker scope is zero — no org data, no other users.",
+                ].map((point) => (
+                  <div key={point} className="flex items-start gap-3 rounded-xl border border-white/6 bg-white/3 px-5 py-4">
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-400 shadow-[0_0_6px_rgba(45,212,191,0.6)] shrink-0" />
+                    <p className="text-sm text-white/50 leading-relaxed">{point}</p>
                   </div>
                 ))}
               </div>
@@ -156,16 +158,20 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+      {/* ── CTA ─────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#060612] border-t border-white/6">
+        <SecurityCtaBg />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
               Security questions? Talk to the team.
             </h2>
+            <p className="text-sm text-white/40 mb-8 max-w-[45ch]">
+              We&apos;re happy to walk through the controls architecture, data residency, and compliance positioning.
+            </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-medium shadow-[0_0_32px_rgba(13,148,136,0.45)] hover:shadow-[0_0_48px_rgba(13,148,136,0.6)] hover:from-teal-400 hover:to-cyan-400 transition-all active:scale-[0.97]"
             >
               Get in touch
               <ArrowUpRight className="h-3.5 w-3.5" />

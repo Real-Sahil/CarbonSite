@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { ScopeComparison } from "@/components/scope-comparison";
-import { ProductGradientBg } from "@/components/gradient-backgrounds";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Layers } from "lucide-react";
+import { ProductHeroBg, ProductRolesBg, ProductCtaBg } from "@/components/marketing/section-backgrounds";
 
 export const metadata: Metadata = {
   title: "Product - CarbonSite",
@@ -58,54 +57,51 @@ const ROLES = [
 
 export default function ProductPage() {
   return (
-    <main className="min-h-[100dvh] bg-gradient-to-br from-blue-50 to-white">
+    <main className="min-h-[100dvh] bg-[#060612]">
       <SiteNav theme="dark" />
 
-      {/* Hero */}
-      <section className="relative min-h-[60vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.pexels.com/photos/8566473/pexels-photo-8566473.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop"
-            alt="Carbon tracking analytics dashboard with renewable energy metrics"
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-white/40 to-white/20" />
-        </div>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="relative min-h-[60vh] flex items-end overflow-hidden bg-[#060612]">
+        <ProductHeroBg />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#060612] to-transparent pointer-events-none" />
+
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#ffdc6e]" />
-              <span className="text-xs text-[#ff6b4c] tracking-[0.12em] font-medium">Platform overview</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-500/20 bg-teal-500/8 mb-8">
+              <Layers className="h-3.5 w-3.5 text-teal-400" />
+              <span className="text-xs text-teal-400 tracking-[0.1em] font-medium">Platform overview</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-6 max-w-[20ch]">
-              One platform,<br />end to end.
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
+              One platform,{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-cyan-300">
+                end to end.
+              </span>
             </h1>
-            <p className="text-base text-[#374151] leading-relaxed max-w-[50ch]">
+            <p className="text-base text-white/40 leading-relaxed max-w-[50ch]">
               Five stages from field evidence to audit-ready report. Each stage is purpose-built, traceable, and role-controlled.
             </p>
           </AnimateIn>
         </div>
       </section>
 
-      {/* Stages */}
-      <section className="bg-white">
+      {/* ── Stages ───────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#060612]">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.014) 1px,transparent 1px)", backgroundSize: "56px 56px" }} />
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <div className="space-y-px bg-[#E2E8F0]">
+          <div className="border border-white/8 divide-y divide-white/6 rounded-2xl overflow-hidden">
             {STAGES.map((stage, i) => (
               <ScrollReveal key={stage.num} direction="up" delay={i * 0.08} duration={0.7}>
-                <div className="bg-white p-8 md:p-10 grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6 hover:bg-blue-50 transition-colors">
-                  <div className="text-[2.5rem] font-semibold text-[#ffd8a3] tracking-[-0.05em] leading-none font-mono">
+                <div className="bg-white/2 hover:bg-white/4 transition-colors p-8 md:p-10 grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6">
+                  <div className="text-[2.5rem] font-semibold bg-clip-text text-transparent bg-gradient-to-br from-teal-400/40 to-teal-400/10 tracking-[-0.05em] leading-none font-mono">
                     {stage.num}
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-[#111827] tracking-[-0.02em] mb-3">{stage.title}</h2>
-                    <p className="text-sm text-[#64748B] leading-relaxed mb-5 max-w-[65ch]">{stage.text}</p>
+                    <h2 className="text-base font-semibold text-white tracking-[-0.02em] mb-3">{stage.title}</h2>
+                    <p className="text-sm text-white/35 leading-relaxed mb-5 max-w-[65ch]">{stage.text}</p>
                     <div className="flex flex-wrap gap-2">
                       {stage.tags.map((tag) => (
-                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-[#ff6b4c]/30 text-[#ff6b4c] bg-[#ff6b4c]/5 tracking-wide">
+                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-teal-500/20 text-teal-400 bg-teal-500/8 tracking-wide">
                           {tag}
                         </span>
                       ))}
@@ -118,29 +114,30 @@ export default function ProductPage() {
         </div>
       </section>
 
-      {/* Role access control */}
-      <section className="bg-gradient-to-br from-blue-50 to-white">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+      {/* ── Role access control ──────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#060612] border-t border-white/6">
+        <ProductRolesBg />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#ffdc6e]" />
-              <span className="text-xs text-[#64748B] tracking-[0.1em]">Access control</span>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-6 h-px bg-gradient-to-r from-teal-500 to-cyan-500" />
+              <span className="text-[10px] font-mono text-teal-400 uppercase tracking-[0.14em]">Access control</span>
             </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-3">
               Six roles, enforced server-side.
             </h2>
-            <p className="text-sm text-[#64748B] mb-12 max-w-[55ch]">
+            <p className="text-sm text-white/40 mb-12 max-w-[55ch]">
               Role is checked on the organisation membership record — not from client-supplied headers or tokens.
             </p>
           </AnimateIn>
-          <div className="border border-gray-200 divide-y divide-gray-200 overflow-hidden">
+          <div className="border border-white/8 divide-y divide-white/6 rounded-2xl overflow-hidden">
             {ROLES.map((r) => (
-              <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-orange-50 transition-colors">
-                <div className="px-6 py-4 border-r border-gray-200">
-                  <code className="text-xs font-mono text-[#ff6b4c]">{r.role}</code>
+              <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-white/3 transition-colors">
+                <div className="px-6 py-4 border-r border-white/6">
+                  <code className="text-xs font-mono text-teal-400">{r.role}</code>
                 </div>
                 <div className="px-6 py-4">
-                  <p className="text-sm text-[#64748B]">{r.can}</p>
+                  <p className="text-sm text-white/40">{r.can}</p>
                 </div>
               </div>
             ))}
@@ -148,26 +145,27 @@ export default function ProductPage() {
         </div>
       </section>
 
-      {/* Scope Comparison */}
-      <section className="bg-gradient-to-br from-white via-blue-50 to-cyan-50 py-24 px-6">
+      {/* ── Scope Comparison ─────────────────────────────────────────────── */}
+      <section className="bg-[#060612] border-t border-white/6 py-24 px-6">
         <div className="mx-auto max-w-7xl">
           <ScopeComparison />
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative overflow-hidden bg-white">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+      {/* ── CTA ─────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#060612] border-t border-white/6">
+        <ProductCtaBg />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
               Start your first reporting period.
             </h2>
-            <p className="text-base text-[#64748B] mb-8 max-w-[45ch]">
+            <p className="text-base text-white/40 mb-8 max-w-[45ch]">
               Create an organisation, add facilities, invite your team. First calculation in under an hour.
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#ff0027] text-white text-sm font-medium hover:bg-[#d40021] hover:scale-105 transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-medium shadow-[0_0_32px_rgba(13,148,136,0.45)] hover:shadow-[0_0_48px_rgba(13,148,136,0.6)] hover:from-teal-400 hover:to-cyan-400 transition-all active:scale-[0.97]"
             >
               Create organisation
               <ArrowUpRight className="h-3.5 w-3.5" />
