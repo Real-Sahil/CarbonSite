@@ -27,7 +27,7 @@ type Props = {
 
 const DEFAULTS = {
   className: "",
-  particles: 500,
+  particles: 200,
   color: "#f97316",
   backgroundColor: "#1C1A2E",
   riseSpeed: 25,
@@ -143,7 +143,7 @@ export default function RisingLines(rawProps: Props) {
       const area = w * h;
       const refArea = 800 * 400;
       const target = Math.max(0, Math.floor((particles * area) / refArea));
-      particleCount = Math.min(target, 4000);
+      particleCount = Math.min(target, 800);
       pX = new Float32Array(particleCount);
       pY = new Float32Array(particleCount);
       pVY = new Float32Array(particleCount);

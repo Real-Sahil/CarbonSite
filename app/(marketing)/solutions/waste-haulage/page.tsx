@@ -51,7 +51,7 @@ export default function WasteHaulagePage() {
       <section className="relative min-h-[65vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.pexels.com/photos/3932559/pexels-photo-3932559.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop"
+            src="https://images.unsplash.com/photo-1559808284-7e4b6ae2b554?w=1600&h=900&fit=crop"
             alt="Waste management recycling circular economy emissions tracking"
             fill
             priority

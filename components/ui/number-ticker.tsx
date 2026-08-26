@@ -30,21 +30,27 @@ export function NumberTicker({
 
     const startValue = direction === 'down' ? value : 0;
     const endValue = direction === 'down' ? 0 : value;
-    const startTime = Date.now();
+    const startTime = performance.now();
     const durationMs = duration * 1000;
+    let rafId: number | null = null;
 
-    const timer = setInterval(() => {
-      const elapsed = Date.now() - startTime;
+    const update = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / durationMs, 1);
       const current = startValue + (endValue - startValue) * progress;
 
       const factor = Math.pow(10, decimals);
       setDisplayValue(Math.round(current * factor) / factor);
 
-      if (progress === 1) clearInterval(timer);
-    }, 16);
+      if (progress < 1) {
+        rafId = requestAnimationFrame(update);
+      }
+    };
 
-    return () => clearInterval(timer);
+    rafId = requestAnimationFrame(update);
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, [isInView, direction, value, duration, decimals]);
 
   return (
