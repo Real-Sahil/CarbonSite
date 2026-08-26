@@ -1,10 +1,6 @@
 import { createRequire } from "module";
 import type { ParsedRow, ParseResult } from "../parser";
 
-const require = createRequire(import.meta.url);
-// pdf-parse is CJS and doesn't export a default ESM, so we use createRequire
-const pdfParseModule = require("pdf-parse") as (buffer: Buffer, options?: unknown) => Promise<{ text: string }>;
-
 // ---------------------------------------------------------------------------
 // PDF import parser
 //
@@ -16,6 +12,14 @@ const pdfParseModule = require("pdf-parse") as (buffer: Buffer, options?: unknow
 // Both paths feed extractRowsFromText(), which applies regex heuristics for
 // common UK document patterns (electricity, gas, water, fuel receipts).
 // ---------------------------------------------------------------------------
+
+// Lazy import so pdf-parse (@napi-rs/canvas) is only loaded when actually parsing PDFs.
+// This prevents serverless environments from failing on non-PDF routes.
+async function pdfParse(buffer: Buffer): Promise<{ text: string }> {
+  const require = createRequire(import.meta.url);
+  const pdfParseModule = require("pdf-parse") as (buffer: Buffer, options?: unknown) => Promise<{ text: string }>;
+  return pdfParseModule(buffer);
+}
 
 // Lazy import so Tesseract's 2 MB WASM is only loaded when actually needed.
 async function ocrText(buffer: Buffer): Promise<string> {
@@ -126,7 +130,7 @@ function linesToParseResult(lines: ExtractedLine[]): ParseResult {
 export async function parsePdf(buffer: Buffer): Promise<ParseResult> {
   // Stage 1: text-layer extraction
   try {
-    const data = await pdfParseModule(buffer);
+    const data = await pdfParse(buffer);
     if (data.text.trim().length > 80) {
       const lines = extractLines(data.text);
       if (lines.length > 0) {
