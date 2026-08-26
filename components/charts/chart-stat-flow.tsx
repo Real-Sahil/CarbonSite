@@ -100,7 +100,7 @@ export function ChartStatFlow({
           {icon}
         </div>
       ) : null}
-      <span className={cn("text-foreground tabular-nums", valueClassName)}>
+      <span className={cn("tabular-nums", valueClassName)}>
         {numberFlowReady ? (
           <NumberFlow
             format={formatOptions}
@@ -114,7 +114,7 @@ export function ChartStatFlow({
           staticValue
         )}
       </span>
-      <span className={cn("mt-0.5 text-chart-label", labelClassName)}>
+      <span className={cn("mt-0.5", labelClassName)}>
         {label}
       </span>
     </>
