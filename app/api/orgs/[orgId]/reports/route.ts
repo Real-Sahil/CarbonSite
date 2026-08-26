@@ -33,6 +33,7 @@ const createReportSchema = z.object({
     "ppn_006_crp",
   ]),
   options: z.record(z.any()).optional(),
+  auditEventFilter: z.array(z.string()).optional(),
 });
 
 export async function GET(req: NextRequest, { params }: Params) {
@@ -105,6 +106,10 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     let report: Awaited<ReturnType<typeof prisma.report.create>>;
     try {
+      const reportOptions = {
+        ...body.options,
+        ...(body.auditEventFilter ? { auditEventFilter: body.auditEventFilter } : {}),
+      };
       report = await prisma.report.create({
         data: {
           organizationId: orgId,
@@ -112,7 +117,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           snapshotId: body.snapshotId,
           type: body.type,
           status: "queued",
-          options: body.options ?? {},
+          options: reportOptions,
           requestHash,
           createdByUserId: session.user.id,
         },

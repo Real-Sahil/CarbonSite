@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { type ColumnDef } from "@tanstack/react-table";
 import {
   Card,
   CardContent,
@@ -10,14 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Inbox, AlertCircle } from "lucide-react";
@@ -76,13 +70,59 @@ const BULK_ELIGIBLE = new Set(["submitted", "under_review"]);
 export function SubmissionsTable({ orgId, members, initialSubmissions }: SubmissionsTableProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<Submission[]>(initialSubmissions);
+  const [isLoading, setIsLoading] = useState(false);
+  const [cursors, setCursors] = useState<(string | null)[]>([null]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [approving, startApproving] = useTransition();
   const [assigning, startAssigning] = useTransition();
   const [showAssignSelect, setShowAssignSelect] = useState(false);
   const [assigneeUserId, setAssigneeUserId] = useState(members[0]?.id ?? "");
 
-  const eligible = initialSubmissions.filter((s) => BULK_ELIGIBLE.has(s.status));
+  const fetchPage = useCallback(
+    async (cursor: string | null) => {
+      try {
+        const params = new URLSearchParams();
+        if (cursor) params.set("cursor", cursor);
+        const res = await fetch(`/api/orgs/${orgId}/field-submissions?${params}`);
+        if (!res.ok) throw new Error("fetch failed");
+        const json = await res.json();
+        setData(json.data);
+        setNextCursor(json.nextCursor ?? null);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [orgId],
+  );
+
+  useEffect(() => {
+    if (initialSubmissions.length > 0) {
+      setData(initialSubmissions);
+      setNextCursor(null);
+    }
+  }, [initialSubmissions]);
+
+  const goNext = () => {
+    if (!nextCursor) return;
+    const newCursors = [...cursors, nextCursor];
+    setCursors(newCursors);
+    setCurrentPage(newCursors.length - 1);
+    setIsLoading(true);
+    fetchPage(nextCursor);
+  };
+
+  const goPrev = () => {
+    if (currentPage === 0) return;
+    const newPage = currentPage - 1;
+    setCurrentPage(newPage);
+    setIsLoading(true);
+    fetchPage(cursors[newPage]);
+  };
+
+  const eligible = data.filter((s) => BULK_ELIGIBLE.has(s.status));
   const allEligibleSelected =
     eligible.length > 0 && eligible.every((s) => selected.has(s.id));
 
@@ -166,7 +206,158 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
     });
   }
 
-  const list = initialSubmissions;
+  const columns: ColumnDef<Submission>[] = [
+    {
+      id: "checkbox",
+      header: ({ table }) => (
+        <>
+          {eligible.length > 0 && (
+            <Checkbox
+              checked={allEligibleSelected}
+              onCheckedChange={toggleAll}
+              aria-label="Select all eligible submissions"
+            />
+          )}
+        </>
+      ),
+      cell: ({ row }) => {
+        const isEligible = BULK_ELIGIBLE.has(row.original.status);
+        return (
+          <>
+            {isEligible && (
+              <Checkbox
+                checked={selected.has(row.original.id)}
+                onCheckedChange={() => toggleOne(row.original.id)}
+                aria-label={`Select submission ${row.original.id}`}
+                onClick={(e: React.MouseEvent<HTMLInputElement>) => e.stopPropagation()}
+              />
+            )}
+          </>
+        );
+      },
+    },
+    {
+      id: "documentType",
+      header: "Document type",
+      cell: ({ row }) => (
+        <Link
+          href={`/orgs/${orgId}/submissions/${row.original.id}`}
+          className="hover:underline underline-offset-2 text-[#111827]"
+        >
+          {DOC_TYPE_LABELS[row.original.documentType] ?? row.original.documentType}
+        </Link>
+      ),
+    },
+    {
+      id: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <span
+          className={cn(
+            "inline-flex items-center rounded-full border px-[14px] py-[7px] text-xs font-normal tracking-[-0.36px]",
+            STATUS_CLASSES[row.original.status] ??
+              "border-[#E5E7EB] bg-[#F0F9FF] text-[#374151]",
+          )}
+        >
+          {STATUS_LABELS[row.original.status] ?? row.original.status}
+        </span>
+      ),
+    },
+    {
+      id: "setup",
+      header: "Setup",
+      cell: ({ row }) => {
+        if (!row.original.emissionCategoryId &&
+          (row.original.status === "submitted" || row.original.status === "under_review" || row.original.status === "needs_info")) {
+          return (
+            <Link
+              href={`/orgs/${orgId}/submissions/${row.original.id}`}
+              className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 hover:bg-amber-100 transition-colors"
+              title="Assign an emission category before this can be approved"
+            >
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              Category needed
+            </Link>
+          );
+        }
+        return null;
+      },
+    },
+    {
+      id: "submittedBy",
+      header: "Submitted by",
+      cell: ({ row }) => (
+        <span className="text-[#374151]">
+          {row.original.submittedBy.name ?? row.original.submittedBy.email}
+        </span>
+      ),
+    },
+    {
+      id: "reportingPeriod",
+      header: "Reporting period",
+      cell: ({ row }) => (
+        <span className="text-[#374151]">
+          {row.original.reportingPeriod.label}
+        </span>
+      ),
+    },
+    {
+      id: "facility",
+      header: "Facility",
+      cell: ({ row }) => (
+        <span className="text-[#374151]">
+          {row.original.facility?.name ?? (
+            <span className="text-[#374151] italic">None</span>
+          )}
+        </span>
+      ),
+    },
+    {
+      id: "date",
+      header: "Date",
+      cell: ({ row }) => (
+        <span className="text-[#374151] text-sm tracking-[-0.36px]">
+          {new Date(row.original.createdAt).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+        </span>
+      ),
+    },
+  ];
+
+  if (data.length === 0 && currentPage === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle className="text-base">Submissions</CardTitle>
+            <CardDescription className="mt-1">
+              Share an invite link with your field workers to get started.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="pb-8">
+          <div className="flex flex-col items-center gap-4 py-12 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F0F9FF]">
+              <Inbox aria-hidden="true" className="h-7 w-7 text-[#111827]" />
+            </div>
+            <div>
+              <p className="font-normal text-[#111827] tracking-[-0.42px]">
+                No field submissions yet
+              </p>
+              <p className="text-sm text-[#374151] tracking-[-0.42px] mt-[7px] max-w-sm">
+                Share an invite link with your field workers to get started.
+                Field workers photograph waste tickets, delivery notes, and fuel
+                receipts directly from the mobile app.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -176,14 +367,9 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
             <CardTitle className="text-base">
               Submissions
               <span className="ml-2 text-sm font-normal text-[#374151]">
-                ({list.length})
+                ({data.length})
               </span>
             </CardTitle>
-            {list.length === 0 && (
-              <CardDescription className="mt-1">
-                Share an invite link with your field workers to get started.
-              </CardDescription>
-            )}
           </div>
           {selected.size > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -243,126 +429,21 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
         </div>
       </CardHeader>
 
-      <CardContent className={list.length === 0 ? "pb-8" : "p-0 pb-2"}>
+      <CardContent className="p-0">
         {error && (
           <p className="px-4 py-3 text-sm text-red-600 tracking-[-0.42px]">{error}</p>
         )}
-
-        {list.length === 0 && (
-          <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F0F9FF]">
-              <Inbox aria-hidden="true" className="h-7 w-7 text-[#111827]" />
-            </div>
-            <div>
-              <p className="font-normal text-[#111827] tracking-[-0.42px]">
-                No field submissions yet
-              </p>
-              <p className="text-sm text-[#374151] tracking-[-0.42px] mt-[7px] max-w-sm">
-                Share an invite link with your field workers to get started.
-                Field workers photograph waste tickets, delivery notes, and fuel
-                receipts directly from the mobile app.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {list.length > 0 && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">
-                  {eligible.length > 0 && (
-                    <Checkbox
-                      checked={allEligibleSelected}
-                      onCheckedChange={toggleAll}
-                      aria-label="Select all eligible submissions"
-                    />
-                  )}
-                </TableHead>
-                <TableHead>Document type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Setup</TableHead>
-                <TableHead>Submitted by</TableHead>
-                <TableHead>Reporting period</TableHead>
-                <TableHead>Facility</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {list.map((s) => {
-                const isEligible = BULK_ELIGIBLE.has(s.status);
-                const isChecked = selected.has(s.id);
-                return (
-                  <TableRow
-                    key={s.id}
-                    data-state={isChecked ? "selected" : undefined}
-                  >
-                    <TableCell className="w-10">
-                      {isEligible && (
-                        <Checkbox
-                          checked={isChecked}
-                          onCheckedChange={() => toggleOne(s.id)}
-                          aria-label={`Select submission ${s.id}`}
-                          onClick={(e: React.MouseEvent<HTMLInputElement>) => e.stopPropagation()}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/orgs/${orgId}/submissions/${s.id}`}
-                        className="hover:underline underline-offset-2 text-[#111827]"
-                      >
-                        {DOC_TYPE_LABELS[s.documentType] ?? s.documentType}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={cn(
-                          "inline-flex items-center rounded-full border px-[14px] py-[7px] text-xs font-normal tracking-[-0.36px]",
-                          STATUS_CLASSES[s.status] ??
-                            "border-[#E5E7EB] bg-[#F0F9FF] text-[#374151]",
-                        )}
-                      >
-                        {STATUS_LABELS[s.status] ?? s.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {!s.emissionCategoryId &&
-                        (s.status === "submitted" || s.status === "under_review" || s.status === "needs_info") && (
-                        <Link
-                          href={`/orgs/${orgId}/submissions/${s.id}`}
-                          className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 hover:bg-amber-100 transition-colors"
-                          title="Assign an emission category before this can be approved"
-                        >
-                          <AlertCircle className="h-3 w-3 shrink-0" />
-                          Category needed
-                        </Link>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-[#374151]">
-                      {s.submittedBy.name ?? s.submittedBy.email}
-                    </TableCell>
-                    <TableCell className="text-[#374151]">
-                      {s.reportingPeriod.label}
-                    </TableCell>
-                    <TableCell className="text-[#374151]">
-                      {s.facility?.name ?? (
-                        <span className="text-[#374151] italic">None</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-[#374151] text-sm tracking-[-0.36px]">
-                      {new Date(s.createdAt).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        )}
+        <DataTable
+          columns={columns}
+          data={data}
+          isLoading={isLoading}
+          onPreviousPage={goPrev}
+          onNextPage={goNext}
+          hasPreviousPage={currentPage > 0}
+          hasNextPage={Boolean(nextCursor)}
+          pageRowCount={data.length}
+          emptyMessage="No field submissions yet."
+        />
       </CardContent>
     </Card>
   );

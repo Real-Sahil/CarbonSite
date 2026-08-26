@@ -104,8 +104,36 @@ const SCOPE_LABELS: Record<number, string> = {
   3: "Scope 3 — Value chain",
 };
 
+const DEFAULT_AUDIT_EVENT_TYPES = [
+  "report.generation_triggered",
+  "report.published",
+  "calculation.run_completed",
+  "snapshot.published",
+];
+
+export async function fetchReportAuditTrail(
+  reportId: string,
+  snapshotId: string,
+  orgId: string,
+  includeEventTypes?: string[],
+) {
+  const eventTypes = includeEventTypes ?? DEFAULT_AUDIT_EVENT_TYPES;
+  return prisma.auditLog.findMany({
+    where: {
+      organizationId: orgId,
+      action: { in: eventTypes },
+      OR: [
+        { resourceId: reportId },
+        { resourceId: snapshotId },
+      ],
+    },
+    orderBy: { createdAt: "asc" },
+    take: 50,
+  });
+}
+
 export async function buildBasePdfData(
-  report: { organizationId: string; organization: { name: string }; reportingPeriod: { label: string; startDate: Date; endDate: Date }; snapshot: { version: number; publishedAt: Date; calculationRunId: string; calculationRun: { factorLibrary: { name: string; version: string }; methodologyVersion: { name: string; gwpVersion: string } }; publishedBy: { name: string | null; email: string } }; type: string },
+  report: { organizationId: string; organization: { name: string }; reportingPeriod: { label: string; startDate: Date; endDate: Date }; snapshot: { version: number; publishedAt: Date; calculationRunId: string; calculationRun: { factorLibrary: { name: string; version: string }; methodologyVersion: { name: string; gwpVersion: string } }; publishedBy: { name: string | null; email: string } }; type: string; id: string },
   agg: Aggregation,
   calcs: CalculationRow[],
   logoDataUri: string | undefined,
@@ -113,6 +141,7 @@ export async function buildBasePdfData(
   factorLibrary: string,
   methodology: string,
   gwpVersion: string,
+  auditEventFilter?: string[],
 ): Promise<ReportData> {
   const runId = report.snapshot.calculationRunId;
   const orgId = report.organizationId;
@@ -122,6 +151,10 @@ export async function buildBasePdfData(
     _sum: { biogenicCo2e: true },
   });
   const biogenicTotal = Number(biogenicAgg._sum.biogenicCo2e ?? 0);
+
+  const auditEvents = auditEventFilter
+    ? await fetchReportAuditTrail(report.id, runId, orgId, auditEventFilter)
+    : undefined;
 
   return {
     orgName: report.organization.name,
@@ -156,6 +189,7 @@ export async function buildBasePdfData(
       calculationStatus: "completed",
       totalCalculationsExecuted: calcs.length,
     },
+    auditEvents,
   };
 }
 

@@ -5,7 +5,9 @@ import { useReducedMotion } from "motion/react";
 const STANDARDS = [
   "GHG Protocol Corporate Standard",
   "DEFRA 2025 Conversion Factors",
+  "EPA GHG Hub",
   "IPCC AR6 GWP-100 Values",
+  "Boavizta Environmental Footprint",
   "SECR Compliance",
   "ISO 14064-1",
   "Scope 1, 2 and 3 Reporting",
