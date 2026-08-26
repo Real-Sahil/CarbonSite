@@ -22,7 +22,7 @@ export function HeroSection() {
   const fade = (delay = 0) =>
     reduced
       ? {}
-      : { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] } };
+      : { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } };
 
   return (
     <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#060612]">
