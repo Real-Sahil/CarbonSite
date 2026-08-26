@@ -109,7 +109,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
             </div>
           </div>
 
-          <div className="rounded-lg bg-[#F0F9FF] border border-[#BAE6FD] px-4 py-3">
+          <div className="rounded-lg bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3">
             <p className="text-xs font-medium text-[#f97316] mb-2">Baseline emissions (tCO2e)</p>
             <div className="grid grid-cols-3 gap-2">
               {[
@@ -118,7 +118,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
                 { key: "baselineScope3Tco2e", label: "Scope 3 (opt.)" },
               ].map(({ key, label }) => (
                 <div key={key}>
-                  <label className="block text-xs text-[#f97316] mb-1">{label}</label>
+                  <label className="block text-xs text-[#ea580c] mb-1">{label}</label>
                   <input type="number" min={0} step="0.01" value={form[key as keyof typeof form]}
                     onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                     required={key !== "baselineScope3Tco2e"}
@@ -231,7 +231,7 @@ export default function SbtiPage() {
         <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
       ) : !target ? (
         <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
-          <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#F0F9FF] flex items-center justify-center">
+          <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
             <TrendingDown className="h-5 w-5 text-[#f97316]" />
           </div>
           <p className="text-sm font-medium text-gray-700">No SBTi target set</p>
@@ -248,7 +248,7 @@ export default function SbtiPage() {
                 {statusConfig.label}
               </span>
             )}
-            <span className="rounded-full px-3 py-1 text-xs font-medium bg-[#F0F9FF] text-[#f97316]">
+            <span className="rounded-full px-3 py-1 text-xs font-medium bg-[#FFF7ED] text-[#f97316]">
               {target.pathway} pathway
             </span>
             <span className="text-xs text-gray-500">Base year: {target.baseYear}</span>
@@ -340,12 +340,12 @@ export default function SbtiPage() {
           )}
 
           {/* SBTi info box */}
-          <div className="rounded-xl border border-[#BAE6FD] bg-[#F0F9FF] p-5">
+          <div className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-5">
             <div className="flex items-start gap-3">
               <Info className="h-4 w-4 text-[#f97316] mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-[#0369A1] mb-1">About SBTi alignment</p>
-                <p className="text-xs text-[#f97316] leading-relaxed">
+                <p className="text-sm font-medium text-[#9A3412] mb-1">About SBTi alignment</p>
+                <p className="text-xs text-[#7C3D12] leading-relaxed">
                   The 1.5°C pathway requires approximately 50% reduction in Scope 1+2 emissions by 2030 from a 2020 base year.
                   Net-zero targets require at least 90% reduction and the neutralisation of residual emissions.
                   Submit your targets to the Science Based Targets initiative for validation at sciencebasedtargets.org.

@@ -27,17 +27,17 @@ export function CapabilitiesBg() {
   );
 }
 
-// Home — how-it-works section (Refero WaveArcs — cursor-reactive amber arcs)
+// Home — how-it-works section (Refero WaveArcs — cursor-reactive amber arcs on light bg)
 export function HowItWorksBg() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <WaveArcs
-        backgroundColor="#1C1A2E"
+        backgroundColor="#FAFBF8"
         lineColor="rgb(245, 158, 11)"
-        lineWidth={0.9}
-        lineCount={55}
+        lineWidth={0.6}
+        lineCount={40}
         speed={3.5}
-        glow={9}
+        glow={5}
         interactive={false}
       />
     </div>
@@ -51,7 +51,7 @@ export function CtaBg() {
       <RisingLines
         particles={380}
         color="#f97316"
-        backgroundColor="#1C1A2E"
+        backgroundColor="#0A1628"
         horizonColor="#e76f51"
         riseSpeed={18}
         opacity={72}

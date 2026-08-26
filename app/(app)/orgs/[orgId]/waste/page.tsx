@@ -125,10 +125,10 @@ function AddRecordModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
             </div>
           </div>
           {co2ePreview && (
-            <div className="rounded-lg bg-[#fff7ed] border border-[#BAE6FD] px-4 py-3">
+            <div className="rounded-lg bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3">
               <p className="text-xs text-[#f97316]">
                 Calculated emissions: <span className="font-semibold">{co2ePreview} tCO2e</span>
-                <span className="text-[#f97316] ml-1">(DEFRA 2024 factor: {selected?.factor} kgCO2e/t)</span>
+                <span className="text-[#ea580c] ml-1">(DEFRA 2024 factor: {selected?.factor} kgCO2e/t)</span>
               </p>
             </div>
           )}
