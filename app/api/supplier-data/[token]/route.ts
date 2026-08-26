@@ -8,6 +8,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { writeAuditLog } from "@/lib/db/audit";
+import { runQualityChecks } from "@/lib/suppliers/quality-checks";
+import { getExpectedUnits } from "@/lib/suppliers/validation-rules";
 
 const UNIT_OPTIONS = ["kg", "tonne", "kWh", "MWh", "litre", "m3", "GBP", "piece"] as const;
 
@@ -115,13 +117,34 @@ export async function POST(req: NextRequest, { params }: Params) {
     submittedAt: now.toISOString(),
   };
 
+  // Run quality checks on submission
+  const expectedUnits = getExpectedUnits(request.categoryCode);
+  const qualityCheckResult = await runQualityChecks(
+    request.organizationId,
+    request.id,
+    request.supplierEmail,
+    request.reportingPeriodId,
+    request.categoryCode,
+    body.data.quantity,
+    body.data.unit,
+    expectedUnits,
+  );
+
+  // Determine status based on quality checks
+  // If there are warning or critical flags, mark as flagged for review
+  // Otherwise, mark as submitted (approved will happen after admin review)
+  const hasWarningsOrCritical = qualityCheckResult.flags.some((f) => f.severity !== "info");
+  const initialStatus = hasWarningsOrCritical ? "flagged" : "submitted";
+
   await prisma.supplierDataRequest.update({
     where: { id: request.id },
     data: {
-      status: "submitted",
+      status: initialStatus,
       submittedAt: now,
       openedAt: request.status === "sent" ? now : undefined,
       submittedData,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      qualityFlags: qualityCheckResult.flags as any,
       ...(body.data.supplierName ? { supplierName: body.data.supplierName } : {}),
     },
   });
@@ -137,8 +160,18 @@ export async function POST(req: NextRequest, { params }: Params) {
       supplierEmail: request.supplierEmail,
       quantity: body.data.quantity,
       unit: body.data.unit,
+      initialStatus,
+      qualityFlagCount: qualityCheckResult.flags.length,
     },
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    status: initialStatus,
+    qualityFlags: qualityCheckResult.flags.length > 0 ? qualityCheckResult.flags : undefined,
+    message:
+      qualityCheckResult.flags.length > 0
+        ? `Your submission has been received and flagged for review due to ${qualityCheckResult.flags.length} data quality concern(s).`
+        : "Your submission has been received successfully.",
+  });
 }
