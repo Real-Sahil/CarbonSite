@@ -36,7 +36,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
           emissionCategory: { select: { scope: true, name: true, code: true } },
           facility: { select: { name: true } },
           businessUnit: { select: { name: true } },
-          _count: { select: { calculations: true, evidence: true } },
+          evidence: {
+            include: {
+              evidenceFile: { select: { id: true, filename: true } },
+            },
+          },
+          _count: { select: { calculations: true } },
         },
         orderBy: { createdAt: "desc" },
         take: take + 1,
