@@ -4,6 +4,7 @@
 
 import PDFDocument from "pdfkit";
 import type PDFKit from "pdfkit";
+import { PDFDocument as PdfLib, StandardFonts, rgb } from "pdf-lib";
 import type { ReportData } from "./template";
 
 const MARGIN = 52;
@@ -46,15 +47,16 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         },
         bufferPages: true,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as Record<string, unknown>;
       console.error("[pdf-generator] PDFDocument initialization error:", {
-        code: err?.code,
-        errno: err?.errno,
-        syscall: err?.syscall,
-        path: err?.path,
-        message: err?.message,
+        code: e?.code,
+        errno: e?.errno,
+        syscall: e?.syscall,
+        path: e?.path,
+        message: e?.message,
       });
-      reject(new Error(`PDF initialization failed: ${err?.message}`));
+      reject(new Error(`PDF initialization failed: ${String(e?.message ?? err)}`));
       return;
     }
 
@@ -546,4 +548,46 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     // Suppress TypeScript "totalPages unused" — it's updated after end()
     void totalPages;
   });
+}
+
+interface AuditMeta {
+  snapshotId: string;
+  methodologyVersion: string;
+  sha256: string;
+  generatedAt: Date;
+  orgId: string;
+}
+
+/**
+ * Stamp XMP metadata and a faint audit footer on every page of a PDF.
+ * The sha256 passed in is the checksum of the original (pre-stamp) buffer.
+ */
+export async function stampAuditMetadata(pdfBytes: Buffer, meta: AuditMeta): Promise<Buffer> {
+  const doc = await PdfLib.load(pdfBytes);
+
+  const title = doc.getTitle();
+  if (title) doc.setTitle(title);
+  doc.setSubject(`Snapshot ${meta.snapshotId}`);
+  doc.setKeywords([meta.snapshotId, meta.methodologyVersion, meta.sha256.slice(0, 16)]);
+  doc.setProducer("CarbonSite");
+  doc.setCreationDate(meta.generatedAt);
+
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const shortSha = `${meta.sha256.slice(0, 16)}...`;
+  const footerText = `CarbonSite · Snapshot ${meta.snapshotId.slice(0, 8)} · ${meta.methodologyVersion} · SHA-256: ${shortSha}`;
+  const gray = rgb(0.608, 0.639, 0.686); // #9CA3AF
+
+  for (const page of doc.getPages()) {
+    const { width } = page.getSize();
+    page.drawText(footerText, {
+      x: 18,
+      y: 10,
+      size: 6,
+      font,
+      color: gray,
+      maxWidth: width - 36,
+    });
+  }
+
+  return Buffer.from(await doc.save());
 }
