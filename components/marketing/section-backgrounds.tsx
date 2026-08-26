@@ -32,7 +32,7 @@ export function HowItWorksBg() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <WaveArcs
-        backgroundColor="#171520"
+        backgroundColor="#1C1A2E"
         lineColor="rgb(245, 158, 11)"
         lineWidth={0.9}
         lineCount={55}
@@ -51,7 +51,7 @@ export function CtaBg() {
       <RisingLines
         particles={380}
         color="#f97316"
-        backgroundColor="#171520"
+        backgroundColor="#1C1A2E"
         horizonColor="#e76f51"
         riseSpeed={18}
         opacity={72}

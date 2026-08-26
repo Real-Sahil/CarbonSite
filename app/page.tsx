@@ -55,7 +55,7 @@ const HOW_IT_WORKS = [
 
 export default function RootPage() {
   return (
-    <main className="min-h-[100dvh] overflow-hidden bg-[#171520]">
+    <main className="min-h-[100dvh] overflow-hidden bg-[#1C1A2E]">
       <SiteNav theme="dark" />
       <HeroSection />
 
@@ -63,7 +63,7 @@ export default function RootPage() {
       <StandardsMarquee />
 
       {/* ── Manifesto section ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#171520]">
+      <section className="relative overflow-hidden bg-[#1C1A2E]">
         {/* Mesh blobs */}
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.12)_0%,transparent_70%)] pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(234,88,12,0.08)_0%,transparent_70%)] pointer-events-none" />
@@ -105,7 +105,7 @@ export default function RootPage() {
       </section>
 
       {/* ── Capabilities ──────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#171520]">
+      <section className="relative overflow-hidden bg-[#1C1A2E]">
         <CapabilitiesBg />
 
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
@@ -142,7 +142,7 @@ export default function RootPage() {
       </section>
 
       {/* ── How it works — horizontal steps ──────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#171520]">
+      <section className="relative overflow-hidden bg-[#1C1A2E]">
         <HowItWorksBg />
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
@@ -176,7 +176,7 @@ export default function RootPage() {
       </section>
 
       {/* ── Field app feature ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#171520]">
+      <section className="relative overflow-hidden bg-[#1C1A2E]">
         {/* Large teal blob */}
         <div className="absolute -bottom-32 -right-32 w-[700px] h-[700px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.18)_0%,transparent_65%)] pointer-events-none" />
         <div className="absolute top-1/4 left-[-100px] w-[400px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.10)_0%,transparent_70%)] pointer-events-none" />
@@ -255,7 +255,7 @@ export default function RootPage() {
       </section>
 
       {/* ── CTA ── dark mesh gradient ─────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#171520]">
+      <section className="relative overflow-hidden bg-[#1C1A2E]">
         <CtaBg />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-32">

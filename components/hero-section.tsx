@@ -26,7 +26,7 @@ export function HeroSection() {
       : { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } };
 
   return (
-    <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#171520]">
+    <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#1C1A2E]">
 
       {/* ── ThreeUI predictive arc background ───────────────────────────────── */}
       <PredictiveArcCanvas
@@ -44,7 +44,7 @@ export function HeroSection() {
 
       {/* Vignette to blend into page */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,transparent_40%,rgba(6,6,18,0.65)_100%)]" />
-      <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-[#171520] to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-[#1C1A2E] to-transparent pointer-events-none" />
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-28 pb-20 text-center">

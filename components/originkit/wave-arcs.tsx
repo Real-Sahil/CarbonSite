@@ -152,7 +152,7 @@ interface WaveArcsProps {
 }
 
 export default function WaveArcs({
-  backgroundColor = "#171520",
+  backgroundColor = "#1C1A2E",
   lineColor = "rgb(245, 158, 11)",
   lineWidth = 1.0,
   lineCount = 60,
