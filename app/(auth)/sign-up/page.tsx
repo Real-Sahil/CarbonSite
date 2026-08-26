@@ -29,7 +29,7 @@ function mapSignUpError(err: { code?: string; message?: string } | null | undefi
 }
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-teal-500/60 focus:bg-white/8 focus:ring-2 focus:ring-teal-500/20 disabled:opacity-40 transition-all";
+  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -76,14 +76,14 @@ export default function SignUpPage() {
       <div>
         <div className="mb-6">
           <div className="flex items-center gap-2.5 mb-4">
-            <div className="h-8 w-8 rounded-xl bg-teal-500/15 border border-teal-500/20 flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-teal-400" />
+            <div className="h-8 w-8 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-amber-400" />
             </div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-teal-400">Step 2 of 2</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-amber-400">Step 2 of 2</p>
           </div>
           <div className="flex gap-1.5 mb-4">
-            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500" />
-            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500" />
+            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
+            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
           </div>
           <h1 className="text-xl font-semibold tracking-tight text-white">Set up your organisation</h1>
           <p className="text-sm text-white/40 mt-1">Welcome, {name.split(" ")[0]}. Name your workspace.</p>
@@ -106,7 +106,7 @@ export default function SignUpPage() {
               <span>{error}</span>
             </div>
           )}
-          <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(13,148,136,0.35)] hover:shadow-[0_0_28px_rgba(13,148,136,0.5)] hover:from-teal-400 hover:to-cyan-400 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+          <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:from-orange-400 hover:to-amber-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
             {loading ? "Creating your workspace…" : "Create organisation"}
           </button>
           <button type="button" onClick={() => { setStep("account"); setError(""); }} className="text-sm text-white/30 hover:text-white/60 transition-colors text-center" disabled={loading}>
@@ -123,7 +123,7 @@ export default function SignUpPage() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/35">Step 1 of 2</p>
           <div className="flex gap-1.5">
-            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500" />
+            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
             <div className="h-0.5 w-8 rounded-full bg-white/12" />
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function SignUpPage() {
             <span>{error}</span>
           </div>
         )}
-        <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(13,148,136,0.35)] hover:shadow-[0_0_28px_rgba(13,148,136,0.5)] hover:from-teal-400 hover:to-cyan-400 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+        <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:from-orange-400 hover:to-amber-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
           Continue
           <ArrowRight className="h-4 w-4" />
         </button>
@@ -158,7 +158,7 @@ export default function SignUpPage() {
 
       <p className="mt-5 text-center text-sm text-white/30">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-teal-400 hover:text-teal-300 transition-colors">Sign in</Link>
+        <Link href="/sign-in" className="text-amber-400 hover:text-amber-300 transition-colors">Sign in</Link>
       </p>
     </div>
   );

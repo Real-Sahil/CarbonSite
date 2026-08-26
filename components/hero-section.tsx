@@ -32,9 +32,9 @@ export function HeroSection() {
       <PredictiveArcCanvas
         className="absolute inset-0 w-full h-full"
         mode="dark"
-        hue={174}
-        saturation={0.7}
-        brightness={0.55}
+        hue={25}
+        saturation={0.75}
+        brightness={0.6}
         speed={0.4}
         spacing={48}
         dotSize={1.8}
@@ -52,7 +52,7 @@ export function HeroSection() {
         {/* Badge pill */}
         <motion.div {...fade(0)} className="mb-8">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-xs font-medium text-white/70">
-            <Leaf className="h-3 w-3 text-teal-400" />
+            <Leaf className="h-3 w-3 text-amber-400" />
             Carbon accounting infrastructure
           </span>
         </motion.div>
@@ -63,7 +63,7 @@ export function HeroSection() {
           className="text-[clamp(2.6rem,7.5vw,5.8rem)] font-semibold tracking-[-0.04em] leading-[1] text-white max-w-[18ch] mb-6"
         >
           Track emissions.{" "}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 via-cyan-300 to-emerald-300">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200">
             Prove the numbers.
           </span>
         </motion.h1>
@@ -80,7 +80,7 @@ export function HeroSection() {
         <motion.div {...fade(0.23)} className="flex flex-wrap items-center justify-center gap-3 mb-16">
           <Link
             href="/sign-up"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-semibold shadow-[0_0_32px_rgba(13,148,136,0.45)] hover:shadow-[0_0_40px_rgba(13,148,136,0.6)] hover:from-teal-400 hover:to-cyan-400 transition-all active:scale-[0.97]"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-[0_0_32px_rgba(245,158,11,0.45)] hover:shadow-[0_0_40px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
           >
             Start free
             <ArrowUpRight className="h-3.5 w-3.5" />

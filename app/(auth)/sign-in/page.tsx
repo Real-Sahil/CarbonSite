@@ -25,7 +25,7 @@ function mapSignInError(err: { code?: string; message?: string } | null | undefi
 }
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-teal-500/60 focus:bg-white/8 focus:ring-2 focus:ring-teal-500/20 disabled:opacity-40 transition-all";
+  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -84,7 +84,7 @@ export default function SignInPage() {
             <label htmlFor="password" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">
               Password
             </label>
-            <Link href="/forgot-password" className="text-xs text-teal-400 hover:text-teal-300 transition-colors" tabIndex={-1}>
+            <Link href="/forgot-password" className="text-xs text-amber-400 hover:text-amber-300 transition-colors" tabIndex={-1}>
               Forgot password?
             </Link>
           </div>
@@ -112,7 +112,7 @@ export default function SignInPage() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(13,148,136,0.35)] hover:shadow-[0_0_28px_rgba(13,148,136,0.5)] hover:from-teal-400 hover:to-cyan-400 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="mt-1 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:from-orange-400 hover:to-amber-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {loading ? "Signing in…" : "Sign in"}
         </button>
@@ -120,7 +120,7 @@ export default function SignInPage() {
 
       <p className="mt-5 text-center text-sm text-white/30">
         Don&apos;t have an account?{" "}
-        <Link href="/sign-up" className="text-teal-400 hover:text-teal-300 transition-colors">
+        <Link href="/sign-up" className="text-amber-400 hover:text-amber-300 transition-colors">
           Create account
         </Link>
       </p>
