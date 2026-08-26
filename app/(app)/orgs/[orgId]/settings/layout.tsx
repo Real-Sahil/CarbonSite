@@ -20,18 +20,18 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   const orgId = match?.[1] ?? "";
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#060612]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="border-b border-white/8">
         <div className="max-w-[1200px] mx-auto px-8 pt-8 pb-0">
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             Settings
           </h1>
-          <p className="mt-1 text-sm text-[#374151]">
+          <p className="mt-1 text-sm text-white/50">
             Manage your organisation, members, and configuration.
           </p>
 
-          <nav className="flex gap-1 mt-6" aria-label="Settings sections">
+          <nav className="flex gap-1 mt-6 overflow-x-auto" aria-label="Settings sections">
             {TABS.map((tab) => {
               const href = `/orgs/${orgId}/settings/${tab.segment}`;
               const isActive = pathname.includes(`/settings/${tab.segment}`);
@@ -40,10 +40,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                   key={tab.segment}
                   href={href}
                   className={cn(
-                    "px-4 py-2 text-sm font-normal tracking-[-0.42px] border-b-2 -mb-px transition-colors",
+                    "px-4 py-2 text-sm font-normal tracking-[-0.42px] border-b-2 -mb-px transition-colors whitespace-nowrap",
                     isActive
-                      ? "border-[#0EA5E9] text-[#111827]"
-                      : "border-transparent text-[#374151] hover:text-[#111827]",
+                      ? "border-teal-400 text-white"
+                      : "border-transparent text-white/40 hover:text-white/70",
                   )}
                 >
                   {tab.label}

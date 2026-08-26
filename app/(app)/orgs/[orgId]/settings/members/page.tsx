@@ -172,19 +172,19 @@ export default async function MembersPage({ params }: MembersPageProps) {
   const assignments = assignmentState.assignments;
 
   const PLAN_CLASSES: Record<string, string> = {
-    trial: "bg-amber-100 text-amber-800 border border-amber-300",
-    starter: "bg-blue-100 text-blue-800 border border-blue-300",
-    professional: "bg-emerald-100 text-emerald-800 border border-emerald-300",
-    enterprise: "bg-purple-100 text-purple-800 border border-purple-300",
+    trial: "bg-amber-500/15 text-amber-300 border border-amber-500/20",
+    starter: "bg-blue-500/15 text-blue-300 border border-blue-500/20",
+    professional: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20",
+    enterprise: "bg-purple-500/15 text-purple-300 border border-purple-500/20",
   };
   const planClass =
-    PLAN_CLASSES[org.plan] ?? "bg-zinc-100 text-zinc-800 border border-zinc-300";
+    PLAN_CLASSES[org.plan] ?? "bg-white/10 text-white/60 border border-white/15";
 
   return (
     <div className="flex flex-col gap-[28px]">
       {/* Plan badge */}
       <div className="flex items-center gap-3">
-        <p className="text-sm font-normal text-[#374151] tracking-[-0.42px]">
+        <p className="text-sm font-normal text-white/60 tracking-[-0.42px]">
           {org.name}
         </p>
         <span
@@ -216,15 +216,15 @@ export default async function MembersPage({ params }: MembersPageProps) {
             <TableBody>
               {members.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell className="font-normal text-[#000000]">
+                  <TableCell className="font-normal text-white">
                     {m.user.name ?? (
-                      <span className="text-[#374151] italic">No name</span>
+                      <span className="text-white/30 italic">No name</span>
                     )}
                     {m.user.id === currentUserId && (
-                      <span className="ml-2 text-xs text-[#374151]">(you)</span>
+                      <span className="ml-2 text-xs text-white/40">(you)</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-[#374151]">
+                  <TableCell className="text-white/50">
                     {m.user.email}
                   </TableCell>
                   <TableCell>
@@ -260,26 +260,26 @@ export default async function MembersPage({ params }: MembersPageProps) {
         <CardContent>
           <InviteMemberForm orgId={orgId} />
           {pendingTeamInvites.length > 0 && (
-            <div className="mt-5 rounded-[14px] border border-[#E5E7EB]">
+            <div className="mt-5 rounded-[14px] border border-white/10">
               <div className="border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
-                <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
+                <p className="text-sm font-normal text-white tracking-[-0.42px]">
                   Pending email invites
                 </p>
-                <p className="text-xs text-[#374151]">
+                <p className="text-xs text-white/40">
                   {pendingTeamInvites.length} pending
                 </p>
               </div>
-              <div className="divide-y divide-[#e5e7eb]">
+              <div className="divide-y divide-white/10">
                 {pendingTeamInvites.map((invite) => (
                   <div
                     key={invite.id}
                     className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
+                      <p className="text-sm font-normal text-white tracking-[-0.42px]">
                         {invite.email}
                       </p>
-                      <p className="text-xs text-[#374151] tracking-[-0.36px]">
+                      <p className="text-xs text-white/40 tracking-[-0.36px]">
                         {ROLE_LABELS[invite.role] ?? invite.role}
                         {" · "}Expires{" "}
                         {invite.expiresAt.toLocaleDateString("en-GB", {
