@@ -29,7 +29,7 @@ const DEFAULTS = {
   className: "",
   particles: 500,
   color: "#f97316",
-  backgroundColor: "#171520",
+  backgroundColor: "#1C1A2E",
   riseSpeed: 25,
   opacity: 100,
   scale: 7,

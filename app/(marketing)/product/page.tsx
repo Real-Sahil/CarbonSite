@@ -57,13 +57,13 @@ const ROLES = [
 
 export default function ProductPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#171520]">
+    <main className="min-h-[100dvh] bg-[#1C1A2E]">
       <SiteNav theme="dark" />
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[60vh] flex items-end overflow-hidden bg-[#171520]">
+      <section className="relative min-h-[60vh] flex items-end overflow-hidden bg-[#1C1A2E]">
         <ProductHeroBg />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#171520] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#241F38] to-transparent pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
@@ -85,7 +85,7 @@ export default function ProductPage() {
       </section>
 
       {/* ── Stages ───────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#171520]">
+      <section className="relative overflow-hidden bg-[#241F38]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.014) 1px,transparent 1px)", backgroundSize: "56px 56px" }} />
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
@@ -115,7 +115,7 @@ export default function ProductPage() {
       </section>
 
       {/* ── Role access control ──────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#171520] border-t border-white/6">
+      <section className="relative overflow-hidden bg-[#1C1A2E] border-t border-white/6">
         <ProductRolesBg />
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
@@ -146,14 +146,14 @@ export default function ProductPage() {
       </section>
 
       {/* ── Scope Comparison ─────────────────────────────────────────────── */}
-      <section className="bg-[#171520] border-t border-white/6 py-24 px-6">
+      <section className="bg-[#241F38] border-t border-white/6 py-24 px-6">
         <div className="mx-auto max-w-7xl">
           <ScopeComparison />
         </div>
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#171520] border-t border-white/6">
+      <section className="relative overflow-hidden bg-[#1C1A2E] border-t border-white/6">
         <ProductCtaBg />
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>

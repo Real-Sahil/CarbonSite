@@ -6,7 +6,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <SiteNav theme="dark" />
-      <main className="min-h-[100dvh] bg-[#171520] text-white pt-16">
+      <main className="min-h-[100dvh] bg-[#1C1A2E] text-white pt-16">
         {children}
       </main>
       <SiteFooter />
