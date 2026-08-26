@@ -4,6 +4,7 @@
 
 import type { AuditLog } from "@prisma/client";
 import { brandStyles, brandLogoHtml } from "./templates/shared";
+import { buildAuditTrailHtml } from "./audit-trail-section";
 
 export type ReportData = {
   orgName: string;
@@ -200,6 +201,9 @@ export function renderReportHtml(data: ReportData): string {
     <thead><tr><th>Facility</th><th class="num">Records</th><th class="num">tCO<sub>2</sub>e</th><th class="num">Share</th></tr></thead>
     <tbody>${facilityRows}</tbody>
   </table>
+
+  ${data.auditEvents && data.auditEvents.length > 0 ? `<h2>Audit Trail</h2>` + buildAuditTrailHtml(data.auditEvents) : ""}
+  ${data.confidentialityNotice ? `<p style="margin-top:16px;font-size:11px;color:#64748b;font-weight:500;border:1px solid #e2e8f0;padding:12px;border-radius:4px;background:#f8fafc">${escapeHtml(data.confidentialityNotice)}</p>` : ""}
 
   <div class="footer">
     <p>Published by ${escapeHtml(data.publishedBy)}. This report was generated from immutable snapshot v${data.snapshotVersion}; totals match the dashboard for the same snapshot.</p>
