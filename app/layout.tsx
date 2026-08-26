@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { MotionProvider } from "@/components/motion-provider";
 import { ScrollProvider } from "@/components/scroll-provider";
 import "./globals.css";
+import "@designcodeio/threeui/style.css";
 
 export const metadata: Metadata = {
   title: "CarbonSite | GHG Emissions Tracking",
