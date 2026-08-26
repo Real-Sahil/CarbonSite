@@ -6,7 +6,7 @@ import { enqueueNotification } from "@/lib/jobs/queues/index";
 import type { ReportData } from "./template";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { getReportHandler, type ReportContext } from "./registry";
-import { generateReportPdf, stampAuditMetadata } from "./pdf-generator";
+import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter } from "./pdf-generator";
 
 const REPORT_INCLUDE = {
   organization: {
@@ -60,13 +60,34 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         ? await generateReportPdf(pdfkitData)
         : await renderPdf(html);
       const pdfChecksum = createHash("sha256").update(rawPdfBuffer).digest("hex");
-      const pdfBuffer = await stampAuditMetadata(rawPdfBuffer, {
+
+      // Create verification token (expires in 90 days)
+      const verificationTokenData = await prisma.reportVerificationToken.upsert({
+        where: { reportId },
+        update: {},
+        create: {
+          reportId,
+          organizationId: orgId,
+          expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/public/reports/verify/${verificationTokenData.token}`;
+
+      let pdfBuffer = await stampAuditMetadata(rawPdfBuffer, {
         snapshotId: report.snapshot.calculationRunId,
         methodologyVersion: report.snapshot.calculationRun.methodologyVersion.name,
         sha256: pdfChecksum,
         generatedAt: new Date(),
         orgId,
       });
+
+      // Add QR code to PDF footer
+      pdfBuffer = await addQrCodeToFooter(pdfBuffer, {
+        verificationUrl,
+        verificationTokenId: verificationTokenData.id,
+      });
+
       const pdfKey = keys.reportPdf(orgId, reportId);
       await putObject(pdfKey, pdfBuffer, "application/pdf");
 

@@ -178,6 +178,7 @@ model Organization {
   digestPreferences   DigestPreference[]
   projectRoleAssignments ProjectRoleAssignment[]
   snapshotAssurances  SnapshotAssurance[]
+  reportVerificationTokens ReportVerificationToken[]
 
   @@map("organizations")
 }
@@ -1206,6 +1207,26 @@ model Report {
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("reports")
+
+  verificationTokens ReportVerificationToken[]
+}
+
+model ReportVerificationToken {
+  id             String   @id @default(cuid())
+  reportId       String   @map("report_id")
+  organizationId String   @map("organization_id")
+  token          String   @unique @default(cuid())
+  expiresAt      DateTime @map("expires_at")
+  accessCount    Int      @default(0) @map("access_count")
+  maxAccessCount Int?     @map("max_access_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  report       Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId])
+  @@index([organizationId, expiresAt])
+  @@map("report_verification_tokens")
 }
 
 // ─── Collaboration & Audit ────────────────────────────────────────────────────
