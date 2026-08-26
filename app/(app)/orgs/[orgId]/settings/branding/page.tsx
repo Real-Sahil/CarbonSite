@@ -57,7 +57,7 @@ export default async function BrandingPage({ params }: BrandingPageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-[28px]">
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">White-label branding</CardTitle>

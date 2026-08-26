@@ -94,7 +94,7 @@ export function OperationsSetup({
   factorLibraries: FactorLibrary[];
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid gap-6 xl:grid-cols-2 max-w-5xl">
       <section className="xl:col-span-2">
         <OrgProfilePanel orgId={orgId} profile={orgProfile} />
       </section>
@@ -151,7 +151,7 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
         title="Organisation profile"
         description="Industry classification drives sector-specific dashboard widgets and report defaults."
       />
-      <div className="grid gap-3 border-t border-slate-100 p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Field label="Organisation name">
           <Input value={name} disabled={isPending} onChange={(e) => setName(e.target.value)} maxLength={200} />
         </Field>
@@ -248,7 +248,7 @@ function FactorImportPanel({
         title="Emission factor import"
         description="Load governed factor rows into an approved library for deterministic calculation runs."
       />
-      <form onSubmit={importFactors} className="grid gap-3 border-t border-slate-100 p-4 lg:grid-cols-[1fr_1fr_auto]">
+      <form onSubmit={importFactors} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
         <Field label="Factor library">
           <select
             name="factorLibraryId"
@@ -334,7 +334,7 @@ function ReportingPeriodsPanel({
         description="Define the periods used by imports, field submissions, calculations, snapshots, and reports."
       />
       <div className="border-t border-slate-100 p-4">
-        <form onSubmit={createPeriod} className="grid gap-3 lg:grid-cols-[1fr_9rem_10rem_10rem_auto]">
+        <form onSubmit={createPeriod} className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_9rem_10rem_10rem_auto]">
           <Field label="Label">
             <Input name="label" required maxLength={100} disabled={isPending} />
           </Field>
@@ -506,7 +506,7 @@ function FacilitiesPanel({
 
   return (
     <EntityPanel title="Facilities" description="Site, depot, and project locations used by records and field submissions.">
-      <form onSubmit={createFacility} className="grid gap-3 border-b border-slate-100 p-4 sm:grid-cols-[1fr_8rem_10rem_auto]">
+      <form onSubmit={createFacility} className="grid gap-3 border-b border-slate-100 p-4 grid-cols-1 md:grid-cols-[1fr_8rem_10rem_auto]">
         <Field label="Name">
           <Input name="name" required maxLength={100} disabled={isPending} />
         </Field>
@@ -572,12 +572,12 @@ function FacilityRow({ orgId, facility }: { orgId: string; facility: Facility })
   }
 
   return (
-    <div className="grid gap-3 p-4 sm:grid-cols-[1fr_8rem_10rem_auto]">
+    <div className="grid gap-3 p-4 grid-cols-1 md:grid-cols-[1fr_8rem_10rem_auto]">
       <Input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} />
       <Input value={country} disabled={isPending} onChange={(event) => setCountry(event.target.value)} />
       <Input value={region} disabled={isPending} onChange={(event) => setRegion(event.target.value)} />
       <RowActions save={save} remove={remove} disabled={isPending} canSave={changed && name.trim().length > 0} />
-      {error && <p className="text-xs text-red-600 sm:col-span-4">{error}</p>}
+      {error && <p className="text-xs text-red-600 md:col-span-4">{error}</p>}
     </div>
   );
 }
@@ -614,7 +614,7 @@ function BusinessUnitsPanel({
 
   return (
     <EntityPanel title="Business units" description="Internal divisions used for responsibility, reporting, and rollups.">
-      <form onSubmit={createBusinessUnit} className="grid gap-3 border-b border-slate-100 p-4 sm:grid-cols-[1fr_auto]">
+      <form onSubmit={createBusinessUnit} className="grid gap-3 border-b border-slate-100 p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
         <Field label="Name">
           <Input name="name" required maxLength={100} disabled={isPending} />
         </Field>
@@ -677,10 +677,10 @@ function BusinessUnitRow({
   }
 
   return (
-    <div className="grid gap-3 p-4 sm:grid-cols-[1fr_auto]">
+    <div className="grid gap-3 p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
       <Input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} />
       <RowActions save={save} remove={remove} disabled={isPending} canSave={name !== businessUnit.name && name.trim().length > 0} />
-      {error && <p className="text-xs text-red-600 sm:col-span-2">{error}</p>}
+      {error && <p className="text-xs text-red-600 md:col-span-2">{error}</p>}
     </div>
   );
 }

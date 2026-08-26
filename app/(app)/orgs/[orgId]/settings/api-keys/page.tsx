@@ -103,7 +103,7 @@ export default function ApiKeysPage() {
   }
 
   return (
-    <div className="flex flex-col gap-[28px]">
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       <div>
         <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#111827]">API Keys</h2>
         <p className="text-sm text-zinc-500 mt-0.5">

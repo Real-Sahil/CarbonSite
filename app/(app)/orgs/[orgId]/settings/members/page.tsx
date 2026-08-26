@@ -181,7 +181,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
     PLAN_CLASSES[org.plan] ?? "bg-white/10 text-white/60 border border-white/15";
 
   return (
-    <div className="flex flex-col gap-[28px]">
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       {/* Plan badge */}
       <div className="flex items-center gap-3">
         <p className="text-sm font-normal text-white/60 tracking-[-0.42px]">
@@ -216,15 +216,15 @@ export default async function MembersPage({ params }: MembersPageProps) {
             <TableBody>
               {members.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell className="font-normal text-white">
+                  <TableCell className="font-normal text-[#111827]">
                     {m.user.name ?? (
-                      <span className="text-white/30 italic">No name</span>
+                      <span className="text-[#9CA3AF] italic">No name</span>
                     )}
                     {m.user.id === currentUserId && (
-                      <span className="ml-2 text-xs text-white/40">(you)</span>
+                      <span className="ml-2 text-xs text-[#9CA3AF]">(you)</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-white/50">
+                  <TableCell className="text-[#374151]">
                     {m.user.email}
                   </TableCell>
                   <TableCell>

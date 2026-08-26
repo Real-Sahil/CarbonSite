@@ -119,7 +119,7 @@ export default function AuditLogPage() {
     : logs;
 
   return (
-    <div className="flex flex-col gap-[28px]">
+    <div className="flex flex-col gap-[28px] max-w-7xl">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#111827]">

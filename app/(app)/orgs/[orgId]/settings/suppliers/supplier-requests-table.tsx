@@ -195,7 +195,7 @@ export function SupplierRequestsTable({
   const pendingCount = counts.submitted;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 max-w-7xl">
       {/* Header */}
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Supplier data requests</h2>
