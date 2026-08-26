@@ -47,7 +47,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
 
     // Download and parse the file
     const buffer = await getObject(batch.sourceStorageKey);
-    const { headers, rows } = parseSpreadsheet(buffer, batch.sourceFilename);
+    const { headers, rows } = await parseSpreadsheet(buffer, batch.sourceFilename);
 
     if (rows.length === 0) {
       await prisma.importBatch.update({

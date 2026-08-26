@@ -14,11 +14,11 @@ function makeXlsxBuffer(rows: (string | number)[][]): Buffer {
 }
 
 describe("parseSpreadsheet", () => {
-  it("parses a valid CSV with headers and data rows", () => {
+  it("parses a valid CSV with headers and data rows", async () => {
     const csv = `Amount,Unit,Category Code,Activity Date
 100,kWh,s2-electricity-lb,2025-01-15
 200,litres,s1-mobile,2025-02-01`;
-    const { headers, rows } = parseSpreadsheet(makeCsvBuffer(csv), "test.csv");
+    const { headers, rows } = await parseSpreadsheet(makeCsvBuffer(csv), "test.csv");
 
     expect(headers).toEqual(["Amount", "Unit", "Category Code", "Activity Date"]);
     expect(rows).toHaveLength(2);
@@ -27,33 +27,33 @@ describe("parseSpreadsheet", () => {
     expect(rows[1]["Category Code"]).toBe("s1-mobile");
   });
 
-  it("skips entirely blank rows", () => {
+  it("skips entirely blank rows", async () => {
     const csv = `Amount,Unit,Category Code
 100,kWh,s2-electricity-lb
 ,,
 200,litres,s1-mobile`;
-    const { rows } = parseSpreadsheet(makeCsvBuffer(csv), "test.csv");
+    const { rows } = await parseSpreadsheet(makeCsvBuffer(csv), "test.csv");
     expect(rows).toHaveLength(2);
   });
 
-  it("returns empty rows for a header-only CSV", () => {
-    const { headers, rows } = parseSpreadsheet(makeCsvBuffer("Amount,Unit,Category Code\n"), "test.csv");
+  it("returns empty rows for a header-only CSV", async () => {
+    const { headers, rows } = await parseSpreadsheet(makeCsvBuffer("Amount,Unit,Category Code\n"), "test.csv");
     expect(headers).toHaveLength(3);
     expect(rows).toHaveLength(0);
   });
 
-  it("returns empty for an empty buffer", () => {
-    const { headers, rows } = parseSpreadsheet(makeCsvBuffer(""), "test.csv");
+  it("returns empty for an empty buffer", async () => {
+    const { headers, rows } = await parseSpreadsheet(makeCsvBuffer(""), "test.csv");
     expect(headers).toHaveLength(0);
     expect(rows).toHaveLength(0);
   });
 
-  it("parses an XLSX buffer", () => {
+  it("parses an XLSX buffer", async () => {
     const buffer = makeXlsxBuffer([
       ["Amount", "Unit", "Category Code"],
       [500, "kg", "s3-upstream-transport"],
     ]);
-    const { headers, rows } = parseSpreadsheet(buffer, "data.xlsx");
+    const { headers, rows } = await parseSpreadsheet(buffer, "data.xlsx");
 
     expect(headers).toContain("Amount");
     expect(rows).toHaveLength(1);
@@ -61,9 +61,9 @@ describe("parseSpreadsheet", () => {
     expect(rows[0]["Category Code"]).toBe("s3-upstream-transport");
   });
 
-  it("trims whitespace from headers and cell values", () => {
+  it("trims whitespace from headers and cell values", async () => {
     const csv = `  Amount  ,  Unit  \n  100  ,  kWh  `;
-    const { headers, rows } = parseSpreadsheet(makeCsvBuffer(csv), "test.csv");
+    const { headers, rows } = await parseSpreadsheet(makeCsvBuffer(csv), "test.csv");
     expect(headers[0]).toBe("Amount");
     expect(rows[0]["Amount"]).toBe("100");
   });
