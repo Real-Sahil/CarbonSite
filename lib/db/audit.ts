@@ -41,6 +41,7 @@ type AuditAction =
   | "report.generation_triggered"
   | "report.published"
   | "report.downloaded"
+  | "report.verification_accessed"
   | "target.created"
   | "target.deleted"
   | "initiative.created"

@@ -5,6 +5,7 @@
 import PDFDocument from "pdfkit";
 import type PDFKit from "pdfkit";
 import { PDFDocument as PdfLib, StandardFonts, rgb } from "pdf-lib";
+import QRCode from "qrcode";
 import type { ReportData } from "./template";
 
 const MARGIN = 52;
@@ -586,6 +587,59 @@ export async function stampAuditMetadata(pdfBytes: Buffer, meta: AuditMeta): Pro
       font,
       color: gray,
       maxWidth: width - 36,
+    });
+  }
+
+  return Buffer.from(await doc.save());
+}
+
+interface QrMeta {
+  verificationUrl: string;
+  verificationTokenId: string;
+}
+
+export async function addQrCodeToFooter(pdfBytes: Buffer, meta: QrMeta): Promise<Buffer> {
+  const doc = await PdfLib.load(pdfBytes);
+
+  // Generate QR code as PNG data URL
+  const qrDataUrl = await QRCode.toDataURL(meta.verificationUrl, {
+    errorCorrectionLevel: "M",
+    type: "image/png",
+    width: 300,
+    margin: 0,
+  });
+
+  // Convert data URL to PNG bytes
+  const base64Data = qrDataUrl.split(",")[1];
+  if (!base64Data) throw new Error("Failed to generate QR code");
+  const qrPngBytes = Buffer.from(base64Data, "base64");
+
+  // Embed PNG image in PDF
+  const qrImage = await doc.embedPng(qrPngBytes);
+  const qrSize = 50; // 50 points = ~18mm
+
+  // Add QR code to bottom-right of footer on every page
+  for (const page of doc.getPages()) {
+    const { width, height } = page.getSize();
+    const margin = 18;
+
+    // QR code positioned at bottom-right, above the footer text
+    page.drawImage(qrImage, {
+      x: width - margin - qrSize,
+      y: height - margin - qrSize - 2,
+      width: qrSize,
+      height: qrSize,
+    });
+
+    // Small text label next to QR code
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const gray = rgb(0.608, 0.639, 0.686); // #9CA3AF
+    page.drawText("Scan to verify", {
+      x: width - margin - qrSize - 55,
+      y: height - margin - qrSize + 10,
+      size: 6,
+      font,
+      color: gray,
     });
   }
 
