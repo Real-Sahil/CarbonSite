@@ -209,9 +209,7 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
                 Expanded(child: Text(file.filename, style: textTheme.bodyMedium, overflow: TextOverflow.ellipsis)),
                 if (file.downloadUrl != null && file.downloadUrl!.isNotEmpty)
                   TextButton(
-                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('URL: ${file.downloadUrl}')),
-                    ),
+                    onPressed: () => _showImageViewer(file.filename, file.downloadUrl!),
                     child: const Text('View'),
                   ),
               ],
@@ -229,6 +227,58 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
       case 'fuel_receipt': return 'Fuel Receipt';
       default: return 'Document';
     }
+  }
+
+  void _showImageViewer(String filename, String url) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppBar(
+                leading: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(filename, style: Theme.of(context).textTheme.titleMedium),
+                backgroundColor: Colors.black87,
+                foregroundColor: Colors.white,
+              ),
+              Expanded(
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+                        const SizedBox(height: 16),
+                        const Text('Could not load image'),
+                      ],
+                    ),
+                  ),
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
