@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight, Leaf } from "lucide-react";
+import { PredictiveArcCanvas } from "@designcodeio/threeui";
 
 const TRUST = [
   "DEFRA 2025 factors",
@@ -27,23 +28,23 @@ export function HeroSection() {
   return (
     <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#060612]">
 
-      {/* ── Mesh gradient blobs ─────────────────────────────────────────────── */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Primary teal blob — top left */}
-        <div className="absolute -top-40 -left-32 w-[600px] h-[600px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.45)_0%,transparent_70%)] blur-[1px]" />
-        {/* Cyan bloom — center right */}
-        <div className="absolute top-1/4 right-[-100px] w-[500px] h-[500px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.30)_0%,transparent_70%)] blur-[1px]" />
-        {/* Emerald accent — bottom left */}
-        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.22)_0%,transparent_70%)] blur-[1px]" />
-        {/* Purple depth — bottom right */}
-        <div className="absolute -bottom-32 right-1/3 w-[480px] h-[480px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.18)_0%,transparent_70%)] blur-[1px]" />
-        {/* Noise grain overlay */}
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
-          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "200px 200px" }} />
-        {/* Subtle grid */}
-        <div className="absolute inset-0"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)", backgroundSize: "72px 72px" }} />
-      </div>
+      {/* ── ThreeUI predictive arc background ───────────────────────────────── */}
+      <PredictiveArcCanvas
+        className="absolute inset-0 w-full h-full"
+        mode="dark"
+        hue={174}
+        saturation={0.7}
+        brightness={0.55}
+        speed={0.4}
+        spacing={48}
+        dotSize={1.8}
+        archHeight={0.38}
+        thickness={1.4}
+      />
+
+      {/* Vignette to blend into page */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,transparent_40%,rgba(6,6,18,0.65)_100%)]" />
+      <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-[#060612] to-transparent pointer-events-none" />
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-28 pb-20 text-center">
@@ -117,9 +118,6 @@ export function HeroSection() {
           ))}
         </motion.div>
       </div>
-
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#060612] to-transparent pointer-events-none" />
     </section>
   );
 }
