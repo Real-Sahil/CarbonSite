@@ -65,16 +65,16 @@ export default function RootPage() {
       {/* ── Manifesto section ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#060612]">
         {/* Mesh blobs */}
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.12)_0%,transparent_70%)] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.08)_0%,transparent_70%)] pointer-events-none" />
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.12)_0%,transparent_70%)] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(234,88,12,0.08)_0%,transparent_70%)] pointer-events-none" />
 
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             <AnimateIn>
-              <p className="text-[10px] text-teal-400 font-mono uppercase tracking-[0.14em] mb-5">Why CarbonSite</p>
+              <p className="text-[10px] text-amber-400 font-mono uppercase tracking-[0.14em] mb-5">Why CarbonSite</p>
               <h2 className="text-[clamp(2rem,4.5vw,3.2rem)] font-semibold tracking-[-0.04em] leading-[1.1] text-white">
                 Carbon data that holds up{" "}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-cyan-300">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
                   under audit.
                 </span>
               </h2>
@@ -93,7 +93,7 @@ export default function RootPage() {
                 </p>
                 <Link
                   href="/product"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors mt-2 group"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors mt-2 group"
                 >
                   Full platform overview
                   <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -111,8 +111,8 @@ export default function RootPage() {
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-6 h-px bg-gradient-to-r from-teal-500 to-cyan-500" />
-              <span className="text-[10px] font-mono text-teal-400 uppercase tracking-[0.14em]">Platform capabilities</span>
+              <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
+              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-[0.14em]">Platform capabilities</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-16">
               Everything in one place.
@@ -124,10 +124,10 @@ export default function RootPage() {
               const Icon = cap.icon;
               return (
                 <AnimateIn key={cap.n} delay={i * 0.05}>
-                  <div className="group relative rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm p-6 hover:border-teal-500/20 hover:bg-white/5 transition-all duration-300">
+                  <div className="group relative rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm p-6 hover:border-amber-500/20 hover:bg-white/5 transition-all duration-300">
                     <div className="flex items-start justify-between mb-5">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-500/10 border border-teal-500/20">
-                        <Icon className="h-4.5 w-4.5 text-teal-400" />
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <Icon className="h-4.5 w-4.5 text-amber-400" />
                       </div>
                       <span className="text-[10px] font-mono text-white/20 tracking-widest">{cap.n}</span>
                     </div>
@@ -147,8 +147,8 @@ export default function RootPage() {
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-6 h-px bg-gradient-to-r from-teal-500 to-cyan-500" />
-              <span className="text-[10px] font-mono text-teal-400 uppercase tracking-[0.14em]">How it works</span>
+              <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
+              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-[0.14em]">How it works</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-16">
               Four stages, end to end.
@@ -158,7 +158,7 @@ export default function RootPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {HOW_IT_WORKS.map((s, i) => (
               <AnimateIn key={s.step} delay={i * 0.08}>
-                <div className="relative rounded-2xl border border-white/8 bg-white/3 p-6 overflow-hidden group hover:border-teal-500/20 hover:bg-white/5 transition-all duration-300">
+                <div className="relative rounded-2xl border border-white/8 bg-white/3 p-6 overflow-hidden group hover:border-amber-500/20 hover:bg-white/5 transition-all duration-300">
                   <div className="text-[3.5rem] font-semibold bg-clip-text text-transparent bg-gradient-to-br from-white/10 to-white/5 tracking-[-0.05em] leading-none mb-6 select-none">
                     {s.n}
                   </div>
@@ -166,7 +166,7 @@ export default function RootPage() {
                   <p className="text-sm text-white/35 leading-relaxed">{s.text}</p>
                   {/* Step connector dot */}
                   {i < HOW_IT_WORKS.length - 1 && (
-                    <div className="hidden lg:block absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-px bg-gradient-to-r from-teal-500/30 to-transparent z-10" />
+                    <div className="hidden lg:block absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-px bg-gradient-to-r from-amber-500/30 to-transparent z-10" />
                   )}
                 </div>
               </AnimateIn>
@@ -178,7 +178,7 @@ export default function RootPage() {
       {/* ── Field app feature ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#060612]">
         {/* Large teal blob */}
-        <div className="absolute -bottom-32 -right-32 w-[700px] h-[700px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.18)_0%,transparent_65%)] pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-[700px] h-[700px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.18)_0%,transparent_65%)] pointer-events-none" />
         <div className="absolute top-1/4 left-[-100px] w-[400px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.10)_0%,transparent_70%)] pointer-events-none" />
 
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
@@ -186,12 +186,12 @@ export default function RootPage() {
             <AnimateIn>
               <div>
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-6 h-px bg-gradient-to-r from-teal-500 to-cyan-500" />
-                  <span className="text-[10px] font-mono text-teal-400 uppercase tracking-[0.14em]">Mobile field app</span>
+                  <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
+                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-[0.14em]">Mobile field app</span>
                 </div>
                 <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] leading-[1.1] text-white mb-6">
                   Evidence captured at the{" "}
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-cyan-300">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
                     point of activity.
                   </span>
                 </h2>
@@ -206,7 +206,7 @@ export default function RootPage() {
                 </p>
                 <Link
                   href="/field-app"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors group"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors group"
                 >
                   About the field app
                   <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -217,11 +217,11 @@ export default function RootPage() {
             <AnimateIn delay={0.12}>
               {/* Glassmorphic phone mockup card */}
               <div className="relative rounded-3xl border border-white/10 bg-white/4 backdrop-blur-sm p-8 overflow-hidden">
-                <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.3)_0%,transparent_70%)]" />
+                <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.3)_0%,transparent_70%)]" />
                 <div className="relative space-y-4">
                   {/* Mock OCR result card */}
                   <div className="rounded-xl border border-white/8 bg-white/5 p-4">
-                    <p className="text-[10px] font-mono text-teal-400 uppercase tracking-widest mb-3">OCR extracted</p>
+                    <p className="text-[10px] font-mono text-amber-400 uppercase tracking-widest mb-3">OCR extracted</p>
                     <div className="grid grid-cols-2 gap-3">
                       {[
                         ["Weight", "4.2 t"],
@@ -237,9 +237,9 @@ export default function RootPage() {
                     </div>
                   </div>
                   {/* Mock status chip */}
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-full border border-teal-500/20 bg-teal-500/8 w-fit">
-                    <div className="h-1.5 w-1.5 rounded-full bg-teal-400 shadow-[0_0_6px_rgba(45,212,191,0.8)]" />
-                    <span className="text-xs text-teal-300 font-medium">Synced · Awaiting review</span>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-full border border-amber-500/20 bg-amber-500/8 w-fit">
+                    <div className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
+                    <span className="text-xs text-amber-300 font-medium">Synced · Awaiting review</span>
                   </div>
                   {/* Mock category badge */}
                   <div className="flex flex-wrap gap-2">
@@ -261,10 +261,10 @@ export default function RootPage() {
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-32">
           <AnimateIn>
             <div className="max-w-[40rem]">
-              <p className="text-[10px] font-mono text-teal-400 uppercase tracking-[0.14em] mb-5">Get started today</p>
+              <p className="text-[10px] font-mono text-amber-400 uppercase tracking-[0.14em] mb-5">Get started today</p>
               <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-[-0.04em] leading-[1.05] text-white mb-6">
                 Start tracking emissions{" "}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-cyan-300">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
                   correctly.
                 </span>
               </h2>
@@ -275,7 +275,7 @@ export default function RootPage() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/sign-up"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-medium shadow-[0_0_32px_rgba(13,148,136,0.45)] hover:shadow-[0_0_48px_rgba(13,148,136,0.6)] hover:from-teal-400 hover:to-cyan-400 transition-all active:scale-[0.97]"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_32px_rgba(245,158,11,0.45)] hover:shadow-[0_0_48px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
                 >
                   Create organisation
                   <ArrowUpRight className="h-3.5 w-3.5" />

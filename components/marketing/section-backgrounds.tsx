@@ -2,22 +2,24 @@
 
 import {
   ConstellationField,
-  InterfaceLines,
   StreamConvergenceBackground,
   DefenseLines,
   TopoField,
   GatewayFlow,
   ParticleNetwork,
 } from "@designcodeio/threeui";
+import RisingLines from "@/components/originkit/rising-lines";
+import WaveArcs from "@/components/originkit/wave-arcs";
 
+// Home — capabilities section
 export function CapabilitiesBg() {
   return (
     <ConstellationField
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={174}
-      saturation={0.6}
-      brightness={0.4}
+      hue={25}
+      saturation={0.65}
+      brightness={0.45}
       speed={0.3}
       density={0.7}
       opacity={0.55}
@@ -25,39 +27,49 @@ export function CapabilitiesBg() {
   );
 }
 
+// Home — how-it-works section (Refero WaveArcs — cursor-reactive amber arcs)
 export function HowItWorksBg() {
   return (
-    <InterfaceLines
-      className="absolute inset-0 w-full h-full"
-      mode="dark"
-      hue={174}
-      saturation={0.5}
-      brightness={0.35}
-      speed={0.25}
-      opacity={0.4}
-    />
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <WaveArcs
+        backgroundColor="#060612"
+        lineColor="rgb(245, 158, 11)"
+        lineWidth={0.9}
+        lineCount={55}
+        speed={3.5}
+        glow={9}
+        interactive={false}
+      />
+    </div>
   );
 }
 
+// Home — CTA section (Refero RisingLines — warm burnt-orange rising particles)
 export function CtaBg() {
   return (
-    <StreamConvergenceBackground
-      className="absolute inset-0 w-full h-full"
-      hue={174}
-      saturation={0.75}
-      brightness={0.55}
-      speed={0.5}
-      opacity={0.65}
-    />
+    <div className="absolute inset-0 overflow-hidden">
+      <RisingLines
+        particles={380}
+        color="#f97316"
+        backgroundColor="#060612"
+        horizonColor="#e76f51"
+        riseSpeed={18}
+        opacity={72}
+        horizonOpacity={52}
+        scale={7}
+        showHorizon={true}
+      />
+    </div>
   );
 }
 
+// Security — hero section
 export function SecurityHeroBg() {
   return (
     <DefenseLines
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={174}
+      hue={20}
       saturation={0.6}
       brightness={0.45}
       speed={0.3}
@@ -66,11 +78,12 @@ export function SecurityHeroBg() {
   );
 }
 
+// Security — CTA section
 export function SecurityCtaBg() {
   return (
     <StreamConvergenceBackground
       className="absolute inset-0 w-full h-full"
-      hue={174}
+      hue={15}
       saturation={0.7}
       brightness={0.45}
       speed={0.4}
@@ -79,12 +92,13 @@ export function SecurityCtaBg() {
   );
 }
 
+// Product — hero section
 export function ProductHeroBg() {
   return (
     <TopoField
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={174}
+      hue={30}
       saturation={0.65}
       brightness={0.45}
       speed={0.25}
@@ -93,12 +107,13 @@ export function ProductHeroBg() {
   );
 }
 
+// Product — role access section
 export function ProductRolesBg() {
   return (
     <ConstellationField
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={174}
+      hue={25}
       saturation={0.5}
       brightness={0.3}
       speed={0.2}
@@ -107,11 +122,12 @@ export function ProductRolesBg() {
   );
 }
 
+// Product — CTA section
 export function ProductCtaBg() {
   return (
     <StreamConvergenceBackground
       className="absolute inset-0 w-full h-full"
-      hue={174}
+      hue={15}
       saturation={0.75}
       brightness={0.5}
       speed={0.45}
@@ -120,12 +136,13 @@ export function ProductCtaBg() {
   );
 }
 
+// Field App — hero section
 export function FieldAppHeroBg() {
   return (
     <GatewayFlow
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={174}
+      hue={35}
       saturation={0.7}
       brightness={0.5}
       speed={0.35}
@@ -134,12 +151,13 @@ export function FieldAppHeroBg() {
   );
 }
 
+// Field App — OCR section
 export function FieldAppOcrBg() {
   return (
     <ParticleNetwork
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={174}
+      hue={30}
       saturation={0.5}
       brightness={0.3}
       speed={0.2}
@@ -148,11 +166,12 @@ export function FieldAppOcrBg() {
   );
 }
 
+// Field App — CTA section
 export function FieldAppCtaBg() {
   return (
     <StreamConvergenceBackground
       className="absolute inset-0 w-full h-full"
-      hue={174}
+      hue={15}
       saturation={0.7}
       brightness={0.45}
       speed={0.4}

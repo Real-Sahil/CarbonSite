@@ -20,7 +20,7 @@ export default function CalculationPage() {
       <CalculationPipeline />
 
       {/* Interactive Calculation Flow */}
-      <section className="bg-gradient-to-br from-white via-blue-50 to-cyan-50 py-24 px-6">
+      <section className="bg-gradient-to-br from-white via-orange-50 to-amber-50 py-24 px-6">
         <div className="mx-auto max-w-7xl">
           <CalculationFlowAnimation />
         </div>

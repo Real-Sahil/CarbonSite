@@ -57,7 +57,7 @@ const CONTROLS = [
 const TAG_STYLE: Record<string, string> = {
   P0:      "text-red-400 border-red-500/30 bg-red-500/8",
   Core:    "text-white/50 border-white/15 bg-white/5",
-  Defence: "text-cyan-400 border-cyan-500/30 bg-cyan-500/8",
+  Defence: "text-amber-300 border-amber-500/30 bg-amber-500/8",
 };
 
 export default function SecurityPage() {
@@ -73,9 +73,9 @@ export default function SecurityPage() {
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-500/20 bg-teal-500/8 mb-8">
-              <ShieldCheck className="h-3.5 w-3.5 text-teal-400" />
-              <span className="text-xs text-teal-400 tracking-[0.1em] font-medium">Security</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/8 mb-8">
+              <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
+              <span className="text-xs text-amber-400 tracking-[0.1em] font-medium">Security</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[18ch]">
               Designed to be audited.
@@ -124,7 +124,7 @@ export default function SecurityPage() {
       <section className="relative overflow-hidden bg-[#060612] border-t border-white/6">
         <div className="absolute inset-0 pointer-events-none"
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.014) 1px,transparent 1px)", backgroundSize: "56px 56px" }} />
-        <div className="absolute top-0 right-0 w-[500px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.09)_0%,transparent_70%)] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[500px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.09)_0%,transparent_70%)] pointer-events-none" />
 
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
@@ -148,7 +148,7 @@ export default function SecurityPage() {
                   "Field worker scope is zero — no org data, no other users.",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-3 rounded-xl border border-white/6 bg-white/3 px-5 py-4">
-                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-400 shadow-[0_0_6px_rgba(45,212,191,0.6)] shrink-0" />
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)] shrink-0" />
                     <p className="text-sm text-white/50 leading-relaxed">{point}</p>
                   </div>
                 ))}
@@ -171,7 +171,7 @@ export default function SecurityPage() {
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-medium shadow-[0_0_32px_rgba(13,148,136,0.45)] hover:shadow-[0_0_48px_rgba(13,148,136,0.6)] hover:from-teal-400 hover:to-cyan-400 transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_32px_rgba(245,158,11,0.45)] hover:shadow-[0_0_48px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
             >
               Get in touch
               <ArrowUpRight className="h-3.5 w-3.5" />
