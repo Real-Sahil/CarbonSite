@@ -100,6 +100,8 @@ type AuditAction =
   | "supplier_data_request.approve"
   | "supplier_data_request.reject"
   | "supplier_data_request.flag_for_review"
+  | "supplier_data_request.resent"
+  | "supplier_portal.dashboard_accessed"
   | "security.alert_repeated_failed_logins"
   | "security.alert_privilege_escalation"
   | "security.alert_mass_export"
