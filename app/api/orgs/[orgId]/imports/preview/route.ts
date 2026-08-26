@@ -33,7 +33,7 @@ export async function POST(
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const { headers, rows } = parseSpreadsheet(buffer, file.name);
+    const { headers, rows } = await parseSpreadsheet(buffer, file.name);
 
     // Return first 5 data rows as preview so the UI can show real values.
     const previewRows = rows.slice(0, 5);
