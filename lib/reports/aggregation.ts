@@ -133,7 +133,7 @@ export async function fetchReportAuditTrail(
 }
 
 export async function buildBasePdfData(
-  report: { organizationId: string; organization: { name: string }; reportingPeriod: { label: string; startDate: Date; endDate: Date }; snapshot: { version: number; publishedAt: Date; calculationRunId: string; calculationRun: { factorLibrary: { name: string; version: string }; methodologyVersion: { name: string; gwpVersion: string } }; publishedBy: { name: string | null; email: string } }; type: string },
+  report: { organizationId: string; organization: { name: string }; reportingPeriod: { label: string; startDate: Date; endDate: Date }; snapshot: { version: number; publishedAt: Date; calculationRunId: string; calculationRun: { factorLibrary: { name: string; version: string }; methodologyVersion: { name: string; gwpVersion: string } }; publishedBy: { name: string | null; email: string } }; type: string; id: string },
   agg: Aggregation,
   calcs: CalculationRow[],
   logoDataUri: string | undefined,
@@ -141,6 +141,7 @@ export async function buildBasePdfData(
   factorLibrary: string,
   methodology: string,
   gwpVersion: string,
+  auditEventFilter?: string[],
 ): Promise<ReportData> {
   const runId = report.snapshot.calculationRunId;
   const orgId = report.organizationId;
@@ -150,6 +151,10 @@ export async function buildBasePdfData(
     _sum: { biogenicCo2e: true },
   });
   const biogenicTotal = Number(biogenicAgg._sum.biogenicCo2e ?? 0);
+
+  const auditEvents = auditEventFilter
+    ? await fetchReportAuditTrail(report.id, runId, orgId, auditEventFilter)
+    : undefined;
 
   return {
     orgName: report.organization.name,
@@ -184,6 +189,7 @@ export async function buildBasePdfData(
       calculationStatus: "completed",
       totalCalculationsExecuted: calcs.length,
     },
+    auditEvents,
   };
 }
 

@@ -123,6 +123,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   const orgId = report.organizationId;
   const runId = report.snapshot.calculationRunId;
   const opts = (report.options ?? {}) as Record<string, unknown>;
+  const auditEventFilter = (opts.auditEventFilter as string[] | undefined) ?? undefined;
   const logoDataUri = await loadLogoDataUri(report.organization.branding?.reportHeaderLogoKey);
 
   const calcs = report.type !== "national_toms"
@@ -136,7 +137,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   const publishedBy = report.snapshot.publishedBy.name ?? report.snapshot.publishedBy.email;
 
   const basePdfData = await buildBasePdfData(
-    report, agg, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion,
+    report, agg, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion, auditEventFilter,
   );
 
   const ctx: ReportContext = {
