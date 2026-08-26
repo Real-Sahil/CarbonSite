@@ -154,7 +154,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                 <Input name="since" type="date" defaultValue={validDate(filters.since) ?? ""} />
               </Field>
               <div className="flex items-end gap-2">
-                <Button type="submit" className="w-full lg:w-auto bg-[#0EA5E9] hover:bg-[#0284C7] text-white">Apply</Button>
+                <Button type="submit" className="w-full lg:w-auto bg-[#f97316] hover:bg-[#ea580c] text-white">Apply</Button>
                 <Button asChild variant="outline" className="w-full lg:w-auto border-[#E5E7EB] text-[#374151]">
                   <a href={`/orgs/${orgId}/audit`}>Clear</a>
                 </Button>

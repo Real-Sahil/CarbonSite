@@ -173,7 +173,7 @@ export default async function SocialValuePage({ params }: Props) {
                       key={theme.code}
                       className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1"
                     >
-                      <span className="text-xs font-semibold text-[#0EA5E9]">
+                      <span className="text-xs font-semibold text-[#f97316]">
                         {theme.code}
                       </span>
                       <span className="text-xs text-[#9CA3AF] leading-[1.4]">

@@ -85,7 +85,7 @@ function AddRecordModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15 disabled:opacity-50";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -125,10 +125,10 @@ function AddRecordModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
             </div>
           </div>
           {co2ePreview && (
-            <div className="rounded-lg bg-[#F0F9FF] border border-[#BAE6FD] px-4 py-3">
-              <p className="text-xs text-[#0EA5E9]">
+            <div className="rounded-lg bg-[#fff7ed] border border-[#BAE6FD] px-4 py-3">
+              <p className="text-xs text-[#f97316]">
                 Calculated emissions: <span className="font-semibold">{co2ePreview} tCO2e</span>
-                <span className="text-[#0EA5E9] ml-1">(DEFRA 2024 factor: {selected?.factor} kgCO2e/t)</span>
+                <span className="text-[#f97316] ml-1">(DEFRA 2024 factor: {selected?.factor} kgCO2e/t)</span>
               </p>
             </div>
           )}
@@ -154,7 +154,7 @@ function AddRecordModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading}
-            className="w-full rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] disabled:opacity-60 transition-colors">
+            className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : "Save waste record"}
           </button>
         </form>
@@ -214,7 +214,7 @@ export default function WastePage() {
           <p className="text-sm text-gray-500 mt-1">Track waste disposal routes and DEFRA 2024 emission factors.</p>
         </div>
         <button onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] transition-colors">
+          className="inline-flex items-center gap-2 rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors">
           <Plus className="h-4 w-4" />
           Add waste record
         </button>

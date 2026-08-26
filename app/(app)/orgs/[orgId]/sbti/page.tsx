@@ -81,7 +81,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15 disabled:opacity-50";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -110,7 +110,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
           </div>
 
           <div className="rounded-lg bg-[#F0F9FF] border border-[#BAE6FD] px-4 py-3">
-            <p className="text-xs font-medium text-[#0EA5E9] mb-2">Baseline emissions (tCO2e)</p>
+            <p className="text-xs font-medium text-[#f97316] mb-2">Baseline emissions (tCO2e)</p>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { key: "baselineScope1Tco2e", label: "Scope 1" },
@@ -118,11 +118,11 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
                 { key: "baselineScope3Tco2e", label: "Scope 3 (opt.)" },
               ].map(({ key, label }) => (
                 <div key={key}>
-                  <label className="block text-xs text-[#0EA5E9] mb-1">{label}</label>
+                  <label className="block text-xs text-[#f97316] mb-1">{label}</label>
                   <input type="number" min={0} step="0.01" value={form[key as keyof typeof form]}
                     onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                     required={key !== "baselineScope3Tco2e"}
-                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-sm text-[#111827] outline-none focus:border-[#0EA5E9] focus:ring-1 focus:ring-[#0EA5E9]/20" placeholder="0" />
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-sm text-[#111827] outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20" placeholder="0" />
                 </div>
               ))}
             </div>
@@ -172,7 +172,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
           <button type="submit" disabled={loading}
-            className="w-full rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] disabled:opacity-60 transition-colors">
+            className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : existing ? "Update target" : "Set SBTi target"}
           </button>
         </form>
@@ -221,7 +221,7 @@ export default function SbtiPage() {
           <p className="text-sm text-gray-500 mt-1">Science-Based Targets aligned with the 1.5°C pathway.</p>
         </div>
         <button onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] transition-colors">
+          className="inline-flex items-center gap-2 rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors">
           <Target className="h-4 w-4" />
           {target ? "Edit target" : "Set SBTi target"}
         </button>
@@ -232,7 +232,7 @@ export default function SbtiPage() {
       ) : !target ? (
         <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#F0F9FF] flex items-center justify-center">
-            <TrendingDown className="h-5 w-5 text-[#0EA5E9]" />
+            <TrendingDown className="h-5 w-5 text-[#f97316]" />
           </div>
           <p className="text-sm font-medium text-gray-700">No SBTi target set</p>
           <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
@@ -248,7 +248,7 @@ export default function SbtiPage() {
                 {statusConfig.label}
               </span>
             )}
-            <span className="rounded-full px-3 py-1 text-xs font-medium bg-[#F0F9FF] text-[#0EA5E9]">
+            <span className="rounded-full px-3 py-1 text-xs font-medium bg-[#F0F9FF] text-[#f97316]">
               {target.pathway} pathway
             </span>
             <span className="text-xs text-gray-500">Base year: {target.baseYear}</span>
@@ -275,7 +275,7 @@ export default function SbtiPage() {
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Baseline emissions by scope</h3>
             <div className="space-y-3">
               {[
-                { label: "Scope 1 (Direct)", value: Number(target.baselineScope1Tco2e), color: "bg-[#0EA5E9]" },
+                { label: "Scope 1 (Direct)", value: Number(target.baselineScope1Tco2e), color: "bg-[#f97316]" },
                 { label: "Scope 2 (Electricity)", value: Number(target.baselineScope2Tco2e), color: "bg-emerald-500" },
                 ...(target.baselineScope3Tco2e
                   ? [{ label: "Scope 3 (Value chain)", value: Number(target.baselineScope3Tco2e), color: "bg-violet-500" }]
@@ -313,9 +313,9 @@ export default function SbtiPage() {
                   const isNetZero = point.year === target.netZeroYear;
                   return (
                     <div key={point.year} className="flex flex-col items-center gap-1 flex-shrink-0" style={{ minWidth: "24px" }}>
-                      <div className="w-4 rounded-t-sm bg-[#0EA5E9] transition-all"
+                      <div className="w-4 rounded-t-sm bg-[#f97316] transition-all"
                         style={{ height: `${Math.max(heightPct, 2)}%`, opacity: isNearTerm || isNetZero ? 1 : 0.7 }} />
-                      <span className={`text-[9px] tabular-nums ${isNearTerm || isNetZero ? "text-[#0EA5E9] font-semibold" : "text-gray-300"}`}>
+                      <span className={`text-[9px] tabular-nums ${isNearTerm || isNetZero ? "text-[#f97316] font-semibold" : "text-gray-300"}`}>
                         {point.year}
                       </span>
                     </div>
@@ -324,7 +324,7 @@ export default function SbtiPage() {
               </div>
               <div className="flex items-center gap-6 mt-3 pt-3 border-t border-gray-100">
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-6 rounded-full bg-[#0EA5E9]" />
+                  <div className="h-2 w-6 rounded-full bg-[#f97316]" />
                   <span className="text-xs text-gray-500">Target trajectory</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -332,7 +332,7 @@ export default function SbtiPage() {
                   <span className="text-xs text-gray-500">Near-term: {nearTermTarget.toFixed(0)} tCO2e by {target.nearTermYear}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Target className="h-3.5 w-3.5 text-[#0EA5E9]" />
+                  <Target className="h-3.5 w-3.5 text-[#f97316]" />
                   <span className="text-xs text-gray-500">Net-zero: {netZeroTarget.toFixed(0)} tCO2e by {target.netZeroYear}</span>
                 </div>
               </div>
@@ -342,10 +342,10 @@ export default function SbtiPage() {
           {/* SBTi info box */}
           <div className="rounded-xl border border-[#BAE6FD] bg-[#F0F9FF] p-5">
             <div className="flex items-start gap-3">
-              <Info className="h-4 w-4 text-[#0EA5E9] mt-0.5 flex-shrink-0" />
+              <Info className="h-4 w-4 text-[#f97316] mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-[#0369A1] mb-1">About SBTi alignment</p>
-                <p className="text-xs text-[#0EA5E9] leading-relaxed">
+                <p className="text-xs text-[#f97316] leading-relaxed">
                   The 1.5°C pathway requires approximately 50% reduction in Scope 1+2 emissions by 2030 from a 2020 base year.
                   Net-zero targets require at least 90% reduction and the neutralisation of residual emissions.
                   Submit your targets to the Science Based Targets initiative for validation at sciencebasedtargets.org.

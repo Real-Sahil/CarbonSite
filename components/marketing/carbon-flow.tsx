@@ -6,9 +6,9 @@ import { motion, useReducedMotion } from "motion/react";
 // Communicates: the platform's end-to-end workflow in one glance.
 // SMIL animateMotion drives particle flow; JS only drives the entry animation.
 const STAGES = [
-  { cx: 70,  label: "Import",    abbr: "↑",  color: "#0f766e", glow: "#0f766e33" },
-  { cx: 200, label: "Review",    abbr: "✓",  color: "#0ea5e9", glow: "#0ea5e933" },
-  { cx: 330, label: "Calculate", abbr: "Σ",  color: "#84cc16", glow: "#84cc1633" },
+  { cx: 70,  label: "Import",    abbr: "↑",  color: "#e76f51", glow: "#e76f5133" },
+  { cx: 200, label: "Review",    abbr: "✓",  color: "#f4a261", glow: "#f4a26133" },
+  { cx: 330, label: "Calculate", abbr: "Σ",  color: "#e9c46a", glow: "#e9c46a33" },
   { cx: 460, label: "Publish",   abbr: "◉",  color: "#8b5cf6", glow: "#8b5cf633" },
   { cx: 590, label: "Report",    abbr: "↓",  color: "#f59e0b", glow: "#f59e0b33" },
 ];

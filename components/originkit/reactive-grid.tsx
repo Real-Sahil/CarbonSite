@@ -23,7 +23,7 @@ const DEFAULTS = {
   fill: "solid" as const,
   strokeWidth: 1.5,
   particleColor: "#f97316",
-  backgroundColor: "#060612",
+  backgroundColor: "#171520",
   maxSize: 32,
   minSize: 10,
   gap: 4,

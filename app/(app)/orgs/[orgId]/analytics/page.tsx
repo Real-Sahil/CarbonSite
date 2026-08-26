@@ -398,7 +398,7 @@ export default async function AnalyticsPage({ params, searchParams }: Props) {
                           <td className="px-3 py-3 font-normal text-[#111827] tracking-[-0.42px]">
                             {p.label}
                             {activePeriod?.id === p.id && (
-                              <span className="ml-2 inline-flex items-center rounded-full bg-[#0EA5E9] px-2 py-0.5 text-[10px] font-medium text-white">
+                              <span className="ml-2 inline-flex items-center rounded-full bg-[#f97316] px-2 py-0.5 text-[10px] font-medium text-white">
                                 Selected
                               </span>
                             )}

@@ -48,7 +48,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
       }
       // 403 - not a member
       return (
-        <div className="min-h-[100dvh] flex items-center justify-center bg-[#060612]">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-[#171520]">
           <div className="text-center">
             <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">
               Access denied
@@ -63,7 +63,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     // Non-AuthError from Prisma (e.g. missing DB column) — show a recoverable error
     // rather than crashing the layout and making every page inaccessible.
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-[#060612]">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#171520]">
         <div className="text-center max-w-sm px-6">
           <h1 className="text-2xl font-semibold tracking-tight text-white mb-2">
             Temporary error
@@ -73,7 +73,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
           </p>
           <a
             href=""
-            className="inline-block rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-2 text-sm text-white hover:from-teal-400 hover:to-cyan-400 transition-all"
+            className="inline-block rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-sm text-white hover:from-orange-400 hover:to-amber-300 transition-all"
           >
             Refresh
           </a>
@@ -105,7 +105,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
 
   if (dataFetchError) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-[#060612]">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#171520]">
         <div className="text-center max-w-sm px-6">
           <h1 className="text-2xl font-semibold tracking-tight text-white mb-2">
             Temporary error
@@ -115,7 +115,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
           </p>
           <a
             href=""
-            className="inline-block rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-2 text-sm text-white hover:from-teal-400 hover:to-cyan-400 transition-all"
+            className="inline-block rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-sm text-white hover:from-orange-400 hover:to-amber-300 transition-all"
           >
             Refresh
           </a>
@@ -136,7 +136,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const cssVars = buildBrandingCssVars(branding);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#060612]">
+    <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#171520]">
       {cssVars && <style>{`:root { ${cssVars} }`}</style>}
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership.role} />
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">

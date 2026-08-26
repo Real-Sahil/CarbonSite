@@ -55,32 +55,32 @@
   --color-sidebar-bg:           #FFFFFF;
   --color-sidebar-border:       #E5E7EB;
   --color-sidebar-text:         #6B7280;
-  --color-sidebar-text-active:  #0EA5E9;
-  --color-sidebar-bg-active:    #F0F9FF;
+  --color-sidebar-text-active:  #f97316;
+  --color-sidebar-bg-active:    #fff7ed;
   --color-sidebar-label:        #9CA3AF;
 
   /* Scope colours (GHG Protocol convention) */
-  --color-scope-1: #0F766E;
-  --color-scope-2: #0EA5E9;
-  --color-scope-3: #10B981;
+  --color-scope-1: #e76f51;
+  --color-scope-2: #f4a261;
+  --color-scope-3: #e9c46a;
 
   /* Legacy aliases (keeps old var() references working) */
-  --color-forest-ink:    #0EA5E9;
-  --color-sage-wash:     #A7F3D0;
-  --color-mist-blue:     #BAE6FD;
-  --color-mint-veil:     #D1FAE5;
-  --color-linen:         #F0F9FF;
+  --color-forest-ink:    #f97316;
+  --color-sage-wash:     #fed7aa;
+  --color-mist-blue:     #fde68a;
+  --color-mint-veil:     #fef3c7;
+  --color-linen:         #fff7ed;
   --color-linen-white:   #FFFFFF;
   --color-hairline-gray: #E5E7EB;
   --color-charcoal:      #1F2937;
   --color-graphite:      #374151;
-  --color-brand-primary: #0EA5E9;
-  --color-brand-accent:  #10B981;
+  --color-brand-primary: #f97316;
+  --color-brand-accent:  #f4a261;
 
   /* Brand palette */
-  --color-brand-forest: #10B981;
-  --color-sky-blue:     #0EA5E9;
-  --color-sky-light:    #F0F9FF;
+  --color-brand-forest: #f4a261;
+  --color-sky-blue:     #f97316;
+  --color-sky-light:    #fff7ed;
   --color-cta-orange:   #F97316;
   --color-surface-var:  #F9FAFB;
 
@@ -91,8 +91,8 @@
   /* Marketing design tokens */
   --color-mk-bg:        #0F172A;
   --color-mk-surface:   #F5F4F0;
-  --color-mk-accent:    #06B6D4;
-  --color-mk-accent-hi: #0891B2;
+  --color-mk-accent:    #f97316;
+  --color-mk-accent-hi: #ea580c;
   --color-mk-text:      #0F172A;
   --color-mk-muted:     #64748B;
   --color-mk-faint:     #94A3B8;
@@ -113,7 +113,7 @@
   }
 
   html, body {
-    background-color: #F9FAFB;
+    background-color: #EEECEA;
     color: #111827;
     font-family: var(--font-sans);
     font-weight: 400;

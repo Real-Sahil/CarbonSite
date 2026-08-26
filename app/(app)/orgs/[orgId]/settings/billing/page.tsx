@@ -46,7 +46,7 @@ function formatLimit(n: number): string {
 function MeterBar({ used, limit, label, icon: Icon }: { used: number; limit: number; label: string; icon: React.ElementType }) {
   const pct = usagePercent(used, limit);
   const isUnlimited = !isFinite(limit);
-  const color = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-orange-400" : "bg-[#0EA5E9]";
+  const color = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-orange-400" : "bg-[#f97316]";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -130,7 +130,7 @@ export default function BillingPage() {
           {plan !== "enterprise" && (
             <a
               href="mailto:hello@carbonsite.io?subject=Upgrade%20enquiry"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0EA5E9] px-4 py-2 text-sm font-medium text-white hover:bg-[#0284C7] transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#f97316] px-4 py-2 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors shrink-0"
             >
               Upgrade
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -185,11 +185,11 @@ export default function BillingPage() {
                 {PLANS.map((p) => (
                   <th
                     key={p}
-                    className={`py-3 px-4 text-center font-semibold ${p === plan ? "text-[#0EA5E9]" : "text-gray-700"}`}
+                    className={`py-3 px-4 text-center font-semibold ${p === plan ? "text-[#f97316]" : "text-gray-700"}`}
                   >
                     {PLAN_LABELS[p]}
                     {p === plan && (
-                      <span className="ml-1.5 text-[10px] font-medium text-[#0EA5E9] uppercase tracking-wide">current</span>
+                      <span className="ml-1.5 text-[10px] font-medium text-[#f97316] uppercase tracking-wide">current</span>
                     )}
                   </th>
                 ))}
@@ -225,7 +225,7 @@ export default function BillingPage() {
 
       <p className="text-xs text-gray-400">
         To upgrade, downgrade, or cancel, contact{" "}
-        <a href="mailto:hello@carbonsite.io" className="text-[#0EA5E9] hover:underline">
+        <a href="mailto:hello@carbonsite.io" className="text-[#f97316] hover:underline">
           hello@carbonsite.io
         </a>
         . Enterprise plans include custom contracts, SSO, and dedicated support.

@@ -33,7 +33,7 @@ const STATE_CONFIG: Record<string, { label: string; className: string }> = {
   parsing:         { label: "Parsing",           className: "bg-blue-50 text-blue-700 border-transparent animate-pulse" },
   needs_attention: { label: "Needs attention",   className: "bg-amber-50 text-amber-700 border-transparent" },
   ready_to_commit: { label: "Ready to commit",   className: "bg-[#F0F9FF] text-[#111827] border-transparent" },
-  committed:       { label: "Committed",         className: "bg-[#0EA5E9] text-white border-transparent" },
+  committed:       { label: "Committed",         className: "bg-[#f97316] text-white border-transparent" },
   failed:          { label: "Failed",            className: "bg-red-50 text-red-700 border-transparent" },
 };
 

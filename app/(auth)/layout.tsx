@@ -23,7 +23,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   return (
     <div className="min-h-[100dvh] flex">
       {/* ── Left panel — mesh gradient dark ──────────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-[46%] xl:w-[44%] flex-col relative overflow-hidden shrink-0 bg-[#060612]">
+      <div className="hidden lg:flex lg:w-[46%] xl:w-[44%] flex-col relative overflow-hidden shrink-0 bg-[#171520]">
 
         {/* Mesh gradient blobs */}
         <div className="absolute -top-32 -left-32 w-[480px] h-[480px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.5)_0%,transparent_65%)] pointer-events-none" />
@@ -93,7 +93,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       </div>
 
       {/* ── Right panel — glassmorphic form area ─────────────────────────────── */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#060612] px-6 py-12 min-h-[100dvh] relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#171520] px-6 py-12 min-h-[100dvh] relative overflow-hidden">
         {/* Subtle mesh on right panel */}
         <div className="absolute top-1/3 right-0 w-[320px] h-[320px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.1)_0%,transparent_70%)] pointer-events-none" />
         <div className="absolute bottom-1/4 left-0 w-[280px] h-[280px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.08)_0%,transparent_70%)] pointer-events-none" />

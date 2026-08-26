@@ -126,7 +126,7 @@ export function FactorLibraryShowcase() {
             style={{
               background:
                 selectedLibrary === key
-                  ? `linear-gradient(135deg, ${selectedLibrary === 'defra' ? '#0EA5E9' : selectedLibrary === 'epa' ? '#F97316' : '#10B981'}15 0%, ${selectedLibrary === 'defra' ? '#0EA5E9' : selectedLibrary === 'epa' ? '#F97316' : '#10B981'}05 100%)`
+                  ? `linear-gradient(135deg, ${selectedLibrary === 'defra' ? '#f97316' : selectedLibrary === 'epa' ? '#F97316' : '#f4a261'}15 0%, ${selectedLibrary === 'defra' ? '#f97316' : selectedLibrary === 'epa' ? '#F97316' : '#f4a261'}05 100%)`
                   : 'rgba(255, 255, 255, 0.6)',
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',

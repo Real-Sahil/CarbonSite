@@ -35,7 +35,7 @@ const STANDARDS = ["VCS", "Gold_Standard", "REDD+", "Plan_Vivo", "ACR", "CAR", "
 
 const STATUS_COLORS: Record<string, string> = {
   forestry:           "bg-green-100 text-green-700",
-  renewable_energy:   "bg-[#F0F9FF] text-[#0EA5E9]",
+  renewable_energy:   "bg-[#fff7ed] text-[#f97316]",
   methane_capture:    "bg-purple-100 text-purple-700",
   blue_carbon:        "bg-blue-100 text-blue-700",
   soil_carbon:        "bg-amber-100 text-amber-700",
@@ -85,7 +85,7 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/15 disabled:opacity-50";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
   const labelCls = "block text-xs font-medium text-gray-600 mb-1";
 
   return (
@@ -150,7 +150,7 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
             </div>
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] disabled:opacity-60 transition-colors">
+          <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : "Save offset"}
           </button>
         </form>
@@ -197,7 +197,7 @@ export default function OffsetsPage() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#0EA5E9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284C7] transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add offset

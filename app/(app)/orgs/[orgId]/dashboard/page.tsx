@@ -832,7 +832,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               href={`/orgs/${orgId}/dashboard`}
               className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                 !selectedContractId
-                  ? "bg-[#0EA5E9] text-white"
+                  ? "bg-[#f97316] text-white"
                   : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
               }`}
             >
@@ -844,7 +844,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 href={`/orgs/${orgId}/dashboard?contractId=${contract.id}`}
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
-                    ? "bg-[#0EA5E9] text-white"
+                    ? "bg-[#f97316] text-white"
                     : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
                 }`}
               >
@@ -860,7 +860,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         aria-label="Carbon footprint summary"
         className="mt-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
       >
-        <div className="rounded-[14px] border border-[#0EA5E9] bg-[#0EA5E9] p-[21px] text-white md:col-span-2 xl:col-span-1">
+        <div className="rounded-[14px] border border-[#f97316] bg-[#f97316] p-[21px] text-white md:col-span-2 xl:col-span-1">
           <div className="flex items-center gap-2">
             <Leaf aria-hidden="true" className="h-4 w-4 text-[#BAE6FD]" />
             <p className="text-xs font-normal uppercase tracking-wide text-[#BAE6FD]">
@@ -1147,7 +1147,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   href={`/orgs/${orgId}/dashboard`}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     !selectedFacilityId
-                      ? "bg-[#0EA5E9] text-white"
+                      ? "bg-[#f97316] text-white"
                       : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
                   }`}
                 >
@@ -1159,7 +1159,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     href={`/orgs/${orgId}/dashboard?facilityId=${fac.id}`}
                     className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                       selectedFacilityId === fac.id
-                        ? "bg-[#0EA5E9] text-white"
+                        ? "bg-[#f97316] text-white"
                         : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
                     }`}
                   >
@@ -1211,7 +1211,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                           <div className="flex items-center justify-end gap-2">
                             <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#F0F9FF]">
                               <div
-                                className="h-full rounded-full bg-[#0EA5E9]"
+                                className="h-full rounded-full bg-[#f97316]"
                                 style={{ width: `${share}%` }}
                               />
                             </div>
@@ -1422,7 +1422,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
-          <CardHeader className="border-b border-[#E5E7EB] bg-[#0EA5E9] text-white">
+          <CardHeader className="border-b border-[#E5E7EB] bg-[#f97316] text-white">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
@@ -1927,7 +1927,7 @@ function ProgressRow({
         <p className="shrink-0 text-sm font-normal text-[#111827] tracking-[-0.42px]">{value}</p>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#F0F9FF]">
-        <div className="h-full rounded-full bg-[#0EA5E9]" style={{ width }} />
+        <div className="h-full rounded-full bg-[#f97316]" style={{ width }} />
       </div>
     </div>
   );
@@ -1951,7 +1951,7 @@ function PipelineRow({
         <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">{count.toLocaleString("en-GB")}</span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#F0F9FF]">
-        <div className="h-full rounded-full bg-[#0EA5E9]" style={{ width }} />
+        <div className="h-full rounded-full bg-[#f97316]" style={{ width }} />
       </div>
     </div>
   );
