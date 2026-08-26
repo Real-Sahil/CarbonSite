@@ -34,6 +34,11 @@ export async function GET(req: NextRequest, { params }: Params) {
           select: { validationErrors: true, rowNumber: true },
           orderBy: { rowNumber: "asc" },
         },
+        evidence: {
+          include: {
+            evidenceFile: { select: { id: true, filename: true } },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: take + 1,
