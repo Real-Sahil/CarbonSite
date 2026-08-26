@@ -6,6 +6,8 @@ import { StandardsMarquee } from "@/components/marketing/standards-marquee";
 import { AnimateIn } from "@/components/marketing/animate-in";
 import { ArrowUpRight, Smartphone, ClipboardCheck, Calculator, FileText, ShieldCheck, Users } from "lucide-react";
 import { HowItWorksBg, CtaBg } from "@/components/marketing/section-backgrounds";
+import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
+import { BorderBeam } from "@/components/ui/border-beam";
 
 const CAPABILITIES = [
   {
@@ -106,7 +108,9 @@ export default function RootPage() {
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">Platform capabilities</span>
+              <AnimatedShinyText className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">
+                Platform capabilities
+              </AnimatedShinyText>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-16">
               Everything in one place.
@@ -176,7 +180,9 @@ export default function RootPage() {
               <div>
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-                  <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">Mobile field app</span>
+                  <AnimatedShinyText className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">
+                    Mobile field app
+                  </AnimatedShinyText>
                 </div>
                 <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] leading-[1.1] text-[#111827] mb-6">
                   Evidence captured at the{" "}
@@ -205,7 +211,7 @@ export default function RootPage() {
 
             <AnimateIn delay={0.12}>
               {/* Clean card mockup */}
-              <div className="relative rounded-3xl border border-[#E5E7EB] bg-white shadow-sm p-8 overflow-hidden">
+              <BorderBeam className="relative rounded-3xl border border-[#E5E7EB] bg-white shadow-sm p-8 overflow-hidden" borderRadius="1.5rem">
                 <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.12)_0%,transparent_70%)]" />
                 <div className="relative space-y-4">
                   {/* Mock OCR result card */}
@@ -237,7 +243,7 @@ export default function RootPage() {
                     ))}
                   </div>
                 </div>
-              </div>
+              </BorderBeam>
             </AnimateIn>
           </div>
         </div>
