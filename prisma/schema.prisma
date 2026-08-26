@@ -179,6 +179,7 @@ model Organization {
   projectRoleAssignments ProjectRoleAssignment[]
   snapshotAssurances  SnapshotAssurance[]
   reportVerificationTokens ReportVerificationToken[]
+  apiDataSources      ApiDataSource[]
 
   @@map("organizations")
 }
@@ -2143,6 +2144,34 @@ model DigestPreference {
   @@unique([organizationId, userId])
   @@index([organizationId, enabled])
   @@map("digest_preferences")
+}
+
+model ApiDataSource {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  name              String
+  description       String?
+  endpoint          String
+  authMethod        String   @default("none") @map("auth_method") // "none", "api_key", "bearer", "basic"
+  apiKey            String?  @map("api_key") // Encrypted
+  bearerToken       String?  @map("bearer_token") // Encrypted
+  basicUsername     String?  @map("basic_username")
+  basicPassword     String?  @map("basic_password") // Encrypted
+  dataFormat        String   @default("json") @map("data_format") // "json", "csv"
+  mappingConfig     Json     @map("mapping_config") // Field mapping for extracting activity data
+  enabled           Boolean  @default(true)
+  lastSyncAt        DateTime? @map("last_sync_at")
+  lastErrorAt       DateTime? @map("last_error_at")
+  lastErrorMessage  String?  @map("last_error_message")
+  syncIntervalMins  Int      @default(60) @map("sync_interval_mins")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, enabled])
+  @@index([organizationId, lastSyncAt])
+  @@map("api_data_sources")
 }
 
 model ProjectRoleAssignment {

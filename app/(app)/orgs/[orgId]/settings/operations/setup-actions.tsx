@@ -6,6 +6,7 @@ import { Plus, Save, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ApiDataSourcesPanel } from "./api-data-sources";
 
 type ReportingPeriod = {
   id: string;
@@ -33,6 +34,19 @@ type FactorLibrary = {
   id: string;
   name: string;
   version: string;
+};
+
+type ApiDataSourceRow = {
+  id: string;
+  name: string;
+  endpoint: string;
+  authMethod: "none" | "api_key" | "bearer" | "basic";
+  dataFormat: "json" | "csv";
+  enabled: boolean;
+  lastSyncAt: string | null;
+  lastErrorAt: string | null;
+  lastErrorMessage: string | null;
+  syncIntervalMins: number;
 };
 
 const PERIOD_TYPES = ["month", "quarter", "year", "custom"] as const;
@@ -85,6 +99,7 @@ export function OperationsSetup({
   facilities,
   businessUnits,
   factorLibraries,
+  apiDataSources,
 }: {
   orgId: string;
   orgProfile: OrgProfile;
@@ -92,6 +107,7 @@ export function OperationsSetup({
   facilities: Facility[];
   businessUnits: BusinessUnit[];
   factorLibraries: FactorLibrary[];
+  apiDataSources: ApiDataSourceRow[];
 }) {
   return (
     <div className="grid gap-6 xl:grid-cols-2 max-w-5xl">
@@ -105,6 +121,9 @@ export function OperationsSetup({
       <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
       <section className="xl:col-span-2">
         <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} />
+      </section>
+      <section className="xl:col-span-2">
+        <ApiDataSourcesPanel orgId={orgId} sources={apiDataSources} />
       </section>
     </div>
   );
