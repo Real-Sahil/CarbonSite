@@ -6,7 +6,7 @@ import { enqueueNotification } from "@/lib/jobs/queues/index";
 import type { ReportData } from "./template";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { getReportHandler, type ReportContext } from "./registry";
-import { generateReportPdf } from "./pdf-generator";
+import { generateReportPdf, stampAuditMetadata } from "./pdf-generator";
 
 const REPORT_INCLUDE = {
   organization: {
@@ -56,11 +56,18 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         csvBuffer = buildCsv(calculations, report);
       }
 
-      const pdfBuffer = pdfkitData
+      const rawPdfBuffer = pdfkitData
         ? await generateReportPdf(pdfkitData)
         : await renderPdf(html);
+      const pdfChecksum = createHash("sha256").update(rawPdfBuffer).digest("hex");
+      const pdfBuffer = await stampAuditMetadata(rawPdfBuffer, {
+        snapshotId: report.snapshot.calculationRunId,
+        methodologyVersion: report.snapshot.calculationRun.methodologyVersion.name,
+        sha256: pdfChecksum,
+        generatedAt: new Date(),
+        orgId,
+      });
       const pdfKey = keys.reportPdf(orgId, reportId);
-      const pdfChecksum = createHash("sha256").update(pdfBuffer).digest("hex");
       await putObject(pdfKey, pdfBuffer, "application/pdf");
 
       let csvKey: string | undefined;
