@@ -833,7 +833,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                 !selectedContractId
                   ? "bg-[#f97316] text-white"
-                  : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
+                  : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
               }`}
             >
               All
@@ -845,7 +845,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
                     ? "bg-[#f97316] text-white"
-                    : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
+                    : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
                 }`}
               >
                 {contract.name}
@@ -862,15 +862,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       >
         <div className="rounded-[14px] border border-[#f97316] bg-[#f97316] p-[21px] text-white md:col-span-2 xl:col-span-1">
           <div className="flex items-center gap-2">
-            <Leaf aria-hidden="true" className="h-4 w-4 text-[#BAE6FD]" />
-            <p className="text-xs font-normal uppercase tracking-wide text-[#BAE6FD]">
+            <Leaf aria-hidden="true" className="h-4 w-4 text-white/85" />
+            <p className="text-xs font-normal uppercase tracking-wide text-white/85">
               Total footprint
             </p>
           </div>
           <p className="mt-3 text-4xl font-normal tracking-[-0.4px]">
             {currentFootprint > 0 ? formatKgCo2e(currentFootprint) : "—"}
           </p>
-          <p className="mt-1 text-xs text-[#BAE6FD] tracking-[-0.36px]">
+          <p className="mt-1 text-xs text-white/85 tracking-[-0.36px]">
             {currentFootprint > 0
               ? `Scopes 1–3 · ${currentPeriod?.label ?? "current period"}`
               : "Run a calculation to populate your footprint"}
@@ -1148,7 +1148,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     !selectedFacilityId
                       ? "bg-[#f97316] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
                   }`}
                 >
                   All
@@ -1160,7 +1160,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                       selectedFacilityId === fac.id
                         ? "bg-[#f97316] text-white"
-                        : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
+                        : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
                     }`}
                   >
                     {fac.name}
@@ -1426,11 +1426,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
-                <CardDescription className="text-[#BAE6FD]">
+                <CardDescription className="text-white/85">
                   Category concentration and scope movement for the active reporting period.
                 </CardDescription>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-white/10 text-[#BAE6FD]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-white/10 text-white/85">
                 <LineChart aria-hidden="true" className="h-5 w-5" />
               </div>
             </div>
@@ -1867,7 +1867,7 @@ function HeroStat({
     return (
       <Link
         href={href}
-        className="block rounded-[14px] border border-[#E5E7EB] bg-white p-[21px] transition-colors hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
+        className="block rounded-[14px] border border-[#E5E7EB] bg-white p-[21px] transition-colors hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
       >
         {inner}
       </Link>

@@ -20,22 +20,22 @@ interface AuditLogEntry {
 }
 
 const ACTION_COLOURS: Record<string, string> = {
-  "auth.sign_in": "bg-blue-500/15 text-blue-300",
-  "auth.sign_out": "bg-white/8 text-white/50",
-  "record.created": "bg-emerald-500/15 text-emerald-300",
-  "record.updated": "bg-amber-500/15 text-amber-300",
-  "record.deleted": "bg-red-500/15 text-red-400",
-  "import.committed": "bg-emerald-500/15 text-emerald-300",
-  "import.failed": "bg-red-500/15 text-red-400",
-  "snapshot.published": "bg-purple-500/15 text-purple-300",
-  "report.published": "bg-purple-500/15 text-purple-300",
-  "field_submission.approved": "bg-emerald-500/15 text-emerald-300",
-  "field_submission.rejected": "bg-red-500/15 text-red-400",
-  "audit.export_downloaded": "bg-white/8 text-white/50",
+  "auth.sign_in": "bg-blue-50 text-blue-600",
+  "auth.sign_out": "bg-[#F3F4F6] text-[#374151]",
+  "record.created": "bg-emerald-50 text-emerald-700",
+  "record.updated": "bg-amber-50 text-amber-700",
+  "record.deleted": "bg-red-50 text-red-600",
+  "import.committed": "bg-emerald-50 text-emerald-700",
+  "import.failed": "bg-red-50 text-red-600",
+  "snapshot.published": "bg-purple-50 text-purple-700",
+  "report.published": "bg-purple-50 text-purple-700",
+  "field_submission.approved": "bg-emerald-50 text-emerald-700",
+  "field_submission.rejected": "bg-red-50 text-red-600",
+  "audit.export_downloaded": "bg-[#F3F4F6] text-[#374151]",
 };
 
 function ActionBadge({ action }: { action: string }) {
-  const colours = ACTION_COLOURS[action] ?? "bg-white/8 text-white/50";
+  const colours = ACTION_COLOURS[action] ?? "bg-[#F3F4F6] text-[#374151]";
   return (
     <span className={cn("text-[11px] font-mono rounded px-1.5 py-0.5 tracking-tight", colours)}>
       {action}
@@ -122,10 +122,10 @@ export default function AuditLogPage() {
     <div className="flex flex-col gap-[28px]">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[22px] font-normal tracking-[-0.44px] text-white">
+          <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#111827]">
             Audit Log
           </h2>
-          <p className="text-sm text-white/50 mt-0.5">
+          <p className="text-sm text-[#6B7280] mt-0.5">
             Immutable record of all actions in this organisation.
           </p>
         </div>
@@ -164,7 +164,7 @@ export default function AuditLogPage() {
 
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-[340px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#9CA3AF] pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -178,68 +178,68 @@ export default function AuditLogPage() {
             setActionFilter(e.target.value);
             setLogs([]);
           }}
-          className="h-8 rounded-md border border-white/12 bg-white/6 px-3 text-sm text-white/80 focus:outline-none focus:ring-2 focus:ring-teal-400/50"
+          className="h-8 rounded-md border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50"
         >
-          <option value="" className="bg-[#0d0d1a]">All actions</option>
-          <option value="record" className="bg-[#0d0d1a]">record.*</option>
-          <option value="import" className="bg-[#0d0d1a]">import.*</option>
-          <option value="field_submission" className="bg-[#0d0d1a]">field_submission.*</option>
-          <option value="auth" className="bg-[#0d0d1a]">auth.*</option>
-          <option value="snapshot" className="bg-[#0d0d1a]">snapshot.*</option>
-          <option value="report" className="bg-[#0d0d1a]">report.*</option>
-          <option value="audit" className="bg-[#0d0d1a]">audit.*</option>
+          <option value="">All actions</option>
+          <option value="record">record.*</option>
+          <option value="import">import.*</option>
+          <option value="field_submission">field_submission.*</option>
+          <option value="auth">auth.*</option>
+          <option value="snapshot">snapshot.*</option>
+          <option value="report">report.*</option>
+          <option value="audit">audit.*</option>
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-[10px] border border-white/8">
+      <div className="overflow-x-auto rounded-[10px] border border-[#E5E7EB]">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/8 bg-white/3">
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-white/40 tracking-wider">
+            <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#6B7280] tracking-wider">
                 Time
               </th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-white/40 tracking-wider">
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#6B7280] tracking-wider">
                 Action
               </th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-white/40 tracking-wider">
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#6B7280] tracking-wider">
                 Resource
               </th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-white/40 tracking-wider">
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#6B7280] tracking-wider">
                 Actor
               </th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-white/40 tracking-wider">
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#6B7280] tracking-wider">
                 Details
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/8">
+          <tbody className="divide-y divide-[#E5E7EB]">
             {filtered.length === 0 && !loading && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm text-white/30">
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#9CA3AF]">
                   No audit entries found.
                 </td>
               </tr>
             )}
             {filtered.map((log) => (
-              <tr key={log.id} className="hover:bg-white/3 transition-colors">
-                <td className="px-4 py-2.5 text-xs font-mono text-white/40 whitespace-nowrap">
+              <tr key={log.id} className="hover:bg-[#F9FAFB] transition-colors">
+                <td className="px-4 py-2.5 text-xs font-mono text-[#9CA3AF] whitespace-nowrap">
                   {formatTime(log.createdAt)}
                 </td>
                 <td className="px-4 py-2.5 whitespace-nowrap">
                   <ActionBadge action={log.action} />
                 </td>
-                <td className="px-4 py-2.5 text-xs text-white/60">
-                  <span className="text-white/30">{log.resourceType}/</span>
+                <td className="px-4 py-2.5 text-xs text-[#374151]">
+                  <span className="text-[#9CA3AF]">{log.resourceType}/</span>
                   <span className="font-mono">{log.resourceId.slice(0, 8)}</span>
                 </td>
-                <td className="px-4 py-2.5 text-xs text-white/60">
+                <td className="px-4 py-2.5 text-xs text-[#374151]">
                   {log.actor ? (
                     <span title={log.actor.email}>{log.actor.name ?? log.actor.email}</span>
                   ) : (
-                    <span className="text-white/30">System</span>
+                    <span className="text-[#9CA3AF]">System</span>
                   )}
                 </td>
-                <td className="px-4 py-2.5 text-xs font-mono text-white/30 max-w-[260px] truncate">
+                <td className="px-4 py-2.5 text-xs font-mono text-[#9CA3AF] max-w-[260px] truncate">
                   {Object.keys(log.metadata ?? {}).length > 0
                     ? JSON.stringify(log.metadata)
                     : ""}

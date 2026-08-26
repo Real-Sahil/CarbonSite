@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
-import { SiteNav } from "@/components/marketing/site-nav";
-import { SiteFooter } from "@/components/marketing/site-footer";
 import { ArrowUpRight, Smartphone } from "lucide-react";
-import { FieldAppHeroBg, FieldAppOcrBg, FieldAppCtaBg } from "@/components/marketing/section-backgrounds";
+import { FieldAppHeroBg, FieldAppCtaBg } from "@/components/marketing/section-backgrounds";
 
 export const metadata: Metadata = {
   title: "Field App - CarbonSite",
@@ -29,13 +27,12 @@ const OCR_FIELDS = [
 
 export default function FieldAppPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#1C1A2E]">
-      <SiteNav theme="dark" />
+    <main className="min-h-[100dvh] bg-[#FAFBF8]">
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[70vh] flex items-end overflow-hidden bg-[#1C1A2E]">
+      <section className="relative min-h-[70vh] flex items-end overflow-hidden bg-[#0A1628]">
         <FieldAppHeroBg />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#1C1A2E] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0A1628] to-transparent pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
@@ -43,13 +40,13 @@ export default function FieldAppPage() {
               <Smartphone className="h-3.5 w-3.5 text-amber-400" />
               <span className="text-xs text-amber-400 tracking-[0.1em] font-medium">Mobile field app</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[22ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[22ch]">
               Evidence captured at the{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
                 point of activity.
               </span>
             </h1>
-            <p className="text-base text-white/40 leading-relaxed max-w-[48ch] mb-8">
+            <p className="text-base text-[#94A3B8] leading-relaxed max-w-[48ch] mb-8">
               Field workers photograph documents on-site. On-device OCR extracts the data.
               Works without internet. Syncs automatically when connectivity returns.
             </p>
@@ -58,7 +55,7 @@ export default function FieldAppPage() {
                 Invite a field worker
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
-              <Link href="/solutions/construction" className="inline-flex items-center px-6 py-3 rounded-full border border-white/15 bg-white/5 text-white/70 text-sm font-medium hover:border-white/25 hover:text-white transition-colors">
+              <Link href="/solutions/construction" className="inline-flex items-center px-6 py-3 rounded-full border border-[#94A3B8]/40 text-[#94A3B8] text-sm font-medium hover:border-[#94A3B8]/70 hover:text-[#F8FAFC] transition-colors">
                 Construction use cases
               </Link>
             </div>
@@ -67,18 +64,18 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── Stats ────────────────────────────────────────────────────────── */}
-      <section className="bg-[#1C1A2E] border-b border-white/8">
+      <section className="bg-[#F2F4EF] border-b border-[#E5E7EB]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-white/8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
             {[
               { stat: "On-device", label: "OCR processing", note: "No server round-trip, no API cost, works in a basement" },
               { stat: "Offline-first", label: "SQLite queue", note: "Every submission drafts locally before any network attempt" },
               { stat: "Auto-sync", label: "Background service", note: "Drains the queue with exponential backoff when online" },
             ].map((item) => (
               <div key={item.stat} className="px-0 md:px-8 py-8 md:py-4 first:pl-0 last:pr-0">
-                <div className="text-xl font-semibold text-amber-400 mb-1">{item.stat}</div>
-                <div className="text-sm font-medium text-white/70 mb-1">{item.label}</div>
-                <div className="text-xs text-white/30">{item.note}</div>
+                <div className="text-xl font-semibold text-amber-600 mb-1">{item.stat}</div>
+                <div className="text-sm font-medium text-[#374151] mb-1">{item.label}</div>
+                <div className="text-xs text-[#6B7280]">{item.note}</div>
               </div>
             ))}
           </div>
@@ -86,28 +83,24 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── Capture steps ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#1C1A2E]">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.014) 1px,transparent 1px)", backgroundSize: "56px 56px" }} />
-        <div className="absolute top-1/2 right-0 w-[500px] h-[500px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.09)_0%,transparent_70%)] pointer-events-none -translate-y-1/2" />
-
+      <section className="relative overflow-hidden bg-[#FAFBF8]">
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-[0.14em]">How it works</span>
+              <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">How it works</span>
             </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-16">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-16">
               From first launch to first submission.
             </h2>
           </AnimateIn>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {CAPTURE_STEPS.map((step, i) => (
               <AnimateIn key={step.n} delay={i * 0.05}>
-                <div className="rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm p-8 hover:border-amber-500/20 hover:bg-white/5 transition-all duration-300">
-                  <div className="text-[10px] font-mono text-amber-400 mb-6 tracking-widest">{step.n}</div>
-                  <h3 className="text-base font-semibold text-white tracking-[-0.02em] mb-3">{step.title}</h3>
-                  <p className="text-sm text-white/35 leading-relaxed">{step.text}</p>
+                <div className="rounded-2xl border border-[#E5E7EB] bg-white p-8 hover:border-amber-500/40 hover:bg-[#FFF7ED] transition-all duration-300">
+                  <div className="text-[10px] font-mono text-amber-600 mb-6 tracking-widest">{step.n}</div>
+                  <h3 className="text-base font-semibold text-[#111827] tracking-[-0.02em] mb-3">{step.title}</h3>
+                  <p className="text-sm text-[#6B7280] leading-relaxed">{step.text}</p>
                 </div>
               </AnimateIn>
             ))}
@@ -116,29 +109,28 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── OCR fields ───────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#1C1A2E] border-t border-white/6">
-        <FieldAppOcrBg />
+      <section className="relative overflow-hidden bg-[#F2F4EF] border-t border-[#E5E7EB]">
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-[0.14em]">OCR extraction</span>
+              <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">OCR extraction</span>
             </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-3">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
               What the extractor reads.
             </h2>
-            <p className="text-sm text-white/40 mb-12 max-w-[55ch]">
+            <p className="text-sm text-[#6B7280] mb-12 max-w-[55ch]">
               ML Kit text recognition runs on-device. A regex and heuristic extractor finds structured fields from the raw text blocks. Unrecognised fields are left blank for manual entry.
             </p>
           </AnimateIn>
-          <div className="border border-white/8 divide-y divide-white/6 rounded-2xl overflow-hidden">
+          <div className="border border-[#E5E7EB] divide-y divide-[#E5E7EB] rounded-2xl overflow-hidden">
             {OCR_FIELDS.map((row) => (
-              <div key={row.doc} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-white/3 transition-colors">
-                <div className="px-6 py-4 border-r border-white/6">
-                  <span className="text-sm font-medium text-white/80">{row.doc}</span>
+              <div key={row.doc} className="grid grid-cols-1 md:grid-cols-[180px_1fr] bg-white hover:bg-[#FAFBF8] transition-colors">
+                <div className="px-6 py-4 border-r border-[#E5E7EB]">
+                  <span className="text-sm font-medium text-[#111827]">{row.doc}</span>
                 </div>
                 <div className="px-6 py-4">
-                  <p className="text-sm text-white/40">{row.fields}</p>
+                  <p className="text-sm text-[#6B7280]">{row.fields}</p>
                 </div>
               </div>
             ))}
@@ -147,12 +139,12 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── Security isolation ────────────────────────────────────────────── */}
-      <section className="bg-[#1C1A2E] border-t border-white/6">
+      <section className="bg-[#FAFBF8] border-t border-[#E5E7EB]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-16">
           <AnimateIn>
-            <div className="max-w-xl rounded-2xl border border-white/8 bg-white/3 p-8">
-              <h3 className="text-lg font-semibold text-white tracking-[-0.02em] mb-3">Field worker data isolation.</h3>
-              <p className="text-sm text-white/40 leading-relaxed">
+            <div className="max-w-xl rounded-2xl border border-[#E5E7EB] bg-white p-8">
+              <h3 className="text-lg font-semibold text-[#111827] tracking-[-0.02em] mb-3">Field worker data isolation.</h3>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
                 A field_worker role has zero access to org dashboards, calculations, or other users&apos; submissions.
                 They see only the reporting periods they were invited to and the status of their own submissions.
                 Access is enforced server-side on every API request, not from client-supplied headers.
@@ -163,11 +155,11 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#1C1A2E] border-t border-white/6">
+      <section className="relative overflow-hidden bg-[#0A1628]">
         <FieldAppCtaBg />
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-white mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#F8FAFC] mb-4">
               Put evidence capture in your team&apos;s pocket.
             </h2>
             <Link
@@ -181,7 +173,6 @@ export default function FieldAppPage() {
         </div>
       </section>
 
-      <SiteFooter />
     </main>
   );
 }
