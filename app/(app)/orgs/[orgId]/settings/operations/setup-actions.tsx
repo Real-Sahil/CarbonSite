@@ -293,7 +293,7 @@ function FactorImportPanel({
           />
         </Field>
         <div className="flex items-end">
-          <Button type="submit" disabled={!canImport || isPending} className="w-full">
+          <Button type="submit" disabled={!canImport || isPending}>
             <Upload className="h-4 w-4" />
             Import factors
           </Button>
@@ -373,7 +373,7 @@ function ReportingPeriodsPanel({
             <Input name="endDate" type="date" required disabled={isPending} />
           </Field>
           <div className="flex items-end">
-            <Button type="submit" disabled={isPending} className="w-full">
+            <Button type="submit" disabled={isPending}>
               <Plus className="h-4 w-4" />
               Add
             </Button>
@@ -536,7 +536,7 @@ function FacilitiesPanel({
           <Input name="region" maxLength={80} disabled={isPending} />
         </Field>
         <div className="flex items-end">
-          <Button type="submit" disabled={isPending} className="w-full">
+          <Button type="submit" disabled={isPending}>
             <Plus className="h-4 w-4" />
             Add
           </Button>
@@ -638,7 +638,7 @@ function BusinessUnitsPanel({
           <Input name="name" required maxLength={100} disabled={isPending} />
         </Field>
         <div className="flex items-end">
-          <Button type="submit" disabled={isPending} className="w-full">
+          <Button type="submit" disabled={isPending}>
             <Plus className="h-4 w-4" />
             Add
           </Button>
