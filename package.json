@@ -29,6 +29,7 @@
     "@aws-sdk/client-s3": "^3.775.0",
     "@aws-sdk/s3-request-presigner": "^3.775.0",
     "@base-ui/react": "^1.7.0",
+    "@designcodeio/threeui": "^1.1.0",
     "@hookform/resolvers": "^5.4.0",
     "@number-flow/react": "^0.6.2",
     "@prisma/client": "^6.3.0",
