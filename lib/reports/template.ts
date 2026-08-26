@@ -2,6 +2,7 @@
 // and testable without Puppeteer. All emission values stored in kg CO2e;
 // displayed in tonnes (tCO2e) per GHG Protocol reporting convention.
 
+import type { AuditLog } from "@prisma/client";
 import { brandStyles, brandLogoHtml } from "./templates/shared";
 
 export type ReportData = {
@@ -30,6 +31,8 @@ export type ReportData = {
     calculationStatus: string;
     totalCalculationsExecuted: number;
   };
+  auditEvents?: AuditLog[];
+  confidentialityNotice?: string;
 };
 
 const REPORT_TYPE_TITLES: Record<string, string> = {
