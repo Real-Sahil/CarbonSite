@@ -159,7 +159,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                 Deterministic emission calculations from approved activity records. Results are immutable per run.
               </p>
             </div>
-            <Button asChild size="sm" className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white shrink-0">
+            <Button asChild size="sm" className="bg-[#f97316] hover:bg-[#ea580c] text-white shrink-0">
               <Link href={`/orgs/${orgId}/dashboard#run-calculation`}>
                 <Play className="h-3.5 w-3.5 mr-1.5" />
                 Run calculation
@@ -284,7 +284,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                             {run.status === "succeeded" && (
                               <Link
                                 href={`/orgs/${orgId}/calculations/${run.id}`}
-                                className="inline-flex items-center gap-1 text-xs font-medium text-[#0EA5E9] hover:text-[#0284C7] hover:underline underline-offset-2"
+                                className="inline-flex items-center gap-1 text-xs font-medium text-[#f97316] hover:text-[#ea580c] hover:underline underline-offset-2"
                               >
                                 View &amp; publish
                               </Link>
@@ -350,7 +350,7 @@ function EmptyState({ orgId }: { orgId: string }) {
       <p className="text-sm text-[#9CA3AF] max-w-sm mb-6">
         Approve activity records, then trigger a calculation from the dashboard to compute scope 1, 2, and 3 emissions.
       </p>
-      <Button asChild size="sm" className="bg-[#0EA5E9] hover:bg-[#1a5c26] text-white">
+      <Button asChild size="sm" className="bg-[#f97316] hover:bg-[#1a5c26] text-white">
         <Link href={`/orgs/${orgId}/dashboard#run-calculation`}>
           <Play className="h-3.5 w-3.5 mr-1.5" />
           Go to dashboard

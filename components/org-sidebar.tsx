@@ -109,11 +109,11 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-normal tracking-tight transition-all",
           collapsed ? "justify-center px-2" : "",
           isActive
-            ? "bg-gradient-to-r from-teal-500/15 to-cyan-500/10 text-teal-300 border border-teal-500/20"
+            ? "bg-gradient-to-r from-amber-500/15 to-orange-500/10 text-amber-300 border border-amber-500/20"
             : "text-white/40 hover:text-white/80 hover:bg-white/5 border border-transparent",
         )}
       >
-        <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-teal-400" : "text-white/30")} aria-hidden="true" />
+        <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-amber-400" : "text-white/30")} aria-hidden="true" />
         {!collapsed && item.label}
       </Link>
     );
@@ -124,12 +124,12 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       {/* Logo */}
       <div className={cn("flex items-center border-b border-white/6 overflow-hidden", collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-4 pt-5 pb-4")}>
         {collapsed ? (
-          <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-[0_0_12px_rgba(13,148,136,0.5)]" title={orgName}>
+          <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.5)]" title={orgName}>
             <Leaf className="h-4 w-4 text-white" />
           </span>
         ) : (
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(13,148,136,0.5)]">
+            <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(245,158,11,0.5)]">
               <Leaf className="h-4 w-4 text-white" />
             </span>
             <div className="min-w-0">
@@ -173,7 +173,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <button className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/8 transition-colors" onClick={handleSignOut} title="Sign out">
                 <Avatar className="h-7 w-7 shrink-0">
                   <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                  <AvatarFallback className="bg-teal-500/20 text-teal-400 text-[10px] font-medium border border-teal-500/20">{getInitials(user.name, user.email)}</AvatarFallback>
+                  <AvatarFallback className="bg-amber-500/20 text-amber-400 text-[10px] font-medium border border-amber-500/20">{getInitials(user.name, user.email)}</AvatarFallback>
                 </Avatar>
               </button>
             </TooltipTrigger>
@@ -187,7 +187,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-white/5 transition-colors text-left">
                 <Avatar className="h-7 w-7 shrink-0">
                   <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                  <AvatarFallback className="bg-teal-500/20 text-teal-400 text-xs font-medium border border-teal-500/20">{getInitials(user.name, user.email)}</AvatarFallback>
+                  <AvatarFallback className="bg-amber-500/20 text-amber-400 text-xs font-medium border border-amber-500/20">{getInitials(user.name, user.email)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   {user.name && <p className="text-xs font-medium text-white/70 truncate">{user.name}</p>}
@@ -223,7 +223,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           <Menu className="h-5 w-5 text-white/60" aria-hidden="true" />
         </button>
         <div className="ml-3 flex items-center gap-2 min-w-0">
-          <span className="h-6 w-6 rounded-md bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(13,148,136,0.5)]">
+          <span className="h-6 w-6 rounded-md bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]">
             <Leaf className="h-3.5 w-3.5 text-white" />
           </span>
           <span className="text-sm font-semibold tracking-tight text-white">CarbonSite</span>
@@ -241,7 +241,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
             <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(13,148,136,0.2)_0%,transparent_70%)] pointer-events-none" />
             <div className="relative flex items-center justify-between px-4 pt-5 pb-4 border-b border-white/6">
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(13,148,136,0.5)]">
+                <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(245,158,11,0.5)]">
                   <Leaf className="h-4 w-4 text-white" />
                 </span>
                 <div className="min-w-0">
@@ -264,7 +264,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                   <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-white/5 transition-colors text-left">
                     <Avatar className="h-7 w-7 shrink-0">
                       <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                      <AvatarFallback className="bg-teal-500/20 text-teal-400 text-xs font-medium border border-teal-500/20">{getInitials(user.name, user.email)}</AvatarFallback>
+                      <AvatarFallback className="bg-amber-500/20 text-amber-400 text-xs font-medium border border-amber-500/20">{getInitials(user.name, user.email)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       {user.name && <p className="text-xs font-medium text-white/70 truncate">{user.name}</p>}

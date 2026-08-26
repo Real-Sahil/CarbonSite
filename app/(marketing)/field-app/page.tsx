@@ -29,13 +29,13 @@ const OCR_FIELDS = [
 
 export default function FieldAppPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#060612]">
+    <main className="min-h-[100dvh] bg-[#171520]">
       <SiteNav theme="dark" />
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[70vh] flex items-end overflow-hidden bg-[#060612]">
+      <section className="relative min-h-[70vh] flex items-end overflow-hidden bg-[#171520]">
         <FieldAppHeroBg />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#060612] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#171520] to-transparent pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
@@ -67,7 +67,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── Stats ────────────────────────────────────────────────────────── */}
-      <section className="bg-[#060612] border-b border-white/8">
+      <section className="bg-[#171520] border-b border-white/8">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-white/8">
             {[
@@ -86,7 +86,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── Capture steps ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#060612]">
+      <section className="relative overflow-hidden bg-[#171520]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.014) 1px,transparent 1px)", backgroundSize: "56px 56px" }} />
         <div className="absolute top-1/2 right-0 w-[500px] h-[500px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.09)_0%,transparent_70%)] pointer-events-none -translate-y-1/2" />
@@ -116,7 +116,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── OCR fields ───────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#060612] border-t border-white/6">
+      <section className="relative overflow-hidden bg-[#171520] border-t border-white/6">
         <FieldAppOcrBg />
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
@@ -147,7 +147,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── Security isolation ────────────────────────────────────────────── */}
-      <section className="bg-[#060612] border-t border-white/6">
+      <section className="bg-[#171520] border-t border-white/6">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-16">
           <AnimateIn>
             <div className="max-w-xl rounded-2xl border border-white/8 bg-white/3 p-8">
@@ -163,7 +163,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#060612] border-t border-white/6">
+      <section className="relative overflow-hidden bg-[#171520] border-t border-white/6">
         <FieldAppCtaBg />
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>

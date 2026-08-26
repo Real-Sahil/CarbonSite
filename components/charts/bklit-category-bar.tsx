@@ -4,9 +4,9 @@ import { BarChart } from "./bar-chart";
 import { Bar } from "./bar";
 
 const SCOPE_COLORS: Record<number, string> = {
-  1: "#0f766e",
-  2: "#0ea5e9",
-  3: "#84cc16",
+  1: "#e76f51",
+  2: "#f4a261",
+  3: "#e9c46a",
 };
 
 export interface CategoryBarDatum {
@@ -71,7 +71,7 @@ export function BklitCategoryBar({
       >
         <Bar
           dataKey="value"
-          fill="#0ea5e9"
+          fill="#f4a261"
           lineCap="round"
           animationType="grow"
         />

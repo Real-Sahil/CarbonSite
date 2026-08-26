@@ -30,13 +30,13 @@ export default function GlobalError({
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
             <button
               onClick={reset}
-              style={{ padding: "10px 20px", background: "#0EA5E9", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14 }}
+              style={{ padding: "10px 20px", background: "#f97316", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14 }}
             >
               Try again
             </button>
             <Link
               href="/"
-              style={{ padding: "10px 20px", background: "#F0F9FF", color: "#0EA5E9", borderRadius: 8, fontSize: 14, textDecoration: "none", display: "inline-block" }}
+              style={{ padding: "10px 20px", background: "#F0F9FF", color: "#f97316", borderRadius: 8, fontSize: 14, textDecoration: "none", display: "inline-block" }}
             >
               Go home
             </Link>

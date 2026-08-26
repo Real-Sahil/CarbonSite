@@ -48,13 +48,13 @@ export default function OrgError({
           <button
             onClick={handleReset}
             disabled={resetCount > 2}
-            className="px-5 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-sm font-medium hover:bg-[#0284C7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 bg-[#f97316] text-white rounded-lg text-sm font-medium hover:bg-[#ea580c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {resetCount > 2 ? "Please refresh page" : "Try again"}
           </button>
           <button
             onClick={() => { window.location.href = "/"; }}
-            className="px-5 py-2.5 bg-[#F0F9FF] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#E0F2FE] transition-colors"
+            className="px-5 py-2.5 bg-[#fff7ed] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#E0F2FE] transition-colors"
           >
             Go home
           </button>

@@ -45,7 +45,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
           {steps.map((step, i) => (
             <div
               key={i}
-              className={`h-1.5 w-6 rounded-full transition-colors ${step.done ? "bg-[#0EA5E9]" : "bg-[#F0F9FF]"}`}
+              className={`h-1.5 w-6 rounded-full transition-colors ${step.done ? "bg-[#f97316]" : "bg-[#F0F9FF]"}`}
             />
           ))}
         </div>

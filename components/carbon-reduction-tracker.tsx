@@ -100,7 +100,7 @@ export function CarbonReductionTracker() {
       target: 10000,
       percentage: 25,
       unit: 'tCO₂e',
-      color: '#10B981',
+      color: '#f4a261',
       gradient: 'from-emerald-500 to-green-600',
       description: 'Clean energy adoption progress',
     },

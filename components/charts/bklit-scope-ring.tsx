@@ -5,7 +5,7 @@ import { RingCenter } from "./ring-center";
 import { Ring } from "./ring";
 import type { RingData } from "./ring-context";
 
-const SCOPE_COLORS = ["#0f766e", "#0ea5e9", "#84cc16"];
+const SCOPE_COLORS = ["#e76f51", "#f4a261", "#e9c46a"];
 
 export interface ScopeRingDatum {
   scope: number;

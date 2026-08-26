@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardFooter className="justify-center">
-          <Link href="/sign-in" className="text-sm text-[#0EA5E9] hover:underline">
+          <Link href="/sign-in" className="text-sm text-[#f97316] hover:underline">
             Back to sign in
           </Link>
         </CardFooter>
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
         </form>
       </CardContent>
       <CardFooter className="justify-center">
-        <Link href="/sign-in" className="text-sm text-[#0EA5E9] hover:underline">
+        <Link href="/sign-in" className="text-sm text-[#f97316] hover:underline">
           Back to sign in
         </Link>
       </CardFooter>

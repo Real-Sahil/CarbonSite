@@ -135,7 +135,7 @@ export default async function SubmissionsPage({
       <div className="bg-white border-b border-[#E5E7EB]">
         <div className="max-w-[1200px] mx-auto px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#fff7ed]">
               <ClipboardList className="h-4 w-4 text-[#111827]" />
             </div>
             <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
@@ -161,8 +161,8 @@ export default async function SubmissionsPage({
                   href={filterHref(filter.value)}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     active
-                      ? "bg-[#0EA5E9] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
+                      ? "bg-[#f97316] text-white"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#fff7ed]"
                   }`}
                 >
                   {filter.label}
@@ -184,7 +184,7 @@ export default async function SubmissionsPage({
           <div className="mt-4 flex justify-center">
             <Link
               href={filterHref(statusFilter, limit + PAGE_SIZE)}
-              className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF] transition-colors"
+              className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#BAE6FD] hover:bg-[#fff7ed] transition-colors"
             >
               Show more ({initialSubmissions.length.toLocaleString("en-GB")} of{" "}
               {(statusFilter === "all"

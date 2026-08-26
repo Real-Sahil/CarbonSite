@@ -57,7 +57,7 @@ export function AnalyticsFilters({
   const chipClass = (active: boolean) =>
     `rounded-full px-3 py-1 text-xs font-normal transition-colors cursor-pointer border ${
       active
-        ? "bg-[#0EA5E9] text-white border-[#0EA5E9]"
+        ? "bg-[#f97316] text-white border-[#f97316]"
         : "border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#F0F9FF]"
     }`;
 

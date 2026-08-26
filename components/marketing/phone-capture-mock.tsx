@@ -7,10 +7,10 @@ import { useReducedMotion } from "motion/react";
 // Camera -> OCR scanning -> Pre-filled form -> Submitted
 // Pure CSS/SVG - no external images required.
 const STAGES = [
-  { label: "Camera", icon: "📷", color: "#0f766e" },
-  { label: "OCR scanning...", icon: "🔍", color: "#0ea5e9" },
-  { label: "Form pre-filled", icon: "✎", color: "#8b5cf6" },
-  { label: "Submitted", icon: "✓", color: "#84cc16" },
+  { label: "Camera", icon: "📷", color: "#e76f51" },
+  { label: "OCR scanning...", icon: "🔍", color: "#f4a261" },
+  { label: "Form pre-filled", icon: "✎", color: "#f97316" },
+  { label: "Submitted", icon: "✓", color: "#e9c46a" },
 ];
 
 export function PhoneCaptureMock() {

@@ -54,13 +54,13 @@ export default function AppError({
           <div className="flex gap-3 justify-center">
             <button
               onClick={handleReset}
-              className="px-5 py-2.5 bg-[#0EA5E9] text-white rounded-lg text-sm font-medium hover:bg-[#0284C7] transition-colors"
+              className="px-5 py-2.5 bg-[#f97316] text-white rounded-lg text-sm font-medium hover:bg-[#ea580c] transition-colors"
             >
               Try again
             </button>
             <button
               onClick={() => { window.location.href = "/sign-in"; }}
-              className="px-5 py-2.5 bg-[#F0F9FF] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#E0F2FE] transition-colors"
+              className="px-5 py-2.5 bg-[#fff7ed] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#E0F2FE] transition-colors"
             >
               Sign in
             </button>

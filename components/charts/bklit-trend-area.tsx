@@ -16,9 +16,9 @@ interface BklitTrendAreaProps {
 }
 
 const SCOPE_SERIES = [
-  { key: "scope1" as const, label: "Scope 1", color: "#0f766e" },
-  { key: "scope2" as const, label: "Scope 2", color: "#0ea5e9" },
-  { key: "scope3" as const, label: "Scope 3", color: "#84cc16" },
+  { key: "scope1" as const, label: "Scope 1", color: "#e76f51" },
+  { key: "scope2" as const, label: "Scope 2", color: "#f4a261" },
+  { key: "scope3" as const, label: "Scope 3", color: "#e9c46a" },
 ];
 
 function tonnes(kg: number): string {
@@ -65,9 +65,9 @@ export function BklitTrendArea({ data, height = 260 }: BklitTrendAreaProps) {
         barGap={0.25}
         animationDuration={1000}
       >
-        <Bar dataKey="scope1" fill="#0f766e" lineCap="butt" />
-        <Bar dataKey="scope2" fill="#0ea5e9" lineCap="butt" />
-        <Bar dataKey="scope3" fill="#84cc16" lineCap="round" />
+        <Bar dataKey="scope1" fill="#e76f51" lineCap="butt" />
+        <Bar dataKey="scope2" fill="#f97316" lineCap="butt" />
+        <Bar dataKey="scope3" fill="#e9c46a" lineCap="round" />
       </BarChart>
       <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
         {SCOPE_SERIES.map((s) => (
