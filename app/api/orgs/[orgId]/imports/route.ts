@@ -84,10 +84,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       return apiError("BAD_REQUEST", "templateKey is required.", 400);
     }
 
-    const allowedExts = [".csv", ".xlsx", ".xls"];
+    const allowedExts = [".csv", ".xlsx", ".xls", ".pdf"];
     const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
     if (!allowedExts.includes(ext)) {
-      return apiError("BAD_REQUEST", "File must be a CSV or Excel file.", 400);
+      return apiError("BAD_REQUEST", "File must be a CSV, Excel, or PDF file.", 400);
     }
     if (file.size > 50 * 1024 * 1024) {
       return apiError("TOO_LARGE", "File must be under 50 MB.", 413);

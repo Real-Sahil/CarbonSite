@@ -1,10 +1,15 @@
 import * as XLSX from "xlsx";
+import { parsePdf } from "./parsers/pdf";
 
 export type ParsedRow = Record<string, string>;
 export type ParseResult = { headers: string[]; rows: ParsedRow[] };
 
-export function parseSpreadsheet(buffer: Buffer, filename: string): ParseResult {
+export async function parseSpreadsheet(buffer: Buffer, filename: string): Promise<ParseResult> {
   const ext = filename.slice(filename.lastIndexOf(".")).toLowerCase();
+
+  if (ext === ".pdf") {
+    return parsePdf(buffer);
+  }
 
   let workbook: XLSX.WorkBook;
   if (ext === ".csv") {
