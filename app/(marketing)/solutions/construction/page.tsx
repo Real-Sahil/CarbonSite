@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
+import { VideoBackground } from "@/components/ui/video-background";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -40,18 +40,7 @@ export default function ConstructionPage() {
 
       {/* Hero */}
       <section className="relative min-h-[65vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&h=900&fit=crop"
-            alt="Green construction sustainability carbon reduction building"
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A1628]/90 via-[#0A1628]/60 to-[#0A1628]/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/80 to-transparent" />
-        </div>
+        <VideoBackground src="/videos/hero-construction.mp4" overlayOpacity={0.60} />
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">

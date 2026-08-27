@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
 import { ArrowUpRight, Smartphone } from "lucide-react";
-import { FieldAppHeroBg, FieldAppCtaBg } from "@/components/marketing/section-backgrounds";
+import { VideoBackground } from "@/components/ui/video-background";
+import { FieldAppCtaBg } from "@/components/marketing/section-backgrounds";
 
 export const metadata: Metadata = {
   title: "Field App - CarbonSite",
@@ -31,7 +32,7 @@ export default function FieldAppPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative min-h-[70vh] flex items-end overflow-hidden bg-[#0A1628]">
-        <FieldAppHeroBg />
+        <VideoBackground src="/videos/hero-field-app.mp4" overlayOpacity={0.60} />
         <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0A1628] to-transparent pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">

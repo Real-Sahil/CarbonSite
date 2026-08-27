@@ -37,9 +37,12 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
         sentAt: true,
         openedAt: true,
         submittedAt: true,
+        reviewedAt: true,
         expiresAt: true,
         notes: true,
         submittedData: true,
+        qualityFlags: true,
+        rejectionReason: true,
         reportingPeriod: { select: { id: true, label: true } },
         createdBy: { select: { name: true, email: true } },
       },
@@ -52,24 +55,33 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
     }),
   ]);
 
+  const now = new Date();
   const rows = requests.map((r) => ({
     id: r.id,
     supplierEmail: r.supplierEmail,
     supplierName: r.supplierName,
     categoryCode: r.categoryCode,
     categoryName: r.categoryCode.replace(/^s\d-/, "").replace(/-/g, " "),
-    status: r.status as "sent" | "opened" | "submitted" | "expired",
+    status: r.status as "sent" | "opened" | "submitted" | "expired" | "flagged" | "approved" | "rejected",
     sentAt: r.sentAt.toISOString(),
     openedAt: r.openedAt?.toISOString() ?? null,
     submittedAt: r.submittedAt?.toISOString() ?? null,
+    reviewedAt: r.reviewedAt?.toISOString() ?? null,
     expiresAt: r.expiresAt.toISOString(),
-    expired: r.expiresAt < new Date() && r.status !== "submitted",
+    expired: r.expiresAt < now && !["submitted", "approved", "rejected", "flagged"].includes(r.status),
     notes: r.notes,
     submittedData: r.submittedData as {
       quantity: number;
       unit: string;
       description?: string | null;
     } | null,
+    qualityFlags: (r.qualityFlags ?? null) as Array<{
+      field: string;
+      severity: "warning" | "critical";
+      message: string;
+      suggestedRange?: { min: number; max: number };
+    }> | null,
+    rejectionReason: r.rejectionReason,
     periodId: r.reportingPeriod.id,
     periodLabel: r.reportingPeriod.label,
     sentBy: r.createdBy.name ?? r.createdBy.email,
@@ -81,6 +93,9 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
     sent: rows.filter((r) => r.status === "sent" && !r.expired).length,
     opened: rows.filter((r) => r.status === "opened" && !r.expired).length,
     submitted: rows.filter((r) => r.status === "submitted").length,
+    flagged: rows.filter((r) => r.status === "flagged").length,
+    approved: rows.filter((r) => r.status === "approved").length,
+    rejected: rows.filter((r) => r.status === "rejected").length,
     expired: rows.filter((r) => r.expired).length,
   };
 

@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Upload, FileText, BarChart2, Calculator,
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
-  Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart,
+  Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -84,8 +84,9 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Contracts", href: `/orgs/${orgId}/contracts`, icon: Briefcase, roles: EXTENDED_VIEW_ROLES },
     ]},
     { label: "Admin", items: [
-      { label: "Audit",    href: `/orgs/${orgId}/audit`,    icon: Clock,    roles: CORE_ROLES },
-      { label: "Settings", href: role === "admin" ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/settings/operations`, icon: Settings, roles: ["admin", "editor"] },
+      { label: "Suppliers", href: `/orgs/${orgId}/settings/suppliers`, icon: Truck,    roles: ["admin"] },
+      { label: "Audit",     href: `/orgs/${orgId}/audit`,              icon: Clock,    roles: CORE_ROLES },
+      { label: "Settings",  href: role === "admin" ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/settings/operations`, icon: Settings, roles: ["admin", "editor"] },
     ]},
   ];
 
