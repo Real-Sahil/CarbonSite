@@ -10,10 +10,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Plus } from "lucide-react";
+import { MoreVertical, Plus, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { CreateAccountDialog } from "./create-account-dialog";
 import { PasswordResetDialog } from "./password-reset-dialog";
+import { BulkImportDialog } from "./bulk-import-dialog";
 
 interface SupplierAccount {
   userId: string;
@@ -34,6 +35,7 @@ export interface SupplierAccountsProps {
 
 export function SupplierAccountsTable({ orgId, accounts, onRefresh }: SupplierAccountsProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedAccountForReset, setSelectedAccountForReset] = useState<SupplierAccount | null>(null);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
 
@@ -91,10 +93,16 @@ export function SupplierAccountsTable({ orgId, accounts, onRefresh }: SupplierAc
             <CardTitle>Supplier Accounts</CardTitle>
             <CardDescription>Manage supplier login credentials and access</CardDescription>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)} size="sm" className="gap-1">
-            <Plus className="h-4 w-4" />
-            Create Account
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setShowImportDialog(true)} size="sm" variant="outline" className="gap-1">
+              <Upload className="h-4 w-4" />
+              Import CSV
+            </Button>
+            <Button onClick={() => setShowCreateDialog(true)} size="sm" className="gap-1">
+              <Plus className="h-4 w-4" />
+              Create Account
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {accounts.length === 0 ? (
@@ -171,6 +179,12 @@ export function SupplierAccountsTable({ orgId, accounts, onRefresh }: SupplierAc
       </Card>
 
       <CreateAccountDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} orgId={orgId} onSuccess={onRefresh} />
+
+      <BulkImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImportComplete={onRefresh}
+      />
 
       {selectedAccountForReset && (
         <PasswordResetDialog
