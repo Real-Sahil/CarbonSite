@@ -7,22 +7,23 @@ export interface SupabaseError {
 
 export function parseSupabaseError(error: unknown): SupabaseError {
   if (error && typeof error === "object" && "code" in error && "message" in error) {
-    const err = error as any;
+    const err = error as Record<string, unknown>;
     return {
-      code: err.code || "UNKNOWN_ERROR",
-      message: err.message || "An unknown error occurred",
-      details: err.details,
-      status: err.status,
+      code: String(err.code || "UNKNOWN_ERROR"),
+      message: String(err.message || "An unknown error occurred"),
+      details: err.details ? String(err.details) : undefined,
+      status: typeof err.status === "number" ? err.status : undefined,
     };
   }
 
   if (error && typeof error === "object" && "status" in error) {
-    const err = error as any;
+    const err = error as Record<string, unknown>;
+    const status = typeof err.status === "number" ? err.status : 0;
     return {
-      code: `HTTP_${err.status}`,
-      message: err.message || `HTTP Error ${err.status}`,
-      details: err.details,
-      status: err.status,
+      code: `HTTP_${status}`,
+      message: err.message ? String(err.message) : `HTTP Error ${status}`,
+      details: err.details ? String(err.details) : undefined,
+      status,
     };
   }
 
