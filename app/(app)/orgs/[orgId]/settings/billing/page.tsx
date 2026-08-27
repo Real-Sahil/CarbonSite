@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2 } from "lucide-react";
 import { getLimits, PLAN_LABELS, PLAN_PRICES, usagePercent } from "@/lib/billing/limits";
+import { PaymentMethodsSection } from "./payment-methods-section";
 
 // Captured once at module load — pure constant, safe for React Compiler.
 const PAGE_LOAD_TIME = Date.now();
@@ -147,6 +148,9 @@ export default function BillingPage() {
           </p>
         )}
       </div>
+
+      {/* Payment Methods */}
+      <PaymentMethodsSection orgId={orgId} />
 
       {/* Usage meters */}
       <div className="rounded-xl border border-gray-200 bg-white p-6">
