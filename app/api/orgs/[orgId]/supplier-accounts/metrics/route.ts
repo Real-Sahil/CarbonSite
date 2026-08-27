@@ -24,7 +24,9 @@ export async function GET(
     const period = Math.max(7, Math.min(365, parseInt(query.period)));
     const metrics = await getSupplierMetrics(orgId, period);
 
-    return NextResponse.json(metrics);
+    const response = NextResponse.json(metrics);
+    response.headers.set("Cache-Control", "private, max-age=300");
+    return response;
   } catch (err) {
     return handleRouteError(err);
   }

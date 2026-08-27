@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -42,6 +43,7 @@ interface MetricsData {
 export function MetricsDashboard() {
   const params = useParams();
   const orgId = params.orgId as string;
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,15 @@ export function MetricsDashboard() {
   useEffect(() => {
     loadMetrics();
   }, [period]);
+
+  const handlePeriodChange = (value: string) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    debounceTimeoutRef.current = setTimeout(() => {
+      setPeriod(value);
+    }, 300);
+  };
 
   const loadMetrics = async () => {
     setLoading(true);
@@ -128,11 +139,33 @@ export function MetricsDashboard() {
 
   if (loading || !metrics) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-zinc-500">Loading metrics...</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <div className="flex gap-2 items-center justify-between">
+          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-5 w-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-4 w-32 mt-2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-72 w-full" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -142,7 +175,7 @@ export function MetricsDashboard() {
       <div className="flex gap-2 items-center justify-between">
         <div className="flex gap-2 items-center">
           <Calendar className="w-4 h-4 text-gray-600" />
-          <Select value={period} onValueChange={setPeriod}>
+          <Select value={period} onValueChange={handlePeriodChange}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>

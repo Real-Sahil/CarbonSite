@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SupplierAccountsTable } from "./accounts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 
 interface SupplierAccount {
@@ -66,6 +67,22 @@ export function SupplierAccountsPage({ orgId }: { orgId: string }) {
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>{error}</AlertDescription>
       </Alert>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-lg border border-slate-200">
+          <div className="p-4 space-y-3">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+      </div>
     );
   }
 

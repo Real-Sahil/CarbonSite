@@ -34,10 +34,12 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       supplierPasswordRotationDays: org.supplierPasswordRotationDays,
       supplierAccountExpiryDays: org.supplierAccountExpiryDays,
     });
+    response.headers.set("Cache-Control", "private, max-age=300");
+    return response;
   } catch (err) {
     return handleRouteError(err);
   }

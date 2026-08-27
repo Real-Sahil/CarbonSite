@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -89,11 +90,39 @@ export function AccountPoliciesSettings() {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-zinc-500">Loading policies...</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64 mt-2" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-32" />
+              <div className="flex gap-2 flex-wrap">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-10 w-24" />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-32" />
+              <div className="flex gap-2 flex-wrap">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-10 w-32" />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

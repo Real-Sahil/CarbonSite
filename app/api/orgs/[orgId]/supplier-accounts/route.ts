@@ -52,7 +52,9 @@ export async function GET(
       terminatedAt: membership.terminatedAt?.toISOString(),
     }));
 
-    return NextResponse.json({ accounts: formattedAccounts });
+    const response = NextResponse.json({ accounts: formattedAccounts });
+    response.headers.set("Cache-Control", "private, max-age=300");
+    return response;
   } catch (err) {
     return handleRouteError(err);
   }
