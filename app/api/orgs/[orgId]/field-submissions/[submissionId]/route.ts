@@ -69,9 +69,16 @@ export async function GET(
           try {
             if (f.evidenceFile?.storageKey) {
               downloadUrl = await presignDownload(f.evidenceFile.storageKey);
+            } else {
+              console.warn(
+                `[field-submissions/${submissionId}] evidence file ${f.evidenceFile!.id} has empty storageKey`,
+              );
             }
-          } catch {
-            // Presign failure is non-fatal — return filename without URL
+          } catch (err) {
+            console.error(
+              `[field-submissions/${submissionId}] presignDownload failed for key "${f.evidenceFile?.storageKey}":`,
+              err instanceof Error ? err.message : String(err),
+            );
           }
           return {
             id: f.evidenceFile!.id,
