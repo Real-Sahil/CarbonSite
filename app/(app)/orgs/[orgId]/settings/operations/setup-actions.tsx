@@ -525,7 +525,7 @@ function FacilitiesPanel({
 
   return (
     <EntityPanel title="Facilities" description="Site, depot, and project locations used by records and field submissions.">
-      <form onSubmit={createFacility} className="grid gap-3 border-b border-slate-100 p-4 grid-cols-1 md:grid-cols-[1fr_8rem_10rem_auto]">
+      <form onSubmit={createFacility} className="grid gap-3 border-b border-slate-100 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_8rem_10rem_auto]">
         <Field label="Name">
           <Input name="name" required maxLength={100} disabled={isPending} />
         </Field>
@@ -536,12 +536,12 @@ function FacilitiesPanel({
           <Input name="region" maxLength={80} disabled={isPending} />
         </Field>
         <div className="flex items-end">
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending} size="sm">
             <Plus className="h-4 w-4" />
             Add
           </Button>
         </div>
-        {error && <p className="text-sm text-red-600 sm:col-span-4">{error}</p>}
+        {error && <p className="text-sm text-red-600 sm:col-span-2 lg:col-span-4">{error}</p>}
       </form>
       {facilities.length === 0 ? (
         <EmptyRow text="No facilities yet." />
@@ -591,12 +591,12 @@ function FacilityRow({ orgId, facility }: { orgId: string; facility: Facility })
   }
 
   return (
-    <div className="grid gap-3 p-4 grid-cols-1 md:grid-cols-[1fr_8rem_10rem_auto]">
+    <div className="grid gap-3 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_8rem_10rem_auto]">
       <Input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} />
       <Input value={country} disabled={isPending} onChange={(event) => setCountry(event.target.value)} />
       <Input value={region} disabled={isPending} onChange={(event) => setRegion(event.target.value)} />
       <RowActions save={save} remove={remove} disabled={isPending} canSave={changed && name.trim().length > 0} />
-      {error && <p className="text-xs text-red-600 md:col-span-4">{error}</p>}
+      {error && <p className="text-xs text-red-600 sm:col-span-2 lg:col-span-4">{error}</p>}
     </div>
   );
 }
@@ -633,12 +633,12 @@ function BusinessUnitsPanel({
 
   return (
     <EntityPanel title="Business units" description="Internal divisions used for responsibility, reporting, and rollups.">
-      <form onSubmit={createBusinessUnit} className="grid gap-3 border-b border-slate-100 p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
+      <form onSubmit={createBusinessUnit} className="grid gap-3 border-b border-slate-100 p-4 grid-cols-1 sm:grid-cols-[1fr_auto]">
         <Field label="Name">
           <Input name="name" required maxLength={100} disabled={isPending} />
         </Field>
         <div className="flex items-end">
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending} size="sm">
             <Plus className="h-4 w-4" />
             Add
           </Button>
@@ -696,10 +696,10 @@ function BusinessUnitRow({
   }
 
   return (
-    <div className="grid gap-3 p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
+    <div className="grid gap-3 p-4 grid-cols-1 sm:grid-cols-[1fr_auto]">
       <Input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} />
       <RowActions save={save} remove={remove} disabled={isPending} canSave={name !== businessUnit.name && name.trim().length > 0} />
-      {error && <p className="text-xs text-red-600 md:col-span-2">{error}</p>}
+      {error && <p className="text-xs text-red-600 sm:col-span-2">{error}</p>}
     </div>
   );
 }
