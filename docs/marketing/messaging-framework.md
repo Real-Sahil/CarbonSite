@@ -1,187 +1,151 @@
 # CarbonSite Messaging Framework
 
-## Three-Level Messaging Hierarchy
-
-### Level 1: Hero Message (Primary Positioning)
+## Hero Message
 **"Carbon data that holds up under audit"**
 
-A single, powerful statement that communicates CarbonSite's core value: emissions data you can defend. Unlike competitors' platforms that focus on ease-of-use or dashboards, CarbonSite prioritizes auditability and immutability.
+The core positioning emphasizes trust, immutability, and defensibility. CarbonSite is built for organizations that need to stand behind their carbon accounting with evidence, not estimates.
 
 ---
 
-### Level 2: Sub-Messages (Four Pillars)
+## Three-Level Messaging Hierarchy
 
-#### 1. **Immutability & Trust**
-- Every calculation is traceable to a source document
-- Append-only audit logs prevent retroactive changes
-- SHA-256 hash chains guarantee integrity
-- "Audit-proof from first entry to final report"
+### Level 1: Feature Layer (What We Do)
+These are the tactical differentiators that set CarbonSite apart operationally.
 
-#### 2. **Field Evidence & Transparency**
-- Capture emissions from the source, not spreadsheets
-- On-device OCR means no manual data entry errors
-- Offline-first means field workers aren't blocked by connectivity
-- "Evidence over estimates. Every time."
+1. **Field-First Capture**
+   - Emissions data captured at source (photographs, tickets, receipts) not transcribed from spreadsheets
+   - Mobile-first OCR extraction for suppliers, field workers, delivery notes
+   - Eliminates transcription errors and creates defensible audit trail
 
-#### 3. **Supply Chain Collaboration**
-- Suppliers submit directly, eliminating back-and-forth
-- Field workers capture data at point of origin
-- Automated Scope 3 collection, not manual forms
-- "Turn supplier silence into structured data"
+2. **Immutable Calculation Trail**
+   - Every calculation is versioned and append-only
+   - Factor selection and formula stored with each result
+   - No "black box" — auditors can reproduce any number
 
-#### 4. **Built-in Intelligence**
-- Anomaly detection flags bad data automatically
-- Scope 3 estimation predicts missing emissions
-- No manual review of every record
-- "Smart validation, not endless spreadsheets"
+3. **Supply Chain Collaboration**
+   - Scope 3 data collection from suppliers via simple mobile workflow
+   - No surveys, no email chains — direct evidence capture
+   - Field workers can photograph supplier invoices, tickets, utility bills
 
----
-
-### Level 3: Target Personas & Their Messages
-
-#### Persona 1: **Sustainability Manager**
-**Pain:** Spending 60% of time on data collection/validation instead of strategy
-**Message:** "Spend less time hunting data. Spend more time on climate targets."
-- **Features to highlight:** Field app, anomaly detection, supplier automation
-- **CTA:** "See how field capture saves 20 hours/month"
-
-#### Persona 2: **Finance Lead / CFO**
-**Pain:** Carbon data affects financial disclosure (CSRD, SEC); can't afford errors
-**Message:** "Carbon data with financial-grade controls."
-- **Features to highlight:** Audit trail, immutability, compliance evidence, reporting
-- **CTA:** "Download audit architecture white paper"
-
-#### Persona 3: **Auditor / Compliance Officer**
-**Pain:** Verifying carbon calculations manually, second-guessing methodologies
-**Message:** "Audit-ready by design. Every calculation is defensible."
-- **Features to highlight:** Calculation transparency, factor versioning, audit log, evidence export
-- **CTA:** "Request compliance demo"
+4. **Built-In Intelligence**
+   - Anomaly detection flags unusual emissions before reporting
+   - Scope 3 estimation fills data gaps with ML confidence scores
+   - Trending analysis identifies improvement opportunities
 
 ---
 
-## Unique Differentiators vs. Competitors
+### Level 2: Benefit Layer (Why It Matters)
+Connect features to concrete business outcomes.
 
-### What CarbonSite Has That Competitors Don't:
+**For Sustainability Managers:**
+- Spend less time in spreadsheets, more time on strategy
+- Confident reports that survive auditor scrutiny
+- Transparent methodology — explain any number to the CFO or board
 
-1. **Field Worker OCR Capture** ← Only CarbonSite
-   - Competitors rely on supplier portals or manual data entry
-   - CarbonSite captures from waste tickets, delivery notes, receipts
+**For Finance Leads:**
+- Carbon accounting is now audit-ready, not a compliance scramble
+- Integrated with spend data for automated Scope 3 estimation
+- Version control for carbon reports like you have for financial statements
 
-2. **Open-Source Transparency** ← Only CarbonSite
-   - Code is public on GitHub
-   - Emission factors (DEFRA, EPA) visible and auditable
-   - Calculation formulas in plain code, not black boxes
-
-3. **Supply Chain Collaboration** ← Partially unique
-   - Field worker roles for suppliers, subcontractors
-   - Suppliers don't need accounts; field workers capture on their behalf
-   - Scope 3 collection becomes automatic, not a vendor survey
-
-4. **Built-in ML Anomaly Detection** ← Only CarbonSite
-   - Z-score anomalies + extreme outlier detection
-   - Explains why data is flagged (statistical, contextual)
-   - Competitors require manual review or external tools
-
-### Competitive Positioning Table:
-
-| Feature | CarbonSite | Gaia | Persefoni | Watershed | Normative |
-|---------|-----------|------|-----------|-----------|-----------|
-| Field OCR Capture | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Open-Source Transparency | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Supplier Field Roles | ✅ | ❌ | ❌ | ✅ (limited) | ❌ |
-| Anomaly Detection | ✅ | ❌ | ✅ (basic) | ✅ (basic) | ✅ (basic) |
-| Real-time Dashboard | 🚧 (roadmap) | ✅ | ✅ | ✅ | ✅ |
-| SSO/SAML | 🚧 (roadmap) | ✅ | ✅ | ✅ | ✅ |
-| Scope 3 ML Estimation | ✅ | ❌ | ✅ | ❌ | ✅ |
-| Pricing Transparency | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Free Tier | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Open Code | ✅ | ❌ | ❌ | ❌ | ❌ |
+**For Auditors/Compliance Teams:**
+- Every emission is traceable to source documents
+- Calculation methodology versioned per snapshot
+- Regulatory mapping (CSRD, CDP, SBTi) built in
 
 ---
 
-## Key Statistics & Social Proof (To Develop)
+### Level 3: Strategic Layer (Who We Are)
+The deeper narrative that shapes decision-making.
 
-### Market Context:
-- Carbon accounting market growing from $11.25B → $90.63B (2025-2035)
-- 68% of enterprises cite "data quality" as top barrier to carbon reporting
-- CSRD affects 50k+ EU companies (compliance mandatory 2025-2026)
-- SEC Climate Rule pending (voluntary 2025, mandatory 2027)
+**Transparency as Moat**
+CarbonSite's advantage is not in hiding calculation complexity — it's in exposing it. Our open methodology (DEFRA + EPA + community factors) and immutable audit trail make carbon accounting trustworthy.
 
-### CarbonSite Proof Points (To Gather):
-- Field capture reduces manual entry errors by X%
-- Anomaly detection catches ~15% of uploaded records
-- Scope 3 estimation saves X hours vs. supplier surveys
-- Audit trail speeds compliance reviews by X%
+**Supply Chain as Leverage Point**
+Most carbon accounting platforms pretend Scope 3 is a solved problem. It isn't. CarbonSite acknowledges that suppliers won't respond to surveys, so we give field workers a camera instead. Direct evidence beats estimates.
+
+**Field Workers as First-Responders**
+The carbon data ecosystem underestimates the intelligence of the people closest to the work — truck drivers, site supervisors, inventory managers. CarbonSite puts OCR and offline-first tools in their hands so carbon accounting starts at the operational level, not the desk.
 
 ---
 
-## Tone & Voice Guidelines
+## Target Personas
 
-**Tone:** Professional, direct, expert (not marketing-fluffy)
-- Avoid hyperbole ("revolutionary", "game-changing")
-- Use evidence-based language ("reduces errors by X%", "audit-ready by design")
-- Address problems head-on (not "we help", but "here's what breaks, here's how we fix it")
+### Persona 1: Sustainability Manager (Mid-Market, 500–5k employees)
+- **Role:** Oversees carbon accounting, regulatory compliance, ESG reporting
+- **Pain Points:**
+  - Manual data collection from facilities and suppliers takes weeks
+  - Scope 3 data is missing or outdated (supplier surveys have 40% response rate)
+  - CFO questions the methodology every reporting cycle
+  - Audit trail is fragmented (email, spreadsheets, verbal agreements)
+- **Decision Driver:** Credibility. Needs a solution that impresses auditors and the board.
+- **Key Message:** "Carbon data that holds up under audit"
 
-**Voice:** 
-- Speak to sustainability professionals, not consumers
-- Assume audience understands emissions, carbon accounting, compliance
-- Reference regulatory context (CSRD, GHG Protocol, DEFRA factors)
-- Use technical terms (Scope 1/2/3, GWP, AR6, normalization)
+### Persona 2: Finance Lead (Small-to-mid-market CFO or Controller)
+- **Role:** Oversees financial reporting, ESG disclosure, investor relations
+- **Pain Points:**
+  - Carbon accounting appears in investor decks but lacks rigor of financial reporting
+  - Scope 3 relies on rough estimates (spent $X on materials, assume emissions ratio)
+  - Can't reconcile carbon numbers to spend systems
+  - Board questions methodology every quarter
+- **Decision Driver:** Rigor. Wants carbon accounting to feel as real as GAAP.
+- **Key Message:** "Emissions tracking as rigorous as your financial statements"
 
-**Do:**
-- Use specific numbers (Z-score ≥ 3σ, 15-min presigned URLs, 100k+ records)
-- Reference standards (DEFRA 2025, EPA GHG Hub, GHG Protocol v2)
-- Show calculation transparency (formulas visible, factor sources cited)
-
-**Don't:**
-- Use marketing jargon ("game-changing", "cutting-edge", "synergistic")
-- Make vague promises ("helps you reduce emissions" — we track emissions, not reduce them)
-- Overstate readiness (roadmap items are roadmap, not current)
-
----
-
-## Messaging by Channel
-
-### Website Homepage
-- Hero: "Carbon data that holds up under audit"
-- Subheading: "Field evidence, structured review, deterministic calculation, immutable publication"
-- CTA: "Start free trial" or "Request demo"
-
-### Blog Posts
-- Position as thought leadership, not advertising
-- Address specific pain points (OCR accuracy, supplier collection, data quality)
-- Include technical depth (linear regression model, Z-score math)
-
-### Email Campaigns
-- Segment by persona (Sustainability Manager, Finance Lead, Auditor)
-- Personalized CTAs (field app demo vs. compliance whitepaper)
-
-### Sales Collateral
-- One-pager: "Why CarbonSite Wins on Audit Readiness"
-- ROI calculator: "Save X hours/month with field capture"
-- Competitive comparison: Feature matrix
-
-### Social Media
-- LinkedIn: Thought leadership, compliance updates, customer success
-- Twitter: Industry news, carbon accounting trends, tips
-- Avoid: Product announcements without context
+### Persona 3: Auditor/Compliance Officer (Large enterprises, complex supply chains)
+- **Role:** Validates carbon accounting, ensures regulatory readiness, manages audit responses
+- **Pain Points:**
+  - Auditing carbon data is opaque — calculation formulas buried in code or spreadsheets
+  - Scope 3 supplier data is unverified (self-reported via email)
+  - No version control for published reports
+  - Regulatory landscape shifting (CSRD deadlines, CDP requirements, SBTi rules)
+- **Decision Driver:** Control. Needs an audit-ready system, not a best-effort approximation.
+- **Key Message:** "Every number is traceable, versioned, and defensible"
 
 ---
 
-## Messaging Evolution (Roadmap)
+## Tone & Voice
 
-### Q1 2026: Current (Field Capture + Transparency + ML)
-- "Carbon data that holds up under audit"
-- Focus on immutability, supply chain, anomaly detection
+- **Authoritative, not academic.** We use plain language, not jargon. "Waste ticket" not "circular economy material flow."
+- **Humble about complexity.** We don't hide hard problems (Scope 3 estimation, GWP values, methodology versioning). We expose them and help customers navigate.
+- **Optimistic about leverage points.** Field capture, supply chain collaboration, and anomaly detection are real multipliers. We celebrate them without overselling.
+- **Direct.** "Here's the problem. Here's what we do. Here's why it works."
 
-### Q2 2026: Real-Time Addition
-- Once real-time dashboard launches, add sub-message: "Live emissions tracking"
-- Competitive advantage vs. batch-only platforms
+---
 
-### Q3 2026: Enterprise Addition
-- Once SSO/SAML ships, add sub-message: "Enterprise-grade authentication"
-- Messaging shifts to support mid-market + enterprise sales
+## Differentiators
 
-### Q4 2026: Advanced Analytics Addition
-- Once forecasting + advanced analytics launched, add sub-message: "Predictive carbon intelligence"
-- Messaging shifts to position as intelligence platform, not just tracker
+| Aspect | Normative / Persefoni | Watershed | CarbonSite |
+|--------|----------------------|-----------|-----------|
+| Field Capture | Portal dashboards + API integrations | Primarily API-first | Mobile OCR for suppliers & field workers |
+| Scope 3 Data | Supplier surveys + LCA databases | API integrations + database | Direct evidence capture via phone camera |
+| Open Methodology | Proprietary calculations | Proprietary | Public DEFRA/EPA factors, reproducible formulas |
+| Pricing Model | Enterprise (custom quotes) | Enterprise (custom) | Transparent, usage-based (MVP: Freemium) |
+| Audit Readiness | Manual audit prep | Manual | Immutable snapshots, versioned formulas, audit export |
+| Transparency | Black-box SaaS | Black-box | Source code open on GitHub |
+
+---
+
+## Supporting Narratives
+
+### Narrative 1: The Spreadsheet Trap
+Most carbon accounting starts as a sustainability team spreadsheet, grows into ten spreadsheets, then becomes "we need specialized software." By then, the audit trail is destroyed. CarbonSite starts at capture (field submissions) so the data quality is built in, not bolted on.
+
+### Narrative 2: Scope 3 is a Supply Chain Problem
+Suppliers won't fill out forms. They will, however, take a photo of their invoice when a field worker asks. CarbonSite treats Scope 3 not as a survey problem but as an operational problem — put OCR and offline-first tools in the hands of the people doing the work.
+
+### Narrative 3: Transparency as Competitive Advantage
+Enterprise carbon platforms are black boxes because they profit from opacity. CarbonSite's model is public. Customers can audit the methodology because it's on GitHub. This is not a weakness — it's a trust multiplier.
+
+### Narrative 4: Anomaly Detection as Pattern Recognition
+When a facility reports 10x more waste than historical average, most systems send an alert. CarbonSite explains why. Anomaly detection is not a flag — it's an investigation tool.
+
+---
+
+## Call-to-Action Messaging
+
+| Context | CTA | Landing Page |
+|---------|-----|--------------|
+| Field capture efficiency | Try our mobile app — first submission free | /field-app |
+| Audit readiness | Download our audit framework guide | /resources/audit-framework |
+| Scope 3 strategy | See how companies reduce Scope 3 with direct capture | /case-studies |
+| Methodology transparency | Review our factor library on GitHub | /resources/methodology |
+| Enterprise SSO | Request a demo | /pricing |

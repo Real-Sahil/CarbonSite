@@ -1,227 +1,153 @@
 ---
 title: "From Field to Finance: The Complete Emissions Data Journey"
-description: "A single emissions record travels through evidence capture, review, calculation, versioning, and reporting. Each step is critical to accuracy."
-author: "CarbonSite"
-publishedAt: "2026-02-19"
-keywords: ["data quality", "workflow", "emissions", "reporting", "compliance"]
+description: "Data quality issues happen at every handoff. We designed CarbonSite to catch errors at each stage of the emissions pipeline."
+date: "2026-10-13"
+author: "CarbonSite Team"
+readTime: "8 min read"
+pillar: "Field Operations"
+image: "/blog/data-journey.jpg"
 ---
 
-# From Field to Finance: The Complete Emissions Data Journey
+Every carbon report is a story of data transformation. It starts as a field worker's photograph of a waste ticket. It becomes OCR-extracted numbers. It gets reviewed by a sustainability manager. It's calculated by a mathematical formula. It's aggregated with other data. It's frozen in an immutable snapshot. Finally, it's published as a board-ready report.
 
-A field worker photographs a waste ticket. A sustainability manager reviews it. A calculation engine processes it. A CFO reports it. A board member questions it. An auditor verifies it.
+Each step is an opportunity for errors to slip in. Most platforms handle one or two steps well. CarbonSite designed every step to catch and prevent errors.
 
-Each step can introduce errors. Each step can hide problems. Each step is critical to the final number.
+## The Data Journey: Five Stages
 
-Most carbon accounting platforms treat each step as separate. Data flows in, gets reviewed, gets calculated, gets reported. Black box.
+### Stage 1: Capture (Field Worker)
 
-CarbonSite treats the entire journey as a connected story. Every step is visible. Every step is auditable. Every step preserves data quality.
+A field worker photographs a waste ticket. The ticket shows: "2,450 kg, plastic waste, Jan 15, 2026"
 
-## Stage 1: Evidence Capture (Field Worker)
+Possible errors at this stage:
+- Photo is blurry (can't read the numbers)
+- Wrong document photographed (photo contains invoice instead of waste ticket)
+- Incomplete information (date missing, category unclear)
 
-**The moment emissions actually happen** is when a waste ticket is issued, a delivery arrives, a meter reads.
+CarbonSite prevents these with:
+- **Image quality checks:** If photo is too blurry, app prompts to retake
+- **Document classification:** App confirms "This looks like a waste ticket" before proceeding
+- **Completeness validation:** Field app flags missing fields before submission
 
-A CarbonSite field worker captures this moment:
+### Stage 2: Extraction (OCR)
 
-1. **Photograph the source document.** Waste ticket. Delivery manifest. Energy bill. GPS location auto-tagged.
-2. **On-device OCR extracts data.** Weight, date, supplier, vehicle.
-3. **Form pre-fills with extracted values.** Worker reviews (30 seconds).
-4. **Worker corrects if needed.** "That's not 120 kg, it's 1.2 tonnes."
-5. **Submit locally (even if offline).** Data saved to phone.
-6. **Sync when connectivity returns.** Upload to server with idempotency key.
+OCR extracts structured data from the photograph. Expected result: {weight: 2450, unit: "kg", category: "plastic waste", date: "2026-01-15"}
 
-**Data quality at this stage:** High. Actual evidence (photo), immediate review, correction at source.
+Possible errors:
+- "2,450" misread as "24,50" or "2450" with wrong unit
+- Category text recognized as "plastic waste" but system doesn't recognize this specific category name
+- Date format misread (Jan 15 → 15 Jan → different interpretation)
 
-**Audit trail at this stage:**
-- Photo timestamp + GPS coordinates
-- OCR confidence scores
-- User who submitted
-- Offline sync history
+CarbonSite prevents these with:
+- **Regex validation:** Weight extraction requires explicit unit matching
+- **Category mapping:** OCR result matched against canonical categories; unclear matches require review
+- **Date normalization:** Multiple date formats handled; normalized to ISO 8601
 
-## Stage 2: Review Queue (Sustainability Manager)
+### Stage 3: Review (Sustainability Manager)
 
-**The sustainability manager reviews** incoming submissions before they become official records.
+A sustainability manager reviews the extracted data and the original photo.
 
-Review workflow:
+Review flow:
+1. See OCR result: {weight: 2450, unit: "kg", category: "plastic waste"}
+2. See original photo to verify
+3. Approve (OCR was correct), Correct (OCR had error), or Reject (entire submission is wrong)
 
-1. **Submission appears in queue.** Status: "Pending review."
-2. **Anomaly detection flags it.** (If it looks suspicious, show the flag.)
-3. **Manager reviews the evidence.** (Photo attached, GPS location shown.)
-4. **Manager approves or rejects.** (Can add comment: "Verified with site manager." Or "Weight seems high, please resubmit.")
-5. **If approved, record is locked.** (No future edits allowed. Creates immutable record.)
-6. **If rejected, notification sent to field worker.** ("Weight flagged as anomalous. Please verify with site manager and resubmit.")
+Possible errors:
+- Manager fat-fingers a correction: "2450" → "2450" (typo, 24.50 meant)
+- Manager approves OCR error: "24,50" actually was "2,450" but reviewer missed it
+- Manager corrects based on memory, not photo: "The ticket said plastic but I remember it was paper"
 
-**Data quality at this stage:** Very high. Human review, evidence verification, anomaly catching.
+CarbonSite prevents these with:
+- **Visual confirmation:** Original photo shown side-by-side with extracted data
+- **Audit trail:** Who reviewed it, when, what changed
+- **Anomaly detection:** If corrected value is 100x different from baseline, flag for second review
+- **Edit history:** All corrections logged with reason
 
-**Audit trail at this stage:**
-- Reviewer name + timestamp
-- Approval/rejection decision
-- Comment explaining decision
-- Hash chain integrity check
+### Stage 4: Calculation (Engine)
 
-## Stage 3: Calculation Engine (Automated)
+The calculation engine applies emission factors:
 
-**Once approved, the record is queued for calculation.**
+Input: {weight: 2450 kg, category: "plastic waste"}
+Factor: 2.8 kg CO2e per kg (plastic waste to landfill)
+Result: 2450 × 2.8 = 6,860 kg CO2e
 
-Calculation pipeline:
+Possible errors:
+- Wrong factor selected (applied factor for plastic incineration instead of landfill)
+- Factor not updated (using 2024 factor instead of 2025 factor)
+- Calculation error (arithmetic mistake)
+- Unit conversion error (forgot to convert kg to tonnes)
 
-1. **Normalize units.** "1.2 tonnes" → 1,200 kg (canonical unit).
-2. **Select factor.** For waste to landfill:
-   - Geography: UK (facility location)
-   - Date: Dec 2025
-   - Waste type: General waste (from EWC code)
-   - Result: DEFRA 2025.1 factor = 1.5 kg CO₂e/kg waste
-3. **Apply formula.** 1,200 kg × 1.5 = 1,800 kg CO₂e
-4. **Record immutably.** `EmissionCalculation` row created (never modified).
-5. **Denormalize to aggregates.** Update `DashboardAggregate` (+1,800 kg CO₂e for Dec 2025).
+CarbonSite prevents these with:
+- **Factor selection logic:** Deterministic, documented, reproducible. Same data always gets same factor.
+- **Factor versioning:** Factors tied to methodology version. Can see exactly which factor was used.
+- **Formula storage:** Formula captured with result. Easy to verify: 2450 × 2.8 = 6,860 ✓
+- **Unit system:** Canonical units system. All conversions automated and checked.
 
-**Data quality at this stage:** Perfect. Deterministic calculation, no human error, no randomness.
+### Stage 5: Publication (Report)
 
-**Audit trail at this stage:**
-- Factor selection reason (why this factor, not another)
-- Factor version (DEFRA 2025.1, pinned)
-- Formula applied (1,200 kg × 1.5 kg/kg)
+Calculated emissions are frozen into an immutable snapshot and published.
+
+Snapshot shows:
+- Total emissions: 1,234,567 kg CO2e
+- Methodology version: ghg-protocol-v2026-01
 - Calculation timestamp
+- Data completeness (80% of expected records captured)
 
-## Stage 4: Snapshot Publishing (Lock-In)
+Possible errors:
+- Report published with wrong time period (Dec instead of Jan)
+- Calculation methodology changed mid-stream (v2026-01 vs v2026-02)
+- Some data was excluded by accident
 
-**When reporting period ends (e.g., Dec 31), you publish a snapshot.**
+CarbonSite prevents these with:
+- **Snapshot immutability:** Once published, snapshot can't be changed
+- **Methodology versioning:** Every snapshot records which methodology was used
+- **Data lineage:** Snapshot shows: "50,000 records included, 10,000 pending review, 5,000 failed quality checks"
+- **Recalculation versioning:** If errors found and corrected, new snapshot created (v2) with clear change history
 
-Snapshot creation:
+## Error Recovery Workflow
 
-1. **Select all approved records** for the period (Jan–Dec 2025).
-2. **Calculate totals** per scope, per category, per facility.
-3. **Lock methodology version.** (If DEFRA updates factors in Jan 2026, historical calculations use Dec 2025 factors.)
-4. **Create immutable snapshot.** `PublishedSnapshot` row created (never changed).
-5. **Version the result.** Snapshot v1 (2025-12-31): 10,000 tonnes CO₂e.
+If an error is discovered at any stage, CarbonSite's workflow is:
 
-**Why snapshots matter:** If you need to restate (found an error), you create Snapshot v2, not change Snapshot v1. Auditors see both versions and the delta.
+1. **Identify** — Which stage failed? (OCR, review, calculation, publication)
+2. **Correct** — Fix the source data or explanation
+3. **Recalculate** — Rerun calculation from corrected data
+4. **Version** — Create new snapshot, document change
+5. **Notify** — Auditors and stakeholders see the change history
 
-**Audit trail at this stage:**
-- Snapshot ID (unique, versioned)
-- Records included (count, checksum)
-- Methodology version (GHG Protocol v2026-01, DEFRA 2025.1)
-- Published timestamp
-- User who published
+This is different from systems that silently update calculations. You get an audit trail showing: "Calculated Jan 15 with error X. Corrected Jan 20. Recalculated with corrected data."
 
-## Stage 5: Report Generation (Narrative + Numbers)
+## Real Example: Catching a Calculation Error
 
-**A published snapshot becomes the basis for a report.**
+January publication:
+- Field worker captures 50 tonnes waste
+- Sustainability manager approves
+- Engine calculates: 50 × 2.8 = 140 kg CO2e
+- Snapshot published: 140 kg CO2e
 
-Report creation:
+July audit:
+- Auditor reviews the calculation
+- Auditor notices: factor should be 2.80 kg CO2e per kg, not 0.28 per 10 kg
+- Previous calculation used wrong factor version (old 2024 factor instead of new 2025 factor)
+- True emissions should be: 50 × 2.80 = 140 kg CO2e (actually same result, but methodology was wrong)
 
-1. **Generate executive summary** (LLM-assisted). "2025 emissions were 10,000 tonnes, up 5% from 2024."
-2. **Show trends.** Charts of monthly progression, per-facility comparison.
-3. **Highlight changes.** "Scope 1 increased 20% due to new facility opening. Scope 2 decreased 10% due to renewable energy switch."
-4. **Include methodology.** "Emissions calculated using GHG Protocol, DEFRA 2025.1 factors, with Scope 3 estimation for Tier 2 suppliers."
-5. **Generate PDF with checksums.** Report content + hash of embedded data (audit verification).
-6. **Store immutably** in R2 storage. Signed URL good for 15 minutes (download only, no leak).
+CarbonSite handles this:
+1. Audit finds error in factor selection
+2. Sustainability team updates factor library to 2025 version for January period
+3. System recalculates: 50 × 2.80 = 140 kg CO2e (same result)
+4. Creates new snapshot (v1.1) with note: "Corrected factor library reference (Jan 15 → Jul 20). Calculation unchanged."
+5. Audit trail shows: v1.0 (Jan 15, wrong factor), v1.1 (Jul 20, corrected factor, same result)
 
-**Data quality at this stage:** High. Report tied to specific snapshot version (can't hide changes).
+Auditor can see the entire history. No mystery. No "we hope this was right."
 
-**Audit trail at this stage:**
-- Report ID, snapshot version
-- Report generation timestamp
-- LLM narrative (if used)
-- PDF checksum
-- Download access log (who, when, which report)
+## The Key: Design for Verification
 
-## Stage 6: Auditor Verification (Question Everything)
+Most platforms optimize for convenience: easy data entry, pretty dashboards, fast reports.
 
-**External auditor reviews the report and digs into the data.**
+CarbonSite optimizes for verification. Every step is designed so auditors can ask "How did you get this number?" and you can show them the complete path:
 
-Auditor workflow:
+1. Original photo (field capture)
+2. OCR extraction and review (data entry)
+3. Factor selection and formula (calculation)
+4. Immutable snapshot (publication)
+5. Audit trail of any corrections (changes)
 
-1. **Sample 10 records** from the report.
-2. **Verify calculations.** Inputs → formula → output. Math checks out.
-3. **Verify factors.** DEFRA factors cross-checked against official library.
-4. **Verify evidence.** Request photos/documents (all stored in CarbonSite).
-5. **Verify immutability.** Hash chain is intact, no tampering.
-6. **Verify methodology.** GHG Protocol compliance, Scope boundaries, consolidation approach.
-7. **Spot-check controls.** Anomaly detection caught which records? Did managers review and approve?
-8. **Sign-off or flag.** If controls are solid and data is clean, auditor approves. If concerns remain, auditor flags.
-
-**Audit trail at this stage:**
-- Audit questionnaire + responses
-- Samples tested + results
-- Factors verified
-- Hash chain verification
-- Auditor sign-off (or findings)
-
-## Stage 7: Board Disclosure (The Final Step)
-
-**CFO includes the verified emissions number in annual disclosure.**
-
-For public companies:
-- SEC climate rule filing
-- CSRD disclosure (EU companies)
-- CDP climate questionnaire
-- SBTi target validation report
-- Investor relations report
-
-**The entire journey** is now on public record. Every number has a documented path from field to final disclosure.
-
-If a regulator or shareholder questions the number, the company can walk through the complete trail:
-- Here's the photo evidence.
-- Here's the review approval.
-- Here's the calculation formula.
-- Here's the factor source.
-- Here's the snapshot lock.
-- Here's the auditor approval.
-
-## Where Most Platforms Break
-
-**Traditional platforms:**
-1. ✓ Capture data (usually: manual entry, no photo)
-2. ✓ Review data (spot checks, incomplete)
-3. ✓ Calculate emissions (black box, formula hidden)
-4. ✗ Version snapshots (just replace old with new)
-5. ✗ Lock methodology (factors change retroactively)
-6. ✗ Immutable records (data can be edited)
-7. ✗ Complete audit trail (partial logging)
-
-**CarbonSite:**
-1. ✓ Capture evidence (photo, GPS, timestamp, OCR confidence)
-2. ✓ Review rigorously (anomaly detection, approval gates)
-3. ✓ Calculate transparently (formula visible, factors sourced)
-4. ✓ Version snapshots (v1, v2, v3 with deltas)
-5. ✓ Lock methodology (period-specific factors, never retroactive)
-6. ✓ Immutable records (SHA-256 hash chains, no edits)
-7. ✓ Complete audit trail (every actor, action, timestamp)
-
-## The Quality Multiplier
-
-When every stage has oversight and is auditable, data quality compounds:
-
-- **Stage 1:** OCR captures with 92% confidence
-- **Stage 2:** Human review catches 70% of anomalies
-- **Stage 3:** Calculation is deterministic (no error)
-- **Stage 4:** Snapshot locks methodology (no retroactive changes)
-- **Stage 5:** Report can be audited (numbers are traceable)
-- **Stage 6:** Auditor approves controls (confidence increases)
-- **Stage 7:** Public disclosure is defensible (full trail visible)
-
-Final quality: 98%+ confidence. Auditor-approved. Regulatory-compliant.
-
-## The Regulatory Alignment
-
-This journey aligns with every regulatory requirement:
-
-| Regulation | Requirement | CarbonSite Coverage |
-|---|---|---|
-| CSRD | Methodology transparency | ✓ Open-source, visible formulas |
-| SEC Climate Rule | Consistent methodology | ✓ Snapshots lock methodology |
-| GHG Protocol | Complete audit trail | ✓ Hash chains, immutable records |
-| SBTi | Verified Scope 3 data | ✓ Field capture + estimation |
-| ISO 14064 | Data integrity controls | ✓ Anomaly detection, review gates |
-
-## The Path Forward
-
-Carbon accounting doesn't fail because the math is wrong. It fails because the data is unreliable at every stage.
-
-Fix the journey: capture rigorously, review carefully, calculate transparently, snapshot immutably, report defensibly, audit completely.
-
-That's CarbonSite.
-
----
-
-*Trace every emission from field to finance. [Explore CarbonSite's complete audit trail](#cta).*
+This is what carbon accounting should look like.

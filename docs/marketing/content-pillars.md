@@ -1,196 +1,148 @@
 # CarbonSite Content Pillars
 
-Five strategic pillars guide all marketing content creation. Each pillar represents a distinct topic area where CarbonSite owns unique expertise or competitive advantage.
+Five content pillars organize all marketing content — blog posts, guides, case studies, and resources. Each pillar has 5-8 associated topics that feed the content calendar.
 
 ---
 
 ## Pillar 1: Methodology & Transparency
 
-**Why it matters:** Auditors, finance leads, and compliance officers need to understand *how* CarbonSite calculates emissions. Transparency in methodology is a core differentiator vs. competitors' black-box approaches.
+**Thesis:** Carbon accounting only works when the methodology is defensible and auditable. CarbonSite publishes its calculations, factor sources, and versioning so customers and auditors can understand every number.
 
-**Core topics:**
-- GHG Protocol application (Scope 1/2/3 hierarchy, corporate vs. product accounting)
-- Emission factor selection criteria (geography, year, methodology version, scope-2 method choice)
-- Factor versioning (why DEFRA 2025 differs from 2024; regulatory updates)
-- Calculation formula transparency (CO2 + CH4×GWP(27.9) + N2O×GWP(273) + scope-2 market/location-based)
-- AR6 vs AR5 GWP values (why we switched, impact on historical comparisons)
-- Biogenic carbon accounting (when to include/exclude, CSRD rules)
-- Normalization methods (per unit, per FTE, per revenue, per production)
-- Uncertainty quantification (measurement error, factor accuracy ranges)
-- Open-source code audit trail (GitHub commit history, factor library versioning)
-- Compliance mapping (CSRD article 8, SBTi methodology, CDP questionnaire alignment)
-- Recalculation policy (when factors change, how users are notified, version control)
-
-**Content types:**
-- White papers (AR6 GWP migration guide, Scope 3 estimation methodology, CSRD compliance checklist)
-- Technical blog posts (detailed calculation walkthroughs, factor selection logic)
-- Documentation (calculation engine formulas, factor library structure, audit trail format)
-- Comparison tables (DEFRA vs EPA factors for common categories)
-- Regulatory explainers (CSRD timeline, SEC climate rule implications)
-
-**Personas:** Finance Lead, Auditor, Sustainability Manager (technical track)
+### Topics:
+1. "Open-Source Carbon Accounting: Why Transparency Matters" — Blog post explaining CarbonSite's GitHub-first approach
+2. "How We Select Emission Factors" — Deep dive into DEFRA, EPA, and SustainMetrics factor selection logic
+3. "Scope 2 Methods: Location-Based vs. Market-Based" — Technical guide comparing calculation approaches
+4. "GWP Values and AR6: What Changed in 2024" — Explanation of global warming potential updates
+5. "Building for Audit: Immutability and Versioning" — How snapshot calculations are frozen and traceable
+6. "Methodology Version History" — Public changelog of calculation methodology updates
+7. Resource guide: "The Carbon Accountant's Factor Library" — DEFRA + EPA factors explained for auditors
 
 ---
 
-## Pillar 2: Field Operations
+## Pillar 2: Field Operations & Data Quality
 
-**Why it matters:** Field workers (subcontractors, suppliers, tipper hires) are the frontline of data collection. Content showing how field capture improves data quality and reduces manual entry drives adoption in the mobile app.
+**Thesis:** Carbon data quality is determined at capture, not at review. By putting OCR and offline-first tools in field workers' hands, CarbonSite eliminates transcription errors and creates defensible evidence chains.
 
-**Core topics:**
-- OCR accuracy benchmarks (waste ticket extraction, delivery note parsing, receipt recognition)
-- On-device processing (why no cloud upload, privacy advantages, offline capability)
-- Photo guidance (angle, lighting, document positioning for best OCR)
-- GPS tagging (auto-location, facility mapping, journey mapping)
-- Offline submission workflow (local draft queue, sync on reconnect, idempotency)
-- Common extraction errors (how to correct, retry mechanism)
-- Mobile app features (PIN-based access, no email/password, field worker permissions)
-- Data quality feedback (submission accepted/rejected, why, how to correct)
-- Vehicle & driver tagging (registration number extraction, vehicle fleet management)
-- Evidence audit trail (photo timestamp, location, user, submission history)
-- Best practices for suppliers (submission frequency, completeness, accuracy tips)
-
-**Content types:**
-- Video tutorials (how to photograph waste tickets, OCR correction workflow, sync status)
-- Field worker guides (1-pager laminated pocket cards for tipper drivers)
-- FAQ (common OCR misreads, offline sync troubleshooting, PIN reset)
-- Case studies ("From paper tickets to digital: how contractor X reduced data entry by 80%")
-- Email sequences (onboarding field workers, submission reminders, quality feedback)
-
-**Personas:** Field Worker, Logistics Manager, Supplier Compliance Officer
+### Topics:
+1. "Why Carbon Accounting Still Fails: A Field Worker's Perspective" — Blog post on data entry errors and how to prevent them
+2. "On-Device OCR for Carbon Accounting: The Technology Behind Field Capture" — Technical explainer for emissions data extraction
+3. "Offline-First Architecture: Why Field Workers Need Offline Sync" — How CarbonSite handles connectivity gaps
+4. "Five Common Field Submission Errors and How to Fix Them" — Practical guide for reviewers
+5. "Mobile OCR Accuracy: Real-World Performance and Limitations" — Honest assessment of what OCR can and can't do
+6. "Building Confidence in Field Data: Anomaly Detection and Trending" — Using ML to catch outliers before they reach reports
+7. Case study: "How [Company] Reduced Field Submission Errors by 80%" — Real customer example
 
 ---
 
 ## Pillar 3: Supply Chain Collaboration
 
-**Why it matters:** Scope 3 emissions (upstream supply chain) are often 70%+ of total footprint. Content showing how CarbonSite automates supplier data collection (vs. manual surveys) resonates with procurement and sustainability managers.
+**Thesis:** Scope 3 data collection has always been framed as a survey problem. It's actually an operational problem. When you give suppliers and logistics partners a camera instead of a form, they respond. Direct evidence beats estimates.
 
-**Core topics:**
-- Scope 3 classification (purchased goods, upstream transport, business travel, commuting, use-of-products)
-- Supplier data collection challenges (low response rates, manual spreadsheets, format inconsistency)
-- Field worker onboarding for suppliers (no email required, deep link activation, PIN setup)
-- Automated data collection workflows (photos of delivery notes, invoices, manifests)
-- Supplier performance dashboards (submission rates, data completeness, on-time delivery)
-- Peer benchmarking (how does this supplier's emissions compare to peer average)
-- Data quality tiers (unverified, approved, audited)
-- Integration with procurement systems (ERP spend data → Scope 3 estimation)
-- Supplier scorecards (emissions intensity, trend, improvement targets)
-- Contractual data requirements (embedding emissions reporting in supplier agreements)
-- Third-party verification (how auditors can validate supplier submissions)
-
-**Content types:**
-- Procurement guides (Scope 3 strategy, supplier onboarding playbook)
-- Technical integration docs (API for ERP systems, spend data normalization)
-- Business case studies ("How retail org reduced Scope 3 uncertainty from ±40% to ±5%")
-- Webinars ("Supply chain collaboration: from silence to structured data")
-- Email templates (supplier invitation, data quality feedback, performance reports)
-
-**Personas:** Sustainability Manager, Procurement Lead, Finance Lead
+### Topics:
+1. "Scope 3 Emissions: From Supplier Silence to Collaborative Data" — Blog post on Scope 3 collection challenges
+2. "Why Suppliers Won't Fill Out Your Carbon Survey" — Behavioral economics of data collection
+3. "The Case for Supplier-Captured Evidence Over Estimation" — Comparing direct capture vs. LCA estimates
+4. "Scope 3 Estimation: When OCR Meets ML" — Using past data and anomaly detection to fill gaps
+5. "Field Worker as Data Ambassador: Turning Suppliers into Participants" — Operational integration strategies
+6. "Supply Chain Collaboration Tools: Reducing Data Collection Time from Weeks to Days" — Product feature explanation
+7. Case study: "How [Logistics Company] Automated Scope 3 Emissions Reporting in 6 Weeks"
 
 ---
 
-## Pillar 4: Compliance & Audit
+## Pillar 4: Compliance & Regulatory Readiness
 
-**Why it matters:** CSRD, SEC climate rules, SBTi, and CDP questionnaires drive the need for audit-ready emissions data. CFOs and compliance officers must demonstrate rigorous controls. Content showing audit trail, calculation reproducibility, and evidence retention builds trust.
+**Thesis:** Regulatory requirements (CSRD, CDP, SBTi, Net Zero) are moving fast. Carbon accounting platforms need to be audit-ready and compliance-forward. CarbonSite is built for current and future requirements.
 
-**Core topics:**
-- CSRD readiness (double materiality assessment, reporting timeline, Delegated Acts alignment)
-- SEC climate disclosure rule (Scope 1/2/3 thresholds, emissions intensity, GHG Protocol alignment)
-- SBTi near-term target validation (baseline year reproducibility, calculation methodology approval)
-- CDP climate questionnaire (data quality framework, risk assessment, business impacts)
-- Audit trails (who changed what, when, why; immutable logs for forensic review)
-- Data lineage (from source document → factor selection → calculation → snapshot → report)
-- Calculation reproducibility (re-run same period + factors → exact same result)
-- Evidence retention (minimum 7-year policy, export/archive workflows)
-- Third-party audit workflows (auditor access, calculation visibility, factor evidence)
-- Financial materiality linkage (carbon cost impacts on balance sheet, P&L)
-- Assurance engagement support (Type I/II attestation, DNV/EY readiness)
-- Glossary & definitions (GHG Protocol vs ISO 14064, location-based vs market-based)
-
-**Content types:**
-- Compliance playbooks (CSRD 2024-2026 roadmap for EU companies, SEC readiness checklist)
-- Audit preparation guides (how to prepare for Type II assurance, DNV requirements)
-- White papers ("Building Financial-Grade Controls for Carbon Data")
-- Webinars ("CSRD compliance: from data collection to double materiality")
-- Regulatory tracking (legislative updates, deadline reminders, methodology changes)
-- Template documents (audit request response, calculation methodology statement)
-
-**Personas:** Finance Lead, CFO, Auditor, Compliance Officer
+### Topics:
+1. "CSRD Readiness: What CarbonSite Does for Double Materiality" — Technical guide to CSRD compliance
+2. "SBTi Science-Based Targets: From Definition to Dashboard" — Scope 1/2/3 planning and tracking
+3. "Scope 2 and Renewable Energy: Market-Based vs. Location-Based in 2026" — Updated guidance on power purchase agreements
+4. "Audit Trail for Carbon Accounting: Building Immutable Records" — Regulatory expectations for append-only logs
+5. "CDP Disclosure: Mapping CarbonSite Data to Standard Questions" — Framework for annual reporting
+6. Compliance guide: "Carbon Accounting Framework Comparison" — CSRD, GHG Protocol, ISO 14064, CDP, SBTi
+7. Webinar series: "Regulatory Roadmap for Carbon Accounting" — Monthly updates on new requirements
 
 ---
 
-## Pillar 5: Industry Trends & Thought Leadership
+## Pillar 5: Industry Trends & Benchmarking
 
-**Why it matters:** Position CarbonSite as a knowledgeable voice in carbon accounting. Content on regulatory shifts, methodology innovations, market benchmarking, and industry challenges builds brand authority and SEO.
+**Thesis:** Carbon accounting is a rapidly shifting landscape. CarbonSite tracks regulatory changes, shares industry benchmarks, and helps customers understand their competitive position on emissions.
 
-**Core topics:**
-- Regulatory landscape (CSRD adoption timeline, SEC rule implementation, UK mandatory TCFD)
-- Methodology innovations (AR6 GWP adoption, biogenic carbon rules, scope-3 estimation advances)
-- Carbon accounting market dynamics (consolidation, platform switching, vendor evaluation)
-- Industry benchmarks (average emissions intensity by sector, carbon efficiency trends)
-- Decarbonization trends (renewable energy uptake, EV adoption, circular economy)
-- Carbon market mechanisms (voluntary carbon markets, carbon credits, offset accounting)
-- Climate technology landscape (AI for emissions estimation, IoT metering, blockchain audit trails)
-- Data quality trends (how companies are improving emissions data, common pitfalls)
-- Financial materiality shifts (carbon costs, stranded asset risk, climate litigation)
-- Innovation in measurement (satellite monitoring, IoT sensors, meter-level data collection)
-- Future of ESG reporting (integrated non-financial disclosure, EU taxonomy alignment)
-
-**Content types:**
-- Trend reports ("State of Carbon Accounting 2026: 8 trends reshaping emissions reporting")
-- Industry analysis (sector benchmarks, emissions intensity rankings, peer comparison tools)
-- Expert commentary (CarbonSite founders on regulatory changes, webinar appearances)
-- Research (proprietary data from CarbonSite customers, anonymized benchmarks)
-- News roundup (weekly/monthly regulatory updates, methodology changes, market moves)
-- Podcast (interviews with auditors, sustainability leaders, regulators)
-- LinkedIn thought leadership (daily/weekly posts on industry news, CarbonSite features)
-
-**Personas:** All (appeal as thought leaders to decision makers, prospects, existing customers)
+### Topics:
+1. "Carbon Accounting Market Trends: Enterprise Expectations in 2026" — Industry overview and competitor analysis
+2. "Why Your Dashboard Feels Slow: Scaling Carbon Accounting to 100k+ Records" — Technical deep dive on CarbonSite performance
+3. "Emerging Tech in Carbon: AI, Blockchain, and Real-Time Monitoring" — Opportunities and hype
+4. "The Carbon Accounting Talent Gap: What Sustainability Teams Actually Need" — Hiring and skill development
+5. "Scope 3 Benchmarking: How Your Emissions Compare to Industry Peers" — Anonymized peer data analysis
+6. Benchmark report: "Construction, Logistics, and Manufacturing Carbon Profiles" — Industry-specific baselines
+7. Forecast: "Five Carbon Accounting Trends for 2026-2027" — Emerging methodologies, tools, regulations
 
 ---
 
-## Content Calendar Integration
+## Content Topics by Persona
 
-**Publishing frequency target:**
-- **Methodology & Transparency:** 2 posts/month (deep technical content, slower cadence, high authority)
-- **Field Operations:** 1 post/month + 1 video/month (drive adoption, practical tips)
-- **Supply Chain Collaboration:** 1 post/month + 1 case study/quarter (procurement audience)
-- **Compliance & Audit:** 2 posts/month (regulatory changes, deadline-driven, time-sensitive)
-- **Industry Trends:** 3 posts/month (news, benchmarks, thought leadership; drives organic traffic)
+### Sustainability Manager
+- Pillar 1: Methodology validation for auditors (build credibility with CFO)
+- Pillar 2: Reducing time to data readiness (spreadsheets to submissions)
+- Pillar 3: Supplier engagement strategies (how to ask without annoying)
+- Pillar 4: Regulatory roadmap (which requirements apply, when)
+- Pillar 5: Benchmarking and peer comparison (are we doing okay?)
 
-**Total:** ~9 blog posts/month + videos + case studies + regulatory tracking
+### Finance Lead
+- Pillar 1: Calculation transparency and reproducibility (audit confidence)
+- Pillar 2: Error reduction and data validation (financial-grade accuracy)
+- Pillar 3: Spend-based Scope 3 integration (reconciling to AP system)
+- Pillar 4: Regulatory reporting and disclosure (investor confidence)
+- Pillar 5: ROI and cost justification (carbon accounting value)
 
-**Distribution:**
-- Website blog (primary)
-- LinkedIn (excerpt + link)
-- Email newsletter (weekly curated top 3 posts)
-- Twitter/X (daily industry news, tips)
-- Sales enablement (battle cards, competitive intel)
-
----
-
-## Success Metrics per Pillar
-
-| Pillar | KPI | Target |
-|--------|-----|--------|
-| Methodology & Transparency | Organic traffic to calculation/factor pages | +200% YoY |
-| Field Operations | Mobile app installer growth via blog | +150 installs/week |
-| Supply Chain Collaboration | Procurement audience engagement (email opens, clicks) | >35% open rate |
-| Compliance & Audit | Regulatory keyword rankings (CSRD, SEC climate rule) | Top 5 Google results |
-| Industry Trends | LinkedIn follower growth + engagement | +5k followers, >2% engagement |
+### Auditor/Compliance Officer
+- Pillar 1: Methodology versioning and audit trail (compliance evidence)
+- Pillar 2: Data quality frameworks and anomaly detection (assurance)
+- Pillar 3: Third-party data validation and evidence chains (Scope 3 audit)
+- Pillar 4: Regulatory framework mapping and controls (compliance architecture)
+- Pillar 5: Industry standards and peer practices (benchmarking)
 
 ---
 
-## Responsible Team
+## Content Calendar Template
 
-- **Methodology & Transparency:** CarbonSite Engineers + Sustainability Methodologist
-- **Field Operations:** Product/Mobile team + Customer Success (user interviews)
-- **Supply Chain Collaboration:** Sales + Sustainability Methodologist
-- **Compliance & Audit:** Finance/Legal + Compliance Officer
-- **Industry Trends:** Marketing + CTO (thought leadership)
+| Week | Pillar | Topic | Format | Persona | Launch Platform |
+|------|--------|-------|--------|---------|-----------------|
+| 1 | 2 | Why Carbon Accounting Still Fails | Blog post (1.2k) | Sustainability Mgr | /blog, LinkedIn, Twitter |
+| 2 | 1 | Open-Source Carbon Accounting | Blog post (1.4k) | Auditor | /blog, Hacker News, Dev communities |
+| 3 | 3 | Scope 3 Emissions: From Silence to Data | Blog post (1.3k) | Sustainability Mgr, Finance | /blog, LinkedIn |
+| 4 | 4 | Anomaly Detection in Carbon Data | Blog post (1.1k) | Auditor, Sustainability Mgr | /blog, Dev communities |
+| 5 | 1 | Building for Audit: Immutability | Blog post (1.5k) | Auditor, Finance | /blog, LinkedIn |
+| 6 | 3 | Scope 3 Estimation: OCR + ML | Blog post (1.2k) | Sustainability Mgr, Tech | /blog |
+| 7 | 2 | Carbon Accounting at Scale | Blog post (1.2k) | Tech, Finance | /blog, Dev Twitter |
+| 8 | 3 | Supplier Carbon Data Is Wrong | Blog post (1.2k) | Sustainability Mgr, Finance | /blog, LinkedIn |
 
-Each pillar has a **Pillar Owner** (assigned marketing team member) who:
-- Maintains editorial calendar
-- Coordinates contributor interviews
-- Publishes monthly (minimum)
-- Tracks KPIs
-- Reports to CMO quarterly
+---
+
+## Content Assets to Create
+
+**Guides (Free, Gated Lead Magnets):**
+- "The Carbon Accountant's Factor Library" (DEFRA + EPA factors explained)
+- "Scope 3 Collection Playbook" (field worker workflows and scripts)
+- "Audit Preparation Checklist" (regulatory framework mapping)
+- "Methodology & Versioning Guide" (how CarbonSite calculations work)
+
+**Case Studies:**
+- Construction waste tracking automation (internal or customer)
+- Logistics supplier emissions collection in 6 weeks
+- Manufacturing facility benchmarking (peer comparison)
+
+**Data & Benchmarks:**
+- Industry Scope 3 benchmarks (anonymized peer comparison)
+- Carbon factor library CSV (freely downloadable)
+- Methodology version changelog (public on GitHub)
+
+**Webinars & Video:**
+- "Regulatory Roadmap for Carbon Accounting" (monthly, live)
+- "Building Defensible Carbon Reports" (pre-recorded, case study)
+- "Scope 3 Without the Surveys" (demo + use cases)
+
+**Interactive Tools:**
+- Scope 3 estimation calculator (embed on /pricing)
+- Factor library browser (search and download)
+- Regulatory requirement checker (which rules apply to you)

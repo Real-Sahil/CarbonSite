@@ -1,0 +1,123 @@
+---
+title: "Scope 3 Emissions: From Supplier Silence to Collaborative Data"
+description: "Tier-1 suppliers won't fill out surveys. They will photograph an invoice when a field worker asks. Scope 3 is not a survey problem — it's an operational problem."
+date: "2026-09-15"
+author: "CarbonSite Team"
+readTime: "8 min read"
+pillar: "Supply Chain"
+image: "/blog/supply-chain.jpg"
+---
+
+Scope 3 emissions are often 75% of a company's total carbon footprint. They're also the hardest to measure.
+
+Most organizations approach Scope 3 the same way: send suppliers a survey asking them to self-report emissions data. Here's what happens: 20% respond on time, 40% respond late with incomplete data, 40% don't respond at all.
+
+The result is a spreadsheet full of blanks, estimates, and outdated assumptions. When it's time to report, sustainability teams plug in LCA factors or industry averages. Then they cross their fingers and hope.
+
+This is treating Scope 3 as a survey problem. It's actually an operational problem.
+
+## Why Surveys Don't Work
+
+Suppliers have no incentive to respond to sustainability surveys. They have dozens of customers, all asking different questions in different formats. Filling out a carbon questionnaire is low priority, especially for small suppliers who don't have a sustainability coordinator.
+
+The data you get is either missing or guessed. When a supplier finally responds ("Our carbon emissions are approximately 500 tonnes per year"), they're estimating based on industry benchmarks or last year's LCA study, not actual measurement.
+
+This is not malice. It's just the reality of how supply chains operate.
+
+## The Operational Approach: Evidence Over Estimates
+
+CarbonSite treats Scope 3 as what it actually is: an operational data problem.
+
+Instead of asking suppliers to fill out a form, you give field workers a camera. When a logistics coordinator receives a delivery from a supplier, they photograph the invoice. When a purchasing team receives a shipment, they photograph the packing slip. OCR extracts the quantity, date, supplier name, and shipment details.
+
+This creates primary evidence. Not an estimate. Not a survey response. An actual transaction record.
+
+Here's what changes:
+
+**Before (Survey-Based):**
+- Send supplier survey
+- Wait 4 weeks
+- Get response with estimated annual emissions
+- Plug number into dashboard
+- Hope it's accurate
+
+**After (Evidence-Based):**
+- Photograph delivery invoice
+- OCR extracts quantity, date, supplier
+- Field submission reviewed by purchasing team
+- Calculation engine produces emissions based on actual transaction
+- Pattern emerges from multiple transactions (supplier average, seasonal trends)
+
+The second approach produces better data because it's based on transactions, not surveys.
+
+## Scope 3 Categories and Evidence Capture
+
+Different Scope 3 categories have different evidence sources:
+
+**Purchased Goods & Services:** Capture supplier invoices showing quantities. OCR extracts weight, unit, category. System applies waste/material factors.
+
+**Upstream Transportation:** Capture delivery slips showing carrier, distance, weight. OCR extracts routing information. System calculates based on vehicle type and distance.
+
+**Fuel and Energy-Related Activities:** Capture utility invoices showing consumption. OCR extracts quantities. System applies factors.
+
+**Business Travel:** Capture flight receipts and mileage logs. OCR extracts origin, destination, distance. System applies per-mile factors.
+
+**Upstream Leased Assets:** Capture rental agreements and usage logs. OCR extracts duration. System calculates based on asset type.
+
+For each category, the principle is the same: capture the transaction record, extract structured data via OCR, calculate emissions from actual data, not estimates.
+
+## ML Estimation Fills the Gaps
+
+Not every transaction can be captured. Some suppliers will always be unresponsive. Some historical data is missing.
+
+This is where machine learning estimation helps. After CarbonSite has collected transaction data from a supplier across multiple months, it can predict emissions for missing periods:
+
+- Average per-unit emissions increases 15% in Q4 (seasonal pattern detected)
+- Supplier switched to new product line last month (anomaly detected)
+- Emissions trending upward by 3% per month (trajectory visible)
+
+The ML model doesn't replace the data. It fills gaps with confidence scores. A sustainability manager can see: "We're missing October invoice. Estimated emissions: 450 tonnes with 82% confidence based on Q3 average."
+
+This is far better than: "We don't know, so we'll use industry average."
+
+## From Suppliers to Field Workers
+
+The magic happens when field workers become data ambassadors.
+
+A logistics coordinator now has a simple workflow:
+
+1. Receive shipment from supplier
+2. Open CarbonSite mobile app
+3. Photograph invoice or packing slip
+4. OCR extracts data automatically
+5. Review and submit
+
+The supplier never fills out a form. They don't need to do anything different. But now their emissions are being captured and tracked.
+
+This scales because the burden is on the organization (your field workers), not on suppliers (who have hundreds of customers asking different questions).
+
+## Real Impact: Supply Chain Visibility
+
+After 6 months of field capture:
+
+**Week 1-4:** 30% of transactions captured (low adoption, field workers still learning)
+**Week 5-12:** 60% of transactions captured (workflow optimized, habits formed)
+**Month 4+:** 80-90% of transactions captured (becomes routine)
+
+At 80% capture rate, you have genuine primary evidence for Scope 3. You can tell the auditor: "We captured transaction records for 80% of supplier spend. For the remaining 20%, we applied ML estimation based on historical patterns."
+
+This is defensible. This is audit-ready.
+
+## Getting Started
+
+If you're currently relying on supplier surveys or industry averages for Scope 3:
+
+1. Identify your top 10-20 suppliers by spend
+2. Start capturing delivery invoices for these suppliers via CarbonSite mobile app
+3. Let OCR extract data automatically
+4. Build transaction history over 2-3 months
+5. Watch the pattern emerge
+
+By month 3, you'll have genuine Scope 3 data instead of guesses. By month 6, you'll have an operational system that captures data continuously.
+
+The future of Scope 3 accounting isn't better surveys. It's better operations: field workers with cameras and OCR, turning supplier transactions into carbon data.

@@ -1,0 +1,102 @@
+---
+title: "Why Carbon Accounting Still Fails: A Field Worker's Perspective"
+description: "Most carbon accounting platforms assume data is pre-cleaned and arrives from spreadsheets. The reality is messier — and that's where most errors originate."
+date: "2026-09-01"
+author: "CarbonSite Team"
+readTime: "8 min read"
+pillar: "Field Operations"
+image: "/blog/field-workers.jpg"
+---
+
+Carbon accounting is broken at the capture layer.
+
+Most platforms assume data arrives pre-cleaned from accounting systems, spreadsheets, or utility bills. The reality is messier. A sustainability manager at a construction company receives dozens of waste tickets from subcontractors every week, each with different formats, incomplete information, and handwritten notes. A logistics coordinator gets delivery dockets from suppliers with weights in different units (kilograms, tonnes, pounds). A facility manager has utility consumption data that arrives in multiple formats from multiple buildings.
+
+By the time this data reaches a carbon accounting platform, it's already been transcribed multiple times, corrupted through manual entry, and separated from its source documents.
+
+This is not a software problem. It's an operational problem.
+
+## The Spreadsheet Trap
+
+Most organizations start with a spreadsheet. A sustainability team creates a simple template: facility, category, amount, unit, date. Within months, it grows to five spreadsheets. By year two, there's a master sheet, a draft, a "corrected" version, and an "old methodology" archive. By year three, the audit trail is gone.
+
+The problem is that spreadsheets separate data from context. The original weight might be written on a waste ticket with a handprint signature, stored in a supplier's cloud drive, and transcribed by whoever happened to be available. Nobody can reproduce the original value if the spreadsheet number is challenged.
+
+## Why Field-First Capture Changes This
+
+Field workers are the first responders to carbon data. They're the ones photographing waste tickets, scanning delivery notes, reading meters. If you can capture emissions data at that moment with a mobile phone, you create a defensible evidence chain:
+
+1. **Original source:** Photo of the ticket, with timestamp and GPS coordinates
+2. **Extracted data:** OCR pulls weight, category, date from the image
+3. **Review layer:** Sustainability manager confirms the extraction or corrects it
+4. **Immutable record:** Original photo + extraction + review decision all stored together
+
+No transcription. No manual entry. No lost context.
+
+## OCR Isn't Magic, But It's Better Than Humans
+
+On-device OCR has gotten remarkably good at extracting structured data from unstructured documents. It's not 100% accurate, but it's more consistent than a human transcriber. And when it makes errors, you can see exactly where it went wrong because the original image is preserved.
+
+Here's a real example:
+
+A delivery note shows "2,450 kg" in the weight field. A human transcriber might read this as "2,450" and forget the unit. OCR extracts both: ["2450", "kg"]. The system normalizes to tonnes: 2.45. The original photo is attached for audit.
+
+If an auditor questions this number, you can point to the original photo and the OCR extraction. No "I think I remember someone saying..."
+
+## Anomaly Detection Catches Errors Before They Escalate
+
+Even with good OCR, data quality issues slip through. A facility reports 50 tonnes of waste in one week when historical average is 2 tonnes. A supplier invoice shows 1,000 liters when previous shipments showed 50 liters.
+
+Most systems flag these with an alert. CarbonSite explains them. Was the facility undergoing renovation (explaining the spike)? Did the supplier change shipping routes (explaining the larger order)? Or is this an actual error in transcription or calculation?
+
+Anomaly detection becomes an investigation tool, not just a warning light.
+
+## The Governance Layer
+
+Field capture + OCR + anomaly detection creates a governance framework:
+
+1. **Capture:** Field worker photographs source document (immutable)
+2. **Extraction:** OCR extracts data automatically
+3. **Validation:** System flags anomalies or missing data
+4. **Review:** Sustainability manager confirms or corrects
+5. **Calculation:** Calculation engine applies factors and formulas
+6. **Publication:** Immutable snapshot created for report
+7. **Audit:** Every step is traceable
+
+If an auditor asks why a number changed between reporting periods, you can walk backwards through this entire chain. You can show the original photo, explain the OCR result, show what the reviewer changed, and explain why they changed it.
+
+This is what audit-ready carbon accounting looks like.
+
+## Why This Matters for Your Organization
+
+If your sustainability team is drowning in spreadsheets and manual data entry, field-first capture is not a nice-to-have optimization. It's the foundation for defensible carbon accounting.
+
+Here are the concrete benefits:
+
+**For Sustainability Managers:**
+- Reduce time spent on data entry by 70-80%
+- Create defensible evidence trails for auditors
+- Catch errors earlier (anomaly detection before calculation)
+- Build confidence in reported numbers
+
+**For Finance Leads:**
+- Carbon accounting now has the same rigor as financial reporting
+- Reconcile to actual spend (capture linked to invoice)
+- Version control for carbon like you have for financial statements
+- Compliance-ready without scrambling at year-end
+
+**For Auditors:**
+- Every number traces to a source document
+- OCR extraction is reproducible and auditable
+- Methodology versioning shows what changed and when
+- Immutable snapshots mean no post-hoc adjustments
+
+## Getting Started
+
+If you're currently using spreadsheets or manual data entry, CarbonSite's field capture system is designed to be a drop-in replacement. Field workers photograph documents, OCR extracts data, your sustainability team reviews and commits, calculations run automatically.
+
+No training required. No complex integrations. Just better data, from the start.
+
+Start with a pilot: have a few field workers capture data for a single facility or supplier for a month. Compare quality and time-to-results versus your current manual process. You'll see the difference immediately.
+
+The future of carbon accounting isn't better math or shinier dashboards. It's data that you can defend because you captured it at the source.
