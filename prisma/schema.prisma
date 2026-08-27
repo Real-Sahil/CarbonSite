@@ -69,6 +69,7 @@ model User {
   customEmissionFactorsCreated      OrganizationEmissionFactor[] @relation("CustomFactorCreator")
   anomaliesAcknowledged             SupplierAnomaly[]            @relation("AnomalyAcknowledger")
   scope3EstimatesAccepted           Scope3Estimate[]             @relation("Scope3EstimatesAccepted")
+  ssoSessions                       SsoSession[]                 @relation("SsoSessions")
 
   platformMembership PlatformMembership?
 
@@ -208,6 +209,8 @@ model Organization {
   supplierPerformance         SupplierPerformance[]     @relation("supplierPerformanceOrg")
   suppliedToPerformance       SupplierPerformance[]     @relation("supplierPerformanceSupplier")
   auditContexts               AuditContext[]            @relation("AuditContexts")
+  ssoConfiguration            SsoConfiguration?         @relation("SsoConfigurations")
+  ssoSessions                 SsoSession[]              @relation("SsoSessions")
 
   @@map("organizations")
 }
@@ -2690,4 +2693,51 @@ model AuditContext {
   @@index([organizationId, framework, resourceType, resourceId])
   @@index([organizationId, auditLogId])
   @@map("audit_contexts")
+}
+
+// ─── SSO & Enterprise Auth ───────────────────────────────────────────────────
+
+model SsoConfiguration {
+  id                String   @id @default(cuid())
+  organizationId    String   @unique @map("organization_id")
+  provider          String   // 'okta', 'azure_ad', 'google_workspace', 'generic_oidc', 'saml'
+  enabled           Boolean  @default(true)
+  metadataUrl       String?  @map("metadata_url")
+  clientId          String   @map("client_id")
+  clientSecret      String   @map("client_secret") // Encrypted in transit
+  idpEntityId       String?  @map("idp_entity_id") // For SAML
+  ssoUrl            String?  @map("sso_url") // For SAML
+  certificateX509   String?  @map("certificate_x509") // For SAML validation
+  autoCreateUsers   Boolean  @default(true) @map("auto_create_users")
+  autoAssignRole    String?  @default("viewer") @map("auto_assign_role") // admin | editor | reviewer | viewer | field_worker
+  requireMfa        Boolean  @default(false) @map("require_mfa")
+  syncAttributes    Json?    @map("sync_attributes") // Maps IdP claims to user fields
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation("SsoConfigurations", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("sso_configurations")
+}
+
+model SsoSession {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  userId          String   @map("user_id")
+  provider        String
+  providerUserId  String   @map("provider_user_id")
+  idpSessionId    String?  @map("idp_session_id") // To track sessions at IdP level
+  accessToken     String?  @map("access_token")
+  refreshToken    String?  @map("refresh_token")
+  tokenExpiresAt  DateTime? @map("token_expires_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  lastActivityAt  DateTime @default(now()) @updatedAt @map("last_activity_at")
+
+  organization Organization @relation("SsoSessions", fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("SsoSessions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, userId])
+  @@index([organizationId, provider])
+  @@unique([organizationId, providerUserId])
+  @@map("sso_sessions")
 }
