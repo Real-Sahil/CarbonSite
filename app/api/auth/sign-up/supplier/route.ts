@@ -13,6 +13,8 @@ const createSupplierSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1).max(255),
   company: z.string().max(255).optional(),
+  tags: z.array(z.string()).optional(),
+  categoryAssignments: z.array(z.string()).optional(),
   assignedCategoryIds: z.array(z.string()).optional(),
   assignedPeriodIds: z.array(z.string()).optional(),
 });
@@ -73,6 +75,7 @@ export async function POST(req: NextRequest) {
           accountId: user.id,
           providerId: "credential",
           password: hashedPassword,
+          passwordChangedAt: new Date(),
         },
       });
 
@@ -84,6 +87,48 @@ export async function POST(req: NextRequest) {
           role: "supplier",
         },
       });
+
+      // Assign tags
+      if (body.tags && body.tags.length > 0) {
+        for (const tagName of body.tags) {
+          // Get or create tag
+          let tag = await tx.supplierTag.findUnique({
+            where: {
+              organizationId_name: {
+                organizationId: body.orgId,
+                name: tagName,
+              },
+            },
+          });
+
+          if (!tag) {
+            tag = await tx.supplierTag.create({
+              data: {
+                organizationId: body.orgId,
+                name: tagName,
+              },
+            });
+          }
+
+          await tx.supplierTagAssignment.create({
+            data: {
+              tagId: tag.id,
+              supplierId: user.id,
+            },
+          });
+        }
+      }
+
+      // Assign categories
+      if (body.categoryAssignments && body.categoryAssignments.length > 0) {
+        await tx.supplierCategoryAssignment.createMany({
+          data: body.categoryAssignments.map((categoryCode) => ({
+            organizationId: body.orgId,
+            supplierId: user.id,
+            categoryCode,
+          })),
+        });
+      }
 
       return user;
     });
