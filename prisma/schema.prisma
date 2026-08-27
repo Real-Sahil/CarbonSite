@@ -189,6 +189,9 @@ model Organization {
   apiDataSources      ApiDataSource[]
   supplierTags        SupplierTag[]
   supplierCategoryAssignments SupplierCategoryAssignment[]
+  iotDevices          IoTDevice[]
+  iotDeviceCredentials IoTDeviceCredential[]
+  meterReadings       MeterReading[]
 
   @@map("organizations")
 }
@@ -361,6 +364,7 @@ model Facility {
   aggregates      DashboardAggregate[]
   submissions     FieldSubmission[]
   fieldWorkerAssignments FieldWorkerAssignment[]
+  iotDevices      IoTDevice[]
 
   @@index([organizationId])
   @@map("facilities")
@@ -621,6 +625,7 @@ model ActivityRecord {
   calculations EmissionCalculation[]
   evidence     ActivityRecordEvidence[]
   scenarioDrafts ScenarioDraft[]        @relation("ScenarioDraftActivityRecord")
+  meterReadings MeterReading[]
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
   @@index([organizationId, routeDistanceId])
@@ -2113,6 +2118,81 @@ model IntegrationConnection {
   @@unique([organizationId, provider], name: "organizationId_provider")
   @@index([organizationId])
   @@map("integration_connections")
+}
+
+// ─── IoT Devices & Real-Time Meter Data ──────────────────────────────────────
+
+enum IoTDeviceType {
+  electricity_meter
+  gas_meter
+  fuel_pump
+  water_meter
+
+  @@map("iot_device_type")
+}
+
+model IoTDevice {
+  id                    String        @id @default(cuid())
+  organizationId        String        @map("organization_id")
+  name                  String
+  deviceType            IoTDeviceType @map("device_type")
+  serialNumber          String        @map("serial_number")
+  emissionCategoryCode  String        @map("emission_category_code")
+  facilityId            String?       @map("facility_id")
+  lastReadingAt         DateTime?     @map("last_reading_at")
+  isActive              Boolean       @default(true) @map("is_active")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility         Facility?     @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  readings         MeterReading[]
+  credentials      IoTDeviceCredential[]
+
+  @@unique([organizationId, serialNumber])
+  @@index([organizationId, isActive])
+  @@index([organizationId, facilityId])
+  @@map("iot_devices")
+}
+
+model IoTDeviceCredential {
+  id             String   @id @default(cuid())
+  iotDeviceId    String   @map("iot_device_id")
+  organizationId String   @map("organization_id")
+  keyHash        String   @unique @map("key_hash")
+  prefix         String   @unique
+  revokedAt      DateTime? @map("revoked_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  device IoTDevice @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([iotDeviceId])
+  @@index([organizationId])
+  @@map("iot_device_credentials")
+}
+
+model MeterReading {
+  id                 String   @id @default(cuid())
+  iotDeviceId        String   @map("iot_device_id")
+  organizationId     String   @map("organization_id")
+  timestamp          DateTime
+  rawValue           Decimal  @map("raw_value") @db.Decimal(18, 6)
+  rawUnit            String   @map("raw_unit")
+  normalizedQuantity Decimal  @map("normalized_quantity") @db.Decimal(18, 6)
+  normalizedUnit     String   @map("normalized_unit")
+  activityRecordId   String?  @map("activity_record_id")
+  isDuplicate        Boolean  @default(false) @map("is_duplicate")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  device           IoTDevice    @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecord   ActivityRecord? @relation(fields: [activityRecordId], references: [id], onDelete: SetNull)
+
+  @@index([iotDeviceId, timestamp])
+  @@index([organizationId, createdAt])
+  @@index([activityRecordId])
+  @@map("meter_readings")
 }
 
 // no S3-compatible bucket is configured (R2 requires a credit card). Written
