@@ -240,6 +240,64 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     doc.y += 64;
     moveDown(18);
 
+    // ── Executive Summary & Audit Narrative ────────────────────────────────────
+
+    if (data.narrative) {
+      fillColor(COLOR_DARK);
+      doc.fontSize(11);
+      setFont("Helvetica-Bold");
+      doc.text("Executive Summary", MARGIN, doc.y);
+      moveDown(10);
+
+      fillColor(COLOR_MID);
+      doc.fontSize(9);
+      setFont("Helvetica");
+      doc.text(data.narrative.executive_summary, MARGIN, doc.y, {
+        width: BODY_W,
+        align: "left",
+      });
+      moveDown(12);
+
+      if (data.narrative.key_findings.length > 0) {
+        fillColor(COLOR_DARK);
+        doc.fontSize(11);
+        setFont("Helvetica-Bold");
+        doc.text("Key Findings", MARGIN, doc.y);
+        moveDown(10);
+
+        fillColor(COLOR_MID);
+        doc.fontSize(9);
+        setFont("Helvetica");
+        data.narrative.key_findings.forEach((finding) => {
+          doc.text(`• ${finding}`, MARGIN + 12, doc.y, {
+            width: BODY_W - 12,
+          });
+          moveDown(8);
+        });
+      }
+
+      if (data.narrative.recommendations) {
+        moveDown(2);
+        fillColor(COLOR_DARK);
+        doc.fontSize(11);
+        setFont("Helvetica-Bold");
+        doc.text("Recommendations", MARGIN, doc.y);
+        moveDown(10);
+
+        fillColor(COLOR_MID);
+        doc.fontSize(9);
+        setFont("Helvetica");
+        doc.text(data.narrative.recommendations, MARGIN, doc.y, {
+          width: BODY_W,
+          align: "left",
+        });
+        moveDown(12);
+      }
+
+      rule();
+      moveDown(18);
+    }
+
     // ── Scope breakdown ────────────────────────────────────────────────────────
 
     if (data.scopes.length > 0) {

@@ -22,7 +22,9 @@ export function verifyStorageSignature(
   expiresAtMs: number,
   signature: string,
 ): boolean {
-  if (!Number.isFinite(expiresAtMs) || expiresAtMs < Date.now()) return false;
+  // Add 5-minute grace period for clock skew between server and client
+  const CLOCK_SKEW_MS = 5 * 60 * 1000;
+  if (!Number.isFinite(expiresAtMs) || expiresAtMs + CLOCK_SKEW_MS < Date.now()) return false;
   const expected = Buffer.from(signStorageUrl(key, expiresAtMs));
   const provided = Buffer.from(signature);
   return expected.length === provided.length && timingSafeEqual(expected, provided);

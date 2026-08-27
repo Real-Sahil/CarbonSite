@@ -189,17 +189,61 @@ Return JSON in this exact format:
       llmErr instanceof Error ? llmErr.message : String(llmErr),
     );
 
-    const weightMatch = ocrText.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|kilograms?)/i);
-    const ewcMatch = ocrText.match(/\b\d{6}\b/);
-    const dateMatch = ocrText.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
-    const supplierMatch = ocrText.match(/(?:supplier|company|from):\s*([^\n]+)/i);
-    const facilityMatch = ocrText.match(/(?:facility|to|destination):\s*([^\n]+)/i);
+    // Weight: match numeric values followed by unit indicators (kg, litres, lbs, tonnes, m3, etc)
+    const weightMatch = ocrText.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|kilograms?|litres?|liters?|l(?!\w)|lbs?|tonnes?|metric\s*tonnes?|mt|t(?![a-z])|m3|m³|m\^3|cbm|cubic\s*meters?)/i);
+
+    // EWC Code: 6 digits, but validate it looks like a waste code (00-20xxxxx format)
+    const ewcMatch = ocrText.match(/\b([0-2]\d{5})\b/);
+
+    // Date: support ISO format (YYYY-MM-DD, YYYY/MM/DD) and traditional separators (DD/MM/YYYY, DD-MM-YYYY)
+    // Require separators to avoid matching 6-digit waste codes like EWC "160120"
+    const dateMatch = ocrText.match(/(\d{4}[-\/]\d{1,2}[-\/]\d{1,2}|\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
+
+    // Supplier: try labeled first, then fallback to company-like names (capitalized words)
+    let supplierMatch = ocrText.match(/(?:supplier|company|from|transported\s*by|carried\s*by|operator):\s*([^\n]+)/i);
+    if (!supplierMatch) {
+      // Fallback: look for capitalized words that might be company names
+      const companyMatch = ocrText.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*(?:Ltd|Inc|Ltd\.|Inc\.|plc|PLC|Co\.?|LLC|LLP)/i);
+      if (companyMatch) {
+        supplierMatch = companyMatch;
+      }
+    }
+
+    // Facility: try labeled first, then fallback to location names
+    let facilityMatch = ocrText.match(/(?:facility|site|location|destination|to|landfill|tip|receiving):\s*([^\n]+)/i);
+    if (!facilityMatch) {
+      // Fallback: look for capitalized location-like names after delivery context
+      const locationMatch = ocrText.match(/(?:delivered?|destination|received?)\s+(?:at|to)?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
+      if (locationMatch) {
+        facilityMatch = locationMatch;
+      }
+    }
 
     let parsedDate: string | undefined;
     if (dateMatch) {
       try {
-        const date = new Date(dateMatch[1]);
-        if (!Number.isNaN(date.getTime())) {
+        const dateStr = dateMatch[1];
+        let date: Date | null = null;
+
+        // ISO format: YYYY-MM-DD or YYYY/MM/DD
+        if (/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}$/.test(dateStr)) {
+          const normalized = dateStr.replace(/\//g, "-");
+          date = new Date(normalized + "T00:00:00Z");
+        }
+        // Traditional format: DD/MM/YYYY or DD-MM-YYYY
+        else if (/^\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}$/.test(dateStr)) {
+          const parts = dateStr.split(/[-\/]/);
+          const day = parts[0];
+          const month = parts[1];
+          let year = parts[2];
+          // Handle 2-digit years
+          if (year.length === 2) {
+            year = (parseInt(year) > 50 ? "19" : "20") + year;
+          }
+          date = new Date(`${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T00:00:00Z`);
+        }
+
+        if (date && !Number.isNaN(date.getTime())) {
           parsedDate = date.toISOString();
         }
       } catch {
@@ -367,9 +411,11 @@ export function estimateDataQuality(fields: Partial<WasteField>): {
 
   // Confidence scores
   if (fields.confidence) {
+    const confidenceValues = Object.values(fields.confidence).filter((c): c is number => typeof c === "number");
     const avgConfidence =
-      Object.values(fields.confidence).reduce((a, b) => a + b, 0) /
-      Object.keys(fields.confidence).length;
+      confidenceValues.length > 0
+        ? confidenceValues.reduce((a, b) => a + b, 0) / confidenceValues.length
+        : 0;
     score += Math.floor(avgConfidence * 30);
 
     if (avgConfidence < 0.7) {

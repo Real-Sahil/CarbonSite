@@ -20,7 +20,7 @@ export async function generateAuditNarrative(reportData: ReportData): Promise<Au
   if (!llmClient.isConfigured()) {
     return {
       executive_summary:
-        "Unable to generate automated narrative — no LLM provider configured. Set HUGGINGFACE_API_KEY or NVIDIA_NIM_API_KEY, then regenerate the report.",
+        "Unable to generate automated narrative — no LLM provider configured. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY, then regenerate the report.",
       key_findings: [],
       recommendations: "",
     };

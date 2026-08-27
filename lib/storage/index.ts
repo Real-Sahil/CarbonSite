@@ -45,7 +45,7 @@ function resolveDriver(): "r2" | "db" | "local" {
 }
 
 const DRIVER = resolveDriver();
-const PRESIGN_TTL = 60 * 15; // 15 minutes
+const PRESIGN_TTL = 60 * 60; // 1 hour (increased from 15 minutes for slow/interrupted downloads)
 
 // Absolute origin for db-driver URLs — mobile clients and redirects need a
 // full URL, never a bare path.

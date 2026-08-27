@@ -52,6 +52,22 @@ function parseEstimateResponse(jsonStr: string): Scope3Estimate {
 }
 
 export async function estimateScope3(req: Scope3EstimateRequest): Promise<Scope3Estimate> {
+  // Check if LLM is configured before attempting estimation
+  if (!llmClient.isConfigured()) {
+    return {
+      category: req.spendCategory || 's3-purchased-goods',
+      estimatedCo2e: 0,
+      estimatedCo2eLower: 0,
+      estimatedCo2eUpper: 0,
+      confidenceScore: 0,
+      methodology: 'Not available — LLM provider not configured',
+      recommendedUnit: 'kg',
+      recommendedAmount: 0,
+      suggestedRecordDescription: 'Scope 3 estimation requires LLM configuration. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY in environment.',
+      warnings: ['No LLM provider configured for AI-powered estimation. Manual estimation required.'],
+    };
+  }
+
   const spendType = req.spendCategory || 'general-business-travel';
   const spend = req.spendAmount || 0;
   const industryContext = req.industry

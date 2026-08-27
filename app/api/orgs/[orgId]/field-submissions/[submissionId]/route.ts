@@ -79,6 +79,7 @@ export async function GET(
               `[field-submissions/${submissionId}] presignDownload failed for key "${f.evidenceFile?.storageKey}":`,
               err instanceof Error ? err.message : String(err),
             );
+            throw err;
           }
           return {
             id: f.evidenceFile!.id,
