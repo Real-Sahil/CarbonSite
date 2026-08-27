@@ -25,12 +25,31 @@ export const metadata: Metadata = {
   title: "Audit Trail",
 };
 
+interface AuditLogEvent {
+  id: string;
+  actorUserId: string | null;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+}
+
+interface AuditLogsResponse {
+  items: AuditLogEvent[];
+  pagination: {
+    nextCursor: string | null;
+    hasMore: boolean;
+    limit: number;
+  };
+}
+
 async function AuditTrailTable({
   orgId,
-  page,
 }: {
   orgId: string;
-  page: number;
 }) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/orgs/${orgId}/audit-logs?limit=25`, {
     headers: {
@@ -42,12 +61,14 @@ async function AuditTrailTable({
     return <div className="text-red-600">Failed to load audit logs</div>;
   }
 
-  const data = await res.json();
+  const data: AuditLogsResponse = await res.json();
 
   const actionColors: Record<string, string> = {
-    INSERT: "bg-green-100 text-green-800",
-    UPDATE: "bg-blue-100 text-blue-800",
-    DELETE: "bg-red-100 text-red-800",
+    create: "bg-green-100 text-green-800",
+    update: "bg-blue-100 text-blue-800",
+    delete: "bg-red-100 text-red-800",
+    approve: "bg-purple-100 text-purple-800",
+    reject: "bg-orange-100 text-orange-800",
   };
 
   return (
@@ -57,26 +78,26 @@ async function AuditTrailTable({
           <TableHead>Timestamp</TableHead>
           <TableHead>Actor</TableHead>
           <TableHead>Action</TableHead>
-          <TableHead>Table</TableHead>
-          <TableHead>Record ID</TableHead>
+          <TableHead>Resource Type</TableHead>
+          <TableHead>Resource ID</TableHead>
           <TableHead>IP Address</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.items.map((event: any) => (
+        {data.items.map((event: AuditLogEvent) => (
           <TableRow key={event.id}>
             <TableCell className="text-sm">
-              {new Date(event.timestamp).toLocaleString()}
+              {new Date(event.createdAt).toLocaleString()}
             </TableCell>
-            <TableCell className="text-sm">{event.actorId || "System"}</TableCell>
+            <TableCell className="text-sm">{event.actorUserId || "System"}</TableCell>
             <TableCell>
               <Badge className={actionColors[event.action] || "bg-gray-100 text-gray-800"}>
                 {event.action}
               </Badge>
             </TableCell>
-            <TableCell className="text-sm font-mono text-xs">{event.tableName}</TableCell>
+            <TableCell className="text-sm font-mono text-xs">{event.resourceType}</TableCell>
             <TableCell className="text-sm font-mono text-xs truncate max-w-[150px]">
-              {event.recordId || "—"}
+              {event.resourceId || "—"}
             </TableCell>
             <TableCell className="text-sm text-gray-500">{event.ipAddress || "—"}</TableCell>
           </TableRow>
@@ -113,10 +134,10 @@ export default async function AuditTrailPage({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-sm font-medium">Table Name</label>
+              <label className="text-sm font-medium">Resource Type</label>
               <Select>
                 <SelectTrigger>
-                  <SelectValue placeholder="All tables" />
+                  <SelectValue placeholder="All resources" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="EmissionCalculation">Emission Calculations</SelectItem>
@@ -124,6 +145,8 @@ export default async function AuditTrailPage({
                   <SelectItem value="Report">Reports</SelectItem>
                   <SelectItem value="ImportBatch">Import Batches</SelectItem>
                   <SelectItem value="FieldSubmission">Field Submissions</SelectItem>
+                  <SelectItem value="ActivityRecord">Activity Records</SelectItem>
+                  <SelectItem value="Organization">Organization</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -135,9 +158,12 @@ export default async function AuditTrailPage({
                   <SelectValue placeholder="All actions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="INSERT">INSERT</SelectItem>
-                  <SelectItem value="UPDATE">UPDATE</SelectItem>
-                  <SelectItem value="DELETE">DELETE</SelectItem>
+                  <SelectItem value="create">Create</SelectItem>
+                  <SelectItem value="update">Update</SelectItem>
+                  <SelectItem value="delete">Delete</SelectItem>
+                  <SelectItem value="approve">Approve</SelectItem>
+                  <SelectItem value="reject">Reject</SelectItem>
+                  <SelectItem value="publish">Publish</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -164,7 +190,7 @@ export default async function AuditTrailPage({
         </CardHeader>
         <CardContent>
           <Suspense fallback={<div className="text-gray-500">Loading audit logs...</div>}>
-            <AuditTrailTable orgId={orgId} page={1} />
+            <AuditTrailTable orgId={orgId} />
           </Suspense>
         </CardContent>
       </Card>

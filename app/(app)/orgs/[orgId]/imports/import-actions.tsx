@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Download, ExternalLink, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CheckCircle2, Download, ExternalLink, Trash2, BarChart3 } from "lucide-react";
+import { QualityReport } from "@/components/imports/QualityReport";
 
 interface ImportBatchActionsProps {
   orgId: string;
@@ -19,6 +27,7 @@ export function ImportBatchActions({
 }: ImportBatchActionsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showQualityModal, setShowQualityModal] = useState(false);
 
   async function handleCommit() {
     setLoading("commit");
@@ -59,32 +68,57 @@ export function ImportBatchActions({
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {canCommit && (
-        <Button
-          size="sm"
-          onClick={handleCommit}
-          disabled={loading === "commit"}
-          className="gap-1 h-7 text-xs"
-        >
-          <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
-          {loading === "commit" ? "Committing…" : "Commit"}
-        </Button>
-      )}
-      {hasErrorExport && (
+    <>
+      <div className="flex flex-col gap-1.5">
         <Button
           size="sm"
           variant="outline"
-          onClick={handleDownloadErrors}
-          disabled={loading === "errors"}
+          onClick={() => setShowQualityModal(true)}
           className="gap-1 h-7 text-xs"
         >
-          <Download aria-hidden="true" className="h-3.5 w-3.5" />
-          Error CSV
+          <BarChart3 aria-hidden="true" className="h-3.5 w-3.5" />
+          Quality
         </Button>
-      )}
-      {error && <p className="text-xs text-red-600">{error}</p>}
-    </div>
+        {canCommit && (
+          <Button
+            size="sm"
+            onClick={handleCommit}
+            disabled={loading === "commit"}
+            className="gap-1 h-7 text-xs"
+          >
+            <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
+            {loading === "commit" ? "Committing…" : "Commit"}
+          </Button>
+        )}
+        {hasErrorExport && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDownloadErrors}
+            disabled={loading === "errors"}
+            className="gap-1 h-7 text-xs"
+          >
+            <Download aria-hidden="true" className="h-3.5 w-3.5" />
+            Error CSV
+          </Button>
+        )}
+        {error && <p className="text-xs text-red-600">{error}</p>}
+      </div>
+
+      <Dialog open={showQualityModal} onOpenChange={setShowQualityModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Data Quality Assessment</DialogTitle>
+            <DialogDescription>
+              Review quality metrics before committing this import to your emissions inventory.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <QualityReport orgId={orgId} importId={importId} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

@@ -11,11 +11,11 @@ type Params = { params: Promise<{ orgId: string }> };
 const auditLogsQuerySchema = z.object({
   cursor: z.string().optional(),
   limit: z.string().default("50").pipe(z.coerce.number().min(1).max(100)),
-  tableName: z.string().optional(),
+  resourceType: z.string().optional(),
   action: z.string().optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
-  recordId: z.string().optional(),
+  resourceId: z.string().optional(),
 });
 
 export async function GET(
@@ -34,44 +34,43 @@ export async function GET(
       return apiError("VALIDATION_ERROR", "Invalid query parameters", 400, query.error.flatten());
     }
 
-    const { cursor, limit, tableName, action, startDate, endDate, recordId } = query.data;
+    const { cursor, limit, resourceType, action, startDate, endDate, resourceId } = query.data;
 
     const where: any = {
       organizationId: orgId,
     };
 
-    if (tableName) where.tableName = tableName;
+    if (resourceType) where.resourceType = resourceType;
     if (action) where.action = action;
-    if (recordId) where.recordId = recordId;
+    if (resourceId) where.resourceId = resourceId;
 
     if (startDate || endDate) {
-      where.timestamp = {};
-      if (startDate) where.timestamp.gte = new Date(startDate);
-      if (endDate) where.timestamp.lte = new Date(endDate);
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
     }
 
-    const auditEvents = await prisma.auditEvent.findMany({
+    const auditLogs = await prisma.auditLog.findMany({
       where,
-      orderBy: { timestamp: "desc" },
+      orderBy: { createdAt: "desc" },
       take: limit + 1,
       skip: cursor ? 1 : 0,
       cursor: cursor ? { id: cursor } : undefined,
       select: {
         id: true,
-        actorId: true,
+        actorUserId: true,
         action: true,
-        tableName: true,
-        recordId: true,
-        oldValues: true,
-        newValues: true,
-        timestamp: true,
+        resourceType: true,
+        resourceId: true,
+        metadata: true,
+        createdAt: true,
         ipAddress: true,
         userAgent: true,
       },
     });
 
-    const hasMore = auditEvents.length > limit;
-    const items = hasMore ? auditEvents.slice(0, -1) : auditEvents;
+    const hasMore = auditLogs.length > limit;
+    const items = hasMore ? auditLogs.slice(0, -1) : auditLogs;
     const nextCursor = hasMore ? items[items.length - 1]?.id : null;
 
     return NextResponse.json({

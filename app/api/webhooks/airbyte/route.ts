@@ -1,21 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { enqueueAirbyteSyncCompletion } from '@/lib/jobs/queues';
+
+const AirbyteSyncCompletionEventSchema = z.object({
+  type: z.enum(['connection.sync_success', 'connection.sync_failed', 'connection.sync_partial_success']),
+  connectionId: z.string(),
+  syncRunId: z.string(),
+  recordsEmitted: z.number().optional(),
+  errorMessage: z.string().optional(),
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const event = await req.json();
+    const body = await req.json();
 
-    // Airbyte webhook events:
-    // - connection.sync_success: Sync completed successfully
-    // - connection.sync_failed: Sync failed
-    // - connection.sync_partial_success: Partial success
+    const event = AirbyteSyncCompletionEventSchema.parse(body);
 
-    if (!event.type || !event.connectionId) {
-      return NextResponse.json(
-        { error: 'Missing event type or connectionId' },
-        { status: 400 }
-      );
-    }
+    console.log('[Airbyte Webhook] Received sync completion event', {
+      syncRunId: event.syncRunId,
+      connectionId: event.connectionId,
+      type: event.type,
+      recordsEmitted: event.recordsEmitted,
+    });
 
     const { type, connectionId, syncRunId, recordsEmitted } = event;
 
@@ -25,36 +31,53 @@ export async function POST(req: NextRequest) {
       await enqueueAirbyteSyncCompletion({
         connectionId,
         syncRunId,
-        recordsEmitted
+        recordsEmitted,
       });
 
-      return NextResponse.json({
-        success: true,
-        message: 'Airbyte sync event processed',
-        jobQueued: true
-      });
+      return NextResponse.json(
+        {
+          received: true,
+          syncRunId,
+          jobQueued: true,
+        },
+        { status: 202 }
+      );
     }
 
     if (type === 'connection.sync_failed') {
-      console.error(`Airbyte sync failed for connection ${connectionId}:`, event);
-      // Could optionally enqueue an error notification job here
-      return NextResponse.json({
-        success: true,
-        message: 'Airbyte sync failure logged'
+      console.warn(`[Airbyte Webhook] Sync failed for connection ${connectionId}`, {
+        syncRunId,
+        errorMessage: event.errorMessage,
       });
+      // Acknowledge failure without processing
+      return NextResponse.json(
+        {
+          received: true,
+          syncRunId,
+          status: 'failed',
+        },
+        { status: 200 }
+      );
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.warn('[Airbyte Webhook] Invalid payload', {
+        errors: error.errors,
+      });
+      return NextResponse.json(
+        {
+          code: 'INVALID_PAYLOAD',
+          message: 'Invalid Airbyte webhook payload',
+        },
+        { status: 400 }
+      );
     }
 
-    // Acknowledge other event types without processing
-    return NextResponse.json({
-      success: true,
-      message: 'Event acknowledged'
-    });
-  } catch (error) {
-    console.error('Airbyte webhook error:', error);
+    console.error('[Airbyte Webhook] Processing failed', error);
     return NextResponse.json(
       {
-        error: 'Webhook processing failed',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        code: 'WEBHOOK_ERROR',
+        message: 'Failed to process webhook',
       },
       { status: 500 }
     );

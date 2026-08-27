@@ -869,12 +869,34 @@ model SupplierPerformance {
   updatedAt               DateTime @updatedAt @map("updated_at")
   createdAt               DateTime @default(now()) @map("created_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceOrg")
-  supplier     Organization @relation(fields: [supplierId], references: [id], onDelete: Cascade, name: "supplierPerformanceSupplier")
+  organization Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceOrg")
+  supplier     Organization                   @relation(fields: [supplierId], references: [id], onDelete: Cascade, name: "supplierPerformanceSupplier")
+  history      SupplierPerformanceHistory[]
 
   @@unique([organizationId, supplierId])
   @@index([organizationId])
+  @@index([organizationId, supplierId])
+  @@index([dataQualityScore(sort: Desc)])
+  @@index([submissionCount(sort: Desc)])
   @@map("supplier_performance")
+}
+
+model SupplierPerformanceHistory {
+  id                      String   @id @default(cuid())
+  supplierPerformanceId   String   @map("supplier_performance_id")
+  organizationId          String   @map("organization_id")
+  completenessScore       Decimal  @db.Decimal(5, 2) @map("completeness_score")
+  dataQualityScore        Decimal  @db.Decimal(5, 2) @map("data_quality_score")
+  submissionCount         Int      @map("submission_count")
+  approvedCount           Int      @map("approved_count")
+  recordedAt              DateTime @default(now()) @map("recorded_at")
+
+  supplierPerformance SupplierPerformance @relation(fields: [supplierPerformanceId], references: [id], onDelete: Cascade)
+  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceHistoryOrg")
+
+  @@index([supplierPerformanceId, recordedAt(sort: Desc)])
+  @@index([organizationId, recordedAt(sort: Desc)])
+  @@map("supplier_performance_history")
 }
 
 // ─── Emission Factors ─────────────────────────────────────────────────────────
