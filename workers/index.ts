@@ -13,6 +13,7 @@ import type {
   UptimeMonitoringJobData,
   DsarSlaMonitoringJobData,
   AccountPoliciesJobData,
+  AirbyteSyncJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -23,6 +24,7 @@ import { processDsarErasure } from "./dsar-erasure";
 import { processUptimeMonitoring } from "./uptime-monitoring";
 import { processDsarSlaMonitoring } from "./dsar-sla-monitoring";
 import { processAccountPolicies } from "./account-policies";
+import { handleAirbyteSyncJob } from "@/lib/jobs/workers/airbyte-sync";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -168,8 +170,21 @@ async function start() {
     {},
   );
 
+  // ── Airbyte Sync Completion ──────────────────────────────────────────────
+  await boss.work<AirbyteSyncJobData>(
+    "airbyte-sync",
+    { localConcurrency: 3 },
+    async (jobs: Job<AirbyteSyncJobData>[]) => {
+      for (const job of jobs) {
+        const { connectionId } = job.data;
+        console.log(`[airbyte-sync] processing connection ${connectionId}`);
+        await handleAirbyteSyncJob(job);
+      }
+    },
+  );
+
   console.log(
-    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring, dsar-sla-monitoring, account-policies)",
+    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring, dsar-sla-monitoring, account-policies, airbyte-sync)",
   );
 }
 

@@ -28,6 +28,7 @@ export type DsarJobData = { dsarRequestId: string };
 export type UptimeMonitoringJobData = { checkId?: string };
 export type DsarSlaMonitoringJobData = Record<string, never>;
 export type AccountPoliciesJobData = Record<string, never>;
+export type AirbyteSyncJobData = { connectionId: string; syncRunId?: string; recordsEmitted?: number };
 
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
@@ -62,4 +63,9 @@ export async function enqueueDsarErasure(data: DsarJobData) {
 export async function enqueueAccountPoliciesCheck(data: AccountPoliciesJobData) {
   await ensureBossStarted();
   await boss.send("account-policies", data, retry);
+}
+
+export async function enqueueAirbyteSyncCompletion(data: AirbyteSyncJobData) {
+  await ensureBossStarted();
+  await boss.send("airbyte-sync", data, retry);
 }

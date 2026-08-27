@@ -197,6 +197,11 @@ model Organization {
   customEmissionFactors       OrganizationEmissionFactor[]
   supplierAnomalies           SupplierAnomaly[]
   zapierIntegration           ZapierIntegration?
+  auditEvents                 AuditEvent[]
+  dataQualityChecks           DataQualityCheck[]
+  importBatchQualityScores    ImportBatchQualityScore[]
+  stagedExternalData          StagedExternalData[]
+  airbyteSyncConnections      AirbyteSyncConnection[]
 
   @@map("organizations")
 }
@@ -511,11 +516,13 @@ model ImportBatch {
   createdAt             DateTime    @default(now()) @map("created_at")
   updatedAt             DateTime    @updatedAt @map("updated_at")
 
-  organization    Organization           @relation(fields: [organizationId], references: [id])
-  createdBy       User?                  @relation(fields: [createdByUserId], references: [id])
-  stagedRecords   StagedActivityRecord[]
-  activityRecords ActivityRecord[]
-  evidence        ImportBatchEvidence[]
+  organization       Organization                @relation(fields: [organizationId], references: [id])
+  createdBy          User?                       @relation(fields: [createdByUserId], references: [id])
+  stagedRecords      StagedActivityRecord[]
+  activityRecords    ActivityRecord[]
+  evidence           ImportBatchEvidence[]
+  qualityChecks      DataQualityCheck[]
+  qualityScore       ImportBatchQualityScore?
 
   @@index([organizationId, reportingPeriodId, state])
   @@index([organizationId, sourceChecksum])
@@ -2453,4 +2460,116 @@ model ZapierIntegration {
 
   @@unique([organizationId])
   @@map("zapier_integrations")
+}
+
+// ─── Phase 1B: Data Quality Checks ────────────────────────────────────────────
+
+model DataQualityCheck {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  importBatchId  String?   @map("import_batch_id") @db.Uuid
+  checkType      String    @map("check_type")
+  checkName      String    @map("check_name")
+  passed         Boolean
+  failuresCount  Int       @default(0) @map("failures_count")
+  failureSamples Json?     @map("failure_samples")
+  qualityScore   Decimal?  @map("quality_score") @db.Decimal(5, 2)
+  metadata       Json?
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  importBatch  ImportBatch?  @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, importBatchId])
+  @@index([organizationId, checkType])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("data_quality_checks")
+}
+
+model ImportBatchQualityScore {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId   String    @map("organization_id") @db.Uuid
+  importBatchId    String    @unique @map("import_batch_id") @db.Uuid
+  overallScore     Decimal   @map("overall_score") @db.Decimal(5, 2)
+  checksPassed     Int       @map("checks_passed")
+  checksTotal      Int       @map("checks_total")
+  canCommit        Boolean   @map("can_commit")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  importBatch  ImportBatch   @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("import_batch_quality_scores")
+}
+
+// ─── Phase 1A: pgAudit Database-Level Audit Trail ────────────────────────────
+
+model AuditEvent {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  actorId        String?   @map("actor_id")
+  action         String
+  tableName      String    @map("table_name")
+  recordId       String?   @map("record_id")
+  oldValues      Json?     @map("old_values")
+  newValues      Json?     @map("new_values")
+  timestamp      DateTime  @default(now())
+  ipAddress      String?   @map("ip_address")
+  userAgent      String?   @map("user_agent")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, timestamp(sort: Desc)])
+  @@index([organizationId, action])
+  @@index([organizationId, tableName])
+  @@index([organizationId, tableName, recordId])
+  @@map("audit_events")
+}
+
+// ─── Phase 2A: Airbyte Data Integration ──────────────────────────────────────
+
+model StagedExternalData {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId    String    @map("organization_id") @db.Uuid
+  sourceSystem      String    @map("source_system") // 'salesforce', 'sap', 'aws_iot', etc.
+  sourceRecordId    String    @map("source_record_id")
+  dataType          String    @map("data_type") // 'facility_spend', 'material_cost', 'energy_consumption'
+  payload           Json
+  extractedAt       DateTime  @map("extracted_at")
+  processed         Boolean   @default(false)
+  processedAt       DateTime? @map("processed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, sourceSystem, sourceRecordId])
+  @@index([organizationId, sourceSystem, processed])
+  @@index([organizationId, dataType, processed])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("staged_external_data")
+}
+
+model AirbyteSyncConnection {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId      String    @map("organization_id") @db.Uuid
+  sourceSystem        String    @map("source_system") // 'salesforce', 'sap', 'aws_iot'
+  airbytConnectionId  String?   @map("airbyte_connection_id")
+  airbytSourceId      String?   @map("airbyte_source_id")
+  airbytDestinationId String?   @map("airbyte_destination_id")
+  config              Json      // Connection-specific configuration (credentials, mappings, etc.)
+  enabled             Boolean   @default(true)
+  lastSyncAt          DateTime? @map("last_sync_at")
+  lastSyncStatus      String?   @map("last_sync_status") // 'success', 'failed', 'partial'
+  syncFrequency       String    @default("daily") @map("sync_frequency") // 'daily', 'weekly', 'manual'
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, sourceSystem, enabled])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("airbyte_sync_connections")
 }

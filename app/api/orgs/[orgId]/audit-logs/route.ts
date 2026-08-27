@@ -1,67 +1,87 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
-import { handleRouteError, apiError } from "@/lib/validation/api";
+import { apiError, handleRouteError } from "@/lib/validation/api";
+import { z } from "zod";
 
-const QuerySchema = z.object({
+type Params = { params: Promise<{ orgId: string }> };
+
+const auditLogsQuerySchema = z.object({
   cursor: z.string().optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
+  limit: z.string().default("50").pipe(z.coerce.number().min(1).max(100)),
+  tableName: z.string().optional(),
   action: z.string().optional(),
-  resourceType: z.string().optional(),
-  actorUserId: z.string().optional(),
-  from: z.string().datetime().optional(),
-  to: z.string().datetime().optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  recordId: z.string().optional(),
 });
 
-// GET /api/orgs/[orgId]/audit-logs
-// Requires admin or auditor role.
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
+  { params }: Params,
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "auditor");
+    await requireOrgMember(orgId, "admin", "auditor", "reviewer");
 
-    const search = Object.fromEntries(req.nextUrl.searchParams);
-    const parsed = QuerySchema.safeParse(search);
-    if (!parsed.success) {
-      return apiError("VALIDATION_ERROR", "Invalid query parameters", 400, parsed.error.flatten());
+    const query = auditLogsQuerySchema.safeParse(
+      Object.fromEntries(req.nextUrl.searchParams.entries()),
+    );
+
+    if (!query.success) {
+      return apiError("VALIDATION_ERROR", "Invalid query parameters", 400, query.error.flatten());
     }
 
-    const { cursor, limit, action, resourceType, actorUserId, from, to } = parsed.data;
+    const { cursor, limit, tableName, action, startDate, endDate, recordId } = query.data;
 
-    const logs = await prisma.auditLog.findMany({
-      where: {
-        organizationId: orgId,
-        ...(action ? { action } : {}),
-        ...(resourceType ? { resourceType } : {}),
-        ...(actorUserId ? { actorUserId } : {}),
-        ...(from || to
-          ? {
-              createdAt: {
-                ...(from ? { gte: new Date(from) } : {}),
-                ...(to ? { lte: new Date(to) } : {}),
-              },
-            }
-          : {}),
-        ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
-      },
-      include: {
-        actor: { select: { id: true, name: true, email: true } },
-      },
-      orderBy: { createdAt: "desc" },
+    const where: any = {
+      organizationId: orgId,
+    };
+
+    if (tableName) where.tableName = tableName;
+    if (action) where.action = action;
+    if (recordId) where.recordId = recordId;
+
+    if (startDate || endDate) {
+      where.timestamp = {};
+      if (startDate) where.timestamp.gte = new Date(startDate);
+      if (endDate) where.timestamp.lte = new Date(endDate);
+    }
+
+    const auditEvents = await prisma.auditEvent.findMany({
+      where,
+      orderBy: { timestamp: "desc" },
       take: limit + 1,
+      skip: cursor ? 1 : 0,
+      cursor: cursor ? { id: cursor } : undefined,
+      select: {
+        id: true,
+        actorId: true,
+        action: true,
+        tableName: true,
+        recordId: true,
+        oldValues: true,
+        newValues: true,
+        timestamp: true,
+        ipAddress: true,
+        userAgent: true,
+      },
     });
 
-    const hasMore = logs.length > limit;
-    const items = hasMore ? logs.slice(0, limit) : logs;
-    const nextCursor = hasMore ? items[items.length - 1].createdAt.toISOString() : null;
+    const hasMore = auditEvents.length > limit;
+    const items = hasMore ? auditEvents.slice(0, -1) : auditEvents;
+    const nextCursor = hasMore ? items[items.length - 1]?.id : null;
 
-    return NextResponse.json({ data: items, nextCursor });
+    return NextResponse.json({
+      items,
+      pagination: {
+        nextCursor,
+        hasMore,
+        limit,
+      },
+    });
   } catch (err) {
     return handleRouteError(err);
   }
