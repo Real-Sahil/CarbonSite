@@ -2,8 +2,8 @@
 
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { sendTransactionalEmail } from "@/lib/notifications/email";
 import { inviteAcceptedEmail } from "@/lib/suppliers/email-templates";
+import { sendTransactionalEmail } from "@/lib/notifications/email";
 import { CATEGORY_GUIDANCE } from "@/lib/suppliers/category-guidance";
 
 export async function acceptSupplierInvite(
@@ -52,6 +52,10 @@ export async function acceptSupplierInvite(
         supplierEmail: invite.email,
         status: "sent",
       },
+      include: {
+        createdBy: { select: { email: true } },
+        reportingPeriod: { select: { label: true } },
+      },
     });
 
     if (dataRequests.length > 0) {
@@ -66,23 +70,24 @@ export async function acceptSupplierInvite(
 
       // Notify admin of acceptance for each request
       for (const req of dataRequests) {
+        if (!req.createdBy?.email) continue;
+
         const categoryGuidance = CATEGORY_GUIDANCE[req.categoryCode];
         const categoryName = categoryGuidance?.categoryName || req.categoryCode;
 
         const dashboardLink = `${process.env.NEXT_PUBLIC_APP_URL}/orgs/${invite.organizationId}/settings/suppliers?requestId=${req.id}`;
 
         const emailPayload = inviteAcceptedEmail({
-          adminEmail: req.createdBy?.email || "", // This will fail if createdBy not loaded
+          adminEmail: req.createdBy.email,
           supplierName: displayName,
           supplierEmail: invite.email,
           categoryName,
-          reportingPeriodLabel: (await prisma.reportingPeriod.findUnique({ where: { id: req.reportingPeriodId } }))
-            ?.label || "2026",
+          reportingPeriodLabel: req.reportingPeriod.label,
           dashboardLink,
         });
 
-        // Send notification to the org contact (would need to get admin email properly)
-        // For now, we'll skip this and just audit log it
+        // Send the email notification
+        await sendTransactionalEmail(emailPayload);
       }
     }
 

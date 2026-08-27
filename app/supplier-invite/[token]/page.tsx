@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { acceptSupplierInvite } from "./actions";
@@ -9,12 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
-interface PageProps {
-  params: Promise<{ token: string }>;
-  searchParams: Promise<Record<string, string>>;
-}
-
-export default function SupplierInviteAcceptPage({ params: paramsPromise }: PageProps) {
+export default function SupplierInviteAcceptPage() {
+  const params = useParams();
+  const token = params?.token as string;
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(acceptSupplierInvite, null);
   const [displayName, setDisplayName] = useState("");
@@ -26,6 +24,7 @@ export default function SupplierInviteAcceptPage({ params: paramsPromise }: Page
       setLocalError("Please enter your name or company name");
       return;
     }
+    formData.append("token", token);
     formData.append("displayName", displayName);
     await formAction(formData);
   };
@@ -73,7 +72,6 @@ export default function SupplierInviteAcceptPage({ params: paramsPromise }: Page
 
           {/* Form */}
           <form action={handleSubmit} className="space-y-4">
-            <input type="hidden" name="token" value={paramsPromise.then((p) => p.token)} />
 
             <div>
               <label htmlFor="displayName" className="block text-sm font-medium text-slate-900 mb-1.5">

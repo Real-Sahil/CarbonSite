@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Clock, Loader2, AlertTriangle, XCircle } from "lucide-react";
-import { getRequestDisplayInfo, formatRequestStatus, RequestDisplayInfo } from "@/lib/suppliers/portal-helpers";
+import { getRequestDisplayInfo, RequestDisplayInfo } from "@/lib/suppliers/portal-helpers";
 
 interface SupplierRequest {
   id: string;

@@ -1,13 +1,16 @@
 import { prisma } from "@/lib/db";
+import { writeAuditLog } from "@/lib/db/audit";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
 import { supplierInviteEmail, inviteAcceptedEmail } from "./email-templates";
 import { CATEGORY_GUIDANCE } from "./category-guidance";
+
+type InviteEmailResult = { success: true; messageId: string | null };
 
 export async function resendSupplierInvite(params: {
   inviteId: string;
   orgId: string;
   orgName: string;
-}): Promise<{ success: boolean; messageId: string | null }> {
+}): Promise<InviteEmailResult> {
   const { inviteId, orgId, orgName } = params;
 
   const invite = await prisma.supplierInvite.findUnique({
@@ -22,19 +25,20 @@ export async function resendSupplierInvite(params: {
   // Re-send the invite email
   const emailPayload = supplierInviteEmail({
     supplierEmail: invite.email,
-    supplierName: invite.companyName,
+    supplierName: invite.companyName || undefined,
     inviteToken: invite.token,
     categoryName: "Data Request",
     reportingPeriodLabel: "Q3 2026", // TODO: get from context if available
-    orgName: orgName || invite.organization.name,
+    orgName: orgName || invite.organization.name || "Organization",
   });
 
-  const result = await sendTransactionalEmail(emailPayload);
+  const emailResult = await sendTransactionalEmail(emailPayload);
 
-  return {
+  const result: InviteEmailResult = {
     success: true,
-    messageId: result.messageId,
+    messageId: emailResult.messageId,
   };
+  return result;
 }
 
 export async function revokeSupplierInvite(params: {
@@ -64,7 +68,7 @@ export async function notifyAdminOfAcceptance(params: {
   orgId: string;
   adminEmail: string;
   orgName: string;
-}): Promise<{ success: boolean; messageId: string | null }> {
+}): Promise<InviteEmailResult> {
   const { requestId, orgId, adminEmail, orgName } = params;
 
   const request = await prisma.supplierDataRequest.findUnique({
@@ -82,19 +86,20 @@ export async function notifyAdminOfAcceptance(params: {
 
   const emailPayload = inviteAcceptedEmail({
     adminEmail,
-    supplierName: request.supplierName,
+    supplierName: request.supplierName || undefined,
     supplierEmail: request.supplierEmail,
     categoryName,
     reportingPeriodLabel: request.reportingPeriod.label,
     dashboardLink,
   });
 
-  const result = await sendTransactionalEmail(emailPayload);
+  const emailResult = await sendTransactionalEmail(emailPayload);
 
-  return {
+  const result: InviteEmailResult = {
     success: true,
-    messageId: result.messageId,
+    messageId: emailResult.messageId,
   };
+  return result;
 }
 
 export type InviteStats = {

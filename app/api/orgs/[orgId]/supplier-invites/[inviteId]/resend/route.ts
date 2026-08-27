@@ -16,7 +16,7 @@ export async function POST(
 ) {
   try {
     const { orgId, inviteId } = await params;
-    const { session, user } = await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const invite = await prisma.supplierInvite.findUnique({
       where: { id: inviteId },
@@ -61,19 +61,19 @@ export async function POST(
     // Send the invite email
     const emailPayload = supplierInviteEmail({
       supplierEmail: invite.email,
-      supplierName: invite.companyName,
+      supplierName: invite.companyName || undefined,
       inviteToken: invite.token,
       categoryName,
       reportingPeriodLabel: periodLabel,
-      orgName: invite.organization.name,
+      orgName: invite.organization.name || "Organization",
     });
 
-    await sendTransactionalEmail(emailPayload);
+    const emailResult = await sendTransactionalEmail(emailPayload);
 
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "supplier_invite.resent",
+      action: "supplier_data_request.resent",
       resourceType: "SupplierInvite",
       resourceId: inviteId,
       metadata: {
@@ -87,6 +87,7 @@ export async function POST(
       {
         success: true,
         message: `Invite resent to ${invite.email}`,
+        messageId: emailResult.messageId,
       },
       { status: 200 },
     );
