@@ -10,6 +10,8 @@ import {
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 
+type Params = { params: Promise<{ orgId: string; deviceId: string }> };
+
 const updateDeviceSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   facilityId: z.string().optional().nullable(),
@@ -17,10 +19,10 @@ const updateDeviceSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { orgId: string; deviceId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId, deviceId } = params;
+    const { orgId, deviceId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "viewer");
 
     const device = await getDeviceWithCredentials(orgId, deviceId);
@@ -40,11 +42,11 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { orgId: string; deviceId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId, deviceId } = params;
-    const user = await requireOrgMember(orgId, ["admin"]);
+    const { orgId, deviceId } = await params;
+    const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();
     const validatedInput = updateDeviceSchema.parse(body);
@@ -91,7 +93,7 @@ export async function PATCH(
 
     await writeAuditLog({
       organizationId: orgId,
-      actorUserId: user.id,
+      actorUserId: session.user.id,
       action: "iot_device.updated",
       resourceType: "iot_device",
       resourceId: deviceId,
@@ -108,11 +110,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { orgId: string; deviceId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId, deviceId } = params;
-    const user = await requireOrgMember(orgId, ["admin"]);
+    const { orgId, deviceId } = await params;
+    const { session } = await requireOrgMember(orgId, "admin");
 
     const device = await prisma.ioTDevice.findFirst({
       where: { id: deviceId, organizationId: orgId },
@@ -125,7 +127,7 @@ export async function DELETE(
       );
     }
 
-    await deactivateDevice(orgId, deviceId, user.id);
+    await deactivateDevice(orgId, deviceId, session.user.id);
 
     return Response.json({ success: true });
   } catch (error) {
@@ -135,11 +137,11 @@ export async function DELETE(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { orgId: string; deviceId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId, deviceId } = params;
-    const user = await requireOrgMember(orgId, ["admin"]);
+    const { orgId, deviceId } = await params;
+    const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();
     const action = body.action as string;
@@ -162,7 +164,7 @@ export async function POST(
       );
     }
 
-    const credential = await createCredential(orgId, deviceId, user.id);
+    const credential = await createCredential(orgId, deviceId, session.user.id);
 
     return Response.json(
       {

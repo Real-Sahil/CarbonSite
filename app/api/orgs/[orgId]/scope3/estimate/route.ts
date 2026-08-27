@@ -4,6 +4,8 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { estimateScope3, suggestScope3Category } from "@/lib/calculation/scope3-estimator";
 import { handleRouteError } from "@/lib/validation/api";
 
+type Params = { params: Promise<{ orgId: string }> };
+
 const estimateSchema = z.object({
   spendCategory: z.string().optional(),
   spendAmount: z.number().min(0).optional(),
@@ -20,10 +22,10 @@ const suggestCategorySchema = z.object({
   industry: z.string().optional(),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { orgId: string } }) {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const { orgId } = params;
-    await requireOrgMember(orgId, ["admin", "editor", "auditor"]);
+    const { orgId } = await params;
+    await requireOrgMember(orgId, "admin", "editor", "auditor");
 
     const body = await req.json();
     const { operation } = z.object({ operation: z.enum(["estimate", "suggest"]) }).parse({
@@ -51,6 +53,6 @@ export async function POST(req: NextRequest, { params }: { params: { orgId: stri
       { status: 200 },
     );
   } catch (err) {
-    return handleRouteError(err, "Failed to estimate Scope 3 emissions");
+    return handleRouteError(err);
   }
 }

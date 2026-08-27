@@ -72,13 +72,13 @@ export function calculateSBTiPathway(req: SBTiTargetRequest): SBTiPathwayResult 
     const yearIndex = year - req.baselineYear;
     const emissions = req.baselineEmissions * Math.pow(1 - annualReductionRate, yearIndex);
     const annualReduction = previousYearEmissions - emissions;
-    const annualReductionRate = (annualReduction / previousYearEmissions) * 100;
+    const yearlyReductionPercent = (annualReduction / previousYearEmissions) * 100;
     const cumulativeReduction = ((previousYearEmissions - emissions) / req.baselineEmissions) * 100;
 
     annualTargets.push({
       year,
       targetEmissions: emissions,
-      annualReductionRate: annualReductionRate,
+      annualReductionRate: yearlyReductionPercent,
       annualReductionAmount: annualReduction,
       cumulativeReduction: cumulativeReduction,
       onTrack: true,

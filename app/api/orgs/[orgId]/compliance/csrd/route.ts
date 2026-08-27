@@ -10,6 +10,8 @@ import { handleRouteError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 
+type Params = { params: Promise<{ orgId: string }> };
+
 const csrdComplianceSchema = z.object({
   reportingYear: z.number().min(2024).max(2050),
   scope1: z.number().min(0).optional(),
@@ -17,10 +19,10 @@ const csrdComplianceSchema = z.object({
   scope3: z.number().min(0).optional(),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { orgId: string } }) {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const { orgId } = params;
-    await requireOrgMember(orgId, ["admin", "auditor"]);
+    const { orgId } = await params;
+    await requireOrgMember(orgId, "admin", "auditor");
 
     const body = await req.json();
     const input = csrdComplianceSchema.parse(body);
@@ -70,14 +72,14 @@ export async function POST(req: NextRequest, { params }: { params: { orgId: stri
       { status: 200 },
     );
   } catch (err) {
-    return handleRouteError(err, "Failed to generate CSRD compliance report");
+    return handleRouteError(err);
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { orgId: string } }) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
-    const { orgId } = params;
-    await requireOrgMember(orgId, ["admin", "auditor", "viewer"]);
+    const { orgId } = await params;
+    await requireOrgMember(orgId, "admin", "auditor", "viewer");
 
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
@@ -101,6 +103,6 @@ export async function GET(req: NextRequest, { params }: { params: { orgId: strin
       count: mappings.length,
     });
   } catch (err) {
-    return handleRouteError(err, "Failed to retrieve CSRD mappings");
+    return handleRouteError(err);
   }
 }

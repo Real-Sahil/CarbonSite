@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/db";
 import { normalizeUnit } from "@/lib/calculation/units";
-import { selectFactor } from "@/lib/calculation/factor-selector";
-import { computeCo2e } from "@/lib/calculation/engine";
 import { writeAuditLog } from "@/lib/db/audit";
 
 interface MeterReadingInput {
@@ -48,20 +46,17 @@ export async function processMeterReading(
   const duplicateWindow = new Date(
     input.timestamp.getTime() - DUPLICATE_WINDOW_MS
   );
+
   const existingReading = await prisma.meterReading.findFirst({
     where: {
       iotDeviceId: input.deviceId,
-      timestamp: {
-        gte: duplicateWindow,
-        lte: new Date(input.timestamp.getTime() + DUPLICATE_WINDOW_MS),
-      },
-      isDuplicate: false,
+      timestamp: { gte: duplicateWindow },
     },
     orderBy: { timestamp: "desc" },
   });
 
   let isDuplicate = false;
-  if (existingReading) {
+  if (existingReading && typeof existingReading.rawValue === "number") {
     const valueDiff = Math.abs(existingReading.rawValue - input.rawValue);
     // Consider it a duplicate if value is within 1% or exactly the same
     if (
@@ -78,7 +73,7 @@ export async function processMeterReading(
 
   try {
     const normalized = normalizeUnit(input.rawValue, input.rawUnit);
-    normalizedQuantity = normalized.value;
+    normalizedQuantity = normalized.amount;
     normalizedUnit = normalized.unit;
   } catch (err) {
     console.error(
@@ -103,129 +98,40 @@ export async function processMeterReading(
     },
   });
 
-  // If not a duplicate, auto-create activity record
-  let activityRecordId: string | undefined;
-  if (!isDuplicate) {
-    const category = device.emissionCategoryCode;
-
-    // Get reporting period (most recent period that includes this timestamp)
-    const period = await prisma.reportingPeriod.findFirst({
-      where: {
-        organizationId: orgId,
-        startDate: { lte: input.timestamp },
-        endDate: { gte: input.timestamp },
-      },
-      orderBy: { endDate: "desc" },
-    });
-
-    if (period) {
-      try {
-        // Select factor
-        const factor = await selectFactor({
-          category,
-          quantity: normalizedQuantity,
-          unit: normalizedUnit,
-          date: input.timestamp,
-          orgId,
-          userId,
-          source: "iot_device",
-        });
-
-        if (factor) {
-          // Compute CO2e
-          const result = computeCo2e({
-            quantity: normalizedQuantity,
-            unit: normalizedUnit,
-            factor: factor.value,
-            factorUnit: factor.factorUnit,
-            gas: factor.gas || "CO2e",
-            date: input.timestamp,
-          });
-
-          // Create activity record
-          const activityRecord = await prisma.activityRecord.create({
-            data: {
-              organizationId: orgId,
-              reportingPeriodId: period.id,
-              categoryId: category,
-              facilityId: device.facilityId,
-              quantity: normalizedQuantity,
-              unit: normalizedUnit,
-              description: `Auto-captured from IoT device: ${device.name} (${device.serialNumber})`,
-              co2e: result.co2e,
-              ch4: result.ch4,
-              n2o: result.n2o,
-              emissionFactorLibraryVersionId: factor.libraryVersionId,
-              emissionFactorCode: factor.code,
-              emissionFactorSource: factor.source,
-              factorSelectionReason: factor.selectionReason || "iot_auto",
-              formulaString: result.formula,
-              reviewStatus: "approved",
-              reviewedBy: userId,
-              reviewedAt: new Date(),
-              createdBy: userId,
-            },
-          });
-
-          activityRecordId = activityRecord.id;
-
-          // Link meter reading to activity record
-          await prisma.meterReading.update({
-            where: { id: meterReading.id },
-            data: { activityRecordId },
-          });
-
-          // Log audit trail
-          await writeAuditLog({
-            organizationId: orgId,
-            actorUserId: userId,
-            action: "meter_reading.processed",
-            resourceType: "meter_reading",
-            resourceId: meterReading.id,
-            metadata: {
-              device_id: device.id,
-              device_name: device.name,
-              activity_record_id: activityRecord.id,
-              category: category,
-              co2e: result.co2e,
-            },
-          });
-        }
-      } catch (err) {
-        console.error(
-          `Failed to auto-create activity record for meter reading ${meterReading.id}:`,
-          err
-        );
-        // Continue even if activity record creation fails; meter reading is still recorded
-      }
-    }
-  } else {
-    // Log duplicate detection
+  if (isDuplicate) {
+    // Log duplicate detected
     await writeAuditLog({
       organizationId: orgId,
-      actorUserId: "system",
+      actorUserId: userId,
       action: "meter_reading.duplicate_detected",
       resourceType: "meter_reading",
       resourceId: meterReading.id,
       metadata: {
-        device_id: device.id,
-        device_name: device.name,
+        deviceId: input.deviceId,
+        rawValue: input.rawValue,
+      },
+    });
+  } else {
+    // Log meter reading processed
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: userId,
+      action: "meter_reading.processed",
+      resourceType: "meter_reading",
+      resourceId: meterReading.id,
+      metadata: {
+        deviceId: input.deviceId,
+        normalizedQuantity,
+        normalizedUnit,
       },
     });
   }
-
-  // Update device lastReadingAt
-  await prisma.ioTDevice.update({
-    where: { id: device.id },
-    data: { lastReadingAt: input.timestamp },
-  });
 
   return {
     id: meterReading.id,
     isDuplicate,
     normalizedQuantity,
     normalizedUnit,
-    activityRecordId,
   };
 }
 
@@ -235,21 +141,14 @@ export async function getMeterReadings(
   cursor?: string,
   take: number = 50
 ) {
-  const where = {
-    organizationId: orgId,
-    ...(deviceId && { iotDeviceId: deviceId }),
-  };
-
   const readings = await prisma.meterReading.findMany({
-    where,
-    cursor: cursor ? { id: cursor } : undefined,
-    skip: cursor ? 1 : 0,
-    take,
-    orderBy: { timestamp: "desc" },
-    include: {
-      device: { select: { name: true, serialNumber: true, deviceType: true } },
-      activityRecord: { select: { id: true, co2e: true } },
+    where: {
+      organizationId: orgId,
+      ...(deviceId && { iotDeviceId: deviceId }),
     },
+    orderBy: { timestamp: "desc" },
+    take,
+    ...(cursor && { cursor: { id: cursor }, skip: 1 }),
   });
 
   return readings;

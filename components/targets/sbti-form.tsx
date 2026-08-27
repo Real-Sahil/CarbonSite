@@ -146,7 +146,7 @@ export function SBTiForm({
               <Label>Climate Pathway</Label>
               <RadioGroup
                 value={formData.pathway}
-                onValueChange={(value) => handleChange("pathway", value)}
+                onValueChange={(value: string) => handleChange("pathway", value)}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="1.5C" id="pathway-1.5" />

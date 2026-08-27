@@ -180,5 +180,3 @@ Return only the category code (e.g., "s3-business-travel"), no explanation.
   const match = response.trim().match(/s3-[\w-]+/);
   return match ? match[0] : "s3-purchased-goods";
 }
-
-export type { Scope3EstimateRequest, Scope3Estimate };

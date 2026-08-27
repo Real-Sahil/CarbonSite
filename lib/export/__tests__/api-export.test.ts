@@ -25,9 +25,9 @@ describe("API Export", () => {
 
     expect(jsonld["@context"]).toBeDefined();
     expect(jsonld["@type"]).toBe("EmissionInventory");
-    expect(jsonld.emissions).toBeDefined();
-    expect(jsonld.emissions.scope1.value).toBe(150.5);
-    expect(jsonld.emissions.total.value).toBe(805.7);
+    expect((jsonld as any).emissions).toBeDefined();
+    expect((jsonld as any).emissions.scope1.value).toBe(150.5);
+    expect((jsonld as any).emissions.total.value).toBe(805.7);
   });
 
   it("should include uncertainty when provided", () => {
@@ -47,9 +47,9 @@ describe("API Export", () => {
 
     const jsonld = dashboardToJSONLD(dashboard);
 
-    expect(jsonld.uncertainty).toBeDefined();
-    expect(jsonld.uncertainty.lower95Percentile).toBe(480);
-    expect(jsonld.uncertainty.upper95Percentile).toBe(530);
+    expect((jsonld as any).uncertainty).toBeDefined();
+    expect((jsonld as any).uncertainty.lower95Percentile).toBe(480);
+    expect((jsonld as any).uncertainty.upper95Percentile).toBe(530);
   });
 
   it("should include category breakdown when provided", () => {
@@ -75,10 +75,10 @@ describe("API Export", () => {
 
     const jsonld = dashboardToJSONLD(dashboard);
 
-    expect(jsonld.byCategory).toBeDefined();
-    expect(jsonld.byCategory).toHaveLength(5);
-    expect(jsonld.byCategory[0].category).toBe("s1-mobile");
-    expect(jsonld.byCategory[0].value).toBe(150);
+    expect((jsonld as any).byCategory).toBeDefined();
+    expect((jsonld as any).byCategory).toHaveLength(5);
+    expect((jsonld as any).byCategory[0].category).toBe("s1-mobile");
+    expect((jsonld as any).byCategory[0].value).toBe(150);
   });
 
   it("should convert activity records to CSV", () => {
@@ -205,8 +205,8 @@ describe("API Export", () => {
     const jsonld = dashboardToJSONLD(dashboard);
 
     // Verify JSON-LD structure
-    expect(jsonld.emissions.scope1["@type"]).toBe("qudt:QuantityValue");
-    expect(jsonld.emissions.scope1["qudt:hasUnit"]).toBe("tCO2e");
-    expect(jsonld["@id"]).toContain("urn:carbonsite");
+    expect((jsonld as any).emissions.scope1["@type"]).toBe("qudt:QuantityValue");
+    expect((jsonld as any).emissions.scope1["qudt:hasUnit"]).toBe("tCO2e");
+    expect((jsonld as any)["@id"]).toContain("urn:carbonsite");
   });
 });

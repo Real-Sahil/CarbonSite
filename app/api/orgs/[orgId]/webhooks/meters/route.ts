@@ -5,6 +5,8 @@ import { verifyCredential } from "@/lib/iot/device-manager";
 import { processMeterReading } from "@/lib/iot/meter-processor";
 import { prisma } from "@/lib/db";
 
+type Params = { params: Promise<{ orgId: string }> };
+
 const meterReadingSchema = z.object({
   deviceId: z.string(),
   timestamp: z.string().datetime(),
@@ -20,10 +22,10 @@ const meterReadingSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { orgId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
 
     // Extract API key from Authorization header
     const authHeader = req.headers.get("authorization");

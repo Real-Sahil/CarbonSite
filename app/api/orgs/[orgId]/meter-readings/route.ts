@@ -3,12 +3,14 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { getMeterReadings } from "@/lib/iot/meter-processor";
 
+type Params = { params: Promise<{ orgId: string }> };
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { orgId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "viewer");
 
     const searchParams = req.nextUrl.searchParams;
