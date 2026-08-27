@@ -62,7 +62,8 @@ export function Scope1CombustionCalculator() {
   });
 
   const availableUnits = FUEL_UNITS[state.fuelType];
-  if (!availableUnits.includes(state.unit as any)) {
+  const isValidUnit = availableUnits.includes(state.unit as "kg" | "litre" | "m3" | "kWh");
+  if (!isValidUnit) {
     setState((s) => ({ ...s, unit: availableUnits[0] }));
   }
 
@@ -123,7 +124,7 @@ export function Scope1CombustionCalculator() {
 
           <div className="space-y-2">
             <Label htmlFor="unit">Unit</Label>
-            <Select value={state.unit} onValueChange={(value) => setState((s) => ({ ...s, unit: value as any }))}>
+            <Select value={state.unit} onValueChange={(value) => setState((s) => ({ ...s, unit: value as "kg" | "litre" | "m3" | "kWh" }))}>
               <SelectTrigger id="unit">
                 <SelectValue />
               </SelectTrigger>
