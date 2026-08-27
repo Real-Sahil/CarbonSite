@@ -67,15 +67,13 @@ export async function GET(req: NextRequest, { params }: Params) {
 interface ActivityRecordWithCategory {
   id: string;
   createdAt: Date;
-  originalAmount?: string;
-  originalUnit?: string;
-  normalizedAmount?: string;
-  normalizedUnit?: string;
-  sourceDescription?: string;
-  activityDate: Date;
-  emissionCategory: { id: string; name: string; scope: string };
-  facility?: { id: string; name: string };
-  importBatch?: { id: string; createdAt: Date };
+  amount: { toString(): string };
+  unit: string;
+  sourceDescription: string | null;
+  activityDate: Date | null;
+  emissionCategory: { id: string; name: string; scope: number };
+  facility: { id: string; name: string } | null;
+  importBatch: { id: string; createdAt: Date } | null;
 }
 
 async function buildLineageNodes(
@@ -95,22 +93,20 @@ async function buildLineageNodes(
 
   // 1. Activity Record node
   nodes.push({
-    type: "activity_record",
+    type: "activity_record" as const,
     id: `activity-${recordId}`,
     label: "Activity Record Captured",
     timestamp: activityRecord.createdAt,
     actor: activityRecord.sourceDescription || "imported",
     status: "complete" as const,
     details: {
-      "Original Amount": `${activityRecord.originalAmount} ${activityRecord.originalUnit}`,
-      "Normalized Amount": `${activityRecord.normalizedAmount} ${activityRecord.normalizedUnit}`,
+      "Amount": `${activityRecord.amount.toString()} ${activityRecord.unit}`,
       Category: activityRecord.emissionCategory.name,
-      Scope: activityRecord.emissionCategory.scope,
-      "Activity Date": activityRecord.activityDate.toISOString(),
+      Scope: String(activityRecord.emissionCategory.scope),
+      "Activity Date": activityRecord.activityDate?.toISOString() || "N/A",
       ...(activityRecord.facility && { Facility: activityRecord.facility.name }),
       ...(activityRecord.importBatch && {
         "Import Batch": activityRecord.importBatch.id,
-        "Import Source": activityRecord.importBatch.sourceType,
       }),
     },
   });
@@ -124,7 +120,7 @@ async function buildLineageNodes(
   if (calculations.length > 0) {
     const calc = calculations[0];
     nodes.push({
-      type: "factor_selection",
+      type: "factor_selection" as const,
       id: `factor-${recordId}`,
       label: "Emission Factor Selected",
       timestamp: calc.createdAt,
@@ -138,14 +134,14 @@ async function buildLineageNodes(
 
     // 3. Calculation node
     nodes.push({
-      type: "calculation",
+      type: "calculation" as const,
       id: `calculation-${calc.id}`,
       label: "Emissions Calculated",
       timestamp: calc.createdAt,
       actor: "automatic",
       status: "complete" as const,
       details: {
-        "CO2e (kg)": calc.totalCo2e,
+        "CO2e (kg)": String(calc.totalCo2e),
         "Data Quality Score": `${calc.dataQualityScore || 0}%`,
         "Calculation Run": calc.calculationRunId,
       },
@@ -163,7 +159,7 @@ async function buildLineageNodes(
 
     if (snapshot) {
       nodes.push({
-        type: "snapshot",
+        type: "snapshot" as const,
         id: `snapshot-${snapshot.id}`,
         label: "Snapshot Published",
         timestamp: snapshot.publishedAt,
@@ -172,7 +168,7 @@ async function buildLineageNodes(
         details: {
           "Period Start": snapshot.reportingPeriod.startDate.toISOString().split("T")[0],
           "Period End": snapshot.reportingPeriod.endDate.toISOString().split("T")[0],
-          "Version": snapshot.version,
+          "Version": String(snapshot.version),
         },
       });
 
@@ -184,18 +180,19 @@ async function buildLineageNodes(
       });
 
       if (report) {
+        const reportStatus = report.status === "ready" ? "complete" : "pending";
         nodes.push({
-          type: "report",
+          type: "report" as const,
           id: `report-${report.id}`,
           label: "Report Generated",
           timestamp: report.createdAt,
           actor: report.createdByUserId || "system",
-          status: report.status === "ready" ? ("complete" as const) : ("pending" as const),
+          status: reportStatus as "complete" | "pending",
           details: {
             "Report Type": report.type,
             "Report Status": report.status,
             "Created At": report.createdAt.toISOString(),
-            "Available for Download": report.status === "ready",
+            "Available for Download": report.status === "ready" ? "Yes" : "No",
           },
         });
       }

@@ -46,7 +46,30 @@ export async function GET(req: NextRequest) {
         return apiError("INVALID_PROVIDER", "Unsupported SSO provider", 400);
     }
 
-    return NextResponse.json({ authUrl });
+    const response = NextResponse.json({ authUrl, stateToken: generateRandomState() });
+
+    // Store state, org, and provider in secure cookies for callback verification
+    const state = generateRandomState();
+    response.cookies.set("sso_state", state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 600, // 10 minutes
+    });
+    response.cookies.set("sso_org_id", orgId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 600,
+    });
+    response.cookies.set("sso_provider", provider, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 600,
+    });
+
+    return response;
   } catch (err) {
     return handleRouteError(err);
   }

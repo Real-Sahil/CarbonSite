@@ -64,6 +64,12 @@ export const PII_REGISTRY: PiiRegistryEntry[] = [
     where: (s) => ({ userId: s.userId }),
   },
   {
+    model: "SsoSession",
+    label: "SSO sign-in sessions",
+    erasureStrategy: "delete",
+    where: (s) => ({ userId: s.userId }),
+  },
+  {
     model: "Account",
     label: "Sign-in credentials",
     erasureStrategy: "delete",
