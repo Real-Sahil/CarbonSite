@@ -6,6 +6,7 @@ import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupplierRequestsTable } from "./supplier-requests-table";
 import { SupplierAccountsPage } from "./suppliers-accounts-page";
+import { MetricsDashboard } from "./metrics-dashboard";
 
 interface PageProps {
   params: Promise<{ orgId: string }>;
@@ -102,6 +103,7 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
       <TabsList>
         <TabsTrigger value="requests">Requests</TabsTrigger>
         <TabsTrigger value="accounts">Accounts</TabsTrigger>
+        <TabsTrigger value="metrics">Metrics</TabsTrigger>
       </TabsList>
 
       <TabsContent value="requests">
@@ -117,6 +119,10 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
 
       <TabsContent value="accounts">
         <SupplierAccountsPage orgId={orgId} />
+      </TabsContent>
+
+      <TabsContent value="metrics">
+        <MetricsDashboard />
       </TabsContent>
     </Tabs>
   );
