@@ -11,15 +11,15 @@ const sbtiRequestSchema = z.object({
   baselineEmissions: z.number().min(0),
   targetYear: z.number().min(2000).max(2100),
   pathway: z.enum(["1.5C", "2C", "2.5C"]),
-  scope1?: z.number().min(0),
-  scope2?: z.number().min(0),
-  scope3?: z.number().min(0),
+  scope1: z.number().min(0).optional(),
+  scope2: z.number().min(0).optional(),
+  scope3: z.number().min(0).optional(),
 });
 
 export async function POST(req: NextRequest, { params }: { params: { orgId: string } }) {
   try {
     const { orgId } = params;
-    await requireOrgMember(orgId, ["admin", "editor"]);
+    await requireOrgMember(orgId, "admin", "editor");
 
     const body = await req.json();
     const input = sbtiRequestSchema.parse(body);
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest, { params }: { params: { orgId: stri
 export async function GET(req: NextRequest, { params }: { params: { orgId: string } }) {
   try {
     const { orgId } = params;
-    await requireOrgMember(orgId, ["admin", "editor", "auditor"]);
+    await requireOrgMember(orgId, "admin", "editor", "auditor");
 
     // Retrieve latest published snapshot to get current emissions
     const latestSnapshot = await prisma.publishedSnapshot.findFirst({
