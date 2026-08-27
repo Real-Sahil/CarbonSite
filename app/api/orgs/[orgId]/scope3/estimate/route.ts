@@ -1,58 +1,49 @@
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
-import { estimateScope3, suggestScope3Category } from "@/lib/calculation/scope3-estimator";
-import { handleRouteError } from "@/lib/validation/api";
+import { requireOrgMember } from '@/lib/auth/session';
+import { prisma } from '@/lib/db';
+import { handleRouteError } from '@/lib/validation/api';
+import { predictScope3Emission } from '@/lib/jobs/workers/scope3-estimator';
+import { NextRequest, NextResponse } from 'next/server';
 
-type Params = { params: Promise<{ orgId: string }> };
-
-const estimateSchema = z.object({
-  spendCategory: z.string().optional(),
-  spendAmount: z.number().min(0).optional(),
-  currency: z.string().default("GBP"),
-  orgRevenue: z.number().optional(),
-  industry: z.string().optional(),
-  employees: z.number().optional(),
-  facilities: z.number().optional(),
-  description: z.string().optional(),
-});
-
-const suggestCategorySchema = z.object({
-  description: z.string().min(1),
-  industry: z.string().optional(),
-});
-
-export async function POST(req: NextRequest, { params }: Params) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ orgId: string }> },
+) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "auditor");
+    await requireOrgMember(orgId, 'viewer');
 
     const body = await req.json();
-    const { operation } = z.object({ operation: z.enum(["estimate", "suggest"]) }).parse({
-      operation: body.operation || "estimate",
+    const { emissionCategoryId, facilityId } = body;
+
+    const category = await prisma.emissionCategory.findUnique({
+      where: { id: emissionCategoryId },
     });
 
-    if (operation === "suggest") {
-      const { description, industry } = suggestCategorySchema.parse(body);
-      const category = await suggestScope3Category(description, industry);
-      return NextResponse.json({ category }, { status: 200 });
+    if (!category || category.scope !== 3) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid Scope 3 category' },
+        { status: 400 },
+      );
     }
 
-    // estimate operation
-    const input = estimateSchema.parse(body);
-    const estimate = await estimateScope3({
-      organizationId: orgId,
-      ...input,
-    });
+    const features = {
+      headcount: 50,
+      footprint: 10,
+      month: new Date().getMonth() + 1,
+      is_winter: [12, 1, 2].includes(new Date().getMonth()) ? 1 : 0,
+    };
 
-    return NextResponse.json(
-      {
-        success: true,
-        estimate,
-      },
-      { status: 200 },
-    );
-  } catch (err) {
-    return handleRouteError(err);
+    const prediction = await predictScope3Emission(orgId, emissionCategoryId, features);
+
+    if (!prediction) {
+      return NextResponse.json(
+        { success: false, error: 'No trained model for this category' },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json({ success: true, data: prediction });
+  } catch (error) {
+    return handleRouteError(error);
   }
 }
