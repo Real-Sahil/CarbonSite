@@ -11,7 +11,7 @@ export type LlmOptions = {
   systemPrompt?: string;
 };
 
-const HF_API_KEY = process.env.HUGGINGFACE_API_KEY ?? '';
+const HF_API_KEY = process.env.HUGGINGFACE_TOKEN ?? '';
 const HF_API_BASE = 'https://api-inference.huggingface.co/v1';
 // Use a freely available instruction-tuned model on HF
 const HF_DEFAULT_MODEL = 'mistralai/Mistral-7B-Instruct-v0.3';
@@ -21,7 +21,7 @@ const NIM_API_BASE = process.env.NVIDIA_NIM_BASE_URL ?? 'http://localhost:8000';
 const NIM_DEFAULT_MODEL = 'mistral-7b-instruct';
 
 async function callHuggingFace(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {
-  if (!HF_API_KEY) throw new Error('HUGGINGFACE_API_KEY not set');
+  if (!HF_API_KEY) throw new Error('HUGGINGFACE_TOKEN not set');
 
   const response = await fetch(`${HF_API_BASE}/chat/completions`, {
     method: 'POST',
@@ -103,7 +103,7 @@ export class LlmClient {
     }
 
     throw new Error(
-      'No LLM provider configured. Set HUGGINGFACE_API_KEY or NVIDIA_NIM_API_KEY.',
+      'No LLM provider configured. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY.',
     );
   }
 
