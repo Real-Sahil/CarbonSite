@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/endpoints.dart';
+import '../../core/utils/error_sanitizer.dart';
 
 class InviteScreen extends StatefulWidget {
   final String token;
@@ -66,7 +67,9 @@ class _InviteScreenState extends State<InviteScreen> {
   }
 
   String _friendlyError(Object e) {
-    final msg = e.toString().toLowerCase();
+    // Sanitize the error message first to remove sensitive data
+    final sanitized = ErrorSanitizer.sanitize(e.toString());
+    final msg = sanitized.toLowerCase();
 
     if (msg.contains('already a member') || msg.contains('already_member')) {
       return 'This invite was already used on another device or install. '
