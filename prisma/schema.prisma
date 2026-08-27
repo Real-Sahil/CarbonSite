@@ -197,6 +197,7 @@ model Organization {
   customEmissionFactors       OrganizationEmissionFactor[]
   supplierAnomalies           SupplierAnomaly[]
   zapierIntegration           ZapierIntegration?
+  auditEvents                 AuditEvent[]
 
   @@map("organizations")
 }
@@ -2453,4 +2454,29 @@ model ZapierIntegration {
 
   @@unique([organizationId])
   @@map("zapier_integrations")
+}
+
+// ─── Phase 1A: pgAudit Database-Level Audit Trail ────────────────────────────
+
+model AuditEvent {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  actorId        String?   @map("actor_id")
+  action         String
+  tableName      String    @map("table_name")
+  recordId       String?   @map("record_id")
+  oldValues      Json?     @map("old_values")
+  newValues      Json?     @map("new_values")
+  timestamp      DateTime  @default(now())
+  ipAddress      String?   @map("ip_address")
+  userAgent      String?   @map("user_agent")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, timestamp(sort: Desc)])
+  @@index([organizationId, action])
+  @@index([organizationId, tableName])
+  @@index([organizationId, tableName, recordId])
+  @@map("audit_events")
 }
