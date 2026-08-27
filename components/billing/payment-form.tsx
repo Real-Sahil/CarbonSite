@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface PaymentFormProps {
   setupIntentId: string;
   clientSecret: string;
+  orgId: string;
   onSuccess: () => void;
   onError: (error: string) => void;
 }
@@ -15,25 +16,56 @@ interface PaymentFormProps {
 export function PaymentForm({
   setupIntentId,
   clientSecret,
+  orgId,
   onSuccess,
   onError,
 }: PaymentFormProps) {
+  const stripe = useStripe();
+  const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvc, setCvc] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
+    if (!stripe || !elements) {
+      setError('Stripe has not loaded');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      // In a production environment, Stripe.js would be loaded from CDN
-      // and we'd use stripe.confirmCardSetup() here
-      // For now, we'll handle this via the backend endpoint
-      onSuccess();
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) {
+        throw new Error('Card element not found');
+      }
+
+      const { setupIntent, error: stripeError } = await stripe.confirmCardSetup(clientSecret, {
+        payment_method: {
+          card: cardElement,
+        },
+      });
+
+      if (stripeError) {
+        throw new Error(stripeError.message);
+      }
+
+      if (setupIntent?.status === 'succeeded' && setupIntent.payment_method) {
+        await fetch(`/api/orgs/${orgId}/billing/payment-methods`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            setupIntentId: setupIntent.id,
+            paymentMethodId: setupIntent.payment_method,
+          }),
+        });
+
+        onSuccess();
+      } else {
+        throw new Error('Setup intent did not succeed');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
@@ -52,51 +84,28 @@ export function PaymentForm({
         </div>
       )}
 
-      <div className="space-y-3">
-        <div>
-          <label className="block text-sm font-medium text-slate-900 mb-1">
-            Card number
-          </label>
-          <Input
-            type="text"
-            placeholder="4242 4242 4242 4242"
-            value={cardNumber}
-            onChange={(e) => setCardNumber(e.target.value)}
-            disabled={isLoading}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-slate-900 mb-1">
-              Expiry
-            </label>
-            <Input
-              type="text"
-              placeholder="MM/YY"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-900 mb-1">
-              CVC
-            </label>
-            <Input
-              type="text"
-              placeholder="123"
-              value={cvc}
-              onChange={(e) => setCvc(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-        </div>
+      <div className="p-3 border border-slate-200 rounded-lg bg-white">
+        <CardElement
+          options={{
+            style: {
+              base: {
+                fontSize: '14px',
+                color: '#1e293b',
+                '::placeholder': {
+                  color: '#cbd5e1',
+                },
+              },
+              invalid: {
+                color: '#dc2626',
+              },
+            },
+          }}
+        />
       </div>
 
       <Button
         type="submit"
-        disabled={isLoading}
+        disabled={isLoading || !stripe || !elements}
         className="w-full"
       >
         {isLoading ? (

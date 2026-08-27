@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import {
   Dialog,
   DialogContent,
@@ -27,13 +29,28 @@ export function AddPaymentMethodDialog({
     clientSecret: string;
     setupIntentId: string;
   } | null>(null);
+  const [stripePromise, setStripePromise] = useState<ReturnType<typeof loadStripe> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const initializeStripe = async () => {
+      const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+      if (!stripeKey) {
+        setError('Stripe configuration missing');
+        return;
+      }
+
+      const stripe = loadStripe(stripeKey);
+      setStripePromise(stripe);
+    };
+
+    initializeStripe();
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
 
-    // Fetch SetupIntent
     const fetchSetupIntent = async () => {
       try {
         setIsLoading(true);
@@ -47,7 +64,8 @@ export function AddPaymentMethodDialog({
         );
 
         if (!response.ok) {
-          throw new Error('Failed to create setup intent');
+          const data = await response.json();
+          throw new Error(data.message || 'Failed to create setup intent');
         }
 
         const data = await response.json();
@@ -63,39 +81,9 @@ export function AddPaymentMethodDialog({
     fetchSetupIntent();
   }, [open, orgId]);
 
-  const handleSuccess = async () => {
-    if (!setupIntentData) return;
-
-    try {
-      // Send the SetupIntent ID to the backend to save the payment method
-      const response = await fetch(
-        `/api/orgs/${orgId}/billing/payment-methods`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            setupIntentId: setupIntentData.setupIntentId,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to save payment method');
-      }
-
-      onOpenChange(false);
-      onSuccess();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Add Payment Method</DialogTitle>
           <DialogDescription>
@@ -104,20 +92,27 @@ export function AddPaymentMethodDialog({
         </DialogHeader>
 
         {isLoading ? (
-          <div className="py-8 text-center text-slate-600">
-            Loading payment form...
+          <div className="py-8 text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
+            <p className="mt-4 text-sm text-slate-600">Loading payment form...</p>
           </div>
         ) : error ? (
           <div className="py-8 text-center text-red-600">
-            {error}
+            <p className="text-sm font-medium">{error}</p>
           </div>
-        ) : setupIntentData ? (
-          <PaymentForm
-            setupIntentId={setupIntentData.setupIntentId}
-            clientSecret={setupIntentData.clientSecret}
-            onSuccess={handleSuccess}
-            onError={(err) => setError(err)}
-          />
+        ) : setupIntentData && stripePromise ? (
+          <Elements stripe={stripePromise} options={{ clientSecret: setupIntentData.clientSecret }}>
+            <PaymentForm
+              setupIntentId={setupIntentData.setupIntentId}
+              clientSecret={setupIntentData.clientSecret}
+              orgId={orgId}
+              onSuccess={() => {
+                onOpenChange(false);
+                onSuccess();
+              }}
+              onError={setError}
+            />
+          </Elements>
         ) : null}
       </DialogContent>
     </Dialog>

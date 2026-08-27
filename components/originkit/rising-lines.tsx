@@ -27,7 +27,7 @@ type Props = {
 
 const DEFAULTS = {
   className: "",
-  particles: 200,
+  particles: 100,
   color: "#f97316",
   backgroundColor: "#1C1A2E",
   riseSpeed: 25,
@@ -63,6 +63,7 @@ export default function RisingLines(rawProps: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
+  const isVisibleRef = useRef(true);
 
   const renderTarget = RenderTarget.current();
   const isStatic =
@@ -143,7 +144,7 @@ export default function RisingLines(rawProps: Props) {
       const area = w * h;
       const refArea = 800 * 400;
       const target = Math.max(0, Math.floor((particles * area) / refArea));
-      particleCount = Math.min(target, 800);
+      particleCount = Math.min(target, 400);
       pX = new Float32Array(particleCount);
       pY = new Float32Array(particleCount);
       pVY = new Float32Array(particleCount);
@@ -158,7 +159,7 @@ export default function RisingLines(rawProps: Props) {
       }
 
       const blobTarget = Math.max(0, Math.floor(target * 0.3));
-      blobCount = Math.min(blobTarget, 1200);
+      blobCount = Math.min(blobTarget, 600);
       bX = new Float32Array(blobCount);
       bY = new Float32Array(blobCount);
       bVY = new Float32Array(blobCount);
@@ -191,6 +192,14 @@ export default function RisingLines(rawProps: Props) {
     resize();
     const ro = new ResizeObserver((entries) => resize(entries[0]));
     ro.observe(container);
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        isVisibleRef.current = entries[0].isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    io.observe(container);
 
     const drawFrame = (deltaSec: number) => {
       const { w, h } = sizeRef.current;
@@ -285,9 +294,11 @@ export default function RisingLines(rawProps: Props) {
 
     let lastT = performance.now();
     const loop = (t: number) => {
-      const deltaSec = (t - lastT) / 1000;
-      lastT = t;
-      drawFrame(deltaSec);
+      if (isVisibleRef.current) {
+        const deltaSec = (t - lastT) / 1000;
+        lastT = t;
+        drawFrame(deltaSec);
+      }
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
@@ -295,6 +306,7 @@ export default function RisingLines(rawProps: Props) {
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       ro.disconnect();
+      io.disconnect();
     };
   }, [particles, color, backgroundColor, showHorizon, horizonColor, riseSpeed, opacity, horizonOpacity, scale, isStatic]);
 
