@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 import '../../core/api/endpoints.dart';
 import '../../core/widgets/status_chip.dart';
 
@@ -207,9 +208,9 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
                 Icon(Icons.attach_file, size: 20, color: colorScheme.onSurfaceVariant),
                 const SizedBox(width: 10),
                 Expanded(child: Text(file.filename, style: textTheme.bodyMedium, overflow: TextOverflow.ellipsis)),
-                if (file.downloadUrl != null && file.downloadUrl!.isNotEmpty)
+                if ((file.photoLocalPath?.isNotEmpty == true) || (file.downloadUrl?.isNotEmpty == true))
                   TextButton(
-                    onPressed: () => _showImageViewer(file.filename, file.downloadUrl!),
+                    onPressed: () => _showImageViewer(file.filename, file.photoLocalPath, file.downloadUrl),
                     child: const Text('View'),
                   ),
               ],
@@ -229,7 +230,9 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
     }
   }
 
-  void _showImageViewer(String filename, String url) {
+  void _showImageViewer(String filename, String? localPath, [String? remoteUrl]) {
+    final isLocal = localPath?.isNotEmpty == true;
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -249,30 +252,56 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
                 foregroundColor: Colors.white,
               ),
               Expanded(
-                child: Image.network(
-                  url,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
-                        const SizedBox(height: 16),
-                        const Text('Could not load image'),
-                      ],
-                    ),
-                  ),
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    );
-                  },
-                ),
+                child: !isLocal && remoteUrl?.isEmpty != false
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.image_not_supported, size: 48, color: Theme.of(context).colorScheme.error),
+                            const SizedBox(height: 16),
+                            const Text('No image available'),
+                          ],
+                        ),
+                      )
+                    : isLocal
+                        ? Image.file(
+                            File(localPath!),
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+                                  const SizedBox(height: 16),
+                                  const Text('Could not load image'),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            remoteUrl!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+                                  const SizedBox(height: 16),
+                                  const Text('Could not load image'),
+                                ],
+                              ),
+                            ),
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                          ),
               ),
             ],
           ),

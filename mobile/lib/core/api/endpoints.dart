@@ -368,14 +368,16 @@ class EvidenceFile {
   final String id;
   final String filename;
   final String? downloadUrl;
+  final String? photoLocalPath;
 
-  const EvidenceFile({required this.id, required this.filename, this.downloadUrl});
+  const EvidenceFile({required this.id, required this.filename, this.downloadUrl, this.photoLocalPath});
 
   factory EvidenceFile.fromJson(Map<String, dynamic> json) {
     return EvidenceFile(
       id: json['id'] as String? ?? '',
       filename: json['filename'] as String? ?? '',
       downloadUrl: json['downloadUrl'] as String? ?? json['download_url'] as String?,
+      photoLocalPath: json['photoLocalPath'] as String? ?? json['photo_local_path'] as String?,
     );
   }
 }
