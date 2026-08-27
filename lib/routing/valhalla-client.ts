@@ -235,7 +235,7 @@ export class ValhallaClient {
         // Confidence based on match quality
         const confidence = Math.min(
           1.0,
-          (response.matched_points?.length || 0) / (input.trace.length || 1)
+          ((response.matched_points as MatchedPoint[] | undefined)?.length || 0) / (input.trace.length || 1)
         );
 
         return {
