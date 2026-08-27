@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight, Leaf } from "lucide-react";
 import { PredictiveArcCanvas } from "@designcodeio/threeui";
+import { VideoBackground } from "@/components/ui/video-background";
 
 const TRUST = [
   "DEFRA 2025 factors",
@@ -28,9 +29,12 @@ export function HeroSection() {
   return (
     <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#1C1A2E]">
 
+      {/* ── Video background ────────────────────────────────────────────────── */}
+      <VideoBackground src="/videos/hero-main.mp4" overlayOpacity={0.65} />
+
       {/* ── ThreeUI predictive arc background ───────────────────────────────── */}
       <PredictiveArcCanvas
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full z-0"
         mode="dark"
         hue={25}
         saturation={0.75}
