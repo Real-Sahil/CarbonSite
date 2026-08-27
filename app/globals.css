@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@source "../app" "../components";
+
 @theme {
   /* ── CarbonSite design tokens v4 — vibrant gradient brand ─────────────── */
 

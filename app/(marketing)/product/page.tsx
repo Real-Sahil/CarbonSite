@@ -60,7 +60,7 @@ export default function ProductPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative min-h-[60vh] flex items-end overflow-hidden bg-[#0A1628]">
-        <VideoBackground src="/videos/hero-product.mp4" overlayOpacity={0.60} />
+        <VideoBackground src="/videos/hero-product.mp4" overlayOpacity={0.30} />
         <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0A1628] to-transparent pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
