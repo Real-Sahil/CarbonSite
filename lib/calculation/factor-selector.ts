@@ -1,10 +1,34 @@
 // Factor selection — deterministic, records the selection reason for audit.
 // Precedence (highest first): unit compatibility > fuel/detail match >
 // geography match > activity type match > date validity
+//
+// Pass a FactorCache (built once per calculation run) to eliminate per-record
+// DB queries — 100k records go from ~100k queries to 0.
 
 import { prisma } from "@/lib/db";
 import type { EmissionFactor } from "@prisma/client";
 import { areUnitsCompatible } from "./units";
+
+// Pre-loaded factor table keyed by "factorLibraryId:emissionCategoryId".
+// Build once at the start of a calculation run and pass to selectFactor.
+export type FactorCache = Map<string, EmissionFactor[]>;
+
+export async function buildFactorCache(factorLibraryId: string): Promise<FactorCache> {
+  const allFactors = await prisma.emissionFactor.findMany({
+    where: { factorLibraryId },
+  });
+  const cache: FactorCache = new Map();
+  for (const factor of allFactors) {
+    const key = `${factor.factorLibraryId}:${factor.emissionCategoryId}`;
+    const bucket = cache.get(key);
+    if (bucket) {
+      bucket.push(factor);
+    } else {
+      cache.set(key, [factor]);
+    }
+  }
+  return cache;
+}
 
 export type FactorQuery = {
   emissionCategoryId: string;
@@ -98,25 +122,40 @@ function rankCandidates(
     );
 }
 
-export async function selectFactor(query: FactorQuery): Promise<FactorSelection | null> {
-  const candidates = await prisma.emissionFactor.findMany({
-    where: {
-      factorLibraryId: query.factorLibraryId,
-      emissionCategoryId: query.emissionCategoryId,
-      OR: [
-        { effectiveStartDate: null },
-        { effectiveStartDate: { lte: query.activityDate } },
-      ],
-      AND: [
-        {
-          OR: [
-            { effectiveEndDate: null },
-            { effectiveEndDate: { gte: query.activityDate } },
-          ],
-        },
-      ],
-    },
-  });
+export async function selectFactor(
+  query: FactorQuery,
+  cache?: FactorCache,
+): Promise<FactorSelection | null> {
+  let candidates: EmissionFactor[];
+
+  if (cache) {
+    const key = `${query.factorLibraryId}:${query.emissionCategoryId}`;
+    const bucket = cache.get(key) ?? [];
+    candidates = bucket.filter((f) => {
+      const startOk = !f.effectiveStartDate || f.effectiveStartDate <= query.activityDate;
+      const endOk = !f.effectiveEndDate || f.effectiveEndDate >= query.activityDate;
+      return startOk && endOk;
+    });
+  } else {
+    candidates = await prisma.emissionFactor.findMany({
+      where: {
+        factorLibraryId: query.factorLibraryId,
+        emissionCategoryId: query.emissionCategoryId,
+        OR: [
+          { effectiveStartDate: null },
+          { effectiveStartDate: { lte: query.activityDate } },
+        ],
+        AND: [
+          {
+            OR: [
+              { effectiveEndDate: null },
+              { effectiveEndDate: { gte: query.activityDate } },
+            ],
+          },
+        ],
+      },
+    });
+  }
 
   if (candidates.length === 0) return null;
 

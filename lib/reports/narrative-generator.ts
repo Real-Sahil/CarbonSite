@@ -1,4 +1,4 @@
-import { NvidiaClient } from "@/lib/nvidia/client";
+import { llmClient } from "@/lib/llm/client";
 import type { ReportData } from "./template";
 
 export interface AuditNarrative {
@@ -17,19 +17,16 @@ function pct(part: number, whole: number): string {
 }
 
 export async function generateAuditNarrative(reportData: ReportData): Promise<AuditNarrative> {
-  if (!process.env.NVIDIA_NIM_API_KEY) {
+  if (!llmClient.isConfigured()) {
     return {
       executive_summary:
-        "Unable to generate automated narrative — NVIDIA API key not configured. Please review the report data manually.",
+        "Unable to generate automated narrative — no LLM provider configured. Set HUGGINGFACE_API_KEY or NVIDIA_NIM_API_KEY, then regenerate the report.",
       key_findings: [],
       recommendations: "",
     };
   }
 
   try {
-    const client = new NvidiaClient();
-
-    // Build context from report data
     const totalTonnes = tonnes(reportData.grandTotalKg);
     const scope1 = reportData.scopes.find((s) => s.scope === 1);
     const scope2 = reportData.scopes.find((s) => s.scope === 2);
@@ -72,22 +69,18 @@ KEY_FINDINGS:
 RECOMMENDATIONS:
 [1-2 paragraph recommendations for emissions reduction and reporting improvements]
 
-Use professional language, avoid jargon, and focus on insights a CFO or board member would find valuable. Keep findings specific to the data provided.`;
+Use professional language, avoid jargon, and focus on insights a CFO or board member would find valuable.`;
 
-    const response = await client.complete(prompt, {
-      model: "mistral-7b-instruct",
+    const result = await llmClient.complete(prompt, {
       maxTokens: 800,
       temperature: 0.3,
     });
 
-    // Parse response into structured format
-    const narrative = parseNarrativeResponse(response.text);
-    return narrative;
+    return parseNarrativeResponse(result.text);
   } catch (error) {
-    console.error("[narrative-generator] NVIDIA NIM error:", error);
+    console.error("[narrative-generator] LLM error:", error);
     return {
-      executive_summary:
-        `Error generating narrative: ${error instanceof Error ? error.message : "Unknown error"}. Please review the report data manually.`,
+      executive_summary: `Error generating narrative: ${error instanceof Error ? error.message : "Unknown error"}. Please review the report data manually.`,
       key_findings: [],
       recommendations: "",
     };
@@ -101,31 +94,25 @@ function parseNarrativeResponse(text: string): AuditNarrative {
     recommendations: "",
   };
 
-  // Extract EXECUTIVE_SUMMARY section
   const summaryMatch = text.match(/EXECUTIVE_SUMMARY:\s*([\s\S]*?)(?=KEY_FINDINGS:|RECOMMENDATIONS:|$)/);
   if (summaryMatch) {
     sections.executive_summary = summaryMatch[1].trim().substring(0, 800);
   }
 
-  // Extract KEY_FINDINGS section
   const findingsMatch = text.match(/KEY_FINDINGS:\s*([\s\S]*?)(?=RECOMMENDATIONS:|$)/);
   if (findingsMatch) {
-    const findingsText = findingsMatch[1].trim();
-    // Split by line and filter out empty lines and section headers
-    const lines = findingsText.split("\n").filter((line) => line.trim().length > 0);
+    const lines = findingsMatch[1].trim().split("\n").filter((line) => line.trim().length > 0);
     sections.key_findings = lines
       .map((line) => line.replace(/^[-*•]\s+/, "").trim())
       .filter((line) => line.length > 0)
       .slice(0, 5);
   }
 
-  // Extract RECOMMENDATIONS section
   const recsMatch = text.match(/RECOMMENDATIONS:\s*([\s\S]*?)$/);
   if (recsMatch) {
     sections.recommendations = recsMatch[1].trim().substring(0, 600);
   }
 
-  // Fallback if parsing fails
   if (!sections.executive_summary) {
     sections.executive_summary = text.substring(0, 800);
   }
@@ -137,12 +124,10 @@ export async function generateAuditNarrativeBatch(
   reportDataList: ReportData[],
 ): Promise<Map<string, AuditNarrative>> {
   const results = new Map<string, AuditNarrative>();
-
   for (const reportData of reportDataList) {
     const key = `${reportData.periodLabel}-${reportData.orgName}`;
     const narrative = await generateAuditNarrative(reportData);
     results.set(key, narrative);
   }
-
   return results;
 }
