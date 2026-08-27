@@ -1,179 +1,115 @@
 ---
 title: "Anomaly Detection in Carbon Data: Catching the Outliers"
-description: "A single data entry error can corrupt your annual report. Here's how CarbonSite catches the outliers automatically."
-author: "CarbonSite"
-publishedAt: "2026-01-29"
-keywords: ["data quality", "anomaly detection", "outliers", "carbon accounting", "emissions"]
+description: "When a facility reports 10x more waste than average, most systems send an alert. CarbonSite explains why it happened. Anomaly detection is not a flag — it's an investigation tool."
+date: "2026-09-22"
+author: "CarbonSite Team"
+readTime: "6 min read"
+pillar: "Field Operations"
+image: "/blog/anomaly-detection.jpg"
 ---
 
-# Anomaly Detection in Carbon Data: Catching the Outliers
+Data quality problems hide in outliers.
 
-A sustainability manager at a manufacturing facility submitted an activity record: 1,200 tonnes of waste to landfill on a single day.
+When a facility reports 500 tonnes of waste in a single month after averaging 50 tonnes per month, most carbon accounting systems flag this with a red alert. Your sustainability team investigates. Was it a data entry error? A calculation mistake? Or is the facility actually producing 10x more emissions than usual?
 
-No one flagged it.
+Often it's none of the above. The facility underwent renovation, requiring waste removal. Or inventory clearance happened. Or a one-time event occurred that temporarily increased emissions.
 
-Three months later, the auditor caught it. The facility's average daily waste was 50 tonnes. One day of 1,200 tonnes? Statistical impossibility. Either a data entry error (12 tonnes mistyped as 1,200) or fraud (inflating waste to claim larger carbon offset budget).
-
-By then, the number had been baked into quarterly reports, executive dashboards, and investor disclosures.
-
-The report had to be reissued. The auditor noted "Control deficiency." The CFO was unhappy.
-
-This happens constantly in carbon accounting. A single outlier—a typo, a unit conversion mistake, a misplaced decimal—corrupts the entire dataset.
-
-Most platforms let these slip through.
-
-## The Outlier Problem
-
-Why do outliers persist?
-
-1. **Manual review is slow.** A sustainability manager reviewing 50 activity records per day can't spot every outlier.
-2. **No statistical baseline.** What's "normal"? Without historical context, it's hard to say. (Is 100 kg of CO₂e per tonne of material normal? Or 500 kg?)
-3. **Humans trust round numbers.** A facility reports 1,000 tonnes of waste. Sounds plausible, round number. No one questions it.
-4. **Statistical thinking is rare.** Most sustainability professionals aren't statisticians. Z-scores? Standard deviation? Not familiar.
-
-Result: ~5–10% of carbon accounting data contains outliers. Your reports are confidently reporting the wrong number.
-
-## The Regulatory Signal
-
-CSRD requires internal controls over emissions reporting. Catching outliers is a key control.
-
-SEC climate rule (proposed) requires "reasonable assurance" over emissions calculations. Manual spot-checking doesn't qualify.
-
-Auditors increasingly ask: "What controls do you have in place to catch bad data?"
-
-If your answer is "We review it manually," auditors note it as a deficiency.
-
-If your answer is "We use statistical anomaly detection, plus manual review of flagged records," auditors approve it.
+Most systems stop at the alert. CarbonSite goes further: it explains the anomaly.
 
 ## How Anomaly Detection Works
 
-CarbonSite uses a multi-layered approach:
+CarbonSite uses statistical methods to identify outliers:
 
-### Layer 1: Z-Score Anomalies
+1. **Historical Baseline:** Calculate the mean and standard deviation of emissions for this facility over the past 12 months.
+2. **Z-Score:** Compare the current month to the baseline. If it's more than 3 standard deviations away, flag as anomaly.
+3. **Context:** Look for patterns. Did similar facilities spike at the same time? Are there known events (renovations, seasonal changes, policy changes)?
+4. **Confidence Score:** Assign a confidence level. Some anomalies are clearly errors (impossible values). Others are probably real (large but plausible).
 
-For each emission category and facility, we calculate:
-- **Mean** (average weight of waste submitted)
-- **Standard deviation** (how much it typically varies)
+Then instead of just flagging it, CarbonSite explains it:
 
-If a record falls >3 standard deviations from the mean, it's flagged. (3σ = 0.27% of normal data; anything beyond is statistically unusual.)
+"Facility A reported 500 tonnes in September (Z-score: 3.8). 
+Similar facilities average 48 tonnes. 
+This is 10.4x higher than Facility A's 12-month average.
+Possible causes: renovation activity, inventory clearance, change in operational scope.
+Confidence: 78% this is a real spike, not an error."
 
-Example:
-- Facility submits 50 kg of waste per day, on average.
-- Standard deviation: 10 kg (some days 40 kg, some days 60 kg).
-- A submission of 100 kg is ~5 standard deviations out. Flagged.
+## Why This Matters
 
-### Layer 2: Domain-Specific Rules
+Anomalies are not always errors. They're often signals that something changed in your operation.
 
-Beyond statistics, we apply business rules:
+**Renovation Projects:** A facility undergoes major renovation, generating 10x more waste temporarily. Anomaly detection flags this. Sustainability manager reviews the spike and adds a note: "Renovation project (Jan-Mar 2026). Expected and planned."
 
-- **Weight thresholds** (facility capacity). A waste bin can't hold 10,000 tonnes of waste.
-- **Emission factor bounds**. CO₂e per tonne should be between 0.1 and 10,000. Anything outside is suspicious.
-- **Unit conversions**. If someone entered "1,200" in a weight field but selected "litres," that's likely a unit mistake.
-- **Facility capacity checks**. If a facility's max vehicle capacity is 20 tonnes per trip, a single trip of 50 tonnes is impossible.
+**Facility Expansion:** A manufacturing facility brings online a new production line. Emissions spike 20%. Anomaly detection flags. Team confirms: new product line, additional headcount, expected increase.
 
-### Layer 3: Temporal Patterns
+**Supplier Consolidation:** Your company consolidates suppliers, reducing vendor count by 30%. Scope 3 drops significantly. Anomaly detection flags the drop as unusual. Team confirms: intentional consolidation, maintained service levels.
 
-Are there day-of-week patterns? (Manufacturing plants often have lower emissions on weekends.)
+**Policy Change:** New recycling program implemented. Waste-to-landfill drops 40%. Anomaly detection flags the drop. Team documents: policy change (July 2026), baseline shifted.
 
-Are there seasonal patterns? (Heating fuel consumption peaks in winter.)
+In each case, the anomaly is real and meaningful. A carbon accounting platform that just flags it as "wrong" creates busywork. One that explains it turns it into actionable insight.
 
-Does this record fit the seasonal pattern? If a facility usually consumes 5,000 kWh of electricity in July but this July shows 50,000 kWh, that's flagged.
+## Detection vs. Explanation vs. Investigation
 
-## What Gets Flagged (And Why)
+CarbonSite's anomaly detection has three layers:
 
-When a record is flagged, the system explains it in human terms:
+**Layer 1: Detection**
+"Your data is unusual. Here's the statistical evidence (Z-score, deviation from mean)."
 
-**Example 1: Unit confusion**
-"This record shows 1,200 litres of fuel, but your facility's tank capacity is 500 litres. Possible data entry error (was it 120 litres?). Please review."
+**Layer 2: Explanation**
+"Here's what's likely causing this. Here's how it compares to similar facilities. Here's whether it aligns with known events."
 
-**Example 2: Facility capacity**
-"This waste facility processed 5,000 tonnes in one day. Your facility's average is 200 tonnes/day. This is 25x normal. Possible OCR error or double-counting? Please verify with site manager."
+**Layer 3: Investigation**
+"If you want to dig deeper, look at these data points. Compare to seasonal trends. Compare to peer facilities. Look for correlated changes."
 
-**Example 3: Seasonal anomaly**
-"January electricity consumption is 10,000 kWh. Your winter average is 12,000 kWh. This is unusually low (within normal range). No flag, but noteworthy if the facility was offline."
+This shifts the burden from "your data looks wrong, debug it" to "your data looks unusual, here's what might explain it."
 
-## The Review Workflow
+## Integration with Review Workflows
 
-Not all flags result in rejections.
+When field submissions contain outliers, CarbonSite surfaces them during review:
 
-1. **Record submitted.** The system runs anomaly detection.
-2. **Flagged records go to review queue.** Sustainability manager sees: "Waste submission: 1,200 tonnes. Status: ⚠ Anomaly detected. 25x above average."
-3. **Manager investigates.** (Was there a special event? A one-time bulk cleanup? A data entry error?)
-4. **Manager approves or rejects.** If legitimate, click "Override" + comment why. If an error, reject + ask for correction.
-5. **Record locked.** Once approved, can't be modified (audit trail).
+- Sustainability manager reviews submitted field data
+- System flags: "This weight is 15x higher than similar submissions from this supplier."
+- Manager can accept (with explanation), reject (possible OCR error), or investigate further
 
-The key: **anomaly detection reduces the review burden by 80%**, because reviewers focus on the 1–2% of records that are actually suspicious, instead of manually reviewing everything.
+This catches data quality issues early, before they cascade through calculations.
 
-## The Accuracy Gain
+## Real Example
 
-A mid-market client before CarbonSite: 87% data quality (measured as "plausible values that match supporting documentation").
+A construction company captures waste data from job sites via field submissions. One site reports 50 tonnes of concrete waste in a single day. The system flags it as anomalous (site average is 5 tonnes per day).
 
-Same client, 6 months after: 98% data quality.
+Possible explanations:
+1. OCR error: "50" was actually "5" and decimal was missed
+2. Real event: Concrete removal project scheduled for that day
+3. Measurement error: Weight scale miscalibrated
 
-Why?
-- Automatic anomaly detection flagged 3% of initially-submitted records as suspicious.
-- Manual review found that 70% of flagged records had errors.
-- Corrections were made before data entered the calculation engine.
+Anomaly detection surfaces all three possibilities. The reviewer can:
+- Accept the 50 tonnes with note: "Concrete removal project (planned)"
+- Correct to 5 tonnes if OCR error is obvious
+- Request resubmission with photo/weight confirmation if unsure
 
-Net result: 11-percentage-point improvement in data quality. Their carbon reports are now defensible.
+By the time this data reaches calculations, anomalies have been investigated, not just flagged.
 
-## The Compliance Edge
+## Avoiding False Positives
 
-Auditor conversation, before CarbonSite:
-> "Do you have controls to catch bad data?"
-> "We review it manually."
-> "How do you ensure you catch everything?"
-> "We review everything..."
-> "Do you catch 100% of bad data?"
-> "...no."
-> *Auditor notes deficiency.*
+Anomaly detection can create noise. A facility legitimately spikes for a planned reason. If the system flags every spike as "wrong," users start ignoring alerts (alert fatigue).
 
-Auditor conversation, after CarbonSite:
-> "Do you have controls to catch bad data?"
-> "We use statistical anomaly detection (Z-score, domain rules, temporal patterns) to flag suspicious records. Every flagged record is manually reviewed. We then apply our judgment to approve or reject."
-> "How effective is this?"
-> "Last quarter, we flagged 47 records out of 3,200 submitted (1.5%). Of those, 33 had errors (70% detection rate). We corrected them before calculation."
-> *Auditor approves control.*
+CarbonSite addresses this with:
 
-This is table stakes for passing CSRD audits.
+1. **Confidence Scoring:** Not all anomalies are equally anomalous. A 3.1 sigma spike gets lower confidence than a 5.0 sigma spike.
+2. **Contextual Flagging:** If you note an event (renovation, seasonal change, staffing), system learns and stops flagging similar spikes in the future.
+3. **Peer Comparison:** If 30% of similar facilities spike at the same time, the anomaly becomes normal (seasonal pattern).
+4. **Learning:** After you explain one anomaly type, system recognizes it in the future.
 
-## The ML Estimation Bonus
+Over time, anomaly detection becomes smarter. It flags genuine problems, not noise.
 
-Once you've caught and corrected outliers for 6+ months, CarbonSite's model has clean training data.
+## Getting Started
 
-We use this to build **Scope 3 estimation models**: if you're missing data from a supplier, we predict it based on similar suppliers.
+To use anomaly detection effectively:
 
-Prediction accuracy improves dramatically when the training data is clean.
+1. Let system establish 3-6 months of baseline data
+2. Review flagged anomalies (don't dismiss them all)
+3. For real events (renovations, consolidations), add context notes
+4. System learns from feedback and improves
 
-## The Cost-Benefit
+After 6 months, anomaly detection becomes a powerful tool for catching data quality issues and understanding operational changes.
 
-Time saved per quarter (avoiding one recall/audit finding): 40 hours.
-Cost of NOT catching an outlier (audit finding, report revision, reputation damage): €50k–€200k.
-
-CarbonSite's anomaly detection: €50/month.
-
-ROI: obvious.
-
-## Common False Positives (And How We Handle Them)
-
-Anomaly detection isn't perfect. Sometimes legitimate data gets flagged.
-
-Example: A facility runs a one-time bulk cleanup and submits 10x normal waste. Legitimate. But it triggers the anomaly flag.
-
-CarbonSite's solution: **provide context.**
-
-The review queue shows: "Anomaly detected: 10x above average. Facility submitted note: 'One-time cleanup after equipment replacement.'"
-
-The reviewer can see the contextual note and approve with one click.
-
-Over time, the system learns which types of "anomalies" are false positives (one-time events, seasonal spikes) and refines the thresholds.
-
-## The Path Forward
-
-Outliers corrupt carbon reports. Most platforms don't catch them.
-
-Statistical anomaly detection isn't magic. But it's 10x better than manual review, and it's auditor-approved.
-
----
-
-*Clean data starts with catching outliers. [See CarbonSite anomaly detection in action](#cta).*
+Anomaly detection is not about catching errors. It's about understanding your data.

@@ -1,177 +1,103 @@
 ---
 title: "Open-Source Carbon Accounting: Why Transparency Matters"
-description: "Closed-box carbon tools hide calculation logic. See why CarbonSite publishes everything on GitHub, and why auditors are asking for the same."
-author: "CarbonSite"
-publishedAt: "2026-01-15"
-keywords: ["open-source", "carbon accounting", "transparency", "emissions factors", "audit"]
+description: "Enterprise carbon platforms are black boxes. CarbonSite's open methodology means auditors can verify every calculation. Here's why that matters."
+date: "2026-09-08"
+author: "CarbonSite Team"
+readTime: "7 min read"
+pillar: "Methodology"
+image: "/blog/transparency.jpg"
 ---
 
-# Open-Source Carbon Accounting: Why Transparency Matters
+Most carbon accounting platforms profit from opacity.
 
-Three years ago, a CFO at a €50M manufacturing company asked their external auditors to "show me the calculation" for their carbon footprint.
+A sustainability manager uploads data to the platform, clicks "calculate," and receives a PDF report with totals and charts. When the auditor asks how those totals were derived, the platform's response is: "Trust us. Our model is proprietary."
 
-The auditor opened a laptop and showed them a PDF report. No formulas. No factor sources. No methodology statement. Just a number: 2,847 tonnes CO₂e.
+This is not unreasonable caution. It's the business model. If your calculation methodology is secret, customers can't easily compare you to competitors. Switching costs stay high. Vendor lock-in persists.
 
-The CFO asked: "How do I know this is right?"
+CarbonSite's approach is the opposite: our methodology is public. You can audit our calculations on GitHub.
 
-The auditor said: "You have to trust our software."
+## Why Open Methodology Builds Trust
 
-That's when they started looking for alternatives.
+An immutable principle of financial accounting is reproducibility. If an auditor challenges a number, you provide the formula, the inputs, and a walk-through of the calculation. Carbon accounting should work the same way.
 
-## The Black-Box Problem
+When your calculation methodology is proprietary, you're asking auditors to trust a black box. That works for some platforms, but it creates friction for others. A CFO or board might push back: "How do we know the formula is correct? What if the vendor's factor library is outdated? What if there's a bug we can't see?"
 
-Most carbon accounting platforms are closed systems. You input data, a proprietary engine calculates emissions, you get a dashboard. The methodology? Proprietary. The emission factors? Proprietary. The formula? Proprietary.
+With CarbonSite, the formula is visible. The factor selection logic is visible. The versioning is visible. If an auditor has a question, we can point to the exact code or the exact factor that produced a number.
 
-From a business perspective, it makes sense. Your methodology is a competitive advantage.
+This is not weakness. It's a trust multiplier.
 
-From an audit perspective, it's a disaster.
-
-Here's why:
-
-1. **You can't verify it.** An auditor can't inspect the calculation logic. They have to trust that the software is correct.
-2. **You can't explain it.** When a sustainability manager asks "Why did this facility's footprint jump 30% this year?", you can't trace it. You can only say "The system says so."
-3. **You can't replicate it.** If you need to move platforms (vendor lock-in), you might get different results. Are the new numbers right? Or was the old system wrong?
-4. **You can't detect bias.** If the platform has a bug in one of 5,000 emission factors, you'll never know. Your reports will be consistently, confidently wrong.
-
-Under CSRD, auditors aren't just checking your data. They're checking your *methodology*. They want to see the formulas. They want to audit the factors. They want independent verification that you're calculating correctly.
-
-Closed-box platforms were never designed for that level of scrutiny.
-
-## The SEC Climate Rule Precedent
-
-The SEC's proposed climate disclosure rule (mandatory by 2027) requires companies to:
-- Report Scope 1 and 2 emissions
-- Use "documented methodology" for calculations
-- Provide "consistent" methodology across years
-- Disclose all assumptions and factors used
-
-"Documented methodology" doesn't mean "trust our vendor's proprietary algorithm." It means you need to explain, in writing, how you calculated every number.
-
-If your platform won't show you the methodology, you can't comply.
-
-CarbonSite solves this by publishing everything.
-
-## How CarbonSite Does Open-Source
-
-Our emission calculation engine is public on GitHub: https://github.com/real-sahil/carbonsite/tree/main/lib/calculation
-
-Anyone can:
-- **Read the code.** The formula for computing CO₂e is visible. CH4 × 27.9 (AR6 GWP). N₂O × 273. No magic.
-- **Audit the factors.** Every DEFRA 2025 factor is in the repo. Pinned to a specific version. Dated. Sourced. You can see exactly which factor was used for any calculation.
-- **Trace the history.** Every commit is logged. If we update a factor, you see when, why, and which records are affected.
-- **Run the tests.** We ship unit tests for the calculation engine. You can run them against your own data.
-- **Contribute improvements.** Found an error in the methodology? Open a PR. Spot a missing factor? Propose it.
-
-This isn't vague "transparency theater." This is the actual code that calculates your emissions.
-
-## The Audit Advantage
-
-When an auditor asks "How do you calculate Scope 2?", here's what CarbonSite clients can do:
-
-1. Pull up the GitHub repo.
-2. Show the calculation engine (lines 24–67 in `engine.ts`).
-3. Show the factor selection logic (factor chosen by geography, date, scope-2 method, etc.).
-4. Show the GWP values used (AR6, pinned to 2025 version).
-5. Run a sample record through the code to verify the math.
-
-Auditor confidence: very high.
-
-Contrast with competitors: "You'll have to trust our system."
-
-Auditor confidence: we'll get back to you.
-
-## Why DEFRA and EPA Factors Matter
-
-Every carbon platform uses emission factors. The question is: which ones, and can you see them?
+## What "Open Methodology" Actually Means
 
 CarbonSite publishes:
-- **DEFRA 2025.1** conversion factors (from the UK government)
-- **EPA 2025.1** GHG Hub factors (from the U.S. EPA)
-- **SustainMetrics** sector-specific factors (open license)
 
-For each factor:
-- The source publication
-- The date of publication
-- The unit (kg CO₂e per kg input, per kWh, per £ spend, etc.)
-- Scope (1, 2, or 3)
-- Applicability (what countries, what time periods)
+1. **Factor Library** — DEFRA 2025, EPA 2025, and community factors as searchable CSV. Download the factors we use. Verify they match your expectations. Audit our selections.
 
-A facility using DEFRA electricity factors? You see exactly which DEFRA record was used. You can cross-check it against the official DEFRA spreadsheet (publicly available on gov.uk).
+2. **Calculation Formulas** — Gas-specific emissions calculations (CO2 + CH4×GWP + N2O×GWP) stored with each result. Auditors can reproduce totals exactly.
 
-If DEFRA updates their factors (they do, annually), we track the version change. Your historical calculations are frozen in the version you used. New records use the new version. You'll never accidentally recalculate history.
+3. **Methodology Versioning** — When we update methodology, the version is recorded with the calculation. A report published with methodology v2026-01 used different assumptions than methodology v2027-01. Auditors can see the change.
 
-## The Regulatory Signal
+4. **Source Code** — Our calculation engine is on GitHub. Developers can audit the code. Security researchers can look for bugs. Customers can run the code locally if they want.
 
-CSRD Delegated Acts (EU directive taking effect 2025) require double materiality assessment and disclosure of methodology. The SEC climate rule requires consistent methodology with full transparency.
+5. **Transparency Report** — We publish annually how our factor library is maintained, which external sources we use, when we updated assumptions.
 
-Neither regulation says "open-source." But both regulators are signaling: **companies need to own their methodology, explain it in writing, and stand behind it.**
+## The Competitive Advantage
 
-Closed-box platforms shift that responsibility to the vendor. "Our software calculated it, so it must be right." That won't fly with auditors.
+This sounds risky. Shouldn't hiding the methodology give you an advantage?
 
-Open-source platforms shift it back to the company. "Here's our methodology. Here are the factors. Here's the calculation. We can defend every number."
+In the short term, maybe. Vendor lock-in is real.
 
-That's what regulators actually want.
+In the long term, no. Customers are starting to care more about defensibility than convenience. A finance lead who needs carbon numbers to withstand board scrutiny will choose a platform they can audit over one that's a black box.
 
-## The Customer Example: Retail Chain
+Enterprise platforms like Normative and Persefoni profit from complexity, not from opacity. The reason they're expensive is not that their calculations are secret. It's that their sales process is complex and their integrations are deep.
 
-A €200M retail chain using a competitor's closed-box platform reported 50,000 tonnes CO₂e in Scope 3 emissions (supply chain).
+CarbonSite's advantage is clarity. A customer can evaluate our methodology, decide it's sound, and trust the numbers because they understand how they were derived.
 
-An external auditor asked: "Which factors did you use for transport calculations?"
+## Real Example: Scope 2 Electricity Emissions
 
-The platform couldn't answer. The platform's factors were proprietary.
+Here's what transparency looks like in practice.
 
-The auditor flagged it as "insufficient audit evidence."
+A facility's electricity consumption is 100 MWh for a month. The facility is in California (which uses mostly renewables). If we use location-based method:
 
-The company switched to CarbonSite. Within a week, they could show:
-- Exact factors used (TfL transport coefficients, pinned to specific version)
-- Why those factors were chosen (UK-based supply chain, therefore UK factors)
-- The calculation for each supplier (spend × factor = emissions)
-- Historical factors if they changed year-on-year
+**CarbonSite's approach:**
 
-Auditor confidence: issue resolved.
+1. Take the consumption: 100 MWh
+2. Look up California's grid factor: 0.15 kg CO2e per kWh (available publicly from eGrid)
+3. Calculate: 100 MWh × 1,000 kWh/MWh × 0.15 kg CO2e/kWh = 15,000 kg CO2e
+4. Store the formula: `100 × 1000 × 0.15` and the factor source (eGrid 2025)
+5. Record methodology version: v2026-01
+6. Freeze in immutable calculation row
 
-## The Data Quality Flywheel
+An auditor can see every step. They can verify the eGrid factor is current. They can see exactly when the methodology was updated. They can reproduce the math.
 
-Here's what happens when a platform is open-source:
+**A proprietary platform's approach:**
 
-1. **Errors get found faster.** If a factor is wrong, 10 customers notice within a week. Issues get flagged on GitHub.
-2. **Fixes get shared.** We fix it once, release a patch, all customers benefit.
-3. **Community improves the methodology.** Experts propose factor refinements. We peer-review. Everyone gets better.
-4. **Auditors trust it more.** Because they can verify it independently.
+1. Take the consumption: 100 MWh
+2. Click "calculate"
+3. Result: 15,000 kg CO2e
+4. When auditor asks for the factor and formula: "Contact our sales team"
 
-Closed-box platforms can have bugs for years. Your competitors' bugs. Your factors' bugs. You'll never know.
+The numbers might be identical. The trust is not.
 
-## The Competitive Angle
+## How This Changes Your Reporting
 
-Here's the uncomfortable truth: if your carbon accounting platform won't show you how it calculates, you should ask why.
+When your calculation methodology is transparent, your audit preparation is simpler:
 
-Are they:
-- Hiding a weak methodology?
-- Using outdated factors?
-- Cutting corners to scale quickly?
-- Optimizing for vendor lock-in?
+- Auditors trust the formulas because they can see them
+- You don't need a spreadsheet to "explain" the numbers
+- Your factor selections are defensible because they're documented
+- Version control means you can show exactly what changed between reporting periods
 
-Or are they just following a traditional SaaS model where "proprietary" = "valuable"?
+This reduces audit friction and time. Auditors can focus on data quality and governance, not questioning the math.
 
-For carbon accounting, proprietary is a bug, not a feature.
+## Getting Started
 
-## What Open-Source Doesn't Mean
+If you're currently using a proprietary platform and want visibility into your calculations, CarbonSite makes this simple:
 
-Before you worry: open-source doesn't mean:
+1. Upload your data (CSV or mobile field submissions)
+2. View the calculation methodology on GitHub (or ask our team for a walkthrough)
+3. Review your results with full formula transparency
+4. Export your calculations with all metadata for auditors
 
-- Your data is public. (Your data is encrypted and org-scoped. Only you can see it.)
-- The code is free to use anywhere. (We publish under AGPL, which requires attribution.)
-- You need to maintain the code yourself. (You don't. We do. You get automatic updates.)
-- Random people can change your factors. (All changes go through peer review.)
+We publish our methodology because we believe carbon accounting should be defensible, not just convenient. If you want to audit a platform before adopting it, we're built for that.
 
-It means: you can audit the code. You can verify the math. You can trace every calculation. You can defend your numbers to auditors.
-
-## The Path Forward
-
-CSRD and SEC rules are coming. Auditors are getting tougher. Your CFO needs to sleep at night knowing their carbon data is defensible.
-
-Open-source methodology isn't a luxury. It's table stakes for enterprise carbon accounting.
-
----
-
-*Transparency builds trust. [Explore CarbonSite's open methodology](#cta).*
+The future of carbon accounting isn't hidden calculations with a glossy dashboard. It's transparent methodology that auditors can verify.

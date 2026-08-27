@@ -1,0 +1,132 @@
+---
+title: "Building for Audit: How CarbonSite Ensures Immutability"
+description: "Carbon reports must survive auditor scrutiny. We built immutable snapshots, append-only logs, and versioned formulas so every number is traceable and defensible."
+date: "2026-09-29"
+author: "CarbonSite Team"
+readTime: "9 min read"
+pillar: "Compliance"
+image: "/blog/audit.jpg"
+---
+
+A sustainability manager publishes a carbon report in March showing 10,000 tonnes CO2e for the reporting year. In September, an auditor asks: "How did you calculate this? Can you show me the methodology? Can you show me the source data?"
+
+If your platform updates calculations on the fly or deletes old data, you're in trouble. You can't prove the report was correct on publication day. You can only show the current calculation, which might be different.
+
+This is why immutability matters.
+
+CarbonSite is built with a simple principle: published carbon numbers are frozen. You can't change them retroactively. You can only create a new version with a clear change history.
+
+## Immutability in Practice
+
+When you publish a carbon report in CarbonSite:
+
+1. **Snapshot Creation:** All calculated emissions for the reporting period are frozen into an immutable snapshot.
+2. **Methodology Versioning:** The methodology used (DEFRA 2025, GWP AR6, etc.) is recorded with the snapshot.
+3. **Factor Library Versioning:** The factor library version is recorded (which emission factors were used).
+4. **Formula Storage:** For each calculated emission, the formula is stored (e.g., "100 MWh × 1,000 × 0.15 = 15,000 kg CO2e").
+5. **Audit Trail:** Every step from data ingestion to calculation to publication is logged.
+
+If you recalculate later (because you found an error in input data), you create a new snapshot with a version number. You don't overwrite the old one.
+
+An auditor can ask: "Show me how you calculated the number on publication day." You can show exactly that: the snapshot, the methodology, the factors, the formulas. Nothing was changed retroactively.
+
+## Append-Only Audit Logs
+
+Every action in CarbonSite is logged to an append-only audit trail:
+
+- Who imported data (user identity + IP address)
+- What data was imported (file name, row count, checksum)
+- When calculations ran (timestamp, methodology version)
+- Who reviewed field submissions (user, decision, timestamp)
+- When reports were published (timestamp, formula versions)
+- When data was corrected (old value, new value, reason)
+
+These logs can never be edited or deleted. They're cryptographically hashed so tampering is detectable.
+
+If an auditor asks "When did this data enter the system?" or "Who approved it?", you have a complete record.
+
+## Versioning and Change History
+
+When you update your factor library (because DEFRA released new 2027 factors), calculations change. A facility's 2026 emissions might recalculate differently under the new factors.
+
+CarbonSite handles this with versioning:
+
+- Old reports stay frozen with old factors (v2026-01)
+- New calculations use new factors (v2027-01)
+- Your dashboard can show both the old number and the new number
+- Auditors can see exactly what changed and why
+
+This is crucial for audit readiness. If a factor changes mid-stream, you need to know which version applied to which report.
+
+## SHA-256 Hash Chains
+
+To prevent tampering, each audit log entry includes a SHA-256 hash of the previous entry plus the current entry. If someone modifies a log entry, the hash chain breaks and tampering is immediately detectable.
+
+This is the same technique used in blockchain and in financial audit logs. It provides cryptographic proof that the log has not been altered.
+
+## Real Audit Scenario
+
+Here's what an audit looks like with immutable snapshots:
+
+**Auditor:** "Your 2025 carbon report shows 50,000 tonnes CO2e. How is this calculated?"
+
+**You:** "I'll show you the frozen snapshot from publication day."
+
+You pull up the snapshot published March 15, 2026. It shows:
+- Total emissions: 50,000 tonnes CO2e
+- Methodology version: ghg-protocol-v2026-01
+- Factor library: DEFRA 2025.1, EPA GHG Hub 2025, SustainMetrics 2025
+- Scope 1: 5,000 tonnes (formula: fuel burned × factor)
+- Scope 2: 15,000 tonnes (formula: electricity × factor)
+- Scope 3: 30,000 tonnes (formula: supplier data × factor)
+
+**Auditor:** "Can you show me the Scope 3 calculation?"
+
+You pull up the individual calculation rows. Each shows:
+- Input: Supplier invoice for 100 tonnes of materials
+- Factor applied: 0.30 kg CO2e per kg material
+- Result: 30 tonnes CO2e
+- Formula stored: 100 × 0.30 = 30
+- Source: Captured via field submission on Jan 5, 2026
+
+**Auditor:** "Can you show me the original field submission?"
+
+You pull up the field submission. It shows:
+- Photo of supplier invoice (timestamp + GPS coordinates)
+- OCR extraction result: "100 tonnes" and "materials"
+- Sustainability manager review: "Approved" (timestamp + signature)
+- Calculation result: 30 tonnes CO2e
+
+Everything is there. Everything is frozen. Everything is traced.
+
+This is audit-ready carbon accounting.
+
+## How Recalculation Works (When Needed)
+
+Sometimes data quality issues emerge after publication. A field submission was incorrectly approved. An OCR error was discovered. A calculation bug was found.
+
+In this case, you don't change the old report. You:
+
+1. Correct the input data
+2. Re-run calculation with new data
+3. Create a new snapshot (v2)
+4. Document the change: "Corrected OCR error in submission X. Recalculated on [date]."
+5. Publish new report alongside the old one
+
+Your audit trail now shows: "Published v1 on March 15, 2026 (50,000 tonnes). Corrected OCR error discovered September 1, 2026. Published v2 on September 2, 2026 (49,900 tonnes)."
+
+An auditor can see the full history. No post-hoc changes. No retroactive adjustments.
+
+## Getting Started with Audit-Ready Systems
+
+If you're currently using platforms that don't version calculations or that update numbers retroactively, this is a red flag for audit readiness.
+
+With CarbonSite, audit preparation is built in:
+
+1. Publish your report (creates frozen snapshot)
+2. Keep your source documents (photos, invoices, data files)
+3. If auditor questions a number, pull up the snapshot
+4. Show the formula, the factors, the source data
+5. If errors are found, create a new version, don't overwrite
+
+The key insight: audit-ready carbon accounting is not about having perfect data. It's about being able to explain and defend your data with a complete evidence trail.
