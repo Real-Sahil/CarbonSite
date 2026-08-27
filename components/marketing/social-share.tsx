@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Share2, Link as LinkIcon, Linkedin, Twitter, Mail, Check } from 'lucide-react';
+import { Share2, Link as LinkIcon, Mail, Check } from 'lucide-react';
 
 interface SocialShareProps {
   title: string;
@@ -54,7 +54,7 @@ export function SocialShare({ title, description, url, className = '' }: SocialS
           className="p-2 rounded-lg bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-600 transition-colors"
           title="Share on Twitter/X"
         >
-          <Twitter className="w-5 h-5" />
+          <Share2 className="w-5 h-5" />
         </button>
 
         {/* LinkedIn Share */}
@@ -63,7 +63,7 @@ export function SocialShare({ title, description, url, className = '' }: SocialS
           className="p-2 rounded-lg bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-700 transition-colors"
           title="Share on LinkedIn"
         >
-          <Linkedin className="w-5 h-5" />
+          <Share2 className="w-5 h-5" />
         </button>
 
         {/* Email Share */}
@@ -106,7 +106,7 @@ export function SocialShareRow({ title, description, url }: SocialShareProps) {
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-sm font-medium"
       >
-        <Twitter className="w-4 h-4" />
+        <Share2 className="w-4 h-4" />
         Share on X
       </a>
 
@@ -116,7 +116,7 @@ export function SocialShareRow({ title, description, url }: SocialShareProps) {
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-sm font-medium"
       >
-        <Linkedin className="w-4 h-4" />
+        <Share2 className="w-4 h-4" />
         Share on LinkedIn
       </a>
 
@@ -157,7 +157,7 @@ export function ShareButton({ title, description, url }: SocialShareProps) {
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               title="Share on Twitter/X"
             >
-              <Twitter className="w-4 h-4 text-blue-600" />
+              <Share2 className="w-4 h-4 text-blue-600" />
             </a>
             <a
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`}
@@ -166,7 +166,7 @@ export function ShareButton({ title, description, url }: SocialShareProps) {
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               title="Share on LinkedIn"
             >
-              <Linkedin className="w-4 h-4 text-blue-700" />
+              <Share2 className="w-4 h-4 text-blue-700" />
             </a>
             <a
               href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(description)}\n\n${encodeURIComponent(url)}`}
