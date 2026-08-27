@@ -28,12 +28,67 @@ SELECT rolname, rolbypassrls FROM pg_roles WHERE rolname = 'postgres';
 -- Expected: postgres | t
 ```
 
+## Environment Variables Setup
+
+### Setting Environment Variables on Vercel
+
+1. Go to your Vercel project dashboard: https://vercel.com/dashboard
+2. Select your CarbonSite project
+3. Click Settings → Environment Variables
+4. Add the following variables:
+
+#### Required for All Deployments
+```
+DATABASE_URL          (Neon Postgres connection string)
+DIRECT_URL            (Same as DATABASE_URL for serverless functions)
+BETTER_AUTH_SECRET    (Generate: openssl rand -hex 32)
+BETTER_AUTH_URL       (Your production domain, e.g., https://carbonsite.example.com)
+TRUSTED_ORIGINS       (Same as BETTER_AUTH_URL)
+NEXT_PUBLIC_APP_URL   (Same as BETTER_AUTH_URL)
+```
+
+#### Payment Processing (Stripe) — Currently Using Test Keys
+```
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_51234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmn"
+STRIPE_SECRET_KEY="sk_test_4eC39HqLyjWDarhtT7sF6Z8j2xyS6ZZH8byE9kJWh9mEPt3p8V8u"
+STRIPE_WEBHOOK_SECRET="whsec_test_1234567890abcdefghijklmnopqrstuvwxyz"
+```
+
+**Note:** These are dummy test keys. When you have a Stripe account:
+1. Go to https://dashboard.stripe.com/apikeys
+2. Copy your test publishable key (pk_test_...) and secret key (sk_test_...)
+3. Update the Vercel environment variables with your actual keys
+4. For production, use the live keys (pk_live_... and sk_live_)
+
+#### Optional for Enhanced Features
+```
+STORAGE_DRIVER=r2       (Cloudflare R2 or "db" for serverless)
+RESEND_API_KEY          (For transactional emails)
+EMAIL_FROM              (Sender email address)
+FIREBASE_SERVICE_ACCOUNT_JSON  (For Flutter push notifications)
+```
+
+### Stripe Test Mode Setup (No Account Required)
+
+For development and testing without a Stripe account, the dummy keys above are sufficient. They allow:
+- UI rendering (forms, dialogs)
+- API endpoint validation
+- Error handling testing
+
+To actually process payments later:
+1. Create a Stripe account: https://stripe.com
+2. Get your test API keys from the dashboard
+3. Update all three Stripe env vars on Vercel
+4. Test with Stripe's test card numbers (e.g., 4242 4242 4242 4242)
+
 ## Deployment Steps
 
 1. ✓ Verify dependencies are up-to-date (pnpm audit --prod)
 2. ✓ Run typecheck and tests locally
 3. ✓ Create and test migrations on a staging database
 4. ✓ Verify RLS bypass status (`pnpm check:rls-bypass`)
-5. Deploy migrations (`pnpm prisma migrate deploy` on production)
-6. Deploy application code to Vercel/production environment
-7. Monitor error tracking (Sentry) for the first 30 minutes
+5. ✓ Set environment variables on Vercel (see above)
+6. Deploy migrations (`pnpm prisma migrate deploy` on production)
+7. Deploy application code to Vercel/production environment
+8. Monitor error tracking (Sentry) for the first 30 minutes
+9. Verify payment forms render correctly (Settings → Billing → Payment Methods)
