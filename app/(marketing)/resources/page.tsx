@@ -97,7 +97,7 @@ export default function ResourcesPage() {
         <VideoBackground
           src="/videos/hero-resources.mp4"
           fallbackGradient="linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
-          overlayOpacity={0.50}
+          overlayOpacity={0.25}
         />
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>

@@ -53,7 +53,13 @@ function appOrigin(): string {
   const configured = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL;
   if (configured) return configured.replace(/\/$/, "");
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "";
+  // Critical: return localhost for dev, throw in production
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "CRITICAL: appOrigin() could not determine app origin. Set NEXT_PUBLIC_APP_URL or BETTER_AUTH_URL in production environment.",
+    );
+  }
+  return "http://localhost:3000";
 }
 
 // ── R2 client (only initialised when driver = r2) ────────────────────────────

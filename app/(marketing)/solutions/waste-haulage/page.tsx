@@ -49,7 +49,7 @@ export default function WasteHaulagePage() {
 
       {/* Hero */}
       <section className="relative min-h-[65vh] flex items-end overflow-hidden">
-        <VideoBackground src="/videos/hero-waste.mp4" overlayOpacity={0.60} />
+        <VideoBackground src="/videos/hero-waste.mp4" overlayOpacity={0.30} />
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
