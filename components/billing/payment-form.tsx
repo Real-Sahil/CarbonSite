@@ -53,14 +53,18 @@ export function PaymentForm({
       }
 
       if (setupIntent?.status === 'succeeded' && setupIntent.payment_method) {
-        await fetch(`/api/orgs/${orgId}/billing/payment-methods`, {
+        const response = await fetch(`/api/orgs/${orgId}/billing/payment-methods`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             setupIntentId: setupIntent.id,
-            paymentMethodId: setupIntent.payment_method,
           }),
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to save payment method');
+        }
 
         onSuccess();
       } else {
