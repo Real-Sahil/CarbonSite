@@ -200,6 +200,8 @@ model Organization {
   auditEvents                 AuditEvent[]
   dataQualityChecks           DataQualityCheck[]
   importBatchQualityScores    ImportBatchQualityScore[]
+  stagedExternalData          StagedExternalData[]
+  airbyteSyncConnections      AirbyteSyncConnection[]
 
   @@map("organizations")
 }
@@ -2525,4 +2527,49 @@ model AuditEvent {
   @@index([organizationId, tableName])
   @@index([organizationId, tableName, recordId])
   @@map("audit_events")
+}
+
+// ─── Phase 2A: Airbyte Data Integration ──────────────────────────────────────
+
+model StagedExternalData {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId    String    @map("organization_id") @db.Uuid
+  sourceSystem      String    @map("source_system") // 'salesforce', 'sap', 'aws_iot', etc.
+  sourceRecordId    String    @map("source_record_id")
+  dataType          String    @map("data_type") // 'facility_spend', 'material_cost', 'energy_consumption'
+  payload           Json
+  extractedAt       DateTime  @map("extracted_at")
+  processed         Boolean   @default(false)
+  processedAt       DateTime? @map("processed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, sourceSystem, sourceRecordId])
+  @@index([organizationId, sourceSystem, processed])
+  @@index([organizationId, dataType, processed])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("staged_external_data")
+}
+
+model AirbyteSyncConnection {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId      String    @map("organization_id") @db.Uuid
+  sourceSystem        String    @map("source_system") // 'salesforce', 'sap', 'aws_iot'
+  airbytConnectionId  String?   @map("airbyte_connection_id")
+  airbytSourceId      String?   @map("airbyte_source_id")
+  airbytDestinationId String?   @map("airbyte_destination_id")
+  config              Json      // Connection-specific configuration (credentials, mappings, etc.)
+  enabled             Boolean   @default(true)
+  lastSyncAt          DateTime? @map("last_sync_at")
+  lastSyncStatus      String?   @map("last_sync_status") // 'success', 'failed', 'partial'
+  syncFrequency       String    @default("daily") @map("sync_frequency") // 'daily', 'weekly', 'manual'
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, sourceSystem, enabled])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("airbyte_sync_connections")
 }
