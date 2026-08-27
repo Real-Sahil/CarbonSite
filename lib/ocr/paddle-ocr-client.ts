@@ -153,7 +153,7 @@ export class PaddleOcrApiClient {
   async healthCheck(): Promise<boolean> {
     try {
       const response = await fetch(`${this.apiUrl}/health`, {
-        timeout: this.timeoutMs,
+        signal: AbortSignal.timeout(this.timeoutMs),
       });
       return response.ok;
     } catch {

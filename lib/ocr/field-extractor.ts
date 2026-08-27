@@ -231,16 +231,18 @@ export function mergeWithUserCorrections(
 
   Object.entries(userInput).forEach(([key, value]) => {
     if (value !== undefined && value !== null && key !== "confidence") {
-      merged[key as keyof WasteField] = value;
+      // Safe to cast since we've excluded "confidence"
+      (merged as Record<string, unknown>)[key] = value;
     }
   });
 
   // Recalculate confidence for corrected fields
-  if (merged.confidence) {
+  const confidence = merged.confidence;
+  if (confidence) {
     Object.entries(userInput).forEach(([key]) => {
-      if (key !== "confidence" && key in merged.confidence) {
+      if (key !== "confidence" && key in confidence) {
         // User-corrected fields get 1.0 confidence
-        merged.confidence![key as keyof typeof merged.confidence] = 1.0;
+        (confidence as Record<string, number>)[key] = 1.0;
       }
     });
   }
