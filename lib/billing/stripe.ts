@@ -1,18 +1,24 @@
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  console.warn('STRIPE_SECRET_KEY is not set in environment variables');
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not set in environment variables');
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-02-24.acacia' as any, // Type assertion for version compatibility
+    });
+  }
+  return stripe;
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia' as any, // Type assertion for version compatibility
-});
-
-export { stripe };
+export { getStripe };
 
 export async function createOrGetStripeCustomer(orgId: string, email: string) {
   // Create a new Stripe customer for the organization
-  const customer = await stripe.customers.create({
+  const customer = await getStripe().customers.create({
     email,
     metadata: {
       organizationId: orgId,
@@ -24,7 +30,7 @@ export async function createOrGetStripeCustomer(orgId: string, email: string) {
 
 export async function createSetupIntent(customerId: string) {
   // Create a SetupIntent for capturing payment method details
-  const setupIntent = await stripe.setupIntents.create({
+  const setupIntent = await getStripe().setupIntents.create({
     customer: customerId,
     payment_method_types: ['card'],
   });
@@ -34,7 +40,7 @@ export async function createSetupIntent(customerId: string) {
 
 export async function confirmSetupIntent(setupIntentId: string) {
   // Retrieve and confirm a SetupIntent
-  const setupIntent = await stripe.setupIntents.retrieve(setupIntentId);
+  const setupIntent = await getStripe().setupIntents.retrieve(setupIntentId);
 
   if (setupIntent.status !== 'succeeded') {
     throw new Error(`SetupIntent not in succeeded state: ${setupIntent.status}`);
@@ -45,13 +51,13 @@ export async function confirmSetupIntent(setupIntentId: string) {
 
 export async function getPaymentMethod(paymentMethodId: string) {
   // Retrieve payment method details from Stripe
-  const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+  const paymentMethod = await getStripe().paymentMethods.retrieve(paymentMethodId);
   return paymentMethod;
 }
 
 export async function setDefaultPaymentMethod(customerId: string, paymentMethodId: string) {
   // Set a payment method as default for a customer
-  const customer = await stripe.customers.update(customerId, {
+  const customer = await getStripe().customers.update(customerId, {
     invoice_settings: {
       default_payment_method: paymentMethodId,
     },
@@ -62,13 +68,13 @@ export async function setDefaultPaymentMethod(customerId: string, paymentMethodI
 
 export async function detachPaymentMethod(paymentMethodId: string) {
   // Detach a payment method from a customer
-  const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
+  const paymentMethod = await getStripe().paymentMethods.detach(paymentMethodId);
   return paymentMethod;
 }
 
 export async function getCustomerPaymentMethods(customerId: string) {
   // List all payment methods for a customer
-  const paymentMethods = await stripe.paymentMethods.list({
+  const paymentMethods = await getStripe().paymentMethods.list({
     customer: customerId,
     type: 'card',
   });
