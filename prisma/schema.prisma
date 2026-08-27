@@ -69,6 +69,7 @@ model User {
   customEmissionFactorsCreated      OrganizationEmissionFactor[] @relation("CustomFactorCreator")
   anomaliesAcknowledged             SupplierAnomaly[]            @relation("AnomalyAcknowledger")
   scope3EstimatesAccepted           Scope3Estimate[]             @relation("Scope3EstimatesAccepted")
+  ssoSessions                       SsoSession[]                 @relation("SsoSessions")
 
   platformMembership PlatformMembership?
 
@@ -205,6 +206,11 @@ model Organization {
   airbyteSyncConnections      AirbyteSyncConnection[]
   scope3EstimationModels      Scope3EstimationModel[] @relation("EstimationModels")
   scope3Estimates             Scope3Estimate[]      @relation("Scope3Estimates")
+  supplierPerformance         SupplierPerformance[]     @relation("supplierPerformanceOrg")
+  suppliedToPerformance       SupplierPerformance[]     @relation("supplierPerformanceSupplier")
+  auditContexts               AuditContext[]            @relation("AuditContexts")
+  ssoConfiguration            SsoConfiguration?         @relation("SsoConfigurations")
+  ssoSessions                 SsoSession[]              @relation("SsoSessions")
 
   @@map("organizations")
 }
@@ -810,6 +816,8 @@ model FieldSubmission {
   siteId                    String?               @map("site_id")
   contractId                String?               @map("contract_id")
   deviceSubmittedAt         DateTime?             @map("device_submitted_at")
+  requestedByDeadline       DateTime?             @map("requested_by_deadline")
+  submittedAt               DateTime?             @map("submitted_at")
   idempotencyKey            String?               @map("idempotency_key")
   createdAt                 DateTime              @default(now()) @map("created_at")
   updatedAt                 DateTime              @updatedAt @map("updated_at")
@@ -828,6 +836,7 @@ model FieldSubmission {
   @@unique([organizationId, submittedByUserId, idempotencyKey], map: "field_submission_idempotency_key")
   @@index([organizationId, status, createdAt])
   @@index([organizationId, submittedByUserId])
+  @@index([organizationId, requestedByDeadline, submittedAt])
   @@map("field_submissions")
 }
 
@@ -842,6 +851,30 @@ model FieldSubmissionFile {
 
   @@unique([fieldSubmissionId, evidenceFileId])
   @@map("field_submission_files")
+}
+
+// ─── Supplier Performance ────────────────────────────────────────────────────
+
+model SupplierPerformance {
+  id                      String   @id @default(cuid())
+  organizationId          String   @map("organization_id")
+  supplierId              String   @map("supplier_id") // References Organization.id (external supplier org)
+  submissionCount         Int      @default(0) @map("submission_count")
+  approvedCount           Int      @default(0) @map("approved_count")
+  rejectedCount           Int      @default(0) @map("rejected_count")
+  onTimeCount             Int      @default(0) @map("on_time_count")
+  completenessScore       Decimal? @db.Decimal(5, 2) @map("completeness_score")
+  dataQualityScore        Decimal? @db.Decimal(5, 2) @map("data_quality_score")
+  lastDataQualityTrend    String?  @map("last_data_quality_trend") // "improving", "stable", "declining"
+  updatedAt               DateTime @updatedAt @map("updated_at")
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceOrg")
+  supplier     Organization @relation(fields: [supplierId], references: [id], onDelete: Cascade, name: "supplierPerformanceSupplier")
+
+  @@unique([organizationId, supplierId])
+  @@index([organizationId])
+  @@map("supplier_performance")
 }
 
 // ─── Emission Factors ─────────────────────────────────────────────────────────
@@ -1402,6 +1435,7 @@ model AuditLog {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   actor        User?        @relation(fields: [actorUserId], references: [id])
+  auditContexts AuditContext[] @relation("AuditContexts")
 
   @@index([organizationId, resourceType, resourceId])
   @@index([organizationId, createdAt])
@@ -2639,4 +2673,71 @@ model Scope3Estimate {
   @@index([organizationId, createdAt(sort: Desc)])
   @@index([estimationModelId])
   @@map("scope3_estimates")
+}
+
+// ─── Audit & Compliance ──────────────────────────────────────────────────────
+
+model AuditContext {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  auditLogId      String   @map("audit_log_id")
+  framework       String   // 'csrd', 'sbti', 'cdp', 'ghg-protocol', 'iso-14064'
+  resourceType    String   @map("resource_type") // 'emission_calculation', 'activity_record', 'snapshot', 'report'
+  resourceId      String   @map("resource_id")
+  contextMetadata Json?    @map("context_metadata") // Framework-specific metadata
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation("AuditContexts", fields: [organizationId], references: [id], onDelete: Cascade)
+  auditLog     AuditLog     @relation("AuditContexts", fields: [auditLogId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, framework, resourceType, resourceId])
+  @@index([organizationId, auditLogId])
+  @@map("audit_contexts")
+}
+
+// ─── SSO & Enterprise Auth ───────────────────────────────────────────────────
+
+model SsoConfiguration {
+  id                String   @id @default(cuid())
+  organizationId    String   @unique @map("organization_id")
+  provider          String   // 'okta', 'azure_ad', 'google_workspace', 'generic_oidc', 'saml'
+  enabled           Boolean  @default(true)
+  metadataUrl       String?  @map("metadata_url")
+  clientId          String   @map("client_id")
+  clientSecret      String   @map("client_secret") // Encrypted in transit
+  idpEntityId       String?  @map("idp_entity_id") // For SAML
+  ssoUrl            String?  @map("sso_url") // For SAML
+  certificateX509   String?  @map("certificate_x509") // For SAML validation
+  autoCreateUsers   Boolean  @default(true) @map("auto_create_users")
+  autoAssignRole    String?  @default("viewer") @map("auto_assign_role") // admin | editor | reviewer | viewer | field_worker
+  requireMfa        Boolean  @default(false) @map("require_mfa")
+  syncAttributes    Json?    @map("sync_attributes") // Maps IdP claims to user fields
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation("SsoConfigurations", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("sso_configurations")
+}
+
+model SsoSession {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  userId          String   @map("user_id")
+  provider        String
+  providerUserId  String   @map("provider_user_id")
+  idpSessionId    String?  @map("idp_session_id") // To track sessions at IdP level
+  accessToken     String?  @map("access_token")
+  refreshToken    String?  @map("refresh_token")
+  tokenExpiresAt  DateTime? @map("token_expires_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  lastActivityAt  DateTime @default(now()) @updatedAt @map("last_activity_at")
+
+  organization Organization @relation("SsoSessions", fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("SsoSessions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, userId])
+  @@index([organizationId, provider])
+  @@unique([organizationId, providerUserId])
+  @@map("sso_sessions")
 }

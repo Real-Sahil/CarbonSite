@@ -1,0 +1,112 @@
+/**
+ * Server-Sent Events endpoint for real-time dashboard updates.
+ * GET /api/orgs/:orgId/dashboard/stream
+ *
+ * Streams DashboardAggregate updates as calculation runs complete.
+ * Client opens persistent connection; server sends events as they occur.
+ * Automatic reconnection on connection loss (client-side).
+ *
+ * Response format (text/event-stream):
+ * data: {aggregates, timestamp, calculationRunId}
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { requireOrgMember } from "@/lib/auth/session";
+import { subscriptionManager } from "@/lib/realtime/subscription-manager";
+
+type Params = { params: Promise<{ orgId: string }> };
+
+export async function GET(_req: NextRequest, { params }: Params) {
+  try {
+    const { orgId } = await params;
+
+    // Verify org membership and role (viewers can see live dashboard)
+    await requireOrgMember(
+      orgId,
+      "admin",
+      "editor",
+      "reviewer",
+      "viewer",
+      "auditor"
+    );
+
+    // Set up SSE headers
+    const headers = new Headers({
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no", // Disable Nginx buffering
+    });
+
+    // Create custom readable stream
+    let isConnected = true;
+    const encoder = new TextEncoder();
+
+    const stream = new ReadableStream({
+      start(controller) {
+        // Send initial comment to verify connection
+        controller.enqueue(encoder.encode(": connected\n\n"));
+
+        // Subscribe to dashboard updates
+        const unsubscribe = subscriptionManager.subscribe(orgId, (update) => {
+          if (!isConnected) return;
+
+          try {
+            const data = JSON.stringify({
+              aggregates: update.aggregates,
+              timestamp: update.timestamp.toISOString(),
+              calculationRunId: update.calculationRunId,
+            });
+
+            controller.enqueue(
+              encoder.encode(`data: ${data}\n\n`)
+            );
+          } catch (err) {
+            console.error(`Error sending SSE update: ${err}`);
+            isConnected = false;
+            controller.close();
+          }
+        });
+
+        // Store unsubscribe function for cleanup
+        const originalClose = controller.close.bind(controller);
+        controller.close = () => {
+          isConnected = false;
+          unsubscribe();
+          originalClose();
+        };
+
+        // Send heartbeat every 30 seconds to keep connection alive
+        const heartbeatInterval = setInterval(() => {
+          if (!isConnected) {
+            clearInterval(heartbeatInterval);
+            return;
+          }
+          try {
+            controller.enqueue(encoder.encode(": heartbeat\n\n"));
+          } catch {
+            isConnected = false;
+            clearInterval(heartbeatInterval);
+          }
+        }, 30000);
+
+        // Cleanup on controller close
+        // Handle abort signal
+        const typedController = controller as unknown as { signal?: AbortSignal };
+        typedController.signal?.addEventListener("abort", () => {
+          isConnected = false;
+          clearInterval(heartbeatInterval);
+          unsubscribe();
+        });
+      },
+    });
+
+    return new NextResponse(stream, { headers });
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Unauthorized")) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    console.error(`Dashboard stream error: ${error}`);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
+}

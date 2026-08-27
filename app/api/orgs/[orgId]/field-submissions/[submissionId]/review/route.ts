@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { reviewFieldSubmissionSchema } from "@/lib/validation/records";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
+import { enqueueSupplierPerformanceUpdate } from "@/lib/jobs/queues/index";
 import {
   approvalBlocker,
   approveSubmissionInTx,
@@ -133,6 +134,24 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }).catch((err) =>
       console.error("[field-submissions] Failed to dispatch review notification:", err),
     );
+
+    // Update supplier performance metrics after review
+    const submitterMembership = await prisma.organizationMembership.findFirst({
+      where: { userId: submission.submittedByUserId },
+      select: { organizationId: true },
+    });
+
+    if (submitterMembership) {
+      await enqueueSupplierPerformanceUpdate({
+        orgId,
+        supplierId: submitterMembership.organizationId,
+      }).catch((err) =>
+        console.error(
+          `[field-submissions] Failed to enqueue supplier performance update for ${submitterMembership.organizationId}:`,
+          err,
+        ),
+      );
+    }
 
     return NextResponse.json(updated);
   } catch (err) {
