@@ -5,6 +5,7 @@
 import type { AuditLog } from "@prisma/client";
 import { brandStyles, brandLogoHtml } from "./templates/shared";
 import { buildAuditTrailHtml } from "./audit-trail-section";
+import type { AuditNarrative } from "./narrative-generator";
 
 export type ReportData = {
   orgName: string;
@@ -34,6 +35,7 @@ export type ReportData = {
   };
   auditEvents?: AuditLog[];
   confidentialityNotice?: string;
+  narrative?: AuditNarrative;
 };
 
 const REPORT_TYPE_TITLES: Record<string, string> = {
@@ -181,6 +183,21 @@ export function renderReportHtml(data: ReportData): string {
       <div class="value" style="font-size:22px">${data.recordCount}</div>
     </div>
   </div>
+
+  ${data.narrative ? `<h2>Executive Summary</h2>
+  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:16px;margin-bottom:28px;line-height:1.6;font-size:11px;color:#334155">
+    ${escapeHtml(data.narrative.executive_summary).replace(/\n/g, "<br>")}
+  </div>
+
+  ${data.narrative.key_findings.length > 0 ? `<h3 style="font-size:12px;font-weight:600;margin:16px 0 8px;color:#0f172a">Key Findings</h3>
+  <ul style="margin-left:20px;margin-bottom:16px;font-size:10px;color:#334155;line-height:1.5">
+    ${data.narrative.key_findings.map((f) => `<li style="margin-bottom:4px">${escapeHtml(f)}</li>`).join("")}
+  </ul>` : ""}
+
+  ${data.narrative.recommendations ? `<h3 style="font-size:12px;font-weight:600;margin:16px 0 8px;color:#0f172a">Recommendations</h3>
+  <div style="background:#f0fdf4;border-left:3px solid #22c55e;padding:12px;margin-bottom:20px;font-size:10px;color:#334155;line-height:1.5">
+    ${escapeHtml(data.narrative.recommendations).replace(/\n/g, "<br>")}
+  </div>` : ""}` : ""}
 
   <h2>Emissions by scope</h2>
   ${scopeBars}
