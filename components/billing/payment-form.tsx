@@ -5,6 +5,13 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
+function sanitizeStripeErrorMessage(message: string): string {
+  if (!message) return 'Payment processing failed';
+  const apiKeyPattern = /sk_(test|live)_[a-zA-Z0-9]{24,}/g;
+  const sanitized = message.replace(apiKeyPattern, '[API_KEY_REDACTED]');
+  return sanitized || 'Payment processing failed';
+}
+
 interface PaymentFormProps {
   setupIntentId: string;
   clientSecret: string;
@@ -49,7 +56,8 @@ export function PaymentForm({
       });
 
       if (stripeError) {
-        throw new Error(stripeError.message);
+        const sanitizedMessage = sanitizeStripeErrorMessage(stripeError.message || '');
+        throw new Error(sanitizedMessage);
       }
 
       if (setupIntent?.status === 'succeeded' && setupIntent.payment_method) {
