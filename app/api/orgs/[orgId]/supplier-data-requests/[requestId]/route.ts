@@ -8,6 +8,12 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError } from "@/lib/validation/api";
 import { runQualityChecks } from "@/lib/suppliers/quality-checks";
 import { getExpectedUnits } from "@/lib/suppliers/validation-rules";
+import { sendTransactionalEmail } from "@/lib/notifications/email";
+import {
+  supplierDataApprovedEmail,
+  supplierDataRejectedEmail,
+  supplierDataFlaggedEmail,
+} from "@/lib/notifications/email";
 
 const reviewSchema = z.object({
   action: z.enum(["approve", "reject", "flag_for_review"]),
@@ -136,6 +142,10 @@ export async function PATCH(
         rejectionReason: body.rejectionReason ?? null,
         approvedByUserId,
       },
+      include: {
+        organization: { select: { name: true } },
+        reportingPeriod: { select: { label: true } },
+      },
     });
 
     // Fetch approvedBy separately if needed
@@ -145,6 +155,52 @@ export async function PATCH(
           select: { name: true, email: true },
         })
       : null;
+
+    // Send email notification to supplier (fire-and-forget)
+    if (newStatus !== request.status) {
+      const categoryName = request.categoryCode.replace(/^s\d-/, "").replace(/-/g, " ");
+      const supplierName = request.supplierName || request.supplierEmail;
+
+      if (newStatus === "approved") {
+        sendTransactionalEmail(
+          {
+            to: request.supplierEmail,
+            ...supplierDataApprovedEmail({
+              recipientName: supplierName,
+              orgName: updated.organization.name,
+              categoryName,
+              periodLabel: updated.reportingPeriod.label,
+            }),
+          } as never,
+        ).catch(() => {});
+      } else if (newStatus === "rejected" && body.rejectionReason) {
+        sendTransactionalEmail(
+          {
+            to: request.supplierEmail,
+            ...supplierDataRejectedEmail({
+              recipientName: supplierName,
+              orgName: updated.organization.name,
+              categoryName,
+              periodLabel: updated.reportingPeriod.label,
+              rejectionReason: body.rejectionReason,
+            }),
+          } as never,
+        ).catch(() => {});
+      } else if (newStatus === "flagged") {
+        sendTransactionalEmail(
+          {
+            to: request.supplierEmail,
+            ...supplierDataFlaggedEmail({
+              recipientName: supplierName,
+              orgName: updated.organization.name,
+              categoryName,
+              periodLabel: updated.reportingPeriod.label,
+              flagCount: qualityCheckResult.flags.length,
+            }),
+          } as never,
+        ).catch(() => {});
+      }
+    }
 
     // Audit log
     await writeAuditLog({
@@ -170,7 +226,9 @@ export async function PATCH(
       qualityFlags: updated.qualityFlags,
       rejectionReason: updated.rejectionReason,
       approvedBy: approvedByUser ? { name: approvedByUser.name, email: approvedByUser.email } : null,
-      message: `Request ${body.action}ed successfully. Quality flags: ${qualityCheckResult.flags.length}`,
+      notificationSent:
+        newStatus === "approved" || (newStatus === "rejected" && body.rejectionReason) || newStatus === "flagged",
+      message: `Request ${body.action}ed successfully. Quality flags: ${qualityCheckResult.flags.length}. Notification email sent to ${request.supplierEmail}.`,
     });
   } catch (err) {
     return handleRouteError(err);

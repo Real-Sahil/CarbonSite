@@ -197,3 +197,125 @@ export function supplierDataRequestEmail(params: {
 
   return { subject, html, text };
 }
+
+export function supplierDataApprovedEmail(params: {
+  recipientName: string;
+  orgName: string;
+  categoryName: string;
+  periodLabel: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Your emissions data has been approved`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `Thank you for submitting your emissions data to ${params.orgName}.`,
+    ``,
+    `Your submission for the following has been approved and accepted:`,
+    ``,
+    `  Category: ${params.categoryName}`,
+    `  Reporting period: ${params.periodLabel}`,
+    ``,
+    `Your data will be included in ${params.orgName}'s GHG inventory.`,
+    ``,
+    `No further action is required.`,
+    ``,
+    `Best regards,`,
+    `The CarbonSite team`,
+  ].join("\n");
+
+  const html = `
+<p>Hi ${params.recipientName},</p>
+<p>Thank you for submitting your emissions data to <strong>${params.orgName}</strong>.</p>
+<p>Your submission for the following has been <strong style="color:#16a34a;">approved and accepted:</strong></p>
+<table style="border-collapse:collapse;margin:16px 0;">
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Category</td><td style="padding:4px 0;font-weight:600;">${params.categoryName}</td></tr>
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Reporting period</td><td style="padding:4px 0;font-weight:600;">${params.periodLabel}</td></tr>
+</table>
+<p>Your data will be included in ${params.orgName}'s GHG inventory. No further action is required.</p>
+`;
+
+  return { subject, html, text };
+}
+
+export function supplierDataRejectedEmail(params: {
+  recipientName: string;
+  orgName: string;
+  categoryName: string;
+  periodLabel: string;
+  rejectionReason: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Your emissions data submission needs revision`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `We have reviewed your emissions data submission to ${params.orgName} and need some changes.`,
+    ``,
+    `Submission details:`,
+    `  Category: ${params.categoryName}`,
+    `  Reporting period: ${params.periodLabel}`,
+    ``,
+    `Reason for revision:`,
+    `  ${params.rejectionReason}`,
+    ``,
+    `Please reply to this email or contact ${params.orgName} to discuss the required changes.`,
+    ``,
+    `Best regards,`,
+    `The CarbonSite team`,
+  ].join("\n");
+
+  const html = `
+<p>Hi ${params.recipientName},</p>
+<p>We have reviewed your emissions data submission to <strong>${params.orgName}</strong> and need some changes.</p>
+<table style="border-collapse:collapse;margin:16px 0;">
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Category</td><td style="padding:4px 0;font-weight:600;">${params.categoryName}</td></tr>
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Reporting period</td><td style="padding:4px 0;font-weight:600;">${params.periodLabel}</td></tr>
+</table>
+<p style="margin-top:16px;">
+  <strong style="color:#dc2626;">Reason for revision:</strong><br/>
+  <span style="color:#6b7280;">${params.rejectionReason}</span>
+</p>
+<p>Please reply to this email or contact ${params.orgName} to discuss the required changes.</p>
+`;
+
+  return { subject, html, text };
+}
+
+export function supplierDataFlaggedEmail(params: {
+  recipientName: string;
+  orgName: string;
+  categoryName: string;
+  periodLabel: string;
+  flagCount: number;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Your emissions data submission requires review`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `Thank you for submitting your emissions data to ${params.orgName}.`,
+    ``,
+    `Your submission for the following has been flagged for further review:`,
+    ``,
+    `  Category: ${params.categoryName}`,
+    `  Reporting period: ${params.periodLabel}`,
+    `  Quality flags: ${params.flagCount}`,
+    ``,
+    `${params.orgName} is reviewing your data and will contact you if any adjustments are needed.`,
+    ``,
+    `Best regards,`,
+    `The CarbonSite team`,
+  ].join("\n");
+
+  const html = `
+<p>Hi ${params.recipientName},</p>
+<p>Thank you for submitting your emissions data to <strong>${params.orgName}</strong>.</p>
+<p>Your submission for the following has been <strong style="color:#ea580c;">flagged for further review:</strong></p>
+<table style="border-collapse:collapse;margin:16px 0;">
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Category</td><td style="padding:4px 0;font-weight:600;">${params.categoryName}</td></tr>
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Reporting period</td><td style="padding:4px 0;font-weight:600;">${params.periodLabel}</td></tr>
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Quality concerns</td><td style="padding:4px 0;font-weight:600;">${params.flagCount}</td></tr>
+</table>
+<p>${params.orgName} is reviewing your data and will contact you if any adjustments are needed.</p>
+`;
+
+  return { subject, html, text };
+}

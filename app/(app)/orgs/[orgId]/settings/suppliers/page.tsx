@@ -40,6 +40,9 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
         expiresAt: true,
         notes: true,
         submittedData: true,
+        qualityFlags: true,
+        rejectionReason: true,
+        reviewedAt: true,
         reportingPeriod: { select: { id: true, label: true } },
         createdBy: { select: { name: true, email: true } },
       },
@@ -58,7 +61,7 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
     supplierName: r.supplierName,
     categoryCode: r.categoryCode,
     categoryName: r.categoryCode.replace(/^s\d-/, "").replace(/-/g, " "),
-    status: r.status as "sent" | "opened" | "submitted" | "expired",
+    status: r.status as "sent" | "opened" | "submitted" | "expired" | "flagged" | "approved" | "rejected",
     sentAt: r.sentAt.toISOString(),
     openedAt: r.openedAt?.toISOString() ?? null,
     submittedAt: r.submittedAt?.toISOString() ?? null,
@@ -70,6 +73,14 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
       unit: string;
       description?: string | null;
     } | null,
+    qualityFlags: r.qualityFlags as Array<{
+      field: string;
+      severity: "warning" | "critical" | "info";
+      message: string;
+      suggestedRange?: { min: number; max: number };
+    }> | null,
+    rejectionReason: r.rejectionReason,
+    reviewedAt: r.reviewedAt?.toISOString() ?? null,
     periodId: r.reportingPeriod.id,
     periodLabel: r.reportingPeriod.label,
     sentBy: r.createdBy.name ?? r.createdBy.email,
