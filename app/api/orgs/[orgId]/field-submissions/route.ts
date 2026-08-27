@@ -11,6 +11,7 @@ import { dispatchNotification } from "@/lib/jobs/dispatch";
 import { calculateGpsDistanceKm } from "@/lib/geo/gps-distance";
 import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
 import { identifyDeliveryPostcode, validatePostcode } from "@/lib/geo/postcode-validator";
+import { presignDownload } from "@/lib/storage";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -76,7 +77,11 @@ export async function GET(req: NextRequest, { params }: Params) {
           reportingPeriod: { select: { label: true } },
           emissionCategory: { select: { scope: true, name: true } },
           facility: { select: { name: true } },
-          _count: { select: { files: true } },
+          files: {
+            include: {
+              evidenceFile: { select: { id: true, filename: true, storageKey: true } },
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         take: take + 1,
@@ -107,13 +112,49 @@ export async function GET(req: NextRequest, { params }: Params) {
         }
       }
     }
-    const data = page.map((submission) => ({
-      ...submission,
-      scope: submission.emissionCategory?.scope ?? null,
-      co2eKg: submission.activityRecordId
-        ? co2eByRecord.get(submission.activityRecordId) ?? null
-        : null,
-    }));
+    // Generate presigned URLs for evidence files
+    const data = await Promise.all(
+      page.map(async (submission) => {
+        const evidenceFiles = await Promise.all(
+          submission.files
+            .filter((f) => f.evidenceFile !== null)
+            .map(async (f) => {
+              let downloadUrl: string | null = null;
+              try {
+                if (f.evidenceFile?.storageKey) {
+                  downloadUrl = await presignDownload(f.evidenceFile.storageKey);
+                }
+              } catch (err) {
+                console.error(
+                  `[field-submissions] presignDownload failed for key "${f.evidenceFile?.storageKey}":`,
+                  err instanceof Error ? err.message : String(err),
+                );
+              }
+              return {
+                id: f.evidenceFile!.id,
+                filename: f.evidenceFile!.filename,
+                downloadUrl,
+              };
+            }),
+        );
+
+        return {
+          id: submission.id,
+          documentType: submission.documentType,
+          status: submission.status,
+          createdAt: submission.createdAt,
+          submittedBy: submission.submittedBy,
+          reportingPeriod: submission.reportingPeriod,
+          facility: submission.facility,
+          emissionCategoryId: submission.emissionCategoryId,
+          scope: submission.emissionCategory?.scope ?? null,
+          co2eKg: submission.activityRecordId
+            ? co2eByRecord.get(submission.activityRecordId) ?? null
+            : null,
+          evidenceFiles,
+        };
+      }),
+    );
 
     return NextResponse.json({ data, nextCursor, total });
   } catch (err) {
