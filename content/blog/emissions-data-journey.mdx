@@ -1,0 +1,227 @@
+---
+title: "From Field to Finance: The Complete Emissions Data Journey"
+description: "A single emissions record travels through evidence capture, review, calculation, versioning, and reporting. Each step is critical to accuracy."
+author: "CarbonSite"
+publishedAt: "2026-02-19"
+keywords: ["data quality", "workflow", "emissions", "reporting", "compliance"]
+---
+
+# From Field to Finance: The Complete Emissions Data Journey
+
+A field worker photographs a waste ticket. A sustainability manager reviews it. A calculation engine processes it. A CFO reports it. A board member questions it. An auditor verifies it.
+
+Each step can introduce errors. Each step can hide problems. Each step is critical to the final number.
+
+Most carbon accounting platforms treat each step as separate. Data flows in, gets reviewed, gets calculated, gets reported. Black box.
+
+CarbonSite treats the entire journey as a connected story. Every step is visible. Every step is auditable. Every step preserves data quality.
+
+## Stage 1: Evidence Capture (Field Worker)
+
+**The moment emissions actually happen** is when a waste ticket is issued, a delivery arrives, a meter reads.
+
+A CarbonSite field worker captures this moment:
+
+1. **Photograph the source document.** Waste ticket. Delivery manifest. Energy bill. GPS location auto-tagged.
+2. **On-device OCR extracts data.** Weight, date, supplier, vehicle.
+3. **Form pre-fills with extracted values.** Worker reviews (30 seconds).
+4. **Worker corrects if needed.** "That's not 120 kg, it's 1.2 tonnes."
+5. **Submit locally (even if offline).** Data saved to phone.
+6. **Sync when connectivity returns.** Upload to server with idempotency key.
+
+**Data quality at this stage:** High. Actual evidence (photo), immediate review, correction at source.
+
+**Audit trail at this stage:**
+- Photo timestamp + GPS coordinates
+- OCR confidence scores
+- User who submitted
+- Offline sync history
+
+## Stage 2: Review Queue (Sustainability Manager)
+
+**The sustainability manager reviews** incoming submissions before they become official records.
+
+Review workflow:
+
+1. **Submission appears in queue.** Status: "Pending review."
+2. **Anomaly detection flags it.** (If it looks suspicious, show the flag.)
+3. **Manager reviews the evidence.** (Photo attached, GPS location shown.)
+4. **Manager approves or rejects.** (Can add comment: "Verified with site manager." Or "Weight seems high, please resubmit.")
+5. **If approved, record is locked.** (No future edits allowed. Creates immutable record.)
+6. **If rejected, notification sent to field worker.** ("Weight flagged as anomalous. Please verify with site manager and resubmit.")
+
+**Data quality at this stage:** Very high. Human review, evidence verification, anomaly catching.
+
+**Audit trail at this stage:**
+- Reviewer name + timestamp
+- Approval/rejection decision
+- Comment explaining decision
+- Hash chain integrity check
+
+## Stage 3: Calculation Engine (Automated)
+
+**Once approved, the record is queued for calculation.**
+
+Calculation pipeline:
+
+1. **Normalize units.** "1.2 tonnes" → 1,200 kg (canonical unit).
+2. **Select factor.** For waste to landfill:
+   - Geography: UK (facility location)
+   - Date: Dec 2025
+   - Waste type: General waste (from EWC code)
+   - Result: DEFRA 2025.1 factor = 1.5 kg CO₂e/kg waste
+3. **Apply formula.** 1,200 kg × 1.5 = 1,800 kg CO₂e
+4. **Record immutably.** `EmissionCalculation` row created (never modified).
+5. **Denormalize to aggregates.** Update `DashboardAggregate` (+1,800 kg CO₂e for Dec 2025).
+
+**Data quality at this stage:** Perfect. Deterministic calculation, no human error, no randomness.
+
+**Audit trail at this stage:**
+- Factor selection reason (why this factor, not another)
+- Factor version (DEFRA 2025.1, pinned)
+- Formula applied (1,200 kg × 1.5 kg/kg)
+- Calculation timestamp
+
+## Stage 4: Snapshot Publishing (Lock-In)
+
+**When reporting period ends (e.g., Dec 31), you publish a snapshot.**
+
+Snapshot creation:
+
+1. **Select all approved records** for the period (Jan–Dec 2025).
+2. **Calculate totals** per scope, per category, per facility.
+3. **Lock methodology version.** (If DEFRA updates factors in Jan 2026, historical calculations use Dec 2025 factors.)
+4. **Create immutable snapshot.** `PublishedSnapshot` row created (never changed).
+5. **Version the result.** Snapshot v1 (2025-12-31): 10,000 tonnes CO₂e.
+
+**Why snapshots matter:** If you need to restate (found an error), you create Snapshot v2, not change Snapshot v1. Auditors see both versions and the delta.
+
+**Audit trail at this stage:**
+- Snapshot ID (unique, versioned)
+- Records included (count, checksum)
+- Methodology version (GHG Protocol v2026-01, DEFRA 2025.1)
+- Published timestamp
+- User who published
+
+## Stage 5: Report Generation (Narrative + Numbers)
+
+**A published snapshot becomes the basis for a report.**
+
+Report creation:
+
+1. **Generate executive summary** (LLM-assisted). "2025 emissions were 10,000 tonnes, up 5% from 2024."
+2. **Show trends.** Charts of monthly progression, per-facility comparison.
+3. **Highlight changes.** "Scope 1 increased 20% due to new facility opening. Scope 2 decreased 10% due to renewable energy switch."
+4. **Include methodology.** "Emissions calculated using GHG Protocol, DEFRA 2025.1 factors, with Scope 3 estimation for Tier 2 suppliers."
+5. **Generate PDF with checksums.** Report content + hash of embedded data (audit verification).
+6. **Store immutably** in R2 storage. Signed URL good for 15 minutes (download only, no leak).
+
+**Data quality at this stage:** High. Report tied to specific snapshot version (can't hide changes).
+
+**Audit trail at this stage:**
+- Report ID, snapshot version
+- Report generation timestamp
+- LLM narrative (if used)
+- PDF checksum
+- Download access log (who, when, which report)
+
+## Stage 6: Auditor Verification (Question Everything)
+
+**External auditor reviews the report and digs into the data.**
+
+Auditor workflow:
+
+1. **Sample 10 records** from the report.
+2. **Verify calculations.** Inputs → formula → output. Math checks out.
+3. **Verify factors.** DEFRA factors cross-checked against official library.
+4. **Verify evidence.** Request photos/documents (all stored in CarbonSite).
+5. **Verify immutability.** Hash chain is intact, no tampering.
+6. **Verify methodology.** GHG Protocol compliance, Scope boundaries, consolidation approach.
+7. **Spot-check controls.** Anomaly detection caught which records? Did managers review and approve?
+8. **Sign-off or flag.** If controls are solid and data is clean, auditor approves. If concerns remain, auditor flags.
+
+**Audit trail at this stage:**
+- Audit questionnaire + responses
+- Samples tested + results
+- Factors verified
+- Hash chain verification
+- Auditor sign-off (or findings)
+
+## Stage 7: Board Disclosure (The Final Step)
+
+**CFO includes the verified emissions number in annual disclosure.**
+
+For public companies:
+- SEC climate rule filing
+- CSRD disclosure (EU companies)
+- CDP climate questionnaire
+- SBTi target validation report
+- Investor relations report
+
+**The entire journey** is now on public record. Every number has a documented path from field to final disclosure.
+
+If a regulator or shareholder questions the number, the company can walk through the complete trail:
+- Here's the photo evidence.
+- Here's the review approval.
+- Here's the calculation formula.
+- Here's the factor source.
+- Here's the snapshot lock.
+- Here's the auditor approval.
+
+## Where Most Platforms Break
+
+**Traditional platforms:**
+1. ✓ Capture data (usually: manual entry, no photo)
+2. ✓ Review data (spot checks, incomplete)
+3. ✓ Calculate emissions (black box, formula hidden)
+4. ✗ Version snapshots (just replace old with new)
+5. ✗ Lock methodology (factors change retroactively)
+6. ✗ Immutable records (data can be edited)
+7. ✗ Complete audit trail (partial logging)
+
+**CarbonSite:**
+1. ✓ Capture evidence (photo, GPS, timestamp, OCR confidence)
+2. ✓ Review rigorously (anomaly detection, approval gates)
+3. ✓ Calculate transparently (formula visible, factors sourced)
+4. ✓ Version snapshots (v1, v2, v3 with deltas)
+5. ✓ Lock methodology (period-specific factors, never retroactive)
+6. ✓ Immutable records (SHA-256 hash chains, no edits)
+7. ✓ Complete audit trail (every actor, action, timestamp)
+
+## The Quality Multiplier
+
+When every stage has oversight and is auditable, data quality compounds:
+
+- **Stage 1:** OCR captures with 92% confidence
+- **Stage 2:** Human review catches 70% of anomalies
+- **Stage 3:** Calculation is deterministic (no error)
+- **Stage 4:** Snapshot locks methodology (no retroactive changes)
+- **Stage 5:** Report can be audited (numbers are traceable)
+- **Stage 6:** Auditor approves controls (confidence increases)
+- **Stage 7:** Public disclosure is defensible (full trail visible)
+
+Final quality: 98%+ confidence. Auditor-approved. Regulatory-compliant.
+
+## The Regulatory Alignment
+
+This journey aligns with every regulatory requirement:
+
+| Regulation | Requirement | CarbonSite Coverage |
+|---|---|---|
+| CSRD | Methodology transparency | ✓ Open-source, visible formulas |
+| SEC Climate Rule | Consistent methodology | ✓ Snapshots lock methodology |
+| GHG Protocol | Complete audit trail | ✓ Hash chains, immutable records |
+| SBTi | Verified Scope 3 data | ✓ Field capture + estimation |
+| ISO 14064 | Data integrity controls | ✓ Anomaly detection, review gates |
+
+## The Path Forward
+
+Carbon accounting doesn't fail because the math is wrong. It fails because the data is unreliable at every stage.
+
+Fix the journey: capture rigorously, review carefully, calculate transparently, snapshot immutably, report defensibly, audit completely.
+
+That's CarbonSite.
+
+---
+
+*Trace every emission from field to finance. [Explore CarbonSite's complete audit trail](#cta).*

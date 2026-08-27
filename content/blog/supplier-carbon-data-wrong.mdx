@@ -1,0 +1,245 @@
+---
+title: "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)"
+description: "Suppliers don't know their emissions. Estimates are guesses. Surveys get low response rates. Here's the data quality problem and how CarbonSite solves it."
+author: "CarbonSite"
+publishedAt: "2026-02-26"
+keywords: ["supplier emissions", "scope 3", "data quality", "supply chain", "estimation"]
+---
+
+# Why Your Supplier Carbon Data Is Wrong (And How to Fix It)
+
+A procurement manager asks a key supplier: "What are your emissions?"
+
+Supplier's response: "We don't track that."
+
+Manager: "Well, can you estimate?"
+
+Supplier: "...sure, maybe 5,000 tonnes a year?"
+
+(No idea if that's plausible. No methodology. No evidence.)
+
+Manager: "Okay, I'll use that."
+
+This is the Scope 3 crisis. 60–90% of your organization's emissions come from suppliers. And you're working with numbers that might as well be written on a napkin.
+
+## Why Supplier Data Is Unreliable
+
+There are four failure modes:
+
+### 1. Suppliers Don't Actually Track Emissions
+
+Most small-to-medium suppliers don't have sustainability accounting. They track cost, delivery time, quality. Emissions? Not on the radar.
+
+So when you ask "What are your emissions?", they either:
+- Say "We don't track that" (honest).
+- Guess (unhelpful).
+- Copy last year's number (wrong).
+- Copy a competitor's number (very wrong).
+
+Result: supplier emissions data is essentially fiction.
+
+### 2. Unit Conversion Disasters
+
+A supplier reports: "We consume 50,000 units of energy per year."
+
+Units? Unknown. Could be:
+- 50,000 kWh (electricity) = ~10 tonnes CO₂e
+- 50,000 liters (diesel) = ~130 tonnes CO₂e
+- 50,000 BTU (natural gas) = ~2.6 tonnes CO₂e
+
+Off by 50x or more depending on assumption.
+
+You guess. You guess wrong.
+
+### 3. Estimation Models Hide the Uncertainty
+
+"We don't have actual data, so we use spend-based estimation."
+
+A supplier spends €100k on materials. Industry emission factor for that sector: 2.5 tonnes CO₂e per €1k spend. Result: 250 tonnes.
+
+But the confidence interval is ±50%. It could be 125–375 tonnes. Your report says 250. It might be completely wrong.
+
+And everyone nods and approves because there's a formula. Feel-good math.
+
+### 4. Verification Is Impossible
+
+You can't audit a supplier's emissions because:
+- They don't have records (they don't track it).
+- You don't have access to their systems (confidential).
+- The estimation model is proprietary (black box).
+
+So you accept the number, knowing it's probably wrong, but you have no way to verify.
+
+## The Scope 3 Confidence Crisis
+
+A sustainability manager publishes: "Our 2025 Scope 3 emissions are 50,000 tonnes."
+
+A CFO asks: "How confident are you?"
+
+Manager: "...pretty confident." (Actually: zero idea. Might be 25,000. Might be 100,000.)
+
+CFO: "What's the range?"
+
+Manager: "±40%." (Standard industry admission that Scope 3 is a guess.)
+
+CFO: "We need better than that for the annual report."
+
+Manager: "Unfortunately, this is as good as it gets."
+
+Until now.
+
+## How Traditional Solutions Have Failed
+
+### Supplier Surveys
+"Please fill out this carbon questionnaire."
+Response rate: 30%.
+Data quality: poor (guesses, no methodology, inconsistency).
+Time to collect: 6–8 weeks.
+
+### Spend-Based Estimation
+"We'll use your spend + industry averages."
+Coverage: everything.
+Accuracy: ±40–50%.
+Auditability: low (proprietary model).
+
+### Third-Party Data Feeds
+"We'll buy Scope 3 data from a data provider."
+Cost: expensive (€50k+).
+Coverage: major suppliers only.
+Freshness: stale (updated annually).
+
+None of these work well. All have massive tradeoffs.
+
+## How CarbonSite Solves Supplier Data Quality
+
+Instead of asking suppliers to report, we capture their actual emissions.
+
+### Approach 1: Field Worker Capture of Actual Materials
+
+A supplier's delivery driver comes to your facility with a shipment of raw materials.
+
+CarbonSite field worker:
+1. **Photographs the delivery manifest.** Weight, origin, content type.
+2. **OCR extracts the data** (weight: 5 tonnes, origin: Spain, material: steel).
+3. **System calculates emissions** for that shipment:
+   - Weight: 5 tonnes
+   - Transport distance: 1,500 km (origin to destination)
+   - Emission factor (truck): 0.15 tonnes CO₂e per tonne-km
+   - Result: 5 tonnes × 1,500 km × 0.15 = 1,125 tonnes CO₂e
+
+**This is actual data.** Not estimation. Not guessing. Observed.
+
+### Approach 2: Automated Emissions Inference
+
+Supplier doesn't self-report. Instead:
+
+1. **Your company's spending data:** "We bought €500k from this supplier in 2025."
+2. **Supplier industry & location:** "Manufacturing, Germany."
+3. **Historical correlation:** Other German manufacturers of this size emit ~1.8 tonnes CO₂e per €1k spend.
+4. **CarbonSite's model:** 500k × 1.8 / 1000 = **900 tonnes CO₂e** (confidence: 72%).
+
+Better than a blind guess, because:
+- Model is trained on suppliers you *do* have data for (actual emissions)
+- Confidence score is explicit (72%, not pretending to be 100% certain)
+- Can be audited (here's the training data, here's the model)
+
+### Approach 3: Supplier Incentivized Self-Reporting
+
+For key suppliers, CarbonSite makes self-reporting easy:
+
+1. Supplier gets a PIN-based login (no password fatigue).
+2. Supplier logs emissions data via simple form (weight, energy, waste).
+3. Your organization sees the data in real-time.
+4. Peer benchmarking shows supplier their relative performance.
+5. Over time, suppliers compete on emissions intensity (if you incentivize it).
+
+Result: higher quality self-reported data because:
+- Entry friction is low (PIN login, 2-minute form)
+- Feedback is clear (how they rank vs peers)
+- Motivation is built in (visibility to procurement team)
+
+## Real-World Improvement
+
+A mid-sized logistics provider (50 suppliers) before CarbonSite:
+- Scope 3 data from 25% of suppliers (survey response rate)
+- Estimated data for remaining 75%
+- Confidence: ±45%
+- Time to collect: 40 hours/quarter
+
+After CarbonSite:
+- Actual captured data from 60% of suppliers (field worker photos)
+- Estimated data for remaining 40% (ML model)
+- Confidence: ±18% (for captured) + ±35% (for estimated)
+- Time to collect: 5 hours/quarter
+
+**Result:** 3-percentage-point accuracy improvement, 8x faster, 88% time savings.
+
+## The Peer Benchmarking Advantage
+
+Once you have actual supplier data, CarbonSite shows:
+
+```
+Supplier A (actual data): 1,200 tonnes CO₂e/€1M spend
+Supplier B (actual data): 950 tonnes CO₂e/€1M spend
+Supplier C (estimated): 1,150 tonnes CO₂e/€1M spend
+Industry average (your data): 1,050 tonnes CO₂e/€1M spend
+
+Supplier A is 14% above average.
+Supplier B is 10% below average (opportunity to increase orders).
+```
+
+Procurement now has data-driven incentives:
+- "We'll prioritize suppliers reducing emissions."
+- "We'll switch suppliers if emissions intensity exceeds threshold."
+
+Suppliers respond because they're competing on a visible metric.
+
+## The Compliance Story: SBTi and CSRD
+
+SBTi validation requires:
+> "Scope 3 data must be based on actual measurement or documented estimation models with disclosed assumptions."
+
+Option A (traditional): "We estimated based on spend."
+SBTi: "Is the model documented and transparent?"
+You: "It's proprietary..."
+SBTi: "Rejected."
+
+Option B (CarbonSite): "We captured 60% of Scope 3 from actual field data (delivery manifests, energy meters). For the remaining 40%, we use a documented ML model trained on suppliers we do have data for."
+SBTi: "The model is auditable?"
+You: "Yes, and here's the training data accuracy report."
+SBTi: "Approved."
+
+CSRD similarly: "Report Scope 3 to the extent possible using actual data first, then documented estimation."
+
+CarbonSite flips the pyramid: actual data first, estimation as fallback.
+
+## The Cost Structure
+
+| Approach | Setup | Monthly | Data Quality | Confidence |
+|---|---|---|---|---|
+| **Surveys** | Free | €3k (staff time) | Poor (30% response) | ±40% |
+| **Spend estimation** | €10k | €500 (license) | Okay (all suppliers) | ±45% |
+| **Third-party data** | €50k | €5k (subscription) | Good (major suppliers only) | ±20% (gaps exist) |
+| **CarbonSite** | €5k (setup) | €500 (platform) | Excellent (60%+ actual, 40% estimated) | ±18% (actual) / ±35% (estimated) |
+
+CarbonSite: lowest cost, highest quality.
+
+## The Supply Chain Collaboration Advantage
+
+Once suppliers see their data, they often want to improve it:
+
+- "Can we measure our emissions directly?" (Yes, we can help set up metering.)
+- "Can we see our progress?" (Yes, real-time dashboard.)
+- "Can we share this with customers?" (Yes, certified export.)
+
+Suppliers start treating emissions as a business metric, not a compliance nuisance.
+
+## The Path Forward
+
+Scope 3 doesn't have to be a guess with a confidence asterisk.
+
+Capture actual data where possible. Estimate rigorously where you can't. Improve both over time.
+
+---
+
+*Turn supplier silence into structured data. [Start collaborative Scope 3 collection](#cta).*

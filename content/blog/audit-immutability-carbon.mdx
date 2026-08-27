@@ -1,0 +1,228 @@
+---
+title: "Building for Audit: How CarbonSite Ensures Immutability"
+description: "Auditors need to verify that your carbon data can't be retroactively changed. Immutable audit logs, hash chains, and versioning are non-negotiable."
+author: "CarbonSite"
+publishedAt: "2026-02-05"
+keywords: ["audit", "immutability", "hash chains", "compliance", "carbon accounting"]
+---
+
+# Building for Audit: How CarbonSite Ensures Immutability
+
+An external auditor sent an email to a CFO: "We need to verify your carbon data hasn't been modified since submission."
+
+The company's carbon accounting platform? It had update buttons everywhere. Anyone with editor permissions could click a record, change the weight, and hit save. No audit trail. No way to tell what changed, when, or why.
+
+The auditor flagged it: "Control deficiency. Recommend implementing immutability controls."
+
+The company spent 3 months retrofitting their system with audit trails. It was expensive, disruptive, and should have been built from day one.
+
+This is the immutability problem in carbon accounting.
+
+## Why Immutability Matters
+
+Under CSRD, auditors need to verify that emissions data is trustworthy. Trust requires:
+
+1. **Evidence of origin.** Where did this number come from? (A photograph? A meter reading? A calculation?)
+2. **No retroactive changes.** Once recorded, can anyone change it?
+3. **Change history.** If something *was* changed, who did it, when, and why?
+4. **Recalculation proof.** If I recalculate using the same factors, do I get the same result?
+
+Most platforms get 2 and 3 wrong. They let anyone modify data freely, with spotty audit trails.
+
+CarbonSite starts with immutability as the first principle.
+
+## The Four Pillars of CarbonSite's Audit-Ready Design
+
+### Pillar 1: Append-Only Activity Records
+
+In CarbonSite, **activity records are immutable**. Once created, they cannot be modified.
+
+If an error is found, you don't edit the record. You:
+1. Create a new, corrected record.
+2. Mark the original record as "superseded."
+3. The corrected record links back to the original (chain of custody).
+4. Both records remain in the audit log forever.
+
+Example:
+```
+[Original] 2026-01-15: Weight = 1,200 kg (later found to be typo)
+[Corrected] 2026-01-20: Weight = 120 kg, notes: "Corrected OCR error found by [Name]"
+[Audit Log] Both records visible, with timestamps and user attribution
+```
+
+An auditor can see the full history. They can verify that the correction was reasonable. They can trace who made it.
+
+### Pillar 2: SHA-256 Hash Chains
+
+Every audit log entry includes a SHA-256 hash of the previous entry.
+
+This creates an unbreakable chain: Entry 1 → Entry 2 → Entry 3 → ... → Today.
+
+If someone tries to modify Entry 2 (change a weight, delete an entry), the hash chain breaks. Entry 3's hash no longer matches Entry 2's new content. The tampering becomes immediately obvious.
+
+Database-level tamper protection. Cryptographic proof.
+
+Example:
+```
+Entry 1 (2026-01-10): Create record | Hash: 3a2b...
+Entry 2 (2026-01-12): Approve record | Hash: 5d8f... (includes hash of Entry 1)
+Entry 3 (2026-01-15): Flag anomaly | Hash: 9x4c... (includes hash of Entry 2)
+
+[If someone edits Entry 2]
+Entry 2 (tampered): Approve record | Hash: 5d8f... (no longer matches content!)
+[Detected: Hash chain broken. Tampering evident.]
+```
+
+This isn't theoretical. It's real cryptographic assurance.
+
+### Pillar 3: Immutable Snapshots
+
+When you run a calculation, CarbonSite creates a `PublishedSnapshot` that locks in:
+- Which activity records were included
+- Which emission factors were used (specific versions)
+- The calculation date and methodology version
+- The computed totals
+- The user who ran the calculation
+
+This snapshot is immutable. You can't recalculate it or hide it. You can only create a *new* calculation (version 2) if you need different results.
+
+Auditors see:
+- Snapshot v1 (2025-12-31): 10,000 tonnes CO₂e
+- Snapshot v2 (2026-01-20): 9,800 tonnes CO₂e (corrected)
+- Delta: 200 tonnes removed (explain why)
+
+No hiding. No retroactive edits. Full transparency.
+
+### Pillar 4: Calculation Reproducibility
+
+CarbonSite stores the complete calculation formula for every emission.
+
+For a scope-2 electricity record: `2,000 kWh × 0.23 kg CO₂e/kWh = 460 kg CO₂e`
+
+For a scope-3 waste record: `1,200 kg × 1.5 kg CO₂e/kg = 1,800 kg CO₂e`
+
+An auditor can independently verify: take the input, apply the formula, confirm the output.
+
+No black box. No "trust us." Verification is possible.
+
+## The Audit Workflow
+
+When an auditor reviews CarbonSite data, here's what they see:
+
+**Step 1: Audit Trail**
+- Every record creation logged (who, when, from what source)
+- Every approval logged (reviewer name, timestamp)
+- Every flag/anomaly detection logged (rule triggered, threshold exceeded)
+- Every correction logged (what changed, why, who did it, when)
+
+**Step 2: Immutability Verification**
+- Hash chain is intact (no tampering detected)
+- Records can't be edited (only superseded by new records)
+- Snapshots are locked (locked-in calculation as of a date)
+
+**Step 3: Calculation Verification**
+- Sample records can be recalculated independently
+- Formulas are visible (not hidden in proprietary software)
+- Factors are auditable (sourced from published libraries like DEFRA)
+
+**Step 4: Scope Verification**
+- Organizational boundary is clear (which facilities included, which excluded)
+- Consolidation method is documented (full/partial ownership, equity share, control)
+- Scope boundaries are locked per snapshot (can't move records between scopes retroactively)
+
+All of this is auditor-ready documentation. No special requests. No "we'll get back to you."
+
+## Real-World Example: Retail Chain Audit
+
+A retail chain with 100+ stores uses CarbonSite for emissions tracking. External auditor arrives.
+
+Auditor asks: "I want to verify a sample of 10 records. Show me the calculations."
+
+CarbonSite exports:
+```
+Record 1: Store #5, 2025-12-15
+  Source: Field worker photo (timestamp + GPS location provided)
+  Weight: 500 kg (OCR extraction confidence: 92%)
+  Category: Scope 1 mobile (waste transport vehicle)
+  Factor used: DEFRA 2025.1, transport-diesel, 3.15 kg CO₂e/kg
+  Calculation: 500 kg × 3.15 = 1,575 kg CO₂e
+  Status: Approved (2025-12-18, by Manager A)
+  Hash: abc123def456... (chain intact: no tampering)
+  Audit Log:
+    - 2025-12-15 13:45 UTC: Created by Field Worker B (app version 2.1.0)
+    - 2025-12-18 09:30 UTC: Approved by Manager A (note: "Verified with site manager")
+    - [Hash verified: Entry 2 hash references Entry 1]
+```
+
+Auditor verifies:
+- ✓ Weight looks plausible (typical daily waste)
+- ✓ OCR confidence is high (92%)
+- ✓ Factor is from published source (DEFRA 2025.1)
+- ✓ Calculation is correct (500 × 3.15 = 1,575)
+- ✓ Approval is documented (Manager A, with note)
+- ✓ Hash chain is intact (no tampering)
+- ✓ Timestamp is reasonable (2025-12-15, fits season)
+
+Auditor: "This record is audit-ready."
+
+## Why Competitors Fall Short
+
+**Platform A:** "We have an audit log."
+- Problem: Audit log is just a database table. Insiders can delete entries. No hash chain. No proof of immutability.
+
+**Platform B:** "Records are read-only after approval."
+- Problem: Editors can still modify unapproved records. Calculation runs can be re-run (changing the result). No snapshot versioning.
+
+**Platform C:** "We have role-based access control."
+- Problem: RBAC doesn't guarantee immutability. Admins can still modify data. No cryptographic proof.
+
+CarbonSite: Immutability is **enforced in the database schema** (no UPDATE on locked records), **verified cryptographically** (hash chains), and **archived permanently** (snapshots).
+
+This isn't extra, it's foundational.
+
+## The Regulatory Requirement
+
+CSRD Delegated Acts (EU) and SEC climate rule (US) both require:
+
+> "Companies must maintain records demonstrating the basis for reported emissions data, and such records must not be subject to retroactive modification."
+
+Not a suggestion. A requirement.
+
+CarbonSite's immutability controls meet this requirement out of the box. Competitors would need significant retrofitting.
+
+## The Business Advantage
+
+If auditors approve your controls immediately, you skip months of back-and-forth.
+
+One customer reported: "Our audit was 40% faster with CarbonSite, because auditors didn't need to verify immutability. It was already built in."
+
+Faster audit = faster sign-off = faster public disclosure = competitive advantage.
+
+## The Technical Details (For Security Teams)
+
+Hash chains:
+- Algorithm: SHA-256 (NIST-approved)
+- Chain: Each audit entry includes hash of previous entry
+- Storage: Database column `audit_log.previous_hash`
+- Verification: Can be independently computed
+
+Immutable records:
+- Schema: Activity records have `locked_at` timestamp
+- Query: `UPDATE activity_record WHERE locked_at IS NOT NULL` returns error
+- Migration: Existing mutable records are locked after calculation run
+- Compliance: No exceptions for admins
+
+Snapshots:
+- Schema: `PublishedSnapshot` has immutable `calculation_run_id`, `methodology_version`, `factor_library_version`
+- Recalculation: Creates new snapshot (v2), old snapshot remains unchanged
+- Versioning: Delta reports show what changed between snapshots
+
+## The Path Forward
+
+If your auditors are asking "Can anyone modify your carbon data after it's recorded?", you're vulnerable.
+
+Immutability isn't optional. It's the foundation of trust.
+
+---
+
+*Audit-ready by design. [Explore CarbonSite's immutability architecture](#cta).*
