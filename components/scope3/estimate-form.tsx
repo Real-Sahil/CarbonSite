@@ -45,6 +45,7 @@ export function Scope3EstimateForm({
     e.preventDefault();
     try {
       await requestEstimate({
+        organizationId: orgId,
         spendCategory: formData.spendCategory,
         spendAmount: formData.spendAmount || undefined,
         industry: formData.industry || undefined,

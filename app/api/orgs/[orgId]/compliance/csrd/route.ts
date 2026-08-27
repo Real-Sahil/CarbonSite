@@ -20,7 +20,7 @@ const csrdComplianceSchema = z.object({
 export async function POST(req: NextRequest, { params }: { params: { orgId: string } }) {
   try {
     const { orgId } = params;
-    await requireOrgMember(orgId, ["admin", "auditor"]);
+    await requireOrgMember(orgId, "admin", "auditor");
 
     const body = await req.json();
     const input = csrdComplianceSchema.parse(body);
@@ -70,14 +70,14 @@ export async function POST(req: NextRequest, { params }: { params: { orgId: stri
       { status: 200 },
     );
   } catch (err) {
-    return handleRouteError(err, "Failed to generate CSRD compliance report");
+    return handleRouteError(err);
   }
 }
 
 export async function GET(req: NextRequest, { params }: { params: { orgId: string } }) {
   try {
     const { orgId } = params;
-    await requireOrgMember(orgId, ["admin", "auditor", "viewer"]);
+    await requireOrgMember(orgId, "admin", "auditor", "viewer");
 
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
@@ -101,6 +101,6 @@ export async function GET(req: NextRequest, { params }: { params: { orgId: strin
       count: mappings.length,
     });
   } catch (err) {
-    return handleRouteError(err, "Failed to retrieve CSRD mappings");
+    return handleRouteError(err);
   }
 }

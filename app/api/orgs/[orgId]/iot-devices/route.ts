@@ -49,7 +49,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = params;
-    const user = await requireOrgMember(orgId, "admin");
+    const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();
     const validatedInput = registerDeviceSchema.parse(body);
@@ -57,7 +57,7 @@ export async function POST(
     const result = await registerDevice(
       orgId,
       validatedInput,
-      user.id
+      session.user.id
     );
 
     return Response.json(

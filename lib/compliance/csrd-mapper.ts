@@ -214,10 +214,10 @@ export function generateCSRDCompliance(req: {
   const recommendations = generateCSRDRecommendations(req);
 
   // Calculate milestones
-  const upcomingMilestones = CSRD_MILESTONES.map((m) => ({
-    ...m,
-    status: req.reportingYear >= m.year ? "completed" : "pending",
-  }));
+  const upcomingMilestones: CSRDMilestone[] = CSRD_MILESTONES.map((m) => {
+    const status: "completed" | "pending" | "in-progress" = req.reportingYear >= m.year ? "completed" : "pending";
+    return { ...m, status };
+  });
 
   return {
     organizationId: req.organizationId,
@@ -295,5 +295,3 @@ export function getCSRDCategoryMapping(categoryCode: string): CSRDEmissionCatego
 export function getAllCSRDCategoryMappings(): CSRDEmissionCategory[] {
   return Object.values(CSRD_CATEGORY_MAPPINGS);
 }
-
-export type { CSRDComplianceMapping, CSRDArticle8Requirement, CSRDMilestone };

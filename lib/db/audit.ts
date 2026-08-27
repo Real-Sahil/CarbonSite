@@ -129,7 +129,12 @@ type AuditAction =
   | "monitoring.health_check_error"
   | "billing.payment_method_added"
   | "billing.payment_method_deleted"
-  | "billing.payment_method_set_default";
+  | "billing.payment_method_set_default"
+  | "compliance.csrd_assessed"
+  | "sbti.pathway_created"
+  | "scope3.estimate_generated"
+  | "scope3.estimate_approved"
+  | "scope3.estimate_rejected";
 
 export async function writeAuditLog(params: {
   organizationId: string;

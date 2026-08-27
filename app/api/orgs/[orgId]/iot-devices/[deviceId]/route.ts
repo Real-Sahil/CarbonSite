@@ -44,7 +44,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId, deviceId } = params;
-    const user = await requireOrgMember(orgId, ["admin"]);
+    const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();
     const validatedInput = updateDeviceSchema.parse(body);
@@ -91,7 +91,7 @@ export async function PATCH(
 
     await writeAuditLog({
       organizationId: orgId,
-      actorUserId: user.id,
+      actorUserId: session.user.id,
       action: "iot_device.updated",
       resourceType: "iot_device",
       resourceId: deviceId,
@@ -112,7 +112,7 @@ export async function DELETE(
 ) {
   try {
     const { orgId, deviceId } = params;
-    const user = await requireOrgMember(orgId, ["admin"]);
+    const { session } = await requireOrgMember(orgId, "admin");
 
     const device = await prisma.ioTDevice.findFirst({
       where: { id: deviceId, organizationId: orgId },
@@ -125,7 +125,7 @@ export async function DELETE(
       );
     }
 
-    await deactivateDevice(orgId, deviceId, user.id);
+    await deactivateDevice(orgId, deviceId, session.user.id);
 
     return Response.json({ success: true });
   } catch (error) {
@@ -139,7 +139,7 @@ export async function POST(
 ) {
   try {
     const { orgId, deviceId } = params;
-    const user = await requireOrgMember(orgId, ["admin"]);
+    const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();
     const action = body.action as string;
@@ -162,7 +162,7 @@ export async function POST(
       );
     }
 
-    const credential = await createCredential(orgId, deviceId, user.id);
+    const credential = await createCredential(orgId, deviceId, session.user.id);
 
     return Response.json(
       {

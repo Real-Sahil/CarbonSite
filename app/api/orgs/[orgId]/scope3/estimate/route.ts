@@ -23,7 +23,7 @@ const suggestCategorySchema = z.object({
 export async function POST(req: NextRequest, { params }: { params: { orgId: string } }) {
   try {
     const { orgId } = params;
-    await requireOrgMember(orgId, ["admin", "editor", "auditor"]);
+    await requireOrgMember(orgId, "admin", "editor", "auditor");
 
     const body = await req.json();
     const { operation } = z.object({ operation: z.enum(["estimate", "suggest"]) }).parse({
@@ -51,6 +51,6 @@ export async function POST(req: NextRequest, { params }: { params: { orgId: stri
       { status: 200 },
     );
   } catch (err) {
-    return handleRouteError(err, "Failed to estimate Scope 3 emissions");
+    return handleRouteError(err);
   }
 }

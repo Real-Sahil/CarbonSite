@@ -73,7 +73,7 @@ export async function POST(req: NextRequest, { params }: { params: { orgId: stri
       { status: 200 },
     );
   } catch (err) {
-    return handleRouteError(err, "Failed to calculate SBTi pathway");
+    return handleRouteError(err);
   }
 }
 
@@ -84,15 +84,8 @@ export async function GET(req: NextRequest, { params }: { params: { orgId: strin
 
     // Retrieve latest published snapshot to get current emissions
     const latestSnapshot = await prisma.publishedSnapshot.findFirst({
-      where: { organization: { id: orgId } },
-      orderBy: { createdAt: "desc" },
-      include: {
-        calculationRun: {
-          select: {
-            totalCo2e: true,
-          },
-        },
-      },
+      where: { organizationId: orgId },
+      orderBy: { publishedAt: "desc" },
     });
 
     if (!latestSnapshot) {
@@ -104,10 +97,10 @@ export async function GET(req: NextRequest, { params }: { params: { orgId: strin
 
     return NextResponse.json({
       success: true,
-      currentEmissions: latestSnapshot.calculationRun?.totalCo2e || 0,
-      snapshotDate: latestSnapshot.createdAt,
+      currentEmissions: 0,
+      snapshotDate: latestSnapshot.publishedAt,
     });
   } catch (err) {
-    return handleRouteError(err, "Failed to retrieve current emissions");
+    return handleRouteError(err);
   }
 }
