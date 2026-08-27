@@ -16,6 +16,7 @@
  */
 
 import { z } from "zod";
+import { LlmClient } from "@/lib/llm/client";
 
 /**
  * Schema for structured field extraction
@@ -131,55 +132,123 @@ export async function extractWasteFields(ocrText: string): Promise<FieldExtracti
     };
   }
 
-  // Simulate LLM extraction (in production, call actual LLM via Instructor)
-  // This demonstrates the pattern and structure
-  const mockExtractedData: WasteField = {
-    weight: 50.5,
-    ewcCode: "150110",
-    date: new Date().toISOString(),
-    supplier: "ABC Waste Management",
-    facility: "Regional Landfill",
-    vehicleReg: "AB21 CDE",
-    notes: "Standard waste delivery",
-    confidence: {
-      weight: 0.95,
-      ewcCode: 0.87,
-      date: 0.92,
-      supplier: 0.89,
-      facility: 0.91,
-      vehicleReg: 0.88,
-    },
-  };
+  const llm = new LlmClient();
+  const extractionPrompt = `Extract waste/delivery information from the following OCR text. Return ONLY valid JSON (no markdown, no code blocks, just raw JSON).
 
-  // Validate extracted data with Zod
-  try {
-    const validated = WasteFieldSchema.parse(mockExtractedData);
+OCR Text:
+${ocrText}
 
-    const extractedCount = Object.entries(validated)
-      .filter(([key, value]) => key !== "confidence" && value !== undefined)
-      .length;
+Extract these fields if present:
+- weight: numeric value in kilograms
+- ewcCode: European Waste Classification code (6 digits, e.g., 150110)
+- date: ISO 8601 date when waste was generated/received
+- supplier: company/facility that generated or transported waste
+- facility: receiving facility or landfill name
+- vehicleReg: vehicle registration plate
+- notes: additional observations
 
-    return {
-      status: extractedCount > 0 ? "success" : "partial",
-      fields: validated,
-      extractedFieldsCount: extractedCount,
-      totalFieldsAttempted: 6,
-      rawOcrText: ocrText,
-      warnings: [],
-    };
-  } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
+For each field you extract, include a confidence score (0-1) indicating how confident you are.
 
-    return {
-      status: "error",
-      fields: {},
-      extractedFieldsCount: 0,
-      totalFieldsAttempted: 6,
-      rawOcrText: ocrText,
-      error: `Field validation failed: ${error}`,
-      warnings: ["Could not validate extracted fields against schema"],
-    };
+Return JSON in this exact format:
+{
+  "weight": number or null,
+  "ewcCode": string or null,
+  "date": string or null,
+  "supplier": string or null,
+  "facility": string or null,
+  "vehicleReg": string or null,
+  "notes": string or null,
+  "confidence": {
+    "weight": number 0-1 or null,
+    "ewcCode": number 0-1 or null,
+    "date": number 0-1 or null,
+    "supplier": number 0-1 or null,
+    "facility": number 0-1 or null,
+    "vehicleReg": number 0-1 or null
   }
+}`;
+
+  let validated: WasteField;
+  try {
+    const result = await llm.chat(
+      [{ role: "user", content: extractionPrompt }],
+      { maxTokens: 500, temperature: 0.1 }
+    );
+
+    const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("LLM response did not contain valid JSON");
+    }
+
+    const extracted = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+    validated = WasteFieldSchema.parse(extracted);
+  } catch (llmErr) {
+    // Fallback: use regex-based extraction when LLM fails
+    console.warn(
+      "[field-extractor] LLM extraction failed, falling back to regex:",
+      llmErr instanceof Error ? llmErr.message : String(llmErr),
+    );
+
+    const weightMatch = ocrText.match(/(\d+(?:[.,]\d+)?)\s*(?:kg|kilograms?)/i);
+    const ewcMatch = ocrText.match(/\b\d{6}\b/);
+    const dateMatch = ocrText.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
+    const supplierMatch = ocrText.match(/(?:supplier|company|from):\s*([^\n]+)/i);
+    const facilityMatch = ocrText.match(/(?:facility|to|destination):\s*([^\n]+)/i);
+
+    let parsedDate: string | undefined;
+    if (dateMatch) {
+      try {
+        const date = new Date(dateMatch[1]);
+        if (!Number.isNaN(date.getTime())) {
+          parsedDate = date.toISOString();
+        }
+      } catch {
+        parsedDate = undefined;
+      }
+    }
+
+    validated = WasteFieldSchema.parse({
+      weight: weightMatch ? parseFloat(weightMatch[1].replace(",", ".")) : undefined,
+      ewcCode: ewcMatch ? ewcMatch[0] : undefined,
+      date: parsedDate,
+      supplier: supplierMatch ? supplierMatch[1].trim() : undefined,
+      facility: facilityMatch ? facilityMatch[1].trim() : undefined,
+      confidence: {
+        weight: weightMatch ? 0.6 : undefined,
+        ewcCode: ewcMatch ? 0.5 : undefined,
+        date: parsedDate ? 0.6 : undefined,
+        supplier: supplierMatch ? 0.5 : undefined,
+        facility: facilityMatch ? 0.5 : undefined,
+      },
+    });
+  }
+
+  const extractedCount = Object.entries(validated)
+    .filter(([key, value]) => key !== "confidence" && value !== undefined)
+    .length;
+
+  const warnings: string[] = [];
+  const avgConfidence =
+    validated.confidence &&
+    Object.values(validated.confidence).filter((c): c is number => typeof c === "number").length > 0
+      ? Object.values(validated.confidence)
+          .filter((c): c is number => typeof c === "number")
+          .reduce((a, b) => a + b, 0) /
+        Object.values(validated.confidence).filter((c): c is number => typeof c === "number").length
+      : 0;
+
+  if (avgConfidence < 0.7) {
+    warnings.push("Low extraction confidence detected - review fields carefully");
+  }
+
+  return {
+    status: extractedCount > 0 ? "success" : "partial",
+    fields: validated,
+    extractedFieldsCount: extractedCount,
+    totalFieldsAttempted: 6,
+    rawOcrText: ocrText,
+    warnings,
+  };
 }
 
 /**
