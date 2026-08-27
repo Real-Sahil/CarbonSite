@@ -68,6 +68,7 @@ model User {
   supplierCategoryAssignments       SupplierCategoryAssignment[] @relation("SupplierCategoryAssignments")
   customEmissionFactorsCreated      OrganizationEmissionFactor[] @relation("CustomFactorCreator")
   anomaliesAcknowledged             SupplierAnomaly[]            @relation("AnomalyAcknowledger")
+  scope3EstimatesAccepted           Scope3Estimate[]             @relation("Scope3EstimatesAccepted")
 
   platformMembership PlatformMembership?
 
@@ -202,6 +203,8 @@ model Organization {
   importBatchQualityScores    ImportBatchQualityScore[]
   stagedExternalData          StagedExternalData[]
   airbyteSyncConnections      AirbyteSyncConnection[]
+  scope3EstimationModels      Scope3EstimationModel[] @relation("EstimationModels")
+  scope3Estimates             Scope3Estimate[]      @relation("Scope3Estimates")
 
   @@map("organizations")
 }
@@ -464,6 +467,8 @@ model EmissionCategory {
   aggregates                  DashboardAggregate[]
   submissions                 FieldSubmission[]
   supplierCategoryAssignments SupplierCategoryAssignment[]
+  scope3EstimationModels      Scope3EstimationModel[]     @relation("EstimationModels")
+  scope3Estimates             Scope3Estimate[]            @relation("Scope3Estimates")
 
   @@map("emission_categories")
 }
@@ -640,6 +645,7 @@ model ActivityRecord {
   evidence         ActivityRecordEvidence[]
   scenarioDrafts   ScenarioDraft[]          @relation("ScenarioDraftActivityRecord")
   meterReadings    MeterReading[]
+  scope3Estimates  Scope3Estimate[]         @relation("ActivityRecordEstimate")
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
   @@index([organizationId, routeDistanceId])
@@ -2572,4 +2578,65 @@ model AirbyteSyncConnection {
   @@index([organizationId, sourceSystem, enabled])
   @@index([organizationId, createdAt(sort: Desc)])
   @@map("airbyte_sync_connections")
+}
+
+// ─── Phase 3A: Scope 3 Estimation via ML ────────────────────────────────────
+
+model Scope3EstimationModel {
+  id                    String    @id @default(cuid())
+  organizationId        String    @map("organization_id")
+  emissionCategoryId    String    @map("emission_category_id")
+  facilityType          String?   @map("facility_type") // e.g., "manufacturing", "office", "warehouse"
+  modelType             String    @default("linear-regression") @map("model_type") // "linear-regression", "random-forest"
+  trainingRecordCount   Int       @map("training_record_count")
+  coefficients          Json      // Model parameters: { intercept, features: {featureName: coefficient} }
+  modelMetrics          Json      // R², RMSE, MAE, etc.
+  featureImportance     Json      // Feature importance scores
+  trainingDataDateRange Json      // { from: Date, to: Date }
+  confidenceThreshold   Decimal   @default("0.7") @map("confidence_threshold") @db.Decimal(3, 2)
+  lastTrainedAt         DateTime  @map("last_trained_at")
+  nextTrainAt           DateTime? @map("next_train_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization       Organization           @relation("EstimationModels", fields: [organizationId], references: [id], onDelete: Cascade)
+  emissionCategory   EmissionCategory       @relation("EstimationModels", fields: [emissionCategoryId], references: [id])
+  estimates          Scope3Estimate[]       @relation("ModelEstimates")
+
+  @@unique([organizationId, emissionCategoryId, facilityType])
+  @@index([organizationId, lastTrainedAt])
+  @@map("scope3_estimation_models")
+}
+
+model Scope3Estimate {
+  id                     String    @id @default(cuid())
+  organizationId         String    @map("organization_id")
+  facilitId              String?   @map("facility_id") // Optional reference to facility
+  emissionCategoryId     String    @map("emission_category_id")
+  estimationModelId      String    @map("estimation_model_id")
+  estimatedValue         Decimal   @map("estimated_value") @db.Decimal(18, 6)
+  estimatedUnit          String    @map("estimated_unit") // e.g., "tonnes", "kwh"
+  confidenceScore        Decimal   @map("confidence_score") @db.Decimal(3, 2) // 0-1
+  confidenceInterval     Json      // { lower: number, upper: number, percentile: 95 }
+  modelInputs            Json      // Features used for prediction
+  predictionExplanation String?   @map("prediction_explanation") // Why this estimate?
+  basedOnRecordCount     Int       @default(0) @map("based_on_record_count")
+  status                 String    @default("pending") @map("status") // "pending", "accepted", "rejected", "used"
+  acceptedAt             DateTime? @map("accepted_at")
+  acceptedByUserId       String?   @map("accepted_by_user_id")
+  rejectionReason        String?   @map("rejection_reason")
+  activityRecordId       String?   @map("activity_record_id") // If linked to actual record
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  organization       Organization           @relation("Scope3Estimates", fields: [organizationId], references: [id], onDelete: Cascade)
+  emissionCategory   EmissionCategory       @relation("Scope3Estimates", fields: [emissionCategoryId], references: [id])
+  estimationModel    Scope3EstimationModel  @relation("ModelEstimates", fields: [estimationModelId], references: [id], onDelete: Restrict)
+  acceptedBy         User?                  @relation("Scope3EstimatesAccepted", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  activityRecord     ActivityRecord?        @relation("ActivityRecordEstimate", fields: [activityRecordId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, emissionCategoryId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([estimationModelId])
+  @@map("scope3_estimates")
 }
