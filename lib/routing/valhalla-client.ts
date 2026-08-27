@@ -90,7 +90,6 @@ export class ValhallaClient {
       };
     }
 
-    const startTime = Date.now();
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
@@ -107,11 +106,11 @@ export class ValhallaClient {
           sources: input.sources,
           targets: input.targets,
           matrix: {
-            times: response.sources_to_targets.map((row: any[]) =>
-              row.map((cell: any) => cell.time)
+            times: (response.sources_to_targets as Array<Array<{ time: number }>>).map((row) =>
+              row.map((cell) => cell.time)
             ),
-            distances: response.sources_to_targets.map((row: any[]) =>
-              row.map((cell: any) => cell.distance)
+            distances: (response.sources_to_targets as Array<Array<{ distance: number }>>).map((row) =>
+              row.map((cell) => cell.distance)
             ),
           },
         };
@@ -145,7 +144,6 @@ export class ValhallaClient {
     contourMinutes: number; // e.g., 30, 60, 120
     costing?: "auto" | "bicycle" | "pedestrian";
   }): Promise<IsochroneResult> {
-    const startTime = Date.now();
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
@@ -158,13 +156,18 @@ export class ValhallaClient {
           format: "geojson",
         });
 
-        const features = response.features || [];
+        interface IsochroneGeometry {
+          type: "Polygon";
+          coordinates: number[][][];
+        }
+
+        const features = (response.features as Array<{ geometry: IsochroneGeometry }>) || [];
         const polygon = features[0]?.geometry;
 
         return {
           status: "success",
           center: input.center,
-          polygon: polygon as any,
+          polygon,
           properties: {
             contour: input.contourMinutes,
             color: this.getContourColor(input.contourMinutes),
@@ -206,7 +209,6 @@ export class ValhallaClient {
       };
     }
 
-    const startTime = Date.now();
     let lastError: Error | undefined;
 
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
@@ -217,8 +219,14 @@ export class ValhallaClient {
           format: "json",
         });
 
+        interface MatchedPoint {
+          lat: number;
+          lon: number;
+          edge_index: number;
+        }
+
         const matchedTrace =
-          response.matched_points?.map((p: any) => ({
+          (response.matched_points as MatchedPoint[] | undefined)?.map((p) => ({
             lat: p.lat,
             lon: p.lon,
             name: `Matched ${p.edge_index}`,
@@ -267,7 +275,7 @@ export class ValhallaClient {
     }
   }
 
-  private async callValhallaApi(endpoint: string, payload: any): Promise<any> {
+  private async callValhallaApi(endpoint: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
@@ -283,7 +291,7 @@ export class ValhallaClient {
         throw new Error(`Valhalla API error: ${response.status} ${response.statusText}`);
       }
 
-      return await response.json();
+      return (await response.json()) as Record<string, unknown>;
     } finally {
       clearTimeout(timeoutId);
     }
