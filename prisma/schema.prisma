@@ -173,6 +173,7 @@ model Organization {
   embodiedCarbonRecords EmbodiedCarbonRecord[]
   apiKeys             ApiKey[]
   billingSubscription BillingSubscription?
+  paymentMethods      PaymentMethod[]
   usageEvents         UsageEvent[]
   carbonOffsets       CarbonOffset[]
   complianceRecords   ComplianceRecord[]
@@ -1817,19 +1818,46 @@ model ApiKey {
 // ─── Billing ──────────────────────────────────────────────────────────────────
 
 model BillingSubscription {
-  id             String    @id @default(cuid())
-  organizationId String    @unique @map("organization_id")
-  plan           String    @default("trial")
-  status         String    @default("active")
-  trialEndsAt    DateTime? @map("trial_ends_at")
-  currentPeriodStart DateTime @default(now()) @map("current_period_start")
-  currentPeriodEnd   DateTime @map("current_period_end")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id                  String    @id @default(cuid())
+  organizationId      String    @unique @map("organization_id")
+  plan                String    @default("trial")
+  status              String    @default("active")
+  trialEndsAt         DateTime? @map("trial_ends_at")
+  currentPeriodStart  DateTime  @default(now()) @map("current_period_start")
+  currentPeriodEnd    DateTime  @map("current_period_end")
+  stripeCustomerId    String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?  @map("stripe_subscription_id")
+  defaultPaymentMethodId String? @map("default_payment_method_id")
+  lastPaymentStatus   String?   @map("last_payment_status")
+  lastPaymentDate     DateTime? @map("last_payment_date")
+  nextBillingDate     DateTime? @map("next_billing_date")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  paymentMethods    PaymentMethod[]
 
   @@map("billing_subscriptions")
+}
+
+model PaymentMethod {
+  id                    String    @id @default(cuid())
+  organizationId        String    @map("organization_id")
+  billingSubscriptionId String    @map("billing_subscription_id")
+  stripePaymentMethodId String    @unique @map("stripe_payment_method_id")
+  brand                 String
+  last4                 String
+  expiryMonth           Int       @map("expiry_month")
+  expiryYear            Int       @map("expiry_year")
+  isDefault             Boolean   @default(false) @map("is_default")
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  billingSubscription  BillingSubscription @relation(fields: [billingSubscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([billingSubscriptionId])
+  @@map("payment_methods")
 }
 
 model UsageEvent {

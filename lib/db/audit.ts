@@ -119,7 +119,10 @@ type AuditAction =
   | "security.alert_bulk_submission_review"
   | "security.alert_suspicious_location_jump"
   | "monitoring.health_check_failed"
-  | "monitoring.health_check_error";
+  | "monitoring.health_check_error"
+  | "billing.payment_method_added"
+  | "billing.payment_method_deleted"
+  | "billing.payment_method_set_default";
 
 export async function writeAuditLog(params: {
   organizationId: string;
