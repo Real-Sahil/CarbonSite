@@ -64,6 +64,8 @@ model User {
   epdRecordsSubmitted       EpdRecord[]              @relation("EpdSubmittedBy")
   projectRoleAssignments    ProjectRoleAssignment[] @relation("ProjectAssignments")
   createdProjectRoleAssignments ProjectRoleAssignment[] @relation("ProjectAssignmentsCreated")
+  supplierTagAssignments    SupplierTagAssignment[]  @relation("SupplierTagAssignments")
+  supplierCategoryAssignments SupplierCategoryAssignment[] @relation("SupplierCategoryAssignments")
 
   platformMembership PlatformMembership?
 
@@ -101,6 +103,7 @@ model Account {
   scope                 String?
   idToken               String?   @map("id_token")
   password              String?
+  passwordChangedAt     DateTime? @map("password_changed_at")
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
 
@@ -128,6 +131,8 @@ model Organization {
   reportingCurrency String   @default("GBP") @map("reporting_currency")
   defaultUnits      Json?    @map("default_units")
   plan              String   @default("trial") @map("plan")
+  supplierPasswordRotationDays Int?  @map("supplier_password_rotation_days")
+  supplierAccountExpiryDays    Int?  @map("supplier_account_expiry_days")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
@@ -181,6 +186,8 @@ model Organization {
   snapshotAssurances  SnapshotAssurance[]
   reportVerificationTokens ReportVerificationToken[]
   apiDataSources      ApiDataSource[]
+  supplierTags        SupplierTag[]
+  supplierCategoryAssignments SupplierCategoryAssignment[]
 
   @@map("organizations")
 }
@@ -2009,6 +2016,52 @@ model SupplierDataRequest {
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, status])
   @@map("supplier_data_requests")
+}
+
+// ─── Supplier Management (Phase 2) ────────────────────────────────────────────
+
+model SupplierTag {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignments    SupplierTagAssignment[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("supplier_tags")
+}
+
+model SupplierTagAssignment {
+  id        String   @id @default(cuid())
+  tagId     String   @map("tag_id")
+  supplierId String   @map("supplier_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tag    SupplierTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  user   User        @relation("SupplierTagAssignments", fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, supplierId])
+  @@index([supplierId])
+  @@map("supplier_tag_assignments")
+}
+
+model SupplierCategoryAssignment {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  supplierId     String   @map("supplier_id")
+  categoryCode   String   @map("category_code")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("SupplierCategoryAssignments", fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([supplierId, categoryCode])
+  @@index([organizationId, supplierId])
+  @@map("supplier_category_assignments")
 }
 
 // ─── Integrations ────────────────────────────────────────────────────────────
