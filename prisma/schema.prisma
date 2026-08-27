@@ -205,6 +205,8 @@ model Organization {
   airbyteSyncConnections      AirbyteSyncConnection[]
   scope3EstimationModels      Scope3EstimationModel[] @relation("EstimationModels")
   scope3Estimates             Scope3Estimate[]      @relation("Scope3Estimates")
+  supplierPerformance         SupplierPerformance[]     @relation("supplierPerformanceOrg")
+  suppliedToPerformance       SupplierPerformance[]     @relation("supplierPerformanceSupplier")
 
   @@map("organizations")
 }
@@ -810,6 +812,8 @@ model FieldSubmission {
   siteId                    String?               @map("site_id")
   contractId                String?               @map("contract_id")
   deviceSubmittedAt         DateTime?             @map("device_submitted_at")
+  requestedByDeadline       DateTime?             @map("requested_by_deadline")
+  submittedAt               DateTime?             @map("submitted_at")
   idempotencyKey            String?               @map("idempotency_key")
   createdAt                 DateTime              @default(now()) @map("created_at")
   updatedAt                 DateTime              @updatedAt @map("updated_at")
@@ -828,6 +832,7 @@ model FieldSubmission {
   @@unique([organizationId, submittedByUserId, idempotencyKey], map: "field_submission_idempotency_key")
   @@index([organizationId, status, createdAt])
   @@index([organizationId, submittedByUserId])
+  @@index([organizationId, requestedByDeadline, submittedAt])
   @@map("field_submissions")
 }
 
@@ -842,6 +847,30 @@ model FieldSubmissionFile {
 
   @@unique([fieldSubmissionId, evidenceFileId])
   @@map("field_submission_files")
+}
+
+// ─── Supplier Performance ────────────────────────────────────────────────────
+
+model SupplierPerformance {
+  id                      String   @id @default(cuid())
+  organizationId          String   @map("organization_id")
+  supplierId              String   @map("supplier_id") // References Organization.id (external supplier org)
+  submissionCount         Int      @default(0) @map("submission_count")
+  approvedCount           Int      @default(0) @map("approved_count")
+  rejectedCount           Int      @default(0) @map("rejected_count")
+  onTimeCount             Int      @default(0) @map("on_time_count")
+  completenessScore       Decimal? @db.Decimal(5, 2) @map("completeness_score")
+  dataQualityScore        Decimal? @db.Decimal(5, 2) @map("data_quality_score")
+  lastDataQualityTrend    String?  @map("last_data_quality_trend") // "improving", "stable", "declining"
+  updatedAt               DateTime @updatedAt @map("updated_at")
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceOrg")
+  supplier     Organization @relation(fields: [supplierId], references: [id], onDelete: Cascade, name: "supplierPerformanceSupplier")
+
+  @@unique([organizationId, supplierId])
+  @@index([organizationId])
+  @@map("supplier_performance")
 }
 
 // ─── Emission Factors ─────────────────────────────────────────────────────────
