@@ -10,6 +10,8 @@ import {
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 
+type Params = { params: Promise<{ orgId: string; deviceId: string }> };
+
 const updateDeviceSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   facilityId: z.string().optional().nullable(),
@@ -17,10 +19,10 @@ const updateDeviceSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { orgId: string; deviceId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId, deviceId } = params;
+    const { orgId, deviceId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "viewer");
 
     const device = await getDeviceWithCredentials(orgId, deviceId);
@@ -40,10 +42,10 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { orgId: string; deviceId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId, deviceId } = params;
+    const { orgId, deviceId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();
@@ -108,10 +110,10 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { orgId: string; deviceId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId, deviceId } = params;
+    const { orgId, deviceId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
 
     const device = await prisma.ioTDevice.findFirst({
@@ -135,10 +137,10 @@ export async function DELETE(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { orgId: string; deviceId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId, deviceId } = params;
+    const { orgId, deviceId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();

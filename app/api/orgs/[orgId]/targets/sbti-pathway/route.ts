@@ -6,6 +6,8 @@ import { handleRouteError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 
+type Params = { params: Promise<{ orgId: string }> };
+
 const sbtiRequestSchema = z.object({
   baselineYear: z.number().min(2000).max(2100),
   baselineEmissions: z.number().min(0),
@@ -16,9 +18,9 @@ const sbtiRequestSchema = z.object({
   scope3: z.number().min(0).optional(),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { orgId: string } }) {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor");
 
     const body = await req.json();
@@ -77,9 +79,9 @@ export async function POST(req: NextRequest, { params }: { params: { orgId: stri
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { orgId: string } }) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "auditor");
 
     // Retrieve latest published snapshot to get current emissions

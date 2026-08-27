@@ -8,6 +8,8 @@ import {
 } from "@/lib/iot/device-manager";
 import type { IoTDeviceType } from "@prisma/client";
 
+type Params = { params: Promise<{ orgId: string }> };
+
 const registerDeviceSchema = z.object({
   name: z.string().min(1).max(255),
   deviceType: z.enum([
@@ -22,10 +24,10 @@ const registerDeviceSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { orgId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
     const user = await requireOrgMember(orgId, "admin", "editor");
 
     const searchParams = req.nextUrl.searchParams;
@@ -45,10 +47,10 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { orgId: string } }
+  { params }: Params
 ) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();

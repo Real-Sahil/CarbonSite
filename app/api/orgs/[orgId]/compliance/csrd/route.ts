@@ -10,6 +10,8 @@ import { handleRouteError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 
+type Params = { params: Promise<{ orgId: string }> };
+
 const csrdComplianceSchema = z.object({
   reportingYear: z.number().min(2024).max(2050),
   scope1: z.number().min(0).optional(),
@@ -17,9 +19,9 @@ const csrdComplianceSchema = z.object({
   scope3: z.number().min(0).optional(),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { orgId: string } }) {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "auditor");
 
     const body = await req.json();
@@ -74,9 +76,9 @@ export async function POST(req: NextRequest, { params }: { params: { orgId: stri
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { orgId: string } }) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "auditor", "viewer");
 
     const { searchParams } = new URL(req.url);
