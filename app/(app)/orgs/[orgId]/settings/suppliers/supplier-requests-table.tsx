@@ -110,11 +110,7 @@ function statusBadge(row: RequestRow) {
     return <Badge variant="outline" className="text-slate-400">Expired</Badge>;
   }
   if (row.status === "approved") {
-<<<<<<< HEAD
-    return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Approved</Badge>;
-=======
     return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Approved</Badge>;
->>>>>>> main
   }
   if (row.status === "rejected") {
     return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Rejected</Badge>;
@@ -490,19 +486,8 @@ export function SupplierRequestsTable({
   const [, startTransition] = useTransition();
 
   const [reviewRow, setReviewRow] = useState<RequestRow | null>(null);
-<<<<<<< HEAD
-  const [convertQty, setConvertQty] = useState("");
-  const [convertUnit, setConvertUnit] = useState("");
-  const [convertNotes, setConvertNotes] = useState("");
-  const [rejectionReason, setRejectionReason] = useState("");
-  const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(null);
-  const [converting, setConverting] = useState(false);
-  const [convertError, setConvertError] = useState("");
-  const [convertedIds, setConvertedIds] = useState<Set<string>>(new Set());
-=======
   const [bulkOpen, setBulkOpen] = useState(false);
   const [updatedIds, setUpdatedIds] = useState<Map<string, string>>(new Map());
->>>>>>> main
 
   function setFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -514,78 +499,6 @@ export function SupplierRequestsTable({
     startTransition(() => router.replace(`${pathname}?${params.toString()}`));
   }
 
-<<<<<<< HEAD
-  function openReview(row: RequestRow) {
-    setReviewRow(row);
-    setConvertQty(String(row.submittedData?.quantity ?? ""));
-    setConvertUnit(row.submittedData?.unit ?? "tonne");
-    setConvertNotes(row.submittedData?.description ?? "");
-    setRejectionReason("");
-    setReviewAction(null);
-    setConvertError("");
-  }
-
-  async function handleReviewAction(action: "approve" | "reject") {
-    if (!reviewRow) return;
-    setConvertError("");
-
-    if (action === "reject" && !rejectionReason.trim()) {
-      setConvertError("Rejection reason is required.");
-      return;
-    }
-
-    setConverting(true);
-    try {
-      const endpoint =
-        action === "approve"
-          ? `/api/orgs/${orgId}/supplier-data-requests/${reviewRow.id}/convert`
-          : `/api/orgs/${orgId}/supplier-data-requests/${reviewRow.id}`;
-
-      if (action === "approve") {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            quantity: Number(convertQty),
-            unit: convertUnit || reviewRow.submittedData?.unit,
-            notes: convertNotes.trim() || undefined,
-          }),
-        });
-
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          setConvertError(body?.message ?? "Approval failed.");
-          return;
-        }
-
-        setConvertedIds((prev) => new Set([...prev, reviewRow.id]));
-        setReviewRow(null);
-        startTransition(() => router.refresh());
-      } else {
-        const res = await fetch(endpoint, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "reject",
-            rejectionReason: rejectionReason.trim(),
-          }),
-        });
-
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          setConvertError(body?.message ?? "Rejection failed.");
-          return;
-        }
-
-        setReviewRow(null);
-        startTransition(() => router.refresh());
-      }
-    } catch {
-      setConvertError("Network error. Please try again.");
-    } finally {
-      setConverting(false);
-    }
-=======
   async function flagRow(row: RequestRow) {
     try {
       const res = await fetch(`/api/orgs/${orgId}/supplier-data-requests/${row.id}`, {
@@ -598,7 +511,6 @@ export function SupplierRequestsTable({
         startTransition(() => router.refresh());
       }
     } catch { /* ignore */ }
->>>>>>> main
   }
 
   const filtered = rows.filter((r) => {
@@ -610,12 +522,8 @@ export function SupplierRequestsTable({
     return effectiveStatus === currentStatus;
   });
 
-<<<<<<< HEAD
-  const pendingCount = counts.submitted || 0;
-=======
   const pendingCount = counts.submitted ?? 0;
   const flaggedCount = counts.flagged ?? 0;
->>>>>>> main
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl">
@@ -816,19 +724,6 @@ export function SupplierRequestsTable({
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-<<<<<<< HEAD
-                      {row.status === "approved" || alreadyConverted ? (
-                        <span className="flex items-center justify-end gap-1 text-xs text-green-600">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Converted
-                        </span>
-                      ) : row.status === "submitted" || row.status === "flagged" ? (
-                        <Button size="sm" onClick={() => openReview(row)}>
-                          <Eye className="mr-1.5 h-3.5 w-3.5" />
-                          Review
-                        </Button>
-                      ) : row.status === "rejected" ? (
-                        <span className="text-xs text-red-600">Rejected</span>
-=======
                       {effectiveStatus === "approved" ? (
                         <span className="flex items-center justify-end gap-1 text-xs text-emerald-600">
                           <ShieldCheck className="h-3.5 w-3.5" /> Approved
@@ -860,7 +755,6 @@ export function SupplierRequestsTable({
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
->>>>>>> main
                       ) : (
                         <span className="text-xs text-slate-300">
                           {row.expired ? "Expired" : "Pending"}
@@ -875,175 +769,6 @@ export function SupplierRequestsTable({
         </div>
       )}
 
-<<<<<<< HEAD
-      {/* Review / convert dialog */}
-      <Dialog open={!!reviewRow} onOpenChange={(open) => !open && setReviewRow(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Review supplier submission</DialogTitle>
-            <DialogDescription>
-              Review the submitted data and decide whether to approve, reject, or convert to activity record.
-            </DialogDescription>
-          </DialogHeader>
-
-          {reviewRow && (
-            <div className="flex flex-col gap-4 py-2 max-h-[60vh] overflow-y-auto">
-              {/* Submission summary */}
-              <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
-                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                  <div>
-                    <dt className="text-slate-400 text-xs">Supplier</dt>
-                    <dd className="font-medium">{reviewRow.supplierName ?? reviewRow.supplierEmail}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-slate-400 text-xs">Category</dt>
-                    <dd className="capitalize">{reviewRow.categoryName}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-slate-400 text-xs">Period</dt>
-                    <dd>{reviewRow.periodLabel}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-slate-400 text-xs">Submitted</dt>
-                    <dd>{fmtDate(reviewRow.submittedAt)}</dd>
-                  </div>
-                </dl>
-                {reviewRow.submittedData?.description && (
-                  <p className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-500">
-                    {reviewRow.submittedData.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Quality flags */}
-              {reviewRow.qualityFlags && reviewRow.qualityFlags.length > 0 && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-                  <p className="text-sm font-medium text-amber-900 mb-2">Quality flags ({reviewRow.qualityFlags.length})</p>
-                  <ul className="space-y-2">
-                    {reviewRow.qualityFlags.map((flag, i) => (
-                      <li key={i} className="flex gap-2 text-xs">
-                        <span className={`px-2 py-0.5 rounded font-bold whitespace-nowrap ${
-                          flag.severity === "critical" ? "bg-red-200 text-red-700" : flag.severity === "warning" ? "bg-amber-200 text-amber-700" : "bg-slate-200 text-slate-700"
-                        }`}>
-                          {flag.severity.toUpperCase()}
-                        </span>
-                        <div className="flex-1">
-                          <p className="font-medium text-slate-900">{flag.field}</p>
-                          <p className="text-slate-600">{flag.message}</p>
-                          {flag.suggestedRange && (
-                            <p className="text-slate-500 mt-0.5">Expected: {flag.suggestedRange.min} – {flag.suggestedRange.max}</p>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Rejection reason (if rejected) */}
-              {reviewRow.status === "rejected" && reviewRow.rejectionReason && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                  <p className="text-sm font-medium text-red-900 mb-1">Previous rejection reason</p>
-                  <p className="text-sm text-red-700">{reviewRow.rejectionReason}</p>
-                </div>
-              )}
-
-              {/* Review action tabs */}
-              {reviewRow.status === "submitted" || reviewRow.status === "flagged" ? (
-                <>
-                  {!reviewAction ? (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setReviewAction("approve")}
-                        className="flex-1"
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setReviewAction("reject")}
-                        className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  ) : reviewAction === "approve" ? (
-                    <>
-                      {/* Approve: show convert form */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col gap-1.5">
-                          <Label htmlFor="convert-qty">Quantity</Label>
-                          <Input
-                            id="convert-qty"
-                            type="number"
-                            min="0"
-                            step="any"
-                            value={convertQty}
-                            onChange={(e) => setConvertQty(e.target.value)}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                          <Label htmlFor="convert-unit">Unit</Label>
-                          <Input
-                            id="convert-unit"
-                            value={convertUnit}
-                            onChange={(e) => setConvertUnit(e.target.value)}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="convert-notes">
-                          Notes{" "}
-                          <span className="font-normal text-slate-400">(optional)</span>
-                        </Label>
-                        <Textarea
-                          id="convert-notes"
-                          rows={2}
-                          placeholder="Override the source description if needed."
-                          value={convertNotes}
-                          onChange={(e) => setConvertNotes(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-                        The record will be created with <strong>draft</strong> review status and must be approved before inclusion in a calculation run.
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Reject: show reason field */}
-                      <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="rejection-reason">Reason for rejection *</Label>
-                        <Textarea
-                          id="rejection-reason"
-                          rows={3}
-                          placeholder="Explain why this submission is being rejected and what the supplier should correct."
-                          value={rejectionReason}
-                          onChange={(e) => setRejectionReason(e.target.value)}
-                          maxLength={500}
-                        />
-                        <p className="text-right text-xs text-slate-400">
-                          {rejectionReason.length}/500
-                        </p>
-                      </div>
-
-                      <div className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-                        The supplier will receive an email with this rejection reason and be asked to resubmit.
-                      </div>
-                    </>
-                  )}
-                </>
-              ) : null}
-
-              {convertError && (
-                <p className="flex items-center gap-2 rounded bg-red-50 px-3 py-2 text-sm text-red-700">
-                  <CircleAlert className="h-4 w-4 shrink-0" />
-                  {convertError}
-                </p>
-              )}
-=======
       {/* Rejection reason tooltip shown inline in table for rejected rows */}
       {rows.some((r) => r.status === "rejected" && r.rejectionReason) && currentStatus !== "all" && currentStatus !== "rejected" ? null : (
         rows
@@ -1051,30 +776,10 @@ export function SupplierRequestsTable({
           .map((r) => (
             <div key={`reason-${r.id}`} className="rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-xs text-red-700">
               <span className="font-medium">{r.supplierName ?? r.supplierEmail}:</span> {r.rejectionReason}
->>>>>>> main
             </div>
           ))
       )}
 
-<<<<<<< HEAD
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReviewRow(null)} disabled={converting}>
-              Cancel
-            </Button>
-            {reviewAction ? (
-              <Button onClick={() => handleReviewAction(reviewAction)} disabled={converting}>
-                {converting
-                  ? `${reviewAction === "approve" ? "Approving" : "Rejecting"}...`
-                  : reviewAction === "approve"
-                    ? "Approve & Create Record"
-                    : "Reject Submission"}
-                {!converting && <ArrowRight className="ml-1.5 h-4 w-4" />}
-              </Button>
-            ) : null}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-=======
       {/* Bulk upload dialog */}
       <BulkUploadDialog orgId={orgId} open={bulkOpen} onClose={() => setBulkOpen(false)} />
 
@@ -1091,7 +796,6 @@ export function SupplierRequestsTable({
           }}
         />
       )}
->>>>>>> main
     </div>
   );
 }

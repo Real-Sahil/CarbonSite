@@ -38,7 +38,7 @@ export default async function SupplierPortalPage() {
   }
 
   // Get supplier's account info for password expiry check
-  const supplierAccount = await prisma.account.findUnique({
+  const supplierAccount = await prisma.account.findFirst({
     where: { userId: user.id },
     select: { passwordChangedAt: true },
   });

@@ -1,4 +1,4 @@
-import { parseSync } from "csv-parse/sync";
+import { parse } from "csv-parse/sync";
 
 export interface SupplierImportRow {
   email: string;
@@ -26,7 +26,7 @@ export function parseSupplierCsv(buffer: Buffer): ParsedSupplierRow[] {
   let csv: SupplierImportRow[];
 
   try {
-    csv = parseSync(buffer, {
+    csv = parse(buffer, {
       columns: true,
       skip_empty_lines: true,
       trim: true,

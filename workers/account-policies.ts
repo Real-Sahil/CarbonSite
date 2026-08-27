@@ -36,9 +36,11 @@ export async function processAccountPolicies() {
           role: "supplier",
           terminatedAt: null,
           user: {
-            account: {
-              passwordChangedAt: {
-                lt: rotationThreshold,
+            accounts: {
+              some: {
+                passwordChangedAt: {
+                  lt: rotationThreshold,
+                },
               },
             },
           },
@@ -50,10 +52,10 @@ export async function processAccountPolicies() {
       });
 
       for (const supplier of suppliersNeedingReset) {
-        // Audit log: password rotation required
+        // Audit log: password reset required
         await writeAuditLog({
           organizationId: org.id,
-          action: "supplier_account.password_rotation_required",
+          action: "supplier_account.password_reset",
           resourceType: "OrganizationMembership",
           resourceId: supplier.userId,
           actorUserId: null,
@@ -71,10 +73,12 @@ export async function processAccountPolicies() {
           role: "supplier",
           terminatedAt: null,
           user: {
-            account: {
-              passwordChangedAt: {
-                gte: rotationThreshold,
-                lt: warningThreshold,
+            accounts: {
+              some: {
+                passwordChangedAt: {
+                  gte: rotationThreshold,
+                  lt: warningThreshold,
+                },
               },
             },
           },
@@ -134,9 +138,9 @@ export async function processAccountPolicies() {
         // Terminate account
         await prisma.organizationMembership.update({
           where: {
-            userId_organizationId: {
-              userId: supplier.userId,
+            organizationId_userId: {
               organizationId: org.id,
+              userId: supplier.userId,
             },
           },
           data: {
@@ -144,10 +148,10 @@ export async function processAccountPolicies() {
           },
         });
 
-        // Audit log: account auto-terminated
+        // Audit log: account terminated
         await writeAuditLog({
           organizationId: org.id,
-          action: "supplier_account.auto_terminated",
+          action: "supplier_account.terminated",
           resourceType: "OrganizationMembership",
           resourceId: supplier.userId,
           actorUserId: null,

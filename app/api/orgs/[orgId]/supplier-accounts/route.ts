@@ -24,10 +24,11 @@ export async function GET(
             email: true,
             name: true,
             emailVerified: true,
-            account: {
+            accounts: {
               select: {
                 passwordChangedAt: true,
               },
+              take: 1,
             },
             sessions: {
               select: { createdAt: true },
@@ -40,15 +41,15 @@ export async function GET(
       orderBy: { createdAt: "desc" },
     });
 
-    const formattedAccounts = accounts.map((account) => ({
-      userId: account.userId,
-      email: account.user.email,
-      name: account.user.name || "Unknown",
-      status: account.terminatedAt ? ("terminated" as const) : ("active" as const),
-      createdAt: account.createdAt.toISOString(),
-      passwordChangedAt: account.user.account?.passwordChangedAt?.toISOString(),
-      lastLogin: account.user.sessions[0]?.createdAt.toISOString(),
-      terminatedAt: account.terminatedAt?.toISOString(),
+    const formattedAccounts = accounts.map((membership) => ({
+      userId: membership.userId,
+      email: membership.user.email,
+      name: membership.user.name || "Unknown",
+      status: membership.terminatedAt ? ("terminated" as const) : ("active" as const),
+      createdAt: membership.createdAt.toISOString(),
+      passwordChangedAt: membership.user.accounts[0]?.passwordChangedAt?.toISOString(),
+      lastLogin: membership.user.sessions[0]?.createdAt.toISOString(),
+      terminatedAt: membership.terminatedAt?.toISOString(),
     }));
 
     return NextResponse.json({ accounts: formattedAccounts });
