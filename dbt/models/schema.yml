@@ -1,0 +1,121 @@
+version: 2
+
+sources:
+  - name: carbon_site
+    description: "CarbonSite production database"
+    database: "{{ env_var('DBT_POSTGRES_DBNAME', 'carbonsite') }}"
+    schema: public
+    tables:
+      - name: activity_records
+        description: "Committed activity data for emission calculations"
+        columns:
+          - name: id
+            description: "Primary key"
+            tests:
+              - unique
+              - not_null
+          - name: organization_id
+            description: "Organization this record belongs to"
+            tests:
+              - not_null
+          - name: emission_category_id
+            description: "Emission category foreign key"
+            tests:
+              - not_null
+          - name: normalized_amount
+            description: "Normalized activity amount"
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_values_to_be_in_type_list:
+                  column_type: ["numeric"]
+
+      - name: emission_categories
+        description: "Emission category definitions (Scope 1, 2, 3)"
+        columns:
+          - name: id
+            description: "Primary key"
+            tests:
+              - unique
+              - not_null
+          - name: code
+            description: "Category code"
+            tests:
+              - unique
+              - not_null
+
+      - name: emission_factor_library
+        description: "Emission factors from DEFRA, EPA, SustainMetrics"
+        columns:
+          - name: id
+            description: "Primary key"
+            tests:
+              - unique
+              - not_null
+          - name: emission_factor
+            description: "CO2e factor value"
+            tests:
+              - not_null
+
+      - name: facilities
+        description: "Organization facilities"
+        columns:
+          - name: id
+            description: "Primary key"
+            tests:
+              - unique
+              - not_null
+
+models:
+  - name: stg_activity_records
+    description: "Staged activity records with type standardization"
+    columns:
+      - name: id
+        description: "Activity record ID"
+        tests:
+          - unique
+          - not_null
+      - name: normalized_amount
+        description: "Standardized activity amount"
+        tests:
+          - not_null
+
+  - name: fct_emissions
+    description: "Calculated emission facts with factor linkage"
+    columns:
+      - name: emission_id
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      - name: total_co2e_tonnes
+        description: "Total CO2e in tonnes"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type: ["numeric"]
+          - dbt_expectations.expect_column_values_to_be_greater_than_or_equal_to:
+              min_value: 0
+
+  - name: dim_facilities
+    description: "Facility dimension table"
+    columns:
+      - name: facility_id
+        description: "Facility ID"
+        tests:
+          - unique
+          - not_null
+
+  - name: agg_daily_emissions
+    description: "Daily emission aggregates by facility and category"
+    columns:
+      - name: daily_agg_id
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      - name: total_co2e_tonnes
+        description: "Daily CO2e total in tonnes"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_greater_than_or_equal_to:
+              min_value: 0

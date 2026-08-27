@@ -202,6 +202,7 @@ model Organization {
   importBatchQualityScores    ImportBatchQualityScore[]
   stagedExternalData          StagedExternalData[]
   airbyteSyncConnections      AirbyteSyncConnection[]
+  dbtRuns                     DbtRun[]              @relation("DbtRunsOrganization")
 
   @@map("organizations")
 }
@@ -925,6 +926,7 @@ model CalculationRun {
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
+  dbtRuns            DbtRun[]              @relation("DbtRunsCalculation")
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -2572,4 +2574,34 @@ model AirbyteSyncConnection {
   @@index([organizationId, sourceSystem, enabled])
   @@index([organizationId, createdAt(sort: Desc)])
   @@map("airbyte_sync_connections")
+}
+
+// ─── Phase 2C: dbt SQL Transformation ────────────────────────────────────────
+
+model DbtRun {
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  calculationRunId  String?   @map("calculation_run_id")
+  status            String    // 'queued', 'running', 'success', 'failed'
+  dbtVersion        String?   @map("dbt_version")
+  output            String?   // Full dbt CLI output
+  rowsAffected      Int?      @map("rows_affected")
+  modelCount        Int?      @map("model_count")
+  testCount         Int?      @map("test_count")
+  testsPassed       Int?      @map("tests_passed")
+  testsFailed       Int?      @map("tests_failed")
+  errorMessage      String?   @map("error_message")
+  errorDetails      Json?     @map("error_details") // Structured error info
+  duration          Int?      // milliseconds
+  startedAt         DateTime? @map("started_at")
+  finishedAt        DateTime? @map("finished_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  organization   Organization   @relation("DbtRunsOrganization", fields: [organizationId], references: [id], onDelete: Cascade)
+  calculationRun CalculationRun? @relation("DbtRunsCalculation", fields: [calculationRunId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, calculationRunId])
+  @@index([organizationId, status, createdAt(sort: Desc)])
+  @@map("dbt_runs")
 }

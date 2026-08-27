@@ -1,0 +1,21 @@
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.env.local
+profiles.yml

@@ -1,0 +1,60 @@
+
+# Name your project! Project names should be lowercase and use underscores as separators
+# See https://docs.getdbt.com/docs/declaring-a-project
+
+name: 'carbonsite_dbt'
+version: '1.0.0'
+config-version: 2
+
+# This version of dbt-core has built-in support for structured configs.
+# If you enable structured configs in `dbt_project.yml`, you will need to also update your `profiles.yml`
+
+# Specify a schema to build your models into. If this config gets removed,
+# a model's schema will be its "custom schema" or the default schema in your target dir.
+# Using a schema here is supported for:
+# dbt/postgres/redshift/snowflake/bigquery/spark
+
+models:
+  carbonsite_dbt:
+    materialized: view
+    staging:
+      materialized: view
+      +schema: staging
+    marts:
+      materialized: table
+      +schema: marts
+      +indexes:
+        - columns: [organization_id, reporting_period_id]
+        - columns: [facility_id]
+        - columns: [calculation_run_id]
+
+seeds:
+  +schema: seeds
+
+on-run-start:
+  - "{{ log('dbt run started', info=true) }}"
+
+on-run-end:
+  - "{{ log('dbt run completed', info=true) }}"
+
+# Configuring tests to be run on all models
+tests:
+  carbonsite_dbt:
+    +schema: test_results
+    +tags: [daily]
+
+# These configurations specify where dbt should look for different types of files.
+# The `source-paths` config, for example, defaults to `models`
+# You may customize these by uncommenting the configs below
+
+# paths
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_modules"
+  - "logs"
