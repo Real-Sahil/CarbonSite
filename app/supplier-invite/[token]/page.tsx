@@ -31,7 +31,7 @@ export default function SupplierInviteAcceptPage() {
 
   // Handle redirect after success
   if (state?.success && state?.portalToken) {
-    router.push(`/supplier-portal/${state.portalToken}`);
+    router.push(`/supplier-verify/${state.portalToken}`);
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md border-0 shadow-lg">
