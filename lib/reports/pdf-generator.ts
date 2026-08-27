@@ -688,20 +688,21 @@ export async function addQrCodeToFooter(pdfBytes: Buffer, meta: QrMeta): Promise
     const { width, height } = page.getSize();
     const margin = 18;
 
-    // QR code positioned at bottom-right, above the footer text
+    // QR code positioned at bottom-right corner (PDFKit y=0 is at BOTTOM)
+    // y coordinate places QR code in the footer area above bottom margin
     page.drawImage(qrImage, {
       x: width - margin - qrSize,
-      y: height - margin - qrSize - 2,
+      y: margin,
       width: qrSize,
       height: qrSize,
     });
 
-    // Small text label next to QR code
+    // Small text label to the left of QR code in footer
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const gray = rgb(0.608, 0.639, 0.686); // #9CA3AF
     page.drawText("Scan to verify", {
       x: width - margin - qrSize - 55,
-      y: height - margin - qrSize + 10,
+      y: margin + 15,
       size: 6,
       font,
       color: gray,

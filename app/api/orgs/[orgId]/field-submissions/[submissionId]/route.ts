@@ -60,26 +60,32 @@ export async function GET(
       if (latestCalc) co2eKg = Number(latestCalc.totalCo2e);
     }
 
-    // Generate 15-minute presigned download URLs for evidence files
+    // Generate 1-hour presigned download URLs for evidence files
     const evidenceFiles = await Promise.all(
       submission.files
         .filter((f) => f.evidenceFile !== null)
         .map(async (f) => {
           let downloadUrl: string | null = null;
           try {
-            if (f.evidenceFile?.storageKey) {
-              downloadUrl = await presignDownload(f.evidenceFile.storageKey);
-            } else {
+            if (!f.evidenceFile?.storageKey) {
               console.warn(
                 `[field-submissions/${submissionId}] evidence file ${f.evidenceFile!.id} has empty storageKey`,
               );
+            } else {
+              downloadUrl = await presignDownload(f.evidenceFile.storageKey);
             }
           } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            const storageKey = f.evidenceFile?.storageKey || "(empty)";
             console.error(
-              `[field-submissions/${submissionId}] presignDownload failed for key "${f.evidenceFile?.storageKey}":`,
-              err instanceof Error ? err.message : String(err),
+              `[field-submissions/${submissionId}] presignDownload failed for file ${f.evidenceFile!.id} (key: "${storageKey}"): ${errorMsg}`,
             );
-            throw err;
+            if (err instanceof Error) {
+              console.error(
+                `[field-submissions/${submissionId}] error details:`,
+                err.stack,
+              );
+            }
           }
           return {
             id: f.evidenceFile!.id,

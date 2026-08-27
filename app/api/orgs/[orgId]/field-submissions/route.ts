@@ -112,7 +112,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         }
       }
     }
-    // Generate presigned URLs for evidence files
+    // Generate presigned URLs for evidence files (1-hour TTL)
     const data = await Promise.all(
       page.map(async (submission) => {
         const evidenceFiles = await Promise.all(
@@ -121,15 +121,25 @@ export async function GET(req: NextRequest, { params }: Params) {
             .map(async (f) => {
               let downloadUrl: string | null = null;
               try {
-                if (f.evidenceFile?.storageKey) {
+                if (!f.evidenceFile?.storageKey) {
+                  console.warn(
+                    `[field-submissions] evidence file ${f.evidenceFile!.id} has empty storageKey (submission ${submission.id})`,
+                  );
+                } else {
                   downloadUrl = await presignDownload(f.evidenceFile.storageKey);
                 }
               } catch (err) {
+                const errorMsg = err instanceof Error ? err.message : String(err);
+                const storageKey = f.evidenceFile?.storageKey || "(empty)";
                 console.error(
-                  `[field-submissions] presignDownload failed for key "${f.evidenceFile?.storageKey}":`,
-                  err instanceof Error ? err.message : String(err),
+                  `[field-submissions] presignDownload failed for file ${f.evidenceFile!.id} in submission ${submission.id} (key: "${storageKey}"): ${errorMsg}`,
                 );
-                throw err;
+                if (err instanceof Error) {
+                  console.error(
+                    `[field-submissions] error details:`,
+                    err.stack,
+                  );
+                }
               }
               return {
                 id: f.evidenceFile!.id,

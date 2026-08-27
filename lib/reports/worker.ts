@@ -37,31 +37,48 @@ type ReportWithIncludes = Prisma.ReportGetPayload<{ include: typeof REPORT_INCLU
 
 export async function processReport(reportId: string, orgId: string): Promise<void> {
   console.log(`[reports] processReport START: reportId=${reportId}, orgId=${orgId}`);
+  let report: ReportWithIncludes | null = null;
+
   try {
-    const report = await prisma.report.findUniqueOrThrow({
+    report = await prisma.report.findUniqueOrThrow({
       where: { id: reportId },
       include: REPORT_INCLUDE,
     });
     console.log(`[reports] Report loaded: type=${report.type}, status=${report.status}`);
 
-    if (report.organizationId !== orgId) throw new Error("Org mismatch on report job.");
-    if (report.status === "ready") return;
+    if (report.organizationId !== orgId) {
+      const error = new Error("Org mismatch on report job.");
+      console.error(`[reports] CRITICAL: ${error.message} (reportId=${reportId}, expected orgId=${orgId}, got ${report.organizationId})`);
+      throw error;
+    }
+    if (report.status === "ready") {
+      console.log(`[reports] Report already ready, skipping (reportId=${reportId})`);
+      return;
+    }
 
     await prisma.report.update({ where: { id: reportId }, data: { status: "generating" } });
+    console.log(`[reports] Status updated to generating (reportId=${reportId})`);
+
+    let pdfKey: string | null = null;
+    let csvKey: string | null = null;
+    let xmlKey: string | null = null;
 
     try {
       const { html, pdfkitData, xmlBuffer } = await renderForType(report);
+      console.log(`[reports] Rendering complete (reportId=${reportId}, has pdfkitData=${!!pdfkitData})`);
 
       let csvBuffer: Buffer | null = null;
       if (report.type !== "national_toms" && report.type !== "cbam") {
         const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
         csvBuffer = buildCsv(calculations, report);
+        console.log(`[reports] CSV buffer built (reportId=${reportId}, size=${csvBuffer.length} bytes)`);
       }
 
       const rawPdfBuffer = pdfkitData
         ? await generateReportPdf(pdfkitData)
         : await renderPdf(html);
       const pdfChecksum = createHash("sha256").update(rawPdfBuffer).digest("hex");
+      console.log(`[reports] PDF generated (reportId=${reportId}, size=${rawPdfBuffer.length} bytes, checksum=${pdfChecksum})`);
 
       // Create verification token (expires in 90 days)
       const verificationTokenData = await prisma.reportVerificationToken.upsert({
@@ -73,6 +90,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
           expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
         },
       });
+      console.log(`[reports] Verification token created (reportId=${reportId}, token=${verificationTokenData.token.slice(0, 8)}...)`);
 
       const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/public/reports/verify/${verificationTokenData.token}`;
 
@@ -83,30 +101,42 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         generatedAt: new Date(),
         orgId,
       });
+      console.log(`[reports] Audit metadata stamped (reportId=${reportId})`);
 
       // Add QR code to PDF footer
       pdfBuffer = await addQrCodeToFooter(pdfBuffer, {
         verificationUrl,
         verificationTokenId: verificationTokenData.id,
       });
+      console.log(`[reports] QR code added to footer (reportId=${reportId})`);
 
-      const pdfKey = keys.reportPdf(orgId, reportId);
+      // Store PDF with validation
+      pdfKey = keys.reportPdf(orgId, reportId);
+      console.log(`[reports] Storing PDF (reportId=${reportId}, key=${pdfKey})`);
       await putObject(pdfKey, pdfBuffer, "application/pdf");
+      console.log(`[reports] PDF stored successfully (reportId=${reportId})`);
 
-      let csvKey: string | undefined;
       let csvChecksum: string | undefined;
       if (csvBuffer) {
         csvKey = keys.reportCsv(orgId, reportId);
         csvChecksum = createHash("sha256").update(csvBuffer).digest("hex");
+        console.log(`[reports] Storing CSV (reportId=${reportId}, key=${csvKey})`);
         await putObject(csvKey, csvBuffer, "text/csv");
+        console.log(`[reports] CSV stored successfully (reportId=${reportId})`);
       }
 
-      let xmlKey: string | undefined;
       let xmlChecksum: string | undefined;
       if (xmlBuffer) {
         xmlKey = keys.reportXml(orgId, reportId);
         xmlChecksum = createHash("sha256").update(xmlBuffer).digest("hex");
+        console.log(`[reports] Storing XML (reportId=${reportId}, key=${xmlKey})`);
         await putObject(xmlKey, xmlBuffer, "application/xml");
+        console.log(`[reports] XML stored successfully (reportId=${reportId})`);
+      }
+
+      // Validate storage keys exist before marking ready
+      if (!pdfKey) {
+        throw new Error("PDF storage key is null - storage write may have failed silently");
       }
 
       const updated = await prisma.report.update({
@@ -123,6 +153,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         },
         select: { createdByUserId: true, type: true },
       });
+      console.log(`[reports] Report status updated to ready (reportId=${reportId})`);
 
       enqueueNotification({
         type: "report_ready",
@@ -130,14 +161,41 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         orgId,
         resourceId: reportId,
         metadata: { reportLabel: `${updated.type.replaceAll("_", " ")} — ${report.reportingPeriod.label}` },
-      }).catch((err) => console.error("[reports] Failed to enqueue notification:", err));
+      }).catch((err) => console.error(`[reports] Failed to enqueue notification (reportId=${reportId}):`, err));
     } catch (err) {
-      console.error(`[reports] Error generating report ${reportId}:`, err);
-      await prisma.report.update({ where: { id: reportId }, data: { status: "failed" } });
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      const errorStack = err instanceof Error ? err.stack : "";
+      console.error(`[reports] Error generating report (reportId=${reportId}, orgId=${orgId}): ${errorMsg}`, errorStack);
+
+      try {
+        await prisma.report.update({
+          where: { id: reportId },
+          data: { status: "failed" }
+        });
+        console.log(`[reports] Report status set to failed (reportId=${reportId})`);
+      } catch (updateErr) {
+        console.error(`[reports] CRITICAL: Failed to update report status to failed (reportId=${reportId}):`, updateErr);
+      }
       throw err;
     }
   } catch (err) {
-    await prisma.report.update({ where: { id: reportId }, data: { status: "failed" } }).catch(() => {});
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    const errorStack = err instanceof Error ? err.stack : "";
+    console.error(`[reports] Unhandled error in processReport (reportId=${reportId}, orgId=${orgId}): ${errorMsg}`, errorStack);
+
+    if (report === null) {
+      console.error(`[reports] CRITICAL: Report not found or fetch failed (reportId=${reportId})`);
+    }
+
+    try {
+      await prisma.report.update({
+        where: { id: reportId },
+        data: { status: "failed" }
+      });
+      console.log(`[reports] Report status set to failed from outer catch (reportId=${reportId})`);
+    } catch (updateErr) {
+      console.error(`[reports] CRITICAL: Failed to update report status in outer catch (reportId=${reportId}):`, updateErr);
+    }
     throw err;
   }
 }
