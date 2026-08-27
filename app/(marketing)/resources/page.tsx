@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
+import { VideoBackground } from "@/components/ui/video-background";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -93,28 +93,22 @@ export default function ResourcesPage() {
       <SiteNav theme="dark" />
 
       {/* Hero */}
-      <section className="relative min-h-[55vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1505228395891-9a51e7e86e81?w=1600&h=900&fit=crop"
-            alt="Renewable energy resources climate knowledge documentation"
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-[#0F172A]/70 to-[#0F172A]/25" />
-        </div>
+      <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800">
+        <VideoBackground
+          src="/videos/hero-resources.mp4"
+          fallbackGradient="linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+          overlayOpacity={0.50}
+        />
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#06B6D4]" />
-              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Resources</span>
+              <div className="w-6 h-px bg-cyan-400" />
+              <span className="text-xs text-cyan-400 tracking-[0.12em] font-medium">Resources</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-6 max-w-[20ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
               Guidance for getting started.
             </h1>
-            <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch]">
+            <p className="text-base text-slate-300 leading-relaxed max-w-[50ch]">
               Pilot planning, evidence standards, emission factor notes, and methodology references. Grounded in DEFRA 2025, EPA 2025, and GHG Protocol Corporate Standard.
             </p>
           </AnimateIn>
