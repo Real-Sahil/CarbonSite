@@ -51,22 +51,22 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
 
         if (row.dataType === 'facility_spend') {
           // Convert GBP spend to estimated CO2e using rough conversion factor
-          normalizedAmount = (payload.spend_gbp || 0) * 0.4; // ~0.4 tonnes per £100
+          normalizedAmount = ((payload.spend_gbp as number | undefined) || 0) * 0.4; // ~0.4 tonnes per £100
           normalizedUnit = 'tonnes';
           originalUnit = 'GBP';
         } else if (row.dataType === 'energy_consumption') {
-          normalizedAmount = payload.kwh || 0;
+          normalizedAmount = (payload.kwh as number | undefined) || 0;
           normalizedUnit = 'kwh';
           originalUnit = 'kwh';
         } else if (row.dataType === 'waste_volume') {
-          normalizedAmount = payload.tonnes || (payload.kg ? (payload.kg || 0) / 1000 : 0);
+          normalizedAmount = (payload.tonnes as number | undefined) || (payload.kg ? ((payload.kg as number | undefined) || 0) / 1000 : 0);
           normalizedUnit = 'tonnes';
-          originalUnit = payload.kg ? 'kg' : 'tonnes';
+          originalUnit = (payload.kg) ? 'kg' : 'tonnes';
         } else {
           // Generic numeric value
-          normalizedAmount = payload.amount || 0;
-          normalizedUnit = payload.unit || 'units';
-          originalUnit = payload.unit || 'units';
+          normalizedAmount = (payload.amount as number | undefined) || 0;
+          normalizedUnit = (payload.unit as string | undefined) || 'units';
+          originalUnit = (payload.unit as string | undefined) || 'units';
         }
 
         return {
@@ -106,13 +106,13 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
   }
 
   // 3. Create import batch for these records (if reporting period specified)
-  const reportingPeriodId = (stagedData[0].payload as Record<string, unknown>)?.reporting_period_id;
+  const reportingPeriodId = (stagedData[0].payload as Record<string, unknown>)?.reporting_period_id as string | undefined;
 
   if (reportingPeriodId) {
     await prisma.importBatch.create({
       data: {
         organizationId: orgId,
-        reportingPeriodId,
+        reportingPeriodId: reportingPeriodId as string,
         templateKey: 'airbyte-import',
         state: 'committed',
         sourceFilename: `${connection.sourceSystem}-sync-${new Date().toISOString()}`,
@@ -131,16 +131,18 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
 
     // 4. Bulk insert activity records
     try {
-      const recordsToCreate = records.map((r) => ({
+      const mapped = records.map((r) => ({
         ...r,
         reportingPeriodId: reportingPeriodId as string,
         amount: r.normalizedAmount,
         unit: r.normalizedUnit,
         createdByUserId: null
       }));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const recordsToCreate = mapped as any[];
 
       await prisma.activityRecord.createMany({
-        data: recordsToCreate as Parameters<typeof prisma.activityRecord.createMany>[0]['data']
+        data: recordsToCreate
       });
 
       // 5. Mark staged data as processed
