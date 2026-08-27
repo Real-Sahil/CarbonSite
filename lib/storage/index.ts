@@ -158,7 +158,9 @@ export async function presignUpload(key: string, contentType: string): Promise<s
 export async function presignDownload(key: string): Promise<string> {
   assertStorageKey(key);
   if (DRIVER === "local") {
-    return `/api/dev/storage/serve?key=${encodeURIComponent(key)}`;
+    const exp = Date.now() + PRESIGN_TTL * 1000;
+    const sig = signStorageUrl(key, exp);
+    return `${appOrigin()}/api/dev/storage/serve?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}`;
   }
   if (DRIVER === "db") {
     const exp = Date.now() + PRESIGN_TTL * 1000;
