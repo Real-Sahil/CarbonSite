@@ -3,16 +3,18 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupplierRequestsTable } from "./supplier-requests-table";
+import { SupplierAccountsPage } from "./suppliers-accounts-page";
 
 interface PageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ status?: string; period?: string }>;
+  searchParams: Promise<{ status?: string; period?: string; tab?: string }>;
 }
 
 export default async function SuppliersSettingsPage({ params, searchParams }: PageProps) {
   const { orgId } = await params;
-  const { status: statusFilter, period: periodFilter } = await searchParams;
+  const { status: statusFilter, period: periodFilter, tab = "requests" } = await searchParams;
 
   try {
     await requireOrgMember(orgId, "admin");
@@ -96,13 +98,26 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
   };
 
   return (
-    <SupplierRequestsTable
-      orgId={orgId}
-      rows={rows}
-      counts={counts}
-      periods={periods}
-      currentStatus={statusFilter ?? "all"}
-      currentPeriod={periodFilter ?? ""}
-    />
+    <Tabs defaultValue={tab} className="w-full">
+      <TabsList>
+        <TabsTrigger value="requests">Requests</TabsTrigger>
+        <TabsTrigger value="accounts">Accounts</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="requests">
+        <SupplierRequestsTable
+          orgId={orgId}
+          rows={rows}
+          counts={counts}
+          periods={periods}
+          currentStatus={statusFilter ?? "all"}
+          currentPeriod={periodFilter ?? ""}
+        />
+      </TabsContent>
+
+      <TabsContent value="accounts">
+        <SupplierAccountsPage orgId={orgId} />
+      </TabsContent>
+    </Tabs>
   );
 }
