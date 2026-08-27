@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { normalizeUnit, convertBetween, UnitError } from "./units";
-import { selectFactor } from "./factor-selector";
+import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
 import type { Scope2Method } from "@prisma/client";
@@ -38,6 +38,10 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
     const factorLibraryVersion = `${run.factorLibrary.name} ${run.factorLibrary.version}`;
     const methodologyVersionName = run.methodologyVersion.name;
 
+    // Pre-load all emission factors for this library into memory.
+    // This converts ~100k per-record DB queries into a single bulk fetch.
+    const factorCache = await buildFactorCache(run.factorLibraryId);
+
     // Process each record
     for (const record of records) {
       const activityDate = record.activityDate ?? record.startDate ?? new Date();
@@ -55,21 +59,21 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         }
       }
 
-      const factorSelection = await selectFactor({
-        emissionCategoryId: record.emissionCategoryId,
-        activityType: record.emissionCategory.activityType,
-        geographyCountry: record.country,
-        activityDate,
-        factorLibraryId: run.factorLibraryId,
-        scope2Method: record.scope2Method ?? undefined,
-        // Prefer factors whose input unit can actually consume this record,
-        // and whose description matches the record's fuel/transport detail
-        // (diesel vs petrol live in the same category otherwise).
-        recordUnit: normalized.unit,
-        matchHint: [record.fuelType, record.transportMode, record.refrigerantType]
-          .filter(Boolean)
-          .join(" "),
-      });
+      const factorSelection = await selectFactor(
+        {
+          emissionCategoryId: record.emissionCategoryId,
+          activityType: record.emissionCategory.activityType,
+          geographyCountry: record.country,
+          activityDate,
+          factorLibraryId: run.factorLibraryId,
+          scope2Method: record.scope2Method ?? undefined,
+          recordUnit: normalized.unit,
+          matchHint: [record.fuelType, record.transportMode, record.refrigerantType]
+            .filter(Boolean)
+            .join(" "),
+        },
+        factorCache,
+      );
 
       if (!factorSelection) {
         // No factor found — include the record with zero CO2e and a warning

@@ -8,6 +8,7 @@ import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from 
 import { getReportHandler, type ReportContext } from "./registry";
 import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter } from "./pdf-generator";
 import { generateAuditNarrative } from "./narrative-generator";
+import { llmClient } from "@/lib/llm/client";
 
 const REPORT_INCLUDE = {
   organization: {
@@ -162,8 +163,8 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
     report, agg, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion, auditEventFilter,
   );
 
-  // Generate audit narrative if NVIDIA API is configured
-  if (process.env.NVIDIA_NIM_API_KEY && report.type !== "national_toms" && report.type !== "cbam") {
+  // Generate audit narrative if any LLM provider is configured
+  if (llmClient.isConfigured() && report.type !== "national_toms" && report.type !== "cbam") {
     try {
       basePdfData.narrative = await generateAuditNarrative(basePdfData);
     } catch (err) {
