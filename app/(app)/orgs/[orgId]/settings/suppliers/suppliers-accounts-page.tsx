@@ -12,12 +12,19 @@ interface SupplierAccount {
   company?: string;
   status: "active" | "terminated";
   createdAt: string;
+  passwordChangedAt?: string;
   lastLogin?: string;
   terminatedAt?: string;
 }
 
+interface AccountPolicies {
+  supplierPasswordRotationDays: number | null;
+  supplierAccountExpiryDays: number | null;
+}
+
 export function SupplierAccountsPage({ orgId }: { orgId: string }) {
   const [accounts, setAccounts] = useState<SupplierAccount[]>([]);
+  const [policies, setPolicies] = useState<AccountPolicies | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
@@ -32,13 +39,25 @@ export function SupplierAccountsPage({ orgId }: { orgId: string }) {
       setAccounts(data.accounts || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load accounts");
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const fetchPolicies = async () => {
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/settings/account-policies`);
+      if (!res.ok) {
+        throw new Error("Failed to load policies");
+      }
+      const data = await res.json();
+      setPolicies(data);
+    } catch (err) {
+      console.error("Failed to load policies:", err);
     }
   };
 
   useEffect(() => {
-    fetchAccounts();
+    setLoading(true);
+    Promise.all([fetchAccounts(), fetchPolicies()]).finally(() => setLoading(false));
   }, [orgId]);
 
   if (error) {
@@ -54,6 +73,7 @@ export function SupplierAccountsPage({ orgId }: { orgId: string }) {
     <SupplierAccountsTable
       orgId={orgId}
       accounts={accounts}
+      policies={policies}
       onRefresh={fetchAccounts}
     />
   );

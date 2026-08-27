@@ -12,6 +12,7 @@ import type {
   DsarJobData,
   UptimeMonitoringJobData,
   DsarSlaMonitoringJobData,
+  AccountPoliciesJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -21,6 +22,7 @@ import { processDsarExport } from "./dsar-export";
 import { processDsarErasure } from "./dsar-erasure";
 import { processUptimeMonitoring } from "./uptime-monitoring";
 import { processDsarSlaMonitoring } from "./dsar-sla-monitoring";
+import { processAccountPolicies } from "./account-policies";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -149,8 +151,25 @@ async function start() {
     {},
   );
 
+  // ── Account Policies (password rotation, account expiry) ───────────────────
+  await boss.work<AccountPoliciesJobData>(
+    "account-policies",
+    { localConcurrency: 1 },
+    async () => {
+      console.log("[account-policies] running policy checks");
+      await processAccountPolicies();
+    },
+  );
+
+  // Schedule nightly account policies check: 1 AM UTC (cron: 0 1 * * *)
+  await boss.schedule(
+    "account-policies",
+    "0 1 * * *", // daily at 1 AM UTC
+    {},
+  );
+
   console.log(
-    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring, dsar-sla-monitoring)",
+    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring, dsar-sla-monitoring, account-policies)",
   );
 }
 

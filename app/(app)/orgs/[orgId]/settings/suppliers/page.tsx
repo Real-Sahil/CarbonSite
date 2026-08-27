@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupplierRequestsTable } from "./supplier-requests-table";
 import { SupplierAccountsPage } from "./suppliers-accounts-page";
 import { MetricsDashboard } from "./metrics-dashboard";
+import { AccountPoliciesSettings } from "./account-policies-settings";
 
 interface PageProps {
   params: Promise<{ orgId: string }>;
@@ -104,6 +105,7 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
         <TabsTrigger value="requests">Requests</TabsTrigger>
         <TabsTrigger value="accounts">Accounts</TabsTrigger>
         <TabsTrigger value="metrics">Metrics</TabsTrigger>
+        <TabsTrigger value="policies">Policies</TabsTrigger>
       </TabsList>
 
       <TabsContent value="requests">
@@ -123,6 +125,10 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
 
       <TabsContent value="metrics">
         <MetricsDashboard />
+      </TabsContent>
+
+      <TabsContent value="policies">
+        <AccountPoliciesSettings />
       </TabsContent>
     </Tabs>
   );

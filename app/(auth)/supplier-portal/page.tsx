@@ -4,8 +4,10 @@ import { prisma } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
+import { AlertTriangle, Clock } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -20,13 +22,33 @@ export default async function SupplierPortalPage() {
       terminatedAt: null,
     },
     include: {
-      organization: { select: { name: true, id: true } },
+      organization: {
+        select: {
+          name: true,
+          id: true,
+          supplierPasswordRotationDays: true,
+          supplierAccountExpiryDays: true,
+        },
+      },
     },
   });
 
   if (!supplierMembership) {
     redirect("/sign-in");
   }
+
+  // Get supplier's account info for password expiry check
+  const supplierAccount = await prisma.account.findUnique({
+    where: { userId: user.id },
+    select: { passwordChangedAt: true },
+  });
+
+  // Get supplier's last login
+  const lastSession = await prisma.session.findFirst({
+    where: { userId: user.id },
+    select: { createdAt: true },
+    orderBy: { createdAt: "desc" },
+  });
 
   // Get supplier's assigned data requests
   const requests = await prisma.supplierDataRequest.findMany({
@@ -61,9 +83,72 @@ export default async function SupplierPortalPage() {
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
+  // Check password expiry
+  let passwordWarning: { isExpired: boolean; daysUntil?: number } | null = null;
+  if (supplierMembership.organization.supplierPasswordRotationDays && supplierMembership.organization.supplierPasswordRotationDays > 0) {
+    if (!supplierAccount?.passwordChangedAt) {
+      passwordWarning = { isExpired: true };
+    } else {
+      const passwordChangedAt = supplierAccount.passwordChangedAt;
+      const expiryDate = subDays(new Date(), -supplierMembership.organization.supplierPasswordRotationDays);
+      const daysUntil = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      if (daysUntil <= 0) {
+        passwordWarning = { isExpired: true, daysUntil: 0 };
+      } else if (daysUntil <= 7) {
+        passwordWarning = { isExpired: false, daysUntil };
+      }
+    }
+  }
+
+  // Check account expiry due to inactivity
+  let inactivityWarning: { isExpiring: boolean; daysUntil?: number } | null = null;
+  if (supplierMembership.organization.supplierAccountExpiryDays && supplierMembership.organization.supplierAccountExpiryDays > 0) {
+    if (!lastSession) {
+      inactivityWarning = { isExpiring: true, daysUntil: 0 };
+    } else {
+      const expiryDate = subDays(new Date(), -supplierMembership.organization.supplierAccountExpiryDays);
+      const daysUntil = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      if (daysUntil <= 14 && daysUntil > 0) {
+        inactivityWarning = { isExpiring: true, daysUntil };
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="mx-auto max-w-7xl px-4 py-8">
+        {/* Warnings */}
+        {passwordWarning && (
+          <div className="mb-6">
+            {passwordWarning.isExpired ? (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Your password has expired and must be reset before you can submit data. Please contact your administrator to reset your password.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert className="border-orange-300 bg-orange-50">
+                <Clock className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-800">
+                  Your password will expire in {passwordWarning.daysUntil} day{passwordWarning.daysUntil === 1 ? "" : "s"}. Please contact your administrator to reset it.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+
+        {inactivityWarning && (
+          <div className="mb-6">
+            <Alert className="border-yellow-300 bg-yellow-50">
+              <Clock className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800">
+                Your account will be deactivated due to inactivity in {inactivityWarning.daysUntil} day{inactivityWarning.daysUntil === 1 ? "" : "s"}. Please log in regularly to keep your account active.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-900">Data Submission Portal</h1>

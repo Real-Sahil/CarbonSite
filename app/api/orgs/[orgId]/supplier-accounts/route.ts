@@ -24,6 +24,11 @@ export async function GET(
             email: true,
             name: true,
             emailVerified: true,
+            account: {
+              select: {
+                passwordChangedAt: true,
+              },
+            },
             sessions: {
               select: { createdAt: true },
               orderBy: { createdAt: "desc" },
@@ -41,6 +46,7 @@ export async function GET(
       name: account.user.name || "Unknown",
       status: account.terminatedAt ? ("terminated" as const) : ("active" as const),
       createdAt: account.createdAt.toISOString(),
+      passwordChangedAt: account.user.account?.passwordChangedAt?.toISOString(),
       lastLogin: account.user.sessions[0]?.createdAt.toISOString(),
       terminatedAt: account.terminatedAt?.toISOString(),
     }));

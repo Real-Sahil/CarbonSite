@@ -15,7 +15,10 @@ export type NotificationJobData = {
     | "import_failed"
     | "report_ready"
     | "submission_reviewed"
-    | "submission_received";
+    | "submission_received"
+    | "supplier_password_expiring"
+    | "supplier_account_terminated"
+    | "supplier_account_expiring";
   recipientUserId: string;
   orgId: string;
   resourceId: string;
@@ -24,6 +27,7 @@ export type NotificationJobData = {
 export type DsarJobData = { dsarRequestId: string };
 export type UptimeMonitoringJobData = { checkId?: string };
 export type DsarSlaMonitoringJobData = Record<string, never>;
+export type AccountPoliciesJobData = Record<string, never>;
 
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
@@ -53,4 +57,9 @@ export async function enqueueDsarExport(data: DsarJobData) {
 export async function enqueueDsarErasure(data: DsarJobData) {
   await ensureBossStarted();
   await boss.send("dsar-erasure", data, retry);
+}
+
+export async function enqueueAccountPoliciesCheck(data: AccountPoliciesJobData) {
+  await ensureBossStarted();
+  await boss.send("account-policies", data, retry);
 }

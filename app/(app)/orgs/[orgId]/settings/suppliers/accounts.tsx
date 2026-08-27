@@ -10,8 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Plus, Upload } from "lucide-react";
-import { format } from "date-fns";
+import { MoreVertical, Plus, Upload, AlertTriangle, Clock } from "lucide-react";
+import { format, subDays } from "date-fns";
 import { CreateAccountDialog } from "./create-account-dialog";
 import { PasswordResetDialog } from "./password-reset-dialog";
 import { BulkImportDialog } from "./bulk-import-dialog";
@@ -23,21 +23,55 @@ interface SupplierAccount {
   company?: string;
   status: "active" | "terminated";
   createdAt: string;
+  passwordChangedAt?: string;
   lastLogin?: string;
   terminatedAt?: string;
+}
+
+interface AccountPolicies {
+  supplierPasswordRotationDays: number | null;
+  supplierAccountExpiryDays: number | null;
 }
 
 export interface SupplierAccountsProps {
   orgId: string;
   accounts: SupplierAccount[];
+  policies: AccountPolicies | null;
   onRefresh: () => void;
 }
 
-export function SupplierAccountsTable({ orgId, accounts, onRefresh }: SupplierAccountsProps) {
+export function SupplierAccountsTable({ orgId, accounts, policies, onRefresh }: SupplierAccountsProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedAccountForReset, setSelectedAccountForReset] = useState<SupplierAccount | null>(null);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+
+  const getPasswordExpiryStatus = (account: SupplierAccount): { isExpired: boolean; daysUntil?: number } => {
+    if (!policies?.supplierPasswordRotationDays || policies.supplierPasswordRotationDays === 0) {
+      return { isExpired: false };
+    }
+    if (!account.passwordChangedAt) {
+      return { isExpired: true, daysUntil: 0 };
+    }
+    const passwordChangedAt = new Date(account.passwordChangedAt);
+    const expiryDate = subDays(new Date(), -policies.supplierPasswordRotationDays);
+    const daysUntil = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    return { isExpired: daysUntil <= 0, daysUntil: Math.max(0, daysUntil) };
+  };
+
+  const getInactivityStatus = (account: SupplierAccount): { isExpiring: boolean; daysUntil?: number } => {
+    if (!policies?.supplierAccountExpiryDays || policies.supplierAccountExpiryDays === 0) {
+      return { isExpiring: false };
+    }
+    if (!account.lastLogin) {
+      const accountAgeInDays = Math.ceil((new Date().getTime() - new Date(account.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+      return { isExpiring: accountAgeInDays >= policies.supplierAccountExpiryDays, daysUntil: 0 };
+    }
+    const lastLoginDate = new Date(account.lastLogin);
+    const expiryDate = subDays(new Date(), -policies.supplierAccountExpiryDays);
+    const daysUntil = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    return { isExpiring: daysUntil <= 14, daysUntil: Math.max(0, daysUntil) };
+  };
 
   const handleTerminate = async (userId: string, account: SupplierAccount) => {
     if (!confirm(`Are you sure you want to terminate the account for ${account.email}?`)) return;
@@ -118,6 +152,7 @@ export function SupplierAccountsTable({ orgId, accounts, onRefresh }: SupplierAc
                     <th className="px-4 py-3 text-left font-medium text-zinc-600">Name</th>
                     <th className="px-4 py-3 text-left font-medium text-zinc-600">Company</th>
                     <th className="px-4 py-3 text-left font-medium text-zinc-600">Status</th>
+                    <th className="px-4 py-3 text-left font-medium text-zinc-600">Policy Alerts</th>
                     <th className="px-4 py-3 text-left font-medium text-zinc-600">Created</th>
                     <th className="px-4 py-3 text-left font-medium text-zinc-600">Last Login</th>
                     <th className="px-4 py-3 text-right font-medium text-zinc-600">Actions</th>
@@ -133,6 +168,42 @@ export function SupplierAccountsTable({ orgId, accounts, onRefresh }: SupplierAc
                         <Badge variant={account.status === "active" ? "default" : "secondary"}>
                           {account.status === "active" ? "Active" : "Terminated"}
                         </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1">
+                          {(() => {
+                            const passwordStatus = getPasswordExpiryStatus(account);
+                            const inactivityStatus = getInactivityStatus(account);
+                            const badges = [];
+
+                            if (passwordStatus.isExpired) {
+                              badges.push(
+                                <Badge key="password" variant="destructive" className="gap-1 w-fit">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  Password expired
+                                </Badge>
+                              );
+                            } else if (passwordStatus.daysUntil !== undefined && passwordStatus.daysUntil <= 7) {
+                              badges.push(
+                                <Badge key="password" variant="outline" className="gap-1 w-fit border-orange-300 text-orange-700">
+                                  <Clock className="h-3 w-3" />
+                                  {passwordStatus.daysUntil}d
+                                </Badge>
+                              );
+                            }
+
+                            if (inactivityStatus.isExpiring && account.status === "active") {
+                              badges.push(
+                                <Badge key="inactivity" variant="outline" className="gap-1 w-fit border-yellow-300 text-yellow-700">
+                                  <Clock className="h-3 w-3" />
+                                  {inactivityStatus.daysUntil}d
+                                </Badge>
+                              );
+                            }
+
+                            return badges.length > 0 ? badges : <span className="text-xs text-zinc-400">None</span>;
+                          })()}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-zinc-600">
                         {format(new Date(account.createdAt), "MMM d, yyyy")}
