@@ -20,18 +20,18 @@ export function handleRouteError(err: unknown): NextResponse {
   if (err instanceof AuthError) {
     return apiError(err.code, err.message, err.status);
   }
+  if (isStripeError(err)) {
+    const sanitizedMessage = sanitizeStripeErrorMessage(err.message);
+    const status = (err as any).statusCode || 400;
+    const code = (err as any).code || "STRIPE_ERROR";
+    const errorCode = `STRIPE_${code}`;
+    return apiError(errorCode, sanitizedMessage, status);
+  }
   if (isStructuredApiError(err)) {
     return apiError(err.code, err.message, err.status, err.details);
   }
   if (err instanceof ZodError) {
     return apiError("VALIDATION_ERROR", "Invalid request data", 422, err.flatten());
-  }
-  if (isStripeError(err)) {
-    const status = (err as any).statusCode || 400;
-    const code = (err as any).code || "STRIPE_ERROR";
-    const errorCode = `STRIPE_${code}`;
-    console.error("Stripe error:", { code: errorCode, message: err.message, status });
-    return apiError(errorCode, err.message, status);
   }
   if (err instanceof Error) {
     console.error("Route error:", err.message, err);
@@ -39,6 +39,13 @@ export function handleRouteError(err: unknown): NextResponse {
   }
   console.error("Unknown route error:", err);
   return apiError("INTERNAL_ERROR", "An unexpected error occurred", 500);
+}
+
+function sanitizeStripeErrorMessage(message: string): string {
+  if (!message) return "Payment processing failed";
+  const apiKeyPattern = /sk_(test|live)_[a-zA-Z0-9]{24,}/g;
+  const sanitized = message.replace(apiKeyPattern, "[API_KEY_REDACTED]");
+  return sanitized || "Payment processing failed";
 }
 
 function isStructuredApiError(

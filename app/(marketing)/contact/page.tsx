@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { AnimateIn } from "@/components/marketing/animate-in";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
+import { VideoBackground } from "@/components/ui/video-background";
 import { ArrowUpRight, Mail, Building2, FileText, MapPin } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -17,41 +17,35 @@ export default function ContactPage() {
       <SiteNav theme="dark" />
 
       {/* Hero */}
-      <section className="relative min-h-[60vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&h=900&fit=crop"
-            alt="Sustainability team climate action collaboration"
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-blue-50 via-white to-white" />
-        </div>
+      <section className="relative min-h-[60vh] flex items-end overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800">
+        <VideoBackground
+          src="/videos/hero-contact.mp4"
+          fallbackGradient="linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+          overlayOpacity={0.50}
+        />
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#06B6D4]" />
-              <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Pilot contact</span>
+              <div className="w-6 h-px bg-cyan-400" />
+              <span className="text-xs text-cyan-400 tracking-[0.12em] font-medium">Pilot contact</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-6 max-w-[22ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[22ch]">
               Plan a CarbonSite pilot around real project data.
             </h1>
-            <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch] mb-8">
+            <p className="text-base text-slate-300 leading-relaxed max-w-[50ch] mb-8">
               Bring one construction project, one reporting period, field evidence, supplier files, and postcode routes. CarbonSite proves the workflow with live tenant data.
             </p>
             <div className="flex flex-wrap gap-3">
               <a
                 href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#06B6D4] text-[#111827] text-sm font-medium hover:bg-[#0891B2] transition-colors active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-cyan-500 text-slate-950 text-sm font-medium hover:bg-cyan-400 transition-colors active:scale-[0.97]"
               >
                 <Mail className="h-4 w-4" />
                 Email pilot team
               </a>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-[#111827] text-sm font-medium hover:border-white/40 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-400/30 text-slate-300 text-sm font-medium hover:border-slate-300/50 hover:text-white transition-colors"
               >
                 Create workspace
                 <ArrowUpRight className="h-3.5 w-3.5" />
