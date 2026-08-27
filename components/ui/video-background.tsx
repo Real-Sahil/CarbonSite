@@ -14,7 +14,7 @@ export function VideoBackground({
   src,
   poster,
   fallbackGradient = "linear-gradient(135deg, #0A1628 0%, #1C1A2E 100%)",
-  overlayOpacity = 0.55,
+  overlayOpacity = 0.35,
   className,
 }: VideoBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);

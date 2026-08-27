@@ -714,7 +714,7 @@ function EntityPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-lg border border-slate-200 bg-white max-w-full overflow-hidden">
       <PanelHeader title={title} description={description} />
       {children}
     </div>
