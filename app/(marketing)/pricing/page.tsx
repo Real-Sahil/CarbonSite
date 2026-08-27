@@ -160,7 +160,7 @@ export default function PricingPage() {
             <div>
               <h3 className="font-bold text-lg mb-3">How does billing work?</h3>
               <p className="text-gray-600">
-                You're only charged for what you use. Monthly billing based on your usage tier and features.
+                You&apos;re only charged for what you use. Monthly billing based on your usage tier and features.
               </p>
             </div>
 
@@ -181,7 +181,7 @@ export default function PricingPage() {
             <div>
               <h3 className="font-bold text-lg mb-3">What about data ownership?</h3>
               <p className="text-gray-600">
-                You own your data. We don't sell it. You can export at any time, in any format.
+                You own your data. We don&apos;t sell it. You can export at any time, in any format.
               </p>
             </div>
 

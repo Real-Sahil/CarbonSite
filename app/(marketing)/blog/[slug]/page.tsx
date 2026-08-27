@@ -2,17 +2,17 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-// Dynamic import for MDX content
-async function getBlogPost(slug: string) {
-  try {
-    const post = await import(`@/content/blog/${slug}.mdx`);
-    return post;
-  } catch {
-    return null;
-  }
+interface BlogPostMeta {
+  title: string;
+  description: string;
+  date: string;
+  author: string;
+  readTime: string;
+  pillar: string;
+  image: string;
 }
 
-const posts: Record<string, any> = {
+const posts: Record<string, BlogPostMeta> = {
   "why-carbon-accounting-still-fails": {
     title: "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
     description: "Most carbon accounting platforms assume data is pre-cleaned and arrives from spreadsheets. The reality is messier — and that's where most errors originate.",
@@ -178,12 +178,12 @@ export default async function BlogPostPage({
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Content Coming Soon</h2>
           <p>
-            Each blog post will include deep dives into CarbonSite's unique approach to carbon accounting, field operations, supply chain collaboration, and regulatory compliance.
+            Each blog post will include deep dives into CarbonSite&apos;s unique approach to carbon accounting, field operations, supply chain collaboration, and regulatory compliance.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Key Takeaways</h2>
           <ul className="list-disc list-inside space-y-2">
-            <li>CarbonSite's messaging and content strategy is now documented</li>
+            <li>CarbonSite&apos;s messaging and content strategy is now documented</li>
             <li>8 blog post outlines created and ready for full content development</li>
             <li>Blog infrastructure (listing page, individual post templates, metadata) is in place</li>
             <li>All content organized by content pillar (Methodology, Field Operations, Supply Chain, Compliance, Industry Trends)</li>
@@ -191,7 +191,7 @@ export default async function BlogPostPage({
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Next Steps</h2>
           <p>
-            Full blog post content will be added incrementally. Each post will be 1,200-1,500 words with original insights, real examples, and clear calls-to-action aligned to CarbonSite's positioning as the transparent, audit-ready alternative to enterprise carbon platforms.
+            Full blog post content will be added incrementally. Each post will be 1,200-1,500 words with original insights, real examples, and clear calls-to-action aligned to CarbonSite&apos;s positioning as the transparent, audit-ready alternative to enterprise carbon platforms.
           </p>
         </div>
 

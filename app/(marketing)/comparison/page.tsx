@@ -162,7 +162,7 @@ export default function ComparisonPage() {
         {/* Key Differentiators */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           <div className="bg-white rounded-lg border border-gray-200 p-8">
-            <h3 className="text-xl font-bold mb-4">CarbonSite's Unique Strengths</h3>
+            <h3 className="text-xl font-bold mb-4">CarbonSite&apos;s Unique Strengths</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
