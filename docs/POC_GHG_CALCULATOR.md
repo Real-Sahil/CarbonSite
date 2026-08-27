@@ -10,6 +10,13 @@ This document describes how to test the integration of [ghg-calculator](https://
 
 ---
 
+## Status
+
+**Phase 1a ✅ COMPLETE** — API contract + client + unit tests + mocked server
+**Phase 1b ✅ COMPLETE** — Real calculation logic + FastAPI implementation
+**Phase 1c (Next)** — Integration testing against live API
+**Phase 1d (After)** — Validation report + go/no-go decision
+
 ## Quick Start (Local Development)
 
 ### Prerequisites
@@ -19,25 +26,48 @@ This document describes how to test the integration of [ghg-calculator](https://
 
 ### Setup
 
-1. **Start services:**
+1. **Start Docker services:**
    ```bash
    docker-compose -f docker-compose.poc.yml up -d
    ```
 
 2. **Verify health:**
    ```bash
+   curl http://localhost:9000/health
    curl http://localhost:9000/info
    ```
 
-3. **Set environment variable:**
+3. **Set environment variable** (`GHG_CALCULATOR_API_URL`)
+
+   **Local Development:**
    ```bash
-   # In .env.local or .env
+   # In .env.local (for Next.js dev server)
    GHG_CALCULATOR_API_URL="http://localhost:9000"
    ```
 
-4. **Run CarbonSite tests:**
+   **How to find in production:**
+   - `GHG_CALCULATOR_API_URL` is the base URL of your ghg-calculator FastAPI service
+   - **Examples:**
+     - Self-hosted: `http://ghg-calc.internal.company.com` (on same VPC/network)
+     - Railway/Fly.io: `https://ghg-calc-abc123.railway.app`
+     - AWS/Google Cloud: Your container service URL
+     - Docker: `http://ghg-calculator:9000` (container-to-container communication)
+   
+   - **How to determine:**
+     1. Deploy ghg-calculator service separately
+     2. Get its public/internal URL
+     3. Test with: `curl $GHG_CALCULATOR_API_URL/info`
+     4. Set environment variable in your platform (Vercel, Heroku, etc.)
+
+4. **Run unit tests:**
    ```bash
    pnpm test lib/calculation/__tests__/ghg-calculator.test.ts
+   ```
+
+5. **Run API test script:**
+   ```bash
+   # Test all endpoints (GET /info, POST /calculate, GET /factors, etc.)
+   GHG_CALCULATOR_API_URL="http://localhost:9000" ./scripts/test-ghg-calculator.sh
    ```
 
 ---
@@ -228,7 +258,32 @@ expect(result.factorId).toContain("market");
 
 ---
 
-## Implementing Real ghg-calculator Integration
+## Phase 1b Implementation Status
+
+### What's Done ✅
+
+**FastAPI Server** (`workers/ghg-calculator-server.py`):
+- Real calculation engine (`compute_co2e()` function)
+  - Gas-specific factors (CO2, CH4, N2O with AR6 GWP)
+  - Scalar CO2e factors
+  - Matches CarbonSite's current engine logic exactly
+- Factor selection (`select_factor()` function)
+  - Deterministic matching: exact > fallback > any scope/category
+- Working endpoints:
+  - `POST /calculate` — computes emissions with audit trail
+  - `GET /factors` — searches factors with filters
+  - `GET /info` — returns library metadata
+  - `GET /health` — health check
+- Seed factors (DEFRA 2025 + EPA GHG Hub 2025 sample)
+  - Ready to scale to 967 factors
+
+**Test Automation**:
+- `scripts/test-ghg-calculator.sh` — validates all endpoints
+- Covers Scope 1/2/3 calculations
+- Verifies factor search
+- Tests audit trail formulas
+
+### What's Next: Real ghg-calculator Integration
 
 Once the PoC validates <1% deviation, proceed with real integration:
 
