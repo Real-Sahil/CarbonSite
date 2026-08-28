@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
   _req: NextRequest,
@@ -13,6 +14,13 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const org = await prisma.organization.findUniqueOrThrow({
@@ -28,7 +36,7 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(org);
+    return json(org, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -47,6 +55,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
     const { session } = await requireOrgMember(orgId, "admin");
 
     const body = await req.json();
@@ -79,7 +88,7 @@ export async function PATCH(
       metadata: { fields: Object.keys(parsed.data) },
     });
 
-    return NextResponse.json(org);
+    return json(org, { version });
   } catch (err) {
     return handleRouteError(err);
   }
