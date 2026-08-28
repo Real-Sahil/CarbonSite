@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError } from "@/lib/validation/api";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
   req: NextRequest,
@@ -9,6 +10,12 @@ export async function GET(
 ) {
   try {
     const { orgId, supplierId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
 
     await requireOrgMember(orgId, "admin", "editor", "reviewer");
 
@@ -32,9 +39,7 @@ export async function GET(
     const history = await prisma.supplierPerformanceHistory.findMany({
       where: {
         organizationId: orgId,
-        supplierPerformance: {
-          supplierId,
-        },
+        supplierId,
       },
       orderBy: { recordedAt: "desc" },
       take: 12,
@@ -55,7 +60,7 @@ export async function GET(
       updatedAt: new Date(),
     };
 
-    return NextResponse.json({
+    return json({
       performance: {
         ...performanceData,
         supplier: supplier || { id: supplierId, name: "Unknown" },
@@ -75,7 +80,7 @@ export async function GET(
             ? (performanceData.onTimeCount / performanceData.approvedCount) * 100
             : 0,
       },
-    });
+    }, { version });
   } catch (error) {
     return handleRouteError(error);
   }

@@ -6,6 +6,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -17,6 +18,13 @@ const createSnapshotSchema = z.object({
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const snapshots = await prisma.publishedSnapshot.findMany({
@@ -35,7 +43,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       orderBy: { publishedAt: "desc" },
     });
 
-    return NextResponse.json({ data: snapshots });
+    return json({ data: snapshots }, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -44,6 +52,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
     const { session } = await requireOrgMember(orgId, "admin", "editor");
 
     const body = createSnapshotSchema.parse(await req.json());
@@ -79,7 +88,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       orderBy: { version: "desc" },
       select: { version: true },
     });
-    const version = (latestSnapshot?.version ?? 0) + 1;
+    const snapshotVersion = (latestSnapshot?.version ?? 0) + 1;
 
     const snapshot = await prisma.$transaction(async (tx) => {
       const created = await tx.publishedSnapshot.create({
@@ -88,7 +97,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           reportingPeriodId: body.reportingPeriodId,
           calculationRunId: body.calculationRunId,
           publishedByUserId: session.user.id,
-          version,
+          version: snapshotVersion,
         },
         include: {
           reportingPeriod: { select: { label: true } },
@@ -144,10 +153,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       action: "snapshot.published",
       resourceType: "published_snapshot",
       resourceId: snapshot.id,
-      metadata: { reportingPeriodId: body.reportingPeriodId, version },
+      metadata: { reportingPeriodId: body.reportingPeriodId, snapshotVersion },
     });
 
-    return NextResponse.json(snapshot, { status: 201 });
+    return json(snapshot, { status: 201, version });
   } catch (err) {
     return handleRouteError(err);
   }

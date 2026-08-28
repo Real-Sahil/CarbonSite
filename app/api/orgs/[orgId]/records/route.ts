@@ -9,6 +9,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createActivityRecordSchema } from "@/lib/validation/org";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
   _req: NextRequest,
@@ -16,6 +17,13 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const records = await prisma.activityRecord.findMany({
@@ -30,7 +38,7 @@ export async function GET(
       take: 100,
     });
 
-    return NextResponse.json(records);
+    return json(records, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -42,6 +50,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
     const { session } = await requireOrgMember(orgId, "admin", "editor");
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "records", session.user.id),
@@ -155,7 +164,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(record, { status: 201 });
+    return json(record, { status: 201, version });
   } catch (err) {
     return handleRouteError(err);
   }

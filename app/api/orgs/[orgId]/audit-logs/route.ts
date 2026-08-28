@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -24,6 +25,13 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "auditor", "reviewer");
 
     const query = auditLogsQuerySchema.safeParse(
@@ -73,14 +81,14 @@ export async function GET(
     const items = hasMore ? auditLogs.slice(0, -1) : auditLogs;
     const nextCursor = hasMore ? items[items.length - 1]?.id : null;
 
-    return NextResponse.json({
+    return json({
       items,
       pagination: {
         nextCursor,
         hasMore,
         limit,
       },
-    });
+    }, { version });
   } catch (err) {
     return handleRouteError(err);
   }

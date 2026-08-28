@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 const QuerySchema = z.object({
   periodId: z.string().optional(),
@@ -20,12 +21,19 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const { searchParams } = new URL(req.url);
     const parsed = QuerySchema.safeParse(Object.fromEntries(searchParams));
     if (!parsed.success) {
-      return NextResponse.json({ code: "VALIDATION_ERROR", message: "Invalid query parameters." }, { status: 422 });
+      return json({ code: "VALIDATION_ERROR", message: "Invalid query parameters." }, { status: 422, version });
     }
 
     const { periodId, snapshotId } = parsed.data;
@@ -43,7 +51,7 @@ export async function GET(
         });
 
     if (!period) {
-      return NextResponse.json({
+      return json({
         period: null,
         scopes: [],
         categories: [],
@@ -52,7 +60,7 @@ export async function GET(
         approvedCount: 0,
         pendingReviewCount: 0,
         openReviewTaskCount: 0,
-      });
+      }, { version });
     }
 
     const aggWhere = {
@@ -101,7 +109,7 @@ export async function GET(
 
     const grandCo2eKg = scopeAggs.reduce((sum, s) => sum + Number(s._sum.totalCo2e ?? 0), 0);
 
-    return NextResponse.json({
+    return json({
       period: {
         id: period.id,
         label: period.label,
@@ -140,7 +148,7 @@ export async function GET(
       approvedCount,
       pendingReviewCount,
       openReviewTaskCount: openTaskCount,
-    });
+    }, { version });
   } catch (err) {
     return handleRouteError(err);
   }

@@ -8,6 +8,7 @@ import { apiError, handleRouteError } from "@/lib/validation/api";
 import { putObject, keys } from "@/lib/storage";
 import { dispatchImport } from "@/lib/jobs/dispatch";
 import { createHash } from "crypto";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 // Inline job mode parses the CSV inside this request — allow time for it.
 export const maxDuration = 60;
@@ -17,6 +18,13 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const url = new URL(req.url);
@@ -49,7 +57,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     const data = hasMore ? batches.slice(0, take) : batches;
     const nextCursor = hasMore ? data[data.length - 1].id : null;
 
-    return NextResponse.json({ data, nextCursor });
+    return json({ data, nextCursor }, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -58,6 +66,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
     const { session } = await requireOrgMember(orgId, "admin", "editor");
 
     const formData = await req.formData();
@@ -166,7 +175,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       select: { id: true, state: true, errorCount: true },
     });
 
-    return NextResponse.json(finalBatch ?? updatedBatch, { status: 202 });
+    return json(finalBatch ?? updatedBatch, { status: 202, version });
   } catch (err) {
     return handleRouteError(err);
   }

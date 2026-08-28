@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
@@ -9,6 +9,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { createReportingPeriodSchema } from "@/lib/validation/org";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
   _req: NextRequest,
@@ -16,6 +17,13 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     const { session, membership } = await requireOrgMember(
       orgId,
       "admin",
@@ -43,12 +51,12 @@ export async function GET(
       });
     } catch (err) {
       if (membership.role === "field_worker" && isMissingDatabaseObjectError(err)) {
-        return NextResponse.json([]);
+        return json([]);
       }
       throw err;
     }
 
-    return NextResponse.json(periods);
+    return json(periods, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -60,6 +68,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
     const { session } = await requireOrgMember(orgId, "admin", "editor");
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "reporting-periods", session.user.id),
@@ -100,7 +109,7 @@ export async function POST(
       metadata: { label: period.label, type: period.type },
     });
 
-    return NextResponse.json(period, { status: 201 });
+    return json(period, { status: 201, version });
   } catch (err) {
     return handleRouteError(err);
   }
