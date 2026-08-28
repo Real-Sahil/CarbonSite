@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, ArrowRight, Database, Filter, Zap, CheckCircle, FileText } from 'lucide-react';
+import { Loader2, Database, Filter, Zap, CheckCircle, FileText } from 'lucide-react';
 
 interface LineageStep {
   step: number;
@@ -26,9 +25,6 @@ interface LineageData {
 }
 
 export default function DataLineagePage() {
-  const params = useParams();
-  const orgId = Array.isArray(params.orgId) ? params.orgId[0] : params.orgId;
-
   const [data, setData] = useState<LineageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,7 +130,7 @@ export default function DataLineagePage() {
     }
 
     fetchLineage();
-  }, [orgId]);
+  }, []);
 
   if (loading) {
     return (
