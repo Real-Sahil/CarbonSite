@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { getInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
-import { handleRouteError } from "@/lib/validation/api";
+import { handleRouteError, apiError } from "@/lib/validation/api";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -19,14 +20,13 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
 
-    // TODO: Implement invoice anomaly listing after schema additions (Phase 2+)
-    return NextResponse.json(
-      { code: "NOT_IMPLEMENTED", message: "Invoice anomaly detection coming in Phase 2. Feature not yet available." },
-      { status: 501 }
-    );
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
 
-    /* DISABLED: Incomplete invoice anomaly feature
     await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const query = querySchema.safeParse(
@@ -34,10 +34,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     );
 
     if (!query.success) {
-      return NextResponse.json(
-        { code: "INVALID_QUERY", message: "Invalid query parameters", details: query.error.errors },
-        { status: 400 }
-      );
+      return apiError("INVALID_QUERY", "Invalid query parameters", 400, query.error.flatten());
     }
 
     const { severity, type, resolution, startDate, endDate, limit, offset } =
@@ -58,7 +55,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       parseInt(offset) + parseInt(limit)
     );
 
-    return NextResponse.json({
+    return json({
       data: paginatedAnomalies.map((anomaly) => ({
         id: anomaly.id,
         invoiceId: anomaly.invoiceId,
@@ -80,8 +77,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         limit: parseInt(limit),
         total: anomalies.length,
       },
-    });
-    */
+    }, { version });
   } catch (error) {
     return handleRouteError(error);
   }
