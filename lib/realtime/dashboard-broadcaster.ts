@@ -26,7 +26,7 @@ export async function broadcastDashboardUpdate(
 ): Promise<void> {
   try {
     // Fetch updated dashboard aggregates
-    const where = {
+    const where: { organizationId: string; reportingPeriodId?: string } = {
       organizationId: orgId,
       ...(reportingPeriodId ? { reportingPeriodId } : {}),
     };
@@ -98,9 +98,9 @@ export async function broadcastDashboardUpdate(
 export async function getDashboardSnapshot(
   orgId: string,
   reportingPeriodId?: string
-) {
+): Promise<{ aggregates: { totalCo2e: number; scope1: number; scope2: number; scope3: number; byCategory: Record<string, number> }; timestamp: string } | null> {
   try {
-    const where = {
+    const where: { organizationId: string; reportingPeriodId?: string } = {
       organizationId: orgId,
       ...(reportingPeriodId ? { reportingPeriodId } : {}),
     };
