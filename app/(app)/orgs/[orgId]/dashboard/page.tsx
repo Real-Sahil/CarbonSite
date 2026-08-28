@@ -48,6 +48,7 @@ import { BklitTrendArea, type TrendLineDatum } from "@/components/charts/bklit-t
 import { BklitDataGauge } from "@/components/charts/bklit-data-gauge";
 import { OnboardingChecklist } from "./onboarding-checklist";
 import { CalculationRunsLive } from "./calculation-runs-live";
+import { LiveDashboard } from "@/components/dashboard/LiveDashboard";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -931,6 +932,23 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </div>
           </Link>
         )}
+      </section>
+
+      {/* ── Real-time dashboard stream ─────────────────────────────────── */}
+      <section aria-label="Live dashboard" className="mt-8">
+        <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
+          Live updates
+        </p>
+        <div className="rounded-[14px] border border-[#E5E7EB] bg-white p-6">
+          <LiveDashboard
+            orgId={orgId}
+            fallbackComponent={
+              <div className="text-sm text-[#6B7280]">
+                <p>Real-time emissions updates will appear here as calculations complete.</p>
+              </div>
+            }
+          />
+        </div>
       </section>
 
       {industryData && (
