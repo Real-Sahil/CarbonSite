@@ -99,6 +99,7 @@
     "react-use-measure": "^2.1.7",
     "recharts": "^3.8.1",
     "resend": "^6.12.4",
+    "rfc4648": "^1.5.4",
     "simple-statistics": "^7.10.2",
     "speakeasy": "^2.0.0",
     "string-similarity": "^4.0.4",

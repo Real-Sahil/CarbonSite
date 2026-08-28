@@ -40,7 +40,7 @@ export function generateCodeVerifier(): string {
 }
 
 export async function buildOidcAuthorizationUrl(
-  config: any,
+  config: OidcConfig,
   redirectUri: string,
   state: string,
   codeChallenge?: string
@@ -68,7 +68,7 @@ export async function buildOidcAuthorizationUrl(
 }
 
 export async function exchangeOidcCodeForToken(
-  config: any,
+  config: OidcConfig,
   code: string,
   redirectUri: string,
   codeVerifier?: string
@@ -102,10 +102,10 @@ export async function exchangeOidcCodeForToken(
 }
 
 export async function verifyOidcIdToken(
-  config: any,
+  config: OidcConfig,
   idToken: string,
   clientId: string
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   // In production, verify JWT signature using JWKS
   // For MVP, decode without verification (insecure - only for development)
   if (process.env.NODE_ENV === "production") {
@@ -132,7 +132,7 @@ export async function verifyOidcIdToken(
 }
 
 export async function fetchOidcUserInfo(
-  config: any,
+  config: OidcConfig,
   accessToken: string
 ): Promise<{ sub: string; email: string; name?: string; picture?: string }> {
   const userInfoEndpoint =

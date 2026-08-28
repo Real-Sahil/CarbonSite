@@ -230,6 +230,9 @@ importers:
       resend:
         specifier: ^6.12.4
         version: 6.12.4
+      rfc4648:
+        specifier: ^1.5.4
+        version: 1.5.4
       simple-statistics:
         specifier: ^7.10.2
         version: 7.10.2
@@ -5754,6 +5757,9 @@ packages:
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
+
+  rfc4648@1.5.4:
+    resolution: {integrity: sha512-rRg/6Lb+IGfJqO05HZkN50UtY7K/JhxJag1kP23+zyMfrvoB0B7RWv06MbOzoc79RgCdNTiUaNsTT1AJZ7Z+cg==}
 
   robust-predicates@3.0.3:
     resolution: {integrity: sha512-NS3levdsRIUOmiJ8FZWCP7LG3QpJyrs/TE0Zpf1yvZu8cAJJ6QMW92H1c7kWpdIHo8RvmLxN/o2JXTKHp74lUA==}
@@ -12248,6 +12254,8 @@ snapshots:
     optional: true
 
   reusify@1.1.0: {}
+
+  rfc4648@1.5.4: {}
 
   robust-predicates@3.0.3: {}
 
