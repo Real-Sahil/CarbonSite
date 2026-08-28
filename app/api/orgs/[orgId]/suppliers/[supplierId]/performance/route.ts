@@ -12,9 +12,35 @@ export async function GET(
 
     await requireOrgMember(orgId, "admin", "editor", "reviewer");
 
-    // For now, return empty performance data if the model doesn't exist in DB yet
-    // This will work once the migration is applied
-    const performanceData = {
+    // Fetch supplier performance data
+    const performance = await prisma.supplierPerformance.findUnique({
+      where: {
+        organizationId_supplierId: {
+          organizationId: orgId,
+          supplierId,
+        },
+      },
+    });
+
+    // Fetch supplier organization details
+    const supplier = await prisma.organization.findUnique({
+      where: { id: supplierId },
+      select: { id: true, name: true },
+    });
+
+    // Fetch performance history (last 12 records)
+    const history = await prisma.supplierPerformanceHistory.findMany({
+      where: {
+        organizationId: orgId,
+        supplierPerformance: {
+          supplierId,
+        },
+      },
+      orderBy: { recordedAt: "desc" },
+      take: 12,
+    });
+
+    const performanceData = performance || {
       id: supplierId,
       organizationId: orgId,
       supplierId,
@@ -22,25 +48,24 @@ export async function GET(
       approvedCount: 0,
       rejectedCount: 0,
       onTimeCount: 0,
-      completenessScore: 0,
-      dataQualityScore: 0,
+      completenessScore: null,
+      dataQualityScore: null,
       lastDataQualityTrend: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-      supplier: {
-        id: supplierId,
-        name: "Supplier",
-      },
     };
 
     return NextResponse.json({
-      performance: performanceData,
-      history: [],
+      performance: {
+        ...performanceData,
+        supplier: supplier || { id: supplierId, name: "Unknown" },
+      },
+      history: history.reverse(),
       metrics: {
-        totalSubmissions: 0,
-        approvedSubmissions: 0,
-        rejectedSubmissions: 0,
-        onTimeSubmissions: 0,
+        totalSubmissions: performanceData.submissionCount,
+        approvedSubmissions: performanceData.approvedCount,
+        rejectedSubmissions: performanceData.rejectedCount,
+        onTimeSubmissions: performanceData.onTimeCount,
       },
     });
   } catch (error) {
