@@ -11,8 +11,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
-import { subscriptionManager } from "@/lib/realtime/subscription-manager";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { subscribeToDashboardUpdates } from "@/lib/realtime/subscription-manager";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -21,14 +21,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { orgId } = await params;
 
     // Verify org membership and role (viewers can see live dashboard)
-    await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor"
-    );
+    await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     // Set up SSE headers
     const headers = new Headers({
@@ -48,33 +41,18 @@ export async function GET(_req: NextRequest, { params }: Params) {
         controller.enqueue(encoder.encode(": connected\n\n"));
 
         // Subscribe to dashboard updates
-        const unsubscribe = subscriptionManager.subscribe(orgId, (update) => {
+        const unsubscribe = subscribeToDashboardUpdates(orgId, (update) => {
           if (!isConnected) return;
 
           try {
-            const data = JSON.stringify({
-              aggregates: update.aggregates,
-              timestamp: update.timestamp.toISOString(),
-              calculationRunId: update.calculationRunId,
-            });
-
-            controller.enqueue(
-              encoder.encode(`data: ${data}\n\n`)
-            );
+            const data = JSON.stringify(update);
+            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
           } catch (err) {
             console.error(`Error sending SSE update: ${err}`);
             isConnected = false;
             controller.close();
           }
         });
-
-        // Store unsubscribe function for cleanup
-        const originalClose = controller.close.bind(controller);
-        controller.close = () => {
-          isConnected = false;
-          unsubscribe();
-          originalClose();
-        };
 
         // Send heartbeat every 30 seconds to keep connection alive
         const heartbeatInterval = setInterval(() => {
@@ -90,13 +68,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
           }
         }, 30000);
 
-        // Cleanup on controller close
-        // Handle abort signal
-        const typedController = controller as unknown as { signal?: AbortSignal };
-        typedController.signal?.addEventListener("abort", () => {
+        // Cleanup on request abort
+        _req.signal.addEventListener("abort", () => {
           isConnected = false;
           clearInterval(heartbeatInterval);
           unsubscribe();
+          controller.close();
         });
       },
     });

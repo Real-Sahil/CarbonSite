@@ -5,7 +5,7 @@
 
 import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from "@/lib/db";
-import { subscriptionManager, DashboardUpdate } from "@/lib/realtime/subscription-manager";
+import { broadcastDashboardUpdate as broadcast, type DashboardUpdate } from "@/lib/realtime/subscription-manager";
 
 /**
  * Convert Prisma Decimal to number, handling precision loss gracefully.
@@ -67,19 +67,22 @@ export async function broadcastDashboardUpdate(
 
     // Broadcast to all connected clients
     const update: DashboardUpdate = {
-      timestamp: new Date(),
-      orgId,
-      aggregates: {
-        totalCo2e,
-        scope1,
-        scope2,
-        scope3,
-        byCategory,
+      type: "calculation_progress",
+      organizationId: orgId,
+      timestamp: new Date().toISOString(),
+      data: {
+        aggregates: {
+          totalCo2e,
+          scope1,
+          scope2,
+          scope3,
+          byCategory,
+        },
+        calculationRunId,
       },
-      calculationRunId,
     };
 
-    subscriptionManager.broadcast(update);
+    broadcast(update);
   } catch (err) {
     console.error(
       `Failed to broadcast dashboard update for org ${orgId}: ${err}`
