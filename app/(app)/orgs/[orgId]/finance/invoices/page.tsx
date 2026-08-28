@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import {
   Table,
@@ -51,7 +50,6 @@ interface PaginationMeta {
 export default function InvoicePage() {
   const params = useParams();
   const orgId = params.orgId as string;
-  const queryClient = useQueryClient();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [resolutionFilter, setResolutionFilter] = useState<string>('pending');
@@ -59,34 +57,38 @@ export default function InvoicePage() {
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [cursor, setCursor] = useState<string | undefined>();
 
-  const {
-    data: anomaliesData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: [
-      'invoice-anomalies',
-      orgId,
-      resolutionFilter,
-      severityFilter,
-      typeFilter,
-      cursor,
-    ],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (resolutionFilter) params.append('resolution', resolutionFilter);
-      if (severityFilter) params.append('severity', severityFilter);
-      if (typeFilter) params.append('type', typeFilter);
-      if (cursor) params.append('cursor', cursor);
-      params.append('limit', '20');
+  const [anomaliesData, setAnomaliesData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
 
-      const res = await fetch(
-        `/api/orgs/${orgId}/invoices/anomalies?${params.toString()}`
-      );
-      if (!res.ok) throw new Error('Failed to fetch anomalies');
-      return res.json();
-    },
-  });
+  useEffect(() => {
+    const fetchAnomalies = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        if (resolutionFilter) params.append('resolution', resolutionFilter);
+        if (severityFilter) params.append('severity', severityFilter);
+        if (typeFilter) params.append('type', typeFilter);
+        if (cursor) params.append('cursor', cursor);
+        params.append('limit', '20');
+
+        const res = await fetch(
+          `/api/orgs/${orgId}/invoices/anomalies?${params.toString()}`
+        );
+        if (!res.ok) throw new Error('Failed to fetch anomalies');
+        const data = await res.json();
+        setAnomaliesData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnomalies();
+  }, [orgId, resolutionFilter, severityFilter, typeFilter, cursor]);
 
   const anomalies = anomaliesData?.anomalies || [];
   const pagination: PaginationMeta = anomaliesData?.pagination || {
@@ -94,8 +96,9 @@ export default function InvoicePage() {
     limit: 20,
   };
 
-  const resolveMutation = useMutation({
-    mutationFn: async (resolution: 'approved' | 'rejected') => {
+  const resolveAnomalies = async (resolution: 'approved' | 'rejected') => {
+    setIsResolving(true);
+    try {
       const anomalyIds = Array.from(selectedIds);
       const res = await fetch(
         `/api/orgs/${orgId}/invoices/anomalies`,
@@ -110,15 +113,14 @@ export default function InvoicePage() {
         }
       );
       if (!res.ok) throw new Error('Failed to resolve anomalies');
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['invoice-anomalies', orgId],
-      });
+      setAnomaliesData(null);
       setSelectedIds(new Set());
-    },
-  });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsResolving(false);
+    }
+  };
 
   const severityIcon = {
     info: <Info className="h-4 w-4" />,
@@ -136,7 +138,7 @@ export default function InvoicePage() {
     if (selectedIds.size === anomalies.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(anomalies.map((a) => a.id)));
+      setSelectedIds(new Set(anomalies.map((a: any) => a.id)));
     }
   };
 
@@ -151,10 +153,10 @@ export default function InvoicePage() {
   };
 
   const pendingCount = anomalies.filter(
-    (a) => a.resolution === null
+    (a: any) => a.resolution === null
   ).length;
   const criticalCount = anomalies.filter(
-    (a) => a.severity === 'critical' && a.resolution === null
+    (a: any) => a.severity === 'critical' && a.resolution === null
   ).length;
 
   return (
@@ -287,9 +289,9 @@ export default function InvoicePage() {
                   size="sm"
                   variant="default"
                   onClick={() =>
-                    resolveMutation.mutate('approved')
+                    resolveAnomalies('approved')
                   }
-                  disabled={resolveMutation.isPending}
+                  disabled={isResolving}
                 >
                   <CheckCircle2 className="h-4 w-4 mr-2" />
                   Approve
@@ -298,9 +300,9 @@ export default function InvoicePage() {
                   size="sm"
                   variant="destructive"
                   onClick={() =>
-                    resolveMutation.mutate('rejected')
+                    resolveAnomalies('rejected')
                   }
-                  disabled={resolveMutation.isPending}
+                  disabled={isResolving}
                 >
                   Reject
                 </Button>
@@ -343,10 +345,6 @@ export default function InvoicePage() {
                           selectedIds.size > 0 &&
                           selectedIds.size === anomalies.length
                         }
-                        indeterminate={
-                          selectedIds.size > 0 &&
-                          selectedIds.size < anomalies.length
-                        }
                         onCheckedChange={toggleSelectAll}
                       />
                     </TableHead>
@@ -360,7 +358,7 @@ export default function InvoicePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {anomalies.map((anomaly) => (
+                  {anomalies.map((anomaly: any) => (
                     <TableRow key={anomaly.id}>
                       <TableCell>
                         <Checkbox
@@ -378,13 +376,13 @@ export default function InvoicePage() {
                         <Badge variant="outline">
                           {anomaly.anomalyType
                             .replace(/_/g, ' ')
-                            .replace(/\b\w/g, (c) => c.toUpperCase())}
+                            .replace(/\b\w/g, (c: string) => c.toUpperCase())}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={severityColor[anomaly.severity]}>
+                        <Badge className={severityColor[anomaly.severity as 'info' | 'warning' | 'critical']}>
                           <span className="mr-1 inline-flex">
-                            {severityIcon[anomaly.severity]}
+                            {severityIcon[anomaly.severity as 'info' | 'warning' | 'critical']}
                           </span>
                           {anomaly.severity}
                         </Badge>

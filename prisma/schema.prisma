@@ -212,6 +212,7 @@ model Organization {
   supplierPerformanceHistory  SupplierPerformanceHistory[] @relation("supplierPerformanceHistoryOrg")
   auditContexts               AuditContext[]               @relation("AuditContexts")
   ssoConfiguration            SsoConfiguration?            @relation("SsoConfigurations")
+  ssoSessions                 SsoSession[]                 @relation("SsoSessions")
   xeroSyncLogs                XeroSyncLog[]
   invoiceRecords              InvoiceRecord[]              @relation("InvoiceRecords")
   invoiceAnomalies            InvoiceAnomaly[]             @relation("InvoiceAnomalies")

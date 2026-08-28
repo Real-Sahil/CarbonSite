@@ -1,12 +1,30 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { handleRouteError } from "@/lib/validation/api";
+import { requireOrgMember } from "@/lib/auth/session";
+import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+
+type Params = { params: Promise<{ orgId: string; supplierId: string }> };
+
+function calculateTrend(
+  history: Array<{ dataQualityScore: string | number; recordedAt: Date }>
+): "improving" | "stable" | "declining" {
+  if (history.length < 2) return "stable";
+
+  const recent = parseFloat(String(history[0]?.dataQualityScore ?? 0));
+  const oldest = parseFloat(String(history[history.length - 1]?.dataQualityScore ?? 0));
+
+  const change = recent - oldest;
+  if (change > 5) return "improving";
+  if (change < -5) return "declining";
+  return "stable";
+}
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ orgId: string; supplierId: string }> }
+  { params }: Params
 ) {
   try {
     const { orgId, supplierId } = await params;
@@ -17,71 +35,74 @@ export async function GET(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, "admin", "editor", "viewer");
 
-    // Fetch supplier performance data
-    const performance = await prisma.supplierPerformance.findUnique({
-      where: {
-        organizationId_supplierId: {
-          organizationId: orgId,
-          supplierId,
-        },
-      },
-    });
-
-    // Fetch supplier organization details
-    const supplier = await prisma.organization.findUnique({
-      where: { id: supplierId },
-      select: { id: true, name: true },
-    });
-
-    // Fetch performance history (last 12 records)
-    const history = await prisma.supplierPerformanceHistory.findMany({
+    const performance = await prisma.supplierPerformance.findFirst({
       where: {
         organizationId: orgId,
         supplierId,
       },
-      orderBy: { recordedAt: "desc" },
-      take: 12,
+      include: {
+        history: {
+          orderBy: { recordedAt: "desc" },
+          take: 30,
+        },
+      },
     });
 
-    const performanceData = performance || {
-      id: supplierId,
-      organizationId: orgId,
-      supplierId,
-      submissionCount: 0,
-      approvedCount: 0,
-      rejectedCount: 0,
-      onTimeCount: 0,
-      completenessScore: null,
-      dataQualityScore: null,
-      lastDataQualityTrend: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    if (!performance) {
+      return apiError("NOT_FOUND", "Supplier performance data not found", 404);
+    }
 
-    return json({
-      performance: {
-        ...performanceData,
-        supplier: supplier || { id: supplierId, name: "Unknown" },
+    const totalSubmissions = performance.submissionCount;
+    const approvalRate =
+      totalSubmissions > 0
+        ? (performance.approvedCount / totalSubmissions) * 100
+        : 0;
+
+    const completenessScoreNum = parseFloat(String(performance.completenessScore ?? 0));
+    const dataQualityScoreNum = parseFloat(String(performance.dataQualityScore ?? 0));
+
+    const convertedHistory = performance.history.map((h) => ({
+      dataQualityScore: parseFloat(String(h.dataQualityScore ?? 0)),
+      recordedAt: h.recordedAt,
+    }));
+    const trend = calculateTrend(convertedHistory);
+
+    return json(
+      {
+        supplierId,
+        performance: {
+          submissionCount: performance.submissionCount,
+          approvedCount: performance.approvedCount,
+          completenessScore: completenessScoreNum,
+          dataQualityScore: dataQualityScoreNum,
+          trend,
+          lastUpdated: performance.updatedAt,
+        },
+        statistics: {
+          approvalRate: Math.round(approvalRate * 10) / 10,
+          averageCompletenessScore: Math.round(completenessScoreNum),
+          averageDataQualityScore: Math.round(dataQualityScoreNum),
+        },
+        history: performance.history.map((h) => {
+          const completeness = parseFloat(String(h.completenessScore ?? 0));
+          const quality = parseFloat(String(h.dataQualityScore ?? 0));
+          return {
+            recordedAt: h.recordedAt,
+            completenessScore: completeness,
+            dataQualityScore: quality,
+            submissionCount: h.submissionCount,
+            approvalRate:
+              h.submissionCount > 0
+                ? Math.round((h.approvedCount / h.submissionCount) * 1000) / 10
+                : 0,
+          };
+        }),
       },
-      history: history.reverse(),
-      metrics: {
-        totalSubmissions: performanceData.submissionCount,
-        approvedSubmissions: performanceData.approvedCount,
-        rejectedSubmissions: performanceData.rejectedCount,
-        onTimeSubmissions: performanceData.onTimeCount,
-        approvalRate:
-          performanceData.submissionCount > 0
-            ? (performanceData.approvedCount / performanceData.submissionCount) * 100
-            : 0,
-        onTimeRate:
-          performanceData.approvedCount > 0
-            ? (performanceData.onTimeCount / performanceData.approvedCount) * 100
-            : 0,
-      },
-    }, { version });
-  } catch (error) {
-    return handleRouteError(error);
+      { version }
+    );
+  } catch (err) {
+    return handleRouteError(err);
   }
 }
