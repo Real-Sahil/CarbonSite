@@ -27,13 +27,14 @@ import { processDsarSlaMonitoring } from "./dsar-sla-monitoring";
 import { processAccountPolicies } from "./account-policies";
 import { handleAirbyteSyncJob } from "@/lib/jobs/workers/airbyte-sync";
 import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
+import { workerLogger } from "@/lib/logger";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
   max: 10,
 });
 
-boss.on("error", (err: Error) => console.error("[pg-boss]", err));
+boss.on("error", (err: Error) => workerLogger.error("pg-boss error", { error: err.message, stack: err.stack }));
 
 async function start() {
   await boss.start();
@@ -45,9 +46,19 @@ async function start() {
     async (jobs: Job<ImportJobData>[]) => {
       for (const job of jobs) {
         const { importBatchId, orgId } = job.data;
-        console.log(`[imports] processing batch ${importBatchId}`);
-        await processImportBatch(importBatchId, orgId);
-        console.log(`[imports] finished batch ${importBatchId}`);
+        try {
+          workerLogger.info("Import batch processing started", { importBatchId, orgId });
+          await processImportBatch(importBatchId, orgId);
+          workerLogger.info("Import batch processing completed", { importBatchId, orgId });
+        } catch (error) {
+          workerLogger.error("Import batch processing failed", {
+            importBatchId,
+            orgId,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+          throw error;
+        }
       }
     },
   );
@@ -59,9 +70,19 @@ async function start() {
     async (jobs: Job<CalculationJobData>[]) => {
       for (const job of jobs) {
         const { calculationRunId, orgId } = job.data;
-        console.log(`[calculations] processing run ${calculationRunId}`);
-        await processCalculationRun(calculationRunId, orgId);
-        console.log(`[calculations] finished run ${calculationRunId}`);
+        try {
+          workerLogger.info("Calculation run processing started", { calculationRunId, orgId });
+          await processCalculationRun(calculationRunId, orgId);
+          workerLogger.info("Calculation run processing completed", { calculationRunId, orgId });
+        } catch (error) {
+          workerLogger.error("Calculation run processing failed", {
+            calculationRunId,
+            orgId,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+          throw error;
+        }
       }
     },
   );
@@ -73,9 +94,19 @@ async function start() {
     async (jobs: Job<ReportJobData>[]) => {
       for (const job of jobs) {
         const { reportId, orgId } = job.data;
-        console.log(`[reports] processing report ${reportId}`);
-        await processReport(reportId, orgId);
-        console.log(`[reports] finished report ${reportId}`);
+        try {
+          workerLogger.info("Report processing started", { reportId, orgId });
+          await processReport(reportId, orgId);
+          workerLogger.info("Report processing completed", { reportId, orgId });
+        } catch (error) {
+          workerLogger.error("Report processing failed", {
+            reportId,
+            orgId,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+          throw error;
+        }
       }
     },
   );
@@ -86,8 +117,26 @@ async function start() {
     { localConcurrency: 5 },
     async (jobs: Job<NotificationJobData>[]) => {
       for (const job of jobs) {
-        console.log(`[notifications] processing ${job.data.type} for user ${job.data.recipientUserId}`);
-        await processNotification(job.data);
+        try {
+          workerLogger.info("Notification processing started", {
+            type: job.data.type,
+            recipientUserId: job.data.recipientUserId,
+            orgId: job.data.orgId,
+          });
+          await processNotification(job.data);
+          workerLogger.info("Notification processing completed", {
+            type: job.data.type,
+            recipientUserId: job.data.recipientUserId,
+          });
+        } catch (error) {
+          workerLogger.error("Notification processing failed", {
+            type: job.data.type,
+            recipientUserId: job.data.recipientUserId,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+          throw error;
+        }
       }
     },
   );
