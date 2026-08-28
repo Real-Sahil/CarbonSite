@@ -34,21 +34,6 @@ export type AirbyteSyncJobData = { connectionId: string; syncRunId?: string; rec
 export type SupplierPerformanceJobData = { orgId: string; supplierId: string };
 export type InvoiceAnomalyJobData = { orgId: string };
 
-export type AirbyteSyncJobData = {
-  connectionId: string;
-  syncRunId: string;
-  recordsEmitted?: number;
-};
-
-export type SupplierPerformanceJobData = {
-  orgId: string;
-  supplierId: string;
-};
-
-export type DsarJobData = {
-  dsarRequestId: string;
-};
-
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
   await boss.send("imports", data, retry);
@@ -97,24 +82,4 @@ export async function enqueueSupplierPerformanceUpdate(data: SupplierPerformance
 export async function enqueueInvoiceAnomalyDetection(data: InvoiceAnomalyJobData) {
   await ensureBossStarted();
   await boss.send("invoice-anomalies", data, retry);
-}
-
-export async function enqueueAirbyteSyncCompletion(data: AirbyteSyncJobData) {
-  await ensureBossStarted();
-  await boss.send("airbyte-sync", data, retry);
-}
-
-export async function enqueueSupplierPerformanceUpdate(data: SupplierPerformanceJobData) {
-  await ensureBossStarted();
-  await boss.send("supplier-performance", data, retry);
-}
-
-export async function enqueueDsarExport(data: DsarJobData) {
-  await ensureBossStarted();
-  await boss.send("dsar-export", data, retry);
-}
-
-export async function enqueueDsarErasure(data: DsarJobData) {
-  await ensureBossStarted();
-  await boss.send("dsar-erasure", data, retry);
 }
