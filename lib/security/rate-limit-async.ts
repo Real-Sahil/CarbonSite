@@ -33,8 +33,8 @@ function getRedisClient(): Redis | null {
 
       redisClient.on("error", (err) => {
         securityLogger.warn("Redis error, falling back to Postgres", {
-          error: err.message,
-          code: err.code,
+          error: err instanceof Error ? err.message : String(err),
+          code: (err as unknown as Record<string, unknown>)?.code,
         });
       });
     }

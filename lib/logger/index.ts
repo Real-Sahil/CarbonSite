@@ -18,13 +18,6 @@ class Logger {
     const timestamp = new Date().toISOString();
     const combined = ctx ? { ...this.context, ...ctx } : this.context;
 
-    const logEntry = {
-      timestamp,
-      level,
-      message,
-      ...combined,
-    };
-
     const formatted = `[${timestamp}] [${level.toUpperCase()}] [${combined.namespace || "app"}] ${message}`;
 
     // Log to console based on level
@@ -100,4 +93,6 @@ export const dsarLogger = createLogger("dsar");
 export const authLogger = createLogger("auth");
 export const ocrLogger = createLogger("ocr");
 export const aibyteLogger = createLogger("airbyte");
+export const airbyteSyncLogger = createLogger("airbyte-sync");
 export const supplierLogger = createLogger("suppliers");
+export const scope3Logger = createLogger("scope3");
