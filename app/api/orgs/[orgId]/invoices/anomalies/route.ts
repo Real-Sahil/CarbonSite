@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
-import { getInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
+import { getInvoiceAnomalies, resolveInvoiceAnomaly } from "@/lib/jobs/workers/invoice-anomaly-detector";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { z } from "zod";
+import { prisma } from "@/lib/db";
 
 const querySchema = z.object({
   severity: z.enum(["info", "warning", "critical"]).optional(),
@@ -13,6 +14,12 @@ const querySchema = z.object({
   endDate: z.string().optional(),
   limit: z.string().default("50"),
   offset: z.string().default("0"),
+});
+
+const resolveSchema = z.object({
+  anomalyId: z.string(),
+  resolution: z.enum(["approved", "rejected"]),
+  resolutionNotes: z.string().max(500).optional(),
 });
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -78,6 +85,48 @@ export async function GET(_req: NextRequest, { params }: Params) {
         total: anomalies.length,
       },
     }, { version });
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}
+
+export async function POST(req: NextRequest, { params }: Params) {
+  try {
+    const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
+    const session = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
+
+    const body = resolveSchema.safeParse(await req.json());
+
+    if (!body.success) {
+      return apiError("INVALID_BODY", "Invalid request body", 400, body.error.flatten());
+    }
+
+    const { anomalyId, resolution, resolutionNotes } = body.data;
+
+    const anomaly = await prisma.invoiceAnomaly.findUniqueOrThrow({
+      where: { id: anomalyId },
+      include: { invoice: { select: { organizationId: true } } },
+    });
+
+    if (anomaly.invoice.organizationId !== orgId) {
+      return apiError("FORBIDDEN", "Access denied to this anomaly", 403);
+    }
+
+    await resolveInvoiceAnomaly(
+      anomalyId,
+      resolution,
+      resolutionNotes,
+      session.user.id
+    );
+
+    return json({ success: true, resolution }, { version });
   } catch (error) {
     return handleRouteError(error);
   }
