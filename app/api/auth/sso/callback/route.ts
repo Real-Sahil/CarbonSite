@@ -117,9 +117,9 @@ export async function GET(req: NextRequest) {
       tokenResponse.accessToken
     );
 
-    const providerUserId = userInfo.sub || idTokenPayload.sub;
-    const email = userInfo.email || idTokenPayload.email;
-    const name = userInfo.name || idTokenPayload.name;
+    const providerUserId = (userInfo.sub || idTokenPayload.sub) as string;
+    const email = (userInfo.email || idTokenPayload.email) as string;
+    const name = (userInfo.name || idTokenPayload.name) as string | undefined;
 
     if (!providerUserId || !email) {
       return apiError(

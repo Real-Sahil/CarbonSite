@@ -11,6 +11,7 @@ export interface OidcConfig {
   tokenEndpoint: string;
   userinfoEndpoint: string;
   jwksUri: string;
+  metadataUrl?: string;
 }
 
 export interface SamlConfig {
@@ -73,7 +74,7 @@ export async function exchangeOidcCodeForToken(
   redirectUri: string,
   codeVerifier?: string
 ): Promise<{ accessToken: string; idToken?: string; expiresIn?: number; refreshToken?: string }> {
-  const tokenEndpoint = config.tokenEndpoint || inferOidcEndpoint(config.metadataUrl, "token_endpoint");
+  const tokenEndpoint = config.tokenEndpoint || (config.metadataUrl ? inferOidcEndpoint(config.metadataUrl, "token_endpoint") : "");
 
   const body = new URLSearchParams({
     grant_type: "authorization_code",
@@ -136,7 +137,7 @@ export async function fetchOidcUserInfo(
   accessToken: string
 ): Promise<{ sub: string; email: string; name?: string; picture?: string }> {
   const userInfoEndpoint =
-    config.userinfoEndpoint || inferOidcEndpoint(config.metadataUrl, "userinfo_endpoint");
+    config.userinfoEndpoint || (config.metadataUrl ? inferOidcEndpoint(config.metadataUrl, "userinfo_endpoint") : "");
 
   const response = await fetch(userInfoEndpoint, {
     headers: { Authorization: `Bearer ${accessToken}` },
