@@ -1,117 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { getInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
 import { handleRouteError } from "@/lib/validation/api";
-import {
-  getInvoiceAnomalies,
-  resolveInvoiceAnomaly,
-} from "@/lib/jobs/workers/invoice-anomaly-detector";
-import { securityLogger } from "@/lib/logger";
+import { z } from "zod";
 
-type Params = Promise<{ orgId: string }>;
+const querySchema = z.object({
+  severity: z.enum(["info", "warning", "critical"]).optional(),
+  type: z.string().optional(),
+  resolution: z.enum(["approved", "rejected", "pending"]).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  limit: z.string().default("50"),
+  offset: z.string().default("0"),
+});
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Params }
-) {
+type Params = { params: Promise<{ orgId: string }> };
+
+export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
-    const url = new URL(req.url);
-    const severityParam = url.searchParams.get("severity");
-    const severity = severityParam as "info" | "warning" | "critical" | undefined;
-    const type = url.searchParams.get("type");
-    const status = url.searchParams.get("status");
-    const startDate = url.searchParams.get("startDate");
-    const endDate = url.searchParams.get("endDate");
-    const limit = parseInt(url.searchParams.get("limit") || "50");
-    const offset = parseInt(url.searchParams.get("offset") || "0");
-
-    const anomalies = await getInvoiceAnomalies(orgId, {
-      severity: severity || undefined,
-      type: type || undefined,
-      status: status || undefined,
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined,
-    });
-
-    const paginatedAnomalies = anomalies.slice(offset, offset + limit);
-
-    return NextResponse.json({
-      anomalies: paginatedAnomalies,
-      total: anomalies.length,
-      offset,
-      limit,
-      hasMore: offset + limit < anomalies.length,
-    });
-  } catch (error) {
-    return handleRouteError(error);
-  }
-}
-
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Params }
-) {
-  try {
-    const { orgId } = await params;
-    await requireOrgMember(orgId, "reviewer");
-
-    const body = await req.json();
-    const { anomalyIds, resolution, resolutionNotes } = body;
-
-    if (!Array.isArray(anomalyIds) || anomalyIds.length === 0) {
-      return NextResponse.json(
-        { code: "INVALID_INPUT", message: "anomalyIds array required" },
-        { status: 400 }
-      );
-    }
-
-    if (!resolution) {
-      return NextResponse.json(
-        { code: "INVALID_INPUT", message: "resolution field required" },
-        { status: 400 }
-      );
-    }
-
-    // Verify all anomalies belong to this org
-    const anomalies = await prisma.invoiceAnomaly.findMany({
-      where: {
-        id: { in: anomalyIds },
-        invoice: { organizationId: orgId },
-      },
-    });
-
-    if (anomalies.length !== anomalyIds.length) {
-      return NextResponse.json(
-        { code: "FORBIDDEN", message: "Some anomalies not found or unauthorized" },
-        { status: 403 }
-      );
-    }
-
-    // Batch update all anomalies
-    const updated = await Promise.all(
-      anomalyIds.map((anomalyId: string) =>
-        resolveInvoiceAnomaly(
-          anomalyId,
-          resolution,
-          resolutionNotes,
-          undefined
-        )
-      )
+    const query = querySchema.safeParse(
+      Object.fromEntries(_req.nextUrl.searchParams)
     );
 
-    securityLogger.info("Invoice anomalies resolved", {
-      orgId,
-      count: updated.length,
-      resolution,
-    });
+    if (!query.success) {
+      return NextResponse.json(
+        { code: "INVALID_QUERY", message: "Invalid query parameters", details: query.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const { severity, type, resolution, startDate, endDate, limit, offset } =
+      query.data;
+
+    const filters = {
+      severity: severity as "info" | "warning" | "critical" | undefined,
+      type,
+      status: resolution,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+    };
+
+    const anomalies = await getInvoiceAnomalies(orgId, filters);
+
+    const paginatedAnomalies = anomalies.slice(
+      parseInt(offset),
+      parseInt(offset) + parseInt(limit)
+    );
 
     return NextResponse.json({
-      code: "SUCCESS",
-      message: `${updated.length} anomalies resolved`,
-      updated,
+      data: paginatedAnomalies.map((anomaly) => ({
+        id: anomaly.id,
+        invoiceId: anomaly.invoiceId,
+        invoiceNumber: anomaly.invoice.externalInvoiceId,
+        vendorName: anomaly.invoice.vendorName,
+        vendorId: anomaly.invoice.vendorId,
+        amount: anomaly.invoice.totalAmount,
+        anomalyType: anomaly.anomalyType,
+        severity: anomaly.severity,
+        reason: anomaly.reason,
+        resolution: anomaly.resolution || "pending",
+        resolutionNotes: anomaly.resolutionNotes,
+        resolvedBy: anomaly.resolvedBy?.name,
+        detectedAt: anomaly.detectedAt.toISOString(),
+        resolvedAt: anomaly.resolvedAt?.toISOString(),
+      })),
+      pagination: {
+        offset: parseInt(offset),
+        limit: parseInt(limit),
+        total: anomalies.length,
+      },
     });
   } catch (error) {
     return handleRouteError(error);
