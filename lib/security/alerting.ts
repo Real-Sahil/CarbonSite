@@ -13,6 +13,7 @@
 // - Unexpected geographic patterns (rapid sign-ins from distant locations)
 
 import { prisma } from "@/lib/db";
+import { securityLogger } from "@/lib/logger";
 import { writeAuditLog } from "@/lib/db/audit";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { Prisma } from "@prisma/client";
@@ -137,16 +138,13 @@ export async function checkBulkSubmissionReview(
 // Queue an alert for admin notification.
 // In MVP, alerts are logged; in production, they enqueue a notification job.
 export async function raiseAlert(alert: AuditAlert): Promise<void> {
-  const logEntry = {
-    timestamp: new Date().toISOString(),
+  securityLogger.warn("Security alert detected", {
     type: alert.type,
     severity: alert.severity,
     organizationId: alert.organizationId,
     message: alert.message,
     metadata: alert.metadata,
-  };
-
-  console.warn("[SECURITY ALERT]", logEntry);
+  });
 
   // Send to Sentry for error tracking and monitoring
   if (process.env.SENTRY_DSN) {
@@ -188,14 +186,19 @@ export async function raiseAlert(alert: AuditAlert): Promise<void> {
             ...alert.metadata,
           },
         }).catch((err) =>
-          console.error(
-            `[security-alerting] Failed to enqueue notification for admin ${admin.userId}:`,
-            err,
-          ),
+          securityLogger.error("Failed to enqueue security alert notification", {
+            adminUserId: admin.userId,
+            alertType: alert.type,
+            error: err instanceof Error ? err.message : String(err),
+          }),
         );
       }
     } catch (err) {
-      console.error("[security-alerting] Failed to enqueue admin notifications:", err);
+      securityLogger.error("Failed to enqueue security alert notifications to admins", {
+        organizationId: alert.organizationId,
+        alertType: alert.type,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
