@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createCalculationRunSchema } from "@/lib/validation/records";
 import { dispatchCalculation } from "@/lib/jobs/dispatch";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { createHash } from "crypto";
 
 // Allow up to 60s for Pro plans; Hobby plan caps at 10s regardless.
@@ -19,6 +20,13 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const runs = await prisma.calculationRun.findMany({
@@ -33,7 +41,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       take: 20,
     });
 
-    return NextResponse.json({ data: runs });
+    return json({ data: runs }, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -42,6 +50,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
     const { session } = await requireOrgMember(orgId, "admin", "editor");
 
     const body = createCalculationRunSchema.parse(await req.json());
@@ -92,7 +101,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       select: { id: true, status: true },
     });
     if (inFlight) {
-      return NextResponse.json(inFlight, { status: 200 });
+      return json(inFlight, { status: 200, version });
     }
 
     let run;
@@ -114,7 +123,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         where: { triggerHash },
         select: { id: true, status: true },
       });
-      if (existing) return NextResponse.json(existing, { status: 200 });
+      if (existing) return json(existing, { status: 200, version });
       throw createErr;
     }
 
@@ -153,7 +162,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       select: { id: true, status: true, errorMessage: true, finishedAt: true },
     });
 
-    return NextResponse.json(finalRun ?? run, { status: 202 });
+    return json(finalRun ?? run, { status: 202, version });
   } catch (err) {
     return handleRouteError(err);
   }
