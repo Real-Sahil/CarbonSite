@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getObject } from "@/lib/storage";
+import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
 
 export type CalculationRow = Awaited<ReturnType<typeof fetchCalculations>>[number];
@@ -205,7 +206,11 @@ export async function loadLogoDataUri(logoKey: string | null | undefined): Promi
       : "image/jpeg";
     return `data:${mime};base64,${buf.toString("base64")}`;
   } catch (err) {
-    console.error("[reports] Failed to load branding logo:", err);
+    reportLogger.error("Failed to load branding logo", {
+      logoKey,
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
     return undefined;
   }
 }

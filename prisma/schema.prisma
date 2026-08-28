@@ -208,9 +208,11 @@ model Organization {
   scope3Estimates             Scope3Estimate[]      @relation("Scope3Estimates")
   supplierPerformance         SupplierPerformance[]     @relation("supplierPerformanceOrg")
   suppliedToPerformance       SupplierPerformance[]     @relation("supplierPerformanceSupplier")
+  supplierPerformanceHistory  SupplierPerformanceHistory[] @relation("supplierPerformanceHistoryOrg")
   auditContexts               AuditContext[]            @relation("AuditContexts")
   ssoConfiguration            SsoConfiguration?         @relation("SsoConfigurations")
   ssoSessions                 SsoSession[]              @relation("SsoSessions")
+  xeroSyncLogs                XeroSyncLog[]
 
   @@map("organizations")
 }
@@ -335,6 +337,7 @@ model SupplierInvite {
   usedAt          DateTime? @map("used_at")
   usedByUserId    String?   @map("used_by_user_id")
   createdByUserId String    @map("created_by_user_id")
+  tags            Json?     @default("[]") // Array of supplier category tags
   createdAt       DateTime  @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -2197,6 +2200,30 @@ model IntegrationConnection {
   @@unique([organizationId, provider], name: "organizationId_provider")
   @@index([organizationId])
   @@map("integration_connections")
+}
+
+// ─── Xero Sync Audit Trail ───────────────────────────────────────────────────
+
+model XeroSyncLog {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  invoiceId       String    @map("invoice_id")
+  invoiceNumber   String    @map("invoice_number")
+  lineItemIndex   Int       @map("line_item_index") // Index of line item in invoice
+  supplierName    String    @map("supplier_name")
+  lineDescription String    @map("line_description")
+  amount          Decimal   @db.Decimal(18, 6)
+  category        String    // s3-purchased-goods, s3-upstream-transport, s1-stationary, etc.
+  status          String    @default("processed") // processed, failed, skipped
+  errorMessage    String?   @map("error_message")
+  processedAt     DateTime  @default(now()) @map("processed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, invoiceId, lineItemIndex])
+  @@index([organizationId, processedAt])
+  @@map("xero_sync_logs")
 }
 
 // ─── IoT Devices & Real-Time Meter Data ──────────────────────────────────────

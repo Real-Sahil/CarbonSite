@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { NotificationJobData } from "@/lib/jobs/queues/index";
+import { notificationLogger } from "@/lib/logger";
 import {
   sendEmail,
   taskAssignedEmail,
@@ -173,6 +174,10 @@ export async function processNotification(data: NotificationJobData): Promise<vo
     }
 
     default:
-      console.warn("[notifications] Unknown notification type:", data.type);
+      notificationLogger.warn("Unknown notification type received", {
+        type: data.type,
+        recipientUserId: data.recipientUserId,
+        orgId: data.orgId,
+      });
   }
 }

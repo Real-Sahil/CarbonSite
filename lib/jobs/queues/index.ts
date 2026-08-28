@@ -18,7 +18,9 @@ export type NotificationJobData = {
     | "submission_received"
     | "supplier_password_expiring"
     | "supplier_account_terminated"
-    | "supplier_account_expiring";
+    | "supplier_account_expiring"
+    | "dsar_sla_alert"
+    | "security_alert";
   recipientUserId: string;
   orgId: string;
   resourceId: string;

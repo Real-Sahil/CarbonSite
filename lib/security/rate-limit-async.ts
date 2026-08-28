@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Redis from "ioredis";
 import { prisma } from "@/lib/db";
+import { securityLogger } from "@/lib/logger";
 import { resolveClientIp } from "./client-ip";
 import type { RateLimitResult } from "./rate-limit";
 
@@ -31,13 +32,19 @@ function getRedisClient(): Redis | null {
       });
 
       redisClient.on("error", (err) => {
-        console.warn("[Rate Limit] Redis error, falling back to Postgres:", err.message);
+        securityLogger.warn("Redis error, falling back to Postgres", {
+          error: err.message,
+          code: err.code,
+        });
       });
     }
 
     return redisClient;
   } catch (error) {
-    console.warn("[Rate Limit] Failed to initialize Redis:", error);
+    securityLogger.warn("Failed to initialize Redis", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return null;
   }
 }
@@ -67,7 +74,10 @@ async function rateLimitRedis(
       retryAfterSeconds,
     };
   } catch (error) {
-    console.warn("[Rate Limit] Redis check failed, falling back to Postgres:", error);
+    securityLogger.warn("Redis rate limit check failed, falling back to Postgres", {
+      key,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
@@ -180,7 +190,10 @@ export async function isAccountLocked(email: string): Promise<boolean> {
         return Number(count) > maxAttempts;
       }
     } catch (error) {
-      console.warn("[Rate Limit] Redis check failed, falling back to Postgres:", error);
+      securityLogger.warn("Redis login rate check failed, falling back to Postgres", {
+        email,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

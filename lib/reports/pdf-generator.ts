@@ -5,6 +5,7 @@
 import PDFDocument from "pdfkit";
 import type PDFKit from "pdfkit";
 import { PDFDocument as PdfLib, StandardFonts, rgb } from "pdf-lib";
+import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
 
 const MARGIN = 52;
@@ -49,12 +50,12 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       });
     } catch (err: unknown) {
       const e = err as Record<string, unknown>;
-      console.error("[pdf-generator] PDFDocument initialization error:", {
-        code: e?.code,
-        errno: e?.errno,
-        syscall: e?.syscall,
-        path: e?.path,
-        message: e?.message,
+      reportLogger.error("PDFDocument initialization error", {
+        code: String(e?.code),
+        errno: String(e?.errno),
+        syscall: String(e?.syscall),
+        path: String(e?.path),
+        message: String(e?.message),
       });
       reject(new Error(`PDF initialization failed: ${String(e?.message ?? err)}`));
       return;
@@ -87,12 +88,18 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
           doc.font(fontName);
         }
       } catch (err) {
-        console.warn(`[pdf-generator] Font '${fontName}' not available, using Helvetica fallback:`, err);
+        reportLogger.warn("Font not available, using Helvetica fallback", {
+          fontName,
+          error: err instanceof Error ? err.message : String(err),
+        });
         try {
           if (size) doc.fontSize(size);
           doc.font("Helvetica");
         } catch (fallbackErr) {
-          console.warn("[pdf-generator] Helvetica fallback also failed, continuing without font:", fallbackErr);
+          reportLogger.warn("Helvetica fallback also failed, continuing without font", {
+            fontName,
+            error: fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr),
+          });
         }
       }
     }
@@ -669,7 +676,10 @@ export async function addQrCodeToFooter(pdfBytes: Buffer, meta: QrMeta): Promise
       margin: 0,
     });
   } catch (err) {
-    console.warn("[PDF] QR code generation failed, skipping QR code:", err);
+    reportLogger.warn("QR code generation failed, skipping QR code", {
+      verificationUrl: meta.verificationUrl,
+      error: err instanceof Error ? err.message : String(err),
+    });
     // Return PDF without QR code if generation fails
     return pdfBytes;
   }

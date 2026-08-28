@@ -238,18 +238,55 @@ export async function syncXeroBillsToActivityRecords(
 
     for (const invoice of invoices) {
       try {
-        const invoiceDate = new Date(invoice.Date);
-
-        for (const lineItem of invoice.LineItems) {
+        for (let lineItemIndex = 0; lineItemIndex < invoice.LineItems.length; lineItemIndex++) {
+          const lineItem = invoice.LineItems[lineItemIndex];
           const category = mapXeroInvoiceToCategory(lineItem.Description);
           if (!category) {
+            // Log skipped items for audit trail
+            try {
+              await prisma.xeroSyncLog.upsert({
+                where: {
+                  organizationId_invoiceId_lineItemIndex: {
+                    organizationId,
+                    invoiceId: invoice.InvoiceID,
+                    lineItemIndex,
+                  },
+                },
+                update: {},
+                create: {
+                  organizationId,
+                  invoiceId: invoice.InvoiceID,
+                  invoiceNumber: invoice.InvoiceNumber,
+                  lineItemIndex,
+                  supplierName: invoice.Contact.Name,
+                  lineDescription: lineItem.Description,
+                  amount: new Prisma.Decimal(lineItem.Quantity),
+                  category: "unknown",
+                  status: "skipped",
+                  errorMessage: "No matching emission category",
+                },
+              });
+            } catch (e) {
+              console.warn(`[Xero Sync] Failed to log skipped line item:`, e);
+            }
             continue;
           }
 
           // Deduplication: check if this invoice line item was already synced
-          // For now, we'll create new records each sync - in production, use a separate
-          // tracking table for Xero sync history to prevent duplicates
-          // TODO: Add XeroSyncLog table to track processed invoice IDs
+          const existingLog = await prisma.xeroSyncLog.findUnique({
+            where: {
+              organizationId_invoiceId_lineItemIndex: {
+                organizationId,
+                invoiceId: invoice.InvoiceID,
+                lineItemIndex,
+              },
+            },
+          });
+
+          if (existingLog) {
+            console.log(`[Xero Sync] Invoice ${invoice.InvoiceNumber} line item ${lineItemIndex} already processed`);
+            continue;
+          }
 
           const cat = await prisma.emissionCategory.findUnique({
             where: { code: category },
@@ -257,6 +294,25 @@ export async function syncXeroBillsToActivityRecords(
 
           if (!cat) {
             console.warn(`[Xero Sync] No category found for code ${category}`);
+            // Log failure for audit trail
+            try {
+              await prisma.xeroSyncLog.create({
+                data: {
+                  organizationId,
+                  invoiceId: invoice.InvoiceID,
+                  invoiceNumber: invoice.InvoiceNumber,
+                  lineItemIndex,
+                  supplierName: invoice.Contact.Name,
+                  lineDescription: lineItem.Description,
+                  amount: new Prisma.Decimal(lineItem.Quantity),
+                  category,
+                  status: "failed",
+                  errorMessage: `Category code ${category} not found`,
+                },
+              });
+            } catch (e) {
+              console.warn(`[Xero Sync] Failed to log category error:`, e);
+            }
             continue;
           }
 
@@ -264,21 +320,60 @@ export async function syncXeroBillsToActivityRecords(
           // Xero invoice info stored in sourceDescription for traceability
           const sourceInfo = `Xero Invoice ${invoice.InvoiceNumber} - ${invoice.Contact.Name}: ${lineItem.Description}`;
 
-          await prisma.activityRecord.create({
-            data: {
-              organizationId,
-              reportingPeriodId: reportingPeriod.id,
-              emissionCategoryId: cat.id,
-              sourceDescription: sourceInfo,
-              amount: new Prisma.Decimal(lineItem.Quantity),
-              unit: "unitless",
-              reviewStatus: "draft",
-              evidenceStatus: "missing",
-              createdByUserId: "xero-sync",
-            },
-          });
+          try {
+            await prisma.activityRecord.create({
+              data: {
+                organizationId,
+                reportingPeriodId: reportingPeriod.id,
+                emissionCategoryId: cat.id,
+                sourceDescription: sourceInfo,
+                amount: new Prisma.Decimal(lineItem.Quantity),
+                unit: "unitless",
+                reviewStatus: "draft",
+                evidenceStatus: "missing",
+                createdByUserId: "xero-sync",
+              },
+            });
 
-          synced++;
+            // Log successful sync
+            await prisma.xeroSyncLog.create({
+              data: {
+                organizationId,
+                invoiceId: invoice.InvoiceID,
+                invoiceNumber: invoice.InvoiceNumber,
+                lineItemIndex,
+                supplierName: invoice.Contact.Name,
+                lineDescription: lineItem.Description,
+                amount: new Prisma.Decimal(lineItem.Quantity),
+                category,
+                status: "processed",
+              },
+            });
+
+            synced++;
+          } catch (error) {
+            console.error(`[Xero Sync] Failed to create activity record for ${invoice.InvoiceNumber}:`, error);
+            // Log failure for audit trail
+            try {
+              await prisma.xeroSyncLog.create({
+                data: {
+                  organizationId,
+                  invoiceId: invoice.InvoiceID,
+                  invoiceNumber: invoice.InvoiceNumber,
+                  lineItemIndex,
+                  supplierName: invoice.Contact.Name,
+                  lineDescription: lineItem.Description,
+                  amount: new Prisma.Decimal(lineItem.Quantity),
+                  category,
+                  status: "failed",
+                  errorMessage: error instanceof Error ? error.message : String(error),
+                },
+              });
+            } catch (e) {
+              console.warn(`[Xero Sync] Failed to log error:`, e);
+            }
+            failed++;
+          }
         }
       } catch (error) {
         console.error(`[Xero Sync] Failed to process invoice ${invoice.InvoiceNumber}:`, error);

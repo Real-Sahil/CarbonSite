@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { supplierLogger } from "@/lib/logger";
 
 export async function processSupplierPerformanceUpdate(orgId: string, supplierId: string) {
   // Get all users who are members of the supplier organization
@@ -96,7 +97,14 @@ export async function processSupplierPerformanceUpdate(orgId: string, supplierId
     },
   });
 
-  console.log(
-    `[supplier-performance] updated ${supplierId}: ${submissionCount} submissions, ${approvedCount} approved, ${rejectedCount} rejected`,
-  );
+  supplierLogger.info("Supplier performance updated", {
+    supplierId,
+    orgId,
+    submissionCount,
+    approvedCount,
+    rejectedCount,
+    onTimeCount,
+    completenessScore,
+    dataQualityScore,
+  });
 }

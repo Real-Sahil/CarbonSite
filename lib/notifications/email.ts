@@ -1,5 +1,7 @@
 // Email sending — RESEND_API_KEY in prod, console log in dev (EMAIL_DRIVER=console)
 
+import { notificationLogger } from "@/lib/logger";
+
 const DRIVER = process.env.EMAIL_DRIVER ?? (process.env.RESEND_API_KEY ? "resend" : "console");
 const FROM = process.env.EMAIL_FROM ?? "CarbonSite <noreply@carbonsite.app>";
 
@@ -20,29 +22,55 @@ export async function sendTransactionalEmail(
 ): Promise<TransactionalEmailResult> {
   if (DRIVER === "console") {
     if (process.env.NODE_ENV === "production") {
-      console.warn("[email] RESEND_API_KEY not set — email skipped:", { to: payload.to, subject: payload.subject });
+      notificationLogger.warn("Email sending skipped — RESEND_API_KEY not configured", {
+        to: payload.to,
+        subject: payload.subject,
+      });
     } else {
-      console.log("[email:console]", { to: payload.to, subject: payload.subject });
+      notificationLogger.debug("Email sent via console driver", {
+        to: payload.to,
+        subject: payload.subject,
+      });
     }
     return { provider: "console", messageId: null };
   }
 
-  const { Resend } = await import("resend");
-  const resend = new Resend(process.env.RESEND_API_KEY!);
+  try {
+    const { Resend } = await import("resend");
+    const resend = new Resend(process.env.RESEND_API_KEY!);
 
-  const { data, error } = await resend.emails.send({
-    from: FROM,
-    to: payload.to,
-    subject: payload.subject,
-    text: payload.text,
-    html: payload.html ?? `<pre>${payload.text}</pre>`,
-  });
+    const { data, error } = await resend.emails.send({
+      from: FROM,
+      to: payload.to,
+      subject: payload.subject,
+      text: payload.text,
+      html: payload.html ?? `<pre>${payload.text}</pre>`,
+    });
 
-  if (error) {
-    throw new Error(`Resend error: ${error.message}`);
+    if (error) {
+      notificationLogger.error("Resend error sending email", {
+        to: payload.to,
+        subject: payload.subject,
+        error: error.message,
+      });
+      throw new Error(`Resend error: ${error.message}`);
+    }
+
+    notificationLogger.info("Email sent successfully", {
+      to: payload.to,
+      subject: payload.subject,
+      messageId: data?.id,
+    });
+
+    return { provider: "resend", messageId: data?.id ?? null };
+  } catch (error) {
+    notificationLogger.error("Email sending failed", {
+      to: payload.to,
+      subject: payload.subject,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
-
-  return { provider: "resend", messageId: data?.id ?? null };
 }
 
 export type EmailPayload = {
@@ -54,23 +82,45 @@ export type EmailPayload = {
 
 export async function sendEmail(payload: EmailPayload): Promise<void> {
   if (DRIVER === "console") {
-    console.log("[email] Would send:", { to: payload.to, subject: payload.subject });
+    notificationLogger.debug("Email sent via console driver", {
+      to: payload.to,
+      subject: payload.subject,
+    });
     return;
   }
 
-  const { Resend } = await import("resend");
-  const resend = new Resend(process.env.RESEND_API_KEY!);
+  try {
+    const { Resend } = await import("resend");
+    const resend = new Resend(process.env.RESEND_API_KEY!);
 
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to: payload.to,
-    subject: payload.subject,
-    html: payload.html,
-    text: payload.text,
-  });
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: payload.to,
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    });
 
-  if (error) {
-    throw new Error(`Resend error: ${error.message}`);
+    if (error) {
+      notificationLogger.error("Resend error sending email", {
+        to: payload.to,
+        subject: payload.subject,
+        error: error.message,
+      });
+      throw new Error(`Resend error: ${error.message}`);
+    }
+
+    notificationLogger.info("Email sent successfully", {
+      to: payload.to,
+      subject: payload.subject,
+    });
+  } catch (error) {
+    notificationLogger.error("Email sending failed", {
+      to: payload.to,
+      subject: payload.subject,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
 }
 
