@@ -8,6 +8,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { updateActivityRecordStatusSchema } from "@/lib/validation/org";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function PATCH(
   req: NextRequest,
@@ -15,6 +16,13 @@ export async function PATCH(
 ) {
   try {
     const { orgId, recordId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "record-update", session.user.id),
@@ -68,7 +76,7 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(updated);
+    return json(updated, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -80,6 +88,13 @@ export async function DELETE(
 ) {
   try {
     const { orgId, recordId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     const { session } = await requireOrgMember(orgId, "admin", "editor");
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "record-delete", session.user.id),
