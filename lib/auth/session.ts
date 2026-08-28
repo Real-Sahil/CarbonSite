@@ -223,6 +223,44 @@ export const ROLE_GROUPS = {
   ] as import("@prisma/client").OrgRole[],
 } as const;
 
+export async function requireProjectAccess(
+  orgId: string,
+  projectId: string,
+  ...allowedRoles: string[]
+) {
+  const session = await requireSession();
+
+  // Check org membership first
+  const membership = await prisma.organizationMembership.findUnique({
+    where: {
+      organizationId_userId: { organizationId: orgId, userId: session.user.id },
+    },
+  });
+  if (!membership) throw new AuthError("NOT_MEMBER", 403);
+
+  // If user is admin, grant access to all projects
+  if (membership.role === "admin") {
+    return { session, membership, hasProjectRole: true };
+  }
+
+  // Check project-level role assignment
+  const projectRole = await prisma.projectRoleAssignment.findUnique({
+    where: {
+      userId_projectId: { userId: session.user.id, projectId },
+    },
+  });
+
+  if (!projectRole) {
+    throw new AuthError("PROJECT_ACCESS_DENIED", 403);
+  }
+
+  if (allowedRoles.length && !allowedRoles.includes(projectRole.role)) {
+    throw new AuthError("INSUFFICIENT_PROJECT_ROLE", 403);
+  }
+
+  return { session, membership, projectRole, hasProjectRole: true };
+}
+
 export class AuthError extends Error {
   constructor(
     public readonly code: string,

@@ -15,24 +15,17 @@ export type NotificationJobData = {
     | "import_failed"
     | "report_ready"
     | "submission_reviewed"
-    | "submission_received"
-    | "supplier_password_expiring"
-    | "supplier_account_terminated"
-    | "supplier_account_expiring"
-    | "dsar_sla_alert"
-    | "security_alert";
+    | "submission_received";
   recipientUserId: string;
   orgId: string;
   resourceId: string;
   metadata?: Record<string, unknown>;
 };
-export type DsarJobData = { dsarRequestId: string };
-export type UptimeMonitoringJobData = { checkId?: string };
-export type DsarSlaMonitoringJobData = Record<string, never>;
-export type AccountPoliciesJobData = Record<string, never>;
-export type AirbyteSyncJobData = { connectionId: string; syncRunId?: string; recordsEmitted?: number };
-export type SupplierPerformanceJobData = { orgId: string; supplierId: string };
-export type InvoiceAnomalyJobData = { orgId: string };
+
+export type XeroSyncJobData = {
+  orgId: string;
+  fromDate?: string;
+};
 
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
@@ -54,32 +47,7 @@ export async function enqueueNotification(data: NotificationJobData) {
   await boss.send("notifications", data, retryAggressive);
 }
 
-export async function enqueueDsarExport(data: DsarJobData) {
+export async function enqueueXeroSync(data: XeroSyncJobData) {
   await ensureBossStarted();
-  await boss.send("dsar-export", data, retry);
-}
-
-export async function enqueueDsarErasure(data: DsarJobData) {
-  await ensureBossStarted();
-  await boss.send("dsar-erasure", data, retry);
-}
-
-export async function enqueueAccountPoliciesCheck(data: AccountPoliciesJobData) {
-  await ensureBossStarted();
-  await boss.send("account-policies", data, retry);
-}
-
-export async function enqueueAirbyteSyncCompletion(data: AirbyteSyncJobData) {
-  await ensureBossStarted();
-  await boss.send("airbyte-sync", data, retry);
-}
-
-export async function enqueueSupplierPerformanceUpdate(data: SupplierPerformanceJobData) {
-  await ensureBossStarted();
-  await boss.send("supplier-performance", data, retry);
-}
-
-export async function enqueueInvoiceAnomalyDetection(data: InvoiceAnomalyJobData) {
-  await ensureBossStarted();
-  await boss.send("invoice-anomalies", data, retry);
+  await boss.send("xero-sync", data, retry);
 }

@@ -1,13 +1,9 @@
 import { Prisma } from "@prisma/client";
-import { createHash } from "crypto";
 import { prisma } from "./index";
 
 type AuditAction =
   | "auth.sign_in"
   | "auth.sign_out"
-  | "auth.sso_login"
-  | "auth.mfa_enabled"
-  | "auth.mfa_disabled"
   | "org.created"
   | "org.updated"
   | "org.member.invite"
@@ -15,7 +11,6 @@ type AuditAction =
   | "org.member.added"
   | "org.member.role_change"
   | "org.member.remove"
-  | "organization.account_policies_updated"
   | "business_unit.created"
   | "business_unit.updated"
   | "business_unit.deleted"
@@ -43,7 +38,6 @@ type AuditAction =
   | "report.generation_triggered"
   | "report.published"
   | "report.downloaded"
-  | "report.verification_accessed"
   | "target.created"
   | "target.deleted"
   | "initiative.created"
@@ -56,8 +50,6 @@ type AuditAction =
   | "field_submission.resubmitted"
   | "snapshot.approved"
   | "snapshot.changes_requested"
-  | "snapshot.assured"
-  | "snapshot.assurance_retracted"
   | "field_worker.assignment_created"
   | "field_worker.assignment_deleted"
   | "field_worker.site_assigned"
@@ -78,10 +70,6 @@ type AuditAction =
   | "social_value_target.upserted"
   | "audit.export_downloaded"
   | "audit.data_export_requested"
-  | "dsar.export_completed"
-  | "dsar.erasure_completed"
-  | "dsar.erasure_rejected"
-  | "dsar.sla_approaching"
   | "webhook.created"
   | "webhook.deleted"
   | "field_submission.assigned"
@@ -99,43 +87,9 @@ type AuditAction =
   | "integration.disconnected"
   | "supplier_data_request.sent"
   | "supplier_data_request.submitted"
-  | "supplier_data_request.approve"
-  | "supplier_data_request.reject"
-  | "supplier_data_request.flag_for_review"
-  | "supplier_data_request.resent"
-  | "supplier_portal.dashboard_accessed"
-  | "supplier_account.created"
-  | "supplier_account.created_bulk"
-  | "supplier_account.password_reset"
-  | "supplier_account.categories_updated"
-  | "supplier_account.terminated"
-  | "supplier_account.reactivated"
-  | "supplier_tag.created"
-  | "supplier_tag.deleted"
-  | "supplier_data.submitted"
-  | "iot_device.registered"
-  | "iot_device.updated"
-  | "iot_device.deactivated"
-  | "iot_credential.created"
-  | "iot_credential.revoked"
-  | "meter_reading.processed"
-  | "meter_reading.duplicate_detected"
-  | "security.alert_repeated_failed_logins"
-  | "security.alert_privilege_escalation"
-  | "security.alert_mass_export"
-  | "security.alert_bulk_data_mutation"
-  | "security.alert_bulk_submission_review"
-  | "security.alert_suspicious_location_jump"
-  | "monitoring.health_check_failed"
-  | "monitoring.health_check_error"
-  | "billing.payment_method_added"
-  | "billing.payment_method_deleted"
-  | "billing.payment_method_set_default"
-  | "compliance.csrd_assessed"
-  | "sbti.pathway_created"
-  | "scope3.estimate_generated"
-  | "scope3.estimate_approved"
-  | "scope3.estimate_rejected";
+  | "project.member.added"
+  | "project.member.removed"
+  | "project.member.role_change";
 
 export async function writeAuditLog(params: {
   organizationId: string;
@@ -144,130 +98,15 @@ export async function writeAuditLog(params: {
   resourceType: string;
   resourceId: string;
   metadata?: Prisma.InputJsonObject;
-  ipAddress?: string | null;
-  userAgent?: string | null;
 }) {
-  const metadata = params.metadata ?? Prisma.JsonNull;
-  const { ipAddress, userAgent } =
-    params.ipAddress !== undefined || params.userAgent !== undefined
-      ? { ipAddress: params.ipAddress ?? null, userAgent: params.userAgent ?? null }
-      : await readAmbientRequestContext();
-
-  await prisma.$transaction(async (tx) => {
-    // Serialize hash-chain writes per organization so two concurrent audit
-    // events can't both read the same "previous" row and fork the chain.
-    // hashtext() bucket collisions across orgs just serialize a bit more —
-    // never incorrect, only occasionally more conservative than necessary.
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${params.organizationId}))`;
-
-    const previous = await tx.auditLog.findFirst({
-      where: { organizationId: params.organizationId },
-      orderBy: { chainSeq: "desc" },
-      select: { hash: true },
-    });
-    const previousHash = previous?.hash ?? null;
-    const createdAt = new Date();
-
-    const hash = createHash("sha256")
-      .update(
-        [
-          previousHash ?? "",
-          params.organizationId,
-          params.actorUserId ?? "",
-          params.action,
-          params.resourceType,
-          params.resourceId,
-          JSON.stringify(params.metadata ?? {}),
-          createdAt.toISOString(),
-        ].join("|"),
-      )
-      .digest("hex");
-
-    await tx.auditLog.create({
-      data: {
-        organizationId: params.organizationId,
-        actorUserId: params.actorUserId ?? null,
-        action: params.action,
-        resourceType: params.resourceType,
-        resourceId: params.resourceId,
-        metadata,
-        ipAddress,
-        userAgent,
-        previousHash,
-        hash,
-        createdAt,
-      },
-    });
-  });
-}
-
-// Reads the client IP / user agent middleware.ts already resolved onto the
-// current request (x-client-ip is middleware-set, not attacker-suppliable
-// the way a bare X-Forwarded-For read here would be). Lets every route
-// handler call writeAuditLog() without threading IP/UA through by hand.
-// Returns nulls outside a request scope (e.g. pg-boss workers), which is
-// the correct outcome there — those call sites should pass params explicitly
-// if they have a real actor IP to record (see workers/*.ts for the pattern).
-async function readAmbientRequestContext(): Promise<{
-  ipAddress: string | null;
-  userAgent: string | null;
-}> {
-  try {
-    const { headers } = await import("next/headers");
-    const h = await headers();
-    return {
-      ipAddress: h.get("x-client-ip"),
-      userAgent: h.get("user-agent"),
-    };
-  } catch {
-    return { ipAddress: null, userAgent: null };
-  }
-}
-
-// Verifies the hash chain for an organization is intact — no row was
-// altered or deleted out of sequence. Used by admin/audit tooling, not on
-// the write path (recomputing every row's hash on every write would be
-// O(n) per write). Returns the index of the first broken link, or null if
-// the chain is fully intact.
-export async function verifyAuditChain(organizationId: string): Promise<number | null> {
-  const rows = await prisma.auditLog.findMany({
-    where: { organizationId },
-    orderBy: { chainSeq: "asc" },
-    select: {
-      actorUserId: true,
-      action: true,
-      resourceType: true,
-      resourceId: true,
-      metadata: true,
-      createdAt: true,
-      previousHash: true,
-      hash: true,
+  await prisma.auditLog.create({
+    data: {
+      organizationId: params.organizationId,
+      actorUserId: params.actorUserId ?? null,
+      action: params.action,
+      resourceType: params.resourceType,
+      resourceId: params.resourceId,
+      metadata: params.metadata ?? Prisma.JsonNull,
     },
   });
-
-  let expectedPreviousHash: string | null = null;
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i]!;
-    // Rows written before this migration have no hash — they predate the
-    // chain and aren't verifiable, but aren't evidence of tampering either.
-    if (row.hash === null) continue;
-    if (row.previousHash !== expectedPreviousHash) return i;
-    const recomputed: string = createHash("sha256")
-      .update(
-        [
-          row.previousHash ?? "",
-          organizationId,
-          row.actorUserId ?? "",
-          row.action,
-          row.resourceType,
-          row.resourceId,
-          JSON.stringify(row.metadata ?? {}),
-          row.createdAt.toISOString(),
-        ].join("|"),
-      )
-      .digest("hex");
-    if (recomputed !== row.hash) return i;
-    expectedPreviousHash = row.hash;
-  }
-  return null;
 }
