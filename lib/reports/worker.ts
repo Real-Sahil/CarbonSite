@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { putObject, keys } from "@/lib/storage";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
+import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { getReportHandler, type ReportContext } from "./registry";
@@ -36,7 +37,7 @@ const REPORT_INCLUDE = {
 type ReportWithIncludes = Prisma.ReportGetPayload<{ include: typeof REPORT_INCLUDE }>;
 
 export async function processReport(reportId: string, orgId: string): Promise<void> {
-  console.log(`[reports] processReport START: reportId=${reportId}, orgId=${orgId}`);
+  reportLogger.info("Report processing started", { reportId, orgId });
   let report: ReportWithIncludes | null = null;
 
   try {
@@ -44,20 +45,24 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       where: { id: reportId },
       include: REPORT_INCLUDE,
     });
-    console.log(`[reports] Report loaded: type=${report.type}, status=${report.status}`);
+    reportLogger.info("Report loaded", { reportId, type: report.type, status: report.status });
 
     if (report.organizationId !== orgId) {
       const error = new Error("Org mismatch on report job.");
-      console.error(`[reports] CRITICAL: ${error.message} (reportId=${reportId}, expected orgId=${orgId}, got ${report.organizationId})`);
+      reportLogger.error("Organization mismatch on report job", {
+        reportId,
+        expectedOrgId: orgId,
+        actualOrgId: report.organizationId,
+      });
       throw error;
     }
     if (report.status === "ready") {
-      console.log(`[reports] Report already ready, skipping (reportId=${reportId})`);
+      reportLogger.info("Report already ready, skipping", { reportId });
       return;
     }
 
     await prisma.report.update({ where: { id: reportId }, data: { status: "generating" } });
-    console.log(`[reports] Status updated to generating (reportId=${reportId})`);
+    reportLogger.info("Report status updated to generating", { reportId });
 
     let pdfKey: string | null = null;
     let csvKey: string | null = null;
@@ -161,40 +166,58 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         orgId,
         resourceId: reportId,
         metadata: { reportLabel: `${updated.type.replaceAll("_", " ")} — ${report.reportingPeriod.label}` },
-      }).catch((err) => console.error(`[reports] Failed to enqueue notification (reportId=${reportId}):`, err));
+      }).catch((err) =>
+        reportLogger.error("Failed to enqueue notification", {
+          reportId,
+          error: err instanceof Error ? err.message : String(err),
+        })
+      );
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       const errorStack = err instanceof Error ? err.stack : "";
-      console.error(`[reports] Error generating report (reportId=${reportId}, orgId=${orgId}): ${errorMsg}`, errorStack);
+      reportLogger.error("Error generating report", {
+        reportId,
+        orgId,
+        error: errorMsg,
+        stack: errorStack,
+      });
 
       try {
         await prisma.report.update({
           where: { id: reportId },
           data: { status: "failed" }
         });
-        console.log(`[reports] Report status set to failed (reportId=${reportId})`);
+        reportLogger.info("Report status set to failed", { reportId });
       } catch (updateErr) {
-        console.error(`[reports] CRITICAL: Failed to update report status to failed (reportId=${reportId}):`, updateErr);
+        reportLogger.error("Failed to update report status to failed", {
+          reportId,
+          error: updateErr instanceof Error ? updateErr.message : String(updateErr),
+        });
       }
       throw err;
     }
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     const errorStack = err instanceof Error ? err.stack : "";
-    console.error(`[reports] Unhandled error in processReport (reportId=${reportId}, orgId=${orgId}): ${errorMsg}`, errorStack);
-
-    if (report === null) {
-      console.error(`[reports] CRITICAL: Report not found or fetch failed (reportId=${reportId})`);
-    }
+    reportLogger.error("Unhandled error in processReport", {
+      reportId,
+      orgId,
+      error: errorMsg,
+      stack: errorStack,
+      reportNotFound: report === null,
+    });
 
     try {
       await prisma.report.update({
         where: { id: reportId },
         data: { status: "failed" }
       });
-      console.log(`[reports] Report status set to failed from outer catch (reportId=${reportId})`);
+      reportLogger.info("Report status set to failed from outer catch", { reportId });
     } catch (updateErr) {
-      console.error(`[reports] CRITICAL: Failed to update report status in outer catch (reportId=${reportId}):`, updateErr);
+      reportLogger.error("Failed to update report status in outer catch", {
+        reportId,
+        error: updateErr instanceof Error ? updateErr.message : String(updateErr),
+      });
     }
     throw err;
   }
@@ -226,7 +249,10 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
     try {
       basePdfData.narrative = await generateAuditNarrative(basePdfData);
     } catch (err) {
-      console.error("[reports] Failed to generate narrative:", err);
+      reportLogger.error("Failed to generate narrative", {
+        reportId: report.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 

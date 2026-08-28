@@ -4,6 +4,7 @@
 
 import { prisma } from "@/lib/db";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
+import { dsarLogger } from "@/lib/logger";
 
 const ALERT_WINDOW_DAYS = 5; // Alert 5 days before due date
 
@@ -31,13 +32,13 @@ export async function processDsarSlaMonitoring(): Promise<void> {
     });
 
     if (atRiskRequests.length === 0) {
-      console.log("[dsar-sla-monitoring] All DSAR requests on schedule");
+      dsarLogger.info("All DSAR requests on schedule");
       return;
     }
 
-    console.log(
-      `[dsar-sla-monitoring] Found ${atRiskRequests.length} DSAR request(s) at risk`,
-    );
+    dsarLogger.info("Found DSAR requests at risk", {
+      count: atRiskRequests.length,
+    });
 
     // For each at-risk request, notify the org admins
     for (const request of atRiskRequests) {
@@ -47,9 +48,11 @@ export async function processDsarSlaMonitoring(): Promise<void> {
         (request.dueBy.getTime() - now.getTime()) / (24 * 60 * 60 * 1000),
       );
 
-      console.log(
-        `[dsar-sla-monitoring] DSAR ${request.id} due in ${daysRemaining} days (org: ${request.organization?.name})`,
-      );
+      dsarLogger.info("DSAR SLA approaching", {
+        requestId: request.id,
+        orgName: request.organization?.name,
+        daysRemaining,
+      });
 
       // Log audit entry for tracking
       const { writeAuditLog } = await import("@/lib/db/audit");
@@ -86,10 +89,11 @@ export async function processDsarSlaMonitoring(): Promise<void> {
             subjectEmail: request.user.email,
           },
         }).catch((err) =>
-          console.error(
-            `[dsar-sla-monitoring] Failed to enqueue notification for admin ${admin.userId}:`,
-            err,
-          ),
+          dsarLogger.error("Failed to enqueue notification", {
+            adminUserId: admin.userId,
+            requestId: request.id,
+            error: err instanceof Error ? err.message : String(err),
+          }),
         );
       }
     }
@@ -104,20 +108,23 @@ export async function processDsarSlaMonitoring(): Promise<void> {
     });
 
     if (overdueRequests.length > 0) {
-      console.error(
-        `[dsar-sla-monitoring] CRITICAL: ${overdueRequests.length} DSAR request(s) overdue!`,
-      );
-      for (const request of overdueRequests) {
-        console.error(
-          `[dsar-sla-monitoring] Overdue DSAR ${request.id} (org: ${request.organization?.name}, due: ${request.dueBy.toISOString()})`,
-        );
-      }
+      dsarLogger.error("DSAR requests overdue — SLA breach", {
+        overdueCount: overdueRequests.length,
+        requests: overdueRequests.map((r) => ({
+          id: r.id,
+          orgName: r.organization?.name,
+          dueDate: r.dueBy.toISOString(),
+        })),
+      });
       throw new Error(
         `${overdueRequests.length} DSAR request(s) overdue - SLA breach`,
       );
     }
   } catch (error) {
-    console.error("[dsar-sla-monitoring] Error checking DSAR SLAs:", error);
+    dsarLogger.error("Error checking DSAR SLAs", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw error; // Let pg-boss retry and Sentry capture
   }
 }
