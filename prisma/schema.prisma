@@ -209,6 +209,7 @@ model Organization {
   supplierPerformance         SupplierPerformance[]     @relation("supplierPerformanceOrg")
   suppliedToPerformance       SupplierPerformance[]     @relation("supplierPerformanceSupplier")
   supplierPerformanceHistory  SupplierPerformanceHistory[] @relation("supplierPerformanceHistoryOrg")
+  dbtRuns                     DbtRun[]
   auditContexts               AuditContext[]            @relation("AuditContexts")
   ssoConfiguration            SsoConfiguration?         @relation("SsoConfigurations")
   ssoSessions                 SsoSession[]              @relation("SsoSessions")
@@ -988,6 +989,7 @@ model CalculationRun {
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
+  dbtRuns            DbtRun[]
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -2764,4 +2766,25 @@ model SsoSession {
   @@index([organizationId, provider])
   @@unique([organizationId, providerUserId])
   @@map("sso_sessions")
+}
+
+// ─── dbt SQL Transformations ─────────────────────────────────────────────────
+
+model DbtRun {
+  id                 String   @id @default(cuid())
+  organizationId     String   @map("organization_id")
+  calculationRunId   String   @map("calculation_run_id")
+  status             String   // 'success' or 'failed'
+  output             String   @db.Text // dbt stdout/stderr logs
+  rowsAffected       Int      @default(0) @map("rows_affected")
+  duration           Int      // milliseconds
+  modelsRun          String?  @map("models_run") // e.g. "tag:marts"
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  calculationRun  CalculationRun  @relation(fields: [calculationRunId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, calculationRunId])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("dbt_runs")
 }

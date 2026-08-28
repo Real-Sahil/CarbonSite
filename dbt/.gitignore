@@ -1,0 +1,25 @@
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+*.yml.bak
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,92 @@
+version: 2
+
+sources:
+  - name: carbonsite
+    database: "{{ env_var('DBT_SOURCE_DB', 'carbonsite') }}"
+    schema: public
+    description: CarbonSite production database
+    tables:
+      - name: activity_records
+        description: Raw emissions activity records submitted by users or field workers
+        columns:
+          - name: id
+            description: Unique activity record ID
+            tests:
+              - unique
+              - not_null
+          - name: organization_id
+            description: Organization that owns this record
+            tests:
+              - not_null
+          - name: amount
+            description: Original activity amount
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_values_to_be_in_set:
+                  value_set: [0]  # Allow zero, but not negative
+                  negate: true
+          - name: review_status
+            tests:
+              - accepted_values:
+                  values: ['draft', 'in_review', 'approved', 'rejected']
+
+      - name: emission_factors
+        description: Emission conversion factors (CO2e per unit)
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+          - name: emission_factor
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_values_to_be_greater_than:
+                  min_value: 0
+
+models:
+  - name: stg_activity_records
+    description: Staging layer for activity records
+    columns:
+      - name: activity_record_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_emission_factors
+    description: Staging layer for emission factors
+    columns:
+      - name: factor_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_emissions
+    description: Fact table combining activity records with emission factors
+    columns:
+      - name: emission_id
+        description: Unique emission calculation ID
+        tests:
+          - unique
+          - not_null
+      - name: total_co2e_kg
+        description: Total CO2e in kilograms
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_greater_than_or_equal_to:
+              min_value: 0
+
+  - name: agg_daily_emissions
+    description: Daily aggregates of emissions by organization, facility, category
+    columns:
+      - name: aggregate_id
+        tests:
+          - unique
+          - not_null
+      - name: total_co2e_kg
+        tests:
+          - dbt_expectations.expect_column_values_to_be_greater_than_or_equal_to:
+              min_value: 0
+      - name: record_count
+        tests:
+          - dbt_expectations.expect_column_values_to_be_greater_than:
+              min_value: 0
