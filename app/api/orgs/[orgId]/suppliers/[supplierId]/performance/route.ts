@@ -32,7 +32,9 @@ export async function GET(
     const history = await prisma.supplierPerformanceHistory.findMany({
       where: {
         organizationId: orgId,
-        supplierId,
+        supplierPerformance: {
+          supplierId,
+        },
       },
       orderBy: { recordedAt: "desc" },
       take: 12,

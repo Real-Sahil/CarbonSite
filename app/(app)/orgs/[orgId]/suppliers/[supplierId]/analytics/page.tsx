@@ -6,20 +6,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, Minus, CheckCircle, XCircle, Clock } from 'lucide-react';
 
-interface SupplierPerformance {
+interface ApiResponse {
   performance: {
     submissionCount: number;
     approvedCount: number;
     rejectedCount: number;
     onTimeCount: number;
+    completenessScore: number | null;
+    dataQualityScore: number | null;
+    lastDataQualityTrend: string | null;
+  } | null;
+  history: Array<any>;
+  metrics: {
+    totalSubmissions: number;
+    approvedSubmissions: number;
+    rejectedSubmissions: number;
+    onTimeSubmissions: number;
     approvalRate: number;
-    rejectionRate: number;
     onTimeRate: number;
-    scores: {
-      completenessScore: number | null;
-      dataQualityScore: number | null;
-    };
-    trend: string | null;
   };
 }
 
@@ -28,7 +32,7 @@ export default function SupplierAnalyticsPage() {
   const orgId = params.orgId as string;
   const supplierId = params.supplierId as string;
 
-  const [data, setData] = useState<SupplierPerformance | null>(null);
+  const [data, setData] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,17 +77,31 @@ export default function SupplierAnalyticsPage() {
     );
   }
 
+  if (!data.performance) {
+    return (
+      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+        <p className="text-sm text-yellow-800">No performance data available for this supplier yet.</p>
+      </div>
+    );
+  }
+
   const perf = data.performance;
-  const trendIcon = perf.trend === 'improving' ? (
+  const metrics = data.metrics;
+  const rejectionRate = metrics.totalSubmissions > 0
+    ? (metrics.rejectedSubmissions / metrics.totalSubmissions) * 100
+    : 0;
+
+  const trend = perf.lastDataQualityTrend || 'stable';
+  const trendIcon = trend === 'improving' ? (
     <TrendingUp className="w-5 h-5 text-green-600" />
-  ) : perf.trend === 'declining' ? (
+  ) : trend === 'declining' ? (
     <TrendingDown className="w-5 h-5 text-red-600" />
   ) : (
     <Minus className="w-5 h-5 text-gray-600" />
   );
 
-  const trendLabel = perf.trend === 'improving' ? 'Improving' : perf.trend === 'declining' ? 'Declining' : 'Stable';
-  const trendColor = perf.trend === 'improving' ? 'text-green-700' : perf.trend === 'declining' ? 'text-red-700' : 'text-gray-700';
+  const trendLabel = trend === 'improving' ? 'Improving' : trend === 'declining' ? 'Declining' : 'Stable';
+  const trendColor = trend === 'improving' ? 'text-green-700' : trend === 'declining' ? 'text-red-700' : 'text-gray-700';
 
   return (
     <div className="space-y-6">
@@ -98,7 +116,7 @@ export default function SupplierAnalyticsPage() {
             <CardTitle className="text-sm font-medium text-gray-600 uppercase">Total Submissions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-gray-900">{perf.submissionCount}</p>
+            <p className="text-3xl font-bold text-gray-900">{metrics.totalSubmissions}</p>
             <p className="mt-1 text-xs text-gray-500">All submitted records</p>
           </CardContent>
         </Card>
@@ -109,10 +127,10 @@ export default function SupplierAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-green-600">{perf.approvalRate.toFixed(1)}%</p>
+              <p className="text-3xl font-bold text-green-600">{metrics.approvalRate.toFixed(1)}%</p>
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
-            <p className="mt-1 text-xs text-gray-500">{perf.approvedCount} approved</p>
+            <p className="mt-1 text-xs text-gray-500">{metrics.approvedSubmissions} approved</p>
           </CardContent>
         </Card>
 
@@ -122,10 +140,10 @@ export default function SupplierAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-red-600">{perf.rejectionRate.toFixed(1)}%</p>
+              <p className="text-3xl font-bold text-red-600">{rejectionRate.toFixed(1)}%</p>
               <XCircle className="w-5 h-5 text-red-600" />
             </div>
-            <p className="mt-1 text-xs text-gray-500">{perf.rejectedCount} rejected</p>
+            <p className="mt-1 text-xs text-gray-500">{metrics.rejectedSubmissions} rejected</p>
           </CardContent>
         </Card>
 
@@ -135,10 +153,10 @@ export default function SupplierAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-blue-600">{perf.onTimeRate.toFixed(1)}%</p>
+              <p className="text-3xl font-bold text-blue-600">{metrics.onTimeRate.toFixed(1)}%</p>
               <Clock className="w-5 h-5 text-blue-600" />
             </div>
-            <p className="mt-1 text-xs text-gray-500">{perf.onTimeCount} on time</p>
+            <p className="mt-1 text-xs text-gray-500">{metrics.onTimeSubmissions} on time</p>
           </CardContent>
         </Card>
       </div>
@@ -150,17 +168,17 @@ export default function SupplierAnalyticsPage() {
             <CardDescription>Average quality of submitted records</CardDescription>
           </CardHeader>
           <CardContent>
-            {perf.scores.dataQualityScore !== null ? (
+            {perf.dataQualityScore !== null ? (
               <div className="flex items-end gap-4">
                 <div>
-                  <p className="text-4xl font-bold text-blue-600">{perf.scores.dataQualityScore.toFixed(1)}</p>
+                  <p className="text-4xl font-bold text-blue-600">{Number(perf.dataQualityScore).toFixed(1)}</p>
                   <p className="mt-2 text-sm text-gray-600">out of 100</p>
                 </div>
                 <div className="flex-1">
                   <div className="h-2 rounded-full bg-gray-200">
                     <div
                       className="h-full rounded-full bg-blue-600"
-                      style={{ width: `${Math.min(perf.scores.dataQualityScore, 100)}%` }}
+                      style={{ width: `${Math.min(Number(perf.dataQualityScore), 100)}%` }}
                     />
                   </div>
                 </div>
@@ -177,17 +195,17 @@ export default function SupplierAnalyticsPage() {
             <CardDescription>Average field completeness</CardDescription>
           </CardHeader>
           <CardContent>
-            {perf.scores.completenessScore !== null ? (
+            {perf.completenessScore !== null ? (
               <div className="flex items-end gap-4">
                 <div>
-                  <p className="text-4xl font-bold text-emerald-600">{perf.scores.completenessScore.toFixed(1)}</p>
+                  <p className="text-4xl font-bold text-emerald-600">{Number(perf.completenessScore).toFixed(1)}</p>
                   <p className="mt-2 text-sm text-gray-600">out of 100</p>
                 </div>
                 <div className="flex-1">
                   <div className="h-2 rounded-full bg-gray-200">
                     <div
                       className="h-full rounded-full bg-emerald-600"
-                      style={{ width: `${Math.min(perf.scores.completenessScore, 100)}%` }}
+                      style={{ width: `${Math.min(Number(perf.completenessScore), 100)}%` }}
                     />
                   </div>
                 </div>
@@ -210,9 +228,9 @@ export default function SupplierAnalyticsPage() {
             <div>
               <p className={`text-lg font-semibold ${trendColor}`}>{trendLabel}</p>
               <p className="text-sm text-gray-600">
-                {perf.trend === 'improving'
+                {trend === 'improving'
                   ? 'Data quality is improving over recent submissions'
-                  : perf.trend === 'declining'
+                  : trend === 'declining'
                     ? 'Data quality is declining — consider support'
                     : 'Data quality remains stable'}
               </p>
@@ -229,15 +247,15 @@ export default function SupplierAnalyticsPage() {
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-green-600">{perf.approvedCount}</p>
+              <p className="text-2xl font-bold text-green-600">{metrics.approvedSubmissions}</p>
               <p className="text-xs text-gray-600 uppercase">Approved</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-red-600">{perf.rejectedCount}</p>
+              <p className="text-2xl font-bold text-red-600">{metrics.rejectedSubmissions}</p>
               <p className="text-xs text-gray-600 uppercase">Rejected</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-yellow-600">{Math.max(0, perf.submissionCount - perf.approvedCount - perf.rejectedCount)}</p>
+              <p className="text-2xl font-bold text-yellow-600">{Math.max(0, metrics.totalSubmissions - metrics.approvedSubmissions - metrics.rejectedSubmissions)}</p>
               <p className="text-xs text-gray-600 uppercase">Pending</p>
             </div>
           </div>
