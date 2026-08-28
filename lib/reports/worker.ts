@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { putObject, keys } from "@/lib/storage";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
+import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
 import type { ReportData } from "./template";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { getReportHandler, type ReportContext } from "./registry";
@@ -162,6 +163,14 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         resourceId: reportId,
         metadata: { reportLabel: `${updated.type.replaceAll("_", " ")} — ${report.reportingPeriod.label}` },
       }).catch((err) => console.error(`[reports] Failed to enqueue notification (reportId=${reportId}):`, err));
+
+      // Trigger n8n workflow for report-ready notifications
+      await triggerReportReadyNotification(
+        orgId,
+        reportId,
+        updated.type,
+        report.createdBy.email
+      ).catch((err) => console.error(`[reports] Failed to trigger n8n workflow (reportId=${reportId}):`, err));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       const errorStack = err instanceof Error ? err.stack : "";
