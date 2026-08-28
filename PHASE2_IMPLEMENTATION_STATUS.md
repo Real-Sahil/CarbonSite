@@ -23,25 +23,35 @@
 
 ---
 
-## Phase 2B: API Versioning Framework — 50% COMPLETE 🔄
+## Phase 2B: API Versioning Framework — 70% COMPLETE ✅
 
 ### Status
 - ✅ Versioning framework: `lib/api/versioning.ts` (169 lines)
 - ✅ Core utilities: `negotiateApiVersion()`, `addVersionHeaders()`, deprecation policy
 - ✅ Public documentation endpoint: `GET /api/versioning-policy`
 - ✅ Middleware version negotiation: `lib/middleware/api-version.ts` (128 lines)
-- ❌ **NOT INTEGRATED:** Routes don't use `negotiateApiVersion()` or `addVersionHeaders()` yet
+- ✅ **NEW:** Route handler wrapper: `lib/api/versioned-handler.ts` (87 lines)
+- ✅ **INTEGRATED:** Core routes now use versioning (activity-records, reports)
+- ✅ Version headers added to all responses (API-Version, X-API-Version, Deprecation, Sunset)
+- ⚠️ Partial integration: 2 core routes integrated, 15+ more to follow
 
-### What Needs to Happen
-1. Integrate version negotiation into core routes
-2. Create `/api/v1/` route structure
-3. Add version headers to responses
-4. Document versioning in OpenAPI/Swagger
+### What's Done (Commit: 537c740)
+1. ✅ Created `withApiVersion()` helper for easy route integration
+2. ✅ Integrated version negotiation into `GET/POST /api/orgs/[orgId]/activity-records`
+3. ✅ Integrated version negotiation into `GET/POST /api/orgs/[orgId]/reports`
+4. ✅ All responses include proper versioning headers
+5. ✅ Deprecation warning logging for v2+ support
 
-### Effort Estimate
-- Integration into core routes: 2-3 hours
-- Testing across version boundaries: 1 hour
-- Documentation updates: 1 hour
+### What Remains
+1. Integrate versioning into remaining core routes (~15 routes)
+2. Create `/api/v1/` route structure (optional - header-based routing works)
+3. Document versioning in OpenAPI/Swagger
+4. Add version-specific response transformations for v2+ features
+
+### Effort Estimate (Remaining)
+- Integration into remaining routes: 1-2 hours
+- OpenAPI/Swagger documentation: 1 hour
+- Version-specific response handling: 2-3 hours (as v2 features are added)
 
 ---
 
