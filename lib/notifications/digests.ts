@@ -239,7 +239,7 @@ export async function compileDigestData(
 ): Promise<Partial<DigestTemplate["data"]> | null> {
   // Get time range based on digest type
   const now = new Date();
-  const startDate = new Date();
+  let startDate = new Date();
 
   if (timeframe === "daily") {
     startDate.setDate(startDate.getDate() - 1);
@@ -268,7 +268,7 @@ export async function compileDigestData(
   const pendingReviews = await prisma.activityRecord.count({
     where: {
       organizationId,
-      reviewStatus: "in_review",
+      reviewStatus: "pending_review",
     },
   });
 
@@ -276,28 +276,21 @@ export async function compileDigestData(
   const completedCalculations = await prisma.calculationRun.count({
     where: {
       organizationId,
-      status: "succeeded",
+      status: "completed",
       createdAt: { gte: startDate },
     },
   });
 
-  // Get emissions summary by scope
-  const emissionsByScope = await prisma.dashboardAggregate.groupBy({
-    by: ["scope"],
+  // Get emissions summary
+  const emissions = await prisma.dashboardAggregate.aggregate({
     where: { organizationId },
     _sum: {
       totalCo2e: true,
+      scope1Total: true,
+      scope2Total: true,
+      scope3Total: true,
     },
   });
-
-  const scopeTotals = new Map<number, number>();
-  let totalEmissions = 0;
-
-  for (const item of emissionsByScope) {
-    const amount = Number(item._sum.totalCo2e ?? 0);
-    scopeTotals.set(item.scope, amount);
-    totalEmissions += amount;
-  }
 
   // Get data quality score (simplified)
   const records = await prisma.activityRecord.count({
@@ -315,10 +308,10 @@ export async function compileDigestData(
 
   return {
     emissions: {
-      total: totalEmissions,
-      scope1: scopeTotals.get(1) ?? 0,
-      scope2: scopeTotals.get(2) ?? 0,
-      scope3: scopeTotals.get(3) ?? 0,
+      total: Number(emissions._sum.totalCo2e ?? 0),
+      scope1: Number(emissions._sum.scope1Total ?? 0),
+      scope2: Number(emissions._sum.scope2Total ?? 0),
+      scope3: Number(emissions._sum.scope3Total ?? 0),
     },
     dataQualityScore,
     newRecords,

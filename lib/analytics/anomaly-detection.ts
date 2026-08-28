@@ -26,51 +26,44 @@ export async function detectOutliers(
 ): Promise<EmissionAnomaly[]> {
   const anomalies: EmissionAnomaly[] = [];
 
-  // Get activity records with their calculations
-  const records = await prisma.activityRecord.findMany({
+  // Get calculation data grouped by category
+  const categoryData = await prisma.emissionCalculation.groupBy({
+    by: ["emissionCategoryId"],
     where: {
-      organizationId,
-      ...(reportingPeriodId && { reportingPeriodId }),
-    },
-    select: {
-      id: true,
-      emissionCategoryId: true,
-      calculations: {
-        select: {
-          totalCo2e: true,
-        },
+      activityRecord: {
+        organizationId,
+        ...(reportingPeriodId && { reportingPeriodId }),
       },
     },
+    _sum: {
+      totalCo2e: true,
+    },
+    _count: true,
   });
 
-  // Group by category
-  const categoryGroups = new Map<string, Array<{ recordId: string; value: number }>>();
+  for (const cat of categoryData) {
+    if (!cat.emissionCategoryId) continue;
 
-  for (const record of records) {
-    if (!record.emissionCategoryId || record.calculations.length === 0) continue;
-
-    const categoryId = record.emissionCategoryId;
-    if (!categoryGroups.has(categoryId)) {
-      categoryGroups.set(categoryId, []);
-    }
-
-    const categoryList = categoryGroups.get(categoryId)!;
-    record.calculations.forEach((calc) => {
-      categoryList.push({ recordId: record.id, value: Number(calc.totalCo2e) });
+    // Get all values for this category
+    const calculations = await prisma.emissionCalculation.findMany({
+      where: {
+        emissionCategoryId: cat.emissionCategoryId,
+        activityRecord: {
+          organizationId,
+          ...(reportingPeriodId && { reportingPeriodId }),
+        },
+      },
+      select: {
+        id: true,
+        totalCo2e: true,
+        activityRecordId: true,
+      },
     });
-  }
 
-  // Fetch category names
-  const categories = await prisma.emissionCategory.findMany({
-    where: { id: { in: Array.from(categoryGroups.keys()) } },
-  });
-  const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
-
-  for (const [categoryId, calculations] of categoryGroups) {
-    if (calculations.length < 3) continue;
+    if (calculations.length < 3) continue; // Need at least 3 data points
 
     // Calculate mean and std deviation
-    const values = calculations.map((c) => c.value);
+    const values = calculations.map((c) => Number(c.totalCo2e));
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     const variance =
       values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
@@ -85,24 +78,29 @@ export async function detectOutliers(
       const zScore = Math.abs((value - mean) / stdDev);
 
       if (zScore > zScoreThreshold) {
-        const deviation = Math.round(((value - mean) / mean) * 100);
-        const categoryName = categoryMap.get(categoryId) || "Unknown";
-
-        anomalies.push({
-          recordId: calculations[i].recordId,
-          category: categoryName,
-          anomalyType: "outlier",
-          severity: Math.abs(zScore) > 3 ? "high" : "medium",
-          value: Math.round(value),
-          expectedRange: {
-            min: Math.round(mean - stdDev),
-            max: Math.round(mean + stdDev),
-          },
-          deviation,
-          message: `Emissions ${deviation > 0 ? "significantly higher" : "significantly lower"} than category average (Z-score: ${zScore.toFixed(2)})`,
-          recommendation:
-            "Verify the accuracy of this record. Check for data entry errors, exceptional circumstances, or legitimate business variations.",
+        const record = await prisma.activityRecord.findUnique({
+          where: { id: calculations[i].activityRecordId },
+          include: { category: true },
         });
+
+        if (record) {
+          const deviation = Math.round(((value - mean) / mean) * 100);
+          anomalies.push({
+            recordId: record.id,
+            category: record.category?.name || "Unknown",
+            anomalyType: "outlier",
+            severity: Math.abs(zScore) > 3 ? "high" : "medium",
+            value: Math.round(value),
+            expectedRange: {
+              min: Math.round(mean - stdDev),
+              max: Math.round(mean + stdDev),
+            },
+            deviation,
+            message: `Emissions ${deviation > 0 ? "significantly higher" : "significantly lower"} than category average (Z-score: ${zScore.toFixed(2)})`,
+            recommendation:
+              "Verify the accuracy of this record. Check for data entry errors, exceptional circumstances, or legitimate business variations.",
+          });
+        }
       }
     }
   }
@@ -173,30 +171,25 @@ export async function detectUnusualPatterns(
 ): Promise<EmissionAnomaly[]> {
   const anomalies: EmissionAnomaly[] = [];
 
-  // Get scope breakdown - sum by scope
+  // Get scope breakdown
   const scopeData = await prisma.dashboardAggregate.groupBy({
-    by: ["scope"],
+    by: [], // Get all records
     where: { organizationId },
     _sum: {
+      scope1Total: true,
+      scope2Total: true,
+      scope3Total: true,
       totalCo2e: true,
     },
   });
 
   if (scopeData.length === 0) return anomalies;
 
-  // Calculate totals per scope
-  const scopeTotals = new Map<number, number>();
-  let total = 0;
-
-  for (const item of scopeData) {
-    const amount = Number(item._sum.totalCo2e ?? 0);
-    scopeTotals.set(item.scope, amount);
-    total += amount;
-  }
-
-  const scope1 = scopeTotals.get(1) ?? 0;
-  const scope2 = scopeTotals.get(2) ?? 0;
-  const scope3 = scopeTotals.get(3) ?? 0;
+  const data = scopeData[0];
+  const scope1 = Number(data._sum.scope1Total ?? 0);
+  const scope2 = Number(data._sum.scope2Total ?? 0);
+  const scope3 = Number(data._sum.scope3Total ?? 0);
+  const total = Number(data._sum.totalCo2e ?? 0);
 
   if (total === 0) return anomalies;
 
@@ -256,7 +249,7 @@ async function getMonthlyEmissions(
     const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
     const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-    const result = await prisma.dashboardAggregate.aggregate({
+    const aggregates = await prisma.dashboardAggregate.findMany({
       where: {
         organizationId,
         reportingPeriod: {
@@ -269,7 +262,7 @@ async function getMonthlyEmissions(
       },
     });
 
-    const total = Number(result._sum.totalCo2e ?? 0);
+    const total = aggregates.reduce((sum, agg) => sum + Number(agg._sum.totalCo2e ?? 0), 0);
     data.push({ month: monthStart, total });
   }
 

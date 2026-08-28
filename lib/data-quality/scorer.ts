@@ -31,7 +31,7 @@ export async function calculateDataQualityScore(
   organizationId: string,
   reportingPeriodId?: string
 ): Promise<DataQualityMetrics> {
-  const whereClause: any = { organizationId };
+  let whereClause: any = { organizationId };
 
   if (reportingPeriodId) {
     whereClause.reportingPeriodId = reportingPeriodId;
@@ -40,16 +40,8 @@ export async function calculateDataQualityScore(
   // Get all activity records for the org/period
   const records = await prisma.activityRecord.findMany({
     where: whereClause,
-    select: {
-      id: true,
-      createdAt: true,
-      sourceDescription: true,
-      amount: true,
-      unit: true,
-      emissionCategoryId: true,
-      reviewStatus: true,
-      evidenceStatus: true,
-      emissionCategory: true,
+    include: {
+      category: true,
       facility: true,
       businessUnit: true,
       evidence: {
@@ -97,13 +89,13 @@ export async function calculateDataQualityScore(
 
   for (const record of records) {
     const isComplete =
-      (record.sourceDescription?.trim()?.length ?? 0) > 0 &&
-      record.amount !== null &&
+      record.description?.trim().length > 0 &&
+      record.quantity !== null &&
       record.unit !== null &&
-      record.emissionCategoryId !== null;
+      record.categoryId !== null;
 
     if (isComplete) completeCount++;
-    if (!record.sourceDescription || record.sourceDescription.trim().length === 0) missingDescriptionCount++;
+    if (!record.description || record.description.trim().length === 0) missingDescriptionCount++;
     if (!record.unit) missingUnitCount++;
   }
 
@@ -172,7 +164,7 @@ export async function calculateDataQualityScore(
   // 4. Consistency: standardized categories
   let withStandardCategory = 0;
   for (const record of records) {
-    if (record.emissionCategory) {
+    if (record.category) {
       withStandardCategory++;
     }
   }
@@ -192,7 +184,7 @@ export async function calculateDataQualityScore(
 
   // 5. Review status
   const pendingReview = records.filter(
-    (r) => r.reviewStatus === "draft"
+    (r) => r.reviewStatus === "pending_review"
   ).length;
   if (pendingReview > 0) {
     issues.push({
@@ -262,10 +254,10 @@ export async function getDataQualityTrend(
       },
       select: {
         id: true,
-        sourceDescription: true,
+        description: true,
         unit: true,
-        amount: true,
-        emissionCategoryId: true,
+        quantity: true,
+        categoryId: true,
         evidence: { select: { id: true } },
         reviewStatus: true,
       },
@@ -274,7 +266,7 @@ export async function getDataQualityTrend(
     if (records.length > 0) {
       // Quick score calculation for trend
       const withEvidence = records.filter((r) => r.evidence && r.evidence.length > 0).length;
-      const withCategory = records.filter((r) => r.emissionCategoryId).length;
+      const withCategory = records.filter((r) => r.categoryId).length;
       const reviewed = records.filter((r) => r.reviewStatus === "approved").length;
 
       const score = Math.round(
@@ -318,7 +310,7 @@ export async function identifyHighRiskRecords(
     where: { organizationId },
     include: {
       evidence: { select: { id: true } },
-      emissionCategory: true,
+      category: true,
       calculations: { select: { id: true }, take: 1 },
     },
     take: limit * 2,
@@ -334,8 +326,8 @@ export async function identifyHighRiskRecords(
       riskScore += 25;
     }
 
-    // Draft/pending review
-    if (record.reviewStatus === "draft") {
+    // Pending review
+    if (record.reviewStatus === "pending_review") {
       risks.push("Pending review");
       riskScore += 15;
     }
@@ -353,20 +345,20 @@ export async function identifyHighRiskRecords(
     }
 
     // No category
-    if (!record.emissionCategory) {
+    if (!record.category) {
       risks.push("Uncategorized");
       riskScore += 20;
     }
 
-    // Large amount (potential outlier)
-    if (record.amount && record.amount.toNumber && record.amount.toNumber() > 10000) {
-      risks.push("Unusually large amount");
+    // Large quantity (potential outlier)
+    if (record.quantity && record.quantity > 10000) {
+      risks.push("Unusually large quantity");
       riskScore += 10;
     }
 
     return {
       id: record.id,
-      description: record.sourceDescription || "(No description)",
+      description: record.description || "(No description)",
       riskScore: Math.min(riskScore, 100),
       risks,
     };

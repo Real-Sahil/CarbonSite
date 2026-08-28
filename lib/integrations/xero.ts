@@ -115,9 +115,64 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
   }
 }
 
+interface XeroInvoice {
+  InvoiceID: string;
+  InvoiceNumber: string;
+  Date: string;
+  DueDate: string;
+  Total: number;
+  Status: string;
+  Contact: {
+    Name: string;
+  };
+  LineItems: Array<{
+    Description: string;
+    UnitAmount: number;
+    Quantity: number;
+    LineAmount: number;
+  }>;
+}
+
+/**
+ * Map Xero invoice to activity record, detecting category from line item description.
+ */
+function mapXeroInvoiceToCategory(
+  lineDescription: string
+): "s3-purchased-goods" | "s3-upstream-transport" | "s1-stationary" | null {
+  const description = lineDescription.toLowerCase();
+
+  if (
+    description.includes("fuel") ||
+    description.includes("petrol") ||
+    description.includes("diesel") ||
+    description.includes("transport")
+  ) {
+    return "s3-upstream-transport";
+  }
+
+  if (
+    description.includes("material") ||
+    description.includes("supplies") ||
+    description.includes("equipment") ||
+    description.includes("component")
+  ) {
+    return "s3-purchased-goods";
+  }
+
+  if (
+    description.includes("utilities") ||
+    description.includes("energy") ||
+    description.includes("electricity")
+  ) {
+    return "s1-stationary";
+  }
+
+  return null;
+}
+
 /**
  * Fetch invoices from Xero and convert to activity records.
- * This is a placeholder that can be expanded based on requirements.
+ * Creates ActivityRecord rows from authorized invoices, deduplicating by external ID.
  */
 export async function syncXeroBillsToActivityRecords(
   organizationId: string,
@@ -131,17 +186,14 @@ export async function syncXeroBillsToActivityRecords(
   }
 
   try {
-    const params = new URLSearchParams({
-      where: `Status=="AUTHORISED"`,
-    });
-
+    let where = `Status=="AUTHORISED"`;
     if (fromDate) {
       const dateStr = fromDate.toISOString().split("T")[0];
-      params.append("where", `DueDate>="${dateStr}"`);
+      where += ` AND Date>="${dateStr}"`;
     }
 
     const response = await fetch(
-      `https://api.xero.com/api.xro/2.0/Invoices?${params.toString()}`,
+      `https://api.xero.com/api.xro/2.0/Invoices?where=${encodeURIComponent(where)}`,
       {
         headers: {
           "Authorization": `Bearer ${tokenInfo.accessToken}`,
@@ -157,18 +209,99 @@ export async function syncXeroBillsToActivityRecords(
     }
 
     const data = await response.json();
-    const invoices = data.Invoices ?? [];
+    const invoices = (data.Invoices ?? []) as XeroInvoice[];
 
-    // TODO: Convert Xero invoices to activity records
-    // This would involve:
-    // 1. Mapping Xero line items to emission categories
-    // 2. Creating ActivityRecord rows
-    // 3. Handling currency conversion if needed
-    // 4. Storing sync metadata for deduplication
+    let synced = 0;
+    let failed = 0;
 
-    console.log(`[Xero Sync] Fetched ${invoices.length} invoices for org ${organizationId}`);
+    // Get or create default reporting period for this org
+    const now = new Date();
+    const periodStart = new Date(now.getFullYear(), 0, 1);
+    const periodEnd = new Date(now.getFullYear(), 11, 31);
 
-    return { synced: invoices.length, failed: 0 };
+    let reportingPeriod = await prisma.reportingPeriod.findFirst({
+      where: { organizationId },
+      orderBy: { endDate: "desc" },
+    });
+
+    if (!reportingPeriod) {
+      reportingPeriod = await prisma.reportingPeriod.create({
+        data: {
+          organizationId,
+          name: `${now.getFullYear()} Calendar Year`,
+          startDate: periodStart,
+          endDate: periodEnd,
+        },
+      });
+    }
+
+    for (const invoice of invoices) {
+      try {
+        const invoiceDate = new Date(invoice.Date);
+
+        for (const lineItem of invoice.LineItems) {
+          const category = mapXeroInvoiceToCategory(lineItem.Description);
+          if (!category) {
+            continue;
+          }
+
+          // Check for existing record (deduplication by external ID)
+          const existing = await prisma.activityRecord.findFirst({
+            where: {
+              organizationId,
+              externalId: `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`,
+            },
+          });
+
+          if (existing) {
+            continue;
+          }
+
+          const cat = await prisma.emissionCategory.findUnique({
+            where: { code: category },
+          });
+
+          if (!cat) {
+            console.warn(`[Xero Sync] No category found for code ${category}`);
+            continue;
+          }
+
+          // Create activity record from invoice line item
+          await prisma.activityRecord.create({
+            data: {
+              organizationId,
+              reportingPeriodId: reportingPeriod.id,
+              emissionCategoryId: cat.id,
+              description: `${invoice.Contact.Name} - ${lineItem.Description}`,
+              quantity: lineItem.Quantity,
+              unit: "unitless",
+              emissionValue: lineItem.LineAmount.toString(),
+              reviewStatus: "pending_review",
+              evidenceStatus: "not_provided",
+              createdBy: "xero-sync",
+              externalId: `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`,
+              metadata: {
+                xeroInvoiceNumber: invoice.InvoiceNumber,
+                xeroInvoiceId: invoice.InvoiceID,
+                xeroDate: invoice.Date,
+                xeroTotal: invoice.Total,
+              } as Record<string, unknown>,
+            },
+          });
+
+          synced++;
+        }
+      } catch (error) {
+        console.error(`[Xero Sync] Failed to process invoice ${invoice.InvoiceNumber}:`, error);
+        failed++;
+      }
+    }
+
+    console.log(
+      `[Xero Sync] Synced ${synced} line items from ${invoices.length} invoices for org ${organizationId}`
+    );
+
+    return { synced, failed };
   } catch (error) {
     console.error(`[Xero Sync] Error:`, error);
     return { synced: 0, failed: 1 };

@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/db";
 import { enqueueCalculation } from "@/lib/jobs/queues";
 import { writeAuditLog } from "@/lib/db/audit";
-import { Prisma } from "@prisma/client";
 
 export interface CalculationSchedule {
   id: string;
@@ -66,11 +65,11 @@ export async function createCalculationSchedule(
   // Write audit log
   await writeAuditLog({
     organizationId,
-    action: "calculation.run_triggered",
-    actorUserId: userId,
-    resourceId: schedule.id,
-    resourceType: "calculation_schedule",
-    metadata: {
+    action: "calculation.schedule_created",
+    actorId: userId,
+    targetId: schedule.id,
+    targetType: "calculation_schedule",
+    details: {
       scheduleName: params.name,
       scheduleType: params.schedule,
     },
@@ -106,15 +105,12 @@ export async function triggerCalculation(
   }
 
   // Enqueue calculation job
-  const jobId = `calc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  try {
-    await enqueueCalculation({
-      calculationRunId: jobId,
-      orgId: organizationId,
-    });
-  } catch (error) {
-    console.error(`[Scheduler] Failed to enqueue calculation: ${error}`);
-  }
+  const jobId = await enqueueCalculation({
+    organizationId,
+    reportingPeriodId,
+    initiatedBy: userId || "system",
+    sourceType: source,
+  });
 
   console.log(
     `[Scheduler] Triggered calculation for org ${organizationId}, period ${reportingPeriodId}`
@@ -123,11 +119,11 @@ export async function triggerCalculation(
   if (userId) {
     await writeAuditLog({
       organizationId,
-      action: "calculation.run_triggered",
-      actorUserId: userId,
-      resourceId: reportingPeriodId,
-      resourceType: "reporting_period",
-      metadata: {
+      action: "calculation.triggered",
+      actorId: userId,
+      targetId: reportingPeriodId,
+      targetType: "reporting_period",
+      details: {
         source,
       },
     });
@@ -166,11 +162,11 @@ export async function updateCalculationSchedule(
 
   await writeAuditLog({
     organizationId,
-    action: "calculation.run_triggered",
-    actorUserId: userId,
-    resourceId: scheduleId,
-    resourceType: "calculation_schedule",
-    metadata: updates as Prisma.InputJsonObject,
+    action: "calculation.schedule_updated",
+    actorId: userId,
+    targetId: scheduleId,
+    targetType: "calculation_schedule",
+    details: updates,
   });
 
   return schedule;
@@ -186,10 +182,10 @@ export async function disableCalculationSchedule(
 ): Promise<void> {
   await writeAuditLog({
     organizationId,
-    action: "calculation.run_cancelled",
-    actorUserId: userId,
-    resourceId: scheduleId,
-    resourceType: "calculation_schedule",
+    action: "calculation.schedule_disabled",
+    actorId: userId,
+    targetId: scheduleId,
+    targetType: "calculation_schedule",
   });
 
   console.log(`[Scheduler] Disabled schedule ${scheduleId}`);

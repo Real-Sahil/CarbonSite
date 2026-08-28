@@ -66,7 +66,7 @@ export async function POST(
       return apiError("UNAUTHORIZED", "Not authenticated", 401);
     }
 
-    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admin);
 
     const body = configSchema.parse(await request.json());
 
