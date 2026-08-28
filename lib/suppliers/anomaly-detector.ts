@@ -1,12 +1,18 @@
 import { prisma } from '@/lib/db';
 import { Decimal } from '@prisma/client/runtime/library';
 
+export interface SubmissionData {
+  quantity: string | number;
+  unit?: string;
+  [key: string]: unknown;
+}
+
 export interface AnomalyDetectionResult {
   requestId: string;
   anomalyScore: number;
   severity: 'warning' | 'critical';
   reason: string;
-  flaggedFields: { field: string; value: any; expectedRange?: { min: number; max: number } }[];
+  flaggedFields: { field: string; value: unknown; expectedRange?: { min: number; max: number } }[];
   historicalAverage?: number;
   historicalStdDev?: number;
 }
@@ -31,9 +37,9 @@ export async function detectSupplierAnomalies(
     return null;
   }
 
-  const submittedData = request.submittedData as Record<string, any>;
+  const submittedData = request.submittedData as SubmissionData;
   const quantity = Number(submittedData.quantity);
-  const unit = submittedData.unit;
+  // unit is defined but kept for future use in multi-unit validation
 
   // Get historical data for this supplier + category
   const historicalSubmissions = await prisma.supplierDataRequest.findMany({
@@ -55,7 +61,7 @@ export async function detectSupplierAnomalies(
 
   // Calculate historical statistics
   const quantities = historicalSubmissions
-    .map((s) => Number((s.submittedData as Record<string, any>).quantity))
+    .map((s) => Number((s.submittedData as SubmissionData).quantity))
     .filter((q) => !isNaN(q));
 
   if (quantities.length < 3) {

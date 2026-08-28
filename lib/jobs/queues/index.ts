@@ -32,6 +32,7 @@ export type DsarSlaMonitoringJobData = Record<string, never>;
 export type AccountPoliciesJobData = Record<string, never>;
 export type AirbyteSyncJobData = { connectionId: string; syncRunId?: string; recordsEmitted?: number };
 export type SupplierPerformanceJobData = { orgId: string; supplierId: string };
+export type InvoiceAnomalyJobData = { orgId: string };
 
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
@@ -76,4 +77,9 @@ export async function enqueueAirbyteSyncCompletion(data: AirbyteSyncJobData) {
 export async function enqueueSupplierPerformanceUpdate(data: SupplierPerformanceJobData) {
   await ensureBossStarted();
   await boss.send("supplier-performance", data, retry);
+}
+
+export async function enqueueInvoiceAnomalyDetection(data: InvoiceAnomalyJobData) {
+  await ensureBossStarted();
+  await boss.send("invoice-anomalies", data, retry);
 }

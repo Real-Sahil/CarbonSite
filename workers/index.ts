@@ -15,6 +15,7 @@ import type {
   AccountPoliciesJobData,
   AirbyteSyncJobData,
   SupplierPerformanceJobData,
+  InvoiceAnomalyJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -27,6 +28,7 @@ import { processDsarSlaMonitoring } from "./dsar-sla-monitoring";
 import { processAccountPolicies } from "./account-policies";
 import { handleAirbyteSyncJob } from "@/lib/jobs/workers/airbyte-sync";
 import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
+import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
 import { workerLogger } from "@/lib/logger";
 
 const boss = new PgBoss({
@@ -247,8 +249,42 @@ async function start() {
     },
   );
 
+  // ── Invoice Anomaly Detection ────────────────────────────────────────────
+  await boss.work<InvoiceAnomalyJobData>(
+    "invoice-anomalies",
+    { localConcurrency: 3 },
+    async (jobs: Job<InvoiceAnomalyJobData>[]) => {
+      for (const job of jobs) {
+        const { orgId } = job.data;
+        try {
+          workerLogger.info("Invoice anomaly detection started", { orgId });
+          const result = await detectInvoiceAnomalies(orgId);
+          workerLogger.info("Invoice anomaly detection completed", {
+            orgId,
+            processedCount: result.processedCount,
+            detectedCount: result.detectedCount
+          });
+        } catch (error) {
+          workerLogger.error("Invoice anomaly detection failed", {
+            orgId,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+          throw error;
+        }
+      }
+    },
+  );
+
+  // Schedule invoice anomaly detection: daily at 3 AM UTC
+  await boss.schedule(
+    "invoice-anomalies",
+    "0 3 * * *",
+    { orgId: "scheduled" },
+  );
+
   console.log(
-    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring, dsar-sla-monitoring, account-policies, airbyte-sync, supplier-performance)",
+    "pg-boss workers started (imports, calculations, reports, notifications, dsar-export, dsar-erasure, uptime-monitoring, dsar-sla-monitoring, account-policies, airbyte-sync, supplier-performance, invoice-anomalies)",
   );
 }
 
