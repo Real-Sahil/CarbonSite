@@ -32,9 +32,7 @@ export async function GET(
     const history = await prisma.supplierPerformanceHistory.findMany({
       where: {
         organizationId: orgId,
-        supplierPerformance: {
-          supplierId,
-        },
+        supplierId,
       },
       orderBy: { recordedAt: "desc" },
       take: 12,
@@ -66,6 +64,14 @@ export async function GET(
         approvedSubmissions: performanceData.approvedCount,
         rejectedSubmissions: performanceData.rejectedCount,
         onTimeSubmissions: performanceData.onTimeCount,
+        approvalRate:
+          performanceData.submissionCount > 0
+            ? (performanceData.approvedCount / performanceData.submissionCount) * 100
+            : 0,
+        onTimeRate:
+          performanceData.approvedCount > 0
+            ? (performanceData.onTimeCount / performanceData.approvedCount) * 100
+            : 0,
       },
     });
   } catch (error) {
