@@ -120,6 +120,10 @@ export async function POST(
   try {
     const { orgId } = await params;
 
+    // TODO: Implement corporate card integration after schema updates (Phase 2+)
+    return apiError("NOT_IMPLEMENTED", "Corporate card ingest feature coming in Phase 2. Integration not yet available.", 501);
+
+    /* DISABLED: Incomplete corporate card integration
     // Authenticate via API key
     let authenticatedOrgId: string;
     try {
@@ -246,6 +250,7 @@ export async function POST(
       },
       { status: 202 },
     );
+    */
   } catch (err) {
     return handleRouteError(err);
   }

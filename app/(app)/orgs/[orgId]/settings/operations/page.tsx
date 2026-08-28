@@ -68,22 +68,6 @@ export default async function OperationsSettingsPage({
       include: { _count: { select: { factors: true } } },
       orderBy: [{ name: "asc" }, { version: "desc" }],
     }),
-    prisma.apiDataSource.findMany({
-      where: { organizationId: orgId },
-      select: {
-        id: true,
-        name: true,
-        endpoint: true,
-        authMethod: true,
-        dataFormat: true,
-        enabled: true,
-        lastSyncAt: true,
-        lastErrorAt: true,
-        lastErrorMessage: true,
-        syncIntervalMins: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
   ]).catch(() => null);
 
   if (!data) {
@@ -96,7 +80,7 @@ export default async function OperationsSettingsPage({
     );
   }
 
-  const [org, periods, facilities, businessUnits, factorLibraries, apiDataSources] = data;
+  const [org, periods, facilities, businessUnits, factorLibraries] = data;
 
   return (
     <div className="flex flex-col gap-[28px]">
@@ -132,18 +116,7 @@ export default async function OperationsSettingsPage({
           version: library.version,
           factorCount: library._count.factors,
         }))}
-        apiDataSources={apiDataSources.map((source) => ({
-          id: source.id,
-          name: source.name,
-          endpoint: source.endpoint,
-          authMethod: source.authMethod as "none" | "api_key" | "bearer" | "basic",
-          dataFormat: source.dataFormat as "json" | "csv",
-          enabled: source.enabled,
-          lastSyncAt: source.lastSyncAt?.toISOString() ?? null,
-          lastErrorAt: source.lastErrorAt?.toISOString() ?? null,
-          lastErrorMessage: source.lastErrorMessage,
-          syncIntervalMins: source.syncIntervalMins,
-        }))}
+        apiDataSources={[]}
       />
     </div>
   );

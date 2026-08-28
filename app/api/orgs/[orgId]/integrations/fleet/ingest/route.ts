@@ -142,6 +142,10 @@ export async function POST(
   try {
     const { orgId } = await params;
 
+    // TODO: Implement fleet telematics integration after schema updates (Phase 2+)
+    return apiError("NOT_IMPLEMENTED", "Fleet telematics ingest feature coming in Phase 2. Integration not yet available.", 501);
+
+    /* DISABLED: Incomplete fleet telematics integration
     // Authenticate via API key
     let authenticatedOrgId: string;
     try {
@@ -268,6 +272,7 @@ export async function POST(
       },
       { status: 202 },
     );
+    */
   } catch (err) {
     return handleRouteError(err);
   }

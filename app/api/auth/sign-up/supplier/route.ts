@@ -88,47 +88,45 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Assign tags
-      if (body.tags && body.tags.length > 0) {
-        for (const tagName of body.tags) {
-          // Get or create tag
-          let tag = await tx.supplierTag.findUnique({
-            where: {
-              organizationId_name: {
-                organizationId: body.orgId,
-                name: tagName,
-              },
-            },
-          });
-
-          if (!tag) {
-            tag = await tx.supplierTag.create({
-              data: {
-                organizationId: body.orgId,
-                name: tagName,
-              },
-            });
-          }
-
-          await tx.supplierTagAssignment.create({
-            data: {
-              tagId: tag.id,
-              supplierId: user.id,
-            },
-          });
-        }
-      }
-
-      // Assign categories
-      if (body.categoryAssignments && body.categoryAssignments.length > 0) {
-        await tx.supplierCategoryAssignment.createMany({
-          data: body.categoryAssignments.map((categoryCode) => ({
-            organizationId: body.orgId,
-            supplierId: user.id,
-            categoryCode,
-          })),
-        });
-      }
+      // TODO: Assign tags and categories — models not yet defined in schema
+      // if (body.tags && body.tags.length > 0) {
+      //   for (const tagName of body.tags) {
+      //     let tag = await tx.supplierTag.findUnique({
+      //       where: {
+      //         organizationId_name: {
+      //           organizationId: body.orgId,
+      //           name: tagName,
+      //         },
+      //       },
+      //     });
+      //
+      //     if (!tag) {
+      //       tag = await tx.supplierTag.create({
+      //         data: {
+      //           organizationId: body.orgId,
+      //           name: tagName,
+      //         },
+      //       });
+      //     }
+      //
+      //     await tx.supplierTagAssignment.create({
+      //       data: {
+      //         tagId: tag.id,
+      //         supplierId: user.id,
+      //       },
+      //     });
+      //   }
+      // }
+      //
+      // if (body.categoryAssignments && body.categoryAssignments.length > 0) {
+      //   await tx.supplierCategoryAssignment.createMany({
+      //     data: body.categoryAssignments.map((categoryCode) => ({
+      //       organizationId: body.orgId,
+      //       supplierId: user.id,
+      //       categoryCode,
+      //     })),
+      //   });
+      // }
 
       return user;
     });

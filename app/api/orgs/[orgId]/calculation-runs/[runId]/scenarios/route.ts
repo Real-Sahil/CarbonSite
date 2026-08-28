@@ -26,6 +26,10 @@ export async function POST(
   { params }: { params: Promise<{ orgId: string; runId: string }> },
 ) {
   try {
+    // TODO: Implement what-if scenario analysis after ScenarioRun and ScenarioDraft models are added to schema
+    return apiError("NOT_IMPLEMENTED", "What-if scenario analysis is not yet available. This feature is planned for Phase 3.", 501);
+
+    /*
     const { orgId, runId } = await params;
     const session = await requireOrgMember(orgId, "editor", "admin");
     const userId = session.session.user.id;
@@ -70,6 +74,7 @@ export async function POST(
       draftCount,
       message: `Scenario created with ${draftCount} calculation drafts. Expires in 1 hour.`,
     });
+    */
   } catch (err) {
     return handleRouteError(err);
   }
@@ -80,6 +85,10 @@ export async function GET(
   { params }: { params: Promise<{ orgId: string; runId: string }> },
 ) {
   try {
+    // TODO: Implement what-if scenario analysis after ScenarioRun and ScenarioDraft models are added to schema
+    return apiError("NOT_IMPLEMENTED", "What-if scenario analysis is not yet available. This feature is planned for Phase 3.", 501);
+
+    /*
     const { orgId, runId } = await params;
     await requireOrgMember(orgId, "viewer", "editor", "reviewer", "admin");
 
@@ -103,6 +112,7 @@ export async function GET(
     });
 
     return NextResponse.json({ data: scenarios });
+    */
   } catch (err) {
     return handleRouteError(err);
   }

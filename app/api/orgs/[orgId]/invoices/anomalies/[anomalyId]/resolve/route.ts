@@ -17,6 +17,14 @@ type Params = {
 export async function POST(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, anomalyId } = await params;
+
+    // TODO: Implement invoice anomaly resolution after schema additions (Phase 2+)
+    return NextResponse.json(
+      { code: "NOT_IMPLEMENTED", message: "Invoice anomaly detection coming in Phase 2. Feature not yet available." },
+      { status: 501 }
+    );
+
+    /* DISABLED: Incomplete invoice anomaly feature
     await requireOrgMember(orgId, ...ROLE_GROUPS.reviewers);
 
     const body = await _req.json();
@@ -78,6 +86,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
         resolvedAt: updated.resolvedAt?.toISOString(),
       },
     });
+    */
   } catch (error) {
     return handleRouteError(error);
   }
