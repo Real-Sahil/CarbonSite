@@ -19,6 +19,14 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+
+    // TODO: Implement invoice anomaly listing after schema additions (Phase 2+)
+    return NextResponse.json(
+      { code: "NOT_IMPLEMENTED", message: "Invoice anomaly detection coming in Phase 2. Feature not yet available." },
+      { status: 501 }
+    );
+
+    /* DISABLED: Incomplete invoice anomaly feature
     await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const query = querySchema.safeParse(
@@ -73,6 +81,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         total: anomalies.length,
       },
     });
+    */
   } catch (error) {
     return handleRouteError(error);
   }

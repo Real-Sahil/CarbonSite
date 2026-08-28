@@ -12,6 +12,10 @@ export async function GET(
   { params }: { params: Promise<{ orgId: string; runId: string; scenarioId: string }> },
 ) {
   try {
+    // TODO: Implement scenario analysis after ScenarioRun and ScenarioDraft models are added to schema
+    return apiError("NOT_IMPLEMENTED", "What-if scenario analysis is not yet available. This feature is planned for Phase 3.", 501);
+
+    /*
     const { orgId, scenarioId } = await params;
     await requireOrgMember(orgId as string, "viewer", "editor", "reviewer", "admin");
 
@@ -67,6 +71,7 @@ export async function GET(
       nextCursor: hasMore ? data[data.length - 1].id : null,
       total,
     });
+    */
   } catch (err) {
     return handleRouteError(err);
   }

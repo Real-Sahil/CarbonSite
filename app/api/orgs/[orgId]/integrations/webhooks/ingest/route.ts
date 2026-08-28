@@ -114,6 +114,10 @@ export async function POST(
   try {
     const { orgId } = await params;
 
+    // TODO: Implement webhook data ingest after auth strategy updates (Phase 2+)
+    return apiError("NOT_IMPLEMENTED", "Webhook data ingest feature coming in Phase 2. Integration not yet available.", 501);
+
+    /* DISABLED: Incomplete webhook integration
     // Authenticate via API key
     let authenticatedOrgId: string;
     try {
@@ -174,7 +178,7 @@ export async function POST(
         sourceStorageKey: "pending",
         sourceChecksum: checksum,
         state: "uploaded",
-        createdByUserId: null, // System-generated from webhook, no user context
+        createdByUserId: "", // System-generated from webhook, no user context
         // Store webhook metadata for tracking
         mapping: {
           source: metadata?.source ?? "webhook",
@@ -238,6 +242,7 @@ export async function POST(
       },
       { status: 202 },
     );
+    */
   } catch (err) {
     return handleRouteError(err);
   }

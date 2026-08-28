@@ -27,7 +27,7 @@ export async function GET() {
 
     const requests = await prisma.dsarRequest.findMany({
       where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
+      orderBy: { requestedAt: "desc" },
     });
 
     return NextResponse.json({ data: requests });

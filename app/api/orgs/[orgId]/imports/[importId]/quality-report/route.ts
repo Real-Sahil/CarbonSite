@@ -19,6 +19,16 @@ export async function GET(
 
     paramSchema.parse({ importId });
 
+    // TODO: Implement data quality checking after DataQualityCheck model added to schema
+    return NextResponse.json(
+      {
+        code: 'NOT_IMPLEMENTED',
+        message: 'Quality report feature coming in Phase 1B. Data quality validation framework not yet available.',
+      },
+      { status: 501 }
+    );
+
+    /* DISABLED: Waiting for DataQualityCheck model in schema
     const importBatch = await prisma.importBatch.findUniqueOrThrow({
       where: { id: importId },
       include: {
@@ -38,6 +48,7 @@ export async function GET(
       },
     });
 
+    /* DISABLED: Waiting for DataQualityCheck model in schema
     if (importBatch.organizationId !== orgId) {
       return NextResponse.json(
         { code: 'UNAUTHORIZED', message: 'Organization mismatch' },
@@ -112,6 +123,7 @@ export async function GET(
         failureSamples: check.failures,
       })),
     });
+    */
   } catch (error) {
     return handleRouteError(error);
   }

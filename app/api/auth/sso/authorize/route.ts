@@ -8,6 +8,11 @@ type Params = { params: Promise<{ orgId: string }> };
 
 export async function GET(req: NextRequest) {
   try {
+    // SSO is a Phase 2 feature — not yet implemented
+    return apiError("NOT_IMPLEMENTED", "SSO authentication is not yet available. This feature is planned for Phase 2.", 501);
+
+    // TODO: Implement SSO authorization flow after SsoConfiguration model is added to schema
+    /*
     const orgId = req.nextUrl.searchParams.get("orgId");
     const provider = req.nextUrl.searchParams.get("provider"); // okta, azure_ad, google_workspace, generic_oidc, saml
 
@@ -18,58 +23,58 @@ export async function GET(req: NextRequest) {
     // Fetch SSO configuration
     const ssoConfig = await prisma.ssoConfiguration.findUnique({
       where: { organizationId: orgId },
-    });
+    });*/
 
-    if (!ssoConfig || !ssoConfig.enabled) {
-      return apiError("SSO_NOT_ENABLED", "SSO is not enabled for this organization", 403);
-    }
-
-    // Build authorization URL based on provider
-    let authUrl: string;
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/sso/callback`;
-
-    switch (provider) {
-      case "okta":
-        // Use metadataUrl to construct authorization endpoint
-        authUrl = buildOktaAuthUrl(ssoConfig, redirectUri);
-        break;
-      case "azure_ad":
-        authUrl = buildAzureAdAuthUrl(ssoConfig, redirectUri);
-        break;
-      case "google_workspace":
-        authUrl = buildGoogleWorkspaceAuthUrl(ssoConfig, redirectUri);
-        break;
-      case "generic_oidc":
-        authUrl = buildOidcAuthUrl(ssoConfig, redirectUri);
-        break;
-      default:
-        return apiError("INVALID_PROVIDER", "Unsupported SSO provider", 400);
-    }
-
-    const response = NextResponse.json({ authUrl, stateToken: generateRandomState() });
-
-    // Store state, org, and provider in secure cookies for callback verification
-    const state = generateRandomState();
-    response.cookies.set("sso_state", state, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 600, // 10 minutes
-    });
-    response.cookies.set("sso_org_id", orgId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 600,
-    });
-    response.cookies.set("sso_provider", provider, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 600,
-    });
-
-    return response;
+    // if (!ssoConfig || !ssoConfig.enabled) {
+    //   return apiError("SSO_NOT_ENABLED", "SSO is not enabled for this organization", 403);
+    // }
+    //
+    // // Build authorization URL based on provider
+    // let authUrl: string;
+    // const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/sso/callback`;
+    //
+    // switch (provider) {
+    //   case "okta":
+    //     // Use metadataUrl to construct authorization endpoint
+    //     authUrl = buildOktaAuthUrl(ssoConfig, redirectUri);
+    //     break;
+    //   case "azure_ad":
+    //     authUrl = buildAzureAdAuthUrl(ssoConfig, redirectUri);
+    //     break;
+    //   case "google_workspace":
+    //     authUrl = buildGoogleWorkspaceAuthUrl(ssoConfig, redirectUri);
+    //     break;
+    //   case "generic_oidc":
+    //     authUrl = buildOidcAuthUrl(ssoConfig, redirectUri);
+    //     break;
+    //   default:
+    //     return apiError("INVALID_PROVIDER", "Unsupported SSO provider", 400);
+    // }
+    //
+    // const response = NextResponse.json({ authUrl, stateToken: generateRandomState() });
+    //
+    // // Store state, org, and provider in secure cookies for callback verification
+    // const state = generateRandomState();
+    // response.cookies.set("sso_state", state, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "lax",
+    //   maxAge: 600, // 10 minutes
+    // });
+    // response.cookies.set("sso_org_id", orgId, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "lax",
+    //   maxAge: 600,
+    // });
+    // response.cookies.set("sso_provider", provider, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "lax",
+    //   maxAge: 600,
+    // });
+    //
+    // return response;
   } catch (err) {
     return handleRouteError(err);
   }
