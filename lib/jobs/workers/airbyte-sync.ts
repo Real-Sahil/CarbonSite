@@ -1,9 +1,7 @@
 import { prisma } from '@/lib/db';
-import { airbyteSyncLogger } from '@/lib/logger';
 import { Decimal } from '@prisma/client/runtime/library';
 import type { Job } from 'pg-boss';
 import type { AirbyteSyncJobData } from '@/lib/jobs/queues';
-import type { Prisma } from '@prisma/client';
 
 export async function processAirbyteSyncCompletion(connectionId: string) {
   const connection = await prisma.airbyteSyncConnection.findUniqueOrThrow({
@@ -24,10 +22,7 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
   });
 
   if (stagedData.length === 0) {
-    airbyteSyncLogger.info("No unprocessed data for Airbyte sync", {
-      connectionId,
-      sourceSystem: connection.sourceSystem,
-    });
+    console.log(`No unprocessed data for Airbyte sync: ${connectionId}`);
     return;
   }
 
@@ -64,11 +59,9 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
           normalizedUnit = 'kwh';
           originalUnit = 'kwh';
         } else if (row.dataType === 'waste_volume') {
-          const tonnes = (payload.tonnes as number | undefined);
-          const kg = (payload.kg as number | undefined);
-          normalizedAmount = tonnes || (kg ? kg / 1000 : 0);
+          normalizedAmount = (payload.tonnes as number | undefined) || (payload.kg ? ((payload.kg as number | undefined) || 0) / 1000 : 0);
           normalizedUnit = 'tonnes';
-          originalUnit = kg ? 'kg' : 'tonnes';
+          originalUnit = (payload.kg) ? 'kg' : 'tonnes';
         } else {
           // Generic numeric value
           normalizedAmount = (payload.amount as number | undefined) || 0;
@@ -79,39 +72,31 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
         return {
           organizationId: orgId,
           emissionCategoryId,
-          originalAmount: (payload.amount as number | undefined) || 0,
+          originalAmount: payload.amount || 0,
           originalUnit,
           normalizedAmount: new Decimal(normalizedAmount.toString()),
           normalizedUnit,
           sourceDescription: `${connection.sourceSystem}: ${row.sourceRecordId}`,
           activityDate: new Date(row.extractedAt),
           reviewStatus: 'approved' as const, // External data pre-approved
-          facilityId: payload.facility_id as string | undefined,
-          businessUnitId: payload.business_unit_id as string | undefined,
-          supplierName: payload.supplier_name as string | undefined,
-          country: payload.country as string | undefined,
-          region: payload.region as string | undefined,
-          reportingPeriodId: (payload.reporting_period_id as string | undefined) || '', // Will be set by importer
+          facilityId: payload.facility_id,
+          businessUnitId: payload.business_unit_id,
+          supplierName: payload.supplier_name,
+          country: payload.country,
+          region: payload.region,
+          reportingPeriodId: payload.reporting_period_id || '', // Will be set by importer
           createdAt: new Date(),
           updatedAt: new Date()
         };
       } catch (error) {
-        airbyteSyncLogger.error("Error transforming Airbyte record", {
-          recordId: row.id,
-          sourceSystem: connection.sourceSystem,
-          error: error instanceof Error ? error.message : String(error),
-        });
+        console.error(`Error transforming Airbyte record ${row.id}:`, error);
         return null;
       }
     })
     .filter((r) => r !== null);
 
   if (records.length === 0) {
-    airbyteSyncLogger.warn("No valid records to import after transformation", {
-      connectionId,
-      stagedDataCount: stagedData.length,
-      sourceSystem: connection.sourceSystem,
-    });
+    console.log(`No valid records to import after transformation: ${connectionId}`);
     // Mark all as processed anyway to avoid re-processing on next sync
     await prisma.stagedExternalData.updateMany({
       where: { id: { in: stagedData.map((d) => d.id) } },
@@ -146,26 +131,15 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
 
     // 4. Bulk insert activity records
     try {
-      // Get org's first admin member to attribute records to
-      const adminMember = await prisma.organizationMembership.findFirst({
-        where: {
-          organizationId: orgId,
-          role: 'admin'
-        },
-        select: { userId: true }
-      });
-
-      if (!adminMember) {
-        throw new Error(`No admin member found for organization ${orgId}`);
-      }
-
-      const recordsToCreate = records.map((r) => ({
+      const mapped = records.map((r) => ({
         ...r,
         reportingPeriodId: reportingPeriodId as string,
         amount: r.normalizedAmount,
         unit: r.normalizedUnit,
-        createdByUserId: adminMember.userId
-      })) as Prisma.ActivityRecordCreateManyInput[];
+        createdByUserId: null
+      }));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const recordsToCreate = mapped as any[];
 
       await prisma.activityRecord.createMany({
         data: recordsToCreate
@@ -186,11 +160,7 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
         }
       });
 
-      airbyteSyncLogger.info("Successfully imported records from Airbyte sync", {
-        connectionId,
-        recordCount: records.length,
-        sourceSystem: connection.sourceSystem,
-      });
+      console.log(`✓ Imported ${records.length} records from Airbyte sync: ${connectionId}`);
     } catch (error) {
       // Update connection with failed status
       await prisma.airbyteSyncConnection.update({
@@ -204,11 +174,7 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
       throw new Error(`Failed to import Airbyte records: ${error instanceof Error ? error.message : String(error)}`);
     }
   } else {
-    airbyteSyncLogger.warn("No reporting period specified for Airbyte sync", {
-      connectionId,
-      sourceSystem: connection.sourceSystem,
-      recordCount: records.length,
-    });
+    console.warn(`No reporting period specified for Airbyte sync: ${connectionId}`);
     // Mark as processed anyway
     await prisma.stagedExternalData.updateMany({
       where: { id: { in: stagedData.map((d) => d.id) } },
@@ -219,20 +185,7 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
 
 export async function handleAirbyteSyncJob(job: Job<AirbyteSyncJobData>) {
   const { connectionId } = job.data;
-  airbyteSyncLogger.info("Starting Airbyte sync processing", {
-    connectionId,
-    jobId: job.id,
-  });
-  try {
-    await processAirbyteSyncCompletion(connectionId);
-    airbyteSyncLogger.info("Airbyte sync processing completed", {
-      connectionId,
-    });
-  } catch (error) {
-    airbyteSyncLogger.error("Airbyte sync processing failed", {
-      connectionId,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    throw error;
-  }
+  console.log(`[airbyte-sync] processing connection ${connectionId}`);
+  await processAirbyteSyncCompletion(connectionId);
+  console.log(`[airbyte-sync] finished connection ${connectionId}`);
 }

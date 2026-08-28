@@ -202,7 +202,8 @@ model Organization {
   importBatchQualityScores    ImportBatchQualityScore[]
   stagedExternalData          StagedExternalData[]
   airbyteSyncConnections      AirbyteSyncConnection[]
-  dbtRuns                     DbtRun[]              @relation("DbtRunsOrganization")
+  n8nWorkflows                N8nWorkflow[]
+  n8nWorkflowExecutions       N8nWorkflowExecution[]
 
   @@map("organizations")
 }
@@ -926,7 +927,6 @@ model CalculationRun {
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
-  dbtRuns            DbtRun[]              @relation("DbtRunsCalculation")
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -2576,32 +2576,50 @@ model AirbyteSyncConnection {
   @@map("airbyte_sync_connections")
 }
 
-// ─── Phase 2C: dbt SQL Transformation ────────────────────────────────────────
+// ─── Phase 2B: n8n Workflow Orchestration ────────────────────────────────────
 
-model DbtRun {
-  id                String    @id @default(cuid())
-  organizationId    String    @map("organization_id")
-  calculationRunId  String?   @map("calculation_run_id")
-  status            String    // 'queued', 'running', 'success', 'failed'
-  dbtVersion        String?   @map("dbt_version")
-  output            String?   // Full dbt CLI output
-  rowsAffected      Int?      @map("rows_affected")
-  modelCount        Int?      @map("model_count")
-  testCount         Int?      @map("test_count")
-  testsPassed       Int?      @map("tests_passed")
-  testsFailed       Int?      @map("tests_failed")
-  errorMessage      String?   @map("error_message")
-  errorDetails      Json?     @map("error_details") // Structured error info
-  duration          Int?      // milliseconds
-  startedAt         DateTime? @map("started_at")
-  finishedAt        DateTime? @map("finished_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+model N8nWorkflow {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId   String    @map("organization_id") @db.Uuid
+  n8nWorkflowId    String    @map("n8n_workflow_id")
+  name             String
+  triggerType      String    @map("trigger_type") // 'field_submission_pending', 'emission_threshold_reached', 'report_ready', 'daily_digest'
+  description      String?
+  enabled          Boolean   @default(true)
+  webhookUrl       String?   @map("webhook_url")
+  config           Json?     // Trigger config, filter conditions, output mapping
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  organization   Organization   @relation("DbtRunsOrganization", fields: [organizationId], references: [id], onDelete: Cascade)
-  calculationRun CalculationRun? @relation("DbtRunsCalculation", fields: [calculationRunId], references: [id], onDelete: SetNull)
+  organization Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  executions       N8nWorkflowExecution[]  @relation("WorkflowExecutions")
 
-  @@index([organizationId, calculationRunId])
-  @@index([organizationId, status, createdAt(sort: Desc)])
-  @@map("dbt_runs")
+  @@unique([organizationId, n8nWorkflowId])
+  @@index([organizationId, triggerType, enabled])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("n8n_workflows")
+}
+
+model N8nWorkflowExecution {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  n8nWorkflowId String    @map("n8n_workflow_id") @db.Uuid
+  workflowName  String    @map("workflow_name")
+  triggerType   String    @map("trigger_type")
+  triggerData   Json?     @map("trigger_data") // Data that triggered the workflow
+  status        String    // 'success', 'failed', 'partial'
+  errorMessage  String?   @map("error_message")
+  output        Json?     // Workflow output/results
+  executionTimeMs Int?    @map("execution_time_ms")
+  executedAt    DateTime  @map("executed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  workflow     N8nWorkflow  @relation("WorkflowExecutions", fields: [n8nWorkflowId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, n8nWorkflowId])
+  @@index([organizationId, triggerType])
+  @@index([organizationId, status])
+  @@index([organizationId, executedAt(sort: Desc)])
+  @@map("n8n_workflow_executions")
 }
