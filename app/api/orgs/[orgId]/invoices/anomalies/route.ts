@@ -100,7 +100,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    const session = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const body = resolveSchema.safeParse(await req.json());
 

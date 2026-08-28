@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { GET, POST } from "../anomalies/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/auth/session";
@@ -107,11 +107,12 @@ describe("POST /api/orgs/[orgId]/invoices/anomalies", () => {
     testOrgId = "test-org-123";
 
     vi.mocked(auth.requireOrgMember).mockResolvedValue({
-      user: { id: "user-123", email: "test@example.com" },
-      session: { id: "session-123" },
+      session: {
+        user: { id: "user-123", email: "test@example.com" },
+        id: "session-123"
+      },
+      membership: { role: "admin" },
     } as any);
-
-    vi.mocked(detector.resolveInvoiceAnomaly).mockResolvedValue(undefined);
   });
 
   it("resolves an invoice anomaly", async () => {
@@ -124,9 +125,11 @@ describe("POST /api/orgs/[orgId]/invoices/anomalies", () => {
       reason: "Duplicate invoice",
       resolution: null,
       resolutionNotes: null,
+      resolvedByUserId: null,
       resolvedBy: null,
       detectedAt: new Date(),
       resolvedAt: null,
+      createdAt: new Date(),
       invoice: {
         organizationId: testOrgId,
       },
