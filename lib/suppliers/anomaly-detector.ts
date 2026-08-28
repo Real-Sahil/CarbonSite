@@ -136,7 +136,7 @@ export async function saveAnomaly(
       anomalyScore: new Decimal(result.anomalyScore.toString()),
       anomalySeverity: result.severity,
       reason: result.reason,
-      flaggedFields: result.flaggedFields,
+      flaggedFields: JSON.parse(JSON.stringify(result.flaggedFields)),
       historicalAverage: result.historicalAverage ? new Decimal(result.historicalAverage.toString()) : null,
       historicalStdDev: result.historicalStdDev ? new Decimal(result.historicalStdDev.toString()) : null,
     },

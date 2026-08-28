@@ -100,4 +100,6 @@ export const dsarLogger = createLogger("dsar");
 export const authLogger = createLogger("auth");
 export const ocrLogger = createLogger("ocr");
 export const aibyteLogger = createLogger("airbyte");
+export const airbyteSyncLogger = createLogger("airbyte-sync");
+export const scope3Logger = createLogger("scope3");
 export const supplierLogger = createLogger("suppliers");

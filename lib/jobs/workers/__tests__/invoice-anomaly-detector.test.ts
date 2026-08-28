@@ -24,7 +24,7 @@ async function createTestInvoice(
     invoiceDate: Date;
     receivedDate: Date | null;
     totalAmount: number | Decimal;
-    lineItems: LineItem[];
+    lineItems: LineItem[] | null;
     reconciliationStatus: string;
     processed: boolean;
   }> = {}
@@ -39,7 +39,7 @@ async function createTestInvoice(
       invoiceDate: overrides.invoiceDate || new Date(),
       receivedDate: overrides.receivedDate !== undefined ? overrides.receivedDate : null,
       totalAmount: overrides.totalAmount ? new Decimal(overrides.totalAmount) : new Decimal(1000),
-      lineItems: overrides.lineItems || undefined,
+      lineItems: overrides.lineItems ? JSON.parse(JSON.stringify(overrides.lineItems)) : null,
       reconciliationStatus: overrides.reconciliationStatus || "unmatched",
       processed: overrides.processed ?? false,
     },

@@ -167,7 +167,8 @@ const currencyMismatchRule: DetectionRule = {
   name: "Currency Mismatch Detection",
   type: "currency_mismatch",
   severity: "warning",
-  check: (invoice, context) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  check: (invoice, _context) => {
     // Check if invoice currency differs from org default
     const invoiceData = invoice.lineItems as LineItem[] | null;
     return (
@@ -192,7 +193,8 @@ const unmatchedInvoiceRule: DetectionRule = {
   name: "Unmatched Invoice Detection",
   type: "unmatched_invoice",
   severity: "warning",
-  check: (invoice, context) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  check: (invoice, _context) => {
     // Flag as unmatched if no line items or reconciliation status is unmatched
     const lineItems = invoice.lineItems as LineItem[] | null;
     return (
@@ -332,7 +334,7 @@ export async function getInvoiceAnomalies(
     endDate?: Date;
   }
 ) {
-  const where: any = {
+  const where: Record<string, unknown> = {
     invoice: { organizationId: orgId },
   };
 
@@ -346,13 +348,14 @@ export async function getInvoiceAnomalies(
     where.resolution = filters.status;
   }
   if (filters?.startDate || filters?.endDate) {
-    where.detectedAt = {};
+    const detectedAtFilter: Record<string, Date> = {};
     if (filters?.startDate) {
-      where.detectedAt.gte = filters.startDate;
+      detectedAtFilter.gte = filters.startDate;
     }
     if (filters?.endDate) {
-      where.detectedAt.lte = filters.endDate;
+      detectedAtFilter.lte = filters.endDate;
     }
+    where.detectedAt = detectedAtFilter;
   }
 
   return prisma.invoiceAnomaly.findMany({

@@ -59,7 +59,7 @@ export async function PATCH(
     await requireOrgMember(orgId, "reviewer");
 
     const body = await req.json();
-    const { anomalyIds, resolution, resolutionNotes, bulkAction } = body;
+    const { anomalyIds, resolution, resolutionNotes } = body;
 
     if (!Array.isArray(anomalyIds) || anomalyIds.length === 0) {
       return NextResponse.json(
@@ -89,11 +89,6 @@ export async function PATCH(
         { status: 403 }
       );
     }
-
-    // Get current user ID (assuming from session)
-    const session = await req.headers
-      .get("authorization")
-      ?.split(" ")[1];
 
     // Batch update all anomalies
     const updated = await Promise.all(
