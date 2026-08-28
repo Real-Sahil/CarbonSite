@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { scope3Logger } from '@/lib/logger';
 import type { Prisma } from '@prisma/client';
 
 interface TrainingData {
@@ -89,7 +90,7 @@ function calculateMetrics(
 }
 
 export async function trainScope3EstimationModels(orgId: string) {
-  console.log(`[scope3-estimator] Starting training for org ${orgId}`);
+  scope3Logger.info("Starting Scope 3 model training", { orgId });
 
   const categories = await prisma.emissionCategory.findMany({
     where: { scope: 3 },
@@ -108,7 +109,11 @@ export async function trainScope3EstimationModels(orgId: string) {
       });
 
       if (records.length < 10) {
-        console.log(`[scope3-estimator] Insufficient data for ${category.code}: ${records.length} records`);
+        scope3Logger.warn("Insufficient historical data for model training", {
+          categoryCode: category.code,
+          recordCount: records.length,
+          minRequired: 10,
+        });
         continue;
       }
 
@@ -131,7 +136,11 @@ export async function trainScope3EstimationModels(orgId: string) {
         });
 
       if (trainingData.length < 10) {
-        console.log(`[scope3-estimator] Insufficient valid data for ${category.code}`);
+        scope3Logger.warn("Insufficient valid data for model training", {
+          categoryCode: category.code,
+          validDataCount: trainingData.length,
+          minRequired: 10,
+        });
         continue;
       }
 
@@ -189,9 +198,19 @@ export async function trainScope3EstimationModels(orgId: string) {
         });
       }
 
-      console.log(`✓ Trained model for ${category.code}: R²=${metrics.r_squared}, RMSE=${metrics.rmse}`);
+      scope3Logger.info("Scope 3 model trained successfully", {
+        categoryCode: category.code,
+        rSquared: metrics.r_squared,
+        rmse: metrics.rmse,
+        mae: metrics.mae,
+        trainingRecordCount: trainingData.length,
+      });
     } catch (error) {
-      console.error(`Error training model for ${category.code}:`, error);
+      scope3Logger.error("Error training Scope 3 model", {
+        categoryCode: category.code,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
     }
   }
 }

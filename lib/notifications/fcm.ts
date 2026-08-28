@@ -3,6 +3,7 @@
 // In dev/test, set PUSH_DRIVER=disabled to suppress sends without error.
 
 import { prisma } from "@/lib/db";
+import { notificationLogger } from "@/lib/logger";
 
 let _messaging: import("firebase-admin/messaging").Messaging | null = null;
 
@@ -23,7 +24,10 @@ function getMessaging() {
     _messaging = admin.messaging();
     return _messaging;
   } catch (err) {
-    console.warn("[fcm] Failed to initialise Firebase Admin — push disabled:", err);
+    notificationLogger.warn("Failed to initialize Firebase Admin — push disabled", {
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
     return null;
   }
 }

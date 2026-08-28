@@ -1,4 +1,5 @@
 import { llmClient } from "@/lib/llm/client";
+import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
 
 export interface AuditNarrative {
@@ -78,7 +79,10 @@ Use professional language, avoid jargon, and focus on insights a CFO or board me
 
     return parseNarrativeResponse(result.text);
   } catch (error) {
-    console.error("[narrative-generator] LLM error:", error);
+    reportLogger.error("LLM error during narrative generation", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return {
       executive_summary: `Error generating narrative: ${error instanceof Error ? error.message : "Unknown error"}. Please review the report data manually.`,
       key_findings: [],
