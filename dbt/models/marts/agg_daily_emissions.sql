@@ -1,37 +1,45 @@
-{{ config(
-  materialized='table',
-  tags=['marts', 'aggregates'],
-  indexes=[
-    {'columns': ['organization_id', 'date']},
-    {'columns': ['facility_id', 'date']},
-    {'columns': ['emission_category_id', 'date']}
-  ]
-) }}
+{{
+  config(
+    materialized='table',
+    indexes=[
+      {'columns': ['organization_id', 'emission_date']},
+      {'columns': ['facility_id', 'emission_date']}
+    ]
+  )
+}}
 
-SELECT
-  {{ dbt_utils.generate_surrogate_key(['organization_id', 'date', 'facility_id']) }} as aggregate_id,
-  organization_id,
-  date,
-  facility_id,
-  emission_category_id,
+-- Aggregated emissions by day
+-- Pre-calculated daily totals for dashboard performance
 
-  -- Metrics
-  COUNT(DISTINCT activity_record_id) as record_count,
-  SUM(total_co2e_kg) as total_co2e_kg,
-  SUM(co2_kg) as co2_kg,
-  SUM(ch4_kg_co2e) as ch4_kg_co2e,
-  SUM(n2o_kg_co2e) as n2o_kg_co2e,
-  SUM(biogenic_co2e) as biogenic_co2e_kg,
-  AVG(total_co2e_kg) as avg_co2e_per_record_kg,
+with emissions as (
+  select * from {{ ref('fct_emissions') }}
+),
 
-  -- Quality tracking
-  COUNT(DISTINCT factor_id) as factor_variants_used,
-  COUNT(DISTINCT factor_library_version) as library_versions,
+daily_agg as (
+  select
+    organization_id,
+    date_trunc('day', activity_date)::date as emission_date,
+    facility_id,
+    emission_category_id,
+    scope,
+    count(*) as record_count,
+    sum(total_co2e_tonnes) as total_co2e_tonnes,
+    sum(co2e_kg) as total_co2e_kg,
+    sum(ch4_kg_co2e) as total_ch4_co2e_kg,
+    sum(n2o_kg_co2e) as total_n2o_co2e_kg,
+    min(activity_date) as earliest_activity,
+    max(activity_date) as latest_activity
+  from emissions
+  group by
+    organization_id,
+    date_trunc('day', activity_date),
+    facility_id,
+    emission_category_id,
+    scope
+)
 
-  NOW() as dbt_loaded_at
-FROM {{ ref('fct_emissions') }}
-GROUP BY
-  organization_id,
-  date,
-  facility_id,
-  emission_category_id
+select
+  {{ generate_surrogate_key(['organization_id', 'emission_date', 'facility_id']) }} as daily_agg_id,
+  *,
+  now() as dbt_loaded_at
+from daily_agg

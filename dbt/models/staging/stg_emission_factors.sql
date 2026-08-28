@@ -1,24 +1,22 @@
-{{ config(
-  materialized='view',
-  tags=['staging', 'factors']
-) }}
+-- Staging layer for emission factors
+-- Provides standardized access to emission factor library data
 
-SELECT
-  id as factor_id,
+select
+  id,
   emission_category_id,
-  geography_code,
-  scope,
-  emission_factor,
-  gwp_factor_ch4,
-  gwp_factor_n2o,
-  unit,
-  source,
-  factor_library_version,
-  methodology_version_name,
-  effective_date,
-  sunset_date,
-  confidence_score,
-  created_at
-FROM {{ source('carbonsite', 'emission_factors') }}
-WHERE sunset_date IS NULL OR sunset_date > NOW()
-  AND effective_date <= NOW()
+  country_region,
+  year,
+  emission_factor::numeric as emission_factor,
+  gwp_factor_ch4::numeric as gwp_factor_ch4,
+  gwp_factor_n2o::numeric as gwp_factor_n2o,
+  factor_source,
+  methodology_version,
+  effective_date::date as effective_date,
+  sunset_date::date as sunset_date,
+  created_at,
+  updated_at,
+  now() as dbt_loaded_at
+from {{ source('carbon_site', 'emission_factor_library') }}
+where deleted_at is null
+  and current_date >= effective_date
+  and (sunset_date is null or current_date < sunset_date)

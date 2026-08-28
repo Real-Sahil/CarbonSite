@@ -1,44 +1,44 @@
-{{ config(
-  materialized='view',
-  tags=['staging', 'emissions'],
-  indexes=[
-    {'columns': ['organization_id', 'reporting_period_id']},
-    {'columns': ['facility_id', 'activity_date']}
-  ]
-) }}
+-- Staging layer for activity records
+-- Cleans and standardizes activity records from the source data
 
-SELECT
-  id as activity_record_id,
+with activity_records as (
+  select
+    id,
+    organization_id,
+    emission_category_id,
+    reporting_period_id,
+    facility_id,
+    business_unit_id,
+    original_amount,
+    original_unit,
+    normalized_amount,
+    normalized_unit,
+    source_description,
+    activity_date,
+    review_status,
+    created_at,
+    updated_at,
+    created_by_user_id
+  from {{ source('carbon_site', 'activity_records') }}
+  where deleted_at is null
+)
+
+select
+  id,
   organization_id,
-  reporting_period_id,
   emission_category_id,
-  activity_date,
-  amount as original_amount,
-  unit as original_unit,
-  source_description,
+  reporting_period_id,
   facility_id,
   business_unit_id,
-  supplier_name,
-  country,
-  region,
-  spend_amount,
-  spend_currency,
-  distance_amount,
-  distance_unit,
-  pickup_postcode,
-  delivery_postcode,
-  transport_mode,
-  fuel_type,
-  refrigerant_type,
-  scope2_method,
-  biogenic_co2e,
+  original_amount::numeric as original_amount,
+  original_unit,
+  normalized_amount::numeric as normalized_amount,
+  normalized_unit,
+  source_description,
+  activity_date::date as activity_date,
   review_status,
-  evidence_status,
-  assumption_notes,
-  import_batch_id,
-  field_submission_id,
-  created_by_user_id,
   created_at,
-  updated_at
-FROM {{ source('carbonsite', 'activity_records') }}
-WHERE organization_id = '{{ var("org_id", "00000000-0000-0000-0000-000000000000") }}'
+  updated_at,
+  created_by_user_id,
+  now() as dbt_loaded_at
+from activity_records

@@ -2,24 +2,20 @@
 target/
 dbt_packages/
 logs/
-*.yml.bak
-.env.local
+.gitkeep
 
 # Python
 __pycache__/
-*.pyc
-*.pyo
-venv/
-.venv/
-env/
+*.py[cod]
+*$py.class
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
-Thumbs.db
+.env.local
+profiles.yml

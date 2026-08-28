@@ -68,9 +68,6 @@ model User {
   supplierCategoryAssignments       SupplierCategoryAssignment[] @relation("SupplierCategoryAssignments")
   customEmissionFactorsCreated      OrganizationEmissionFactor[] @relation("CustomFactorCreator")
   anomaliesAcknowledged             SupplierAnomaly[]            @relation("AnomalyAcknowledger")
-  scope3EstimatesAccepted           Scope3Estimate[]             @relation("Scope3EstimatesAccepted")
-  ssoSessions                       SsoSession[]                 @relation("SsoSessions")
-  invoiceAnomaliesResolved          InvoiceAnomaly[]             @relation("InvoiceAnomalyResolutions")
 
   platformMembership PlatformMembership?
 
@@ -205,17 +202,7 @@ model Organization {
   importBatchQualityScores    ImportBatchQualityScore[]
   stagedExternalData          StagedExternalData[]
   airbyteSyncConnections      AirbyteSyncConnection[]
-  scope3EstimationModels      Scope3EstimationModel[] @relation("EstimationModels")
-  scope3Estimates             Scope3Estimate[]      @relation("Scope3Estimates")
-  supplierPerformance         SupplierPerformance[]     @relation("supplierPerformanceOrg")
-  suppliedToPerformance       SupplierPerformance[]     @relation("supplierPerformanceSupplier")
-  supplierPerformanceHistory  SupplierPerformanceHistory[] @relation("supplierPerformanceHistoryOrg")
-  dbtRuns                     DbtRun[]
-  auditContexts               AuditContext[]            @relation("AuditContexts")
-  ssoConfiguration            SsoConfiguration?         @relation("SsoConfigurations")
-  ssoSessions                 SsoSession[]              @relation("SsoSessions")
-  xeroSyncLogs                XeroSyncLog[]
-  invoiceRecords              InvoiceRecord[]           @relation("InvoiceRecords")
+  dbtRuns                     DbtRun[]              @relation("DbtRunsOrganization")
 
   @@map("organizations")
 }
@@ -340,7 +327,6 @@ model SupplierInvite {
   usedAt          DateTime? @map("used_at")
   usedByUserId    String?   @map("used_by_user_id")
   createdByUserId String    @map("created_by_user_id")
-  tags            Json?     @default("[]") // Array of supplier category tags
   createdAt       DateTime  @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -381,7 +367,6 @@ model Facility {
   name           String
   country        String?
   region         String?
-  riskLevel      String?  @map("risk_level")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -480,8 +465,6 @@ model EmissionCategory {
   aggregates                  DashboardAggregate[]
   submissions                 FieldSubmission[]
   supplierCategoryAssignments SupplierCategoryAssignment[]
-  scope3EstimationModels      Scope3EstimationModel[]     @relation("EstimationModels")
-  scope3Estimates             Scope3Estimate[]            @relation("Scope3Estimates")
 
   @@map("emission_categories")
 }
@@ -658,7 +641,6 @@ model ActivityRecord {
   evidence         ActivityRecordEvidence[]
   scenarioDrafts   ScenarioDraft[]          @relation("ScenarioDraftActivityRecord")
   meterReadings    MeterReading[]
-  scope3Estimates  Scope3Estimate[]         @relation("ActivityRecordEstimate")
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
   @@index([organizationId, routeDistanceId])
@@ -823,8 +805,6 @@ model FieldSubmission {
   siteId                    String?               @map("site_id")
   contractId                String?               @map("contract_id")
   deviceSubmittedAt         DateTime?             @map("device_submitted_at")
-  requestedByDeadline       DateTime?             @map("requested_by_deadline")
-  submittedAt               DateTime?             @map("submitted_at")
   idempotencyKey            String?               @map("idempotency_key")
   createdAt                 DateTime              @default(now()) @map("created_at")
   updatedAt                 DateTime              @updatedAt @map("updated_at")
@@ -843,7 +823,6 @@ model FieldSubmission {
   @@unique([organizationId, submittedByUserId, idempotencyKey], map: "field_submission_idempotency_key")
   @@index([organizationId, status, createdAt])
   @@index([organizationId, submittedByUserId])
-  @@index([organizationId, requestedByDeadline, submittedAt])
   @@map("field_submissions")
 }
 
@@ -858,52 +837,6 @@ model FieldSubmissionFile {
 
   @@unique([fieldSubmissionId, evidenceFileId])
   @@map("field_submission_files")
-}
-
-// ─── Supplier Performance ────────────────────────────────────────────────────
-
-model SupplierPerformance {
-  id                      String   @id @default(cuid())
-  organizationId          String   @map("organization_id")
-  supplierId              String   @map("supplier_id") // References Organization.id (external supplier org)
-  submissionCount         Int      @default(0) @map("submission_count")
-  approvedCount           Int      @default(0) @map("approved_count")
-  rejectedCount           Int      @default(0) @map("rejected_count")
-  onTimeCount             Int      @default(0) @map("on_time_count")
-  completenessScore       Decimal? @db.Decimal(5, 2) @map("completeness_score")
-  dataQualityScore        Decimal? @db.Decimal(5, 2) @map("data_quality_score")
-  lastDataQualityTrend    String?  @map("last_data_quality_trend") // "improving", "stable", "declining"
-  updatedAt               DateTime @updatedAt @map("updated_at")
-  createdAt               DateTime @default(now()) @map("created_at")
-
-  organization Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceOrg")
-  supplier     Organization                   @relation(fields: [supplierId], references: [id], onDelete: Cascade, name: "supplierPerformanceSupplier")
-  history      SupplierPerformanceHistory[]
-
-  @@unique([organizationId, supplierId])
-  @@index([organizationId])
-  @@index([organizationId, supplierId])
-  @@index([dataQualityScore(sort: Desc)])
-  @@index([submissionCount(sort: Desc)])
-  @@map("supplier_performance")
-}
-
-model SupplierPerformanceHistory {
-  id                      String   @id @default(cuid())
-  supplierPerformanceId   String   @map("supplier_performance_id")
-  organizationId          String   @map("organization_id")
-  completenessScore       Decimal  @db.Decimal(5, 2) @map("completeness_score")
-  dataQualityScore        Decimal  @db.Decimal(5, 2) @map("data_quality_score")
-  submissionCount         Int      @map("submission_count")
-  approvedCount           Int      @map("approved_count")
-  recordedAt              DateTime @default(now()) @map("recorded_at")
-
-  supplierPerformance SupplierPerformance @relation(fields: [supplierPerformanceId], references: [id], onDelete: Cascade)
-  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceHistoryOrg")
-
-  @@index([supplierPerformanceId, recordedAt(sort: Desc)])
-  @@index([organizationId, recordedAt(sort: Desc)])
-  @@map("supplier_performance_history")
 }
 
 // ─── Emission Factors ─────────────────────────────────────────────────────────
@@ -993,7 +926,7 @@ model CalculationRun {
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
-  dbtRuns            DbtRun[]
+  dbtRuns            DbtRun[]              @relation("DbtRunsCalculation")
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -1465,7 +1398,6 @@ model AuditLog {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   actor        User?        @relation(fields: [actorUserId], references: [id])
-  auditContexts AuditContext[] @relation("AuditContexts")
 
   @@index([organizationId, resourceType, resourceId])
   @@index([organizationId, createdAt])
@@ -2207,30 +2139,6 @@ model IntegrationConnection {
   @@map("integration_connections")
 }
 
-// ─── Xero Sync Audit Trail ───────────────────────────────────────────────────
-
-model XeroSyncLog {
-  id              String    @id @default(cuid())
-  organizationId  String    @map("organization_id")
-  invoiceId       String    @map("invoice_id")
-  invoiceNumber   String    @map("invoice_number")
-  lineItemIndex   Int       @map("line_item_index") // Index of line item in invoice
-  supplierName    String    @map("supplier_name")
-  lineDescription String    @map("line_description")
-  amount          Decimal   @db.Decimal(18, 6)
-  category        String    // s3-purchased-goods, s3-upstream-transport, s1-stationary, etc.
-  status          String    @default("processed") // processed, failed, skipped
-  errorMessage    String?   @map("error_message")
-  processedAt     DateTime  @default(now()) @map("processed_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@unique([organizationId, invoiceId, lineItemIndex])
-  @@index([organizationId, processedAt])
-  @@map("xero_sync_logs")
-}
-
 // ─── IoT Devices & Real-Time Meter Data ──────────────────────────────────────
 
 enum IoTDeviceType {
@@ -2668,251 +2576,32 @@ model AirbyteSyncConnection {
   @@map("airbyte_sync_connections")
 }
 
-// ─── Phase 3A: Scope 3 Estimation via ML ────────────────────────────────────
-
-model Scope3EstimationModel {
-  id                    String    @id @default(cuid())
-  organizationId        String    @map("organization_id")
-  emissionCategoryId    String    @map("emission_category_id")
-  facilityType          String?   @map("facility_type") // e.g., "manufacturing", "office", "warehouse"
-  modelType             String    @default("linear-regression") @map("model_type") // "linear-regression", "random-forest"
-  trainingRecordCount   Int       @map("training_record_count")
-  coefficients          Json      // Model parameters: { intercept, features: {featureName: coefficient} }
-  modelMetrics          Json      // R², RMSE, MAE, etc.
-  featureImportance     Json      // Feature importance scores
-  trainingDataDateRange Json      // { from: Date, to: Date }
-  confidenceThreshold   Decimal   @default("0.7") @map("confidence_threshold") @db.Decimal(3, 2)
-  lastTrainedAt         DateTime  @map("last_trained_at")
-  nextTrainAt           DateTime? @map("next_train_at")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
-
-  organization       Organization           @relation("EstimationModels", fields: [organizationId], references: [id], onDelete: Cascade)
-  emissionCategory   EmissionCategory       @relation("EstimationModels", fields: [emissionCategoryId], references: [id])
-  estimates          Scope3Estimate[]       @relation("ModelEstimates")
-
-  @@unique([organizationId, emissionCategoryId, facilityType])
-  @@index([organizationId, lastTrainedAt])
-  @@map("scope3_estimation_models")
-}
-
-model Scope3Estimate {
-  id                     String    @id @default(cuid())
-  organizationId         String    @map("organization_id")
-  facilitId              String?   @map("facility_id") // Optional reference to facility
-  emissionCategoryId     String    @map("emission_category_id")
-  estimationModelId      String    @map("estimation_model_id")
-  estimatedValue         Decimal   @map("estimated_value") @db.Decimal(18, 6)
-  estimatedUnit          String    @map("estimated_unit") // e.g., "tonnes", "kwh"
-  confidenceScore        Decimal   @map("confidence_score") @db.Decimal(3, 2) // 0-1
-  confidenceInterval     Json      // { lower: number, upper: number, percentile: 95 }
-  modelInputs            Json      // Features used for prediction
-  predictionExplanation String?   @map("prediction_explanation") // Why this estimate?
-  basedOnRecordCount     Int       @default(0) @map("based_on_record_count")
-  status                 String    @default("pending") @map("status") // "pending", "accepted", "rejected", "used"
-  acceptedAt             DateTime? @map("accepted_at")
-  acceptedByUserId       String?   @map("accepted_by_user_id")
-  rejectionReason        String?   @map("rejection_reason")
-  activityRecordId       String?   @map("activity_record_id") // If linked to actual record
-  createdAt              DateTime  @default(now()) @map("created_at")
-  updatedAt              DateTime  @updatedAt @map("updated_at")
-
-  organization       Organization           @relation("Scope3Estimates", fields: [organizationId], references: [id], onDelete: Cascade)
-  emissionCategory   EmissionCategory       @relation("Scope3Estimates", fields: [emissionCategoryId], references: [id])
-  estimationModel    Scope3EstimationModel  @relation("ModelEstimates", fields: [estimationModelId], references: [id], onDelete: Restrict)
-  acceptedBy         User?                  @relation("Scope3EstimatesAccepted", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
-  activityRecord     ActivityRecord?        @relation("ActivityRecordEstimate", fields: [activityRecordId], references: [id], onDelete: SetNull)
-
-  @@index([organizationId, emissionCategoryId, status])
-  @@index([organizationId, createdAt(sort: Desc)])
-  @@index([estimationModelId])
-  @@map("scope3_estimates")
-}
-
-// ─── Audit & Compliance ──────────────────────────────────────────────────────
-
-model AuditContext {
-  id              String   @id @default(cuid())
-  organizationId  String   @map("organization_id")
-  auditLogId      String   @map("audit_log_id")
-  framework       String   // 'csrd', 'sbti', 'cdp', 'ghg-protocol', 'iso-14064'
-  resourceType    String   @map("resource_type") // 'emission_calculation', 'activity_record', 'snapshot', 'report'
-  resourceId      String   @map("resource_id")
-  contextMetadata Json?    @map("context_metadata") // Framework-specific metadata
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  organization Organization @relation("AuditContexts", fields: [organizationId], references: [id], onDelete: Cascade)
-  auditLog     AuditLog     @relation("AuditContexts", fields: [auditLogId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId, framework, resourceType, resourceId])
-  @@index([organizationId, auditLogId])
-  @@map("audit_contexts")
-}
-
-// ─── SSO & Enterprise Auth ───────────────────────────────────────────────────
-
-model SsoConfiguration {
-  id                String   @id @default(cuid())
-  organizationId    String   @unique @map("organization_id")
-  provider          String   // 'okta', 'azure_ad', 'google_workspace', 'generic_oidc', 'saml'
-  enabled           Boolean  @default(true)
-  metadataUrl       String?  @map("metadata_url")
-  clientId          String   @map("client_id")
-  clientSecret      String   @map("client_secret") // Encrypted in transit
-  idpEntityId       String?  @map("idp_entity_id") // For SAML
-  ssoUrl            String?  @map("sso_url") // For SAML
-  certificateX509   String?  @map("certificate_x509") // For SAML validation
-  autoCreateUsers   Boolean  @default(true) @map("auto_create_users")
-  autoAssignRole    String?  @default("viewer") @map("auto_assign_role") // admin | editor | reviewer | viewer | field_worker
-  requireMfa        Boolean  @default(false) @map("require_mfa")
-  syncAttributes    Json?    @map("sync_attributes") // Maps IdP claims to user fields
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  organization Organization @relation("SsoConfigurations", fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@map("sso_configurations")
-}
-
-model SsoSession {
-  id              String   @id @default(cuid())
-  organizationId  String   @map("organization_id")
-  userId          String   @map("user_id")
-  provider        String
-  providerUserId  String   @map("provider_user_id")
-  idpSessionId    String?  @map("idp_session_id") // To track sessions at IdP level
-  accessToken     String?  @map("access_token")
-  refreshToken    String?  @map("refresh_token")
-  tokenExpiresAt  DateTime? @map("token_expires_at")
-  createdAt       DateTime @default(now()) @map("created_at")
-  lastActivityAt  DateTime @default(now()) @updatedAt @map("last_activity_at")
-
-  organization Organization @relation("SsoSessions", fields: [organizationId], references: [id], onDelete: Cascade)
-  user         User         @relation("SsoSessions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId, userId])
-  @@index([organizationId, provider])
-  @@unique([organizationId, providerUserId])
-  @@map("sso_sessions")
-}
-
-// ─── Invoice Anomaly Detection ───────────────────────────────────────────────
-
-enum InvoiceAnomalyType {
-  duplicate
-  qty_mismatch
-  date_inconsistency
-  price_spike
-  missing_grn
-  over_billing
-  currency_mismatch
-  unmatched_invoice
-
-  @@map("invoice_anomaly_type")
-}
-
-enum AnomalySeverity {
-  info
-  warning
-  critical
-
-  @@map("anomaly_severity")
-}
-
-enum InvoiceReconciliationStatus {
-  matched
-  over_received
-  under_received
-  partial_match
-
-  @@map("invoice_reconciliation_status")
-}
-
-model InvoiceRecord {
-  id                     String                    @id @default(cuid())
-  organizationId         String                    @map("organization_id")
-  externalInvoiceId      String                    @map("external_invoice_id")
-  sourceSystem           String                    @map("source_system")
-  vendorId               String                    @map("vendor_id")
-  vendorName             String                    @map("vendor_name")
-  invoiceDate            DateTime                  @map("invoice_date")
-  receivedDate           DateTime?                 @map("received_date")
-  totalAmount            Decimal                   @map("total_amount") @db.Decimal(15, 2)
-  lineItems              Json?                     @map("line_items")
-  reconciliationStatus   String                    @default("unmatched") @map("reconciliation_status")
-  processed              Boolean                   @default(false)
-  createdAt              DateTime                  @default(now()) @map("created_at")
-  updatedAt              DateTime                  @updatedAt @map("updated_at")
-
-  organization    Organization                @relation("InvoiceRecords", fields: [organizationId], references: [id], onDelete: Cascade)
-  anomalies       InvoiceAnomaly[]            @relation("InvoiceAnomalies")
-  reconciliations InvoiceReconciliation[]     @relation("InvoiceReconciliations")
-
-  @@unique([organizationId, sourceSystem, externalInvoiceId])
-  @@index([organizationId])
-  @@index([organizationId, sourceSystem, processed])
-  @@index([organizationId, vendorId])
-  @@index([organizationId, invoiceDate])
-  @@map("invoice_records")
-}
-
-model InvoiceAnomaly {
-  id               String   @id @default(cuid())
-  invoiceId        String   @map("invoice_id")
-  anomalyType      String   @map("anomaly_type")
-  severity         String   @map("severity")
-  reason           String
-  resolution       String?
-  resolutionNotes  String?  @map("resolution_notes")
-  resolvedByUserId String?  @map("resolved_by_user_id")
-  resolvedAt       DateTime? @map("resolved_at")
-  detectedAt       DateTime @default(now()) @map("detected_at")
-  createdAt        DateTime @default(now()) @map("created_at")
-
-  invoice      InvoiceRecord @relation("InvoiceAnomalies", fields: [invoiceId], references: [id], onDelete: Cascade)
-  resolvedBy   User?         @relation("InvoiceAnomalyResolutions", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
-
-  @@index([invoiceId])
-  @@index([severity, detectedAt])
-  @@index([anomalyType])
-  @@map("invoice_anomalies")
-}
-
-model InvoiceReconciliation {
-  id               String   @id @default(cuid())
-  invoiceId        String   @map("invoice_id")
-  lineItemId       String   @map("line_item_id")
-  quantityOrdered  Int?     @map("quantity_ordered")
-  quantityReceived Int?     @map("quantity_received")
-  quantityInvoiced Int      @map("quantity_invoiced")
-  matchStatus      String?  @map("match_status")
-  discrepancyPercent Decimal? @map("discrepancy_percent") @db.Decimal(5, 2)
-  createdAt        DateTime @default(now()) @map("created_at")
-
-  invoice InvoiceRecord @relation("InvoiceReconciliations", fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId])
-  @@index([matchStatus])
-  @@map("invoice_reconciliations")
-}
-
-// ─── dbt SQL Transformations ─────────────────────────────────────────────────
+// ─── Phase 2C: dbt SQL Transformation ────────────────────────────────────────
 
 model DbtRun {
-  id                 String   @id @default(cuid())
-  organizationId     String   @map("organization_id")
-  calculationRunId   String   @map("calculation_run_id")
-  status             String   // 'success' or 'failed'
-  output             String   @db.Text // dbt stdout/stderr logs
-  rowsAffected       Int      @default(0) @map("rows_affected")
-  duration           Int      // milliseconds
-  modelsRun          String?  @map("models_run") // e.g. "tag:marts"
-  createdAt          DateTime @default(now()) @map("created_at")
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  calculationRunId  String?   @map("calculation_run_id")
+  status            String    // 'queued', 'running', 'success', 'failed'
+  dbtVersion        String?   @map("dbt_version")
+  output            String?   // Full dbt CLI output
+  rowsAffected      Int?      @map("rows_affected")
+  modelCount        Int?      @map("model_count")
+  testCount         Int?      @map("test_count")
+  testsPassed       Int?      @map("tests_passed")
+  testsFailed       Int?      @map("tests_failed")
+  errorMessage      String?   @map("error_message")
+  errorDetails      Json?     @map("error_details") // Structured error info
+  duration          Int?      // milliseconds
+  startedAt         DateTime? @map("started_at")
+  finishedAt        DateTime? @map("finished_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  calculationRun  CalculationRun  @relation(fields: [calculationRunId], references: [id], onDelete: Cascade)
+  organization   Organization   @relation("DbtRunsOrganization", fields: [organizationId], references: [id], onDelete: Cascade)
+  calculationRun CalculationRun? @relation("DbtRunsCalculation", fields: [calculationRunId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, calculationRunId])
-  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([organizationId, status, createdAt(sort: Desc)])
   @@map("dbt_runs")
 }
