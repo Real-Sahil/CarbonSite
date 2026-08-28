@@ -43,9 +43,10 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
             invoiceDate: baseDate,
             receivedDate: new Date("2024-01-14"),
             totalAmount: new Decimal("5000.00"),
-            lineItems: undefined,
-            reconciliationStatus: "matched",
-            processed: false,
+            lineItems: [] as any,
+            scope3ReadyStatus: "approved",
+            extractedAt: new Date(),
+            processedAt: null,
           },
           {
             organizationId: testOrgId,
@@ -56,9 +57,10 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
             invoiceDate: new Date(baseDate.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days later
             receivedDate: new Date("2024-01-17"),
             totalAmount: new Decimal("5000.00"),
-            lineItems: undefined,
-            reconciliationStatus: "matched",
-            processed: false,
+            lineItems: [] as any,
+            scope3ReadyStatus: "approved",
+            extractedAt: new Date(),
+            processedAt: null,
           },
         ],
       });
@@ -104,8 +106,9 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
           receivedDate: new Date(),
           totalAmount: new Decimal("5000.00"),
           lineItems: lineItems as any,
-          reconciliationStatus: "unmatched",
-          processed: false,
+          scope3ReadyStatus: "pending",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 
@@ -140,9 +143,10 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
           invoiceDate,
           receivedDate,
           totalAmount: new Decimal("1000.00"),
-          lineItems: undefined,
-          reconciliationStatus: "matched",
-          processed: false,
+          lineItems: [] as any,
+          scope3ReadyStatus: "approved",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 
@@ -184,8 +188,9 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
           receivedDate: new Date(),
           totalAmount: new Decimal("5000.00"),
           lineItems: lineItems as any,
-          reconciliationStatus: "unmatched",
-          processed: false,
+          scope3ReadyStatus: "pending",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 
@@ -217,9 +222,10 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
           invoiceDate: new Date(),
           receivedDate: null,
           totalAmount: new Decimal("1000.00"),
-          lineItems: undefined,
-          reconciliationStatus: "unmatched",
-          processed: false,
+          lineItems: [] as any,
+          scope3ReadyStatus: "pending",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 
@@ -251,9 +257,10 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
           invoiceDate: new Date(),
           receivedDate: new Date(),
           totalAmount: new Decimal("1000.00"),
-          lineItems: undefined,
-          reconciliationStatus: "unmatched",
-          processed: false,
+          lineItems: [] as any,
+          scope3ReadyStatus: "pending",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 
@@ -294,8 +301,9 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
           receivedDate: new Date(),
           totalAmount: new Decimal("5000.00"),
           lineItems: lineItems as any,
-          reconciliationStatus: "unmatched",
-          processed: false,
+          scope3ReadyStatus: "pending",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 
@@ -315,7 +323,7 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
         where: { id: anomaly.id },
         data: {
           resolution: "approved",
-          resolutionNotes: "Verified and corrected",
+          notes: "Verified and corrected",
           resolvedAt: new Date(),
         },
       });
@@ -325,7 +333,7 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
       });
 
       expect(resolved?.resolution).toBe("approved");
-      expect(resolved?.resolutionNotes).toBe("Verified and corrected");
+      expect(resolved?.notes).toBe("Verified and corrected");
     });
   });
 
@@ -351,8 +359,9 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
               quantityReceived: 0,
             },
           ] as any,
-          reconciliationStatus: "unmatched",
-          processed: false,
+          scope3ReadyStatus: "pending",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 
@@ -374,8 +383,9 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
               quantityInvoiced: 100,
             },
           ] as any,
-          reconciliationStatus: "matched",
-          processed: false,
+          scope3ReadyStatus: "approved",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 
@@ -390,9 +400,10 @@ describe.skip("Invoice Anomaly Detection - Integration", () => {
           invoiceDate: new Date(),
           receivedDate: null,
           totalAmount: new Decimal("1000.00"),
-          lineItems: undefined,
-          reconciliationStatus: "unmatched",
-          processed: false,
+          lineItems: [] as any,
+          scope3ReadyStatus: "pending",
+          extractedAt: new Date(),
+          processedAt: null,
         },
       });
 

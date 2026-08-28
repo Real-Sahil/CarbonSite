@@ -63,7 +63,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     if (resolution === "rejected") {
       await prisma.invoiceRecord.update({
         where: { id: anomaly.invoiceId },
-        data: { reconciliationStatus: "rejected" },
+        data: { scope3ReadyStatus: "rejected" },
       });
     }
 
@@ -73,7 +73,6 @@ export async function POST(_req: NextRequest, { params }: Params) {
       data: {
         id: updated.id,
         resolution: updated.resolution,
-        resolutionNotes: updated.resolutionNotes,
         resolvedAt: updated.resolvedAt?.toISOString(),
       },
     }, { version });

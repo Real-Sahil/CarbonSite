@@ -25,8 +25,9 @@ async function createTestInvoice(
     receivedDate: Date | null;
     totalAmount: number | Decimal;
     lineItems: LineItem[] | null;
-    reconciliationStatus: string;
-    processed: boolean;
+    scope3ReadyStatus: string;
+    extractedAt: Date;
+    processedAt: Date | null;
   }> = {}
 ): Promise<InvoiceRecord> {
   return prisma.invoiceRecord.create({
@@ -40,8 +41,9 @@ async function createTestInvoice(
       receivedDate: overrides.receivedDate !== undefined ? overrides.receivedDate : null,
       totalAmount: overrides.totalAmount ? new Decimal(overrides.totalAmount) : new Decimal(1000),
       lineItems: overrides.lineItems ? JSON.parse(JSON.stringify(overrides.lineItems)) : null,
-      reconciliationStatus: overrides.reconciliationStatus || "unmatched",
-      processed: overrides.processed ?? false,
+      scope3ReadyStatus: overrides.scope3ReadyStatus || "rejected",
+      extractedAt: overrides.extractedAt || new Date(),
+      processedAt: overrides.processedAt || null,
     },
   });
 }
@@ -302,7 +304,7 @@ describe.skip("Invoice Anomaly Detector", () => {
     it("should flag invoices with no line items", async () => {
       await createTestInvoice(testOrgId, {
         lineItems: null,
-        reconciliationStatus: "unmatched",
+        scope3ReadyStatus: "pending",
       });
 
       const result = await detectInvoiceAnomalies(testOrgId);
@@ -319,9 +321,9 @@ describe.skip("Invoice Anomaly Detector", () => {
   describe("Full Detection Pipeline", () => {
     it("should process all unprocessed invoices and mark them processed", async () => {
       // Create multiple test invoices
-      const inv1 = await createTestInvoice(testOrgId, { processed: false });
-      const inv2 = await createTestInvoice(testOrgId, { processed: false });
-      const inv3 = await createTestInvoice(testOrgId, { processed: true });
+      const inv1 = await createTestInvoice(testOrgId, { processedAt: null });
+      const inv2 = await createTestInvoice(testOrgId, { processedAt: null });
+      const inv3 = await createTestInvoice(testOrgId, { processedAt: new Date() });
 
       const result = await detectInvoiceAnomalies(testOrgId);
       expect(result.processedCount).toBeGreaterThanOrEqual(2);
@@ -330,18 +332,18 @@ describe.skip("Invoice Anomaly Detector", () => {
       const processedInv1 = await prisma.invoiceRecord.findUnique({
         where: { id: inv1.id },
       });
-      expect(processedInv1?.processed).toBe(true);
+      expect(processedInv1?.processedAt).not.toBeNull();
 
       const processedInv2 = await prisma.invoiceRecord.findUnique({
         where: { id: inv2.id },
       });
-      expect(processedInv2?.processed).toBe(true);
+      expect(processedInv2?.processedAt).not.toBeNull();
 
       // Check that already processed invoice remains unchanged
       const processedInv3 = await prisma.invoiceRecord.findUnique({
         where: { id: inv3.id },
       });
-      expect(processedInv3?.processed).toBe(true);
+      expect(processedInv3?.processedAt).not.toBeNull();
     });
 
     it("should handle empty invoice batch gracefully", async () => {

@@ -140,8 +140,8 @@ export async function PATCH(
           where: { id },
           data: {
             resolution: body.data.resolution,
-            resolutionNotes: body.data.notes,
-            resolvedByUserId: session.user.id,
+            notes: body.data.notes,
+            resolvedBy: session.user.id,
             resolvedAt: new Date(),
           },
           include: {
