@@ -29,10 +29,7 @@ export function generateExcelWorkbook(
   const workbook = XLSX.utils.book_new();
 
   for (const sheet of sheets) {
-    const worksheet = XLSX.utils.json_to_sheet(sheet.data, {
-      header: 1,
-      defval: "",
-    });
+    const worksheet = XLSX.utils.json_to_sheet(sheet.data);
 
     // Set column widths if autoWidth is enabled
     if (sheet.autoWidth && sheet.data.length > 0) {

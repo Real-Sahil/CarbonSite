@@ -61,10 +61,10 @@ export async function recordFailedJob(
   await writeAuditLog({
     organizationId,
     action: "job.failed",
-    actorId: "system",
-    targetId: jobId,
-    targetType: "job",
-    details: {
+    actorUserId: null,
+    resourceType: "FailedJob",
+    resourceId: jobId,
+    metadata: {
       jobType,
       error: error.message,
       retryCount: failedJob.retryCount,

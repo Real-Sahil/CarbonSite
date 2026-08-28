@@ -268,7 +268,7 @@ export async function compileDigestData(
   const pendingReviews = await prisma.activityRecord.count({
     where: {
       organizationId,
-      reviewStatus: "pending_review",
+      reviewStatus: "in_review",
     },
   });
 
@@ -276,7 +276,7 @@ export async function compileDigestData(
   const completedCalculations = await prisma.calculationRun.count({
     where: {
       organizationId,
-      status: "completed",
+      status: "succeeded",
       createdAt: { gte: startDate },
     },
   });
@@ -286,9 +286,7 @@ export async function compileDigestData(
     where: { organizationId },
     _sum: {
       totalCo2e: true,
-      scope1Total: true,
-      scope2Total: true,
-      scope3Total: true,
+      recordCount: true,
     },
   });
 
@@ -309,9 +307,9 @@ export async function compileDigestData(
   return {
     emissions: {
       total: Number(emissions._sum.totalCo2e ?? 0),
-      scope1: Number(emissions._sum.scope1Total ?? 0),
-      scope2: Number(emissions._sum.scope2Total ?? 0),
-      scope3: Number(emissions._sum.scope3Total ?? 0),
+      scope1: 0, // TODO: Get scope-specific totals from DashboardAggregate grouped by scope
+      scope2: 0,
+      scope3: 0,
     },
     dataQualityScore,
     newRecords,

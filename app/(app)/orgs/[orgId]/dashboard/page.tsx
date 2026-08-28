@@ -771,43 +771,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       </div>
 
       <div className="max-w-[1200px] mx-auto px-8 py-8">
-      {onboardingProgress?.state !== "completed" && (
-        <OnboardingChecklist
-          orgId={orgId}
-          steps={[
-            {
-              label: "Invite your team",
-              description: "Add team members who will help manage emissions data",
-              href: `/orgs/${orgId}/settings/members`,
-              done: isStepCompleted(onboardingProgress?.stepState, "invite_team"),
-            },
-            {
-              label: "Set reporting period",
-              description: "Define the time frame for your emissions inventory",
-              href: `/orgs/${orgId}/settings/operations`,
-              done: isStepCompleted(onboardingProgress?.stepState, "set_reporting_period"),
-            },
-            {
-              label: "Add emission categories",
-              description: "Select which scopes and categories apply to your business",
-              href: `/orgs/${orgId}/settings/operations`,
-              done: isStepCompleted(onboardingProgress?.stepState, "add_emission_categories"),
-            },
-            {
-              label: "Import activity data",
-              description: "Upload CSV or connect to your data source",
-              href: `/orgs/${orgId}/imports`,
-              done: isStepCompleted(onboardingProgress?.stepState, "import_activity_data"),
-            },
-            {
-              label: "Run calculations",
-              description: "Generate your first emissions report",
-              href: `/orgs/${orgId}/calculations`,
-              done: isStepCompleted(onboardingProgress?.stepState, "review_calculations"),
-            },
-          ]}
-        />
-      )}
+      {/* OnboardingChecklist disabled - onboardingProgress Prisma model not implemented (Phase 2 feature) */}
 
       {/* Contract filter */}
       {activeContracts.length > 0 && (

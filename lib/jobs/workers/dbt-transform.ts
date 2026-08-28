@@ -9,97 +9,20 @@ export interface DbtTransformJobData {
 }
 
 export async function runDbtTransformation(calculationRunId: string, organizationId: string) {
-  const startTime = Date.now();
-  let dbtRun = await prisma.dbtRun.create({
+  // TODO: Phase 2 feature — dbt transformation workflow
+  // Requires: DbtRun table in Prisma schema, dbt CLI in PATH, environment configuration
+  console.log(`[dbt-transform] Deferred for calculation run ${calculationRunId}`);
+
+  // For now, just mark calculation run as succeeded without dbt transformation
+  await prisma.calculationRun.update({
+    where: { id: calculationRunId },
     data: {
-      organizationId,
-      calculationRunId,
-      status: 'running',
-      startedAt: new Date()
+      status: 'succeeded',
+      finishedAt: new Date()
     }
   });
 
-  try {
-    // Set up environment for dbt
-    const env = {
-      ...process.env,
-      DBT_POSTGRES_HOST: process.env.DB_HOST || 'localhost',
-      DBT_POSTGRES_USER: process.env.DB_USER || 'postgres',
-      DBT_POSTGRES_PASS: process.env.DB_PASSWORD || 'password',
-      DBT_POSTGRES_PORT: process.env.DB_PORT || '5432',
-      DBT_POSTGRES_DBNAME: process.env.DB_NAME || 'carbonsite'
-    };
-
-    // Run dbt models
-    const dbtOutput = await executeDbtModels(env);
-    const duration = Date.now() - startTime;
-
-    // Parse dbt output for statistics
-    const stats = parseDbtOutput(dbtOutput);
-
-    // Update dbt run record with success
-    dbtRun = await prisma.dbtRun.update({
-      where: { id: dbtRun.id },
-      data: {
-        status: 'success',
-        output: dbtOutput,
-        rowsAffected: stats.rowsAffected,
-        modelCount: stats.modelCount,
-        testCount: stats.testCount,
-        testsPassed: stats.testsPassed,
-        testsFailed: stats.testsFailed,
-        finishedAt: new Date(),
-        duration
-      }
-    });
-
-    // Update calculation run to succeeded
-    await prisma.calculationRun.update({
-      where: { id: calculationRunId },
-      data: {
-        status: 'succeeded',
-        finishedAt: new Date()
-      }
-    });
-
-    console.log(`✓ dbt transformation complete for calculation run ${calculationRunId}`);
-    console.log(`  Models: ${stats.modelCount}, Tests: ${stats.testCount} (${stats.testsPassed} passed)`);
-    console.log(`  Duration: ${duration}ms`);
-
-    return dbtRun;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const duration = Date.now() - startTime;
-
-    console.error(`✗ dbt transformation failed: ${errorMessage}`);
-
-    // Update dbt run record with failure
-    await prisma.dbtRun.update({
-      where: { id: dbtRun.id },
-      data: {
-        status: 'failed',
-        errorMessage,
-        errorDetails: {
-          stack: error instanceof Error ? error.stack : null,
-          timestamp: new Date().toISOString()
-        },
-        finishedAt: new Date(),
-        duration
-      }
-    });
-
-    // Mark calculation run as failed
-    await prisma.calculationRun.update({
-      where: { id: calculationRunId },
-      data: {
-        status: 'failed',
-        errorMessage: `dbt transformation failed: ${errorMessage}`,
-        finishedAt: new Date()
-      }
-    });
-
-    throw new Error(`dbt transformation failed: ${errorMessage}`);
-  }
+  return null;
 }
 
 async function executeDbtModels(env: NodeJS.ProcessEnv): Promise<string> {

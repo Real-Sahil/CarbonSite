@@ -73,7 +73,7 @@ export async function POST(
       return apiError("UNAUTHORIZED", "Not authenticated", 401);
     }
 
-    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewer);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewers);
 
     const pathname = request.nextUrl.pathname;
     const isReviewEndpoint = pathname.includes("/review");

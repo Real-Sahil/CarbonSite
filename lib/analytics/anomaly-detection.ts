@@ -26,30 +26,24 @@ export async function detectOutliers(
 ): Promise<EmissionAnomaly[]> {
   const anomalies: EmissionAnomaly[] = [];
 
-  // Get calculation data grouped by category
-  const categoryData = await prisma.emissionCalculation.groupBy({
-    by: ["emissionCategoryId"],
-    where: {
-      activityRecord: {
-        organizationId,
-        ...(reportingPeriodId && { reportingPeriodId }),
-      },
-    },
-    _sum: {
-      totalCo2e: true,
-    },
-    _count: true,
-  });
+  // Get unique categories
+  const uniqueCategories = await prisma.$queryRaw<Array<{ emission_category_id: string }>>`
+    SELECT DISTINCT ar.emission_category_id
+    FROM activity_records ar
+    WHERE ar.organization_id = ${organizationId}
+      ${reportingPeriodId ? `AND ar.reporting_period_id = ${reportingPeriodId}` : ''}
+  `;
 
-  for (const cat of categoryData) {
-    if (!cat.emissionCategoryId) continue;
+  for (const cat of uniqueCategories) {
+    const categoryId = cat.emission_category_id;
+    if (!categoryId) continue;
 
-    // Get all values for this category
+    // Get all calculations for this category
     const calculations = await prisma.emissionCalculation.findMany({
       where: {
-        emissionCategoryId: cat.emissionCategoryId,
         activityRecord: {
           organizationId,
+          emissionCategoryId: categoryId,
           ...(reportingPeriodId && { reportingPeriodId }),
         },
       },
@@ -80,14 +74,14 @@ export async function detectOutliers(
       if (zScore > zScoreThreshold) {
         const record = await prisma.activityRecord.findUnique({
           where: { id: calculations[i].activityRecordId },
-          include: { category: true },
+          include: { emissionCategory: true },
         });
 
         if (record) {
           const deviation = Math.round(((value - mean) / mean) * 100);
           anomalies.push({
             recordId: record.id,
-            category: record.category?.name || "Unknown",
+            category: record.emissionCategory?.name || "Unknown",
             anomalyType: "outlier",
             severity: Math.abs(zScore) > 3 ? "high" : "medium",
             value: Math.round(value),
@@ -171,25 +165,23 @@ export async function detectUnusualPatterns(
 ): Promise<EmissionAnomaly[]> {
   const anomalies: EmissionAnomaly[] = [];
 
-  // Get scope breakdown
-  const scopeData = await prisma.dashboardAggregate.groupBy({
-    by: [], // Get all records
-    where: { organizationId },
-    _sum: {
-      scope1Total: true,
-      scope2Total: true,
-      scope3Total: true,
-      totalCo2e: true,
-    },
-  });
+  // Get scope breakdown via raw SQL
+  const scopeData = await prisma.$queryRaw<Array<{
+    scope: number;
+    total_co2e: string;
+  }>>`
+    SELECT scope, SUM(total_co2e) as total_co2e
+    FROM dashboard_aggregates
+    WHERE organization_id = ${organizationId}
+    GROUP BY scope
+  `;
 
   if (scopeData.length === 0) return anomalies;
 
-  const data = scopeData[0];
-  const scope1 = Number(data._sum.scope1Total ?? 0);
-  const scope2 = Number(data._sum.scope2Total ?? 0);
-  const scope3 = Number(data._sum.scope3Total ?? 0);
-  const total = Number(data._sum.totalCo2e ?? 0);
+  const scope1 = Number(scopeData.find(s => s.scope === 1)?.total_co2e ?? 0);
+  const scope2 = Number(scopeData.find(s => s.scope === 2)?.total_co2e ?? 0);
+  const scope3 = Number(scopeData.find(s => s.scope === 3)?.total_co2e ?? 0);
+  const total = scope1 + scope2 + scope3;
 
   if (total === 0) return anomalies;
 
@@ -249,7 +241,7 @@ async function getMonthlyEmissions(
     const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
     const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-    const aggregates = await prisma.dashboardAggregate.findMany({
+    const result = await prisma.dashboardAggregate.aggregate({
       where: {
         organizationId,
         reportingPeriod: {
@@ -262,7 +254,7 @@ async function getMonthlyEmissions(
       },
     });
 
-    const total = aggregates.reduce((sum, agg) => sum + Number(agg._sum.totalCo2e ?? 0), 0);
+    const total = Number(result._sum.totalCo2e ?? 0);
     data.push({ month: monthStart, total });
   }
 

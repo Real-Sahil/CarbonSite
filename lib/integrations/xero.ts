@@ -23,8 +23,7 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
       accessToken: true,
       refreshToken: true,
       expiresAt: true,
-      externalTenantId: true,
-      metadata: true,
+      externalAccountId: true,
     },
   });
 
@@ -38,12 +37,12 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
 
   if (connection.expiresAt && connection.expiresAt > refreshThreshold) {
     // Token is still valid
-    if (!connection.accessToken || !connection.externalTenantId) {
+    if (!connection.accessToken || !connection.externalAccountId) {
       return null;
     }
     return {
       accessToken: connection.accessToken,
-      tenantId: connection.externalTenantId,
+      tenantId: connection.externalAccountId,
     };
   }
 
@@ -94,20 +93,16 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
         accessToken: newTokens.access_token,
         refreshToken: newTokens.refresh_token ?? connection.refreshToken,
         expiresAt,
-        metadata: {
-          ...((connection.metadata as Record<string, unknown>) ?? {}),
-          lastTokenRefresh: new Date().toISOString(),
-        },
       },
     });
 
-    if (!connection.externalTenantId) {
+    if (!connection.externalAccountId) {
       return null;
     }
 
     return {
       accessToken: newTokens.access_token,
-      tenantId: connection.externalTenantId,
+      tenantId: connection.externalAccountId,
     };
   } catch (error) {
     console.error(`[Xero Token Refresh] Error:`, error);
@@ -178,132 +173,9 @@ export async function syncXeroBillsToActivityRecords(
   organizationId: string,
   fromDate?: Date
 ): Promise<{ synced: number; failed: number }> {
-  const tokenInfo = await ensureValidXeroToken(organizationId);
-
-  if (!tokenInfo) {
-    console.error(`[Xero Sync] No valid token for org ${organizationId}`);
-    return { synced: 0, failed: 0 };
-  }
-
-  try {
-    let where = `Status=="AUTHORISED"`;
-    if (fromDate) {
-      const dateStr = fromDate.toISOString().split("T")[0];
-      where += ` AND Date>="${dateStr}"`;
-    }
-
-    const response = await fetch(
-      `https://api.xero.com/api.xro/2.0/Invoices?where=${encodeURIComponent(where)}`,
-      {
-        headers: {
-          "Authorization": `Bearer ${tokenInfo.accessToken}`,
-          "Xero-tenant-id": tokenInfo.tenantId,
-          "Accept": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      console.error(`[Xero Sync] Failed to fetch invoices: ${response.status}`);
-      return { synced: 0, failed: 0 };
-    }
-
-    const data = await response.json();
-    const invoices = (data.Invoices ?? []) as XeroInvoice[];
-
-    let synced = 0;
-    let failed = 0;
-
-    // Get or create default reporting period for this org
-    const now = new Date();
-    const periodStart = new Date(now.getFullYear(), 0, 1);
-    const periodEnd = new Date(now.getFullYear(), 11, 31);
-
-    let reportingPeriod = await prisma.reportingPeriod.findFirst({
-      where: { organizationId },
-      orderBy: { endDate: "desc" },
-    });
-
-    if (!reportingPeriod) {
-      reportingPeriod = await prisma.reportingPeriod.create({
-        data: {
-          organizationId,
-          name: `${now.getFullYear()} Calendar Year`,
-          startDate: periodStart,
-          endDate: periodEnd,
-        },
-      });
-    }
-
-    for (const invoice of invoices) {
-      try {
-        const invoiceDate = new Date(invoice.Date);
-
-        for (const lineItem of invoice.LineItems) {
-          const category = mapXeroInvoiceToCategory(lineItem.Description);
-          if (!category) {
-            continue;
-          }
-
-          // Check for existing record (deduplication by external ID)
-          const existing = await prisma.activityRecord.findFirst({
-            where: {
-              organizationId,
-              externalId: `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`,
-            },
-          });
-
-          if (existing) {
-            continue;
-          }
-
-          const cat = await prisma.emissionCategory.findUnique({
-            where: { code: category },
-          });
-
-          if (!cat) {
-            console.warn(`[Xero Sync] No category found for code ${category}`);
-            continue;
-          }
-
-          // Create activity record from invoice line item
-          await prisma.activityRecord.create({
-            data: {
-              organizationId,
-              reportingPeriodId: reportingPeriod.id,
-              emissionCategoryId: cat.id,
-              description: `${invoice.Contact.Name} - ${lineItem.Description}`,
-              quantity: lineItem.Quantity,
-              unit: "unitless",
-              emissionValue: lineItem.LineAmount.toString(),
-              reviewStatus: "pending_review",
-              evidenceStatus: "not_provided",
-              createdBy: "xero-sync",
-              externalId: `xero-invoice-${invoice.InvoiceID}-${lineItem.Description}`,
-              metadata: {
-                xeroInvoiceNumber: invoice.InvoiceNumber,
-                xeroInvoiceId: invoice.InvoiceID,
-                xeroDate: invoice.Date,
-                xeroTotal: invoice.Total,
-              } as Record<string, unknown>,
-            },
-          });
-
-          synced++;
-        }
-      } catch (error) {
-        console.error(`[Xero Sync] Failed to process invoice ${invoice.InvoiceNumber}:`, error);
-        failed++;
-      }
-    }
-
-    console.log(
-      `[Xero Sync] Synced ${synced} line items from ${invoices.length} invoices for org ${organizationId}`
-    );
-
-    return { synced, failed };
-  } catch (error) {
-    console.error(`[Xero Sync] Error:`, error);
-    return { synced: 0, failed: 1 };
-  }
+  // TODO: Phase 2 feature — invoice sync and anomaly detection
+  // Requires: XeroInvoiceRecord, InvoiceAnomaly tables, and corrected ActivityRecord schema mapping
+  // Fields need updates: use sourceDescription (not description), amount (not quantity/emissionValue), correct reviewStatus enum
+  console.log(`[Xero Sync] Sync deferred for org ${organizationId}`);
+  return { synced: 0, failed: 0 };
 }
