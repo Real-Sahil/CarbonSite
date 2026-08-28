@@ -131,10 +131,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     select: { id: true, finishedAt: true, reportingPeriodId: true },
   });
 
-  // Fetch onboarding progress
-  const onboardingProgress = await prisma.onboardingProgress.findUnique({
-    where: { organizationId: orgId },
-  });
+  // Fetch onboarding progress (disabled - onboardingProgress model not yet added)
+  const onboardingProgress = null;
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
   const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch] = await Promise.all([

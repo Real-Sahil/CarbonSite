@@ -197,3 +197,36 @@ export function supplierDataRequestEmail(params: {
 
   return { subject, html, text };
 }
+
+export function supplierDataApprovedEmail(params: {
+  recipientName: string;
+  orgName: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Your emissions data submission was approved`;
+  const text = `Hi ${params.recipientName},\n\nYour emissions data submission for ${params.orgName} was approved.\n\nThank you!`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your emissions data submission for <strong>${params.orgName}</strong> was approved.</p><p>Thank you!</p>`;
+  return { subject, html, text };
+}
+
+export function supplierDataRejectedEmail(params: {
+  recipientName: string;
+  orgName: string;
+  reason?: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Your emissions data submission needs revision`;
+  const reasonText = params.reason ? `\n\nReason: ${params.reason}` : "";
+  const reasonHtml = params.reason ? `<p><strong>Reason:</strong> ${params.reason}</p>` : "";
+  const text = `Hi ${params.recipientName},\n\nYour emissions data submission for ${params.orgName} needs revision.${reasonText}`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your emissions data submission for <strong>${params.orgName}</strong> needs revision.</p>${reasonHtml}`;
+  return { subject, html, text };
+}
+
+export function supplierDataFlaggedEmail(params: {
+  recipientName: string;
+  orgName: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Your emissions data submission is under review`;
+  const text = `Hi ${params.recipientName},\n\nYour emissions data submission for ${params.orgName} is currently under review by our team.`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your emissions data submission for <strong>${params.orgName}</strong> is currently under review by our team.</p>`;
+  return { subject, html, text };
+}

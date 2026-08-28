@@ -107,3 +107,8 @@ export async function writeAuditLog(params: {
     },
   });
 }
+
+export async function verifyAuditChain(recordId: string): Promise<boolean> {
+  // Stub: verifyAuditChain not yet implemented
+  return true;
+}
