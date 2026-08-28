@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { calculationLogger } from "@/lib/logger";
 import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
@@ -273,8 +274,15 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
     });
   } catch (err) {
-    console.error(`[calculations] Error on run ${calculationRunId}:`, err);
-    const reason = err instanceof Error ? err.message.slice(0, 500) : "Unknown error";
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    const errorStack = err instanceof Error ? err.stack : "";
+    calculationLogger.error("Calculation run failed", {
+      calculationRunId,
+      orgId,
+      error: errorMsg,
+      stack: errorStack,
+    });
+    const reason = errorMsg.slice(0, 500);
     await prisma.calculationRun.update({
       where: { id: calculationRunId },
       data: { status: "failed", finishedAt: new Date(), errorMessage: reason },
@@ -491,10 +499,11 @@ async function autoCreateSupplierDataRequests(
       // to send emails manually or integrate async email job.
     } catch (err) {
       // Log but don't fail the calculation run if request creation fails
-      console.warn(
-        `[calculations] Failed to create SupplierDataRequest for ${supplierName}/${categoryCode}:`,
-        err,
-      );
+      calculationLogger.warn("Failed to create SupplierDataRequest", {
+        supplierName,
+        categoryCode,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 }

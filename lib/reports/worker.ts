@@ -70,20 +70,30 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
 
     try {
       const { html, pdfkitData, xmlBuffer } = await renderForType(report);
-      console.log(`[reports] Rendering complete (reportId=${reportId}, has pdfkitData=${!!pdfkitData})`);
+      reportLogger.info("Report rendering complete", {
+        reportId,
+        hasPdfKitData: !!pdfkitData,
+      });
 
       let csvBuffer: Buffer | null = null;
       if (report.type !== "national_toms" && report.type !== "cbam") {
         const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
         csvBuffer = buildCsv(calculations, report);
-        console.log(`[reports] CSV buffer built (reportId=${reportId}, size=${csvBuffer.length} bytes)`);
+        reportLogger.info("CSV buffer built", {
+          reportId,
+          csvSizeBytes: csvBuffer.length,
+        });
       }
 
       const rawPdfBuffer = pdfkitData
         ? await generateReportPdf(pdfkitData)
         : await renderPdf(html);
       const pdfChecksum = createHash("sha256").update(rawPdfBuffer).digest("hex");
-      console.log(`[reports] PDF generated (reportId=${reportId}, size=${rawPdfBuffer.length} bytes, checksum=${pdfChecksum})`);
+      reportLogger.info("PDF generated", {
+        reportId,
+        pdfSizeBytes: rawPdfBuffer.length,
+        checksum: pdfChecksum,
+      });
 
       // Create verification token (expires in 90 days)
       const verificationTokenData = await prisma.reportVerificationToken.upsert({
@@ -95,7 +105,11 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
           expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
         },
       });
-      console.log(`[reports] Verification token created (reportId=${reportId}, token=${verificationTokenData.token.slice(0, 8)}...)`);
+      reportLogger.info("Verification token created", {
+        reportId,
+        tokenPreview: verificationTokenData.token.slice(0, 8),
+        expiresAt: verificationTokenData.expiresAt,
+      });
 
       const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/public/reports/verify/${verificationTokenData.token}`;
 
@@ -106,37 +120,66 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         generatedAt: new Date(),
         orgId,
       });
-      console.log(`[reports] Audit metadata stamped (reportId=${reportId})`);
+      reportLogger.info("Audit metadata stamped", {
+        reportId,
+        methodology: report.snapshot.calculationRun.methodologyVersion.name,
+      });
 
       // Add QR code to PDF footer
       pdfBuffer = await addQrCodeToFooter(pdfBuffer, {
         verificationUrl,
         verificationTokenId: verificationTokenData.id,
       });
-      console.log(`[reports] QR code added to footer (reportId=${reportId})`);
+      reportLogger.info("QR code added to footer", {
+        reportId,
+        verificationTokenId: verificationTokenData.id,
+      });
 
       // Store PDF with validation
       pdfKey = keys.reportPdf(orgId, reportId);
-      console.log(`[reports] Storing PDF (reportId=${reportId}, key=${pdfKey})`);
+      reportLogger.info("Storing PDF to R2", {
+        reportId,
+        storageKey: pdfKey,
+      });
       await putObject(pdfKey, pdfBuffer, "application/pdf");
-      console.log(`[reports] PDF stored successfully (reportId=${reportId})`);
+      reportLogger.info("PDF stored successfully", {
+        reportId,
+        storageKey: pdfKey,
+        sizeBytes: pdfBuffer.length,
+      });
 
       let csvChecksum: string | undefined;
       if (csvBuffer) {
         csvKey = keys.reportCsv(orgId, reportId);
         csvChecksum = createHash("sha256").update(csvBuffer).digest("hex");
-        console.log(`[reports] Storing CSV (reportId=${reportId}, key=${csvKey})`);
+        reportLogger.info("Storing CSV to R2", {
+          reportId,
+          storageKey: csvKey,
+        });
         await putObject(csvKey, csvBuffer, "text/csv");
-        console.log(`[reports] CSV stored successfully (reportId=${reportId})`);
+        reportLogger.info("CSV stored successfully", {
+          reportId,
+          storageKey: csvKey,
+          checksum: csvChecksum,
+          sizeBytes: csvBuffer.length,
+        });
       }
 
       let xmlChecksum: string | undefined;
       if (xmlBuffer) {
         xmlKey = keys.reportXml(orgId, reportId);
         xmlChecksum = createHash("sha256").update(xmlBuffer).digest("hex");
-        console.log(`[reports] Storing XML (reportId=${reportId}, key=${xmlKey})`);
+        reportLogger.info("Storing XML to R2", {
+          reportId,
+          storageKey: xmlKey,
+        });
         await putObject(xmlKey, xmlBuffer, "application/xml");
-        console.log(`[reports] XML stored successfully (reportId=${reportId})`);
+        reportLogger.info("XML stored successfully", {
+          reportId,
+          storageKey: xmlKey,
+          checksum: xmlChecksum,
+          sizeBytes: xmlBuffer.length,
+        });
       }
 
       // Validate storage keys exist before marking ready
@@ -158,7 +201,10 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         },
         select: { createdByUserId: true, type: true },
       });
-      console.log(`[reports] Report status updated to ready (reportId=${reportId})`);
+      reportLogger.info("Report status updated to ready", {
+        reportId,
+        reportType: updated.type,
+      });
 
       enqueueNotification({
         type: "report_ready",
