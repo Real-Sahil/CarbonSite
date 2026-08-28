@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { calculationLogger } from "@/lib/logger";
+import { triggerFacilityRiskFlag } from "@/lib/automation/n8n-client";
 import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
@@ -273,6 +274,11 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       where: { id: calculationRunId },
       data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
     });
+
+    // Trigger n8n workflow for facility risk flagging
+    await triggerFacilityRiskFlag(orgId, calculationRunId).catch((err) =>
+      console.error(`[calculations] Failed to trigger n8n facility risk workflow:`, err)
+    );
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     const errorStack = err instanceof Error ? err.stack : "";

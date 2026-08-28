@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { putObject, keys } from "@/lib/storage";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { reportLogger } from "@/lib/logger";
+import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
 import type { ReportData } from "./template";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { getReportHandler, type ReportContext } from "./registry";
@@ -218,6 +219,17 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
           error: err instanceof Error ? err.message : String(err),
         })
       );
+
+      // Trigger n8n workflow for report-ready notifications
+      await triggerReportReadyNotification(
+        orgId,
+        reportId,
+        updated.type,
+        report.createdBy.email
+      ).catch((err) => reportLogger.error("Failed to trigger n8n workflow", {
+        reportId,
+        error: err instanceof Error ? err.message : String(err),
+      }));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       const errorStack = err instanceof Error ? err.stack : "";
