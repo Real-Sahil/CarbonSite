@@ -151,7 +151,6 @@ model Organization {
   sites               Site[]              @relation("OrgSites")
   projects            Project[]           @relation("OrgProjects")
   branding            TenantBranding?
-  onboarding          OnboardingProgress?
   webhooks            Webhook[]
   epdRecords          EpdRecord[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
@@ -239,26 +238,6 @@ model TenantBranding {
   @@map("tenant_branding")
 }
 
-// Onboarding progress tracker for first-time org setup
-model OnboardingProgress {
-  id             String   @id @default(cuid())
-  organizationId String   @unique @map("organization_id")
-
-  // Step completion state (JSON): { "step_key": { completed: bool, skipped: bool, completedAt?: string } }
-  stepState      Json     @default("{}") @map("step_state")
-
-  // Overall flow state: not_started | in_progress | completed
-  state          String   @default("not_started")
-
-  completedAt    DateTime? @map("completed_at")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@map("onboarding_progress")
-}
-
 model OrganizationMembership {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
@@ -343,7 +322,6 @@ model FieldWorkerAssignment {
 model Facility {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
-  projectId      String?  @map("project_id")
   name           String
   country        String?
   region         String?
@@ -351,14 +329,12 @@ model Facility {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  project         Project?              @relation(fields: [projectId], references: [id], onDelete: Cascade)
   activityRecords ActivityRecord[]
   aggregates      DashboardAggregate[]
   submissions     FieldSubmission[]
   fieldWorkerAssignments FieldWorkerAssignment[]
 
   @@index([organizationId])
-  @@index([projectId])
   @@map("facilities")
 }
 
@@ -1246,31 +1222,26 @@ enum ProjectStatus {
 }
 
 model Project {
-  id              String         @id @default(cuid())
-  organizationId  String         @map("organization_id")
-  contractId      String         @map("contract_id")
-  parentProjectId String?        @map("parent_project_id")
-  name            String
-  projectCode     String?        @map("project_code")
-  description     String?
-  startDate       DateTime?      @map("start_date") @db.Date
-  endDate         DateTime?      @map("end_date") @db.Date
-  status          ProjectStatus  @default(active)
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
+  id             String        @id @default(cuid())
+  organizationId String        @map("organization_id")
+  contractId     String        @map("contract_id")
+  name           String
+  projectCode    String?       @map("project_code")
+  description    String?
+  startDate      DateTime?     @map("start_date") @db.Date
+  endDate        DateTime?     @map("end_date") @db.Date
+  status         ProjectStatus @default(active)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
-  contract        Contract       @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  organization    Organization   @relation("OrgProjects", fields: [organizationId], references: [id], onDelete: Cascade)
-  parentProject   Project?       @relation("ProjectHierarchy", fields: [parentProjectId], references: [id], onDelete: Cascade)
-  childProjects   Project[]      @relation("ProjectHierarchy")
-  sites           Site[]
-  facilities      Facility[]
+  contract     Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  organization Organization @relation("OrgProjects", fields: [organizationId], references: [id], onDelete: Cascade)
+  sites        Site[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
-  carbonBudget    CarbonBudget?
-  wasteRecords    WasteRecord[]
+  carbonBudget  CarbonBudget?
+  wasteRecords  WasteRecord[]
 
   @@index([organizationId, contractId])
-  @@index([parentProjectId])
   @@map("projects")
 }
 
@@ -1278,7 +1249,6 @@ model Site {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
   projectId      String   @map("project_id")
-  parentSiteId   String?  @map("parent_site_id")
   name           String
   siteCode       String?  @map("site_code")
   postcode       String?
@@ -1288,17 +1258,14 @@ model Site {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  project         Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  organization    Organization      @relation("OrgSites", fields: [organizationId], references: [id], onDelete: Cascade)
-  parentSite      Site?             @relation("SiteHierarchy", fields: [parentSiteId], references: [id], onDelete: Cascade)
-  childSites      Site[]            @relation("SiteHierarchy")
-  activityRecords ActivityRecord[]
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization     Organization      @relation("OrgSites", fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecords  ActivityRecord[]
   fieldSubmissions FieldSubmission[] @relation("FieldSubmissionSite")
-  inviteLinks     InviteLink[]
+  inviteLinks      InviteLink[]
   workerAssignments FieldWorkerSiteAssignment[]
 
   @@index([organizationId, projectId])
-  @@index([parentSiteId])
   @@map("sites")
 }
 
@@ -1816,7 +1783,6 @@ model SupplierDataRequest {
   submittedAt      DateTime? @map("submitted_at")
   expiresAt        DateTime  @map("expires_at")
   notes            String?
-  submittedData    Json?     @map("submitted_data")
   createdByUserId  String    @map("created_by_user_id")
   createdAt        DateTime  @default(now()) @map("created_at")
 
