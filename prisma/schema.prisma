@@ -70,6 +70,7 @@ model User {
   anomaliesAcknowledged             SupplierAnomaly[]            @relation("AnomalyAcknowledger")
   scope3EstimatesAccepted           Scope3Estimate[]             @relation("Scope3EstimatesAccepted")
   ssoSessions                       SsoSession[]                 @relation("SsoSessions")
+  invoiceAnomaliesResolved          InvoiceAnomaly[]             @relation("InvoiceAnomalyResolutions")
 
   platformMembership PlatformMembership?
 
@@ -213,6 +214,7 @@ model Organization {
   ssoConfiguration            SsoConfiguration?         @relation("SsoConfigurations")
   ssoSessions                 SsoSession[]              @relation("SsoSessions")
   xeroSyncLogs                XeroSyncLog[]
+  invoiceRecords              InvoiceRecord[]           @relation("InvoiceRecords")
 
   @@map("organizations")
 }
@@ -2789,4 +2791,104 @@ model SsoSession {
   @@index([organizationId, provider])
   @@unique([organizationId, providerUserId])
   @@map("sso_sessions")
+}
+
+// ─── Invoice Anomaly Detection ───────────────────────────────────────────────
+
+enum InvoiceAnomalyType {
+  duplicate
+  qty_mismatch
+  date_inconsistency
+  price_spike
+  missing_grn
+  over_billing
+  currency_mismatch
+  unmatched_invoice
+
+  @@map("invoice_anomaly_type")
+}
+
+enum AnomalySeverity {
+  info
+  warning
+  critical
+
+  @@map("anomaly_severity")
+}
+
+enum InvoiceReconciliationStatus {
+  matched
+  over_received
+  under_received
+  partial_match
+
+  @@map("invoice_reconciliation_status")
+}
+
+model InvoiceRecord {
+  id                     String                    @id @default(cuid())
+  organizationId         String                    @map("organization_id")
+  externalInvoiceId      String                    @map("external_invoice_id")
+  sourceSystem           String                    @map("source_system")
+  vendorId               String                    @map("vendor_id")
+  vendorName             String                    @map("vendor_name")
+  invoiceDate            DateTime                  @map("invoice_date")
+  receivedDate           DateTime?                 @map("received_date")
+  totalAmount            Decimal                   @map("total_amount") @db.Decimal(15, 2)
+  lineItems              Json?                     @map("line_items")
+  reconciliationStatus   String                    @default("unmatched") @map("reconciliation_status")
+  processed              Boolean                   @default(false)
+  createdAt              DateTime                  @default(now()) @map("created_at")
+  updatedAt              DateTime                  @updatedAt @map("updated_at")
+
+  organization    Organization                @relation("InvoiceRecords", fields: [organizationId], references: [id], onDelete: Cascade)
+  anomalies       InvoiceAnomaly[]            @relation("InvoiceAnomalies")
+  reconciliations InvoiceReconciliation[]     @relation("InvoiceReconciliations")
+
+  @@unique([organizationId, sourceSystem, externalInvoiceId])
+  @@index([organizationId])
+  @@index([organizationId, sourceSystem, processed])
+  @@index([organizationId, vendorId])
+  @@index([organizationId, invoiceDate])
+  @@map("invoice_records")
+}
+
+model InvoiceAnomaly {
+  id               String   @id @default(cuid())
+  invoiceId        String   @map("invoice_id")
+  anomalyType      String   @map("anomaly_type")
+  severity         String   @map("severity")
+  reason           String
+  resolution       String?
+  resolutionNotes  String?  @map("resolution_notes")
+  resolvedByUserId String?  @map("resolved_by_user_id")
+  resolvedAt       DateTime? @map("resolved_at")
+  detectedAt       DateTime @default(now()) @map("detected_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  invoice      InvoiceRecord @relation("InvoiceAnomalies", fields: [invoiceId], references: [id], onDelete: Cascade)
+  resolvedBy   User?         @relation("InvoiceAnomalyResolutions", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+  @@index([severity, detectedAt])
+  @@index([anomalyType])
+  @@map("invoice_anomalies")
+}
+
+model InvoiceReconciliation {
+  id               String   @id @default(cuid())
+  invoiceId        String   @map("invoice_id")
+  lineItemId       String   @map("line_item_id")
+  quantityOrdered  Int?     @map("quantity_ordered")
+  quantityReceived Int?     @map("quantity_received")
+  quantityInvoiced Int      @map("quantity_invoiced")
+  matchStatus      String?  @map("match_status")
+  discrepancyPercent Decimal? @map("discrepancy_percent") @db.Decimal(5, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  invoice InvoiceRecord @relation("InvoiceReconciliations", fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([matchStatus])
+  @@map("invoice_reconciliations")
 }
