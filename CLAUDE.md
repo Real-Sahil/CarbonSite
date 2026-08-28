@@ -13,7 +13,8 @@ CarbonSite is a multi-tenant GHG emissions tracking platform for small-to-mid-ma
 - **Frontend/Backend:** Next.js 16 (App Router) + React 19 + TypeScript
 - **Auth:** Better Auth (Postgres sessions for web; JWT for Flutter mobile)
 - **Database:** PostgreSQL via Prisma ORM. Dev: local Postgres. Prod: Neon free tier (no credit card).
-- **Queue/Workers:** `pg-boss` — PostgreSQL-based job queue. No Redis, no Docker. Uses the same Postgres instance.
+- **Queue/Workers:** `pg-boss` — PostgreSQL-based job queue. No Docker. Uses the same Postgres instance.
+- **Rate Limiting:** Fixed-window counters backed by Redis (optional) with automatic Postgres fallback. Persists rate limits across serverless cold starts. Recommended for production.
 - **Object Storage:** Cloudflare R2 (S3-compatible, free tier — 10 GB/month, zero egress, no credit card). Dev: local filesystem adapter.
 - **Email:** Resend (3k/month free, 100/day). Dev: log to console.
 - **Push Notifications:** Firebase Cloud Messaging (FCM) — free, Google account only.
@@ -24,8 +25,9 @@ CarbonSite is a multi-tenant GHG emissions tracking platform for small-to-mid-ma
 - **UI:** shadcn/ui + Tailwind CSS 4 + `motion` (animations)
 - **Flutter state:** Riverpod; routing: go_router; HTTP: Dio; offline: drift/SQLite; OCR: google_mlkit_text_recognition (on-device, free, offline)
 
-**No Docker. No Redis. No Python services. No paid subscriptions.**
+**No Docker. No Python services. No paid subscriptions.**
 External accounts required: Neon (Postgres) + Cloudflare (R2) + Resend (email) + Google (FCM).
+Optional: Redis for production rate limiting (recommended but automatic Postgres fallback provided).
 
 ## Commands
 
@@ -277,6 +279,14 @@ All services are free tier, no credit card required except Cloudflare R2.
 - Flutter: `firebase_messaging` package handles FCM token registration
 - Server: `firebase-admin` npm package sends push from the notifications worker
 - Set `FIREBASE_SERVICE_ACCOUNT_JSON` in `.env`
+
+### Redis (optional but recommended for production rate limiting)
+- Sign up at upstash.com, aws.amazon.com (ElastiCache), heroku.com, or redis.com — free or low-cost managed options
+- Used by: Rate limiting for API endpoints (`lib/security/rate-limit-async.ts`) with automatic Postgres fallback
+- Rate limit buckets persist across serverless cold starts (essential for Vercel/Cloudflare Workers deployments)
+- Connection: Set `REDIS_URL` in `.env` — format: `redis://[:password@]host:port` or `rediss://...` for TLS
+- For local dev, leave `REDIS_URL` unset — rate limiting falls back to Postgres automatically
+- Admin monitoring: Check rate limiter health at `GET /api/admin/health/rate-limiter` (returns status, Redis latency, fallback reason)
 
 ### DocuSeal (optional, post-MVP)
 For digital signing of supplier declarations and audit reports. Can be added later — for MVP, a consent checkbox replaces document signing. See https://github.com/docusealco/docuseal when ready.

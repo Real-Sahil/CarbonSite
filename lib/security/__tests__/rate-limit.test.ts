@@ -115,3 +115,102 @@ describe("rateLimitKey", () => {
     expect(rateLimitKey("org-1", "act")).toBe("org:org-1:act:anonymous");
   });
 });
+
+describe("rateLimitRequest Postgres fallback", () => {
+  const makeReq = (ip = "203.0.113.10") =>
+    new NextRequest("https://example.test/api", {
+      headers: { "x-forwarded-for": ip },
+    });
+
+  test("falls back to Postgres when Redis unavailable", async () => {
+    // Simulate Postgres response
+    (prisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { count: 1, reset_at: new Date(Date.now() + 60_000) },
+    ]);
+
+    const result = await rateLimitRequest(makeReq(), {
+      key: "test-fallback",
+      limit: 5,
+      windowMs: 60_000,
+    });
+
+    // Should succeed because count (1) <= limit (5)
+    expect(result).toBeNull();
+
+    // Verify Postgres was queried
+    expect(prisma.$queryRaw).toHaveBeenCalled();
+  });
+
+  test("handles Postgres connection errors gracefully (fail-open)", async () => {
+    (prisma.$queryRaw as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error("Connection timeout"),
+    );
+
+    const result = await rateLimitRequest(makeReq(), {
+      key: "test-error",
+      limit: 5,
+      windowMs: 60_000,
+    });
+
+    // Should fail-open (allow request) on DB error
+    expect(result).toBeNull();
+  });
+
+  test("respects window reset when checking Postgres", async () => {
+    const now = Date.now();
+    const expiredResetAt = new Date(now - 1000); // Expired window
+    const futureResetAt = new Date(now + 60_000); // New reset time after reset
+
+    (prisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { count: 1, reset_at: futureResetAt }, // Postgres resets to count=1 when window expired
+    ]);
+
+    const result = await rateLimitRequest(makeReq(), {
+      key: "test-reset",
+      limit: 5,
+      windowMs: 60_000,
+    });
+
+    // When reset_at is expired, Postgres atomically resets count to 1.
+    // The returned count=1 <= limit=5, so request is allowed.
+    expect(result).toBeNull();
+  });
+});
+
+describe("Rate limiting cold-start persistence", () => {
+  const makeReq = (ip = "192.0.2.42") =>
+    new NextRequest("https://example.test/api", {
+      headers: { "x-forwarded-for": ip },
+    });
+
+  test("persists rate limit state across cold starts when Postgres is available", async () => {
+    // Simulate: First request after "cold start" finds existing bucket in Postgres
+    (prisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { count: 4, reset_at: new Date(Date.now() + 30_000) },
+    ]);
+
+    const result = await rateLimitRequest(makeReq(), {
+      key: "cold-start-test",
+      limit: 5,
+      windowMs: 60_000,
+    });
+
+    expect(result).toBeNull(); // count (4) <= limit (5), allowed
+  });
+
+  test("blocks request on cold start if Postgres shows limit exceeded", async () => {
+    // Simulate: Cold start, Postgres has count from previous requests
+    (prisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { count: 6, reset_at: new Date(Date.now() + 15_000) },
+    ]);
+
+    const result = await rateLimitRequest(makeReq("192.0.2.99"), {
+      key: "cold-start-blocked",
+      limit: 5,
+      windowMs: 60_000,
+    });
+
+    expect(result?.status).toBe(429);
+    expect(result?.headers.get("Retry-After")).toBeTruthy();
+  });
+});
