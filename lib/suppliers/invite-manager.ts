@@ -22,13 +22,22 @@ export async function resendSupplierInvite(params: {
   if (invite.organizationId !== orgId) throw new Error("Unauthorized");
   if (new Date() > invite.expiresAt) throw new Error("Invite has expired");
 
+  // Fetch the current/most recent reporting period for the org
+  const reportingPeriod = await prisma.reportingPeriod.findFirst({
+    where: { organizationId: orgId },
+    orderBy: { endDate: "desc" },
+    select: { label: true },
+  });
+
+  const reportingPeriodLabel = reportingPeriod?.label || "Current Period";
+
   // Re-send the invite email
   const emailPayload = supplierInviteEmail({
     supplierEmail: invite.email,
     supplierName: invite.companyName || undefined,
     inviteToken: invite.token,
     categoryName: "Data Request",
-    reportingPeriodLabel: "Q3 2026", // TODO: get from context if available
+    reportingPeriodLabel,
     orgName: orgName || invite.organization.name || "Organization",
   });
 

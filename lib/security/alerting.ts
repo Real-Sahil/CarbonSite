@@ -14,6 +14,7 @@
 
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
+import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { Prisma } from "@prisma/client";
 
 type AuditAlertType =
@@ -162,12 +163,41 @@ export async function raiseAlert(alert: AuditAlert): Promise<void> {
     }
   }
 
-  // TODO: In production, enqueue a notification job for admins:
-  // await enqueueJob('notifications', {
-  //   type: 'security_alert',
-  //   organizationId: alert.organizationId,
-  //   alert,
-  // });
+  // Enqueue notification jobs for org admins
+  if (alert.organizationId) {
+    try {
+      const admins = await prisma.organizationMembership.findMany({
+        where: {
+          organizationId: alert.organizationId,
+          role: "admin",
+          terminatedAt: null,
+        },
+        select: { userId: true },
+      });
+
+      for (const admin of admins) {
+        await enqueueNotification({
+          type: "security_alert",
+          recipientUserId: admin.userId,
+          orgId: alert.organizationId,
+          resourceId: alert.type,
+          metadata: {
+            alertType: alert.type,
+            severity: alert.severity,
+            message: alert.message,
+            ...alert.metadata,
+          },
+        }).catch((err) =>
+          console.error(
+            `[security-alerting] Failed to enqueue notification for admin ${admin.userId}:`,
+            err,
+          ),
+        );
+      }
+    } catch (err) {
+      console.error("[security-alerting] Failed to enqueue admin notifications:", err);
+    }
+  }
 
   // Audit log the alert itself for compliance/review
   await writeAuditLog({

@@ -3,6 +3,7 @@
 // Alerts org admins before the SLA is breached (5 days before due date).
 
 import { prisma } from "@/lib/db";
+import { enqueueNotification } from "@/lib/jobs/queues/index";
 
 const ALERT_WINDOW_DAYS = 5; // Alert 5 days before due date
 
@@ -64,19 +65,33 @@ export async function processDsarSlaMonitoring(): Promise<void> {
         },
       }).catch(() => null);
 
-      // TODO: In production, enqueue notification jobs for each admin:
-      // for (const admin of admins) {
-      //   await enqueueNotification({
-      //     type: "dsar_sla_alert",
-      //     recipientUserId: admin.user.id,
-      //     orgId: request.organizationId,
-      //     resourceId: request.id,
-      //     metadata: {
-      //       daysRemaining,
-      //       subjectEmail: request.user.email,
-      //     },
-      //   });
-      // }
+      // Enqueue notification jobs for each org admin
+      const admins = await prisma.organizationMembership.findMany({
+        where: {
+          organizationId: request.organizationId,
+          role: "admin",
+          terminatedAt: null,
+        },
+        select: { userId: true },
+      });
+
+      for (const admin of admins) {
+        await enqueueNotification({
+          type: "dsar_sla_alert",
+          recipientUserId: admin.userId,
+          orgId: request.organizationId,
+          resourceId: request.id,
+          metadata: {
+            daysRemaining,
+            subjectEmail: request.user.email,
+          },
+        }).catch((err) =>
+          console.error(
+            `[dsar-sla-monitoring] Failed to enqueue notification for admin ${admin.userId}:`,
+            err,
+          ),
+        );
+      }
     }
 
     // Check for overdue requests (past due date)
