@@ -6,12 +6,21 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createActivityRecordSchema } from "@/lib/validation/records";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 type Params = { params: Promise<{ orgId: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    // Log deprecation warning if applicable
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const url = new URL(_req.url);
@@ -54,7 +63,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const data = hasMore ? records.slice(0, take) : records;
     const nextCursor = hasMore ? data[data.length - 1].id : null;
 
-    return NextResponse.json({ data, nextCursor, total });
+    return json({ data, nextCursor, total }, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -63,6 +72,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
     const { session } = await requireOrgMember(orgId, "admin", "editor");
 
     const body = createActivityRecordSchema.parse(await req.json());
@@ -139,7 +150,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       metadata: { unit: record.unit, emissionCategoryId: record.emissionCategoryId },
     });
 
-    return NextResponse.json(record, { status: 201 });
+    return json(record, { status: 201, version });
   } catch (err) {
     return handleRouteError(err);
   }

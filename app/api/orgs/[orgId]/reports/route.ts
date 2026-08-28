@@ -6,6 +6,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { dispatchReport } from "@/lib/jobs/dispatch";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { createHash } from "crypto";
 import { z } from "zod";
 
@@ -39,6 +40,13 @@ const createReportSchema = z.object({
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const url = new URL(req.url);
@@ -64,7 +72,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     const hasMore = reports.length > take;
     const data = hasMore ? reports.slice(0, take) : reports;
-    return NextResponse.json({ data, nextCursor: hasMore ? data[data.length - 1].id : null, total });
+    return json({ data, nextCursor: hasMore ? data[data.length - 1].id : null, total }, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -73,6 +81,8 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
     const { session } = await requireOrgMember(orgId, "admin", "editor");
 
     const body = createReportSchema.parse(await req.json());
@@ -98,7 +108,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       // For idempotency: return existing report if queued/generating.
       // If failed/ready, allow retry by deleting and recreating.
       if (existing.status === "queued" || existing.status === "generating") {
-        return NextResponse.json(existing);
+        return json(existing, { version });
       }
       // Delete the old report so we can retry with a new one
       await prisma.report.delete({ where: { id: existing.id } });
@@ -142,7 +152,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           where: { requestHash },
           select: { id: true, status: true },
         });
-        if (race) return NextResponse.json(race);
+        if (race) return json(race, { version });
       }
       throw err; // re-throw; outer handler returns generic message
     }
@@ -171,7 +181,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       metadata: { type: body.type, snapshotId: body.snapshotId },
     });
 
-    return NextResponse.json(report, { status: 202 });
+    return json(report, { status: 202, version });
   } catch (err) {
     return handleRouteError(err);
   }
