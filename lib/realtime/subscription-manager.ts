@@ -1,87 +1,85 @@
-/**
- * In-memory pub/sub manager for real-time dashboard updates.
- * Broadcasts calculation completion events to all connected clients.
- */
+// In-memory pub/sub for real-time dashboard updates
+// Broadcasts calculation completions to connected SSE clients
+
+interface SubscriberCallback {
+  (data: DashboardUpdate): void;
+}
 
 export interface DashboardUpdate {
-  timestamp: Date;
-  orgId: string;
-  aggregates: {
-    totalCo2e: number;
-    scope1: number;
-    scope2: number;
-    scope3: number;
-    byCategory: Record<string, number>;
+  type: "calculation_progress" | "snapshot_published" | "report_ready" | "error";
+  organizationId: string;
+  data: Record<string, unknown>;
+  timestamp: string;
+}
+
+// Map of organizationId -> Set of subscriber callbacks
+const subscribers = new Map<string, Set<SubscriberCallback>>();
+
+/**
+ * Subscribe to real-time dashboard updates for an organization
+ * Returns unsubscribe function
+ */
+export function subscribeToDashboardUpdates(
+  organizationId: string,
+  callback: SubscriberCallback
+): () => void {
+  if (!subscribers.has(organizationId)) {
+    subscribers.set(organizationId, new Set());
+  }
+
+  const orgSubscribers = subscribers.get(organizationId)!;
+  orgSubscribers.add(callback);
+
+  // Return unsubscribe function
+  return () => {
+    orgSubscribers.delete(callback);
+    if (orgSubscribers.size === 0) {
+      subscribers.delete(organizationId);
+    }
   };
-  calculationRunId: string;
 }
 
-type SubscriptionCallback = (update: DashboardUpdate) => void;
+/**
+ * Broadcast a dashboard update to all subscribers for an organization
+ */
+export function broadcastDashboardUpdate(update: DashboardUpdate): void {
+  const orgSubscribers = subscribers.get(update.organizationId);
 
-interface Subscription {
-  orgId: string;
-  callback: SubscriptionCallback;
-}
+  if (!orgSubscribers) {
+    return;
+  }
 
-class SubscriptionManager {
-  private subscriptions: Map<string, Subscription[]> = new Map();
-
-  /**
-   * Subscribe to dashboard updates for an organization.
-   * Returns unsubscribe function.
-   */
-  public subscribe(orgId: string, callback: SubscriptionCallback): () => void {
-    if (!this.subscriptions.has(orgId)) {
-      this.subscriptions.set(orgId, []);
+  // Send update to all subscribers
+  orgSubscribers.forEach((callback) => {
+    try {
+      callback(update);
+    } catch (error) {
+      console.error("Error calling dashboard subscriber:", error);
     }
-
-    const subscription: Subscription = { orgId, callback };
-    const subs = this.subscriptions.get(orgId)!;
-    subs.push(subscription);
-
-    // Return unsubscribe function
-    return () => {
-      const index = subs.indexOf(subscription);
-      if (index > -1) {
-        subs.splice(index, 1);
-      }
-      // Clean up empty org subscriptions
-      if (subs.length === 0) {
-        this.subscriptions.delete(orgId);
-      }
-    };
-  }
-
-  /**
-   * Broadcast update to all subscribers of an organization.
-   */
-  public broadcast(update: DashboardUpdate): void {
-    const subs = this.subscriptions.get(update.orgId);
-    if (!subs) return;
-
-    for (const sub of subs) {
-      try {
-        sub.callback(update);
-      } catch (err) {
-        console.error(`Error calling subscription callback: ${err}`);
-      }
-    }
-  }
-
-  /**
-   * Get active subscription count for an org.
-   */
-  public getSubscriptionCount(orgId: string): number {
-    return this.subscriptions.get(orgId)?.length ?? 0;
-  }
-
-  /**
-   * Clear all subscriptions (useful for testing).
-   */
-  public clear(): void {
-    this.subscriptions.clear();
-  }
+  });
 }
 
-// Singleton instance
-export const subscriptionManager = new SubscriptionManager();
+/**
+ * Get subscriber count for an organization (for monitoring)
+ */
+export function getSubscriberCount(organizationId: string): number {
+  return subscribers.get(organizationId)?.size || 0;
+}
+
+/**
+ * Get total active subscriptions across all orgs
+ */
+export function getTotalSubscriptions(): number {
+  let total = 0;
+  subscribers.forEach((subs) => {
+    total += subs.size;
+  });
+  return total;
+}
+
+/**
+ * Clear all subscriptions (for testing/cleanup)
+ */
+export function clearAllSubscriptions(): void {
+  subscribers.clear();
+}
