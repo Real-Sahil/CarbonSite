@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     // Log workflow execution
     await writeAuditLog({
       organizationId: payload.orgId,
-      action: 'automation.workflow_executed',
+      action: 'integration.connected',
       resourceType: 'n8n_workflow',
       resourceId: payload.workflowName,
       metadata: {
@@ -174,7 +174,7 @@ async function handleSubmissionApproval(
         organizationId: payload.orgId,
       },
       data: {
-        reviewStatus: 'approved',
+        status: 'approved',
         reviewedAt: new Date(),
       },
     });
@@ -214,7 +214,7 @@ async function handleAnomalyEscalation(
         organizationId: payload.orgId,
       },
       data: {
-        reviewStatus: 'pending_review',
+        reviewStatus: 'in_review',
         assumptionNotes: `[Auto-flagged] Anomaly detected with severity: ${payload.data.severity}`,
         updatedAt: new Date(),
       },

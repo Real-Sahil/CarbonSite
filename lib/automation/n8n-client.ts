@@ -29,6 +29,7 @@ export async function triggerN8nWorkflow(
     const body: WorkflowPayload = {
       workflowName,
       timestamp: new Date().toISOString(),
+      orgId: payload.orgId,
       ...payload,
     };
 
