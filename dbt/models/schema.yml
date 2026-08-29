@@ -119,3 +119,41 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_be_greater_than_or_equal_to:
               min_value: 0
+
+  - name: agg_organization_summary
+    description: "Organization-level summary totals by reporting period and scope"
+    columns:
+      - name: summary_id
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      - name: organization_id
+        description: "Organization ID"
+        tests:
+          - not_null
+      - name: total_co2e_tonnes
+        description: "Total CO2e in tonnes for this scope and period"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_greater_than_or_equal_to:
+              min_value: 0
+
+  - name: stg_calculation_runs
+    description: "Staged calculation run metadata with duration and status"
+    columns:
+      - name: id
+        description: "Calculation run ID"
+        tests:
+          - unique
+          - not_null
+      - name: organization_id
+        description: "Organization ID"
+        tests:
+          - not_null
+      - name: status
+        description: "Calculation status"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['running', 'succeeded', 'failed']
