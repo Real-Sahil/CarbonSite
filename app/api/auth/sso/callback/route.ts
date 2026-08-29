@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { SsoConfiguration } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import {
@@ -14,23 +15,25 @@ import {
   extractSamlUserInfo,
 } from "@/lib/auth/sso-handler";
 
+interface UserInfo {
+  providerUserId: string;
+  email: string;
+  name?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
+}
+
 async function handleOidcCallback(
-  req: NextRequest,
   code: string,
   stateFromUrl: string,
   stateFromCookie: string,
-  orgIdFromCookie: string,
-  providerFromCookie: string,
   codeVerifierFromCookie: string,
-  ssoConfig: any
-) {
+  ssoConfig: SsoConfiguration
+): Promise<UserInfo> {
   // Validate state to prevent CSRF attacks
-  try {
-    if (!validateSsoState(stateFromCookie, stateFromUrl)) {
-      return apiError("STATE_MISMATCH", "State validation failed. CSRF attack detected.", 403);
-    }
-  } catch {
-    return apiError("STATE_VALIDATION_ERROR", "Failed to validate state", 400);
+  if (!validateSsoState(stateFromCookie, stateFromUrl)) {
+    throw new Error("STATE_MISMATCH: State validation failed. CSRF attack detected.");
   }
 
   // Exchange authorization code for tokens
@@ -88,32 +91,31 @@ async function handleOidcCallback(
   const name = (userInfo.name || idTokenPayload.name) as string | undefined;
 
   if (!providerUserId || !email) {
-    return apiError(
-      "MISSING_USER_INFO",
-      "SSO provider did not return required user information (sub, email)",
-      400
-    );
+    throw new Error("MISSING_USER_INFO: SSO provider did not return required user information (sub, email)");
   }
 
-  return { providerUserId, email, name, accessToken: tokenResponse.accessToken, refreshToken: tokenResponse.refreshToken, expiresIn: tokenResponse.expiresIn };
+  return {
+    providerUserId,
+    email,
+    name,
+    accessToken: tokenResponse.accessToken,
+    refreshToken: tokenResponse.refreshToken,
+    expiresIn: tokenResponse.expiresIn
+  };
 }
 
 async function handleSamlCallback(
   samlResponse: string,
-  ssoConfig: any
-) {
-  const userInfo = await extractSamlUserInfo(samlResponse, ssoConfig.certificate || "");
+  ssoConfig: SsoConfiguration
+): Promise<UserInfo> {
+  const userInfo = await extractSamlUserInfo(samlResponse, ssoConfig.certificateX509 || "");
 
   const providerUserId = userInfo.sub;
   const email = userInfo.email;
   const name = userInfo.name;
 
   if (!providerUserId || !email) {
-    return apiError(
-      "MISSING_USER_INFO",
-      "SAML provider did not return required user information (sub, email)",
-      400
-    );
+    throw new Error("MISSING_USER_INFO: SAML provider did not return required user information (sub, email)");
   }
 
   return { providerUserId, email, name };
@@ -121,35 +123,26 @@ async function handleSamlCallback(
 
 async function createOrUpdateUserAndSession(
   req: NextRequest,
-  providerUserId: string,
-  email: string,
-  name: string | undefined,
+  userInfo: UserInfo,
   orgIdFromCookie: string,
   providerFromCookie: string,
-  ssoConfig: any,
-  accessToken?: string,
-  refreshToken?: string,
-  expiresIn?: number
-) {
+  ssoConfig: SsoConfiguration
+): Promise<NextResponse> {
   // Find or create user in Better Auth
   let user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: userInfo.email },
   });
 
   if (!user) {
     if (!ssoConfig.autoCreateUsers) {
-      return apiError(
-        "USER_NOT_FOUND",
-        "User does not exist. Please contact your organization administrator.",
-        403
-      );
+      throw new Error("USER_NOT_FOUND: User does not exist. Please contact your organization administrator.");
     }
 
     // Auto-create user if enabled
     user = await prisma.user.create({
       data: {
-        email,
-        name: name || email.split("@")[0],
+        email: userInfo.email,
+        name: userInfo.name || userInfo.email.split("@")[0],
         emailVerified: true,
         emailVerifiedAt: new Date(),
       },
@@ -168,7 +161,7 @@ async function createOrUpdateUserAndSession(
     await prisma.account.create({
       data: {
         userId: user.id,
-        accountId: providerUserId,
+        accountId: userInfo.providerUserId,
         providerId: providerFromCookie,
       },
     });
@@ -184,11 +177,7 @@ async function createOrUpdateUserAndSession(
 
   if (!orgMembership) {
     if (!ssoConfig.autoAssignRole) {
-      return apiError(
-        "NOT_ORG_MEMBER",
-        "Your SSO account is not associated with this organization. Please contact your administrator.",
-        403
-      );
+      throw new Error("NOT_ORG_MEMBER: Your SSO account is not associated with this organization. Please contact your administrator.");
     }
 
     // Auto-assign role if enabled
@@ -207,11 +196,11 @@ async function createOrUpdateUserAndSession(
     orgIdFromCookie,
     user.id,
     providerFromCookie,
-    providerUserId,
-    accessToken,
-    refreshToken,
+    userInfo.providerUserId,
+    userInfo.accessToken,
+    userInfo.refreshToken,
     undefined,
-    expiresIn ? new Date(Date.now() + expiresIn * 1000) : undefined
+    userInfo.expiresIn ? new Date(Date.now() + userInfo.expiresIn * 1000) : undefined
   );
 
   // Create Better Auth session for the user
@@ -293,32 +282,20 @@ export async function GET(req: NextRequest) {
     }
 
     // Handle OIDC callback
-    const oidcResult = await handleOidcCallback(
-      req,
+    const userInfo = await handleOidcCallback(
       code,
       stateFromUrl,
       stateFromCookie,
-      orgIdFromCookie,
-      providerFromCookie,
       codeVerifierFromCookie,
       ssoConfig
     );
 
-    if (oidcResult.code) {
-      return oidcResult; // Error response
-    }
-
     return createOrUpdateUserAndSession(
       req,
-      oidcResult.providerUserId,
-      oidcResult.email,
-      oidcResult.name,
+      userInfo,
       orgIdFromCookie,
       providerFromCookie,
-      ssoConfig,
-      oidcResult.accessToken,
-      oidcResult.refreshToken,
-      oidcResult.expiresIn
+      ssoConfig
     );
   } catch (error) {
     return handleRouteError(error);
@@ -330,7 +307,6 @@ export async function POST(req: NextRequest) {
     // SAML callbacks come as POST requests with SAMLResponse in the body
     const body = await req.formData().catch(() => new FormData());
     const samlResponse = body.get("SAMLResponse") as string | null;
-    const relayState = body.get("RelayState") as string | null;
 
     if (!samlResponse) {
       return apiError(
@@ -340,7 +316,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Extract org ID and provider from RelayState or cookies
+    // Extract org ID and provider from cookies
     const orgIdFromCookie = req.cookies.get("sso_org_id")?.value;
     const providerFromCookie = req.cookies.get("sso_provider")?.value;
 
@@ -360,17 +336,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Handle SAML callback
-    const samlResult = await handleSamlCallback(samlResponse, ssoConfig);
-
-    if (samlResult.code) {
-      return samlResult; // Error response
-    }
+    const userInfo = await handleSamlCallback(samlResponse, ssoConfig);
 
     return createOrUpdateUserAndSession(
       req,
-      samlResult.providerUserId,
-      samlResult.email,
-      samlResult.name,
+      userInfo,
       orgIdFromCookie,
       providerFromCookie,
       ssoConfig
