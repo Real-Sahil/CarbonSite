@@ -2957,32 +2957,6 @@ model IntegrationConfig {
 
 // ─── Phase 3: Data Transformation & Orchestration ──────────────────────────
 
-model DbtRun {
-  id                String    @id @default(cuid())
-  organizationId    String    @map("organization_id")
-  calculationRunId  String    @map("calculation_run_id")
-  status            String    @default("pending") @map("status") // 'pending', 'running', 'succeeded', 'failed'
-  dbtCommand        String    @map("dbt_command") // 'dbt run', 'dbt test', etc.
-  dbtOutput         String?   @map("dbt_output") // Raw dbt CLI output
-  rowsAffected      Int       @default(0) @map("rows_affected")
-  modelsCreated     Int       @default(0) @map("models_created")
-  testCount         Int       @default(0) @map("test_count")
-  testsPassed       Int       @default(0) @map("tests_passed")
-  testsFailed       Int       @default(0) @map("tests_failed")
-  duration          Int?      @map("duration") // milliseconds
-  errorMessage      String?   @map("error_message")
-  startedAt         DateTime  @default(now()) @map("started_at")
-  completedAt       DateTime? @map("completed_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-
-  organization   Organization   @relation("DbtRuns", fields: [organizationId], references: [id], onDelete: Cascade)
-  calculationRun CalculationRun @relation("DbtRuns", fields: [calculationRunId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId, calculationRunId])
-  @@index([organizationId, status, createdAt(sort: Desc)])
-  @@map("dbt_runs")
-}
-
 model N8nWorkflow {
   id                String          @id @default(cuid())
   organizationId    String          @map("organization_id")

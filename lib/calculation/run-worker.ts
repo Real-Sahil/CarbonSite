@@ -6,6 +6,7 @@ import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
+import { getBoss } from "@/lib/jobs/boss";
 import type { Scope2Method } from "@prisma/client";
 
 export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<void> {
@@ -286,6 +287,16 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       where: { id: calculationRunId },
       data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
     });
+
+    // Enqueue dbt transformation for immutable fact table building
+    const boss = await getBoss();
+    await boss
+      .send(
+        "dbt-transform-jobs",
+        { calculationRunId, organizationId: orgId },
+        { retryLimit: 2, retryDelay: 30 },
+      )
+      .catch((err: Error) => calculationLogger.warn("Failed to enqueue dbt transformation", { err }));
 
     // Trigger n8n workflow for facility risk flagging
     await triggerFacilityRiskFlag(orgId, calculationRunId).catch((err) =>

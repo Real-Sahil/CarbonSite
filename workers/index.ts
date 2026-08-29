@@ -14,6 +14,8 @@ import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
 import { processNotification } from "@/lib/notifications/worker";
 import { processReport } from "@/lib/reports/worker";
+import { runDbtTransformation } from "@/lib/jobs/workers/dbt-transform";
+import type { DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -79,7 +81,21 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications)");
+  // ── dbt Transformation ────────────────────────────────────────────────────
+  await boss.work<DbtTransformJobData>(
+    "dbt-transform-jobs",
+    { localConcurrency: 2 },
+    async (jobs: Job<DbtTransformJobData>[]) => {
+      for (const job of jobs) {
+        const { calculationRunId, organizationId } = job.data;
+        console.log(`[dbt-transform] processing calculation ${calculationRunId}`);
+        await runDbtTransformation(calculationRunId, organizationId);
+        console.log(`[dbt-transform] finished calculation ${calculationRunId}`);
+      }
+    },
+  );
+
+  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform)");
 }
 
 start().catch((err) => {
