@@ -11,6 +11,9 @@ const NAV_LINKS = [
   { href: "/solutions/construction", label: "Construction" },
   { href: "/solutions/waste-haulage", label: "Waste & Haulage" },
   { href: "/field-app", label: "Field App" },
+  { href: "/blog", label: "Blog" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/comparison", label: "Comparison" },
   { href: "/security", label: "Security" },
   { href: "/resources", label: "Resources" },
 ];

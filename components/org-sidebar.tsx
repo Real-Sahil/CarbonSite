@@ -8,6 +8,7 @@ import {
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
+  Zap, Eye,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -84,9 +85,13 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Contracts", href: `/orgs/${orgId}/contracts`, icon: Briefcase, roles: EXTENDED_VIEW_ROLES },
     ]},
     { label: "Admin", items: [
-      { label: "Suppliers", href: `/orgs/${orgId}/settings/suppliers`, icon: Truck,    roles: ["admin"] },
-      { label: "Audit",     href: `/orgs/${orgId}/audit`,              icon: Clock,    roles: CORE_ROLES },
-      { label: "Settings",  href: role === "admin" ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/settings/operations`, icon: Settings, roles: ["admin", "editor"] },
+      { label: "Suppliers",      href: `/orgs/${orgId}/settings/suppliers`,           icon: Truck,      roles: ["admin"] },
+      { label: "Performance",    href: `/orgs/${orgId}/suppliers/performance`,        icon: LineChart,  roles: ["admin"] },
+      { label: "Invoice Review", href: `/orgs/${orgId}/finance/invoice-review`,       icon: Zap,        roles: ["admin", "editor"] },
+      { label: "SSO Config",     href: `/orgs/${orgId}/settings/sso`,                 icon: ShieldCheck, roles: ["admin"] },
+      { label: "Data Lineage",   href: `/orgs/${orgId}/audit/data-lineage`,           icon: Eye,        roles: ["admin", "auditor"] },
+      { label: "Audit Trail",    href: `/orgs/${orgId}/audit`,                       icon: Clock,       roles: CORE_ROLES },
+      { label: "Settings",       href: role === "admin" ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/settings/operations`, icon: Settings, roles: ["admin", "editor"] },
     ]},
   ];
 
