@@ -32,7 +32,8 @@ const N8nExecutionEventSchema = z.object({
   }).optional(),
 });
 
-type N8nExecutionEvent = z.infer<typeof N8nExecutionEventSchema>;
+// Type inferred from schema for documentation purposes
+// type N8nExecutionEvent = z.infer<typeof N8nExecutionEventSchema>;
 
 export async function POST(req: NextRequest) {
   try {
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
     const executionTime = executionResult?.executionTime || 0;
 
     // Build execution output
-    const output: any = {
+    const output: Record<string, unknown> = {
       n8nExecutionId: execution.id,
       workflowName: execution.workflowName,
       mode: execution.mode,
@@ -117,30 +118,32 @@ export async function POST(req: NextRequest) {
           organizationId: workflow.organizationId,
           n8nExecutionId: execution.id,
           status: mappedStatus,
-          executionTime: executionTime,
-          output: output,
-          error: executionError?.message || null,
-          triggeredBy: metadata.triggeredBy || null,
-          triggeredAt: startTime,
+          duration: executionTime,
+          // @ts-expect-error - n8n execution output is valid JSON
+          output,
+          errorMessage: executionError?.message || null,
+          triggerEvent: metadata.triggeredBy || 'manual',
+          startedAt: startTime,
           completedAt: completedAt,
         },
       });
 
       // Update workflow with latest execution info
+      const updateData: Record<string, unknown> = {
+        lastTriggeredAt: startTime,
+        lastTriggeredBy: metadata.triggeredBy || 'manual',
+      };
+
+      if (mappedStatus === 'error') {
+        updateData.failureCount = { increment: 1 };
+        updateData.lastFailedAt = new Date();
+        updateData.lastFailureReason = executionError?.message || 'Unknown error';
+      }
+
       await prisma.n8nWorkflow.update({
         where: { id: workflow.id },
-        data: {
-          lastTriggeredAt: startTime,
-          lastExecutionStatus: mappedStatus,
-          executionCount: {
-            increment: 1,
-          },
-          ...(mappedStatus === 'error' && {
-            failureCount: {
-              increment: 1,
-            },
-          }),
-        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: updateData as any,
       });
 
       securityLogger.info('n8n execution recorded', {

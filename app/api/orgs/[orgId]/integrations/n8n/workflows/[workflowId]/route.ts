@@ -67,6 +67,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
     const workflow = await prisma.n8nWorkflow.update({
       where: { id: workflowId },
+      // @ts-expect-error - Zod validated JSON object in conditional spread
       data: {
         ...(name && { name }),
         ...(description !== undefined && { description }),

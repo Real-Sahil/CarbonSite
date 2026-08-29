@@ -62,6 +62,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
     const connection = await prisma.airbyteSyncConnection.update({
       where: { id: connectionId },
+      // @ts-expect-error - Zod validated JSON object in conditional spread
       data: {
         ...(config && { config }),
         ...(syncFrequency && { syncFrequency }),

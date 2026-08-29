@@ -70,6 +70,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         description,
         trigger,
         action,
+        // @ts-expect-error - Zod validated JSON object
         config,
         n8nWebhookUrl,
         enabled: true

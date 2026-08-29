@@ -14,7 +14,8 @@ const AirbyteSyncCompletionEventSchema = z.object({
   errorMessage: z.string().optional(),
 });
 
-type AirbyteSyncEvent = z.infer<typeof AirbyteSyncCompletionEventSchema>;
+// Type inferred from schema for documentation purposes
+// type AirbyteSyncEvent = z.infer<typeof AirbyteSyncCompletionEventSchema>;
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     const { type, connectionId, syncRunId, recordsEmitted } = event;
 
     // Find the connection in our database
-    const connection = await prisma.airbyteSyncConnection.findUnique({
+    const connection = await prisma.airbyteSyncConnection.findFirst({
       where: { airbytConnectionId: connectionId },
       select: {
         id: true,

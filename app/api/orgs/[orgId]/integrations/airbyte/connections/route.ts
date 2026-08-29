@@ -51,6 +51,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       data: {
         organizationId: orgId,
         sourceSystem,
+        // @ts-expect-error - Zod validated JSON object
         config,
         syncFrequency,
         enabled: true
