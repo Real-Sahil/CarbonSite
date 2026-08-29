@@ -203,9 +203,10 @@ export async function raiseAlert(alert: AuditAlert): Promise<void> {
   }
 
   // Audit log the alert itself for compliance/review
+  const alertAction = `security.alert_${alert.type}` as const;
   await writeAuditLog({
     organizationId: alert.organizationId,
-    action: `security.alert_${alert.type}`,
+    action: alertAction as any,
     resourceType: "SecurityAlert",
     resourceId: alert.type,
     metadata: alert.metadata,

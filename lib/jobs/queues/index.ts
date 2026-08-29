@@ -40,9 +40,10 @@ export async function enqueueImport(data: ImportJobData) {
   await boss.send("imports", data, retry);
 }
 
-export async function enqueueCalculation(data: CalculationJobData) {
+export async function enqueueCalculation(data: CalculationJobData): Promise<string | null> {
   await ensureBossStarted();
-  await boss.send("calculations", data, retry);
+  const jobId = await boss.send("calculations", data, retry);
+  return jobId;
 }
 
 export async function enqueueReport(data: ReportJobData) {

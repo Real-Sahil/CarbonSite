@@ -35,6 +35,7 @@ type AuditAction =
   | "record.reviewed"
   | "factor.library_imported"
   | "calculation.run_triggered"
+  | "calculation.triggered"
   | "calculation.run_completed"
   | "calculation.run_cancelled"
   | "calculation.schedule_created"
@@ -125,7 +126,17 @@ type AuditAction =
   | "sbti.pathway_created"
   | "billing.payment_method_added"
   | "billing.payment_method_deleted"
-  | "billing.payment_method_set_default";
+  | "billing.payment_method_set_default"
+  | "dsar.erasure_rejected"
+  | "dsar.erasure_completed"
+  | "dsar.export_completed"
+  | "dsar.sla_approaching"
+  | "security.alert_repeated_failed_logins"
+  | "security.alert_privilege_escalation"
+  | "security.alert_mass_export"
+  | "security.alert_bulk_data_mutation"
+  | "security.alert_bulk_submission_review"
+  | "security.alert_suspicious_location_jump";
 
 export async function writeAuditLog(params: {
   organizationId: string;
@@ -134,6 +145,8 @@ export async function writeAuditLog(params: {
   resourceType: string;
   resourceId: string;
   metadata?: Prisma.InputJsonObject;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }) {
   await prisma.auditLog.create({
     data: {
@@ -143,6 +156,8 @@ export async function writeAuditLog(params: {
       resourceType: params.resourceType,
       resourceId: params.resourceId,
       metadata: params.metadata ?? Prisma.JsonNull,
+      ipAddress: params.ipAddress ?? null,
+      userAgent: params.userAgent ?? null,
     },
   });
 }

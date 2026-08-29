@@ -578,6 +578,7 @@ enum ReviewStatus {
   in_review
   approved
   rejected
+  pending_info
 
   @@map("review_status")
 }
