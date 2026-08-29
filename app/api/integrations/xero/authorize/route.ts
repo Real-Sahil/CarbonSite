@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify user is org admin
-    await requireOrgMember(orgId, ["admin"]);
+    await requireOrgMember(orgId, "admin");
 
     const clientId = process.env.XERO_CLIENT_ID;
     const redirectUri = process.env.XERO_REDIRECT_URI;

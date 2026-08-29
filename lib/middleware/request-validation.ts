@@ -112,7 +112,7 @@ export const StrictQuerySchema = {
   boolean: z.enum(["true", "false"]).transform((val) => val === "true"),
   date: z.string().datetime(),
   enum: <T extends readonly string[]>(values: T) =>
-    z.enum(values),
+    z.enum(values as unknown as [string, ...string[]]),
   optional: <T extends ZodSchema>(schema: T) => schema.optional(),
   array: (schema: ZodSchema) =>
     z.string().transform((val) => val.split(",").map((s) => s.trim())).pipe(

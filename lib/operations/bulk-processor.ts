@@ -64,11 +64,11 @@ export async function createBulkReviewOperation(
   if (userId) {
     await writeAuditLog({
       organizationId,
+      actorUserId: userId,
       action: "bulk.review_queued",
-      actorId: userId,
-      targetId: operationId,
-      targetType: "bulk_operation",
-      details: {
+      resourceId: operationId,
+      resourceType: "bulk_operation",
+      metadata: {
         count: recordIds.length,
         action,
       },
@@ -130,11 +130,11 @@ export async function createBulkCategorizeOperation(
   if (userId) {
     await writeAuditLog({
       organizationId,
+      actorUserId: userId,
       action: "bulk.categorize_queued",
-      actorId: userId,
-      targetId: operationId,
-      targetType: "bulk_operation",
-      details: {
+      resourceId: operationId,
+      resourceType: "bulk_operation",
+      metadata: {
         count: recordIds.length,
         categoryId,
       },

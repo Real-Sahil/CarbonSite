@@ -41,7 +41,7 @@ export async function calculateDataQualityScore(
   const records = await prisma.activityRecord.findMany({
     where: whereClause,
     include: {
-      category: true,
+      emissionCategory: true,
       facility: true,
       businessUnit: true,
       evidence: {
@@ -89,13 +89,13 @@ export async function calculateDataQualityScore(
 
   for (const record of records) {
     const isComplete =
-      record.description?.trim().length > 0 &&
-      record.quantity !== null &&
+      (record.sourceDescription?.trim() ?? "").length > 0 &&
+      record.amount !== null &&
       record.unit !== null &&
-      record.categoryId !== null;
+      record.emissionCategoryId !== null;
 
     if (isComplete) completeCount++;
-    if (!record.description || record.description.trim().length === 0) missingDescriptionCount++;
+    if (!record.sourceDescription || record.sourceDescription.trim().length === 0) missingDescriptionCount++;
     if (!record.unit) missingUnitCount++;
   }
 
@@ -164,7 +164,7 @@ export async function calculateDataQualityScore(
   // 4. Consistency: standardized categories
   let withStandardCategory = 0;
   for (const record of records) {
-    if (record.category) {
+    if (record.emissionCategory) {
       withStandardCategory++;
     }
   }
@@ -184,7 +184,7 @@ export async function calculateDataQualityScore(
 
   // 5. Review status
   const pendingReview = records.filter(
-    (r) => r.reviewStatus === "pending_review"
+    (r) => r.reviewStatus === "in_review"
   ).length;
   if (pendingReview > 0) {
     issues.push({
@@ -254,10 +254,10 @@ export async function getDataQualityTrend(
       },
       select: {
         id: true,
-        description: true,
+        sourceDescription: true,
         unit: true,
-        quantity: true,
-        categoryId: true,
+        amount: true,
+        emissionCategoryId: true,
         evidence: { select: { id: true } },
         reviewStatus: true,
       },
@@ -266,7 +266,7 @@ export async function getDataQualityTrend(
     if (records.length > 0) {
       // Quick score calculation for trend
       const withEvidence = records.filter((r) => r.evidence && r.evidence.length > 0).length;
-      const withCategory = records.filter((r) => r.categoryId).length;
+      const withCategory = records.filter((r) => r.emissionCategoryId).length;
       const reviewed = records.filter((r) => r.reviewStatus === "approved").length;
 
       const score = Math.round(
@@ -310,7 +310,7 @@ export async function identifyHighRiskRecords(
     where: { organizationId },
     include: {
       evidence: { select: { id: true } },
-      category: true,
+      emissionCategory: true,
       calculations: { select: { id: true }, take: 1 },
     },
     take: limit * 2,
@@ -327,7 +327,7 @@ export async function identifyHighRiskRecords(
     }
 
     // Pending review
-    if (record.reviewStatus === "pending_review") {
+    if (record.reviewStatus === "in_review") {
       risks.push("Pending review");
       riskScore += 15;
     }
@@ -345,20 +345,20 @@ export async function identifyHighRiskRecords(
     }
 
     // No category
-    if (!record.category) {
+    if (!record.emissionCategory) {
       risks.push("Uncategorized");
       riskScore += 20;
     }
 
     // Large quantity (potential outlier)
-    if (record.quantity && record.quantity > 10000) {
+    if (record.amount && Number(record.amount) > 10000) {
       risks.push("Unusually large quantity");
       riskScore += 10;
     }
 
     return {
       id: record.id,
-      description: record.description || "(No description)",
+      description: record.sourceDescription || "(No description)",
       riskScore: Math.min(riskScore, 100),
       risks,
     };

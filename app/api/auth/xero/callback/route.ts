@@ -130,18 +130,13 @@ export async function GET(request: NextRequest) {
       await prisma.integrationConnection.update({
         where: { id: existingConnection.id },
         data: {
-          externalTenantId: tenantId,
+          externalAccountId: tenantId,
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token ?? existingConnection.refreshToken,
-          tokenType: tokens.token_type,
           scopes: tokens.scope.split(" "),
           expiresAt,
           connectedAt: new Date(),
           externalAccountName: accountName,
-          metadata: {
-            ...((existingConnection.metadata as Record<string, unknown>) ?? {}),
-            lastTokenRefresh: new Date().toISOString(),
-          },
         },
       });
 
@@ -163,10 +158,9 @@ export async function GET(request: NextRequest) {
         data: {
           organizationId: orgId,
           provider: "xero",
-          externalTenantId: tenantId,
+          externalAccountId: tenantId,
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token,
-          tokenType: tokens.token_type,
           scopes: tokens.scope.split(" "),
           expiresAt,
           connectedAt: new Date(),

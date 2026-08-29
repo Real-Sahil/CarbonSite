@@ -72,7 +72,7 @@ export async function DELETE(
       return apiError("UNAUTHORIZED", "Not authenticated", 401);
     }
 
-    await requireOrgMember(orgId, ...ROLE_GROUPS.admin);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const operation = getOperationStatus(operationId);
 
@@ -116,7 +116,7 @@ export async function POST(
       return apiError("UNAUTHORIZED", "Not authenticated", 401);
     }
 
-    await requireOrgMember(orgId, ...ROLE_GROUPS.admin);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const operation = getOperationStatus(operationId);
 

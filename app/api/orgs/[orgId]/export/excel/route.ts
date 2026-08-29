@@ -1,3 +1,4 @@
+import { Decimal } from "@prisma/client/runtime/library";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -63,7 +64,7 @@ export async function GET(
         reportingPeriodId: period.id,
       },
       include: {
-        category: true,
+        emissionCategory: true,
         facility: true,
         businessUnit: true,
         importBatch: true,
@@ -79,9 +80,9 @@ export async function GET(
     const formattedRecords = activityRecords.map((record) => ({
       id: record.id,
       createdAt: record.createdAt,
-      category: record.category,
-      description: record.description,
-      quantity: record.quantity,
+      category: record.emissionCategory,
+      sourceDescription: record.sourceDescription,
+      amount: record.amount,
       unit: record.unit,
       reviewStatus: record.reviewStatus,
       evidenceStatus: record.evidenceStatus,
@@ -108,19 +109,40 @@ export async function GET(
     });
 
     // Calculate category breakdown
-    const categoryBreakdown = await prisma.emissionCalculation.groupBy({
-      by: ["emissionCategoryId"],
+    const calculationRecords = await prisma.emissionCalculation.findMany({
       where: {
         activityRecord: {
           organizationId: orgId,
           reportingPeriodId: period.id,
         },
       },
-      _sum: {
-        totalCo2e: true,
+      include: {
+        activityRecord: true,
       },
-      _count: true,
     });
+
+    // Group by category in application code
+    const categoryMap = new Map<string, { totalCo2e: Decimal; count: number }>();
+    for (const calc of calculationRecords) {
+      const catId = calc.activityRecord.emissionCategoryId;
+      if (!categoryMap.has(catId)) {
+        categoryMap.set(catId, {
+          totalCo2e: new Decimal(0),
+          count: 0,
+        });
+      }
+      const current = categoryMap.get(catId)!;
+      current.totalCo2e = current.totalCo2e.plus(calc.totalCo2e ?? 0);
+      current.count += 1;
+    }
+
+    const categoryBreakdown = Array.from(categoryMap.entries()).map(
+      ([emissionCategoryId, data]) => ({
+        emissionCategoryId,
+        _sum: { totalCo2e: data.totalCo2e },
+        _count: data.count,
+      })
+    );
 
     // Map category IDs to names
     const categoryData = await Promise.all(
@@ -130,7 +152,7 @@ export async function GET(
         });
         return {
           category,
-          totalCo2e: Number(cat._sum.totalCo2e ?? 0),
+          totalCo2e: Number(cat._sum.totalCo2e),
           recordCount: cat._count,
         };
       })
@@ -148,7 +170,7 @@ export async function GET(
     if (query.type === "full") {
       buffer = await generateComplianceReportWorkbook(
         org.name,
-        period.name,
+        period.label,
         formattedRecords,
         dashboardData,
         categoryData,
@@ -185,7 +207,7 @@ export async function GET(
             data: [
               {
                 "Organization": org.name,
-                "Reporting Period": period.name,
+                "Reporting Period": period.label,
                 "Total Emissions (kg CO₂e)": Math.round(totalEmissions),
                 "Record Count": formattedRecords.length,
                 "Report Generated": new Date().toLocaleString(),
@@ -213,9 +235,9 @@ export async function GET(
       .digest("hex");
 
     // Return Excel file
-    const fileName = `${org.name}_${period.name}_${new Date().getTime()}.xlsx`;
+    const fileName = `${org.name}_${period.label}_${new Date().getTime()}.xlsx`;
 
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as any, {
       status: 200,
       headers: {
         "Content-Type":

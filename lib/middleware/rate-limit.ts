@@ -30,7 +30,7 @@ export function withRateLimit(config: Partial<RateLimitConfig> = {}) {
     ((request: NextRequest) => {
       return (
         request.headers.get("x-forwarded-for") ||
-        request.ip ||
+        request.headers.get("x-real-ip") ||
         "unknown"
       );
     });
@@ -95,7 +95,11 @@ export function createOrgKeyGenerator(
     const orgId = pathSegments[2]; // /api/orgs/[orgId]/...
 
     if (!userId || !orgId) {
-      return request.ip || "unknown";
+      return (
+        request.headers.get("x-forwarded-for") ||
+        request.headers.get("x-real-ip") ||
+        "unknown"
+      );
     }
 
     return `${orgId}:${userId}`;

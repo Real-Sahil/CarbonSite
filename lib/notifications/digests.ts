@@ -268,7 +268,7 @@ export async function compileDigestData(
   const pendingReviews = await prisma.activityRecord.count({
     where: {
       organizationId,
-      reviewStatus: "pending_review",
+      reviewStatus: "in_review",
     },
   });
 
@@ -276,21 +276,28 @@ export async function compileDigestData(
   const completedCalculations = await prisma.calculationRun.count({
     where: {
       organizationId,
-      status: "completed",
+      status: "succeeded",
       createdAt: { gte: startDate },
     },
   });
 
-  // Get emissions summary
-  const emissions = await prisma.dashboardAggregate.aggregate({
+  // Get emissions summary by scope
+  const emissionsByScope = await prisma.dashboardAggregate.groupBy({
+    by: ["scope"],
     where: { organizationId },
     _sum: {
       totalCo2e: true,
-      scope1Total: true,
-      scope2Total: true,
-      scope3Total: true,
     },
   });
+
+  const scopeMap = new Map<number, number>();
+  let totalEmissions = 0;
+
+  for (const row of emissionsByScope) {
+    const co2e = Number(row._sum.totalCo2e ?? 0);
+    scopeMap.set(row.scope, co2e);
+    totalEmissions += co2e;
+  }
 
   // Get data quality score (simplified)
   const records = await prisma.activityRecord.count({
@@ -308,10 +315,10 @@ export async function compileDigestData(
 
   return {
     emissions: {
-      total: Number(emissions._sum.totalCo2e ?? 0),
-      scope1: Number(emissions._sum.scope1Total ?? 0),
-      scope2: Number(emissions._sum.scope2Total ?? 0),
-      scope3: Number(emissions._sum.scope3Total ?? 0),
+      total: totalEmissions,
+      scope1: scopeMap.get(1) ?? 0,
+      scope2: scopeMap.get(2) ?? 0,
+      scope3: scopeMap.get(3) ?? 0,
     },
     dataQualityScore,
     newRecords,
