@@ -157,16 +157,17 @@ async function testN8n(webhookUrl: string) {
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { orgId: string } }
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
-    await requireOrgMember(params.orgId, ...ROLE_GROUPS.admins);
+    const { orgId } = await params;
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const body = await req.json();
     const { type, webhookType } = testSchema.parse(body);
 
     const config = await prisma.integrationConfig.findUnique({
-      where: { organizationId: params.orgId },
+      where: { organizationId: orgId },
     });
 
     if (!config) {
@@ -187,14 +188,14 @@ export async function POST(
           );
         }
         result = await testLLM(
-          params.orgId,
+          orgId,
           config.llmProvider,
           decryptCredential(config.llmToken)
         );
 
         if (result.status === "success") {
           await prisma.integrationConfig.update({
-            where: { organizationId: params.orgId },
+            where: { organizationId: orgId },
             data: {
               llmTokenValid: true,
               llmTokenValidatedAt: new Date(),
@@ -223,7 +224,7 @@ export async function POST(
 
         if (result.status === "success") {
           await prisma.integrationConfig.update({
-            where: { organizationId: params.orgId },
+            where: { organizationId: orgId },
             data: {
               xeroConnected: true,
               xeroConnectedAt: new Date(),
@@ -249,7 +250,7 @@ export async function POST(
 
         if (result.status === "success") {
           await prisma.integrationConfig.update({
-            where: { organizationId: params.orgId },
+            where: { organizationId: orgId },
             data: {
               oidcDiscoveryValid: true,
               oidcDiscoveryValidatedAt: new Date(),
@@ -282,7 +283,7 @@ export async function POST(
         if (result.status === "success") {
           if (webhookType === "submissions") {
             await prisma.integrationConfig.update({
-              where: { organizationId: params.orgId },
+              where: { organizationId: orgId },
               data: {
                 n8nWebhookSubmissionsTested: true,
                 testResults: {
@@ -294,7 +295,7 @@ export async function POST(
             });
           } else {
             await prisma.integrationConfig.update({
-              where: { organizationId: params.orgId },
+              where: { organizationId: orgId },
               data: {
                 n8nWebhookReportsTested: true,
                 testResults: {

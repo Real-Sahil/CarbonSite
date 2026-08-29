@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { oidc } from "better-auth/integrations/oidc";
 import { prisma } from "@/lib/db";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
 
@@ -20,19 +19,9 @@ const trustedOrigins = Array.from(
   ),
 );
 
-// Build OIDC config if environment variables are set
-const oidcConfig = process.env.OIDC_CLIENT_ID && process.env.OIDC_CLIENT_SECRET ? {
-  oidc: oidc({
-    providers: {
-      [process.env.OIDC_PROVIDER_ID || "oidc"]: {
-        clientId: process.env.OIDC_CLIENT_ID,
-        clientSecret: process.env.OIDC_CLIENT_SECRET,
-        discoveryUrl: process.env.OIDC_ISSUER_URL,
-        scopes: (process.env.OIDC_SCOPE || "openid email profile").split(" "),
-      },
-    },
-  }),
-} : {};
+// OIDC integration deferred: better-auth OIDC support to be added in Phase 2
+// For now, OIDC config remains empty; credentials can be managed via integration settings
+const oidcConfig = {};
 
 // Parse optional role mapping
 const roleMapping = process.env.OIDC_ROLE_MAPPING

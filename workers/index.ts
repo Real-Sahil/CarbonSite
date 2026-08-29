@@ -9,13 +9,11 @@ import type {
   CalculationJobData,
   ReportJobData,
   NotificationJobData,
-  XeroSyncJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
 import { processNotification } from "@/lib/notifications/worker";
 import { processReport } from "@/lib/reports/worker";
-import { processXeroSync } from "@/lib/integrations/xero-sync-worker";
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -81,20 +79,7 @@ async function start() {
     },
   );
 
-  // ── Xero Sync ──────────────────────────────────────────────────────────
-  await boss.work<XeroSyncJobData>(
-    "xero-sync",
-    { localConcurrency: 1 },
-    async (jobs: Job<XeroSyncJobData>[]) => {
-      for (const job of jobs) {
-        console.log(`[xero-sync] processing sync for org ${job.data.orgId}`);
-        await processXeroSync(job.data.orgId, job.data.fromDate);
-        console.log(`[xero-sync] finished sync for org ${job.data.orgId}`);
-      }
-    },
-  );
-
-  console.log("pg-boss workers started (imports, calculations, reports, notifications, xero-sync)");
+  console.log("pg-boss workers started (imports, calculations, reports, notifications)");
 }
 
 start().catch((err) => {
