@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { oidc } from "better-auth/integrations/oidc";
 import { prisma } from "@/lib/db";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
 
@@ -18,6 +19,25 @@ const trustedOrigins = Array.from(
       .filter((origin): origin is string => Boolean(origin)),
   ),
 );
+
+// Build OIDC config if environment variables are set
+const oidcConfig = process.env.OIDC_CLIENT_ID && process.env.OIDC_CLIENT_SECRET ? {
+  oidc: oidc({
+    providers: {
+      [process.env.OIDC_PROVIDER_ID || "oidc"]: {
+        clientId: process.env.OIDC_CLIENT_ID,
+        clientSecret: process.env.OIDC_CLIENT_SECRET,
+        discoveryUrl: process.env.OIDC_ISSUER_URL,
+        scopes: (process.env.OIDC_SCOPE || "openid email profile").split(" "),
+      },
+    },
+  }),
+} : {};
+
+// Parse optional role mapping
+const roleMapping = process.env.OIDC_ROLE_MAPPING
+  ? JSON.parse(process.env.OIDC_ROLE_MAPPING)
+  : {};
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -87,6 +107,7 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins,
+  ...(Object.keys(oidcConfig).length > 0 ? oidcConfig : {}),
 });
 
 export type Session = typeof auth.$Infer.Session;

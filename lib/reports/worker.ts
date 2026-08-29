@@ -304,14 +304,32 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
 
   // Generate audit narrative if any LLM provider is configured
   if (llmClient.isConfigured() && report.type !== "national_toms" && report.type !== "cbam") {
+    reportLogger.info("LLM configured, generating audit narrative", {
+      reportId: report.id,
+      reportType: report.type,
+    });
     try {
       basePdfData.narrative = await generateAuditNarrative(basePdfData);
+      reportLogger.info("Narrative generation completed", {
+        reportId: report.id,
+        hasSummary: !!basePdfData.narrative?.executive_summary,
+        findingsCount: basePdfData.narrative?.key_findings?.length ?? 0,
+      });
     } catch (err) {
       reportLogger.error("Failed to generate narrative", {
         reportId: report.id,
         error: err instanceof Error ? err.message : String(err),
+        hint: "Check if HUGGINGFACE_TOKEN is set and valid",
       });
+      // Continue without narrative rather than failing the entire report
     }
+  } else {
+    reportLogger.info("Skipping narrative generation", {
+      reportId: report.id,
+      isConfigured: llmClient.isConfigured(),
+      reportType: report.type,
+      reason: !llmClient.isConfigured() ? "LLM not configured" : "Report type excludes narratives",
+    });
   }
 
   const ctx: ReportContext = {
