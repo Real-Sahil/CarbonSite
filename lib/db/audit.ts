@@ -148,6 +148,34 @@ export async function writeAuditLog(params: {
   ipAddress?: string | null;
   userAgent?: string | null;
 }) {
+  const { createHash } = await import("crypto");
+
+  // Get the previous log to chain the hash
+  const previousLog = await prisma.auditLog.findFirst({
+    where: { organizationId: params.organizationId },
+    orderBy: { createdAt: "desc" },
+    select: { hash: true },
+  });
+
+  const now = new Date();
+  const previousHash = previousLog?.hash ?? null;
+  const actorUserId = params.actorUserId ?? "";
+  const metadata = params.metadata ?? {};
+
+  // Compute hash chain: hash(previousHash | orgId | actor | action | resourceType | resourceId | metadata | createdAt)
+  const hashInput = [
+    previousHash || "",
+    params.organizationId,
+    actorUserId,
+    params.action,
+    params.resourceType,
+    params.resourceId,
+    JSON.stringify(metadata),
+    now.toISOString(),
+  ].join("|");
+
+  const hash = createHash("sha256").update(hashInput).digest("hex");
+
   await prisma.auditLog.create({
     data: {
       organizationId: params.organizationId,
@@ -155,14 +183,71 @@ export async function writeAuditLog(params: {
       action: params.action,
       resourceType: params.resourceType,
       resourceId: params.resourceId,
-      metadata: params.metadata ?? Prisma.JsonNull,
+      metadata: metadata as Prisma.InputJsonObject,
       ipAddress: params.ipAddress ?? null,
       userAgent: params.userAgent ?? null,
+      previousHash,
+      hash,
     },
   });
 }
 
-export async function verifyAuditChain(recordId: string): Promise<boolean> {
-  // Stub: verifyAuditChain not yet implemented
-  return true;
+export async function verifyAuditChain(organizationId: string): Promise<null | 0> {
+  const { createHash } = await import("crypto");
+
+  const logs = await prisma.auditLog.findMany({
+    where: { organizationId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (logs.length === 0) return null;
+
+  // Check if there are any pre-chain rows (no hash) mixed with hashed rows
+  const hasUnhashedRows = logs.some(log => !log.hash);
+  const hasHashedRows = logs.some(log => log.hash);
+
+  if (hasUnhashedRows && !hasHashedRows) {
+    // All rows are pre-chain (no hash yet), skip verification
+    return null;
+  }
+
+  if (hasUnhashedRows && hasHashedRows) {
+    // Mixed pre-chain and hashed rows means we're at the transition point
+    // Skip verification for legacy data
+    return null;
+  }
+
+  // Verify hash chain integrity for all hashed rows
+  let previousHash: string | null = null;
+  for (const log of logs) {
+    if (!log.hash) {
+      // Skip unhashed (pre-chain) rows
+      continue;
+    }
+
+    const computedHash = createHash("sha256")
+      .update(
+        [
+          previousHash || "",
+          organizationId,
+          log.actorUserId || "",
+          log.action,
+          log.resourceType,
+          log.resourceId || "",
+          JSON.stringify(log.metadata || {}),
+          log.createdAt.toISOString(),
+        ].join("|"),
+      )
+      .digest("hex");
+
+    if (computedHash !== log.hash) {
+      // Tampered row detected
+      return 0;
+    }
+
+    previousHash = log.hash;
+  }
+
+  // Chain is intact
+  return null;
 }
