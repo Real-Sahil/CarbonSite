@@ -1,90 +1,21 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import { getBlogPost, getAllBlogPosts } from "@/lib/blog/loader";
 
-interface BlogPostMeta {
-  title: string;
-  description: string;
-  date: string;
-  author: string;
-  readTime: string;
-  pillar: string;
-  image: string;
-}
-
-const posts: Record<string, BlogPostMeta> = {
-  "why-carbon-accounting-still-fails": {
-    title: "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
-    description: "Most carbon accounting platforms assume data is pre-cleaned and arrives from spreadsheets. The reality is messier — and that's where most errors originate.",
-    date: "2026-09-01",
-    author: "CarbonSite Team",
-    readTime: "8 min read",
-    pillar: "Field Operations",
-    image: "/blog/field-workers.jpg",
-  },
-  "open-source-carbon-accounting": {
-    title: "Open-Source Carbon Accounting: Why Transparency Matters",
-    description: "Enterprise carbon platforms are black boxes. CarbonSite's open methodology means auditors can verify every calculation.",
-    date: "2026-09-08",
-    author: "CarbonSite Team",
-    readTime: "7 min read",
-    pillar: "Methodology",
-    image: "/blog/transparency.jpg",
-  },
-  "scope3-from-silence-to-data": {
-    title: "Scope 3 Emissions: From Supplier Silence to Collaborative Data",
-    description: "Tier-1 suppliers won't fill out surveys. They will photograph an invoice when a field worker asks.",
-    date: "2026-09-15",
-    author: "CarbonSite Team",
-    readTime: "8 min read",
-    pillar: "Supply Chain",
-    image: "/blog/supply-chain.jpg",
-  },
-  "anomaly-detection-carbon-data": {
-    title: "Anomaly Detection in Carbon Data: Catching the Outliers",
-    description: "When a facility reports 10x more waste than average, most systems send an alert. CarbonSite explains why.",
-    date: "2026-09-22",
-    author: "CarbonSite Team",
-    readTime: "6 min read",
-    pillar: "Field Operations",
-    image: "/blog/anomaly-detection.jpg",
-  },
-  "building-for-audit": {
-    title: "Building for Audit: How CarbonSite Ensures Immutability",
-    description: "Carbon reports must survive auditor scrutiny. We built immutable snapshots, append-only logs, and versioned formulas.",
-    date: "2026-09-29",
-    author: "CarbonSite Team",
-    readTime: "9 min read",
-    pillar: "Compliance",
-    image: "/blog/audit.jpg",
-  },
-  "carbon-accounting-at-scale": {
-    title: "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
-    description: "Most carbon platforms struggle with 100k+ record orgs. CarbonSite uses materialized views and indexed queries.",
-    date: "2026-10-06",
-    author: "CarbonSite Team",
-    readTime: "7 min read",
-    pillar: "Field Operations",
-    image: "/blog/scale.jpg",
-  },
-  "emissions-data-journey": {
-    title: "From Field to Finance: The Complete Emissions Data Journey",
-    description: "Data quality issues happen at every handoff — capture to review, review to calculation, calculation to report.",
-    date: "2026-10-13",
-    author: "CarbonSite Team",
-    readTime: "8 min read",
-    pillar: "Field Operations",
-    image: "/blog/data-journey.jpg",
-  },
-  "supplier-carbon-data-wrong": {
-    title: "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)",
-    description: "Supplier data comes from estimates, outdated surveys, and manual entry. CarbonSite combines OCR and ML.",
-    date: "2026-10-20",
-    author: "CarbonSite Team",
-    readTime: "8 min read",
-    pillar: "Supply Chain",
-    image: "/blog/supplier-data.jpg",
-  },
+const pillarMap: Record<string, string> = {
+  "why-carbon-accounting-still-fails": "Field Operations",
+  "why-carbon-accounting-fails": "Field Operations",
+  "open-source-carbon-accounting": "Methodology",
+  "scope-3-emissions-supplier-data": "Supply Chain",
+  "anomaly-detection-carbon-data": "Field Operations",
+  "building-for-audit": "Compliance",
+  "building-for-audit-immutability": "Compliance",
+  "carbon-accounting-at-scale": "Field Operations",
+  "data-journey-field-to-finance": "Field Operations",
+  "emissions-data-journey": "Field Operations",
+  "supplier-carbon-data-wrong": "Supply Chain",
 };
 
 export async function generateMetadata({
@@ -92,7 +23,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const post = posts[params.slug];
+  const post = await getBlogPost(params.slug);
   if (!post) {
     return {
       title: "Not Found",
@@ -100,20 +31,21 @@ export async function generateMetadata({
   }
 
   return {
-    title: post.title,
-    description: post.description,
+    title: post.frontmatter.title,
+    description: post.frontmatter.description,
+    keywords: post.frontmatter.keywords,
     openGraph: {
-      title: post.title,
-      description: post.description,
+      title: post.frontmatter.title,
+      description: post.frontmatter.description,
       type: "article",
-      publishedTime: post.date,
-      authors: [post.author],
+      publishedTime: post.frontmatter.date,
+      authors: [post.frontmatter.author],
       images: [
         {
-          url: post.image || "/og-image.jpg",
+          url: "/og-image.jpg",
           width: 1200,
           height: 630,
-          alt: post.title,
+          alt: post.frontmatter.title,
         },
       ],
     },
@@ -121,8 +53,9 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
-  return Object.keys(posts).map((slug) => ({
-    slug,
+  const posts = await getAllBlogPosts();
+  return posts.map((post) => ({
+    slug: post.slug,
   }));
 }
 
@@ -131,11 +64,13 @@ export default async function BlogPostPage({
 }: {
   params: { slug: string };
 }) {
-  const post = posts[params.slug];
+  const post = await getBlogPost(params.slug);
 
   if (!post) {
     notFound();
   }
+
+  const pillar = pillarMap[params.slug] || "Industry Insights";
 
   return (
     <div className="min-h-[100dvh] bg-[#FAFBF8] text-[#111827] py-16">
@@ -149,50 +84,52 @@ export default async function BlogPostPage({
           </Link>
 
           <h1 className="text-5xl font-bold tracking-tight mb-4 leading-tight">
-            {post.title}
+            {post.frontmatter.title}
           </h1>
 
           <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-6">
-            <span>{post.date}</span>
-            <span>{post.readTime}</span>
+            <span>{post.frontmatter.date}</span>
+            <span>{post.frontmatter.readingTime}</span>
             <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded text-sm font-medium">
-              {post.pillar}
+              {pillar}
             </span>
           </div>
 
           <p className="text-xl text-gray-600 leading-relaxed">
-            {post.description}
+            {post.frontmatter.description}
           </p>
 
           <div className="mt-6 border-t border-gray-200 pt-6">
-            <p className="text-sm text-gray-500">By {post.author}</p>
+            <p className="text-sm text-gray-500">By {post.frontmatter.author}</p>
           </div>
         </header>
 
         <div className="prose prose-lg max-w-none mb-12 text-gray-700 leading-relaxed">
-          <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded mb-8">
-            <p className="text-gray-700 font-medium">
-              This blog post will be populated with the full article content. The template is ready for MDX or markdown content.
-            </p>
-          </div>
-
-          <h2 className="text-2xl font-bold mt-12 mb-4">Content Coming Soon</h2>
-          <p>
-            Each blog post will include deep dives into CarbonSite&apos;s unique approach to carbon accounting, field operations, supply chain collaboration, and regulatory compliance.
-          </p>
-
-          <h2 className="text-2xl font-bold mt-8 mb-4">Key Takeaways</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>CarbonSite&apos;s messaging and content strategy is now documented</li>
-            <li>8 blog post outlines created and ready for full content development</li>
-            <li>Blog infrastructure (listing page, individual post templates, metadata) is in place</li>
-            <li>All content organized by content pillar (Methodology, Field Operations, Supply Chain, Compliance, Industry Trends)</li>
-          </ul>
-
-          <h2 className="text-2xl font-bold mt-8 mb-4">Next Steps</h2>
-          <p>
-            Full blog post content will be added incrementally. Each post will be 1,200-1,500 words with original insights, real examples, and clear calls-to-action aligned to CarbonSite&apos;s positioning as the transparent, audit-ready alternative to enterprise carbon platforms.
-          </p>
+          <ReactMarkdown
+            components={{
+              h2: ({ ...props }) => <h2 className="text-2xl font-bold mt-12 mb-4" {...props} />,
+              h3: ({ ...props }) => <h3 className="text-xl font-bold mt-8 mb-3" {...props} />,
+              p: ({ ...props }) => <p className="mb-4 leading-relaxed" {...props} />,
+              ul: ({ ...props }) => <ul className="list-disc list-inside space-y-2 mb-4" {...props} />,
+              ol: ({ ...props }) => <ol className="list-decimal list-inside space-y-2 mb-4" {...props} />,
+              li: ({ ...props }) => <li className="mb-1" {...props} />,
+              blockquote: ({ ...props }) => (
+                <blockquote
+                  className="border-l-4 border-blue-600 pl-4 italic text-gray-600 my-4"
+                  {...props}
+                />
+              ),
+              code: ({ ...props }) => (
+                <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono" {...props} />
+              ),
+              pre: ({ ...props }) => (
+                <pre className="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto mb-4" {...props} />
+              ),
+              a: ({ ...props }) => <a className="text-blue-600 hover:text-blue-700 underline" {...props} />,
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
         </div>
 
         <div className="mt-16 pt-8 border-t border-gray-200">
