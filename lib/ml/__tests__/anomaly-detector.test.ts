@@ -1,34 +1,54 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import { Decimal } from "@prisma/client/runtime/library";
 import { detectAnomaliesInBatch, detectFacilityTrendAnomalies, detectDuplicateRecords } from "../anomaly-detector";
 import { prisma } from "@/lib/db";
 
 describe("Anomaly Detection", () => {
-  const orgId = "test-org-123";
-  const facilityId = "test-facility-123";
   const categoryId = "s1-stationary";
+  let orgId: string;
+  let facilityId: string;
+  let userId: string;
   let recordIds: string[] = [];
 
   beforeAll(async () => {
+    // Create test user
+    const user = await prisma.user.create({
+      data: {
+        email: `test-anomaly-${Date.now()}@example.com`,
+        name: "Test User",
+      },
+    });
+    userId = user.id;
+
     // Create test org and facility
     const org = await prisma.organization.create({
-      data: { name: "Test Org", slug: "test-org" },
+      data: { name: "Test Org" },
     });
+    orgId = org.id;
 
     const facility = await prisma.facility.create({
       data: {
         organizationId: org.id,
         name: "Test Facility",
-        headcount: 100,
-        footprintSqm: 5000,
+      },
+    });
+    facilityId = facility.id;
+
+    const reportingPeriod = await prisma.reportingPeriod.create({
+      data: {
+        organizationId: org.id,
+        type: "year",
+        label: "2024",
+        startDate: new Date("2024-01-01"),
+        endDate: new Date("2024-12-31"),
       },
     });
 
     const category = await prisma.emissionCategory.create({
       data: {
-        organizationId: org.id,
         code: categoryId,
         name: "Stationary Combustion",
-        scope: "1",
+        scope: 1,
       },
     });
 
@@ -48,14 +68,12 @@ describe("Anomaly Detection", () => {
           organizationId: org.id,
           facilityId: facility.id,
           emissionCategoryId: category.id,
-          reportingPeriodId: "period-1",
-          originalAmount: rec.amount,
-          originalUnit: "kg",
-          normalizedAmount: rec.amount,
-          normalizedUnit: "kg",
+          reportingPeriodId: reportingPeriod.id,
+          createdByUserId: userId,
+          amount: new Decimal(rec.amount),
+          unit: "kg",
           sourceDescription: "Test record",
           activityDate: new Date(Date.now() + rec.offset * 24 * 60 * 60 * 1000),
-          reviewStatus: "approved",
         },
       });
       recordIds.push(created.id);
@@ -65,9 +83,11 @@ describe("Anomaly Detection", () => {
   afterAll(async () => {
     // Cleanup
     await prisma.activityRecord.deleteMany({ where: { organizationId: orgId } });
-    await prisma.emissionCategory.deleteMany({ where: { organizationId: orgId } });
+    await prisma.reportingPeriod.deleteMany({ where: { organizationId: orgId } });
     await prisma.facility.deleteMany({ where: { organizationId: orgId } });
+    await prisma.emissionCategory.deleteMany({ where: { code: categoryId } });
     await prisma.organization.deleteMany({ where: { id: orgId } });
+    await prisma.user.deleteMany({ where: { id: userId } });
   });
 
   it("should detect z-score anomalies (>3 sigma)", async () => {

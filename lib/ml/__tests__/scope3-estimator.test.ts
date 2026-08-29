@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { Decimal } from "@prisma/client/runtime/library";
 import {
   estimateScope3Energy,
   estimateScope3Waste,
@@ -9,35 +10,56 @@ import {
 import { prisma } from "@/lib/db";
 
 describe("Scope 3 Estimation", () => {
-  const orgId = "test-org-scope3";
+  let orgId: string;
   let facilityId: string;
   let categoryId: string;
+  let reportingPeriodId: string;
+  let userId: string;
 
   beforeAll(async () => {
+    // Create test user
+    const user = await prisma.user.create({
+      data: {
+        email: `test-scope3-${Date.now()}@example.com`,
+        name: "Test User",
+      },
+    });
+    userId = user.id;
+
     // Create test org, facility, and category
     const org = await prisma.organization.create({
-      data: { name: "Test Org Scope3", slug: "test-scope3" },
+      data: { name: "Test Org Scope3" },
     });
+    orgId = org.id;
 
     const facility = await prisma.facility.create({
       data: {
         organizationId: org.id,
         name: "Manufacturing Facility",
-        headcount: 250,
-        footprintSqm: 10000,
-        sectorCode: "manufacturing",
         country: "GB",
       },
     });
+    facilityId = facility.id;
+
+    const reportingPeriod = await prisma.reportingPeriod.create({
+      data: {
+        organizationId: org.id,
+        type: "year",
+        label: "Test Period",
+        startDate: new Date("2024-01-01"),
+        endDate: new Date("2024-12-31"),
+      },
+    });
+    reportingPeriodId = reportingPeriod.id;
 
     const category = await prisma.emissionCategory.create({
       data: {
-        organizationId: org.id,
         code: "s3-energy-consumption",
         name: "Scope 3 Energy",
-        scope: "3",
+        scope: 3,
       },
     });
+    categoryId = category.id;
 
     // Create some historical data for estimation context
     for (let i = 0; i < 10; i++) {
@@ -46,29 +68,26 @@ describe("Scope 3 Estimation", () => {
           organizationId: org.id,
           facilityId: facility.id,
           emissionCategoryId: category.id,
-          reportingPeriodId: "period-1",
-          originalAmount: 5000 + Math.random() * 2000,
-          originalUnit: "kWh",
-          normalizedAmount: 5000 + Math.random() * 2000,
-          normalizedUnit: "kWh",
+          reportingPeriodId: reportingPeriod.id,
+          createdByUserId: userId,
+          amount: new Decimal(5000 + Math.random() * 2000),
+          unit: "kWh",
           sourceDescription: "Utility bill",
           activityDate: new Date(Date.now() - i * 30 * 24 * 60 * 60 * 1000),
-          reviewStatus: "approved",
         },
       });
     }
-
-    facilityId = facility.id;
-    categoryId = category.id;
   });
 
   afterAll(async () => {
     // Cleanup
     await prisma.activityRecord.deleteMany({ where: { organizationId: orgId } });
-    await prisma.emissionCategory.deleteMany({ where: { organizationId: orgId } });
+    await prisma.reportingPeriod.deleteMany({ where: { organizationId: orgId } });
     await prisma.facility.deleteMany({ where: { organizationId: orgId } });
     await prisma.scope3Estimate.deleteMany({ where: { organizationId: orgId } });
+    await prisma.emissionCategory.deleteMany({ where: { code: "s3-energy-consumption" } });
     await prisma.organization.deleteMany({ where: { id: orgId } });
+    await prisma.user.deleteMany({ where: { id: userId } });
   });
 
   it("should estimate energy consumption", async () => {
@@ -151,7 +170,7 @@ describe("Scope 3 Estimation", () => {
       const rejected = await prisma.scope3Estimate.findFirst({
         where: {
           organizationId: orgId,
-          facilityId,
+          facilitId: facilityId,
           status: "rejected",
         },
       });
