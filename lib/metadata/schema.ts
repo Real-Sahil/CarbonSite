@@ -130,7 +130,7 @@ export function generateProductSchema(product: ProductSchema): Record<string, an
     offers: {
       '@type': 'Offer',
       price: product.price,
-      priceCurrency: product.priceCurrency || 'USD',
+      priceCurrency: product.priceCurrency || 'GBP',
       availability: product.availability || 'https://schema.org/InStock',
       url: 'https://carbonsite.app/pricing',
     },
