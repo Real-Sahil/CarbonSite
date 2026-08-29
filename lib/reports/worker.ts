@@ -112,7 +112,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         expiresAt: verificationTokenData.expiresAt,
       });
 
-      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/public/reports/verify/${verificationTokenData.token}`;
+      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/public/reports/verify/${verificationTokenData.token}`;
 
       let pdfBuffer = await stampAuditMetadata(rawPdfBuffer, {
         snapshotId: report.snapshot.calculationRunId,
