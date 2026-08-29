@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireOrgMember } from '@/lib/auth/session';
 import { handleRouteError } from '@/lib/validation/api';
 import { prisma } from '@/lib/db';
-import { validateImportBatch, saveQualityCheckResults } from '@/lib/validation/data-quality';
+import { scoreImportQuality, calculateMetrics } from '@/lib/data-quality/quality-scorer';
 import { z } from 'zod';
 
 const paramSchema = z.object({
@@ -19,36 +19,18 @@ export async function GET(
 
     paramSchema.parse({ importId });
 
-    // TODO: Implement data quality checking after DataQualityCheck model added to schema
-    return NextResponse.json(
-      {
-        code: 'NOT_IMPLEMENTED',
-        message: 'Quality report feature coming in Phase 1B. Data quality validation framework not yet available.',
-      },
-      { status: 501 }
-    );
-
-    /* DISABLED: Waiting for DataQualityCheck model in schema
     const importBatch = await prisma.importBatch.findUniqueOrThrow({
       where: { id: importId },
       include: {
-        stagedRecords: {
-          select: {
-            rowNumber: true,
-            data: true,
-            validationErrors: true,
-            validationWarnings: true,
-            status: true,
-          },
-        },
-        qualityScore: true,
         qualityChecks: {
           orderBy: { createdAt: 'desc' },
+        },
+        organization: {
+          select: { id: true, name: true },
         },
       },
     });
 
-    /* DISABLED: Waiting for DataQualityCheck model in schema
     if (importBatch.organizationId !== orgId) {
       return NextResponse.json(
         { code: 'UNAUTHORIZED', message: 'Organization mismatch' },
@@ -56,74 +38,31 @@ export async function GET(
       );
     }
 
-    // If quality checks already ran, return cached result
-    if (importBatch.qualityScore) {
-      return NextResponse.json({
-        success: true,
-        qualityScore: {
-          overallScore: importBatch.qualityScore.overallScore,
-          checksPassed: importBatch.qualityScore.checksPassed,
-          checksTotal: importBatch.qualityScore.checksTotal,
-          canCommit: importBatch.qualityScore.canCommit,
-        },
-        checks: importBatch.qualityChecks.map((check) => ({
-          type: check.checkType,
-          name: check.checkName,
-          passed: check.passed,
-          failuresCount: check.failuresCount,
-          failureSamples: check.failureSamples,
-        })),
-        cachedAt: importBatch.qualityScore.createdAt,
-      });
-    }
+    // Calculate quality score from existing checks
+    const qualityScore = await scoreImportQuality(importId, importBatch.qualityChecks);
 
-    // Prepare records for validation
-    const records = importBatch.stagedRecords.map((record: any) => ({
-      ...record.data,
-      rowNumber: record.rowNumber,
-    }));
-
-    if (records.length === 0) {
-      return NextResponse.json({
-        success: true,
-        qualityScore: {
-          overallScore: 0,
-          checksPassed: 0,
-          checksTotal: 0,
-          canCommit: false,
-        },
-        checks: [],
-        message: 'No records to validate',
-      });
-    }
-
-    // Run quality checks
-    const checkResults = await validateImportBatch(importId, orgId, records);
-
-    // Save results to database
-    const { overallScore, canCommit } = await saveQualityCheckResults(
-      importId,
-      orgId,
-      checkResults
-    );
+    // Get broader metrics across recent imports
+    const metrics = await calculateMetrics(orgId, importId);
 
     return NextResponse.json({
       success: true,
-      qualityScore: {
-        overallScore,
-        checksPassed: checkResults.filter((c) => c.passed).length,
-        checksTotal: checkResults.length,
-        canCommit,
-      },
-      checks: checkResults.map((check) => ({
-        type: check.type,
-        name: check.name,
+      batchName: `Import ${importBatch.id.slice(0, 8)}`,
+      importDate: importBatch.createdAt,
+      totalRows: importBatch.rowCount ?? 0,
+      successfulRows: (importBatch.rowCount ?? 0) - importBatch.errorCount,
+      qualityScore,
+      metrics,
+      checks: importBatch.qualityChecks.map((check) => ({
+        id: check.id,
+        type: check.checkType,
+        name: check.checkName,
         passed: check.passed,
-        failuresCount: check.failures?.length || 0,
-        failureSamples: check.failures,
+        failuresCount: check.failuresCount,
+        failureSamples: check.failureSamples,
+        metadata: check.metadata,
+        createdAt: check.createdAt,
       })),
     });
-    */
   } catch (error) {
     return handleRouteError(error);
   }

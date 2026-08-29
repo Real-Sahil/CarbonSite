@@ -1,0 +1,42 @@
+{
+  "dashboard": {
+    "title": "Field Submission Status",
+    "tags": ["carbonsite", "field-submissions"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Submissions by Status",
+        "type": "stat",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT status, COUNT(*) as count FROM field_submissions WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY status"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "title": "Average Review Time",
+        "type": "stat",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT AVG(EXTRACT(epoch FROM (reviewed_at - created_at)) / 3600) as hours FROM field_submissions WHERE reviewed_at IS NOT NULL AND created_at > NOW() - INTERVAL '7 days'"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "title": "Submission Timeline",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT DATE_TRUNC('day', created_at) as time, COUNT(*) as count FROM field_submissions WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY time ORDER BY time"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 }
+      }
+    ]
+  }
+}
