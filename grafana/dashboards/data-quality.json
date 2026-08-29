@@ -1,0 +1,42 @@
+{
+  "dashboard": {
+    "title": "Data Quality Metrics",
+    "tags": ["carbonsite", "data-quality"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Overall Quality Score",
+        "type": "gauge",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT AVG(quality_score) as score FROM data_quality_checks WHERE created_at > NOW() - INTERVAL '7 days'"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "title": "Quality Score Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT CASE WHEN quality_score >= 85 THEN 'Excellent' WHEN quality_score >= 70 THEN 'Good' WHEN quality_score >= 50 THEN 'Fair' ELSE 'Poor' END as level, COUNT(*) as count FROM data_quality_checks WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY level"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "title": "Dimension Scores Trend",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT DATE_TRUNC('day', created_at) as time, AVG(quality_score) as score FROM data_quality_checks WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY time ORDER BY time"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 }
+      }
+    ]
+  }
+}

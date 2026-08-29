@@ -1,0 +1,42 @@
+{
+  "dashboard": {
+    "title": "Report Generation Pipeline",
+    "tags": ["carbonsite", "reports"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Reports by Status",
+        "type": "stat",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT status, COUNT(*) as count FROM reports WHERE created_at > NOW() - INTERVAL '24 hours' GROUP BY status"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "title": "Average Generation Time",
+        "type": "stat",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT AVG(EXTRACT(epoch FROM (published_at - created_at))) / 60 as minutes FROM reports WHERE status = 'ready' AND created_at > NOW() - INTERVAL '7 days'"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "title": "Report Generation Timeline",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "rawSql": "SELECT DATE_TRUNC('hour', created_at) as time, COUNT(*) as count FROM reports WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY time ORDER BY time"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 }
+      }
+    ]
+  }
+}
