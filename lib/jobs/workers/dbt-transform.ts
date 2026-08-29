@@ -8,23 +8,6 @@ export interface DbtTransformJobData {
   organizationId: string;
 }
 
-export async function runDbtTransformation(calculationRunId: string, organizationId: string) {
-  // TODO: Phase 2 feature — dbt transformation workflow
-  // Requires: DbtRun table in Prisma schema, dbt CLI in PATH, environment configuration
-  console.log(`[dbt-transform] Deferred for calculation run ${calculationRunId}`);
-
-  // For now, just mark calculation run as succeeded without dbt transformation
-  await prisma.calculationRun.update({
-    where: { id: calculationRunId },
-    data: {
-      status: 'succeeded',
-      finishedAt: new Date()
-    }
-  });
-
-  return null;
-}
-
 async function executeDbtModels(env: NodeJS.ProcessEnv): Promise<string> {
   return new Promise((resolve, reject) => {
     let output = '';
@@ -32,7 +15,7 @@ async function executeDbtModels(env: NodeJS.ProcessEnv): Promise<string> {
 
     const dbtProcess: ChildProcess = spawn('dbt', ['run', '--select', 'models/marts/*', '--profiles-dir', 'dbt'], {
       env,
-      cwd: global.process.cwd()
+      cwd: process.cwd()
     });
 
     dbtProcess.stdout?.on('data', (data: Buffer) => {
@@ -72,13 +55,11 @@ function parseDbtOutput(output: string): {
     testsFailed: 0
   };
 
-  // Parse "Done. XXXX model(s) created/updated in XXXX.XXs." format
   const modelMatch = output.match(/Done\.\s+(\d+)\s+model/);
   if (modelMatch) {
     stats.modelCount = parseInt(modelMatch[1], 10);
   }
 
-  // Parse test results "Completed successfully" or "XXXX of XXXX passed"
   const testPassMatch = output.match(/(\d+)\s+of\s+(\d+)\s+tests passed/i);
   if (testPassMatch) {
     stats.testsPassed = parseInt(testPassMatch[1], 10);
@@ -86,7 +67,6 @@ function parseDbtOutput(output: string): {
     stats.testsFailed = stats.testCount - stats.testsPassed;
   }
 
-  // Try to extract rows affected from materializations
   const rowsMatch = output.match(/Creating table ".*?" \.\.\.\s+(\d+) rows/gi);
   if (rowsMatch) {
     stats.rowsAffected = rowsMatch.reduce((sum, match) => {
@@ -98,9 +78,76 @@ function parseDbtOutput(output: string): {
   return stats;
 }
 
+export async function runDbtTransformation(calculationRunId: string, organizationId: string) {
+  const startTime = Date.now();
+  let dbtRun = await prisma.dbtRun.create({
+    data: {
+      organizationId,
+      calculationRunId,
+      status: 'running',
+      dbtCommand: 'dbt run --select models/marts/*'
+    }
+  });
+
+  try {
+    const env = { ...process.env, DBT_PROFILES_DIR: 'dbt' };
+    const dbtOutput = await executeDbtModels(env);
+    const stats = parseDbtOutput(dbtOutput);
+
+    const duration = Date.now() - startTime;
+
+    dbtRun = await prisma.dbtRun.update({
+      where: { id: dbtRun.id },
+      data: {
+        status: 'succeeded',
+        dbtOutput,
+        rowsAffected: stats.rowsAffected,
+        modelsCreated: stats.modelCount,
+        testCount: stats.testCount,
+        testsPassed: stats.testsPassed,
+        testsFailed: stats.testsFailed,
+        duration,
+        completedAt: new Date()
+      }
+    });
+
+    await prisma.calculationRun.update({
+      where: { id: calculationRunId },
+      data: {
+        status: 'succeeded',
+        finishedAt: new Date()
+      }
+    });
+
+    return dbtRun;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const duration = Date.now() - startTime;
+
+    await prisma.dbtRun.update({
+      where: { id: dbtRun.id },
+      data: {
+        status: 'failed',
+        errorMessage,
+        duration,
+        completedAt: new Date()
+      }
+    });
+
+    await prisma.calculationRun.update({
+      where: { id: calculationRunId },
+      data: {
+        status: 'failed',
+        errorMessage,
+        finishedAt: new Date()
+      }
+    });
+
+    throw error;
+  }
+}
+
 export async function handleDbtTransformJob(job: Job<DbtTransformJobData>) {
   const { calculationRunId, organizationId } = job.data;
-  console.log(`[dbt-transform] starting for calculation run ${calculationRunId}`);
   await runDbtTransformation(calculationRunId, organizationId);
-  console.log(`[dbt-transform] finished for calculation run ${calculationRunId}`);
 }

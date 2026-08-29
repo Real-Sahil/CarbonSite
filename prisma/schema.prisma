@@ -217,6 +217,9 @@ model Organization {
   invoiceRecords              InvoiceRecord[]              @relation("InvoiceRecords")
   invoiceAnomalies            InvoiceAnomaly[]             @relation("InvoiceAnomalies")
   integrationConfig           IntegrationConfig?
+  dbtRuns                     DbtRun[]                     @relation("DbtRuns")
+  n8nWorkflows                N8nWorkflow[]                @relation("N8nWorkflows")
+  n8nExecutions               N8nExecution[]               @relation("N8nExecutions")
 
   @@map("organizations")
 }
@@ -994,6 +997,7 @@ model CalculationRun {
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
+  dbtRuns            DbtRun[]              @relation("DbtRuns")
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -2947,5 +2951,83 @@ model IntegrationConfig {
 
   @@index([organizationId])
   @@map("integration_configs")
+}
+
+// ─── Phase 3: Data Transformation & Orchestration ──────────────────────────
+
+model DbtRun {
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  calculationRunId  String    @map("calculation_run_id")
+  status            String    @default("pending") @map("status") // 'pending', 'running', 'succeeded', 'failed'
+  dbtCommand        String    @map("dbt_command") // 'dbt run', 'dbt test', etc.
+  dbtOutput         String?   @map("dbt_output") // Raw dbt CLI output
+  rowsAffected      Int       @default(0) @map("rows_affected")
+  modelsCreated     Int       @default(0) @map("models_created")
+  testCount         Int       @default(0) @map("test_count")
+  testsPassed       Int       @default(0) @map("tests_passed")
+  testsFailed       Int       @default(0) @map("tests_failed")
+  duration          Int?      @map("duration") // milliseconds
+  errorMessage      String?   @map("error_message")
+  startedAt         DateTime  @default(now()) @map("started_at")
+  completedAt       DateTime? @map("completed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  organization   Organization   @relation("DbtRuns", fields: [organizationId], references: [id], onDelete: Cascade)
+  calculationRun CalculationRun @relation("DbtRuns", fields: [calculationRunId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, calculationRunId])
+  @@index([organizationId, status, createdAt(sort: Desc)])
+  @@map("dbt_runs")
+}
+
+model N8nWorkflow {
+  id                String          @id @default(cuid())
+  organizationId    String          @map("organization_id")
+  n8nWorkflowId     String          @map("n8n_workflow_id") // ID from n8n instance
+  name              String
+  description       String?
+  trigger           String          @map("trigger") // 'report_ready', 'field_submission', 'import_complete', 'manual'
+  action            String          @map("action") // 'send_email', 'slack_notification', 'create_jira_ticket', 'update_spreadsheet'
+  enabled           Boolean         @default(true)
+  n8nWebhookUrl     String?         @map("n8n_webhook_url") // Encrypted, for CarbonSite → n8n direction
+  config            Json // Workflow-specific config (email templates, Slack channels, etc.)
+  lastTriggeredAt   DateTime?       @map("last_triggered_at")
+  lastTriggeredBy   String?         @map("last_triggered_by") // Event type that triggered it
+  failureCount      Int             @default(0) @map("failure_count")
+  lastFailedAt      DateTime?       @map("last_failed_at")
+  lastFailureReason String?         @map("last_failure_reason")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  organization Organization       @relation("N8nWorkflows", fields: [organizationId], references: [id], onDelete: Cascade)
+  executions       N8nExecution[]
+
+  @@unique([organizationId, n8nWorkflowId])
+  @@index([organizationId, trigger, enabled])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("n8n_workflows")
+}
+
+model N8nExecution {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  workflowId      String    @map("workflow_id")
+  n8nExecutionId  String    @map("n8n_execution_id") // ID from n8n
+  triggerEvent    String    @map("trigger_event") // 'report_ready', 'field_submission', etc.
+  status          String    @default("running") @map("status") // 'running', 'success', 'error', 'timeout'
+  output          Json?     @map("output") // Workflow output data
+  errorMessage    String?   @map("error_message")
+  duration        Int?      @map("duration") // milliseconds
+  startedAt       DateTime  @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation("N8nExecutions", fields: [organizationId], references: [id], onDelete: Cascade)
+  workflow         N8nWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, workflowId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("n8n_executions")
 }
 
