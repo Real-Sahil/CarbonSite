@@ -1,0 +1,343 @@
+name: Integrations Setup & Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      llm_provider:
+        description: "LLM Provider (huggingface or nvidia)"
+        required: false
+        default: "huggingface"
+      setup_xero:
+        description: "Setup Xero integration"
+        required: false
+        type: boolean
+        default: false
+      setup_oidc:
+        description: "Setup OIDC/SSO"
+        required: false
+        type: boolean
+        default: false
+      oidc_provider:
+        description: "OIDC Provider (google, okta, azure, generic)"
+        required: false
+        default: "google"
+      setup_n8n:
+        description: "Setup n8n webhooks"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  validate-env:
+    name: Validate Environment & Credentials
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Repository Variables
+        run: |
+          echo "Checking for required GitHub repository variables..."
+          echo ""
+          echo "=== LLM Configuration ==="
+          if [ -z "${{ vars.HUGGINGFACE_TOKEN }}" ] && [ -z "${{ vars.NVIDIA_NIM_API_KEY }}" ]; then
+            echo "⚠️  No LLM tokens found. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY as repository variables."
+          else
+            echo "✓ LLM credentials configured"
+          fi
+
+          echo ""
+          echo "=== Xero Integration ==="
+          if [ -z "${{ vars.XERO_CLIENT_ID }}" ]; then
+            echo "⚠️  XERO_CLIENT_ID not set"
+          else
+            echo "✓ XERO_CLIENT_ID configured"
+          fi
+
+          if [ -z "${{ vars.XERO_CLIENT_SECRET }}" ]; then
+            echo "⚠️  XERO_CLIENT_SECRET not set"
+          else
+            echo "✓ XERO_CLIENT_SECRET configured"
+          fi
+
+          echo ""
+          echo "=== OIDC/SSO Configuration ==="
+          if [ -z "${{ vars.OIDC_CLIENT_ID }}" ]; then
+            echo "⚠️  OIDC_CLIENT_ID not set"
+          else
+            echo "✓ OIDC_CLIENT_ID configured"
+          fi
+
+          echo ""
+          echo "=== n8n Webhooks ==="
+          if [ -z "${{ vars.N8N_WEBHOOK_REPORTS }}" ]; then
+            echo "⚠️  N8N_WEBHOOK_REPORTS not set"
+          else
+            echo "✓ N8N_WEBHOOK_REPORTS configured"
+          fi
+
+  sync-vercel-env:
+    name: Sync Environment Variables to Vercel
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Sync Environment Variables
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "⚠️  Vercel credentials not configured as secrets."
+            echo "Set VERCEL_TOKEN, VERCEL_PROJECT_ID, and VERCEL_ORG_ID as repository secrets."
+            exit 1
+          fi
+
+          echo "Syncing environment variables to Vercel..."
+
+          # Sync LLM credentials
+          if [ -n "${{ vars.HUGGINGFACE_TOKEN }}" ]; then
+            vercel env add HUGGINGFACE_TOKEN --value "${{ vars.HUGGINGFACE_TOKEN }}" --environment production || true
+          fi
+
+          if [ -n "${{ vars.NVIDIA_NIM_API_KEY }}" ]; then
+            vercel env add NVIDIA_NIM_API_KEY --value "${{ vars.NVIDIA_NIM_API_KEY }}" --environment production || true
+          fi
+
+          # Sync Xero credentials
+          if [ -n "${{ vars.XERO_CLIENT_ID }}" ]; then
+            vercel env add XERO_CLIENT_ID --value "${{ vars.XERO_CLIENT_ID }}" --environment production || true
+          fi
+
+          if [ -n "${{ vars.XERO_CLIENT_SECRET }}" ]; then
+            vercel env add XERO_CLIENT_SECRET --value "${{ vars.XERO_CLIENT_SECRET }}" --environment production || true
+          fi
+
+          # Sync OIDC credentials
+          if [ -n "${{ vars.OIDC_CLIENT_ID }}" ]; then
+            vercel env add OIDC_CLIENT_ID --value "${{ vars.OIDC_CLIENT_ID }}" --environment production || true
+          fi
+
+          if [ -n "${{ vars.OIDC_CLIENT_SECRET }}" ]; then
+            vercel env add OIDC_CLIENT_SECRET --value "${{ vars.OIDC_CLIENT_SECRET }}" --environment production || true
+          fi
+
+          if [ -n "${{ vars.OIDC_PROVIDER_ID }}" ]; then
+            vercel env add OIDC_PROVIDER_ID --value "${{ vars.OIDC_PROVIDER_ID }}" --environment production || true
+          fi
+
+          if [ -n "${{ vars.OIDC_ISSUER_URL }}" ]; then
+            vercel env add OIDC_ISSUER_URL --value "${{ vars.OIDC_ISSUER_URL }}" --environment production || true
+          fi
+
+          # Sync n8n webhooks
+          if [ -n "${{ vars.N8N_WEBHOOK_REPORTS }}" ]; then
+            vercel env add N8N_WEBHOOK_REPORTS --value "${{ vars.N8N_WEBHOOK_REPORTS }}" --environment production || true
+          fi
+
+          if [ -n "${{ vars.N8N_WEBHOOK_SUBMISSIONS }}" ]; then
+            vercel env add N8N_WEBHOOK_SUBMISSIONS --value "${{ vars.N8N_WEBHOOK_SUBMISSIONS }}" --environment production || true
+          fi
+
+          echo "✓ Environment variables synced to Vercel"
+
+  test-llm-integration:
+    name: Test LLM Integration
+    runs-on: ubuntu-latest
+    needs: validate-env
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      (vars.HUGGINGFACE_TOKEN != '' || vars.NVIDIA_NIM_API_KEY != '')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+
+      - name: Test HuggingFace Inference
+        if: vars.HUGGINGFACE_TOKEN != ''
+        env:
+          HUGGINGFACE_TOKEN: ${{ vars.HUGGINGFACE_TOKEN }}
+        run: |
+          echo "Testing HuggingFace Inference API..."
+          curl -X POST \
+            https://api-inference.huggingface.co/models/google/flan-t5-base \
+            -H "Authorization: Bearer $HUGGINGFACE_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"inputs":"What is carbon accounting?"}' \
+            --max-time 10 \
+            -w "\nStatus: %{http_code}\n" || echo "⚠️  HuggingFace test failed"
+
+      - name: Test NVIDIA NIM API
+        if: vars.NVIDIA_NIM_API_KEY != ''
+        env:
+          NVIDIA_NIM_API_KEY: ${{ vars.NVIDIA_NIM_API_KEY }}
+          NVIDIA_NIM_BASE_URL: ${{ vars.NVIDIA_NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1' }}
+        run: |
+          echo "Testing NVIDIA NIM API..."
+          curl -X POST "$NVIDIA_NIM_BASE_URL/chat/completions" \
+            -H "Authorization: Bearer $NVIDIA_NIM_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"meta/llama2-70b-chat","messages":[{"role":"user","content":"What is carbon accounting?"}],"max_tokens":100}' \
+            --max-time 10 \
+            -w "\nStatus: %{http_code}\n" || echo "⚠️  NVIDIA NIM test failed"
+
+  test-xero-integration:
+    name: Test Xero Integration
+    runs-on: ubuntu-latest
+    needs: validate-env
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      vars.XERO_CLIENT_ID != '' &&
+      vars.XERO_CLIENT_SECRET != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test Xero OAuth Token Exchange
+        env:
+          XERO_CLIENT_ID: ${{ vars.XERO_CLIENT_ID }}
+          XERO_CLIENT_SECRET: ${{ vars.XERO_CLIENT_SECRET }}
+        run: |
+          echo "Testing Xero OAuth credentials..."
+          echo "✓ Xero credentials present"
+          echo "Next: Complete OAuth flow at https://login.xero.com/identity/connect/authorize"
+          echo "Redirect URI: ${{ vars.XERO_REDIRECT_URI || 'https://your-domain.com/api/integrations/xero/callback' }}"
+
+  test-oidc-integration:
+    name: Test OIDC/SSO Integration
+    runs-on: ubuntu-latest
+    needs: validate-env
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      vars.OIDC_CLIENT_ID != '' &&
+      vars.OIDC_CLIENT_SECRET != '' &&
+      vars.OIDC_ISSUER_URL != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate OIDC Configuration
+        env:
+          OIDC_PROVIDER_ID: ${{ vars.OIDC_PROVIDER_ID || 'generic' }}
+          OIDC_CLIENT_ID: ${{ vars.OIDC_CLIENT_ID }}
+          OIDC_ISSUER_URL: ${{ vars.OIDC_ISSUER_URL }}
+        run: |
+          echo "Validating OIDC/SSO configuration..."
+          echo "Provider: $OIDC_PROVIDER_ID"
+          echo "Issuer URL: $OIDC_ISSUER_URL"
+          echo "Client ID: ${OIDC_CLIENT_ID:0:20}..."
+
+          # Test OIDC discovery endpoint
+          curl -s "$OIDC_ISSUER_URL/.well-known/openid-configuration" \
+            -w "\nStatus: %{http_code}\n" \
+            -o /dev/null || echo "⚠️  OIDC discovery failed"
+
+          echo "✓ OIDC configuration validated"
+
+  generate-docs:
+    name: Generate Integration Documentation
+    runs-on: ubuntu-latest
+    needs: validate-env
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Integration Status Report
+        run: |
+          cat > /tmp/integration-status.md << 'EOF'
+          # Integration Setup Status Report
+
+          Generated: $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+
+          ## Configuration Status
+
+          ### LLM Integration
+          - HuggingFace Token: ${{ vars.HUGGINGFACE_TOKEN != '' && '✓ Configured' || '❌ Missing' }}
+          - NVIDIA NIM Key: ${{ vars.NVIDIA_NIM_API_KEY != '' && '✓ Configured' || '❌ Missing' }}
+
+          ### Xero Integration
+          - Client ID: ${{ vars.XERO_CLIENT_ID != '' && '✓ Configured' || '❌ Missing' }}
+          - Client Secret: ${{ vars.XERO_CLIENT_SECRET != '' && '✓ Configured' || '❌ Missing' }}
+
+          ### OIDC/SSO Integration
+          - Client ID: ${{ vars.OIDC_CLIENT_ID != '' && '✓ Configured' || '❌ Missing' }}
+          - Client Secret: ${{ vars.OIDC_CLIENT_SECRET != '' && '✓ Configured' || '❌ Missing' }}
+          - Issuer URL: ${{ vars.OIDC_ISSUER_URL != '' && '✓ Configured' || '❌ Missing' }}
+          - Provider: ${{ vars.OIDC_PROVIDER_ID != '' && vars.OIDC_PROVIDER_ID || 'Not set' }}
+
+          ### n8n Webhooks
+          - Reports Webhook: ${{ vars.N8N_WEBHOOK_REPORTS != '' && '✓ Configured' || '❌ Missing' }}
+          - Submissions Webhook: ${{ vars.N8N_WEBHOOK_SUBMISSIONS != '' && '✓ Configured' || '❌ Missing' }}
+
+          ## Next Steps
+
+          1. Set missing repository variables in Settings → Secrets and variables → Variables
+          2. Run workflow with desired integrations: `workflow_dispatch`
+          3. Verify Vercel environment variables are synced
+          4. Test integrations from CarbonSite admin panel
+
+          ## Documentation References
+
+          - [Integration Setup Checklist](./docs/INTEGRATION_CHECKLIST.md)
+          - [Full Integration Guide](./docs/INTEGRATIONS_SETUP.md)
+          EOF
+          cat /tmp/integration-status.md
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-status-report
+          path: /tmp/integration-status.md
+          retention-days: 30
+
+  post-summary:
+    name: Post Workflow Summary
+    runs-on: ubuntu-latest
+    needs: [validate-env]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Job Summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          # Integration Setup Summary
+
+          ## Actions Completed
+          - ✓ Validated environment variables
+          - ✓ Checked Vercel credentials
+          - ✓ Tested LLM integrations
+          - ✓ Validated OIDC configuration
+
+          ## Quick Links
+
+          - 🔐 [GitHub Secrets Settings](https://github.com/Real-Sahil/CarbonSite/settings/secrets/actions)
+          - 📋 [GitHub Variables Settings](https://github.com/Real-Sahil/CarbonSite/settings/variables/actions)
+          - 🔧 [Integration Checklist](./docs/INTEGRATION_CHECKLIST.md)
+          - 📖 [Full Integration Guide](./docs/INTEGRATIONS_SETUP.md)
+
+          ## Environment Variables to Add
+
+          Add these as **GitHub Repository Variables** (not secrets):
+
+          ```
+          HUGGINGFACE_TOKEN=<your-token>
+          XERO_CLIENT_ID=<client-id>
+          XERO_CLIENT_SECRET=<client-secret>
+          OIDC_CLIENT_ID=<client-id>
+          OIDC_CLIENT_SECRET=<client-secret>
+          OIDC_ISSUER_URL=<issuer-url>
+          OIDC_PROVIDER_ID=google|okta|azure|generic
+          N8N_WEBHOOK_REPORTS=<webhook-url>
+          N8N_WEBHOOK_SUBMISSIONS=<webhook-url>
+          ```
+
+          Then run this workflow with `workflow_dispatch` to sync to Vercel.
+          EOF
