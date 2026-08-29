@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /blog/
+Allow: /pricing/
+Allow: /comparison/
+Allow: /case-studies/
+Disallow: /api/
+Disallow: /app/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /_next/
+Disallow: /admin/
+
+# Crawl-delay for polite crawling
+Crawl-delay: 0
+
+# Sitemap
+Sitemap: https://carbonsite.ai/sitemap.xml

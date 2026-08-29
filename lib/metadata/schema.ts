@@ -1,86 +1,61 @@
-/**
- * JSON-LD Schema.org generators for rich snippets (Google Search)
- */
+export interface JsonLdSchema {
+  '@context': string;
+  '@type': string;
+  [key: string]: unknown;
+}
 
-export interface BlogPostSchema {
-  title: string;
+export function buildOrganizationSchema(): JsonLdSchema {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'CarbonSite',
+    url: 'https://carbonsite.ai',
+    logo: 'https://carbonsite.ai/logo.png',
+    description: 'Carbon accounting platform for small-to-mid-market companies',
+    sameAs: [
+      'https://twitter.com/carbonsiteapp',
+      'https://linkedin.com/company/carbonsite',
+      'https://github.com/carbonsite/carbonsite',
+    ],
+    contact: {
+      '@type': 'ContactPoint',
+      contactType: 'Customer Support',
+      email: 'support@carbonsite.ai',
+      url: 'https://carbonsite.ai/support',
+    },
+  };
+}
+
+export function buildArticleSchema(article: {
+  headline: string;
   description: string;
-  image?: string;
+  image: string;
   datePublished: string;
   dateModified?: string;
   author: string;
-  url: string;
-  wordCount?: number;
-}
-
-export interface FAQSchema {
-  question: string;
-  answer: string;
-}
-
-export interface OrganizationSchema {
-  name: string;
-  logo?: string;
-  url: string;
-  sameAs?: string[];
-  foundingDate?: string;
-  description?: string;
-}
-
-export interface ProductSchema {
-  name: string;
-  description: string;
-  image?: string;
-  price: string;
-  priceCurrency?: string;
-  availability?: string;
-  rating?: {
-    ratingValue: number;
-    reviewCount: number;
-  };
-}
-
-/**
- * Generate BlogPosting schema for blog posts
- */
-export function generateBlogPostSchema(post: BlogPostSchema): Record<string, any> {
+  slug: string;
+}): JsonLdSchema {
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.description,
-    image: post.image,
-    datePublished: post.datePublished,
-    dateModified: post.dateModified || post.datePublished,
+    headline: article.headline,
+    description: article.description,
+    image: article.image,
+    datePublished: article.datePublished,
+    dateModified: article.dateModified || article.datePublished,
     author: {
-      '@type': 'Organization',
-      name: post.author,
-      url: 'https://carbonsite.app',
+      '@type': 'Person',
+      name: article.author,
     },
-    publisher: {
-      '@type': 'Organization',
-      name: 'CarbonSite',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://carbonsite.app/logo.png',
-      },
-    },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': post.url,
-    },
-    wordCount: post.wordCount || 1200,
+    url: `https://carbonsite.ai/blog/${article.slug}`,
   };
 }
 
-/**
- * Generate FAQPage schema for FAQ sections
- */
-export function generateFAQSchema(faqs: FAQSchema[]): Record<string, any> {
+export function buildFaqSchema(faqs: Array<{ question: string; answer: string }>): JsonLdSchema {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
+    mainEntity: faqs.map(faq => ({
       '@type': 'Question',
       name: faq.question,
       acceptedAnswer: {
@@ -91,96 +66,15 @@ export function generateFAQSchema(faqs: FAQSchema[]): Record<string, any> {
   };
 }
 
-/**
- * Generate Organization schema
- */
-export function generateOrganizationSchema(org: OrganizationSchema): Record<string, any> {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: org.name,
-    url: org.url,
-    logo: org.logo || 'https://carbonsite.app/logo.png',
-    description: org.description || 'Carbon emissions accounting platform',
-    sameAs: org.sameAs || [
-      'https://twitter.com/CarbonSiteApp',
-      'https://linkedin.com/company/carbonsite',
-      'https://github.com/real-sahil/carbonsite',
-    ],
-    foundingDate: org.foundingDate,
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'Sales',
-      url: 'https://carbonsite.app/contact',
-      email: 'sales@carbonsite.app',
-    },
-  };
-}
-
-/**
- * Generate Product schema (for pricing page)
- */
-export function generateProductSchema(product: ProductSchema): Record<string, any> {
-  const schema: Record<string, any> = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    description: product.description,
-    image: product.image,
-    offers: {
-      '@type': 'Offer',
-      price: product.price,
-      priceCurrency: product.priceCurrency || 'GBP',
-      availability: product.availability || 'https://schema.org/InStock',
-      url: 'https://carbonsite.app/pricing',
-    },
-  };
-
-  if (product.rating) {
-    schema.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue: product.rating.ratingValue,
-      reviewCount: product.rating.reviewCount,
-    };
-  }
-
-  return schema;
-}
-
-/**
- * Generate BreadcrumbList schema (for navigation)
- */
-export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+export function buildBreadcrumbSchema(items: Array<{ name: string; url: string }>): JsonLdSchema {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => ({
+    itemListElement: items.map((item, idx) => ({
       '@type': 'ListItem',
-      position: index + 1,
+      position: idx + 1,
       name: item.name,
-      item: item.url,
+      item: `https://carbonsite.ai${item.url}`,
     })),
   };
-}
-
-/**
- * Convert schema to JSON-LD script tag HTML string
- */
-export function schemaToScriptTag(schema: Record<string, any>): string {
-  return `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
-}
-
-/**
- * Batch schema generator for multiple schemas on one page
- */
-export function generateMultipleSchemas(...schemas: Record<string, any>[]): string {
-  if (schemas.length === 1) {
-    return schemaToScriptTag(schemas[0]);
-  }
-
-  // For multiple schemas, wrap in @graph
-  return schemaToScriptTag({
-    '@context': 'https://schema.org',
-    '@graph': schemas,
-  });
 }

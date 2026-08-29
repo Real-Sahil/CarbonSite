@@ -1,0 +1,207 @@
+---
+title: "Building for Audit: How CarbonSite Ensures Immutability"
+excerpt: "Auditors must trust that historical emissions data wasn't altered. Here's how CarbonSite's hash chain guarantees immutability."
+date: "2024-09-28"
+author: "CarbonSite"
+readingTime: 8
+tags: ["Audit Trail", "Immutability", "Compliance", "Security"]
+image: "https://images.unsplash.com/photo-1633356122544-f134324ef6cb?w=1200&h=630&fit=crop"
+---
+
+## The Auditor's Trust Problem
+
+It's November 2024. An external auditor reviews your 2023 emissions report. They want to verify:
+
+**"How do we know your 2023 data wasn't changed in January 2024?"**
+
+Most platforms can't answer this. Here's why:
+
+### Traditional Database (Updatable)
+```sql
+-- Original record (2023)
+UPDATE emissions SET amount = 1000 WHERE id = 12345 AND date = '2023-11-15';
+
+-- Later, someone modifies it (2024)
+UPDATE emissions SET amount = 500 WHERE id = 12345 AND date = '2023-11-15';
+
+-- Auditor queries: SELECT amount FROM emissions WHERE id = 12345;
+-- Result: 500
+-- Auditor has no way to know it was changed.
+```
+
+**Result:** Auditor has to trust your company's internal controls. But they have no technical proof that data integrity was maintained.
+
+<Callout type="critical">
+**The Problem:** Traditional databases allow updates. Even with audit logs, there's a chain-of-trust problem: who maintains the audit logs? What if they're altered too?
+</Callout>
+
+## The Immutability Solution
+
+CarbonSite uses an **append-only audit log with SHA-256 hash chaining**. Here's how it works:
+
+### 1. Append-Only Database (No Updates)
+```sql
+-- Only INSERTs allowed on AuditLog table
+-- UPDATEs and DELETEs are forbidden by database constraints
+
+INSERT INTO audit_log (action, record_id, old_value, new_value, timestamp, actor, previous_hash, hash)
+VALUES (
+  'calculation.create',
+  'calc_12345',
+  NULL,
+  '{co2e: 1000, factor: "defra_2024"}',
+  '2024-09-28 10:42:15',
+  'alice@company.com',
+  'a3f2e1d9c8b7a6f5...',  -- Previous record's hash
+  'b4g3f2e0d9c8b7a5...'    -- This record's hash
+);
+```
+
+### 2. SHA-256 Hash Chain
+Each audit log entry contains:
+- **Previous hash:** Links to the prior record
+- **Content hash:** Hash of this record's data
+- **Chain:** If any prior record is altered, hash chain breaks
+
+**Example chain:**
+```
+Record 1 (2024-01-15): hash = abc123
+Record 2 (2024-01-16): previous_hash = abc123, hash = def456
+Record 3 (2024-01-17): previous_hash = def456, hash = ghi789
+Record 4 (2024-01-18): previous_hash = ghi789, hash = jkl012
+
+If someone tries to change Record 2's data:
+  - Record 2's new hash would be different (xyz999)
+  - Record 3's previous_hash still points to old hash (def456)
+  - Mismatch detected: chain is broken
+```
+
+### 3. Auditability
+Auditors can verify:
+```
+1. Download entire audit trail
+2. Compute hash of Record 1 (should match stored hash: abc123)
+3. Compute hash of Record 2 (should match stored hash: def456)
+4. Check that Record 2's previous_hash = Record 1's hash (abc123)
+5. Repeat for all 10,000 records
+6. If any hash mismatches, data was altered
+```
+
+<ProofPoint>
+**Trust established:** If all hashes match and previous_hash chain is unbroken, auditor can mathematically prove no data was altered since the chain was created.
+</ProofPoint>
+
+## What Gets Logged (Immutably)
+
+Every "sensitive" action is logged:
+
+### Factor Imports
+```
+[2024-09-01 09:30] Factor import: DEFRA 2024.1
+  - Electricity grid emissions factor: 0.198 kg CO₂e/kWh
+  - Actor: alice@company.com
+  - Source: DEFRA official conversion factors
+  - Hash: a3f2e1d9c8b7a6f5...
+  - Previous hash: 92c7b5f3e1a8d6c9...
+```
+
+### Calculation Runs
+```
+[2024-09-15 14:22] Calculation run #42 created
+  - Organization: Acme Corp
+  - Period: Q3 2024
+  - Records processed: 10,442
+  - Methodology: ghg-protocol-v2024-01
+  - Status: complete
+  - Result: 50,234.56 tonnes CO₂e
+  - Actor: bob@company.com
+  - Hash: b4g3f2e0d9c8b7a5...
+  - Previous hash: a3f2e1d9c8b7a6f5...
+```
+
+### Snapshot Publication
+```
+[2024-09-20 16:45] Snapshot published: Q3 2024 Report
+  - Calculation run: #42
+  - Published by: charlie@company.com
+  - Released to auditors: yes
+  - Status: locked (can't be recalculated without new run)
+  - Hash: c5h4g3f1e0d9c8b6...
+  - Previous hash: b4g3f2e0d9c8b7a5...
+```
+
+### Scope 3 Submissions
+```
+[2024-09-10 11:15] Scope 3 data submitted: Supplier ABC
+  - Submitted by: field_worker@supplier.com
+  - Data: {spend: $2.5M, emissions_intensity: 0.45}
+  - Location: upload from mobile app
+  - Offline-synced: yes
+  - Hash: d6i5h4g2f1e0d9c7...
+  - Previous hash: c5h4g3f1e0d9c8b6...
+```
+
+## Audit Evidence Export
+
+When auditors arrive, you can generate a compliance evidence package:
+
+```
+📦 Q3_2024_Audit_Evidence.zip
+├── README.md (instructions for auditor)
+├── audit_trail.csv (all 10,000 log entries)
+├── hash_verification.json (all hashes + chain proof)
+├── factor_library_snapshot.json (DEFRA factors used in 2024-09)
+├── calculation_formulas.md (GHG Protocol methodology)
+├── sample_calculations.xlsx (10 example records traced end-to-end)
+└── digital_signature.pgp (signed by your organization)
+```
+
+Auditor can:
+1. Download the CSV
+2. Run hash verification script (provided)
+3. Confirm no tampering occurred
+4. Verify factor selections
+5. Review calculation methodology
+
+**Time to verify:** 2–3 hours (vs. 3–4 weeks for traditional audits).
+
+## Regulatory Alignment
+
+CarbonSite's immutable architecture aligns with:
+- **ISO 14064-2:** Requires audit trails + evidence preservation
+- **CSRD:** Requires auditable methodology + immutable records
+- **SOC 2:** Requires logging + integrity controls
+- **GDPR:** Audit trail satisfies lawful basis documentation
+
+---
+
+## The Business Case
+
+| Metric | Manual Audit | CarbonSite Audit |
+|--------|---|---|
+| **Time to prepare evidence** | 3–4 weeks | 30 minutes (export) |
+| **Time for auditor verification** | 3–4 weeks | 2–3 hours |
+| **Cost of audit delays** | $50–100k | <$5k |
+| **Auditor confidence** | Moderate (trust-based) | High (mathematically proven) |
+
+---
+
+## Next Steps
+
+1. **Review audit architecture** → See how immutability works
+2. **Try the platform** → Generate test evidence package
+3. **Share with auditors** → Let them verify the process
+
+<CTABlock
+  title="Explore Immutable Audit Architecture"
+  description="Download whitepaper on hash chains, audit trails, and compliance readiness."
+  buttonText="Read Whitepaper"
+  buttonHref="/docs/audit-architecture"
+/>
+
+---
+
+**Related reading:**
+- [Open-Source Carbon Accounting: Why Transparency Matters](/blog/open-source-transparency)
+- [From Field to Finance: The Complete Emissions Data Journey](/blog/data-journey-field-to-finance)
+- [Carbon Accounting at Scale: Why Your Dashboard Feels Slow](/blog/performance-at-scale)

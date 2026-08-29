@@ -1,328 +1,300 @@
-import Link from "next/link";
-import { Metadata } from "next";
-import { Check, X } from "lucide-react";
+'use client';
 
-export const metadata: Metadata = {
-  title: "Comparison | CarbonSite vs. Competitors",
-  description: "How CarbonSite compares to other carbon accounting platforms. Transparency, field capture, audit readiness.",
-  openGraph: {
-    title: "Comparison | CarbonSite vs. Competitors",
-    description: "Feature-by-feature comparison of carbon accounting platforms.",
-    type: "website",
-  },
+import { useState, useMemo } from 'react';
+import { Check, X, AlertCircle } from 'lucide-react';
+
+type Feature = {
+  id: string;
+  name: string;
+  category: 'Field Capture' | 'Calculation' | 'Reporting' | 'Integration';
+  carbonsite: boolean | 'partial';
+  gaia: boolean | 'partial';
+  persefoni: boolean | 'partial';
+  watershed: boolean | 'partial';
+  emitwise: boolean | 'partial';
+  differentiator?: boolean;
 };
 
-interface Feature {
-  name: string;
-  carbonsite: boolean;
-  normative: boolean;
-  watershed: boolean;
-  gaia: boolean;
-  emitwise: boolean;
-}
+const FEATURES: Feature[] = [
+  // Field Capture
+  { id: 'ocr', name: 'On-device OCR capture', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'offline', name: 'Offline-first sync', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'mobile-app', name: 'Mobile field app', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'photo-upload', name: 'Photo/document upload', category: 'Field Capture', carbonsite: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
+  { id: 'gps-tagging', name: 'GPS auto-tagging', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: 'partial', watershed: false, emitwise: false },
 
-interface Category {
-  category: string;
-  items: Feature[];
-}
+  // Calculation
+  { id: 'audit-trail', name: 'Append-only audit trail', category: 'Calculation', carbonsite: true, gaia: 'partial', persefoni: true, watershed: 'partial', emitwise: 'partial', differentiator: true },
+  { id: 'hash-chain', name: 'SHA-256 hash chain', category: 'Calculation', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'scope3-estimation', name: 'Scope 3 ML estimation', category: 'Calculation', carbonsite: true, gaia: false, persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'invoice-sync', name: 'Invoice sync (Xero/SAP/QB)', category: 'Calculation', carbonsite: true, gaia: false, persefoni: 'partial', watershed: 'partial', emitwise: false },
+  { id: 'anomaly-detection', name: 'Anomaly detection', category: 'Calculation', carbonsite: true, gaia: false, persefoni: 'partial', watershed: false, emitwise: false },
+  { id: 'custom-factors', name: 'Custom emission factors', category: 'Calculation', carbonsite: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
+
+  // Reporting
+  { id: 'real-time-dashboard', name: 'Real-time dashboard (SSE)', category: 'Reporting', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'data-lineage', name: 'Data lineage visualization', category: 'Reporting', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'compliance-export', name: 'Compliance evidence export', category: 'Reporting', carbonsite: true, gaia: false, persefoni: 'partial', watershed: 'partial', emitwise: false },
+  { id: 'multi-framework', name: 'Multi-framework (CSRD/SBTi)', category: 'Reporting', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'pdf-csv-export', name: 'PDF/CSV report export', category: 'Reporting', carbonsite: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
+
+  // Integration
+  { id: 'api-versioning', name: 'API versioning', category: 'Integration', carbonsite: true, gaia: false, persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'sso-saml', name: 'SSO/SAML (Okta/Azure)', category: 'Integration', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: false },
+  { id: 'webhooks', name: 'Webhooks & event streams', category: 'Integration', carbonsite: true, gaia: false, persefoni: true, watershed: true, emitwise: false },
+  { id: 'open-source', name: 'Open-source code', category: 'Integration', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+];
+
+const COMPETITORS = ['carbonsite', 'gaia', 'persefoni', 'watershed', 'emitwise'] as const;
+const COMPETITOR_DISPLAY = {
+  carbonsite: { name: 'CarbonSite', color: 'bg-blue-50 dark:bg-blue-950', accent: 'text-blue-700' },
+  gaia: { name: 'Gaia', color: 'bg-gray-50 dark:bg-gray-900', accent: 'text-gray-700' },
+  persefoni: { name: 'Persefoni', color: 'bg-gray-50 dark:bg-gray-900', accent: 'text-gray-700' },
+  watershed: { name: 'Watershed', color: 'bg-gray-50 dark:bg-gray-900', accent: 'text-gray-700' },
+  emitwise: { name: 'Emitwise', color: 'bg-gray-50 dark:bg-gray-900', accent: 'text-gray-700' },
+};
+
+const PRICING = {
+  carbonsite: { tier: 'Freemium', price: '$0–Custom' },
+  gaia: { tier: 'Enterprise', price: '$100+/mo' },
+  persefoni: { tier: 'Enterprise', price: 'Custom' },
+  watershed: { tier: 'Premium', price: '$500+/mo' },
+  emitwise: { tier: 'Mid-market', price: '€50+/mo' },
+};
+
+const CATEGORIES = ['Field Capture', 'Calculation', 'Reporting', 'Integration'] as const;
 
 export default function ComparisonPage() {
-  const features: Category[] = [
-    {
-      category: "Data Ingestion",
-      items: [
-        { name: "CSV/Excel Import", carbonsite: true, normative: true, watershed: true, gaia: true, emitwise: true },
-        { name: "API Integrations", carbonsite: true, normative: true, watershed: true, gaia: false, emitwise: false },
-        { name: "Mobile Field Capture", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-        { name: "OCR for Documents", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-        { name: "Offline-First Sync", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-      ],
-    },
-    {
-      category: "Calculation Engine",
-      items: [
-        { name: "Scope 1/2 Calculation", carbonsite: true, normative: true, watershed: true, gaia: true, emitwise: true },
-        { name: "Scope 3 Estimation", carbonsite: true, normative: true, watershed: true, gaia: true, emitwise: false },
-        { name: "Custom Emission Factors", carbonsite: true, normative: true, watershed: true, gaia: true, emitwise: false },
-        { name: "Methodology Versioning", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-        { name: "Formula Transparency", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-      ],
-    },
-    {
-      category: "Reporting & Audit",
-      items: [
-        { name: "Custom Report Builder", carbonsite: true, normative: true, watershed: true, gaia: true, emitwise: true },
-        { name: "Audit Trail", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-        { name: "Data Lineage Visualization", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-        { name: "Immutable Snapshots", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-        { name: "Version Control for Reports", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-      ],
-    },
-    {
-      category: "Compliance",
-      items: [
-        { name: "CSRD Ready", carbonsite: true, normative: true, watershed: true, gaia: true, emitwise: false },
-        { name: "SBTi Integration", carbonsite: true, normative: true, watershed: true, gaia: false, emitwise: false },
-        { name: "CDP Export Template", carbonsite: true, normative: true, watershed: true, gaia: false, emitwise: false },
-        { name: "Open Methodology", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-      ],
-    },
-    {
-      category: "Enterprise",
-      items: [
-        { name: "SSO/SAML", carbonsite: true, normative: true, watershed: true, gaia: true, emitwise: false },
-        { name: "Role-Based Access Control", carbonsite: true, normative: true, watershed: true, gaia: true, emitwise: false },
-        { name: "Audit-Grade Security Logs", carbonsite: true, normative: false, watershed: false, gaia: false, emitwise: false },
-        { name: "Transparent Pricing", carbonsite: true, normative: false, watershed: false, gaia: true, emitwise: true },
-      ],
-    },
-  ];
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set(CATEGORIES));
 
-  const competitors = [
-    { name: "CarbonSite", slug: "carbonsite" },
-    { name: "Normative", slug: "normative" },
-    { name: "Watershed", slug: "watershed" },
-    { name: "Gaia", slug: "gaia" },
-    { name: "Emitwise", slug: "emitwise" },
-  ];
+  const filteredFeatures = useMemo(() => {
+    return FEATURES.filter(f => selectedCategories.has(f.category));
+  }, [selectedCategories]);
+
+  const toggleCategory = (category: string) => {
+    const newSet = new Set(selectedCategories);
+    if (newSet.has(category)) {
+      newSet.delete(category);
+    } else {
+      newSet.add(category);
+    }
+    setSelectedCategories(newSet);
+  };
+
+  const renderFeatureCell = (value: boolean | 'partial') => {
+    if (value === true) {
+      return <Check className="w-5 h-5 text-green-600" strokeWidth={3} />;
+    }
+    if (value === 'partial') {
+      return <AlertCircle className="w-5 h-5 text-yellow-600" strokeWidth={3} />;
+    }
+    return <X className="w-5 h-5 text-gray-300" strokeWidth={3} />;
+  };
+
+  const differentiatorCount = FEATURES.filter(f => f.differentiator && selectedCategories.has(f.category)).length;
 
   return (
-    <div className="min-h-[100dvh] bg-[#FAFBF8] text-[#111827] py-20">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-16">
-          <h1 className="text-5xl font-bold tracking-tight mb-4">
-            How CarbonSite Compares
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-blue-50 to-slate-50 dark:from-blue-950 dark:to-slate-950 border-b border-slate-200 dark:border-slate-800 px-4 py-12 md:py-16">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+            CarbonSite vs. Competitors
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl">
-            Detailed feature comparison across leading carbon accounting platforms. We focus on transparency, audit readiness, and data quality.
+          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">
+            See how CarbonSite stacks up. We focus on field-first architecture, transparency, and Scope 3 automation—advantages that matter for enterprises and mid-market companies managing emissions at scale.
           </p>
         </div>
+      </div>
 
-        {/* Feature Comparison - Desktop Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-16 hidden md:block">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-6 py-4 text-left font-semibold text-gray-900">Feature</th>
-                  {competitors.map((comp) => (
-                    <th
-                      key={comp.slug}
-                      className={`px-6 py-4 text-center font-semibold min-w-[120px] ${
-                        comp.slug === "carbonsite" ? "bg-blue-50 text-blue-900" : "text-gray-900"
-                      }`}
-                    >
-                      {comp.name}
-                    </th>
+      {/* Category Filter */}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 px-4 py-4">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Filter by category:</p>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => toggleCategory(cat)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedCategories.has(cat)
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          {differentiatorCount > 0 && (
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-3">
+              Showing {differentiatorCount} CarbonSite-exclusive features in selected categories
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Comparison Table */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            {/* Header */}
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-800">
+                <th className="text-left py-4 px-4 font-semibold text-slate-900 dark:text-white sticky left-0 bg-white dark:bg-slate-950 w-48">
+                  Feature
+                </th>
+                {COMPETITORS.map(comp => (
+                  <th key={comp} className="text-center py-4 px-4">
+                    <div className={`py-3 rounded-lg ${COMPETITOR_DISPLAY[comp].color}`}>
+                      <p className="font-bold text-slate-900 dark:text-white">{COMPETITOR_DISPLAY[comp].name}</p>
+                      {comp === 'carbonsite' && (
+                        <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-1">LEADER</p>
+                      )}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+              {/* Pricing Row */}
+              <tr className="border-b-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+                <td className="text-left py-3 px-4 font-semibold text-slate-900 dark:text-white sticky left-0 bg-slate-50 dark:bg-slate-900">
+                  Pricing & Tier
+                </td>
+                {COMPETITORS.map(comp => (
+                  <td key={comp} className="text-center py-3 px-4 text-sm">
+                    <p className="font-bold text-slate-900 dark:text-white">{PRICING[comp].price}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">{PRICING[comp].tier}</p>
+                  </td>
+                ))}
+              </tr>
+            </thead>
+
+            {/* Feature Rows */}
+            <tbody>
+              {filteredFeatures.map((feature, idx) => (
+                <tr
+                  key={feature.id}
+                  className={`border-b border-slate-200 dark:border-slate-800 transition-colors ${
+                    feature.differentiator
+                      ? 'bg-blue-50 dark:bg-blue-950/30'
+                      : idx % 2 === 0
+                        ? 'bg-white dark:bg-slate-950'
+                        : 'bg-slate-50 dark:bg-slate-900'
+                  }`}
+                >
+                  <td className="text-left py-4 px-4 font-medium text-slate-900 dark:text-white sticky left-0 z-10 w-48 bg-inherit">
+                    <div className="flex items-start gap-2">
+                      {feature.differentiator && (
+                        <span className="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap mt-0.5">
+                          Exclusive
+                        </span>
+                      )}
+                      <span>{feature.name}</span>
+                    </div>
+                  </td>
+                  {COMPETITORS.map(comp => (
+                    <td key={`${feature.id}-${comp}`} className="text-center py-4 px-4">
+                      <div className="flex justify-center">
+                        {renderFeatureCell((feature[comp as keyof Feature] as boolean | 'partial') || false)}
+                      </div>
+                    </td>
                   ))}
                 </tr>
-              </thead>
-              <tbody>
-                {features.map((category) => (
-                  <tr key={`cat-${category.category}`}>
-                    <td colSpan={6} className="px-6 py-3 bg-gray-100">
-                      <span className="font-semibold text-gray-900">{category.category}</span>
-                    </td>
-                  </tr>
-                ))}
-
-                {features.map((category) =>
-                  category.items.map((item) => (
-                    <tr key={item.name} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
-                      <td className="px-6 py-4 text-center bg-blue-50">
-                        {item.carbonsite ? (
-                          <Check className="w-5 h-5 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="w-5 h-5 text-gray-400 mx-auto" />
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {item.normative ? (
-                          <Check className="w-5 h-5 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="w-5 h-5 text-gray-400 mx-auto" />
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {item.watershed ? (
-                          <Check className="w-5 h-5 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="w-5 h-5 text-gray-400 mx-auto" />
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {item.gaia ? (
-                          <Check className="w-5 h-5 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="w-5 h-5 text-gray-400 mx-auto" />
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {item.emitwise ? (
-                          <Check className="w-5 h-5 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="w-5 h-5 text-gray-400 mx-auto" />
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        {/* Feature Comparison - Mobile Cards */}
-        <div className="md:hidden mb-16 space-y-8">
-          {features.map((category) => (
-            <div key={`mobile-${category.category}`}>
-              <h3 className="text-lg font-bold mb-4 text-gray-900">{category.category}</h3>
-              <div className="space-y-3">
-                {category.items.map((item) => (
-                  <div key={`mobile-item-${item.name}`} className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">{item.name}</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      {competitors.map((comp) => {
-                        const hasFeature = item[comp.slug as keyof Feature] as boolean;
-                        return (
-                          <div
-                            key={`mobile-check-${comp.slug}`}
-                            className={`flex items-center gap-2 p-2 rounded ${
-                              comp.slug === "carbonsite"
-                                ? "bg-blue-50"
-                                : "bg-gray-50"
-                            }`}
-                          >
-                            {hasFeature ? (
-                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                            ) : (
-                              <X className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                            )}
-                            <span className="text-gray-900 font-medium">{comp.name}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* Legend */}
+        <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Legend:</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-600" strokeWidth={3} />
+              <span className="text-sm text-slate-600 dark:text-slate-400">Full support</span>
             </div>
-          ))}
-        </div>
-
-        {/* Key Differentiators */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <div className="bg-white rounded-lg border border-gray-200 p-8">
-            <h3 className="text-xl font-bold mb-4">CarbonSite&apos;s Unique Strengths</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Mobile field capture with OCR (no other platform offers this)</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Open methodology on GitHub (reproducible and auditable)</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Immutable snapshots and formula storage (audit-grade)</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Transparent, usage-based pricing (vs. enterprise custom quotes)</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-8">
-            <h3 className="text-xl font-bold mb-4">When to Choose CarbonSite</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span>You need transparent, auditable calculations</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span>Your field workers capture data (mobile OCR)</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span>You want predictable, transparent pricing</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span>Audit readiness is a priority</span>
-              </li>
-            </ul>
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-yellow-600" strokeWidth={3} />
+              <span className="text-sm text-slate-600 dark:text-slate-400">Partial / limited support</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <X className="w-5 h-5 text-gray-300" strokeWidth={3} />
+              <span className="text-sm text-slate-600 dark:text-slate-400">Not available</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Pricing Comparison */}
-        <div className="bg-white rounded-lg border border-gray-200 p-8 mb-16">
-          <h3 className="text-2xl font-bold mb-6">Pricing Comparison</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-6 py-3 text-left font-semibold">Tier</th>
-                  <th className="px-6 py-3 text-center font-semibold">CarbonSite</th>
-                  <th className="px-6 py-3 text-center font-semibold">Normative</th>
-                  <th className="px-6 py-3 text-center font-semibold">Watershed</th>
-                  <th className="px-6 py-3 text-center font-semibold">Gaia</th>
-                  <th className="px-6 py-3 text-center font-semibold">Emitwise</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-gray-200">
-                  <td className="px-6 py-3 font-medium">Startup/Pilot</td>
-                  <td className="px-6 py-3 text-center">Free</td>
-                  <td className="px-6 py-3 text-center text-gray-500">Not available</td>
-                  <td className="px-6 py-3 text-center text-gray-500">Not available</td>
-                  <td className="px-6 py-3 text-center">$5-10k/year</td>
-                  <td className="px-6 py-3 text-center">Free tier</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="px-6 py-3 font-medium">SMB</td>
-                  <td className="px-6 py-3 text-center">$50/month</td>
-                  <td className="px-6 py-3 text-center text-gray-500">Not available</td>
-                  <td className="px-6 py-3 text-center text-gray-500">Not available</td>
-                  <td className="px-6 py-3 text-center">$15-30k/year</td>
-                  <td className="px-6 py-3 text-center">$50-500/year</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="px-6 py-3 font-medium">Mid-Market</td>
-                  <td className="px-6 py-3 text-center">$200-500/month</td>
-                  <td className="px-6 py-3 text-center">$50k+/year</td>
-                  <td className="px-6 py-3 text-center">$50k+/year</td>
-                  <td className="px-6 py-3 text-center">$30-75k/year</td>
-                  <td className="px-6 py-3 text-center">$500-5k/year</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 font-medium">Enterprise</td>
-                  <td className="px-6 py-3 text-center">Custom</td>
-                  <td className="px-6 py-3 text-center">Custom (100k+)</td>
-                  <td className="px-6 py-3 text-center">Custom (100k+)</td>
-                  <td className="px-6 py-3 text-center">Custom</td>
-                  <td className="px-6 py-3 text-center">Not available</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="bg-blue-50 rounded-lg border border-blue-100 p-12 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to switch?</h2>
-          <p className="text-lg text-gray-600 mb-8">
-            We make migration easy. Import your existing data, audit our methodology, and start publishing audit-ready reports.
+      {/* CTA Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-900 dark:to-blue-950 px-4 py-12 md:py-16 mt-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Ready to choose the right platform?
+          </h2>
+          <p className="text-blue-100 mb-8 text-lg">
+            CarbonSite brings field-first architecture, transparent methodology, and automated Scope 3 collection. See it in action.
           </p>
-          <Link
-            href="/pricing"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 transition-colors"
-          >
-            View Pricing
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/pricing"
+              className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-lg font-semibold transition-colors"
+            >
+              View Pricing
+            </a>
+            <a
+              href="/demo"
+              className="bg-blue-500 hover:bg-blue-400 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+            >
+              Schedule Demo
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="max-w-4xl mx-auto px-4 py-12 md:py-16">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-8">Comparison FAQ</h2>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              Why does CarbonSite have on-device OCR when others don&apos;t?
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              Field workers often operate in areas with poor connectivity. Our Flutter app uses Google ML Kit for on-device OCR—zero API calls, zero latency, 100% privacy. Data syncs when they reconnect, offline-first.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              What&apos;s the difference between append-only audit trail and a normal database log?
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              Normal database logs can be tampered with if someone gains admin access. Our audit trail is immutable: each entry references the previous entry&apos;s SHA-256 hash. If anyone alters a past entry, the hash chain breaks. Auditors can detect tampering instantly.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              How does CarbonSite&apos;s Scope 3 estimation work compared to competitors?
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              Competitors use historical industry averages (generic). CarbonSite trains ML models on YOUR historical data—learns your facility&apos;s patterns, then estimates missing values. More accurate than one-size-fits-all factors, and it improves as you submit more data.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              Why is open-source important for carbon accounting?
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              Auditors and regulators need to verify calculation logic. Closed-box tools hide formulas. CarbonSite&apos;s code is public on GitHub. Auditors inspect it, fork it, verify it. That transparency builds enterprise trust.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              Which platform should we choose based on this comparison?
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              Choose based on your workflow. Field-heavy operations (contractors, waste management, logistics) benefit most from CarbonSite&apos;s mobile OCR and offline support. Enterprise audit-critical orgs (publicly traded, regulated) value our hash-chain immutability and compliance exports. Supplier-heavy companies (apparel, food, manufacturing) need our supplier portal and automated Scope 3 collection.
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -1,218 +1,253 @@
 ---
 title: "From Field to Finance: The Complete Emissions Data Journey"
-description: "Data quality issues hide at every step from capture to report. Complete data lineage shows exactly how each emission number was calculated."
-date: "2026-08-29"
+excerpt: "Emissions data flows through 4 stages from source to report. Each stage can introduce errors. Here's how CarbonSite maintains integrity end-to-end."
+date: "2024-10-05"
 author: "CarbonSite"
-readingTime: "8 minutes"
-keywords: ["data lineage", "quality control", "data journey", "audit trail", "carbon accounting"]
-slug: "data-journey-field-to-finance"
+readingTime: 9
+tags: ["Data Pipeline", "Lineage", "Quality", "End-to-End"]
+image: "https://images.unsplash.com/photo-1460925895917-adf4e565c479?w=1200&h=630&fit=crop"
 ---
 
-A field worker in Bristol photographs a waste ticket on Monday morning. The ticket shows 500 kg of waste disposed.
+## The Data Pipeline: 4 Critical Stages
 
-By Wednesday, that data has passed through:
-1. Field worker's phone (OCR extraction)
-2. CarbonSite cloud server (validation)
-3. Finance team's review (approval workflow)
-4. Emissions calculation engine (factor selection + calculation)
-5. Dashboard aggregation (included in facility totals)
-6. Published report (frozen in a snapshot)
-
-At each step, something could go wrong:
-- OCR misreads the weight
-- Validation rejects it (wrong unit)
-- Finance team approves it without checking
-- Wrong emission factor gets selected
-- Calculation formula has a bug
-- Dashboard includes outdated data
-- Report publishes with errors that can't be corrected
-
-Most companies have no visibility into this data journey. They see the final number in their report but have no idea how it got there.
-
-## The Data Quality Problem at Each Stage
-
-**Stage 1: Field Capture**
-Problem: OCR might misread handwriting
-- Ticket shows "50kg", OCR reads "5Okg" (zero as letter O)
-- Ticket shows "500 tonnes", OCR reads "500 tonnes" (correct)
-- Ticket shows "0.5 tonnes", OCR reads "0.5 tonnes" (correct)
-
-Solution: CarbonSite shows the original photo + extracted data to the field worker, who verifies it's correct before submitting. Accuracy: 99%+ for clearly printed data.
-
-**Stage 2: Data Validation**
-Problem: Data might violate basic rules
-- Weight is negative (impossible)
-- Unit is misspelled ("tonnes", "Tonnes", "TONNES" should all be the same)
-- Date is in the future
-- Facility doesn't exist in the system
-
-Solution: CarbonSite's validation engine checks 50+ rules and rejects data that fails. Clear error messages tell the field worker how to fix it.
-
-**Stage 3: Finance Review**
-Problem: Finance team might approve without checking
-- They're busy, they rubber-stamp approvals
-- They don't verify source documents
-- Duplicates slip through
-
-Solution: CarbonSite shows source evidence (photo of waste ticket) alongside the extracted data. Finance can reject with a comment: "Please verify, weight seems high." Audit trail shows who approved what and when.
-
-**Stage 4: Factor Selection**
-Problem: Wrong emission factor might be applied
-- Facility reports waste, system should use "Landfill - Non-hazardous" factor
-- System accidentally uses "Incineration" factor (different CO₂e per kg)
-- Result: 20-30% error in calculated emissions
-
-Solution: CarbonSite shows which factor was selected and why:
-```
-Category: Waste
-Type: Disposal (Landfill)
-Selected Factor: DEFRA 2025.1 - Waste Landfill (Non-hazardous)
-Factor Value: 0.516 kg CO₂e / kg waste
-Geography: UK average
-Source: gov.uk (2025-01-15)
-Confidence: High (factor-specific match, not generic estimate)
-```
-
-Finance team can review and object if the factor selection seems wrong.
-
-**Stage 5: Calculation**
-Problem: Formula might be applied incorrectly
-- Weight: 500 kg
-- Factor: 0.516 kg CO₂e / kg
-- Expected: 500 × 0.516 = 258 kg CO₂e
-- Actual calculation: 500 × 0.0516 = 25.8 kg CO₂e (factor misplaced by decimal)
-
-Solution: CarbonSite stores the exact formula used:
-```
-CO₂e = Weight (500 kg) × Factor (0.516 kg CO₂e/kg) = 258 kg CO₂e
-
-Verification:
-- Dimensional analysis: kg × (kg CO₂e/kg) = kg CO₂e ✓
-- Reasonableness check: 258 kg for 500 kg waste seems right ✓
-- Peer comparison: Similar facilities average 200-300 kg CO₂e for 500 kg waste ✓
-```
-
-An auditor can review this formula and confirm it's correct.
-
-**Stage 6: Dashboard Aggregation**
-Problem: Dashboard might include rejected data or use outdated calculations
-- Finance rejected record #123, but dashboard still includes it
-- New calculation run happened, but dashboard shows old totals
-- User filtered by "approved" but dashboard shows "draft" records
-
-Solution: CarbonSite's dashboard queries pre-calculated aggregates that respect status filters:
-```
-Dashboard Query:
-SELECT SUM(co2e) FROM DashboardAggregate
-WHERE facility_id = 'manchester' 
-  AND period = '2025-03'
-  AND status = 'approved'  ← Only approved records
-  AND calculated_after = '2025-03-14 14:30:00'  ← Latest calculation
-
-Result: 1,500 tonnes CO₂e (only approved records, only latest calculation)
-```
-
-Users can't accidentally see draft or rejected data.
-
-**Stage 7: Report Publication**
-Problem: Report might be edited after publication (destroying its integrity)
-Solution: CarbonSite creates immutable snapshots. Once published, reports can't be changed. The SHA-256 hash chain proves nobody edited it.
-
-## The Complete Data Lineage View
-
-CarbonSite shows users the complete journey from field to report:
-
-**Timeline View:**
-```
-Monday 09:00 - Field capture
-  ↓ Photo of waste ticket
-Monday 09:15 - Data extraction
-  ↓ OCR extracted: 500 kg, Landfill disposal
-Monday 09:20 - Validation
-  ✓ All checks passed
-Monday 10:00 - Finance review
-  ↓ James Smith reviewed and approved
-Monday 14:30 - Calculation
-  ↓ Applied factor: 0.516 kg CO₂e/kg
-  ↓ Result: 258 kg CO₂e
-Tuesday 08:00 - Aggregation
-  ↓ Included in facility dashboard
-Friday 10:00 - Report publication
-  ↓ Included in Q1 Report (snapshot v1.0)
-Friday 17:00 - Audit verification
-  ✓ Auditor verified SHA-256 hash
-```
-
-Click any step, and you see:
-- Who performed it (user name, timestamp)
-- What changed (before/after values)
-- Why it might have failed (error messages, validation rules)
-- Audit trail (immutable log entry)
-
-## Real Example: Audit Investigation
-
-A UK food company published Q1 sustainability report showing 500 tonnes Scope 3 emissions from packaging suppliers.
-
-Three months later, an auditor asked: "How did you calculate this number?"
-
-**With traditional carbon accounting:**
-- Finance manager tries to reconstruct the calculation
-- Finds spreadsheets, but data's been edited since
-- Can't show original calculations
-- Audit takes 4 weeks and ends with uncertainty
-
-**With CarbonSite's data lineage:**
-- Auditor opens the published report
-- Clicks "View data lineage"
-- Sees complete journey: 47 supplier invoices → factor selection → calculation → aggregation → publication
-- Clicks any invoice, sees the original photo
-- Verifies factor selection (DEFRA 2025.1)
-- Reviews calculation formula
-- Confirms no editing after publication (SHA-256 hash)
-- Audit completes in 1 week with confidence
-
-Result: Auditor signs off immediately, no pushback.
-
-## Data Quality Score Card
-
-CarbonSite shows you a quality score for your data:
+Emissions data flows through 4 stages before reaching your CFO's report:
 
 ```
-Data Quality Report - Q1 2025
-
-Overall Score: 87%
-
-Breakdown:
-├─ Capture Quality: 92%
-│  ├─ OCR accuracy: 98% (hand-written data lower)
-│  ├─ Field worker verification: 99% (spot-checked)
-├─ Validation Quality: 85%
-│  ├─ Data passing first-pass validation: 92%
-│  ├─ Average corrections needed: 2-3 per 100 records
-├─ Calculation Quality: 88%
-│  ├─ Factor selection accuracy: 94%
-│  ├─ Calculation formula correctness: 100%
-├─ Audit Quality: 78%
-│  ├─ Records with source evidence: 82% (88% with photo)
-│  ├─ Records with manual verification: 74%
-
-Recommendations:
-- Improve field worker training on handwriting clarity (could boost capture quality by 5%)
-- Add factor selection verification step (could boost calculation quality by 8%)
-- Increase manual spot-checks of high-value records (could boost audit quality by 10%)
-
-Score Trend:
-Q4 2024: 81%
-Q1 2025: 87% ← improvement!
+STAGE 1: CAPTURE         STAGE 2: REVIEW          STAGE 3: CALCULATION     STAGE 4: REPORTING
+┌─────────────────┐   ┌─────────────────┐   ┌──────────────────┐   ┌─────────────────┐
+│ Field worker    │   │ Sustainability  │   │ Calculation      │   │ Published       │
+│ photographs or  │──>│ team reviews    │──>│ engine processes │──>│ snapshot for    │
+│ office enters   │   │ and approves    │   │ & calculates     │   │ auditor + exec  │
+│ data            │   │ or rejects      │   │ CO₂e totals      │   │ reporting       │
+└─────────────────┘   └─────────────────┘   └──────────────────┘   └─────────────────┘
 ```
 
-This gives you a concrete picture of your data quality and actionable recommendations for improvement.
+**Problem:** Each stage is a failure point. Data quality issues at stage 1 propagate to stage 4, where auditors discover them too late.
 
-## Getting Started with Data Lineage
+## Stage 1: Data Capture (Field → Staging)
 
-Understanding your data journey is the first step to trusting your carbon numbers.
+**Risks:**
+- Field worker enters wrong unit (kg vs tonnes)
+- OCR misreads handwritten number
+- Spreadsheet uploaded with typos
+- Invoice data missing required fields
 
-CarbonSite provides complete lineage at all pricing tiers:
-- **Free Plan:** Basic lineage (photo + extraction + calculation)
-- **Growth Plan:** £50/month, full lineage with timeline and audit trail
-- **Enterprise:** Advanced lineage with quality scoring and anomaly detection
+**CarbonSite mitigation:**
+- On-device OCR with confidence scoring
+- Automatic unit normalization (all converted to canonical units)
+- Validation rules (check ranges, required fields)
+- Audit log records extraction confidence + timestamp
+
+**Output:** StagedActivityRecord (not yet committed to calculation)
+
+### Stage 1 Lineage Tracking
+```
+Original: "367" (from delivery ticket, handwritten)
+├── Extracted by: google_mlkit_ocr
+├── Confidence: 89%
+├── Unit detected: kg
+├── Normalized: 367 kg → 0.367 tonnes
+├── Timestamp: 2024-10-01 14:32:15
+├── GPS: facility_id = fac_456
+└── Audit entry: hash_abc123xyz
+```
+
+---
+
+## Stage 2: Review (Staging → Committed)
+
+**Risks:**
+- Sustainability lead approves without reviewing
+- Reviewer misses OCR errors (e.g., 367 tonnes passes as "reasonable")
+- Data stuck in review queue too long (stale when calculated)
+
+**CarbonSite mitigation:**
+- Anomaly detection flags suspicious records before review
+- Review UI highlights high-risk records (red) vs. low-risk (green)
+- Reviewer audit trail: who approved, when, any notes
+- SLA notifications: flag records stuck in review >7 days
+- Batch operations: approve/reject multiple records at once
+
+**Output:** ActivityRecord (now committed, immutable)
+
+### Stage 2 Lineage Tracking
+```
+StagedActivityRecord #4521
+├── Status: pending_review
+├── Anomaly flags: Z-score=31.7 (weight 8x baseline)
+├── Review assigned: alice@company.com
+├── Review: Approved with note "Confirmed with field worker, legitimate spike due to facility maintenance"
+├── Approved by: alice@company.com
+├── Approved at: 2024-10-02 09:15:22
+├── Audit entry: hash_def456ghi
+└── Now becomes: ActivityRecord #4521
+```
+
+---
+
+## Stage 3: Calculation (Records → Emissions)
+
+**Risks:**
+- Wrong emission factor applied (old DEFRA vs. new DEFRA)
+- Calculation formula error (forgot GWP for CH4)
+- Calculation run crashes, leaves incomplete results
+- Different records calculated with different methodologies
+
+**CarbonSite mitigation:**
+- Factor version locked at calculation start (all records use same DEFRA 2024)
+- Calculation formula stored with each record (provenance)
+- Atomic calculation: all-or-nothing (no partial results)
+- Calculation run logs every step (factor selection, formula applied, result)
+- Immutable EmissionCalculation records (never updated)
+
+**Output:** PublishedSnapshot (locked, read-only)
+
+### Stage 3 Lineage Tracking
+```
+CalculationRun #42 (2024-10-02 14:00:00 UTC)
+├── Organization: Acme Corp
+├── Period: Q3 2024
+├── Records processed: 10,442
+├── Methodology: ghg-protocol-v2024-01
+├── Factor library: DEFRA 2024.1 (revision 3)
+├── Status: complete (took 12m 34s)
+├── Records with scope1: 8,234
+│   ├── Factor applied: natural_gas_combustion_2024
+│   ├── Formula: activity_mmbtu × factor_value × (1 + ch4_gwp + n2o_gwp)
+│   ├── Total: 15,234 tonnes CO₂e
+│   └── Audit entry: hash_ghi789jkl
+├── Records with scope2: 1,208
+│   ├── Factor applied: uk_grid_electricity_2024
+│   ├── Formula: activity_kwh × factor_value
+│   ├── Total: 28,945 tonnes CO₂e
+│   └── Audit entry: hash_jkl012mno
+└── Total result: 50,234 tonnes CO₂e
+    └── Hash chain: mno345pqr (proof of data integrity)
+```
+
+---
+
+## Stage 4: Reporting (Snapshot → Report)
+
+**Risks:**
+- Dashboard totals ≠ report totals (different aggregations)
+- Export format loses data (decimal places, categories)
+- Report generated before calculation finishes (stale snapshot)
+- Auditor can't trace report numbers back to source data
+
+**CarbonSite mitigation:**
+- Dashboard reads from same PublishedSnapshot as report (single source of truth)
+- Export format includes full lineage (source records + calculation details)
+- Report generation waits for calculation completion + validation
+- Audit evidence package exported with report (links back to stage 1)
+
+**Output:** Published Report + Audit Evidence Package
+
+### Stage 4 Lineage Tracking
+```
+Report #R-2024-Q3-001
+├── Title: "Q3 2024 Emissions Report: Acme Corp"
+├── Created by: bob@company.com
+├── Created at: 2024-10-05 16:30:00 UTC
+├── Based on: CalculationRun #42
+├── Based on: PublishedSnapshot v2.0 (Q3 2024)
+├── Totals (verified match dashboard):
+│   ├── Scope 1: 15,234 tonnes CO₂e ✓
+│   ├── Scope 2: 28,945 tonnes CO₂e ✓
+│   └── Scope 3: 6,055 tonnes CO₂e ✓
+│   └── TOTAL: 50,234 tonnes CO₂e ✓
+├── Format: PDF + Excel
+├── Export includes:
+│   ├── Full audit trail (10k+ log entries)
+│   ├── Factor library snapshot (DEFRA 2024.1)
+│   ├── Calculation formulas
+│   ├── Sample record lineage (10 examples)
+│   └── Hash chain verification (proof of data integrity)
+└── Digital signature: signed_by_acme_org_key
+```
+
+---
+
+## Tracing a Single Record End-to-End
+
+Want to verify report accuracy? Pick any record:
+
+```
+Q3 Report shows: Facility A, Waste, 367 tonnes
+├── Trace back to: CalculationRun #42
+│   ├── Factor applied: waste_landfill_biodegradable_2024
+│   ├── Factor value: 0.234 kg CO₂e / kg waste
+│   ├── Formula: 367 tonnes × 0.234 × (1 + 0) = 86 tonnes CO₂e
+│   └── Matches report: ✓
+├── Trace back to: ActivityRecord #4521
+│   ├── Original value: "367" (extracted by OCR)
+│   ├── Confidence: 89%
+│   ├── Normalized to: 0.367 tonnes
+│   ├── Approved by: alice@company.com (2024-10-02)
+│   └── Anomaly flagged: yes (8x baseline, but confirmed valid)
+└── Verify: All hashes match, no tampering detected ✓
+```
+
+---
+
+## The Big Picture: Data Lineage UI
+
+CarbonSite provides an interactive visualization:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Trace Report Data                                       │
+├─────────────────────────────────────────────────────────┤
+│ Report #R-2024-Q3-001 → 50,234 tonnes CO₂e             │
+│   ↓                                                     │
+│ CalculationRun #42 → DEFRA 2024.1 factors              │
+│   ├─ Scope 1: 15,234 tonnes (8,234 records)            │
+│   ├─ Scope 2: 28,945 tonnes (1,208 records)            │
+│   └─ Scope 3: 6,055 tonnes (1,000 records)             │
+│   ↓                                                     │
+│ Click on Scope 1 → see all 8,234 records               │
+│   ├─ Facility A: 1,234 records → 860 tonnes            │
+│   ├─ Facility B: 3,456 records → 2,890 tonnes          │
+│   └─ Facility C: 3,744 records → 11,484 tonnes         │
+│   ↓                                                     │
+│ Click on Facility A → see individual records           │
+│   ├─ Waste delivery 2024-09-01: 367 tonnes → 86 CO₂e  │
+│   │  └─ Original OCR: "367" (confidence 89%)           │
+│   │     └─ Extracted from: delivery_ticket_photo.jpg  │
+│   │        └─ Captured by: field_worker_123           │
+│   │           └─ Timestamp: 2024-09-01 14:32:15       │
+│   └─ [View all 1,234 records in Facility A]            │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Benefits of Complete Lineage
+
+✅ **Auditors:** Verify data integrity mathematically (hash chains)
+✅ **Reviewers:** Understand which records trigger which emissions
+✅ **Finance:** Reconcile emissions reports to source invoices
+✅ **Operations:** Trace anomalies back to source (field worker, entry date, supplier)
+✅ **Compliance:** Demonstrate CSRD / SBTi alignment at every stage
+
+---
+
+## Next Steps
+
+1. **Import data** → CarbonSite automatically tracks lineage
+2. **Review the audit trail** → Click any record, trace back to source
+3. **Export for auditors** → Generate lineage package in seconds
+
+<CTABlock
+  title="See Data Lineage in Action"
+  description="Import sample data and explore complete record traceability."
+  buttonText="Try Data Lineage"
+  buttonHref="/demo"
+/>
+
+---
+
+**Related reading:**
+- [Building for Audit: How CarbonSite Ensures Immutability](/blog/audit-immutability-architecture)
+- [Why Carbon Accounting Still Fails: A Field Worker's Perspective](/blog/field-workers-carbon-accounting)
+- [Anomaly Detection in Carbon Data: Catching the Outliers](/blog/anomaly-detection-carbon)

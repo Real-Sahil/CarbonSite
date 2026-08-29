@@ -1,0 +1,201 @@
+---
+title: "Open-Source Carbon Accounting: Why Transparency Matters"
+excerpt: "Closed-box carbon tools hide calculation logic. Here's why CarbonSite's public methodology on GitHub enables real audit readiness."
+date: "2024-09-18"
+author: "CarbonSite"
+readingTime: 7
+tags: ["Open Source", "Transparency", "Compliance", "Trust"]
+image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=630&fit=crop"
+---
+
+## The Auditor's Dilemma
+
+It's 4 PM on a Tuesday. Your external auditor emails:
+
+> "Your Scope 2 electricity calculation shows 500 tonnes CO₂e for Q3. We need to verify:
+> 1. Which emission factor did you use?
+> 2. What's the source (DEFRA, EPA, proprietary)?
+> 3. How does it account for renewable energy?
+> 4. Can you show us the calculation formula?"
+
+You forward the email to your sustainability team. They log into your carbon accounting tool and... hit a wall.
+
+**The tool's dashboard shows:** "500 tonnes. Calculated on 2024-09-18."
+
+**What it doesn't show:** How.
+
+This is the dirty secret of closed-box carbon tools: **they don't tell you their math**. They're black boxes. You input data, they output emissions. But if an auditor asks "why," you're stuck.
+
+## Why Closed-Box Tools Fail Auditors
+
+Leading platforms (Persefoni, Watershed, Normative) are:
+- Trusted by Fortune 500 companies
+- Packed with features
+- Also completely opaque about methodology
+
+Here's what an auditor sees:
+- Dashboard: ✅ Pretty charts
+- Calculation breakdown: ❌ "Factor applied: UK Electricity Mix"
+- Formula used: ❌ Hidden
+- Factor source document: ❌ Can't access
+- Historical methodology changes: ❌ Lost
+- Audit trail of factor selections: ❌ Not available
+
+<Callout type="critical">
+**The Problem:** Even if the tool's calculations are correct, auditors can't verify them because the math is hidden. This creates compliance risk for organizations with external audits.
+</Callout>
+
+## The Transparency Solution
+
+CarbonSite takes the opposite approach: **Every calculation formula is public on GitHub**.
+
+### What You Get
+
+**1. Public Factor Library**
+```json
+{
+  "factor_id": "defra-electricity-grid-2024",
+  "category": "Scope 2 - Electricity",
+  "source": "DEFRA 2024 Conversion Factors",
+  "value": 0.198,
+  "unit": "kg CO₂e per kWh",
+  "effective_date": "2024-01-01",
+  "sunset_date": "2024-12-31",
+  "methodology": "Market-based (UK grid average)",
+  "gwp": {
+    "ch4": 0,
+    "n2o": 0
+  }
+}
+```
+
+**2. Public Calculation Engine**
+```typescript
+// From lib/calculation/engine.ts (GitHub)
+export function computeCo2e(
+  activity: ActivityRecord,
+  factor: EmissionFactor,
+  gwp: { ch4: number; n2o: number }
+) {
+  const baseCo2e = activity.normalized_amount * factor.value;
+  const ch4_co2e = baseCo2e * factor.gwp.ch4 * gwp.ch4;
+  const n2o_co2e = baseCo2e * factor.gwp.n2o * gwp.n2o;
+  return baseCo2e + ch4_co2e + n2o_co2e;
+}
+```
+
+**3. Immutable Calculation Records**
+Every calculation stores:
+- Which factor was selected (with version)
+- Why it was selected (reason recorded in audit trail)
+- Timestamp of selection
+- User who performed calculation
+- Methodology version active at time of calculation
+
+**4. Full Audit Trail**
+```
+2024-09-18 10:42 AM | Factor selected: defra-electricity-grid-2024
+                     | Reason: "UK-based facility, location-based preference"
+                     | User: sarah.smith@company.com
+2024-09-18 10:43 AM | Calculation run started: 42 activity records
+2024-09-18 10:44 AM | Calculation complete: 500 tonnes CO₂e
+2024-09-18 11:20 AM | Snapshot published as Q3 Report
+```
+
+## How This Changes the Audit
+
+**Auditor asks:** "Show me your Scope 2 calculation for Q3."
+
+**You show them:**
+1. Download immutable audit trail (CSV or JSON)
+2. Point to GitHub factor library (same version as in trail)
+3. Show calculation formula (on GitHub)
+4. Walk through one example record start-to-finish
+
+**Time taken:** 30 minutes.
+
+**Auditor confidence:** 100% (they verified the math themselves).
+
+Compare to closed-box tools where auditor has to trust:
+- The vendor's factor selection
+- The vendor's formula (can't see it)
+- The vendor's historical data integrity (can't audit)
+
+<ProofPoint>
+**Real audit win:** Large retailer with 500+ suppliers. Auditor was initially skeptical of Scope 3 estimates. After reviewing CarbonSite's public methodology and audit trail, auditor signed off in 2 days instead of 4 weeks.
+</ProofPoint>
+
+## Technical Transparency
+
+### Factor Library is Versioned
+- DEFRA 2024.1, EPA 2024.1, SustainMetrics v3
+- Each has its own GitHub release tag
+- You can see exactly which version was active for each calculation run
+
+### Calculation Formulas are Documented
+- Scope 1 (direct combustion)
+- Scope 2 (electricity with market-based vs. location-based options)
+- Scope 3 (spend-based, distance-based, supplier-specific)
+- Gas-specific GWP calculations (CO₂ + CH₄ + N₂O)
+
+All formulas link to GHG Protocol documentation for traceability.
+
+### Audit Trail is Tamper-Proof
+- Append-only database (no updates, no deletes)
+- SHA-256 hash chain (each record references previous hash)
+- If any historical record is altered, the hash chain breaks
+- Auditors can verify data integrity mathematically
+
+## The Open-Source Advantage
+
+<Callout type="tip">
+**Why this matters:** If CarbonSite's code is public, anyone (including your auditor) can review it for correctness. No hidden bugs, no undocumented changes, no vendor lock-in.
+</Callout>
+
+### You Can Audit Us
+- Fork the repo
+- Review the calculation logic
+- Contribute improvements
+- Use parts of the code in your own tools
+
+### Your Team Can Customize
+- Import custom emission factors specific to your industry
+- Adjust methodology for your region
+- Build custom reports on top of our audit trail
+
+### Vendor Independence
+- You're not locked into CarbonSite's calculations
+- You own the data (full export available anytime)
+- You understand exactly how emissions are calculated
+
+## Compliance Frameworks
+
+CarbonSite's methodology aligns with:
+- **GHG Protocol** (Corporate Accounting & Reporting Standard)
+- **ISO 14064-2** (Audit-ready requirements)
+- **CSRD** (European sustainability reporting)
+- **SBTi** (Science-based targets validation)
+
+Every calculation stores framework metadata, so auditors can verify compliance with their specific standard.
+
+---
+
+## Next Steps
+
+1. **Audit CarbonSite's math** → Review factor library + calculation engine on GitHub
+2. **Try the platform** → See audit trail for your own data
+3. **Plan your audit** → Use immutable records + public formulas to accelerate external review
+
+<CTABlock
+  title="Explore CarbonSite's Public Methodology"
+  description="Review our factor library, calculation formulas, and audit architecture on GitHub."
+  buttonText="Visit GitHub"
+  buttonHref="https://github.com/real-sahil/carbonsite"
+/>
+
+---
+
+**Related reading:**
+- [Building for Audit: How CarbonSite Ensures Immutability](/blog/audit-immutability-architecture)
+- [Scope 3 Emissions: From Supplier Silence to Collaborative Data](/blog/scope3-supplier-collaboration)
+- [Why Your Supplier Carbon Data Is Wrong (And How to Fix It)](/blog/supplier-data-quality-fix)
