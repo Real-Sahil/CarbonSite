@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +29,21 @@ import {
 } from '@/components/ui/select';
 import { AlertCircle, CheckCircle2, Clock, Plus, RefreshCw, Trash2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+
+interface AirbyteSyncConnection {
+  id: string;
+  sourceSystem: string;
+  displayName?: string;
+  enabled: boolean;
+  syncSchedule?: string;
+  recordsSynced?: number;
+  lastSyncAt?: string | null;
+  lastSyncStatus?: string;
+  lastSyncError?: string | null;
+  failureCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface AirbyteConnectorStatus {
   id: string;
@@ -65,11 +80,7 @@ export default function AirbyteConnectorsPage() {
   const [selectedSource, setSelectedSource] = useState<string>('');
   const [isCreating, setIsCreating] = useState(false);
 
-  useEffect(() => {
-    fetchConnectors();
-  }, [orgId]);
-
-  const fetchConnectors = async () => {
+  const fetchConnectors = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`/api/orgs/${orgId}/integrations/airbyte/connectors`);
@@ -77,7 +88,7 @@ export default function AirbyteConnectorsPage() {
 
       const data = await res.json();
       // Map API response to UI state format
-      const mapped = (data.connectors || []).map((connector: any) => ({
+      const mapped = (data.connectors || []).map((connector: AirbyteSyncConnection) => ({
         id: connector.id,
         name: connector.displayName || connector.sourceSystem,
         sourceType: connector.sourceSystem,
@@ -95,7 +106,11 @@ export default function AirbyteConnectorsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
+
+  useEffect(() => {
+    fetchConnectors();
+  }, [fetchConnectors]);
 
   const handleAddConnector = async () => {
     if (!selectedSource) return;
