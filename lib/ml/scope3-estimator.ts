@@ -252,7 +252,7 @@ export async function storeScope3Estimate(
     await prisma.scope3Estimate.create({
       data: {
         organizationId: orgId,
-        facilitId: facilityId,
+        facilityId: facilityId,
         emissionCategoryId: categoryId,
         estimationModelId: "v1-heuristic",
         estimatedValue: estimate.estimatedValue,
