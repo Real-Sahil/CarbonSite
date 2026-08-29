@@ -1,25 +1,23 @@
-carbonsite_dbt:
+carbonsite:
   outputs:
     dev:
       type: postgres
-      host: "{{ env_var('DBT_POSTGRES_HOST', 'localhost') }}"
-      user: "{{ env_var('DBT_POSTGRES_USER', 'postgres') }}"
-      pass: "{{ env_var('DBT_POSTGRES_PASS', 'password') }}"
-      port: "{{ env_var('DBT_POSTGRES_PORT', 5432) }}"
-      dbname: "{{ env_var('DBT_POSTGRES_DBNAME', 'carbonsite') }}"
-      schema: analytics
+      host: "{{ env_var('DB_HOST', 'localhost') }}"
+      port: "{{ env_var('DB_PORT', '5432') | int }}"
+      user: "{{ env_var('DB_USER', 'postgres') }}"
+      password: "{{ env_var('DB_PASSWORD', '') }}"
+      dbname: "{{ env_var('DB_NAME', 'carbonsite') }}"
+      schema: public
       threads: 4
       keepalives_idle: 0
-
     prod:
       type: postgres
-      host: "{{ env_var('DBT_POSTGRES_HOST') }}"
-      user: "{{ env_var('DBT_POSTGRES_USER') }}"
-      pass: "{{ env_var('DBT_POSTGRES_PASS') }}"
-      port: "{{ env_var('DBT_POSTGRES_PORT', 5432) }}"
-      dbname: "{{ env_var('DBT_POSTGRES_DBNAME') }}"
-      schema: analytics
+      host: "{{ env_var('DB_HOST', 'localhost') }}"
+      port: "{{ env_var('DB_PORT', '5432') | int }}"
+      user: "{{ env_var('DB_USER', 'postgres') }}"
+      password: "{{ env_var('DB_PASSWORD', '') }}"
+      dbname: "{{ env_var('DB_NAME', 'carbonsite') }}"
+      schema: public
       threads: 8
       keepalives_idle: 0
-
   target: dev

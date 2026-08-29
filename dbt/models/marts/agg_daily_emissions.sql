@@ -1,45 +1,37 @@
-{{
-  config(
-    materialized='table',
-    indexes=[
-      {'columns': ['organization_id', 'emission_date']},
-      {'columns': ['facility_id', 'emission_date']}
-    ]
-  )
-}}
+-- Aggregate table: daily emissions totals by org, facility, category
+-- Pre-computed for fast dashboard queries
+-- Rebuilt after each calculation run
 
--- Aggregated emissions by day
--- Pre-calculated daily totals for dashboard performance
+{{ config(
+  materialized = 'table',
+  indexes = [
+    {'columns': ['organization_id', 'activity_date']},
+    {'columns': ['facility_id', 'activity_date']},
+    {'columns': ['emission_scope']}
+  ]
+) }}
 
-with emissions as (
-  select * from {{ ref('fct_emissions') }}
-),
-
-daily_agg as (
-  select
-    organization_id,
-    date_trunc('day', activity_date)::date as emission_date,
-    facility_id,
-    emission_category_id,
-    scope,
-    count(*) as record_count,
-    sum(total_co2e_tonnes) as total_co2e_tonnes,
-    sum(co2e_kg) as total_co2e_kg,
-    sum(ch4_kg_co2e) as total_ch4_co2e_kg,
-    sum(n2o_kg_co2e) as total_n2o_co2e_kg,
-    min(activity_date) as earliest_activity,
-    max(activity_date) as latest_activity
-  from emissions
-  group by
-    organization_id,
-    date_trunc('day', activity_date),
-    facility_id,
-    emission_category_id,
-    scope
-)
-
-select
-  {{ generate_surrogate_key(['organization_id', 'emission_date', 'facility_id']) }} as daily_agg_id,
-  *,
-  now() as dbt_loaded_at
-from daily_agg
+SELECT
+  organization_id,
+  activity_date,
+  facility_id,
+  emission_scope,
+  category_code,
+  COUNT(*) as record_count,
+  SUM(total_co2e_kg) as total_co2e_kg,
+  SUM(total_co2e_tonnes) as total_co2e_tonnes,
+  AVG(data_quality_score) as avg_quality_score,
+  MIN(confidence_interval_lower) as min_confidence_lower,
+  MAX(confidence_interval_upper) as max_confidence_upper,
+  STRING_AGG(DISTINCT warnings::text, '; ') FILTER (WHERE warnings IS NOT NULL) as aggregated_warnings,
+  MAX(calculation_created_at) as last_calculation_at
+FROM {{ ref('fct_emissions') }}
+WHERE run_status = 'complete' 
+  OR run_status IS NULL
+GROUP BY 
+  organization_id,
+  activity_date,
+  facility_id,
+  emission_scope,
+  category_code
+ORDER BY organization_id, activity_date DESC

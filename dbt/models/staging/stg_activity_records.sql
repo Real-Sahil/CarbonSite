@@ -1,44 +1,36 @@
--- Staging layer for activity records
--- Cleans and standardizes activity records from the source data
+-- Staging model: cleaned activity records ready for calculation
+-- Source: activity_records table
+-- Enriched with category, facility, and reporting period context
 
-with activity_records as (
-  select
-    id,
-    organization_id,
-    emission_category_id,
-    reporting_period_id,
-    facility_id,
-    business_unit_id,
-    original_amount,
-    original_unit,
-    normalized_amount,
-    normalized_unit,
-    source_description,
-    activity_date,
-    review_status,
-    created_at,
-    updated_at,
-    created_by_user_id
-  from {{ source('carbon_site', 'activity_records') }}
-  where deleted_at is null
-)
-
-select
-  id,
-  organization_id,
-  emission_category_id,
-  reporting_period_id,
-  facility_id,
-  business_unit_id,
-  original_amount::numeric as original_amount,
-  original_unit,
-  normalized_amount::numeric as normalized_amount,
-  normalized_unit,
-  source_description,
-  activity_date::date as activity_date,
-  review_status,
-  created_at,
-  updated_at,
-  created_by_user_id,
-  now() as dbt_loaded_at
-from activity_records
+SELECT
+  ar.id as activity_record_id,
+  ar.organization_id,
+  ar.facility_id,
+  ar.business_unit_id,
+  ar.emission_category_id,
+  ec.code as category_code,
+  ec.scope as emission_scope,
+  ec.activity_type,
+  ar.reporting_period_id,
+  rp.start_date as period_start_date,
+  rp.end_date as period_end_date,
+  ar.amount as original_amount,
+  ar.unit as original_unit,
+  ar.review_status,
+  ar.activity_date,
+  ar.start_date,
+  ar.end_date,
+  ar.description,
+  ar.fuel_type,
+  ar.transport_mode,
+  ar.refrigerant_type,
+  ar.country,
+  ar.scope2_method,
+  ar.import_batch_id,
+  ar.created_at as record_created_at,
+  ar.updated_at as record_updated_at
+FROM activity_records ar
+LEFT JOIN emission_categories ec ON ar.emission_category_id = ec.id
+LEFT JOIN reporting_periods rp ON ar.reporting_period_id = rp.id
+WHERE ar.deleted_at IS NULL
+ORDER BY ar.organization_id, ar.activity_date

@@ -14,6 +14,22 @@ import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
 import { processNotification } from "@/lib/notifications/worker";
 import { processReport } from "@/lib/reports/worker";
+import { runDbtTransformation } from "@/lib/jobs/workers/dbt-transform";
+import type { DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
+import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
+import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
+import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
+import type { ForecastingJobData } from "@/lib/jobs/workers/forecasting";
+
+interface InvoiceAnomalyJobData {
+  organizationId: string;
+  sourceSystem?: string;
+}
+
+interface SupplierPerformanceJobData {
+  orgId: string;
+  supplierId: string;
+}
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -79,7 +95,63 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications)");
+  // ── dbt Transformation ────────────────────────────────────────────────────
+  await boss.work<DbtTransformJobData>(
+    "dbt-transform-jobs",
+    { localConcurrency: 2 },
+    async (jobs: Job<DbtTransformJobData>[]) => {
+      for (const job of jobs) {
+        const { calculationRunId, organizationId } = job.data;
+        console.log(`[dbt-transform] processing calculation ${calculationRunId}`);
+        await runDbtTransformation(calculationRunId, organizationId);
+        console.log(`[dbt-transform] finished calculation ${calculationRunId}`);
+      }
+    },
+  );
+
+  // ── Invoice Anomaly Detection ────────────────────────────────────────────
+  await boss.work<InvoiceAnomalyJobData>(
+    "invoice-anomaly-jobs",
+    { localConcurrency: 1 },
+    async (jobs: Job<InvoiceAnomalyJobData>[]) => {
+      for (const job of jobs) {
+        const { organizationId } = job.data;
+        console.log(`[invoice-anomaly] processing anomaly detection for org ${organizationId}`);
+        await detectInvoiceAnomalies(organizationId);
+        console.log(`[invoice-anomaly] finished anomaly detection for org ${organizationId}`);
+      }
+    },
+  );
+
+  // ── Supplier Performance ──────────────────────────────────────────────────
+  await boss.work<SupplierPerformanceJobData>(
+    "supplier-performance",
+    { localConcurrency: 3 },
+    async (jobs: Job<SupplierPerformanceJobData>[]) => {
+      for (const job of jobs) {
+        const { orgId, supplierId } = job.data;
+        console.log(`[supplier-performance] updating metrics for supplier ${supplierId} in org ${orgId}`);
+        await processSupplierPerformanceUpdate(orgId, supplierId);
+        console.log(`[supplier-performance] finished updating supplier ${supplierId}`);
+      }
+    },
+  );
+
+  // ── Forecasting ───────────────────────────────────────────────────────────
+  await boss.work<ForecastingJobData>(
+    "forecasting",
+    { localConcurrency: 2 },
+    async (jobs: Job<ForecastingJobData>[]) => {
+      for (const job of jobs) {
+        const { orgId, forecastType } = job.data;
+        console.log(`[forecasting] generating ${forecastType} forecast for org ${orgId}`);
+        await processForecastingJob(job.data);
+        console.log(`[forecasting] finished ${forecastType} forecast for org ${orgId}`);
+      }
+    },
+  );
+
+  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, supplier-performance, forecasting)");
 }
 
 start().catch((err) => {

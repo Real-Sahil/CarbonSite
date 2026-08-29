@@ -216,12 +216,14 @@ model Organization {
   xeroSyncLogs                XeroSyncLog[]
   invoiceRecords              InvoiceRecord[]              @relation("InvoiceRecords")
   invoiceAnomalies            InvoiceAnomaly[]             @relation("InvoiceAnomalies")
+  invoiceReconciliations      InvoiceReconciliation[]      @relation("InvoiceReconciliations")
   integrationConfig           IntegrationConfig?
   dbtRuns                     DbtRun[]                     @relation("DbtRuns")
   n8nWorkflows                N8nWorkflow[]                @relation("N8nWorkflows")
   n8nExecutions               N8nExecution[]               @relation("N8nExecutions")
   airbiteConnectors           AirbiteConnector[]           @relation("AirbiteConnectors")
   airbyteSyncLogs             AirbyteSyncLog[]             @relation("AirbyteSyncLogs")
+  forecasts                   Forecast[]                   @relation("Forecasts")
 
   @@map("organizations")
 }
@@ -2794,6 +2796,7 @@ model InvoiceAnomaly {
 
 model InvoiceReconciliation {
   id                 String   @id @default(cuid())
+  organizationId     String   @map("organization_id")
   invoiceId          String   @map("invoice_id")
   lineItemId         String   @map("line_item_id")
   quantityOrdered    Int      @map("quantity_ordered")
@@ -2804,9 +2807,11 @@ model InvoiceReconciliation {
   discrepancyPercent Decimal? @map("discrepancy_percent") @db.Decimal(5, 2) // |(invoiced - received) / received| * 100
   createdAt          DateTime @default(now()) @map("created_at")
 
-  invoice InvoiceRecord @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice      InvoiceRecord  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  organization Organization   @relation("InvoiceReconciliations", fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
+  @@index([organizationId, matchStatus])
   @@map("invoice_reconciliations")
 }
 
@@ -2957,32 +2962,6 @@ model IntegrationConfig {
 
 // ─── Phase 3: Data Transformation & Orchestration ──────────────────────────
 
-model DbtRun {
-  id                String    @id @default(cuid())
-  organizationId    String    @map("organization_id")
-  calculationRunId  String    @map("calculation_run_id")
-  status            String    @default("pending") @map("status") // 'pending', 'running', 'succeeded', 'failed'
-  dbtCommand        String    @map("dbt_command") // 'dbt run', 'dbt test', etc.
-  dbtOutput         String?   @map("dbt_output") // Raw dbt CLI output
-  rowsAffected      Int       @default(0) @map("rows_affected")
-  modelsCreated     Int       @default(0) @map("models_created")
-  testCount         Int       @default(0) @map("test_count")
-  testsPassed       Int       @default(0) @map("tests_passed")
-  testsFailed       Int       @default(0) @map("tests_failed")
-  duration          Int?      @map("duration") // milliseconds
-  errorMessage      String?   @map("error_message")
-  startedAt         DateTime  @default(now()) @map("started_at")
-  completedAt       DateTime? @map("completed_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-
-  organization   Organization   @relation("DbtRuns", fields: [organizationId], references: [id], onDelete: Cascade)
-  calculationRun CalculationRun @relation("DbtRuns", fields: [calculationRunId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId, calculationRunId])
-  @@index([organizationId, status, createdAt(sort: Desc)])
-  @@map("dbt_runs")
-}
-
 model N8nWorkflow {
   id                String          @id @default(cuid())
   organizationId    String          @map("organization_id")
@@ -3079,5 +3058,56 @@ model AirbyteSyncLog {
   @@index([organizationId, connectorId])
   @@index([connectorId, status, startedAt(sort: Desc)])
   @@map("airbyte_sync_logs")
+}
+
+model DbtRun {
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  calculationRunId  String    @map("calculation_run_id")
+  status            String    @default("queued") @map("status") // 'queued', 'running', 'success', 'failed'
+  modelsExecuted    Int?      @map("models_executed")
+  testsRun          Int?      @map("tests_run")
+  testsPassed       Int?      @map("tests_passed")
+  testsFailed       Int?      @map("tests_failed")
+  output            String?   @map("output") // stdout/stderr from dbt
+  errorMessage      String?   @map("error_message")
+  durationSeconds   Int?      @map("duration_seconds")
+  startedAt         DateTime? @map("started_at")
+  completedAt       DateTime? @map("completed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  organization   Organization   @relation("DbtRuns", fields: [organizationId], references: [id], onDelete: Cascade)
+  calculationRun CalculationRun @relation("DbtRuns", fields: [calculationRunId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, calculationRunId])
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("dbt_runs")
+}
+
+model Forecast {
+  id                    String    @id @default(cuid())
+  organizationId        String    @map("organization_id")
+  forecastType          String    @map("forecast_type") // "emissions", "supplier_quality", "anomaly_rate"
+  targetPeriodStart     DateTime  @map("target_period_start") // start of forecast period
+  targetPeriodEnd       DateTime  @map("target_period_end")   // end of forecast period
+  predictions           Json      @map("predictions")         // array of {date, forecast, lowerBound, upperBound, confidence}
+  accuracy              Decimal?  @db.Decimal(5, 2)           // MAPE or similar accuracy metric
+  modelVersion          String    @map("model_version")       // "exponential_smoothing_v1" etc
+  trainingDataPoints    Int       @map("training_data_points")
+  method                String    @map("method")              // "exponential_smoothing", "seasonal_decomposition"
+  metadata              Json?     @map("metadata")            // method-specific params (alpha, beta, etc)
+  generatedAt           DateTime  @default(now()) @map("generated_at")
+  validUntil            DateTime  @map("valid_until")         // when forecast becomes stale
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation("Forecasts", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, forecastType, targetPeriodStart])
+  @@index([organizationId, forecastType, generatedAt(sort: Desc)])
+  @@index([organizationId, validUntil])
+  @@map("forecasts")
 }
 

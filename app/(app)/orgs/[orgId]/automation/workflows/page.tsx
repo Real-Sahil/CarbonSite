@@ -1,244 +1,266 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Zap, AlertCircle } from 'lucide-react';
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Play,
+  RefreshCw,
+  AlertTriangle,
+} from 'lucide-react';
 
 interface Workflow {
   id: string;
-  n8nWorkflowId: string;
   name: string;
-  triggerType: string;
-  description?: string;
+  displayName: string;
+  description: string;
+  schedule: string;
+  triggerType: 'scheduled' | 'event';
   enabled: boolean;
-  executionCount: number;
-  createdAt: string;
-  updatedAt: string;
+  status: 'ready' | 'not-configured';
+  lastRunAt: string | null;
+  lastRunStatus: 'success' | 'failed' | null;
+  nextScheduledRun: string | null;
 }
 
-const triggerTypeLabels: Record<string, string> = {
-  field_submission_pending: 'Field Submission Pending',
-  emission_threshold_reached: 'Emission Threshold Reached',
-  report_ready: 'Report Ready',
-  daily_digest: 'Daily Digest',
-};
+interface WorkflowsResponse {
+  workflows: Workflow[];
+  n8nConfigured: boolean;
+  note: string;
+}
 
 export default function WorkflowsPage() {
   const params = useParams();
   const orgId = params.orgId as string;
 
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [n8nConfigured, setN8nConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [triggeringWorkflow, setTriggeringWorkflow] = useState<string | null>(null);
 
   const fetchWorkflows = useCallback(async () => {
     try {
       setLoading(true);
+      const res = await fetch(`/api/orgs/${orgId}/automation/workflows`);
+      if (!res.ok) throw new Error('Failed to fetch workflows');
+
+      const data: WorkflowsResponse = await res.json();
+      setWorkflows(data.workflows);
+      setN8nConfigured(data.n8nConfigured);
       setError(null);
-
-      const response = await fetch(`/api/orgs/${orgId}/workflows`);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch workflows: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setWorkflows(data.workflows || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch workflows');
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
   }, [orgId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchWorkflows();
-  }, [fetchWorkflows]);
+    // fetchWorkflows is wrapped in useCallback with orgId dependency
+    // This pattern is valid for data fetching
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchWorkflows();
+  }, []);
 
-  const toggleWorkflow = async (workflowId: string, enabled: boolean) => {
+  const handleTriggerWorkflow = async (workflowName: string) => {
+    setTriggeringWorkflow(workflowName);
     try {
-      const response = await fetch(`/api/orgs/${orgId}/workflows/${workflowId}`, {
-        method: 'PATCH',
+      const res = await fetch(`/api/orgs/${orgId}/automation/workflows/${workflowName}/trigger`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: !enabled }),
+        body: JSON.stringify({}),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update workflow');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to trigger workflow');
       }
 
-      setWorkflows((prev) =>
-        prev.map((w) => (w.id === workflowId ? { ...w, enabled: !enabled } : w))
-      );
+      const data = await res.json();
+      alert(`Workflow triggered: ${data.message || 'Successfully queued'}`);
+      await fetchWorkflows();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update workflow');
+      alert(err instanceof Error ? err.message : 'Failed to trigger workflow');
+    } finally {
+      setTriggeringWorkflow(null);
     }
   };
 
-  const deleteWorkflow = async (workflowId: string) => {
-    if (!confirm('Are you sure you want to delete this workflow?')) return;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'success':
+        return <CheckCircle2 className="w-4 h-4 text-green-600" />;
+      case 'failed':
+        return <AlertTriangle className="w-4 h-4 text-red-600" />;
+      default:
+        return null;
+    }
+  };
 
-    try {
-      const response = await fetch(`/api/orgs/${orgId}/workflows/${workflowId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete workflow');
-      }
-
-      setWorkflows((prev) => prev.filter((w) => w.id !== workflowId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete workflow');
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'ready':
+        return <Badge className="bg-green-100 text-green-800">Ready</Badge>;
+      case 'not-configured':
+        return <Badge className="bg-yellow-100 text-yellow-800">Not Configured</Badge>;
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Workflow Automation</h1>
-        <p className="text-gray-600 mt-2">
-          Configure n8n workflows to automate tasks like notifications, data transformations, and approvals
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Automation Workflows</h1>
+          <p className="text-gray-600 mt-2">
+            Manage n8n workflow automation for emissions tracking and notifications
+          </p>
+        </div>
+        <Button onClick={() => void fetchWorkflows()} className="gap-2">
+          <RefreshCw className="w-4 h-4" />
+          Refresh
+        </Button>
       </div>
 
-      {error && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertCircle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800">{error}</AlertDescription>
-        </Alert>
+      {!n8nConfigured && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium text-yellow-900">n8n Not Configured</p>
+            <p className="text-sm text-yellow-800 mt-1">
+              Set the N8N_WEBHOOK_URL environment variable to enable workflow automation.
+              See the n8n setup documentation for details.
+            </p>
+          </div>
+        </div>
       )}
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div>
-            <CardTitle>Active Workflows</CardTitle>
-            <CardDescription>
-              {workflows.length} workflow{workflows.length !== 1 ? 's' : ''} configured
-            </CardDescription>
+            <p className="font-medium text-red-900">Error loading workflows</p>
+            <p className="text-sm text-red-800 mt-1">{error}</p>
           </div>
-          <Button>
-            <Zap className="mr-2 h-4 w-4" />
-            Create Workflow
-          </Button>
-        </CardHeader>
+        </div>
+      )}
 
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-            </div>
-          ) : workflows.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-gray-600 mb-4">No workflows configured yet</p>
-              <Button>Set Up Your First Workflow</Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Workflow Name</TableHead>
-                    <TableHead>Trigger Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Executions</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {workflows.map((workflow) => (
-                    <TableRow key={workflow.id}>
-                      <TableCell className="font-medium">{workflow.name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {triggerTypeLabels[workflow.triggerType] || workflow.triggerType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={workflow.enabled ? 'default' : 'secondary'}>
-                          {workflow.enabled ? 'Enabled' : 'Disabled'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {workflow.executionCount} run{workflow.executionCount !== 1 ? 's' : ''}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {new Date(workflow.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleWorkflow(workflow.id, workflow.enabled)}
-                        >
-                          {workflow.enabled ? 'Disable' : 'Enable'}
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => deleteWorkflow(workflow.id)}
-                        >
-                          Delete
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {loading ? (
+        <div className="text-center py-8 text-gray-500">Loading workflows...</div>
+      ) : workflows.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <p>No workflows available</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {workflows.map((workflow) => (
+            <Card key={workflow.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      {workflow.displayName}
+                      {getStatusBadge(workflow.status)}
+                    </CardTitle>
+                    <CardDescription className="mt-1">{workflow.description}</CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleTriggerWorkflow(workflow.name)}
+                    disabled={!n8nConfigured || triggeringWorkflow === workflow.name}
+                    className="gap-2"
+                  >
+                    <Play className="w-4 h-4" />
+                    {triggeringWorkflow === workflow.name ? 'Triggering...' : 'Trigger'}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-600">Trigger Type</p>
+                    <p className="font-medium capitalize">{workflow.triggerType}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Schedule</p>
+                    <p className="font-medium capitalize">{workflow.schedule}</p>
+                  </div>
+                  {workflow.lastRunAt && (
+                    <div>
+                      <p className="text-gray-600">Last Run</p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {getStatusIcon(workflow.lastRunStatus || '')}
+                        <span className="font-medium capitalize">{workflow.lastRunStatus || 'Unknown'}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {new Date(workflow.lastRunAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                  {workflow.nextScheduledRun && workflow.triggerType === 'scheduled' && (
+                    <div>
+                      <p className="text-gray-600">Next Run</p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Clock className="w-4 h-4 text-blue-600" />
+                        <span className="font-medium text-xs">
+                          {new Date(workflow.nextScheduledRun).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-      <Card>
+                <div className="bg-gray-50 border border-gray-200 rounded p-3 text-sm">
+                  <p className="font-medium text-gray-900 mb-1">Configuration</p>
+                  <p className="text-gray-600">
+                    {workflow.triggerType === 'scheduled'
+                      ? `Runs automatically on a ${workflow.schedule} schedule`
+                      : 'Triggered by system events. Manual trigger available above.'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <Card className="bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle>Available Triggers</CardTitle>
-          <CardDescription>Workflows can be triggered by these events</CardDescription>
+          <CardTitle className="text-base">About Automation Workflows</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Field Submission Pending</h4>
-              <p className="text-sm text-gray-600">
-                Triggered when field submissions exceed 7 days pending. Useful for sending reminder emails to reviewers.
-              </p>
-            </div>
-            <div className="border rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Emission Threshold Reached</h4>
-              <p className="text-sm text-gray-600">
-                Triggered when a facility emissions exceed configured threshold. Useful for alerts and escalations.
-              </p>
-            </div>
-            <div className="border rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Report Ready</h4>
-              <p className="text-sm text-gray-600">
-                Triggered when reports complete generation. Useful for sending reports and slack notifications.
-              </p>
-            </div>
-            <div className="border rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Daily Digest</h4>
-              <p className="text-sm text-gray-600">
-                Triggered daily at configured time. Useful for sending daily summaries and dashboards.
-              </p>
-            </div>
-          </div>
+        <CardContent className="text-sm space-y-2 text-gray-700">
+          <p>
+            CarbonSite uses n8n for low-code workflow automation. The following workflows are available:
+          </p>
+          <ul className="list-disc list-inside space-y-1 ml-2">
+            <li>
+              <strong>Field Worker Submission Reminder</strong> — Daily reminder for pending submissions
+            </li>
+            <li>
+              <strong>Facility Risk Flagging</strong> — Identifies high-emission facilities after calculations
+            </li>
+            <li>
+              <strong>Report Ready Notification</strong> — Notifies when reports are ready
+            </li>
+            <li>
+              <strong>Anomaly Detection Alert</strong> — Alerts on detected data anomalies
+            </li>
+            <li>
+              <strong>Supplier Data Request</strong> — Sends supplier data collection requests
+            </li>
+          </ul>
+          <p className="pt-2">
+            To manage workflows in detail (adding actions, conditions, formatting), visit your n8n
+            instance or configure new workflows via the n8n web interface.
+          </p>
         </CardContent>
       </Card>
     </div>

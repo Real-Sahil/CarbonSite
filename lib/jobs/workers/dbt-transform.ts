@@ -85,7 +85,7 @@ export async function runDbtTransformation(calculationRunId: string, organizatio
       organizationId,
       calculationRunId,
       status: 'running',
-      dbtCommand: 'dbt run --select models/marts/*'
+      startedAt: new Date()
     }
   });
 
@@ -94,42 +94,54 @@ export async function runDbtTransformation(calculationRunId: string, organizatio
     const dbtOutput = await executeDbtModels(env);
     const stats = parseDbtOutput(dbtOutput);
 
-    const duration = Date.now() - startTime;
+    const durationMs = Date.now() - startTime;
+    const durationSeconds = Math.floor(durationMs / 1000);
 
     dbtRun = await prisma.dbtRun.update({
       where: { id: dbtRun.id },
       data: {
-        status: 'succeeded',
-        dbtOutput,
-        rowsAffected: stats.rowsAffected,
-        modelsCreated: stats.modelCount,
-        testCount: stats.testCount,
+        status: stats.testsFailed > 0 ? 'failed' : 'success',
+        output: dbtOutput.substring(0, 10000),
+        modelsExecuted: stats.modelCount,
+        testsRun: stats.testCount,
         testsPassed: stats.testsPassed,
         testsFailed: stats.testsFailed,
-        duration,
+        durationSeconds,
         completedAt: new Date()
       }
     });
 
-    await prisma.calculationRun.update({
-      where: { id: calculationRunId },
-      data: {
-        status: 'succeeded',
-        finishedAt: new Date()
-      }
-    });
+    if (stats.testsFailed === 0) {
+      await prisma.calculationRun.update({
+        where: { id: calculationRunId },
+        data: {
+          status: 'succeeded',
+          finishedAt: new Date()
+        }
+      });
+    } else {
+      await prisma.calculationRun.update({
+        where: { id: calculationRunId },
+        data: {
+          status: 'failed',
+          errorMessage: `dbt tests failed: ${stats.testsFailed}/${stats.testCount}`,
+          finishedAt: new Date()
+        }
+      });
+    }
 
     return dbtRun;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const duration = Date.now() - startTime;
+    const durationMs = Date.now() - startTime;
+    const durationSeconds = Math.floor(durationMs / 1000);
 
     await prisma.dbtRun.update({
       where: { id: dbtRun.id },
       data: {
-        status: 'failed',
-        errorMessage,
-        duration,
+        status: 'error',
+        errorMessage: errorMessage.substring(0, 1000),
+        durationSeconds,
         completedAt: new Date()
       }
     });
@@ -138,7 +150,7 @@ export async function runDbtTransformation(calculationRunId: string, organizatio
       where: { id: calculationRunId },
       data: {
         status: 'failed',
-        errorMessage,
+        errorMessage: errorMessage.substring(0, 500),
         finishedAt: new Date()
       }
     });
