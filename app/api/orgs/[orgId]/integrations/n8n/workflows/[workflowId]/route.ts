@@ -51,7 +51,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const { orgId, workflowId } = await params;
-    await requireOrgMember(orgId, ...ROLE_GROUPS.editors);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const existing = await prisma.n8nWorkflow.findUniqueOrThrow({
       where: { id: workflowId },

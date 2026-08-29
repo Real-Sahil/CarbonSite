@@ -42,7 +42,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, ...ROLE_GROUPS.editors);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = await req.json();
     const { sourceSystem, config, syncFrequency } = CreateConnectionSchema.parse(body);

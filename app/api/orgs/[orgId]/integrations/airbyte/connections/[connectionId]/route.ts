@@ -46,7 +46,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const { orgId, connectionId } = await params;
-    await requireOrgMember(orgId, ...ROLE_GROUPS.editors);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const existing = await prisma.airbyteSyncConnection.findUniqueOrThrow({
       where: { id: connectionId },
