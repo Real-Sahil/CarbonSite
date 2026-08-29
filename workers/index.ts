@@ -16,6 +16,12 @@ import { processNotification } from "@/lib/notifications/worker";
 import { processReport } from "@/lib/reports/worker";
 import { runDbtTransformation } from "@/lib/jobs/workers/dbt-transform";
 import type { DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
+import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
+
+interface InvoiceAnomalyJobData {
+  organizationId: string;
+  sourceSystem?: string;
+}
 
 const boss = new PgBoss({
   connectionString: process.env.DATABASE_URL!,
@@ -95,7 +101,21 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform)");
+  // ── Invoice Anomaly Detection ────────────────────────────────────────────
+  await boss.work<InvoiceAnomalyJobData>(
+    "invoice-anomaly-jobs",
+    { localConcurrency: 1 },
+    async (jobs: Job<InvoiceAnomalyJobData>[]) => {
+      for (const job of jobs) {
+        const { organizationId } = job.data;
+        console.log(`[invoice-anomaly] processing anomaly detection for org ${organizationId}`);
+        await detectInvoiceAnomalies(organizationId);
+        console.log(`[invoice-anomaly] finished anomaly detection for org ${organizationId}`);
+      }
+    },
+  );
+
+  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly)");
 }
 
 start().catch((err) => {

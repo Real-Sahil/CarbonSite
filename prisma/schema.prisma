@@ -2795,6 +2795,7 @@ model InvoiceAnomaly {
 
 model InvoiceReconciliation {
   id                 String   @id @default(cuid())
+  organizationId     String   @map("organization_id")
   invoiceId          String   @map("invoice_id")
   lineItemId         String   @map("line_item_id")
   quantityOrdered    Int      @map("quantity_ordered")
@@ -2805,9 +2806,11 @@ model InvoiceReconciliation {
   discrepancyPercent Decimal? @map("discrepancy_percent") @db.Decimal(5, 2) // |(invoiced - received) / received| * 100
   createdAt          DateTime @default(now()) @map("created_at")
 
-  invoice InvoiceRecord @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice      InvoiceRecord  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  organization Organization   @relation("InvoiceReconciliations", fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
+  @@index([organizationId, matchStatus])
   @@map("invoice_reconciliations")
 }
 
@@ -3080,77 +3083,5 @@ model DbtRun {
   @@index([organizationId, status])
   @@index([organizationId, createdAt(sort: Desc)])
   @@map("dbt_runs")
-}
-
-// Invoice anomaly detection for Scope 3 accuracy
-model InvoiceRecord {
-  id                    String    @id @default(cuid())
-  organizationId        String    @map("organization_id")
-  externalInvoiceId     String    @map("external_invoice_id")
-  vendorId              String    @map("vendor_id")
-  vendorName            String    @map("vendor_name")
-  invoiceDate           DateTime  @map("invoice_date")
-  receivedDate          DateTime? @map("received_date")
-  totalAmount           Decimal   @db.Decimal(15, 2) @map("total_amount")
-  currency              String    @default("GBP") @map("currency")
-  lineItems             Json      @map("line_items") // [{itemId, description, qty, unitPrice, receivedQty?}]
-  sourceSystem          String    @map("source_system") // 'xero', 'sap', 'quickbooks'
-  sourceRecordId        String    @map("source_record_id")
-  status                String    @default("pending") @map("status") // 'pending', 'approved', 'rejected', 'needs_review'
-  anomalies             InvoiceAnomaly[]
-  reconciliations       InvoiceReconciliation[]
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
-
-  organization Organization @relation("InvoiceRecords", fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@unique([organizationId, sourceSystem, sourceRecordId])
-  @@index([organizationId, invoiceDate])
-  @@index([organizationId, status])
-  @@index([organizationId, vendorId])
-  @@map("invoice_records")
-}
-
-model InvoiceAnomaly {
-  id              String    @id @default(cuid())
-  organizationId  String    @map("organization_id")
-  invoiceId       String    @map("invoice_id")
-  anomalyType     String    @map("anomaly_type") // 'duplicate', 'qty_mismatch', 'date_inconsistency', 'price_spike', 'missing_grn', 'over_billing', 'currency_mismatch', 'unmatched'
-  severity        String    @map("severity") // 'info', 'warning', 'critical'
-  reason          String    @map("reason")
-  detectedAt      DateTime  @default(now()) @map("detected_at")
-  resolution      String?   @map("resolution") // 'approved', 'rejected', 'pending'
-  resolvedBy      String?   @map("resolved_by") // User ID who resolved
-  resolvedAt      DateTime? @map("resolved_at")
-  notes           String?   @map("notes")
-  createdAt       DateTime  @default(now()) @map("created_at")
-
-  invoice   InvoiceRecord @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  organization Organization @relation("InvoiceAnomalies", fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId, severity])
-  @@index([organizationId, anomalyType, resolution])
-  @@index([organizationId, createdAt(sort: Desc)])
-  @@map("invoice_anomalies")
-}
-
-model InvoiceReconciliation {
-  id                   String    @id @default(cuid())
-  organizationId       String    @map("organization_id")
-  invoiceId            String    @map("invoice_id")
-  lineItemId           String    @map("line_item_id")
-  quantityOrdered      Int       @map("quantity_ordered")
-  quantityReceived     Int       @map("quantity_received")
-  quantityInvoiced     Int       @map("quantity_invoiced")
-  matchStatus          String    @map("match_status") // 'matched', 'over_received', 'under_received'
-  discrepancyPercent   Decimal   @db.Decimal(5, 2) @map("discrepancy_percent")
-  createdAt            DateTime  @default(now()) @map("created_at")
-
-  invoice InvoiceRecord @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  organization Organization @relation("InvoiceReconciliations", fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId])
-  @@index([organizationId, matchStatus])
-  @@map("invoice_reconciliations")
 }
 
