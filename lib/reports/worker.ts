@@ -112,7 +112,12 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         expiresAt: verificationTokenData.expiresAt,
       });
 
-      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/public/reports/verify/${verificationTokenData.token}`;
+      // Construct verification URL — must point to HTML page, NOT /api endpoint
+      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/api\/?$/, "").replace(/\/$/, "");
+      if (!baseUrl) {
+        throw new Error("NEXT_PUBLIC_APP_URL not configured for QR code generation");
+      }
+      const verificationUrl = `${baseUrl}/public/reports/verify/${verificationTokenData.token}`;
 
       let pdfBuffer = await stampAuditMetadata(rawPdfBuffer, {
         snapshotId: report.snapshot.calculationRunId,
@@ -134,6 +139,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       reportLogger.info("QR code added to footer", {
         reportId,
         verificationTokenId: verificationTokenData.id,
+        qrCodeUrl: verificationUrl,
       });
 
       // Store PDF with validation
