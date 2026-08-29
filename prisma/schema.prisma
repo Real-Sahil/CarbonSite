@@ -223,6 +223,7 @@ model Organization {
   n8nExecutions               N8nExecution[]               @relation("N8nExecutions")
   airbiteConnectors           AirbiteConnector[]           @relation("AirbiteConnectors")
   airbyteSyncLogs             AirbyteSyncLog[]             @relation("AirbyteSyncLogs")
+  forecasts                   Forecast[]                   @relation("Forecasts")
 
   @@map("organizations")
 }
@@ -3083,5 +3084,30 @@ model DbtRun {
   @@index([organizationId, status])
   @@index([organizationId, createdAt(sort: Desc)])
   @@map("dbt_runs")
+}
+
+model Forecast {
+  id                    String    @id @default(cuid())
+  organizationId        String    @map("organization_id")
+  forecastType          String    @map("forecast_type") // "emissions", "supplier_quality", "anomaly_rate"
+  targetPeriodStart     DateTime  @map("target_period_start") // start of forecast period
+  targetPeriodEnd       DateTime  @map("target_period_end")   // end of forecast period
+  predictions           Json      @map("predictions")         // array of {date, forecast, lowerBound, upperBound, confidence}
+  accuracy              Decimal?  @db.Decimal(5, 2)           // MAPE or similar accuracy metric
+  modelVersion          String    @map("model_version")       // "exponential_smoothing_v1" etc
+  trainingDataPoints    Int       @map("training_data_points")
+  method                String    @map("method")              // "exponential_smoothing", "seasonal_decomposition"
+  metadata              Json?     @map("metadata")            // method-specific params (alpha, beta, etc)
+  generatedAt           DateTime  @default(now()) @map("generated_at")
+  validUntil            DateTime  @map("valid_until")         // when forecast becomes stale
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation("Forecasts", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, forecastType, targetPeriodStart])
+  @@index([organizationId, forecastType, generatedAt(sort: Desc)])
+  @@index([organizationId, validUntil])
+  @@map("forecasts")
 }
 

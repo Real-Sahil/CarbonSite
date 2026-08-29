@@ -18,6 +18,8 @@ import { runDbtTransformation } from "@/lib/jobs/workers/dbt-transform";
 import type { DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
 import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
 import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
+import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
+import type { ForecastingJobData } from "@/lib/jobs/workers/forecasting";
 
 interface InvoiceAnomalyJobData {
   organizationId: string;
@@ -135,7 +137,21 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, supplier-performance)");
+  // ── Forecasting ───────────────────────────────────────────────────────────
+  await boss.work<ForecastingJobData>(
+    "forecasting",
+    { localConcurrency: 2 },
+    async (jobs: Job<ForecastingJobData>[]) => {
+      for (const job of jobs) {
+        const { orgId, forecastType } = job.data;
+        console.log(`[forecasting] generating ${forecastType} forecast for org ${orgId}`);
+        await processForecastingJob(job.data);
+        console.log(`[forecasting] finished ${forecastType} forecast for org ${orgId}`);
+      }
+    },
+  );
+
+  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, supplier-performance, forecasting)");
 }
 
 start().catch((err) => {
