@@ -19,13 +19,14 @@ const configUpdateSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { orgId: string } }
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
-    await requireOrgMember(params.orgId, ...ROLE_GROUPS.admins);
+    const { orgId } = await params;
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const config = await prisma.integrationConfig.findUnique({
-      where: { organizationId: params.orgId },
+      where: { organizationId: orgId },
     });
 
     if (!config) {
@@ -68,17 +69,18 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { orgId: string } }
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
-    await requireOrgMember(params.orgId, ...ROLE_GROUPS.admins);
+    const { orgId } = await params;
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const body = await req.json();
     const validated = configUpdateSchema.parse(body);
 
     // Get or create config
     let config = await prisma.integrationConfig.findUnique({
-      where: { organizationId: params.orgId },
+      where: { organizationId: orgId },
     });
 
     const updateData: any = {};
@@ -110,13 +112,13 @@ export async function POST(
 
     if (config) {
       config = await prisma.integrationConfig.update({
-        where: { organizationId: params.orgId },
+        where: { organizationId: orgId },
         data: updateData,
       });
     } else {
       config = await prisma.integrationConfig.create({
         data: {
-          organizationId: params.orgId,
+          organizationId: orgId,
           ...updateData,
         },
       });
