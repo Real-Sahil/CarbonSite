@@ -39,7 +39,7 @@
     "slug": "carbon-accounting-scale-dashboard",
     "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
     "description": "Dashboard queries that take 30 seconds at 100k records will take 5 minutes at 1M records. Here's how CarbonSite optimizes for scale.",
-    "date": "2026-08-29T15:08:38.985Z",
+    "date": "2026-08-29T15:16:23.550Z",
     "author": "CarbonSite",
     "readingTime": "5 min read",
     "keywords": [
@@ -54,7 +54,7 @@
     "slug": "audit-immutability-carbon",
     "title": "Building for Audit: How CarbonSite Ensures Immutability",
     "description": "Auditors need to verify that your carbon data can't be retroactively changed. Immutable audit logs, hash chains, and versioning are non-negotiable.",
-    "date": "2026-08-29T15:08:38.984Z",
+    "date": "2026-08-29T15:16:23.549Z",
     "author": "CarbonSite",
     "readingTime": "5 min read",
     "keywords": [
