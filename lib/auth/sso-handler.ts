@@ -212,3 +212,88 @@ export function validateSsoState(stateFromCookie: string, stateFromUrl: string):
   }
   return crypto.timingSafeEqual(Buffer.from(stateFromCookie), Buffer.from(stateFromUrl));
 }
+
+export function buildSamlAuthenticationRequest(config: SamlConfig): string {
+  const id = `_${crypto.randomBytes(16).toString("hex")}`;
+  const issueInstant = new Date().toISOString();
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<samlp:AuthnRequest
+  xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+  ID="${id}"
+  Version="2.0"
+  IssueInstant="${issueInstant}"
+  Destination="${config.identityProviderUrl}"
+  AssertionConsumerServiceURL="${config.assertionConsumerServiceUrl}"
+  ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST">
+  <saml:Issuer>${config.entityId}</saml:Issuer>
+  <samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress" AllowCreate="true"/>
+  <samlp:RequestedAuthnContext Comparison="exact">
+    <saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:Password</saml:AuthnContextClassRef>
+  </samlp:RequestedAuthnContext>
+</samlp:AuthnRequest>`;
+
+  return Buffer.from(xml).toString("base64");
+}
+
+export async function parseSamlResponse(samlResponse: string): Promise<Record<string, unknown>> {
+  const xml = Buffer.from(samlResponse, "base64").toString("utf8");
+
+  // Parse basic XML to extract NameID and attributes
+  // For production, use a proper XML/SAML library (e.g., passport-saml)
+  const nameIdMatch = xml.match(/<saml:NameID[^>]*>([^<]*)<\/saml:NameID>/);
+  const nameId = nameIdMatch ? nameIdMatch[1] : undefined;
+
+  const emailMatch = xml.match(/<saml:AttributeValue>([^<]*@[^<]*)<\/saml:AttributeValue>/);
+  const email = emailMatch ? emailMatch[1] : undefined;
+
+  const nameMatch = xml.match(/<saml:AttributeValue[^>]*>([^<]*)<\/saml:AttributeValue>/);
+  const name = nameMatch ? nameMatch[1] : undefined;
+
+  if (!nameId && !email) {
+    throw new Error("Could not extract user information from SAML response");
+  }
+
+  return {
+    sub: nameId || email,
+    email: email || nameId,
+    name: name,
+  };
+}
+
+export function verifySamlSignature(samlResponse: string, certificate: string): boolean {
+  const xml = Buffer.from(samlResponse, "base64").toString("utf8");
+
+  // Extract Signature element
+  const signatureMatch = xml.match(/<ds:Signature[^>]*>[\s\S]*?<\/ds:Signature>/);
+  if (!signatureMatch) {
+    throw new Error("No signature found in SAML response");
+  }
+
+  // For MVP, accept any signed response (do not verify signature)
+  // In production, use xmlsec1 or similar to verify signature against certificate
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SAML signature verification not yet implemented for production");
+  }
+
+  return true;
+}
+
+export async function extractSamlUserInfo(samlResponse: string, certificate: string): Promise<{
+  sub: string;
+  email: string;
+  name?: string;
+}> {
+  // Verify signature
+  verifySamlSignature(samlResponse, certificate);
+
+  // Parse response
+  const claims = await parseSamlResponse(samlResponse);
+
+  return {
+    sub: (claims.sub as string) || "",
+    email: (claims.email as string) || "",
+    name: claims.name as string | undefined,
+  };
+}
