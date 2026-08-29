@@ -100,11 +100,12 @@ export function EmissionsCategoryChart({ data, isLoading }: EmissionsCategoryCha
                 border: '1px solid #e5e7eb',
                 borderRadius: '0.5rem',
               }}
-              formatter={(value: number | string) =>
-                value && typeof value === 'number'
-                  ? value.toLocaleString(undefined, { maximumFractionDigits: 2 })
-                  : '0'
-              }
+              formatter={(value) => {
+                if (typeof value === 'number') {
+                  return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+                }
+                return '0';
+              }}
             />
             <Bar dataKey="co2e" radius={[8, 8, 0, 0]}>
               {chartData.map((entry, index) => (

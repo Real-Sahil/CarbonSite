@@ -102,11 +102,12 @@ export function EmissionsScopeChart({ data, isLoading }: EmissionsScopeChartProp
                 border: '1px solid #e5e7eb',
                 borderRadius: '0.5rem',
               }}
-              formatter={(value: number | string) =>
-                value && typeof value === 'number'
-                  ? value.toLocaleString(undefined, { maximumFractionDigits: 2 })
-                  : '0'
-              }
+              formatter={(value) => {
+                if (typeof value === 'number') {
+                  return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+                }
+                return '0';
+              }}
             />
             <Legend />
           </PieChart>
