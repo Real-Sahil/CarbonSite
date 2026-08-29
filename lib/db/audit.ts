@@ -225,7 +225,7 @@ export async function verifyAuditChain(organizationId: string): Promise<null | 0
       continue;
     }
 
-    const computedHash = createHash("sha256")
+    const computedHash: string = createHash("sha256")
       .update(
         [
           previousHash || "",
