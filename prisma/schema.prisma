@@ -216,6 +216,7 @@ model Organization {
   xeroSyncLogs                XeroSyncLog[]
   invoiceRecords              InvoiceRecord[]              @relation("InvoiceRecords")
   invoiceAnomalies            InvoiceAnomaly[]             @relation("InvoiceAnomalies")
+  integrationConfig           IntegrationConfig?
 
   @@map("organizations")
 }
@@ -2901,3 +2902,50 @@ enum InvoiceReconciliationStatus {
 
   @@map("invoice_reconciliation_status")
 }
+
+// ─── Integration Configuration & Management ──────────────────────────────────
+
+model IntegrationConfig {
+  id                           String    @id @default(cuid())
+  organizationId               String    @unique @map("organization_id")
+  organization                 Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // LLM Configuration
+  llmProvider                  String?   @map("llm_provider") // "huggingface" | "nvidia"
+  llmToken                     String?   @map("llm_token") // Encrypted
+  llmTokenValidatedAt          DateTime? @map("llm_token_validated_at")
+  llmTokenValid                Boolean   @default(false) @map("llm_token_valid")
+
+  // Xero OAuth
+  xeroClientId                 String?   @map("xero_client_id")
+  xeroClientSecret             String?   @map("xero_client_secret") // Encrypted
+  xeroConnected                Boolean   @default(false) @map("xero_connected")
+  xeroConnectedAt              DateTime? @map("xero_connected_at")
+  xeroTenantId                 String?   @map("xero_tenant_id") // From OAuth flow
+  xeroRefreshToken             String?   @map("xero_refresh_token") // Encrypted
+  xeroTokenExpiresAt           DateTime? @map("xero_token_expires_at")
+
+  // OIDC/SSO Configuration
+  oidcProvider                 String?   @map("oidc_provider") // "google" | "okta" | "azure" | "generic"
+  oidcClientId                 String?   @map("oidc_client_id")
+  oidcClientSecret             String?   @map("oidc_client_secret") // Encrypted
+  oidcIssuerUrl                String?   @map("oidc_issuer_url")
+  oidcDiscoveryValidatedAt     DateTime? @map("oidc_discovery_validated_at")
+  oidcDiscoveryValid           Boolean   @default(false) @map("oidc_discovery_valid")
+
+  // n8n Webhooks
+  n8nWebhookReports            String?   @map("n8n_webhook_reports") // Encrypted
+  n8nWebhookReportsTested      Boolean   @default(false) @map("n8n_webhook_reports_tested")
+  n8nWebhookSubmissions        String?   @map("n8n_webhook_submissions") // Encrypted
+  n8nWebhookSubmissionsTested  Boolean   @default(false) @map("n8n_webhook_submissions_tested")
+
+  // Audit & Timestamps
+  lastTestedAt                 DateTime? @map("last_tested_at")
+  testResults                  Json?     @map("test_results") // { llm: { status, error? }, xero: {...}, oidc: {...}, n8n: {...} }
+  createdAt                    DateTime  @default(now()) @map("created_at")
+  updatedAt                    DateTime  @updatedAt @map("updated_at")
+
+  @@index([organizationId])
+  @@map("integration_configs")
+}
+
