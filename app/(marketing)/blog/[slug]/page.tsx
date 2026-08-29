@@ -21,9 +21,10 @@ const pillarMap: Record<string, string> = {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const post = await getBlogPost(params.slug);
+  const { slug } = await params;
+  const post = await getBlogPost(slug);
   if (!post) {
     return {
       title: "Not Found",
@@ -62,15 +63,16 @@ export async function generateStaticParams() {
 export default async function BlogPostPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const post = await getBlogPost(params.slug);
+  const { slug } = await params;
+  const post = await getBlogPost(slug);
 
   if (!post) {
     notFound();
   }
 
-  const pillar = pillarMap[params.slug] || "Industry Insights";
+  const pillar = pillarMap[slug] || "Industry Insights";
 
   return (
     <div className="min-h-[100dvh] bg-[#FAFBF8] text-[#111827] py-16">
