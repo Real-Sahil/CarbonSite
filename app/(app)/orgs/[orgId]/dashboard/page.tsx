@@ -133,7 +133,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   });
 
   // Fetch onboarding progress (disabled - onboardingProgress model not yet added)
-  const onboardingProgress = null;
+  const onboardingProgress: { state: string; stepState?: Record<string, boolean> } | null = null;
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
   const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch] = await Promise.all([
@@ -772,7 +772,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       </div>
 
       <div className="max-w-[1200px] mx-auto px-8 py-8">
-      {onboardingProgress?.state !== "completed" && (
+      {/* Onboarding checklist disabled - feature deferred to Phase 2 */}
+      {false && onboardingProgress?.state !== "completed" && (
         <OnboardingChecklist
           orgId={orgId}
           steps={[
