@@ -1,6 +1,6 @@
 // Multi-provider LLM client.
-// Primary: HuggingFace Inference API (free, 30k requests/month, no self-hosting)
-// Fallback: NVIDIA NIM (existing integration, kept as fallback)
+// Primary: NVIDIA NIM (high-performance inference)
+// Fallback: HuggingFace Inference API (free, 30k requests/month, no self-hosting)
 
 export type ChatMessage = { role: 'user' | 'assistant' | 'system'; content: string };
 export type LlmResult = { text: string; tokens: number; provider: string };
@@ -105,25 +105,25 @@ async function callNvidiaNim(messages: ChatMessage[], options: LlmOptions): Prom
 }
 
 export class LlmClient {
-  // Try HuggingFace first; fall back to NVIDIA NIM if HF is unconfigured or fails.
+  // Try NVIDIA NIM first; fall back to HuggingFace if NIM is unconfigured or fails.
   async chat(messages: ChatMessage[], options: LlmOptions = {}): Promise<LlmResult> {
-    if (HF_API_KEY) {
+    if (NIM_API_KEY) {
       try {
-        return await callHuggingFace(messages, options);
+        return await callNvidiaNim(messages, options);
       } catch (err) {
         console.warn(
-          '[llm] HuggingFace failed, falling back to NVIDIA NIM:',
+          '[llm] NVIDIA NIM failed, falling back to HuggingFace:',
           err instanceof Error ? err.message : String(err),
         );
       }
     }
 
-    if (NIM_API_KEY) {
-      return callNvidiaNim(messages, options);
+    if (HF_API_KEY) {
+      return callHuggingFace(messages, options);
     }
 
     throw new Error(
-      'No LLM provider configured. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY.',
+      'No LLM provider configured. Set NVIDIA_NIM_API_KEY or HUGGINGFACE_TOKEN.',
     );
   }
 
