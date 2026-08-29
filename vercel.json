@@ -1,5 +1,9 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm prisma migrate deploy && pnpm build",
-  "devCommand": "pnpm dev"
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "DIRECT_URL": "@direct_url"
+  }
 }
