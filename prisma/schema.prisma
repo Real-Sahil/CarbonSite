@@ -217,6 +217,11 @@ model Organization {
   invoiceRecords              InvoiceRecord[]              @relation("InvoiceRecords")
   invoiceAnomalies            InvoiceAnomaly[]             @relation("InvoiceAnomalies")
   integrationConfig           IntegrationConfig?
+  dbtRuns                     DbtRun[]                     @relation("DbtRuns")
+  n8nWorkflows                N8nWorkflow[]                @relation("N8nWorkflows")
+  n8nExecutions               N8nExecution[]               @relation("N8nExecutions")
+  airbiteConnectors           AirbiteConnector[]           @relation("AirbiteConnectors")
+  airbyteSyncLogs             AirbyteSyncLog[]             @relation("AirbyteSyncLogs")
 
   @@map("organizations")
 }
@@ -994,6 +999,7 @@ model CalculationRun {
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
+  dbtRuns            DbtRun[]              @relation("DbtRuns")
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -2947,5 +2953,131 @@ model IntegrationConfig {
 
   @@index([organizationId])
   @@map("integration_configs")
+}
+
+// ─── Phase 3: Data Transformation & Orchestration ──────────────────────────
+
+model DbtRun {
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  calculationRunId  String    @map("calculation_run_id")
+  status            String    @default("pending") @map("status") // 'pending', 'running', 'succeeded', 'failed'
+  dbtCommand        String    @map("dbt_command") // 'dbt run', 'dbt test', etc.
+  dbtOutput         String?   @map("dbt_output") // Raw dbt CLI output
+  rowsAffected      Int       @default(0) @map("rows_affected")
+  modelsCreated     Int       @default(0) @map("models_created")
+  testCount         Int       @default(0) @map("test_count")
+  testsPassed       Int       @default(0) @map("tests_passed")
+  testsFailed       Int       @default(0) @map("tests_failed")
+  duration          Int?      @map("duration") // milliseconds
+  errorMessage      String?   @map("error_message")
+  startedAt         DateTime  @default(now()) @map("started_at")
+  completedAt       DateTime? @map("completed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  organization   Organization   @relation("DbtRuns", fields: [organizationId], references: [id], onDelete: Cascade)
+  calculationRun CalculationRun @relation("DbtRuns", fields: [calculationRunId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, calculationRunId])
+  @@index([organizationId, status, createdAt(sort: Desc)])
+  @@map("dbt_runs")
+}
+
+model N8nWorkflow {
+  id                String          @id @default(cuid())
+  organizationId    String          @map("organization_id")
+  n8nWorkflowId     String          @map("n8n_workflow_id") // ID from n8n instance
+  name              String
+  description       String?
+  trigger           String          @map("trigger") // 'report_ready', 'field_submission', 'import_complete', 'manual'
+  action            String          @map("action") // 'send_email', 'slack_notification', 'create_jira_ticket', 'update_spreadsheet'
+  enabled           Boolean         @default(true)
+  n8nWebhookUrl     String?         @map("n8n_webhook_url") // Encrypted, for CarbonSite → n8n direction
+  config            Json // Workflow-specific config (email templates, Slack channels, etc.)
+  lastTriggeredAt   DateTime?       @map("last_triggered_at")
+  lastTriggeredBy   String?         @map("last_triggered_by") // Event type that triggered it
+  failureCount      Int             @default(0) @map("failure_count")
+  lastFailedAt      DateTime?       @map("last_failed_at")
+  lastFailureReason String?         @map("last_failure_reason")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  organization Organization       @relation("N8nWorkflows", fields: [organizationId], references: [id], onDelete: Cascade)
+  executions       N8nExecution[]
+
+  @@unique([organizationId, n8nWorkflowId])
+  @@index([organizationId, trigger, enabled])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("n8n_workflows")
+}
+
+model N8nExecution {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  workflowId      String    @map("workflow_id")
+  n8nExecutionId  String    @map("n8n_execution_id") // ID from n8n
+  triggerEvent    String    @map("trigger_event") // 'report_ready', 'field_submission', etc.
+  status          String    @default("running") @map("status") // 'running', 'success', 'error', 'timeout'
+  output          Json?     @map("output") // Workflow output data
+  errorMessage    String?   @map("error_message")
+  duration        Int?      @map("duration") // milliseconds
+  startedAt       DateTime  @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation("N8nExecutions", fields: [organizationId], references: [id], onDelete: Cascade)
+  workflow         N8nWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, workflowId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("n8n_executions")
+}
+
+model AirbiteConnector {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  sourceSystem     String    @map("source_system") // 'salesforce', 'sap', 'xero', 'quickbooks', 'stripe', 'slack', 'aws_iot', 'openweather'
+  displayName      String    @map("display_name") // User-friendly name
+  enabled          Boolean   @default(true)
+  syncSchedule     String?   @map("sync_schedule") // 'hourly', 'daily', 'weekly', 'manual'
+  config           Json      @map("config") // Source-specific config (API keys, field mappings, etc.)
+  recordsSynced    Int       @default(0) @map("records_synced")
+  lastSyncAt       DateTime? @map("last_sync_at")
+  lastSyncStatus   String?   @map("last_sync_status") // 'success', 'failed', 'partial'
+  lastSyncError    String?   @map("last_sync_error")
+  nextScheduledAt  DateTime? @map("next_scheduled_at")
+  failureCount     Int       @default(0) @map("failure_count")
+  lastFailureAt    DateTime? @map("last_failure_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation("AirbiteConnectors", fields: [organizationId], references: [id], onDelete: Cascade)
+  syncLogs         AirbyteSyncLog[]
+
+  @@unique([organizationId, sourceSystem])
+  @@index([organizationId, enabled])
+  @@index([organizationId, lastSyncAt(sort: Desc)])
+  @@map("airbite_connectors")
+}
+
+model AirbyteSyncLog {
+  id           String    @id @default(cuid())
+  organizationId String  @map("organization_id")
+  connectorId  String    @map("connector_id")
+  status       String    @map("status") // 'running', 'success', 'failed'
+  recordsRead  Int       @default(0) @map("records_read")
+  recordsWritten Int     @default(0) @map("records_written")
+  errorMessage String?   @map("error_message")
+  duration     Int?      @map("duration") // milliseconds
+  startedAt    DateTime  @default(now()) @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation("AirbyteSyncLogs", fields: [organizationId], references: [id], onDelete: Cascade)
+  connector      AirbiteConnector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, connectorId])
+  @@index([connectorId, status, startedAt(sort: Desc)])
+  @@map("airbyte_sync_logs")
 }
 
