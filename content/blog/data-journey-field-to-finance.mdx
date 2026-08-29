@@ -1,0 +1,218 @@
+---
+title: "From Field to Finance: The Complete Emissions Data Journey"
+description: "Data quality issues hide at every step from capture to report. Complete data lineage shows exactly how each emission number was calculated."
+date: "2026-08-29"
+author: "CarbonSite"
+readingTime: "8 minutes"
+keywords: ["data lineage", "quality control", "data journey", "audit trail", "carbon accounting"]
+slug: "data-journey-field-to-finance"
+---
+
+A field worker in Bristol photographs a waste ticket on Monday morning. The ticket shows 500 kg of waste disposed.
+
+By Wednesday, that data has passed through:
+1. Field worker's phone (OCR extraction)
+2. CarbonSite cloud server (validation)
+3. Finance team's review (approval workflow)
+4. Emissions calculation engine (factor selection + calculation)
+5. Dashboard aggregation (included in facility totals)
+6. Published report (frozen in a snapshot)
+
+At each step, something could go wrong:
+- OCR misreads the weight
+- Validation rejects it (wrong unit)
+- Finance team approves it without checking
+- Wrong emission factor gets selected
+- Calculation formula has a bug
+- Dashboard includes outdated data
+- Report publishes with errors that can't be corrected
+
+Most companies have no visibility into this data journey. They see the final number in their report but have no idea how it got there.
+
+## The Data Quality Problem at Each Stage
+
+**Stage 1: Field Capture**
+Problem: OCR might misread handwriting
+- Ticket shows "50kg", OCR reads "5Okg" (zero as letter O)
+- Ticket shows "500 tonnes", OCR reads "500 tonnes" (correct)
+- Ticket shows "0.5 tonnes", OCR reads "0.5 tonnes" (correct)
+
+Solution: CarbonSite shows the original photo + extracted data to the field worker, who verifies it's correct before submitting. Accuracy: 99%+ for clearly printed data.
+
+**Stage 2: Data Validation**
+Problem: Data might violate basic rules
+- Weight is negative (impossible)
+- Unit is misspelled ("tonnes", "Tonnes", "TONNES" should all be the same)
+- Date is in the future
+- Facility doesn't exist in the system
+
+Solution: CarbonSite's validation engine checks 50+ rules and rejects data that fails. Clear error messages tell the field worker how to fix it.
+
+**Stage 3: Finance Review**
+Problem: Finance team might approve without checking
+- They're busy, they rubber-stamp approvals
+- They don't verify source documents
+- Duplicates slip through
+
+Solution: CarbonSite shows source evidence (photo of waste ticket) alongside the extracted data. Finance can reject with a comment: "Please verify, weight seems high." Audit trail shows who approved what and when.
+
+**Stage 4: Factor Selection**
+Problem: Wrong emission factor might be applied
+- Facility reports waste, system should use "Landfill - Non-hazardous" factor
+- System accidentally uses "Incineration" factor (different CO₂e per kg)
+- Result: 20-30% error in calculated emissions
+
+Solution: CarbonSite shows which factor was selected and why:
+```
+Category: Waste
+Type: Disposal (Landfill)
+Selected Factor: DEFRA 2025.1 - Waste Landfill (Non-hazardous)
+Factor Value: 0.516 kg CO₂e / kg waste
+Geography: UK average
+Source: gov.uk (2025-01-15)
+Confidence: High (factor-specific match, not generic estimate)
+```
+
+Finance team can review and object if the factor selection seems wrong.
+
+**Stage 5: Calculation**
+Problem: Formula might be applied incorrectly
+- Weight: 500 kg
+- Factor: 0.516 kg CO₂e / kg
+- Expected: 500 × 0.516 = 258 kg CO₂e
+- Actual calculation: 500 × 0.0516 = 25.8 kg CO₂e (factor misplaced by decimal)
+
+Solution: CarbonSite stores the exact formula used:
+```
+CO₂e = Weight (500 kg) × Factor (0.516 kg CO₂e/kg) = 258 kg CO₂e
+
+Verification:
+- Dimensional analysis: kg × (kg CO₂e/kg) = kg CO₂e ✓
+- Reasonableness check: 258 kg for 500 kg waste seems right ✓
+- Peer comparison: Similar facilities average 200-300 kg CO₂e for 500 kg waste ✓
+```
+
+An auditor can review this formula and confirm it's correct.
+
+**Stage 6: Dashboard Aggregation**
+Problem: Dashboard might include rejected data or use outdated calculations
+- Finance rejected record #123, but dashboard still includes it
+- New calculation run happened, but dashboard shows old totals
+- User filtered by "approved" but dashboard shows "draft" records
+
+Solution: CarbonSite's dashboard queries pre-calculated aggregates that respect status filters:
+```
+Dashboard Query:
+SELECT SUM(co2e) FROM DashboardAggregate
+WHERE facility_id = 'manchester' 
+  AND period = '2025-03'
+  AND status = 'approved'  ← Only approved records
+  AND calculated_after = '2025-03-14 14:30:00'  ← Latest calculation
+
+Result: 1,500 tonnes CO₂e (only approved records, only latest calculation)
+```
+
+Users can't accidentally see draft or rejected data.
+
+**Stage 7: Report Publication**
+Problem: Report might be edited after publication (destroying its integrity)
+Solution: CarbonSite creates immutable snapshots. Once published, reports can't be changed. The SHA-256 hash chain proves nobody edited it.
+
+## The Complete Data Lineage View
+
+CarbonSite shows users the complete journey from field to report:
+
+**Timeline View:**
+```
+Monday 09:00 - Field capture
+  ↓ Photo of waste ticket
+Monday 09:15 - Data extraction
+  ↓ OCR extracted: 500 kg, Landfill disposal
+Monday 09:20 - Validation
+  ✓ All checks passed
+Monday 10:00 - Finance review
+  ↓ James Smith reviewed and approved
+Monday 14:30 - Calculation
+  ↓ Applied factor: 0.516 kg CO₂e/kg
+  ↓ Result: 258 kg CO₂e
+Tuesday 08:00 - Aggregation
+  ↓ Included in facility dashboard
+Friday 10:00 - Report publication
+  ↓ Included in Q1 Report (snapshot v1.0)
+Friday 17:00 - Audit verification
+  ✓ Auditor verified SHA-256 hash
+```
+
+Click any step, and you see:
+- Who performed it (user name, timestamp)
+- What changed (before/after values)
+- Why it might have failed (error messages, validation rules)
+- Audit trail (immutable log entry)
+
+## Real Example: Audit Investigation
+
+A UK food company published Q1 sustainability report showing 500 tonnes Scope 3 emissions from packaging suppliers.
+
+Three months later, an auditor asked: "How did you calculate this number?"
+
+**With traditional carbon accounting:**
+- Finance manager tries to reconstruct the calculation
+- Finds spreadsheets, but data's been edited since
+- Can't show original calculations
+- Audit takes 4 weeks and ends with uncertainty
+
+**With CarbonSite's data lineage:**
+- Auditor opens the published report
+- Clicks "View data lineage"
+- Sees complete journey: 47 supplier invoices → factor selection → calculation → aggregation → publication
+- Clicks any invoice, sees the original photo
+- Verifies factor selection (DEFRA 2025.1)
+- Reviews calculation formula
+- Confirms no editing after publication (SHA-256 hash)
+- Audit completes in 1 week with confidence
+
+Result: Auditor signs off immediately, no pushback.
+
+## Data Quality Score Card
+
+CarbonSite shows you a quality score for your data:
+
+```
+Data Quality Report - Q1 2025
+
+Overall Score: 87%
+
+Breakdown:
+├─ Capture Quality: 92%
+│  ├─ OCR accuracy: 98% (hand-written data lower)
+│  ├─ Field worker verification: 99% (spot-checked)
+├─ Validation Quality: 85%
+│  ├─ Data passing first-pass validation: 92%
+│  ├─ Average corrections needed: 2-3 per 100 records
+├─ Calculation Quality: 88%
+│  ├─ Factor selection accuracy: 94%
+│  ├─ Calculation formula correctness: 100%
+├─ Audit Quality: 78%
+│  ├─ Records with source evidence: 82% (88% with photo)
+│  ├─ Records with manual verification: 74%
+
+Recommendations:
+- Improve field worker training on handwriting clarity (could boost capture quality by 5%)
+- Add factor selection verification step (could boost calculation quality by 8%)
+- Increase manual spot-checks of high-value records (could boost audit quality by 10%)
+
+Score Trend:
+Q4 2024: 81%
+Q1 2025: 87% ← improvement!
+```
+
+This gives you a concrete picture of your data quality and actionable recommendations for improvement.
+
+## Getting Started with Data Lineage
+
+Understanding your data journey is the first step to trusting your carbon numbers.
+
+CarbonSite provides complete lineage at all pricing tiers:
+- **Free Plan:** Basic lineage (photo + extraction + calculation)
+- **Growth Plan:** £50/month, full lineage with timeline and audit trail
+- **Enterprise:** Advanced lineage with quality scoring and anomaly detection

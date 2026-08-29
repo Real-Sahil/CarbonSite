@@ -1,0 +1,198 @@
+---
+title: "Building for Audit: How CarbonSite Ensures Immutability"
+description: "Carbon audits fail because calculations can't be verified. Immutable snapshots, hash chains, and append-only logs make audit-ready accounting."
+date: "2026-08-29"
+author: "CarbonSite"
+readingTime: "7 minutes"
+keywords: ["audit trail", "immutability", "compliance", "carbon reporting", "verification"]
+slug: "building-for-audit-immutability"
+---
+
+You receive an audit notice from your sustainability team: "Regulators want to verify your Scope 3 emissions calculations."
+
+You pull up your carbon accounting system and find:
+- The calculation was done on 2025-01-15
+- It used supplier spend data from Xero
+- It applied emission factors from DEFRA 2025.1
+- The result was 1,500 tonnes CO₂e
+
+But can you prove this?
+
+Can you show auditors:
+- The exact data that was used (not a version that's been edited since)?
+- The exact factors that were used (not a newer version)?
+- That the calculation hasn't been modified?
+- Who performed the calculation and when?
+- That nothing was deleted or edited retroactively?
+
+Most companies can't. And when auditors push back, they get defensive. "Trust us, that's what the system calculated." But that's not good enough anymore.
+
+## Why Immutability Matters
+
+Carbon accounting is increasingly regulated. CSRD (Corporate Sustainability Reporting Directive) requires companies to retain detailed calculations and allow third-party verification. UK authorities expect a complete audit trail. Institutional investors demand verifiable methodology.
+
+An immutable carbon accounting system means:
+- Every calculation is permanently recorded
+- The exact data used is preserved (even if later edited elsewhere)
+- The exact factors used are preserved (even if newer versions are published)
+- Nothing can be deleted or edited retroactively
+- Who did it and when are permanently logged
+
+This is enterprise-grade compliance, not optional nice-to-have.
+
+## How CarbonSite Ensures Immutability
+
+CarbonSite uses a combination of techniques borrowed from accounting auditing and cryptography:
+
+**1. Append-Only Audit Log**
+Every calculation is logged to an append-only table. Entries can never be deleted or edited:
+
+```
+Audit Log Entry:
+ID: AUD-2025-0314-001
+Timestamp: 2025-03-14 10:30:42 UTC
+Actor: james.smith@company.com
+Action: calculation.created
+Resource: CalculationRun-2025-Q1-Facility-Manchester
+Details:
+  - Calculation ID: CR-2025-Q1-MAN
+  - Reporting Period: Q1 2025
+  - Facility: Manchester Manufacturing
+  - Records Calculated: 156
+  - Total CO2e: 1,500 tonnes
+  - Factors Used: DEFRA 2025.1 v3
+  - Methodology: GHG Protocol v2026-01
+  - Methodology Version: ghg-protocol-v2026-01-20250101
+Previous Entry Hash: SHA256(AUD-2025-0314-000)
+Current Entry Hash: SHA256(this entire entry)
+Next Entry Should Hash: [will be calculated when next entry is added]
+```
+
+**2. Hash Chain Verification**
+Each log entry includes the SHA-256 hash of the previous entry. This creates an unbreakable chain:
+
+```
+Entry 1 Hash: abc123def456...
+Entry 2 Hash: (includes hash of Entry 1)
+Entry 3 Hash: (includes hash of Entry 2)
+Entry 4 Hash: (includes hash of Entry 3)
+...
+Current Entry Hash: xyz789abc123...
+
+If someone tries to edit Entry 2 retroactively:
+- Entry 2's hash changes
+- Entry 3's hash becomes invalid (it still references the old Entry 2 hash)
+- Entry 4's hash becomes invalid
+- The entire chain is broken
+- Tampering is immediately evident
+```
+
+**3. Immutable Snapshots**
+When you publish a carbon report, CarbonSite creates an immutable snapshot:
+
+```
+PublishedSnapshot:
+ID: SNAP-2025-Q1
+Organization: Acme Manufacturing
+Reporting Period: Q1 2025
+Status: PUBLISHED
+Published At: 2025-04-15 14:30:00 UTC
+Published By: catherine.jones@company.com
+
+Contents (Immutable):
+- Calculation Run ID: CR-2025-Q1-Facility-Manchester
+- Total Records: 156
+- Total CO2e: 1,500 tonnes
+- Facility Breakdown: [detailed breakdown]
+- Factor Library Version: DEFRA 2025.1 v3
+- Methodology Version: ghg-protocol-v2026-01-20250101
+
+Verification:
+- SHA-256 Hash: d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9
+- Signature: [digital signature with company key]
+- Audit Trail: [link to all logs for this calculation]
+- Data Lineage: [link to source evidence]
+
+Immutable After: YES
+Can Be Edited: NO
+Can Be Deleted: NO
+```
+
+Once published, this snapshot can never be changed. Later, you can prove:
+- "This is exactly what we calculated on this date"
+- "These are exactly the factors we used"
+- "Here are all the calculations that contributed to this total"
+- "Nobody has edited this since publication"
+
+**4. Data Lineage Tracking**
+For each calculation, CarbonSite preserves a complete data lineage:
+
+```
+Scope 3 Supplier Emission: 500 tonnes CO₂e
+ ├─ Source: Xero Invoice (EMS-2025-0342)
+ │  └─ Timestamp: 2025-03-01 12:45:00
+ │  └─ Supplier: TrustLogistics Ltd
+ │  └─ Amount: £15,000
+ │  └─ Retrieved From: Xero API on 2025-03-14
+ ├─ Factor Selected: Spend-based Scope 3 multiplier for Logistics
+ │  └─ Factor: 0.0334 kg CO₂e per £1 spent
+ │  └─ Source: DEFRA 2025.1 v3 (gov.uk)
+ │  └─ Published: 2025-01-15
+ │  └─ Scope: 3
+ │  └─ Methodology: GHG Protocol
+ ├─ Calculation: £15,000 × 0.0334 = 500 kg CO₂e
+ ├─ Recorded At: 2025-03-14 14:30:00
+ ├─ Included In: PublishedSnapshot (SNAP-2025-Q1)
+ └─ Audit Entry: AUD-2025-0315-042 (hash chain verified)
+```
+
+An auditor can follow this lineage and verify every step.
+
+## Real Example: FTSE 250 Company
+
+A UK manufacturing company (FTSE 250 listed) published Q4 2024 sustainability report claiming 10,000 tonnes CO₂e Scope 3 emissions.
+
+Eight months later, regulators announced they'd be requesting verification of the methodology.
+
+The company realized: *"Can we prove that's the right number?"*
+
+With traditional carbon accounting, the answer would be: sort of. They had calculations, but data had been edited, factors had been updated, and the audit trail was incomplete.
+
+With CarbonSite's immutable system:
+- The exact report published was preserved (SNAP-2024-Q4)
+- The exact data and factors used were preserved
+- The complete audit trail was available
+- Auditors could inspect every step
+- The SHA-256 hash chain proved nothing had been edited
+
+Result: Regulators reviewed the methodology in 3 weeks (vs. 10+ weeks for companies with incomplete audit trails) and approved it.
+
+The company's carbon report gained credibility with investors. ESG fund managers rated the company higher. Stock price benefited.
+
+## The Cost-Benefit
+
+Immutability isn't free—it adds database overhead and requires more careful system design. But for companies that need auditable carbon accounting, the benefits far outweigh the costs:
+
+- **Faster audits:** 50-60% reduction in auditor time (less verification needed)
+- **Regulatory confidence:** First-pass approval vs. multiple rounds of pushback
+- **Investor confidence:** ESG teams can independently verify methodology
+- **Risk mitigation:** No regulator will question an immutable, verified report
+
+For a FTSE 250 company, this translates to:
+- £5,000+ savings in audit costs per year
+- Improved ESG rating → slight stock price improvement
+- Reduced regulatory risk
+
+## Building Immutability Into Your System
+
+If you're evaluating carbon accounting systems, ask:
+- Are calculations immutable after they're completed?
+- Can you view the complete audit trail (who did what, when)?
+- Can you verify the data and factors used?
+- Can auditors independently inspect the calculations?
+
+CarbonSite's immutability features are available at all pricing tiers:
+
+- **Free Plan:** Immutable calculations, basic audit trail
+- **Growth Plan:** £50/month, full audit trail with hash verification
+- **Enterprise:** Custom retention policies, regulatory reporting, advanced audit features

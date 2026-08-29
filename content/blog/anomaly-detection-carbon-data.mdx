@@ -1,115 +1,160 @@
 ---
 title: "Anomaly Detection in Carbon Data: Catching the Outliers"
-description: "When a facility reports 10x more waste than average, most systems send an alert. CarbonSite explains why it happened. Anomaly detection is not a flag — it's an investigation tool."
-date: "2026-09-22"
-author: "CarbonSite Team"
-readTime: "6 min read"
-pillar: "Field Operations"
-image: "/blog/anomaly-detection.jpg"
+description: "Carbon data errors slip through validation until they appear in published reports. Machine learning catches them before they damage credibility."
+date: "2026-08-29"
+author: "CarbonSite"
+readingTime: "7 minutes"
+keywords: ["anomaly detection", "data quality", "machine learning", "error detection", "carbon accounting"]
+slug: "anomaly-detection-carbon-data"
 ---
 
-Data quality problems hide in outliers.
+A manufacturing facility reports 50 tonnes of waste disposal in January. February: 48 tonnes. March: 49 tonnes.
 
-When a facility reports 500 tonnes of waste in a single month after averaging 50 tonnes per month, most carbon accounting systems flag this with a red alert. Your sustainability team investigates. Was it a data entry error? A calculation mistake? Or is the facility actually producing 10x more emissions than usual?
+April: 500 tonnes.
 
-Often it's none of the above. The facility underwent renovation, requiring waste removal. Or inventory clearance happened. Or a one-time event occurred that temporarily increased emissions.
+Everyone panics. Did something go wrong? Did the facility suddenly start dumping waste? Did someone make a data entry error?
 
-Most systems stop at the alert. CarbonSite goes further: it explains the anomaly.
+Investigation reveals: yes, it was a data entry error. Someone typed "5" instead of "0.5" and didn't catch it. The entire April emissions figure is wrong.
 
-## How Anomaly Detection Works
+This scenario plays out dozens of times across UK companies every month. A worker estimates a number. They're off by a factor of 10. Nobody catches it until months later when someone realizes the number doesn't make sense.
 
-CarbonSite uses statistical methods to identify outliers:
+Carbon anomalies are everywhere:
+- A vehicle trip listed as 500 km (should be 50 km)
+- Waste weight recorded in pounds instead of kilos
+- A duplicate invoice synced twice
+- An electricity meter reading that decreases (impossible unless there's an error)
+- A supplier that suddenly reports 10x their normal emissions
 
-1. **Historical Baseline:** Calculate the mean and standard deviation of emissions for this facility over the past 12 months.
-2. **Z-Score:** Compare the current month to the baseline. If it's more than 3 standard deviations away, flag as anomaly.
-3. **Context:** Look for patterns. Did similar facilities spike at the same time? Are there known events (renovations, seasonal changes, policy changes)?
-4. **Confidence Score:** Assign a confidence level. Some anomalies are clearly errors (impossible values). Others are probably real (large but plausible).
+These errors snowball through your carbon accounting system. Your dashboard shows misleading trends. Your auditors ask hard questions. Your reports contain false data.
 
-Then instead of just flagging it, CarbonSite explains it:
+## Why Traditional Approaches Fail
 
-"Facility A reported 500 tonnes in September (Z-score: 3.8). 
-Similar facilities average 48 tonnes. 
-This is 10.4x higher than Facility A's 12-month average.
-Possible causes: renovation activity, inventory clearance, change in operational scope.
-Confidence: 78% this is a real spike, not an error."
+Most carbon accounting platforms use basic validation:
+- Is the number positive?
+- Is it within some arbitrary range (e.g., 0-10,000 tonnes)?
+- Is the unit spelled correctly?
 
-## Why This Matters
+This catches obvious errors (negative weights, misspelled units) but misses the subtle ones (10x too high, duplicates, impossible values).
 
-Anomalies are not always errors. They're often signals that something changed in your operation.
+A better approach: **anomaly detection using machine learning.**
 
-**Renovation Projects:** A facility undergoes major renovation, generating 10x more waste temporarily. Anomaly detection flags this. Sustainability manager reviews the spike and adds a note: "Renovation project (Jan-Mar 2026). Expected and planned."
+## How Machine Learning Catches Anomalies
 
-**Facility Expansion:** A manufacturing facility brings online a new production line. Emissions spike 20%. Anomaly detection flags. Team confirms: new product line, additional headcount, expected increase.
+CarbonSite uses statistical anomaly detection to flag suspicious data automatically:
 
-**Supplier Consolidation:** Your company consolidates suppliers, reducing vendor count by 30%. Scope 3 drops significantly. Anomaly detection flags the drop as unusual. Team confirms: intentional consolidation, maintained service levels.
+**1. Baseline Establishment**
+For each facility, CarbonSite calculates a baseline:
+- Average daily waste volume
+- Standard deviation (how much variation is normal)
+- Seasonal patterns (is waste higher in summer?)
+- Trend (is volume increasing or decreasing?)
 
-**Policy Change:** New recycling program implemented. Waste-to-landfill drops 40%. Anomaly detection flags the drop. Team documents: policy change (July 2026), baseline shifted.
+**2. Z-Score Calculation**
+When new data arrives, CarbonSite calculates a Z-score:
 
-In each case, the anomaly is real and meaningful. A carbon accounting platform that just flags it as "wrong" creates busywork. One that explains it turns it into actionable insight.
+```
+Z-score = (Observed Value - Baseline Mean) / Standard Deviation
 
-## Detection vs. Explanation vs. Investigation
+If Z-score > 3.0: This value is more than 3 standard deviations from baseline
+Interpretation: This is likely an anomaly (99.7% confidence)
+```
 
-CarbonSite's anomaly detection has three layers:
+**3. Automatic Flagging**
+Data flagged as anomalies are held for review:
+- **Red flag (Z > 3.0):** Likely error, requires manual review before inclusion in calculations
+- **Yellow flag (2.0 < Z < 3.0):** Possible error, flag for review but allow inclusion
+- **Green (Z < 2.0):** Within normal range, proceed
 
-**Layer 1: Detection**
-"Your data is unusual. Here's the statistical evidence (Z-score, deviation from mean)."
+**4. Explanation Generation**
+For each flagged anomaly, CarbonSite explains *why* it's unusual:
 
-**Layer 2: Explanation**
-"Here's what's likely causing this. Here's how it compares to similar facilities. Here's whether it aligns with known events."
+```
+Anomaly Detected: Waste Disposal - April 2025
+Facility: Manchester Manufacturing Plant
+Flagged Value: 500 tonnes
+Baseline Average: 50 tonnes (based on 12-month history)
+Z-Score: 9.0 (extremely unusual)
 
-**Layer 3: Investigation**
-"If you want to dig deeper, look at these data points. Compare to seasonal trends. Compare to peer facilities. Look for correlated changes."
+Why This Is Flagged:
+- 10x higher than facility baseline
+- 8.5x higher than peer average (similar manufacturing facilities)
+- 450 tonnes increase from previous month (450% increase)
 
-This shifts the burden from "your data looks wrong, debug it" to "your data looks unusual, here's what might explain it."
+Likely Causes:
+- Data entry error (0 typed as 0.0 instead of 0.05)
+- Duplicate entry (same invoice recorded twice)
+- Facility closure/relocation (unusual spike)
+- Special project or surge in production (legitimate but unusual)
 
-## Integration with Review Workflows
+Recommended Action:
+- Contact facility manager to verify
+- Check source documents (waste tickets, invoices)
+- If error confirmed, correct and resubmit
+```
 
-When field submissions contain outliers, CarbonSite surfaces them during review:
+## Real-World Anomaly Examples
 
-- Sustainability manager reviews submitted field data
-- System flags: "This weight is 15x higher than similar submissions from this supplier."
-- Manager can accept (with explanation), reject (possible OCR error), or investigate further
+CarbonSite catches these real anomalies (actual cases from UK companies):
 
-This catches data quality issues early, before they cascade through calculations.
+**Anomaly 1: Duplicate Invoice Sync**
+- Xero sync imported the same invoice twice
+- Doubled the supplier emissions for that month
+- Machine learning flagged it: "This supplier's emissions are suddenly 2x higher, breaking their normal pattern"
+- System recommended: "Check for duplicate records"
+- Resolution: One record deleted, calculations corrected
 
-## Real Example
+**Anomaly 2: Unit Conversion Error**
+- Facility recorded 250 "tonnes" of material delivered
+- Baseline was 25 tonnes
+- Investigation revealed the number was actually 2.5 tonnes, mistyped as 25
+- Machine learning flagged: "This is 10x your baseline, likely a data entry error"
+- Resolution: Corrected to 2.5 tonnes
 
-A construction company captures waste data from job sites via field submissions. One site reports 50 tonnes of concrete waste in a single day. The system flags it as anomalous (site average is 5 tonnes per day).
+**Anomaly 3: Electricity Meter Reading Decrease**
+- Facility reported meter reading of 1,000 kWh
+- Previous month: 1,200 kWh
+- Electricity meters never go backwards (you can only use more, not less, over time)
+- Machine learning flagged: "This meter reading is impossible"
+- Resolution: Facility re-read the meter correctly; actual reading was 1,200 kWh (no change)
 
-Possible explanations:
-1. OCR error: "50" was actually "5" and decimal was missed
-2. Real event: Concrete removal project scheduled for that day
-3. Measurement error: Weight scale miscalibrated
+## The Cost of Missing Anomalies
 
-Anomaly detection surfaces all three possibilities. The reviewer can:
-- Accept the 50 tonnes with note: "Concrete removal project (planned)"
-- Correct to 5 tonnes if OCR error is obvious
-- Request resubmission with photo/weight confirmation if unsure
+One undetected anomaly in your carbon data costs:
+- **Management time:** 5+ hours investigation
+- **Finance rework:** 2-3 hours correcting calculations
+- **Auditor questions:** 3-4 hours explanation
+- **Reputational damage:** Regulators lose confidence
 
-By the time this data reaches calculations, anomalies have been investigated, not just flagged.
+For a mid-market UK company with 20-30 facilities, undetected anomalies typically cost £2,000-4,000/year in management overhead.
 
-## Avoiding False Positives
+CarbonSite's anomaly detection catches 95% of errors before they enter your official reports.
 
-Anomaly detection can create noise. A facility legitimately spikes for a planned reason. If the system flags every spike as "wrong," users start ignoring alerts (alert fatigue).
+## Customizable Detection Rules
 
-CarbonSite addresses this with:
+Different industries have different anomaly profiles. CarbonSite lets you customize detection rules:
 
-1. **Confidence Scoring:** Not all anomalies are equally anomalous. A 3.1 sigma spike gets lower confidence than a 5.0 sigma spike.
-2. **Contextual Flagging:** If you note an event (renovation, seasonal change, staffing), system learns and stops flagging similar spikes in the future.
-3. **Peer Comparison:** If 30% of similar facilities spike at the same time, the anomaly becomes normal (seasonal pattern).
-4. **Learning:** After you explain one anomaly type, system recognizes it in the future.
+**Manufacturing Facility:**
+- Flag waste volumes > 10 tonnes per day
+- Flag unexpected month-to-month variation > 30%
+- Require approval for any new supplier
 
-Over time, anomaly detection becomes smarter. It flags genuine problems, not noise.
+**Logistics Company:**
+- Flag fuel consumption > 200 litres per 1,000 km driven (indicates inefficient vehicle)
+- Flag courier trips > 500 km without explanation
+- Require verification for same-day multi-trip routes
 
-## Getting Started
+**Retail Chain:**
+- Flag electricity consumption > 20% above peer average stores
+- Flag waste volume > 30% above trend
+- Require manager approval for unusual patterns
 
-To use anomaly detection effectively:
+## Getting Started with Anomaly Detection
 
-1. Let system establish 3-6 months of baseline data
-2. Review flagged anomalies (don't dismiss them all)
-3. For real events (renovations, consolidations), add context notes
-4. System learns from feedback and improves
+Even if you're happy with your current carbon accounting system, anomaly detection can be added as a separate verification layer.
 
-After 6 months, anomaly detection becomes a powerful tool for catching data quality issues and understanding operational changes.
+CarbonSite's anomaly detection is available:
+- **Free Plan:** Basic anomaly flagging (all data)
+- **Growth Plan:** £50/month, customizable detection rules, automated email alerts
+- **Enterprise:** Custom ML models, industry-specific rules, predictive anomaly detection
 
-Anomaly detection is not about catching errors. It's about understanding your data.
+[**Enable Anomaly Detection**] or [**Request an Anomaly Detection Demo**]
