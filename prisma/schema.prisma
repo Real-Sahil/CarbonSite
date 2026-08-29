@@ -220,6 +220,8 @@ model Organization {
   dbtRuns                     DbtRun[]                     @relation("DbtRuns")
   n8nWorkflows                N8nWorkflow[]                @relation("N8nWorkflows")
   n8nExecutions               N8nExecution[]               @relation("N8nExecutions")
+  airbiteConnectors           AirbiteConnector[]           @relation("AirbiteConnectors")
+  airbyteSyncLogs             AirbyteSyncLog[]             @relation("AirbyteSyncLogs")
 
   @@map("organizations")
 }
@@ -3029,5 +3031,53 @@ model N8nExecution {
   @@index([organizationId, workflowId, status])
   @@index([organizationId, createdAt(sort: Desc)])
   @@map("n8n_executions")
+}
+
+model AirbiteConnector {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  sourceSystem     String    @map("source_system") // 'salesforce', 'sap', 'xero', 'quickbooks', 'stripe', 'slack', 'aws_iot', 'openweather'
+  displayName      String    @map("display_name") // User-friendly name
+  enabled          Boolean   @default(true)
+  syncSchedule     String?   @map("sync_schedule") // 'hourly', 'daily', 'weekly', 'manual'
+  config           Json      @map("config") // Source-specific config (API keys, field mappings, etc.)
+  recordsSynced    Int       @default(0) @map("records_synced")
+  lastSyncAt       DateTime? @map("last_sync_at")
+  lastSyncStatus   String?   @map("last_sync_status") // 'success', 'failed', 'partial'
+  lastSyncError    String?   @map("last_sync_error")
+  nextScheduledAt  DateTime? @map("next_scheduled_at")
+  failureCount     Int       @default(0) @map("failure_count")
+  lastFailureAt    DateTime? @map("last_failure_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation("AirbiteConnectors", fields: [organizationId], references: [id], onDelete: Cascade)
+  syncLogs         AirbyteSyncLog[]
+
+  @@unique([organizationId, sourceSystem])
+  @@index([organizationId, enabled])
+  @@index([organizationId, lastSyncAt(sort: Desc)])
+  @@map("airbite_connectors")
+}
+
+model AirbyteSyncLog {
+  id           String    @id @default(cuid())
+  organizationId String  @map("organization_id")
+  connectorId  String    @map("connector_id")
+  status       String    @map("status") // 'running', 'success', 'failed'
+  recordsRead  Int       @default(0) @map("records_read")
+  recordsWritten Int     @default(0) @map("records_written")
+  errorMessage String?   @map("error_message")
+  duration     Int?      @map("duration") // milliseconds
+  startedAt    DateTime  @default(now()) @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation("AirbyteSyncLogs", fields: [organizationId], references: [id], onDelete: Cascade)
+  connector      AirbiteConnector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, connectorId])
+  @@index([connectorId, status, startedAt(sort: Desc)])
+  @@map("airbyte_sync_logs")
 }
 
