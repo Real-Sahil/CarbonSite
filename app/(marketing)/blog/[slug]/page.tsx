@@ -1,154 +1,148 @@
-import Link from "next/link";
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import { getBlogPost, getAllBlogPosts } from "@/lib/blog/loader";
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { MDXRemote } from 'next-mdx-remote/rsc';
+import { getPost, getPostSlugs } from '@/lib/blog/posts';
+import { formatDate } from '@/lib/utils/date';
+import * as BlogComponents from '@/components/blog/BlogMdxComponents';
 
-const pillarMap: Record<string, string> = {
-  "why-carbon-accounting-still-fails": "Field Operations",
-  "why-carbon-accounting-fails": "Field Operations",
-  "open-source-carbon-accounting": "Methodology",
-  "scope-3-emissions-supplier-data": "Supply Chain",
-  "anomaly-detection-carbon-data": "Field Operations",
-  "building-for-audit": "Compliance",
-  "building-for-audit-immutability": "Compliance",
-  "carbon-accounting-at-scale": "Field Operations",
-  "data-journey-field-to-finance": "Field Operations",
-  "emissions-data-journey": "Field Operations",
-  "supplier-carbon-data-wrong": "Supply Chain",
-};
+interface Props {
+  params: { slug: string };
+}
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const post = await getBlogPost(slug);
-  if (!post) {
-    return {
-      title: "Not Found",
-    };
-  }
+export async function generateStaticParams() {
+  const slugs = getPostSlugs();
+  return slugs.map((slug) => ({
+    slug,
+  }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const post = getPost(params.slug);
+  if (!post) return {};
 
   return {
-    title: post.frontmatter.title,
-    description: post.frontmatter.description,
-    keywords: post.frontmatter.keywords,
+    title: `${post.title} | CarbonSite Blog`,
+    description: post.excerpt,
     openGraph: {
-      title: post.frontmatter.title,
-      description: post.frontmatter.description,
-      type: "article",
-      publishedTime: post.frontmatter.date,
-      authors: [post.frontmatter.author],
-      images: [
-        {
-          url: "/og-image.jpg",
-          width: 1200,
-          height: 630,
-          alt: post.frontmatter.title,
-        },
-      ],
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+      url: `https://carbonsite.ai/blog/${post.slug}`,
+      images: post.image ? [{ url: post.image }] : [],
+      publishedTime: post.date,
+      authors: [post.author],
     },
   };
 }
 
-export async function generateStaticParams() {
-  const posts = await getAllBlogPosts();
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
-}
-
-export default async function BlogPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const post = await getBlogPost(slug);
+export default function BlogPostPage({ params }: Props) {
+  const post = getPost(params.slug);
 
   if (!post) {
     notFound();
   }
 
-  const pillar = pillarMap[slug] || "Industry Insights";
+  const components = {
+    Callout: BlogComponents.Callout,
+    ComparisonTable: BlogComponents.ComparisonTable,
+    ProofPoint: BlogComponents.ProofPoint,
+    FeatureList: BlogComponents.FeatureList,
+    CTABlock: BlogComponents.CTABlock,
+  };
 
   return (
-    <div className="min-h-[100dvh] bg-[#FAFBF8] text-[#111827] py-16">
-      <article className="max-w-3xl mx-auto px-4">
-        <header className="mb-12">
-          <Link
-            href="/blog"
-            className="inline-block mb-6 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            ← Back to Blog
-          </Link>
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      {/* Article Header */}
+      <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+        {/* Back Link */}
+        <Link 
+          href="/blog"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+        >
+          ← Back to blog
+        </Link>
 
-          <h1 className="text-5xl font-bold tracking-tight mb-4 leading-tight">
-            {post.frontmatter.title}
+        {/* Title and Meta */}
+        <header className="mb-8">
+          <h1 className="mb-4 text-4xl font-bold text-zinc-900 dark:text-zinc-50">
+            {post.title}
           </h1>
-
-          <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-6">
-            <span>{post.frontmatter.date}</span>
-            <span>{post.frontmatter.readingTime}</span>
-            <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded text-sm font-medium">
-              {pillar}
-            </span>
+          
+          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+            <time dateTime={post.date}>{formatDate(new Date(post.date))}</time>
+            <span>•</span>
+            <span>{post.readingTime} min read</span>
+            {post.author && (
+              <>
+                <span>•</span>
+                <span>By {post.author}</span>
+              </>
+            )}
           </div>
 
-          <p className="text-xl text-gray-600 leading-relaxed">
-            {post.frontmatter.description}
-          </p>
-
-          <div className="mt-6 border-t border-gray-200 pt-6">
-            <p className="text-sm text-gray-500">By {post.frontmatter.author}</p>
-          </div>
+          {/* Tags */}
+          {post.tags.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 dark:bg-blue-950 dark:text-blue-200"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </header>
 
-        <div className="prose prose-lg max-w-none mb-12 text-gray-700 leading-relaxed">
-          <ReactMarkdown
-            components={{
-              h2: ({ ...props }) => <h2 className="text-2xl font-bold mt-12 mb-4" {...props} />,
-              h3: ({ ...props }) => <h3 className="text-xl font-bold mt-8 mb-3" {...props} />,
-              p: ({ ...props }) => <p className="mb-4 leading-relaxed" {...props} />,
-              ul: ({ ...props }) => <ul className="list-disc list-inside space-y-2 mb-4" {...props} />,
-              ol: ({ ...props }) => <ol className="list-decimal list-inside space-y-2 mb-4" {...props} />,
-              li: ({ ...props }) => <li className="mb-1" {...props} />,
-              blockquote: ({ ...props }) => (
-                <blockquote
-                  className="border-l-4 border-blue-600 pl-4 italic text-gray-600 my-4"
-                  {...props}
-                />
-              ),
-              code: ({ ...props }) => (
-                <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono" {...props} />
-              ),
-              pre: ({ ...props }) => (
-                <pre className="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto mb-4" {...props} />
-              ),
-              a: ({ ...props }) => <a className="text-blue-600 hover:text-blue-700 underline" {...props} />,
-            }}
-          >
-            {post.content}
-          </ReactMarkdown>
+        {/* Featured Image */}
+        {post.image && (
+          <div className="mb-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+            <img
+              src={post.image}
+              alt={post.title}
+              className="h-96 w-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="prose prose-zinc max-w-none dark:prose-invert">
+          <MDXRemote source={post.content} components={components} />
         </div>
 
-        <div className="mt-16 pt-8 border-t border-gray-200">
-          <div className="bg-blue-50 rounded-lg p-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">More from CarbonSite</h3>
-            <p className="text-gray-700 mb-6">
-              Explore other articles on carbon accounting, emissions data quality, and supply chain transparency.
-            </p>
+        {/* Article Footer */}
+        <footer className="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{post.author}</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                Carbon accounting & sustainability expert
+              </p>
+            </div>
             <Link
-              href="/blog"
-              className="inline-block px-6 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 transition-colors"
+              href="/pricing"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
             >
-              View All Posts
+              Try CarbonSite
             </Link>
           </div>
-        </div>
+        </footer>
       </article>
+
+      {/* Related Posts */}
+      <section className="border-t border-zinc-200 bg-zinc-50 py-12 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-50">More from the blog</h2>
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            Read all posts →
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,0 +1,269 @@
+---
+title: "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)"
+excerpt: "Suppliers submit incomplete or incorrect emissions data. Invoice anomaly detection + ML estimation creates a Scope 3 you can trust."
+date: "2024-10-08"
+author: "CarbonSite"
+readingTime: 8
+tags: ["Scope 3", "Data Quality", "Supplier Analytics", "Anomaly Detection"]
+image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop"
+---
+
+## The Scope 3 Accuracy Problem
+
+You invited 50 suppliers to submit emissions data. Here's what you got:
+
+| Supplier | Status | Issues |
+|---|---|---|
+| GlobalTech | Submitted | ✓ Complete |
+| SupplyCo | Submitted | Emissions 5x normal (typo in zeros?) |
+| LocalVendor | Submitted | 40% fields blank (missing production data) |
+| TierTwo | Submitted | Date is in the future (2025) |
+| Subcontractor | Submitted | Same data as last quarter (copy-paste?) |
+| MissingCo | No response | — |
+
+**Result:** Of 50 suppliers, 2 are usable, 3 are suspect, 45 unreliable or missing.
+
+Your Scope 3 estimate is now based on industry averages for 90% of your spend. **This defeats the purpose of supplier data collection.**
+
+## Common Supplier Data Quality Issues
+
+<Callout type="warning">
+**The Pattern:** Suppliers provide data, but it's often wrong because:
+1. They don't track emissions (estimate)
+2. They misunderstand units (tonnes vs. kg)
+3. They copy-paste historical data
+4. They submit incomplete forms
+5. They duplicate previous submissions
+</Callout>
+
+### Issue 1: Duplicate Invoices
+Supplier invoices same shipment twice:
+- Invoice #12345: $50,000 (2024-09-15)
+- Invoice #12346: $50,000 (2024-09-16, probably a resubmission)
+
+**Impact:** Scope 3 spend inflated 2x for this supplier.
+
+### Issue 2: Missing Data
+Supplier submits incomplete form:
+- Production volume: [BLANK]
+- Emissions intensity: 0.45 kg CO₂e/unit
+- Time period: Q3 2024
+
+**Impact:** Can't calculate emissions without production volume.
+
+### Issue 3: Unit Errors
+Supplier reports "500" but is it:
+- 500 tonnes?
+- 500 kg?
+- 500 lbs?
+
+**Result:** 2,200x difference in calculated emissions.
+
+### Issue 4: Out-of-Range Values
+Supplier reports emissions 10x their historical average with no explanation.
+
+**Impact:** Auditor asks "Did this supplier's emissions really spike 10x?"
+
+### Issue 5: Suspicious Patterns
+- Same data submitted for 4 consecutive quarters (clearly copy-pasted)
+- Data always rounded to "1000" or "50000" (suspiciously round)
+- Trend opposite to industry (supplier claims -50% emissions while industry grew +5%)
+
+## The Solution: 8-Rule Anomaly Detection
+
+CarbonSite automatically detects supplier data quality issues:
+
+### Rule 1: Duplicate Invoice Detection
+```
+if (count(invoices) > 1 
+    AND vendor_id=same 
+    AND amount=same 
+    AND date_within_7_days)
+  → Flag: Likely duplicate
+  → Severity: Critical
+  → Action: Ask supplier to confirm
+```
+
+### Rule 2: Completeness Check
+```
+if (required_fields < 80%)
+  → Flag: Incomplete submission
+  → Severity: Warning
+  → Missing fields: [list]
+  → Action: Request update
+```
+
+### Rule 3: Unit Consistency
+```
+if (category="energy" AND unit="tonnes")
+  → Flag: Possible unit error
+  → Severity: Warning
+  → Likely unit: kWh or MWh
+  → Action: Confirm with supplier
+```
+
+### Rule 4: Statistical Outlier
+```
+if (current_value > supplier_baseline * 2.5)
+  → Flag: Value 2.5x above supplier average
+  → Severity: Info/Warning
+  → Action: Request explanation or manual review
+```
+
+### Rule 5: Duplicate Submission
+```
+if (this_quarter_data == last_quarter_data
+    AND this_quarter_data != industry_trend)
+  → Flag: Likely copy-paste
+  → Severity: Critical
+  → Action: Ask for updated data
+```
+
+### Rule 6: Date Validation
+```
+if (submission_date < reporting_period_start 
+    OR submission_date > today)
+  → Flag: Date inconsistency
+  → Severity: Info
+  → Action: Confirm period or corrected date
+```
+
+### Rule 7: Cross-Invoice Reconciliation
+```
+if (purchase_order_qty != invoice_qty)
+  → Flag: Received qty ≠ Invoiced qty
+  → Severity: Warning
+  → Action: Investigate discrepancy
+```
+
+### Rule 8: Price Spike Detection
+```
+if (unit_price > supplier_baseline * 1.2
+    AND no_market_explanation)
+  → Flag: Unit price 20%+ above baseline
+  → Severity: Info
+  → Action: Optional: investigate
+```
+
+---
+
+## Real-World Example: Reconstructing Supplier A's Data
+
+**Supplier submitted:**
+```
+Q3 2024 Emissions: 1,250 tonnes CO₂e
+Production volume: [BLANK]
+Unit: Tonnes
+Timestamp: 2024-10-01
+```
+
+**Anomalies detected:**
+```
+🚨 Critical: Completeness score 60%
+   └─ Missing: production_volume, emissions_intensity
+   
+⚠️ Warning: Value 2.5x above supplier average (baseline: 500 tonnes)
+   └─ Likely explanation: Seasonal spike or new production line
+   └─ Action: Request confirmation
+```
+
+**Supplier confirms:**
+```
+"Yes, we ran a special production run in September. 
+New equipment added 50% capacity. Emissions will return 
+to ~500 tonnes in Q4."
+```
+
+**Resolution:**
+✅ Approved: 1,250 tonnes (legitimate, explained)
+✅ Note recorded: "Special run Q3, back to 500/quarter baseline Q4"
+✅ Emissions used: 1,250 tonnes (not rejected, explanation documented)
+
+---
+
+## Supplier Performance Scoring
+
+After each submission, supplier gets a quality score:
+
+```
+SupplyCo Ltd
+├── Data Completeness: 85% ✓ (good)
+├── Accuracy Trend: Improving ✓ (was 72%, now 85%)
+├── Responsiveness: On-time ✓ (3/3 quarters on time)
+├── Flagged Issues: 1 warning ⚠️ (production volume spike)
+└── Overall Quality Score: 78% (good, trending up)
+```
+
+Scores enable:
+- **Peer benchmarking:** Which suppliers perform best?
+- **Segment management:** Treat top suppliers differently from laggards
+- **Trend tracking:** Is this supplier improving or declining?
+
+---
+
+## Scope 3 ML Estimation Fallback
+
+For suppliers who don't respond (17% of original 50), use ML:
+
+```
+Known:
+  - Supplier industry: Manufacturing
+  - Employee count: 500
+  - Annual spend from us: $2.5M
+  
+Estimated:
+  - Baseline emissions: 600 tonnes CO₂e
+  - Confidence: 78% (based on similar suppliers)
+  - Range: 450–750 tonnes
+```
+
+ML model trained on:
+- Responsive suppliers' data
+- Historical emissions intensity by industry
+- Employee count + facility size
+
+**Accuracy:** ±15% vs. actual supplier data (when eventually received).
+
+---
+
+## From Suspect Data to Trustworthy Scope 3
+
+| Stage | Status | Action | Owner |
+|---|---|---|---|
+| **Submitted** | 50 suppliers | Auto-detect anomalies | System |
+| **Flagged** | 3 suspicious, 2 incomplete | Request corrections | Procurement |
+| **Corrected** | +5 suppliers now usable | Accept corrected data | System |
+| **Unresponsive** | 45 suppliers (original 50) | Use ML estimation | System |
+| **Final** | 10 actual + 40 estimated | Publish with transparency | Report |
+
+**Result:** Scope 3 you can defend in external audits.
+
+<ProofPoint>
+**Real implementation:** Mid-market company with 50 suppliers.
+- Before: 12 usable supplier records (24%)
+- After: 32 usable records + 18 ML-estimated (100%)
+- Scope 3 estimate confidence: 42% → 85%
+</ProofPoint>
+
+---
+
+## Next Steps
+
+1. **Invite suppliers** → CarbonSite portal with no-login link
+2. **Collect data** → Anomaly detection flags issues automatically
+3. **Resolve quality issues** → Request corrections or use ML estimates
+4. **Publish with confidence** → Defend Scope 3 in audits
+
+<CTABlock
+  title="Automate Supplier Data Quality"
+  description="Invite suppliers, detect bad data, improve Scope 3 accuracy."
+  buttonText="Try Supplier Portal"
+  buttonHref="/solutions/supply-chain"
+/>
+
+---
+
+**Related reading:**
+- [Scope 3 Emissions: From Supplier Silence to Collaborative Data](/blog/scope3-supplier-collaboration)
+- [Anomaly Detection in Carbon Data: Catching the Outliers](/blog/anomaly-detection-carbon)
+- [From Field to Finance: The Complete Emissions Data Journey](/blog/data-journey-field-to-finance)

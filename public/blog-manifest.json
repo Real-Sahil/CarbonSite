@@ -39,7 +39,7 @@
     "slug": "carbon-accounting-scale-dashboard",
     "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
     "description": "Dashboard queries that take 30 seconds at 100k records will take 5 minutes at 1M records. Here's how CarbonSite optimizes for scale.",
-    "date": "2026-08-29T15:16:23.550Z",
+    "date": "2026-08-29T19:37:21.222Z",
     "author": "CarbonSite",
     "readingTime": "5 min read",
     "keywords": [
@@ -54,7 +54,7 @@
     "slug": "audit-immutability-carbon",
     "title": "Building for Audit: How CarbonSite Ensures Immutability",
     "description": "Auditors need to verify that your carbon data can't be retroactively changed. Immutable audit logs, hash chains, and versioning are non-negotiable.",
-    "date": "2026-08-29T15:16:23.549Z",
+    "date": "2026-08-29T19:37:21.221Z",
     "author": "CarbonSite",
     "readingTime": "5 min read",
     "keywords": [
@@ -108,21 +108,6 @@
       "scale",
       "database optimization",
       "analytics"
-    ]
-  },
-  {
-    "slug": "data-journey-field-to-finance",
-    "title": "From Field to Finance: The Complete Emissions Data Journey",
-    "description": "Data quality issues hide at every step from capture to report. Complete data lineage shows exactly how each emission number was calculated.",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": "8 minutes",
-    "keywords": [
-      "data lineage",
-      "quality control",
-      "data journey",
-      "audit trail",
-      "carbon accounting"
     ]
   },
   {
@@ -184,5 +169,77 @@
       "emissions data",
       "carbon reporting"
     ]
+  },
+  {
+    "slug": "supplier-data-quality-fix",
+    "title": "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)",
+    "description": "",
+    "date": "2024-10-08",
+    "author": "CarbonSite",
+    "readingTime": 8,
+    "keywords": []
+  },
+  {
+    "slug": "data-journey-field-to-finance",
+    "title": "From Field to Finance: The Complete Emissions Data Journey",
+    "description": "",
+    "date": "2024-10-05",
+    "author": "CarbonSite",
+    "readingTime": 9,
+    "keywords": []
+  },
+  {
+    "slug": "performance-at-scale",
+    "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
+    "description": "",
+    "date": "2024-10-02",
+    "author": "CarbonSite",
+    "readingTime": 7,
+    "keywords": []
+  },
+  {
+    "slug": "audit-immutability-architecture",
+    "title": "Building for Audit: How CarbonSite Ensures Immutability",
+    "description": "",
+    "date": "2024-09-28",
+    "author": "CarbonSite",
+    "readingTime": 8,
+    "keywords": []
+  },
+  {
+    "slug": "anomaly-detection-carbon",
+    "title": "Anomaly Detection in Carbon Data: Catching the Outliers",
+    "description": "",
+    "date": "2024-09-25",
+    "author": "CarbonSite",
+    "readingTime": 6,
+    "keywords": []
+  },
+  {
+    "slug": "scope3-supplier-collaboration",
+    "title": "Scope 3 Emissions: From Supplier Silence to Collaborative Data",
+    "description": "",
+    "date": "2024-09-22",
+    "author": "CarbonSite",
+    "readingTime": 9,
+    "keywords": []
+  },
+  {
+    "slug": "open-source-transparency",
+    "title": "Open-Source Carbon Accounting: Why Transparency Matters",
+    "description": "",
+    "date": "2024-09-18",
+    "author": "CarbonSite",
+    "readingTime": 7,
+    "keywords": []
+  },
+  {
+    "slug": "field-workers-carbon-accounting",
+    "title": "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
+    "description": "",
+    "date": "2024-09-15",
+    "author": "CarbonSite",
+    "readingTime": 8,
+    "keywords": []
   }
 ]

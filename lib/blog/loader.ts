@@ -12,6 +12,12 @@ export interface BlogPostFrontmatter {
   slug: string;
 }
 
+export interface BlogManifestItem {
+  slug: string;
+  title: string;
+  date: string;
+}
+
 export interface BlogPost {
   frontmatter: BlogPostFrontmatter;
   content: string;
@@ -31,7 +37,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
       content,
       slug,
     };
-  } catch (error) {
+  } catch {
     console.warn(`Failed to load blog post: ${slug}`);
     return null;
   }
@@ -46,14 +52,14 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 
     // Load content for each post from the file system
     const posts = await Promise.all(
-      manifest.map(async (item: any) => {
+      manifest.map(async (item: BlogManifestItem) => {
         const post = await getBlogPost(item.slug);
         return post;
       })
     );
 
     return posts.filter((post) => post !== null) as BlogPost[];
-  } catch (error) {
+  } catch {
     console.warn("Failed to load blog posts from manifest, falling back to directory scan");
     try {
       const fs = await import("fs/promises");

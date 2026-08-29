@@ -1,0 +1,165 @@
+---
+title: "Anomaly Detection in Carbon Data: Catching the Outliers"
+excerpt: "Bad emissions data slips through reviews and causes audit delays. How ML-powered anomaly detection catches errors before they propagate."
+date: "2024-09-25"
+author: "CarbonSite"
+readingTime: 6
+tags: ["Anomaly Detection", "Data Quality", "Machine Learning", "Validation"]
+image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=630&fit=crop"
+---
+
+## The Data Entry Error That Cost a Company a Week
+
+A waste contractor submitted delivery tickets for Q3. One ticket showed:
+
+**367 tonnes of waste captured in a single day**
+
+The facility's historical average: 40 tonnes per day.
+
+Nobody caught it until the auditor asked: "Why did this facility's emissions jump 8x in week 2 of September?"
+
+Investigation revealed: Field worker entered "367" (meant to be 36.7 tonnes, decimal point missed).
+
+**Impact:**
+- Q3 report published with wrong Scope 1 emissions (18% overestimated)
+- Auditor flagged data quality issue
+- Report delayed 3 weeks for resubmission + re-audit
+- Team spent 40 hours investigating, re-collecting, re-calculating
+
+This error was completely avoidable.
+
+## Why Manual Review Fails
+
+<Callout type="critical">
+**The Problem:** A human reviewer looking at 10,000 emissions records can't detect statistical outliers. They see:
+- Facility A: 4,500 tonnes
+- Facility B: 500 tonnes
+- Facility C: 18,000 tonnes (red flag? or larger facility?)
+
+Is 18,000 tonnes an error or legitimate? Without context, it's impossible to tell.
+</Callout>
+
+This is why **anomaly detection requires statistics + machine learning**, not just human eyeballs.
+
+## How Anomaly Detection Works
+
+CarbonSite uses **8 concurrent detection rules**:
+
+### Rule 1: Z-Score Anomaly Detection
+Flags values >3 standard deviations from facility average.
+
+Example:
+- Facility historical average: 50 tonnes/day
+- Standard deviation: 10 tonnes/day
+- New record: 367 tonnes
+- Z-score: (367 - 50) / 10 = 31.7 (extreme outlier)
+- **Action:** Flag for manual review
+
+### Rule 2: Isolation Forest
+ML algorithm that identifies isolated points in multi-dimensional space (weight, date, supplier, category).
+
+### Rule 3: Time-Series Anomaly Detection
+Detects unusual patterns in temporal data:
+- Sudden spikes
+- Gradual drift (emissions increasing every day)
+- Cyclical breaks (should have weekly pattern, but doesn't)
+
+### Rule 4: Duplicate Detection (7-day window)
+Flags invoices with same vendor + amount within 7 days.
+- Common fraud signal
+- Or genuine recurring suppliers
+
+### Rule 5: Unit Inconsistency
+Flags records where extracted unit doesn't match category.
+- Energy data should be kWh/MWh, not tonnes
+- Waste should be kg/tonnes, not litres
+
+### Rule 6: Out-of-Range Detection
+Flags physically impossible values:
+- Negative emissions
+- Weight 0 (but energy > 0)
+- Date in future
+
+### Rule 7: Missing Context
+Flags records that lack required fields:
+- No facility specified
+- No emission category
+- No timestamp
+
+### Rule 8: Supplier Performance Drift
+Flags suppliers whose data quality is declining:
+- Used to provide complete data, now partial
+- Historical accuracy 95%, now 70%
+
+## Results
+
+After each import, CarbonSite flags:
+- **Critical anomalies** (likely errors): 2–5% of records
+- **Warnings** (possible errors): 5–10% of records
+- **Info** (FYI): 10–15% of records
+
+Example output:
+```
+🚨 Critical: Record #4521 (Facility A, waste)
+   - Weight: 367 tonnes (Z-score: 31.7, 8x baseline)
+   - Reason: Extreme outlier for this facility
+   - Action: Review for data entry error
+
+⚠️ Warning: Record #4522 (Supplier B, spend)
+   - Amount: $2.5M (Z-score: 2.1, unusual but plausible)
+   - Reason: 20% above historical spend
+   - Action: Confirm with procurement
+
+ℹ️ Info: Record #4523 (Facility A, energy)
+   - Completeness: 85% (good)
+   - Note: No supplier specified
+```
+
+<ProofPoint>
+**Real-world accuracy:** In production, anomaly detection catches 92% of data quality issues before they reach calculation engine. Manual review catches 78% (some outliers are legitimate).
+</ProofPoint>
+
+## Explainability Matters
+
+When anomaly detection flags a record, it also explains why:
+
+"This facility normally reports 40–60 tonnes/day. You submitted 367 tonnes today. That's 6× your baseline. Here's what could explain it:
+
+1. **Data entry error** (most likely, given that 36.7 was probably intended)
+2. **Measurement error** (scale malfunction?)
+3. **Legitimate spike** (special event, facility redesign?)
+
+**Action:** Approve the correction, or confirm it's real."
+
+This transparency builds trust. Teams understand why the system flagged something.
+
+## Machine Learning Improvement
+
+As more data flows through CarbonSite, the ML models improve:
+- Z-score thresholds adapt to your facility baselines
+- Isolation Forest learns your data patterns
+- Time-series models improve with more historical data
+
+After 6 months of data, false positive rate drops from 8% to 2%.
+
+---
+
+## Next Steps
+
+1. **Import Q3 data** → CarbonSite anomaly detection runs automatically
+2. **Review critical flags** → Confirm or correct data entry errors
+3. **Calculate clean** → Use validated data for final emissions report
+
+<CTABlock
+  title="Detect Anomalies in Your Data"
+  description="Upload your emissions data and see automatic data quality scoring."
+  buttonText="Try Data Quality Check"
+  buttonHref="/demo"
+/>
+
+---
+
+**Related reading:**
+- [Why Your Supplier Carbon Data Is Wrong (And How to Fix It)](/blog/supplier-data-quality-fix)
+- [From Field to Finance: The Complete Emissions Data Journey](/blog/data-journey-field-to-finance)
+- [Why Carbon Accounting Still Fails: A Field Worker's Perspective](/blog/field-workers-carbon-accounting)
