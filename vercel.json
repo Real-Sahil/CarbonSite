@@ -1,9 +1,5 @@
 {
   "framework": "nextjs",
   "buildCommand": "pnpm build",
-  "devCommand": "pnpm dev",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "DIRECT_URL": "@direct_url"
-  }
+  "devCommand": "pnpm dev"
 }
