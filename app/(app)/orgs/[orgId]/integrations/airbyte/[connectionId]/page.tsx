@@ -37,11 +37,22 @@ export default function ConnectionDetailPage() {
     try {
       setLoading(true);
       const res = await fetch(
-        `/api/orgs/${orgId}/integrations/airbyte/connections/${connectionId}`
+        `/api/orgs/${orgId}/integrations/airbyte/connectors/${connectionId}`
       );
       if (!res.ok) throw new Error('Failed to fetch connection');
       const data = await res.json();
-      setConnection(data.connection);
+      // Map API response to UI state format
+      const connector = data.connector || data.data;
+      setConnection({
+        id: connector.id,
+        sourceSystem: connector.sourceSystem,
+        enabled: connector.enabled,
+        syncFrequency: connector.syncSchedule || 'daily',
+        lastSyncAt: connector.lastSyncAt,
+        lastSyncStatus: connector.lastSyncStatus,
+        createdAt: connector.createdAt,
+        updatedAt: connector.updatedAt
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -53,9 +64,9 @@ export default function ConnectionDetailPage() {
     if (!connection) return;
     try {
       const res = await fetch(
-        `/api/orgs/${orgId}/integrations/airbyte/connections/${connectionId}`,
+        `/api/orgs/${orgId}/integrations/airbyte/connectors/${connectionId}`,
         {
-          method: 'PUT',
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ enabled: !connection.enabled }),
         }
