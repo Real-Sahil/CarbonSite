@@ -1,6 +1,13 @@
 # CarbonSite Deployment Guide
 
-## Current Status (2026-08-29)
+## Current Status (2026-08-29) — UPDATED
+
+**Latest Fix: QR Code Verification API Endpoint Implemented**
+- Fixed: QR codes were downloading raw JSON instead of displaying verification page
+- Root cause: `/api/public/reports/verify/[token]` endpoint was returning NOT_IMPLEMENTED
+- Solution: Implemented full verification API that returns structured report data
+- Verification page now properly renders formatted HTML with report details, audit trail, download buttons
+- All changes pushed to main branch and ready for Vercel deployment
 
 ### Completed
 - ✅ TypeScript code fixes and type safety enhancements
