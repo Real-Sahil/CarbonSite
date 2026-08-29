@@ -19,15 +19,24 @@ function pct(part: number, whole: number): string {
 
 export async function generateAuditNarrative(reportData: ReportData): Promise<AuditNarrative> {
   if (!llmClient.isConfigured()) {
+    reportLogger.warn("LLM not configured - skipping narrative generation", {
+      reason: "Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY in environment"
+    });
     return {
       executive_summary:
-        "Unable to generate automated narrative — no LLM provider configured. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY, then regenerate the report.",
+        "Unable to generate automated narrative — no LLM provider configured. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY in your .env file, then regenerate the report.",
       key_findings: [],
       recommendations: "",
     };
   }
 
   try {
+    reportLogger.info("Starting audit narrative generation", {
+      orgName: reportData.orgName,
+      periodLabel: reportData.periodLabel,
+      recordCount: reportData.recordCount,
+    });
+
     const totalTonnes = tonnes(reportData.grandTotalKg);
     const scope1 = reportData.scopes.find((s) => s.scope === 1);
     const scope2 = reportData.scopes.find((s) => s.scope === 2);
@@ -77,14 +86,32 @@ Use professional language, avoid jargon, and focus on insights a CFO or board me
       temperature: 0.3,
     });
 
-    return parseNarrativeResponse(result.text);
-  } catch (error) {
-    reportLogger.error("LLM error during narrative generation", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
+    reportLogger.info("Narrative generated successfully", {
+      provider: result.provider,
+      tokensUsed: result.tokens,
+      textLength: result.text.length,
     });
+
+    const narrative = parseNarrativeResponse(result.text);
+    reportLogger.info("Narrative parsed", {
+      hasSummary: !!narrative.executive_summary,
+      findingsCount: narrative.key_findings.length,
+      hasRecommendations: !!narrative.recommendations,
+    });
+
+    return narrative;
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    reportLogger.error("LLM error during narrative generation", {
+      error: errorMsg,
+      stack: errorStack,
+      hint: "Check HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY in environment variables",
+    });
+
     return {
-      executive_summary: `Error generating narrative: ${error instanceof Error ? error.message : "Unknown error"}. Please review the report data manually.`,
+      executive_summary: `Error generating narrative: ${errorMsg}. Ensure HUGGINGFACE_TOKEN is set in your environment. Get it from: https://huggingface.co/settings/tokens`,
       key_findings: [],
       recommendations: "",
     };

@@ -21,35 +21,55 @@ const NIM_API_BASE = process.env.NVIDIA_NIM_BASE_URL ?? 'http://localhost:8000';
 const NIM_DEFAULT_MODEL = 'mistral-7b-instruct';
 
 async function callHuggingFace(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {
-  if (!HF_API_KEY) throw new Error('HUGGINGFACE_TOKEN not set');
-
-  const response = await fetch(`${HF_API_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${HF_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: options.model ?? HF_DEFAULT_MODEL,
-      messages,
-      max_tokens: options.maxTokens ?? 200,
-      temperature: options.temperature ?? 0.3,
-      top_p: 0.9,
-    }),
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`HuggingFace API ${response.status}: ${body.slice(0, 200)}`);
+  if (!HF_API_KEY) {
+    const msg = 'HUGGINGFACE_TOKEN is not set. Set HUGGINGFACE_TOKEN in your .env file. Get it from: https://huggingface.co/settings/tokens';
+    console.error(`[llm] ${msg}`);
+    throw new Error(msg);
   }
 
-  const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-    usage?: { completion_tokens?: number };
-  };
-  const text = data.choices?.[0]?.message?.content ?? '';
-  const tokens = data.usage?.completion_tokens ?? 0;
-  return { text: text.trim(), tokens, provider: 'huggingface' };
+  try {
+    const response = await fetch(`${HF_API_BASE}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${HF_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: options.model ?? HF_DEFAULT_MODEL,
+        messages,
+        max_tokens: options.maxTokens ?? 200,
+        temperature: options.temperature ?? 0.3,
+        top_p: 0.9,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      const errorMsg = `HuggingFace API error ${response.status}: ${body.slice(0, 200)}`;
+      console.error(`[llm] ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
+
+    const data = (await response.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+      usage?: { completion_tokens?: number };
+    };
+
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error('HuggingFace API returned empty choices');
+    }
+
+    const text = data.choices[0]?.message?.content ?? '';
+    if (!text) {
+      throw new Error('HuggingFace API returned empty message content');
+    }
+
+    const tokens = data.usage?.completion_tokens ?? 0;
+    return { text: text.trim(), tokens, provider: 'huggingface' };
+  } catch (err) {
+    console.error('[llm] HuggingFace call failed:', err instanceof Error ? err.message : String(err));
+    throw err;
+  }
 }
 
 async function callNvidiaNim(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {

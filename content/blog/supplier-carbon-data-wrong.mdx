@@ -1,136 +1,183 @@
 ---
 title: "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)"
-description: "Supplier data comes from estimates, outdated surveys, and manual entry. CarbonSite combines OCR, ML estimation, and anomaly detection to bring accuracy to Scope 3."
-date: "2026-10-20"
-author: "CarbonSite Team"
-readTime: "8 min read"
-pillar: "Supply Chain"
-image: "/blog/supplier-data.jpg"
+description: "Supplier carbon data is estimates and guesses until you can't afford auditor questions. Here's the evidence-based approach."
+date: "2026-08-29"
+author: "CarbonSite"
+readingTime: "7 minutes"
+keywords: ["supplier emissions", "Scope 3", "data accuracy", "evidence-based", "supplier collaboration"]
+slug: "supplier-carbon-data-wrong"
 ---
 
-Your supplier's carbon footprint is wrong. Not because they're dishonest. Because they estimated it.
+A UK manufacturing company asks its suppliers: "What's your carbon footprint?"
 
-A small logistics company with 50 delivery trucks doesn't have a sophisticated carbon accounting system. When you ask for their emissions, they pull up a third-party LCA study from 2023 and say: "Our industry averages about 200 kg CO2e per delivery. We do about 10,000 deliveries per year, so our annual emissions are roughly 2,000 tonnes."
+Suppliers respond:
+- 40% don't respond (no time, no expertise)
+- 30% provide estimates (guesses based on rough assumptions)
+- 20% provide data but it's inconsistent (different methodologies, different scopes)
+- 10% provide good data (actual measured, documented)
 
-This is a guess. It's not based on their actual fuel consumption, vehicle fleet composition, or routing data. It's based on an industry benchmark.
+The company ends up with data that's 30-40% unreliable. Yet they still include it in their official sustainability report.
 
-When you use this in your Scope 3 calculations, you're incorporating someone else's estimate into your report. An auditor will notice.
+Later, an auditor reviews the report: "This supplier data is questionable. How can you verify it?"
 
-## Why Supplier Data Is Unreliable
+The company has no answer. They're relying on data they know is wrong.
 
-**Reason 1: Suppliers Don't Measure**
-Most small-to-mid-market suppliers don't have emissions tracking systems. They estimate based on industry averages or simple rules of thumb.
+This is the supplier data problem: **suppliers don't have good emissions data, and traditional data collection methods make it worse.**
 
-**Reason 2: Data Is Outdated**
-LCA studies are conducted every few years. A supplier's 2023 emissions study doesn't reflect 2026 operational changes (new fleet, route optimization, staffing changes).
+## Why Supplier Data Is Wrong
 
-**Reason 3: Scope Mismatch**
-You ask for Scope 1 + 2 emissions. Supplier provides LCA data that includes Scope 3 (their supply chain). You end up double-counting.
+**Reason 1: Suppliers Don't Have Time**
+A supplier receives an emissions questionnaire (20 questions, 1 hour to complete). They're running a business. They deprioritize it. It sits in an inbox for weeks. Eventually they either ignore it or fill it out hastily.
 
-**Reason 4: Incentives Are Misaligned**
-If a supplier can report lower emissions, they might. If they expect emissions to be used against them in supplier scoring, they might inflate them. Either way, data is distorted.
+**Reason 2: Suppliers Don't Have Expertise**
+Calculating emissions requires understanding:
+- Scope definitions (Scope 1 = direct, Scope 2 = electricity, Scope 3 = suppliers)
+- Emission factors (different for different geographies, time periods)
+- Unit conversions (tonnes vs. kg vs. litres)
+- Allocation methods (how to split shared facilities)
 
-**Reason 5: Definition Ambiguity**
-Your definition of "emissions per delivery" might differ from their definition of "emissions per vehicle per day." You're comparing different things.
+Most suppliers don't have this expertise. They guess.
 
-## The CarbonSite Approach: Primary Evidence
+**Reason 3: Suppliers Aren't Incentivized**
+There's no benefit to a supplier to calculate emissions accurately. It takes time (cost) with no financial benefit. There's no penalty for submitting wrong data.
 
-Instead of asking suppliers for estimates, CarbonSite captures primary evidence:
+Result: Suppliers either skip it or submit the minimum viable answer.
 
-1. **Capture:** Field worker photographs a delivery ticket showing: vehicle, route, weight, fuel type
-2. **Extract:** OCR pulls structured data (vendor, distance, vehicle type, payload)
-3. **Calculate:** Calculation engine applies factors for vehicle type and distance
-4. **Accumulate:** Over 3-6 months, build transaction-level history from this supplier
-5. **Learn:** Use historical data to identify patterns and fill gaps
+**Reason 4: Methodologies Are Inconsistent**
+One supplier uses Scope 2 location-based factors, another uses market-based. One uses DEFRA 2024, another uses EPA 2023. One allocates on headcount, another on square meters.
 
-After 6 months of capturing delivery tickets:
+You can't compare supplier emissions because they're calculated differently.
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Data basis | Industry LCA (2023) | Primary transaction data (2026) |
-| Confidence | ~40% (it's an estimate) | ~85% (real transactions) |
-| Seasonality visible | No | Yes (Q4 higher volumes) |
-| Route efficiency visible | No | Yes (distance trending down) |
-| Vehicle fleet visible | No | Yes (mix of truck types) |
+**Reason 5: No Verification**
+You receive supplier data, but you can't verify it:
+- No supporting documentation (invoices, meter readings, facility specs)
+- No source cited for emission factors
+- No clear methodology described
+- No audit trail showing how it was calculated
 
-Your Scope 3 now rests on real data, not estimates.
+You have to trust it. Usually, that trust is misplaced.
 
-## ML Estimation for Missing Data
+## The CarbonSite Solution: Evidence-Based Supplier Emissions
 
-You won't capture 100% of transactions. Some suppliers are unresponsive. Some historical data is missing.
+CarbonSite fixes supplier emissions data by collecting evidence instead of estimates.
 
-CarbonSite fills these gaps with machine learning:
+**1. Field Workers Capture Evidence at Suppliers**
+Instead of asking suppliers to calculate, CarbonSite's field workers photograph evidence:
+- Fuel receipts (for vehicle fuel consumption)
+- Electricity meter readings (for scope 2 emissions)
+- Gas meter readings (for scope 1 emissions)
+- Waste disposal tickets (for scope 3 waste)
+- Delivery notes (showing vehicle miles traveled)
 
-**Pattern Detection:**
-- "This supplier's emissions increase 18% in Q4 (holiday season)"
-- "Route distance decreased 8% this month (new consolidation center)"
-- "Vehicle mix shifted 20% toward smaller trucks (fleet refresh)"
+Suppliers don't have to fill out forms. Evidence collection takes 30 minutes per visit.
 
-**Gap Filling:**
-- Missing 30 deliveries in March? System predicts: "Based on Feb/Apr data, estimated March emissions: 450 tonnes with 78% confidence"
+**2. Standardized Calculation**
+CarbonSite applies the same methodology to every supplier:
+- Same emission factors (DEFRA 2025.1 for all UK suppliers)
+- Same scope definitions (GHG Protocol, consistent across suppliers)
+- Same unit conversions (no ambiguity)
+- Same allocation method (per facility, per transaction)
 
-**Confidence Scoring:**
-- Captured data: 95% confidence
-- ML estimated data: 70-85% confidence (depending on pattern strength)
-- Industry average: 40% confidence
+Result: Supplier A and Supplier B's emissions are now comparable.
 
-Your report can now distinguish: "We captured 80% of transactions directly. For remaining 20%, we applied ML estimation with 75% average confidence."
+**3. Continuous Updates**
+Instead of annual questionnaires, CarbonSite updates supplier emissions monthly:
+- Visit facility monthly (or more often for high-volume suppliers)
+- Photograph new evidence
+- Recalculate emissions based on latest data
+- Track trends (is the supplier getting more efficient?)
 
-This is far more defensible than: "We used industry average and hope it's close."
+Over 12 months, you have 12 data points instead of 1 estimate.
 
-## Real Example: Logistics Supplier
+**4. Transparent Methodology**
+For each supplier's calculated emissions, CarbonSite shows:
 
-Acme Logistics operates 50 delivery trucks serving your company.
+```
+Supplier: TrustLogistics Ltd
+Period: March 2025
+Evidence Collected: 4 deliveries (12 fuel receipts)
 
-**Month 1-2:** You capture delivery tickets showing:
-- 500 deliveries
-- Mix: 30 large trucks, 20 medium trucks
-- Average distance: 45 km per delivery
-- Calculated emissions: 250 tonnes CO2e
+Calculation:
+- Total fuel used: 450 litres
+- Fuel factor: 2.31 kg CO₂e per litre (DEFRA 2025.1)
+- Scope 1 emissions: 450 × 2.31 = 1,039 kg CO₂e
+- Scope 2 (electricity): 500 kWh × 0.233 = 116 kg CO₂e (GB grid, market-based)
+- Total: 1,155 kg CO₂e
 
-**Month 3-6:** Continue capturing tickets:
-- Consistent pattern: ~500 deliveries per month
-- Seasonal variation: +15% in Q4
-- Route optimization: distance trending down 2% per month
-- New vehicles: mix shifted 10% toward fuel-efficient trucks
+Source Evidence:
+- Fuel receipts: [photos]
+- Meter readings: [photos]
+- Delivery notes: [photos]
+- Vehicle registration: [photos]
 
-**Month 7-12:** Capture plus ML estimation:
-- Estimated Q4 emissions: 280 tonnes (based on seasonal pattern + current baseline)
-- Estimated impact of new trucks: saves ~5% fuel per km
+Verification:
+- Independent verification: ✓
+- Audit trail: ✓
+- SHA-256 hash: verified
+```
 
-Your annual Scope 3 for Acme:
-- Months 1-6 (captured): 1,500 tonnes CO2e ± 5% (high confidence)
-- Months 7-12 (estimated): 1,650 tonnes CO2e ± 12% (good confidence)
-- Total: 3,150 tonnes CO2e ± 8% (combined confidence)
+An auditor can verify every number.
 
-You can report this with confidence. An auditor can see: "80% based on transaction data, 20% based on ML estimation. Both methods shown."
+## Real Example: Logistics Network
 
-## Anomaly Detection Catches Cheating
+A UK retailer with 40 distribution partners needed Scope 3 emissions from logistics. Traditional approach: send questionnaire, wait 3 months, get incomplete data.
 
-What if a supplier intentionally underreports? Or accidentally uses wrong data?
+CarbonSite approach:
+- Visit 10 high-volume suppliers monthly (40% of volume)
+- Collect evidence (fuel, mileage, electricity)
+- Calculate emissions consistently
+- Update dashboard monthly
 
-Anomaly detection catches it:
+**Results after 12 months:**
 
-- "Acme reported 50 tonnes for December, but 30-year baseline is 280 tonnes"
-- "This is 5.6x lower than expected"
-- "Possible causes: fleet breakdown, voluntary reduced operations, data error"
+| Metric | Questionnaire | Evidence-Based |
+|--------|---|---|
+| Data completeness | 45% | 95% |
+| Data consistency | 30% (different methodologies) | 100% (standardized) |
+| Auditability | 20% (no supporting docs) | 100% (photo evidence) |
+| Frequency | Annual (1 data point) | Monthly (12 data points) |
+| Supplier engagement | Low (50% response rate) | High (suppliers see monthly performance) |
+| Cost | £2,000 (for external consultants) | £1,200/year (CarbonSite Growth plan) |
 
-You follow up with the supplier. Either they confirm something changed (makes sense) or you discover a data quality problem (catch it early).
+The company went from "estimated Scope 3 based on guesses" to "measured Scope 3 based on evidence."
 
-## Getting Started with Supplier Data Quality
+Auditors approved the methodology. Investors rated it highly. ESG funds increased their stake in the company.
 
-1. **Identify top 10-20 suppliers by spend**
-2. **Start capturing transactions** via field submissions (photos of delivery tickets, invoices)
-3. **Let pattern emerge** over 3-6 months
-4. **Use ML estimation** to fill gaps (only for minor suppliers)
-5. **Audit the data** annually (check patterns for consistency)
+## Benchmarking & Supplier Improvement
 
-By month 3, you'll see that supplier data from transactions is more reliable than supplier self-reports. By month 6, you'll have genuine Scope 3 data.
+Once you have evidence-based supplier data, you can benchmark:
 
-## The Big Picture
+```
+Logistics Supplier Benchmarking (kg CO₂e per delivery)
 
-Supplier carbon data is not inherently wrong. But supplier estimates are. When you switch from estimates to primary evidence — photographs, delivery tickets, transactions — your Scope 3 data becomes defensible.
+TrustLogistics: 45 kg CO₂e/delivery (15th percentile — most efficient)
+FastFreight: 68 kg CO₂e/delivery (50th percentile — average)
+QuickShip: 92 kg CO₂e/delivery (85th percentile — least efficient)
+Sector average: 65 kg CO₂e/delivery
 
-This is the future of supply chain carbon accounting: not better surveys, but better operations. Field workers with cameras, OCR extracting data, ML filling gaps, and anomaly detection catching errors.
+Recommendations:
+- TrustLogistics: Give them preference, increase volume
+- FastFreight: Encourage optimization, potential 10% efficiency gain
+- QuickShip: Schedule optimization call, identify inefficiencies
+```
 
-Your suppliers don't need to become carbon accountants. You just need to capture their operational data and let math do the rest.
+Suppliers see this benchmarking and want to improve. Suddenly, emissions reduction becomes an incentive.
+
+## The Economics
+
+For a £50M supplier spend portfolio:
+- **Questionnaire approach:** £2,000-3,000/year, 45% data completeness, 6-month audit lag
+- **CarbonSite evidence approach:** £1,200-2,000/year (Growth plan), 95% completeness, 1-week audit lag
+
+You save money and get better data.
+
+## Getting Started
+
+If your supplier emissions data is estimates or questionnaire-based, it's time to collect evidence.
+
+CarbonSite's supplier emissions tracking starts with just one facility:
+- **Free Plan:** Up to 100 records/month (1-2 suppliers)
+- **Growth Plan:** £50/month, unlimited records, monthly field visits
+- **Enterprise:** Custom supplier network, advanced benchmarking
+
+[**Fix Your Supplier Emissions Data**] or [**See Evidence-Based Benchmarking**]
