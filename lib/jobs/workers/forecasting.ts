@@ -1,10 +1,12 @@
 /**
  * Background worker for generating emissions forecasts
  * Runs periodically to create time-series predictions
+ * Includes explainability for forecast components and feature importance
  */
 
 import { prisma } from "@/lib/db";
 import { autoForecast } from "@/lib/forecasting/engine";
+import { explainForecast } from "@/lib/explainability/forecast-explainer";
 
 export interface ForecastingJobData {
   orgId: string;
@@ -53,6 +55,20 @@ export async function processForecastingJob(
     // Generate forecast
     const forecast = autoForecast(historicalData, forecastMonths);
 
+    // Generate explainability for first prediction (most relevant)
+    const historicalValues = historicalData.map((d) => d.value);
+    const firstPrediction = forecast.predictions[0];
+    const trendSlope = forecast.metadata.trendSlope as number | undefined;
+    const seasonalComponent = forecast.metadata.seasonalComponent as number | undefined;
+
+    const explanation = explainForecast(
+      historicalValues,
+      firstPrediction.forecast,
+      trendSlope ? trendSlope * 12 : 0,
+      seasonalComponent || 0,
+      forecast.method as "exponential_smoothing" | "seasonal_decomposition"
+    );
+
     // Calculate validity period (forecasts valid for 30 days)
     const now = new Date();
     const validUntil = new Date(now);
@@ -69,6 +85,17 @@ export async function processForecastingJob(
     );
     targetPeriodEnd.setDate(0); // Last day of forecast period
 
+    // Combine forecast metadata with explainability
+    const enrichedMetadata = {
+      ...forecast.metadata,
+      explanation: {
+        summary: explanation.summary,
+        components: explanation.components,
+        featureImportance: explanation.featureImportance,
+        confidenceFactors: explanation.confidenceFactors,
+      },
+    };
+
     // Store forecast in database
     await prisma.forecast.upsert({
       where: {
@@ -84,7 +111,7 @@ export async function processForecastingJob(
         modelVersion: "v1.0.0",
         trainingDataPoints: forecast.trainingDataPoints,
         method: forecast.method,
-        metadata: forecast.metadata as any,
+        metadata: enrichedMetadata as any,
         generatedAt: now,
         validUntil,
         updatedAt: now,
@@ -99,7 +126,7 @@ export async function processForecastingJob(
         modelVersion: "v1.0.0",
         trainingDataPoints: forecast.trainingDataPoints,
         method: forecast.method,
-        metadata: forecast.metadata as any,
+        metadata: enrichedMetadata as any,
         generatedAt: now,
         validUntil,
       },
