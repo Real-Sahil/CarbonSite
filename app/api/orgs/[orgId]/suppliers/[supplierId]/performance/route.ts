@@ -54,10 +54,24 @@ export async function GET(
       return apiError("NOT_FOUND", "Supplier performance data not found", 404);
     }
 
+    // Fetch supplier org data to get name
+    const supplierOrg = await prisma.organization.findUnique({
+      where: { id: supplierId },
+      select: { id: true, name: true },
+    });
+
+    if (!supplierOrg) {
+      return apiError("NOT_FOUND", "Supplier organization not found", 404);
+    }
+
     const totalSubmissions = performance.submissionCount;
-    const approvalRate =
+    const acceptanceRate =
       totalSubmissions > 0
         ? (performance.approvedCount / totalSubmissions) * 100
+        : 0;
+    const rejectionRate =
+      totalSubmissions > 0
+        ? (performance.rejectedCount / totalSubmissions) * 100
         : 0;
 
     const completenessScoreNum = parseFloat(String(performance.completenessScore ?? 0));
@@ -71,34 +85,41 @@ export async function GET(
 
     return json(
       {
-        supplierId,
         performance: {
+          id: performance.id,
+          organizationId: orgId,
+          supplierId,
           submissionCount: performance.submissionCount,
           approvedCount: performance.approvedCount,
+          rejectedCount: performance.rejectedCount,
+          onTimeCount: performance.onTimeCount,
           completenessScore: completenessScoreNum,
           dataQualityScore: dataQualityScoreNum,
-          trend,
-          lastUpdated: performance.updatedAt,
+          acceptanceRate: Math.round(acceptanceRate * 10) / 10,
+          onTimeRate: 0, // Placeholder for on-time rate calculation
+          rejectionRate: Math.round(rejectionRate * 10) / 10,
+          lastDataQualityTrend: trend,
+          createdAt: performance.createdAt.toISOString(),
+          updatedAt: performance.updatedAt.toISOString(),
+          supplier: {
+            id: supplierOrg.id,
+            name: supplierOrg.name,
+          },
         },
-        statistics: {
-          approvalRate: Math.round(approvalRate * 10) / 10,
-          averageCompletenessScore: Math.round(completenessScoreNum),
-          averageDataQualityScore: Math.round(dataQualityScoreNum),
+        history: performance.history.map((h) => ({
+          id: h.id,
+          completenessScore: parseFloat(String(h.completenessScore ?? 0)),
+          dataQualityScore: parseFloat(String(h.dataQualityScore ?? 0)),
+          submissionCount: h.submissionCount,
+          approvedCount: h.approvedCount,
+          recordedAt: h.recordedAt.toISOString(),
+        })),
+        metrics: {
+          totalSubmissions: performance.submissionCount,
+          approvedSubmissions: performance.approvedCount,
+          rejectedSubmissions: performance.rejectedCount,
+          onTimeSubmissions: performance.onTimeCount,
         },
-        history: performance.history.map((h) => {
-          const completeness = parseFloat(String(h.completenessScore ?? 0));
-          const quality = parseFloat(String(h.dataQualityScore ?? 0));
-          return {
-            recordedAt: h.recordedAt,
-            completenessScore: completeness,
-            dataQualityScore: quality,
-            submissionCount: h.submissionCount,
-            approvalRate:
-              h.submissionCount > 0
-                ? Math.round((h.approvedCount / h.submissionCount) * 1000) / 10
-                : 0,
-          };
-        }),
       },
       { version }
     );

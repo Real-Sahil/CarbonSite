@@ -67,16 +67,32 @@ function getTrendIcon(trend: string | null) {
   }
 }
 
-export default function SupplierPerformancePage() {
+interface PageProps {
+  searchParams: Promise<{ supplierId?: string }>;
+}
+
+export default function SupplierPerformancePage(props: PageProps) {
   const params = useParams();
-  const supplierId = Array.isArray(params.supplierId) ? params.supplierId[0] : params.supplierId;
   const orgId = Array.isArray(params.orgId) ? params.orgId[0] : params.orgId;
 
+  const [supplierId, setSupplierId] = useState<string | null>(null);
   const [data, setData] = useState<SupplierPerformanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    async function resolveParams() {
+      const searchParams = await props.searchParams;
+      if (searchParams.supplierId) {
+        setSupplierId(searchParams.supplierId);
+      }
+    }
+    resolveParams();
+  }, [props.searchParams]);
+
+  useEffect(() => {
+    if (!supplierId || !orgId) return;
+
     async function fetchData() {
       try {
         setLoading(true);
