@@ -29,7 +29,7 @@ export default function PricingPage() {
             <h3 className="text-2xl font-bold mb-2">Starter</h3>
             <div className="mb-6">
               <span className="text-4xl font-bold">$0</span>
-              <span className="text-gray-600 ml-2">/month</span>
+              <span className="text-gray-600 ml-2">USD/month</span>
             </div>
             <p className="text-gray-600 mb-8">Perfect for trying CarbonSite</p>
 
@@ -74,7 +74,7 @@ export default function PricingPage() {
             <h3 className="text-2xl font-bold mb-2">Growth</h3>
             <div className="mb-6">
               <span className="text-4xl font-bold">$50</span>
-              <span className="text-gray-600 ml-2">/month</span>
+              <span className="text-gray-600 ml-2">USD/month</span>
             </div>
             <p className="text-gray-600 mb-8">For growing teams</p>
 
@@ -115,7 +115,7 @@ export default function PricingPage() {
             <h3 className="text-2xl font-bold mb-2">Enterprise</h3>
             <div className="mb-6">
               <span className="text-2xl font-bold">Custom</span>
-              <span className="text-gray-600 ml-2">pricing</span>
+              <span className="text-gray-600 ml-2">USD pricing</span>
             </div>
             <p className="text-gray-600 mb-8">For large organizations</p>
 

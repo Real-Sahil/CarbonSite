@@ -12,8 +12,22 @@ export const metadata: Metadata = {
   },
 };
 
+interface Feature {
+  name: string;
+  carbonsite: boolean;
+  normative: boolean;
+  watershed: boolean;
+  gaia: boolean;
+  emitwise: boolean;
+}
+
+interface Category {
+  category: string;
+  items: Feature[];
+}
+
 export default function ComparisonPage() {
-  const features = [
+  const features: Category[] = [
     {
       category: "Data Ingestion",
       items: [
@@ -65,11 +79,11 @@ export default function ComparisonPage() {
   ];
 
   const competitors = [
-    { name: "CarbonSite", slug: "carbonsite", bg: "bg-blue-50" },
-    { name: "Normative", slug: "normative", bg: "bg-gray-50" },
-    { name: "Watershed", slug: "watershed", bg: "bg-gray-50" },
-    { name: "Gaia", slug: "gaia", bg: "bg-gray-50" },
-    { name: "Emitwise", slug: "emitwise", bg: "bg-gray-50" },
+    { name: "CarbonSite", slug: "carbonsite" },
+    { name: "Normative", slug: "normative" },
+    { name: "Watershed", slug: "watershed" },
+    { name: "Gaia", slug: "gaia" },
+    { name: "Emitwise", slug: "emitwise" },
   ];
 
   return (
@@ -84,8 +98,8 @@ export default function ComparisonPage() {
           </p>
         </div>
 
-        {/* Feature Comparison Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-16">
+        {/* Feature Comparison - Desktop Table */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-16 hidden md:block">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -94,7 +108,7 @@ export default function ComparisonPage() {
                   {competitors.map((comp) => (
                     <th
                       key={comp.slug}
-                      className={`px-6 py-4 text-center font-semibold ${
+                      className={`px-6 py-4 text-center font-semibold min-w-[120px] ${
                         comp.slug === "carbonsite" ? "bg-blue-50 text-blue-900" : "text-gray-900"
                       }`}
                     >
@@ -105,7 +119,7 @@ export default function ComparisonPage() {
               </thead>
               <tbody>
                 {features.map((category) => (
-                  <tr key={category.category}>
+                  <tr key={`cat-${category.category}`}>
                     <td colSpan={6} className="px-6 py-3 bg-gray-100">
                       <span className="font-semibold text-gray-900">{category.category}</span>
                     </td>
@@ -157,6 +171,44 @@ export default function ComparisonPage() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Feature Comparison - Mobile Cards */}
+        <div className="md:hidden mb-16 space-y-8">
+          {features.map((category) => (
+            <div key={`mobile-${category.category}`}>
+              <h3 className="text-lg font-bold mb-4 text-gray-900">{category.category}</h3>
+              <div className="space-y-3">
+                {category.items.map((item) => (
+                  <div key={`mobile-item-${item.name}`} className="bg-white rounded-lg border border-gray-200 p-4">
+                    <h4 className="font-semibold text-gray-900 mb-3">{item.name}</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {competitors.map((comp) => {
+                        const hasFeature = item[comp.slug as keyof Feature] as boolean;
+                        return (
+                          <div
+                            key={`mobile-check-${comp.slug}`}
+                            className={`flex items-center gap-2 p-2 rounded ${
+                              comp.slug === "carbonsite"
+                                ? "bg-blue-50"
+                                : "bg-gray-50"
+                            }`}
+                          >
+                            {hasFeature ? (
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            ) : (
+                              <X className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            )}
+                            <span className="text-gray-900 font-medium">{comp.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Key Differentiators */}
