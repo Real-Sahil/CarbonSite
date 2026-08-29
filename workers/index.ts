@@ -17,10 +17,16 @@ import { processReport } from "@/lib/reports/worker";
 import { runDbtTransformation } from "@/lib/jobs/workers/dbt-transform";
 import type { DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
 import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
+import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
 
 interface InvoiceAnomalyJobData {
   organizationId: string;
   sourceSystem?: string;
+}
+
+interface SupplierPerformanceJobData {
+  orgId: string;
+  supplierId: string;
 }
 
 const boss = new PgBoss({
@@ -115,7 +121,21 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly)");
+  // ── Supplier Performance ──────────────────────────────────────────────────
+  await boss.work<SupplierPerformanceJobData>(
+    "supplier-performance",
+    { localConcurrency: 3 },
+    async (jobs: Job<SupplierPerformanceJobData>[]) => {
+      for (const job of jobs) {
+        const { orgId, supplierId } = job.data;
+        console.log(`[supplier-performance] updating metrics for supplier ${supplierId} in org ${orgId}`);
+        await processSupplierPerformanceUpdate(orgId, supplierId);
+        console.log(`[supplier-performance] finished updating supplier ${supplierId}`);
+      }
+    },
+  );
+
+  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, supplier-performance)");
 }
 
 start().catch((err) => {
