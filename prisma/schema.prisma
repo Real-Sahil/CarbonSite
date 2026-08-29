@@ -3081,3 +3081,29 @@ model AirbyteSyncLog {
   @@map("airbyte_sync_logs")
 }
 
+model DbtRun {
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  calculationRunId  String    @map("calculation_run_id")
+  status            String    @default("queued") @map("status") // 'queued', 'running', 'success', 'failed'
+  modelsExecuted    Int?      @map("models_executed")
+  testsRun          Int?      @map("tests_run")
+  testsPassed       Int?      @map("tests_passed")
+  testsFailed       Int?      @map("tests_failed")
+  output            String?   @map("output") // stdout/stderr from dbt
+  errorMessage      String?   @map("error_message")
+  durationSeconds   Int?      @map("duration_seconds")
+  startedAt         DateTime? @map("started_at")
+  completedAt       DateTime? @map("completed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  organization   Organization   @relation("DbtRuns", fields: [organizationId], references: [id], onDelete: Cascade)
+  calculationRun CalculationRun @relation("DbtRuns", fields: [calculationRunId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, calculationRunId])
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("dbt_runs")
+}
+
