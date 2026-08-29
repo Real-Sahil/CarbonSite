@@ -76,7 +76,20 @@ export default function AirbyteConnectorsPage() {
       if (!res.ok) throw new Error('Failed to fetch connectors');
 
       const data = await res.json();
-      setConnectors(data.connectors || []);
+      // Map API response to UI state format
+      const mapped = (data.connectors || []).map((connector: any) => ({
+        id: connector.id,
+        name: connector.displayName || connector.sourceSystem,
+        sourceType: connector.sourceSystem,
+        destinationType: 'postgresql' as const,
+        status: connector.enabled ? 'active' : 'inactive',
+        lastSyncTime: connector.lastSyncAt || new Date().toISOString(),
+        lastSyncStatus: connector.lastSyncStatus || 'success',
+        recordsSynced: connector.recordsSynced || 0,
+        nextScheduledSync: new Date(Date.now() + 24*60*60*1000).toISOString(),
+        connectionId: connector.id
+      }));
+      setConnectors(mapped);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -89,16 +102,38 @@ export default function AirbyteConnectorsPage() {
 
     try {
       setIsCreating(true);
+      const sourceName = AVAILABLE_SOURCES.find(s => s.id === selectedSource)?.name || selectedSource;
+
       const res = await fetch(`/api/orgs/${orgId}/integrations/airbyte/connectors`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sourceType: selectedSource }),
+        body: JSON.stringify({
+          sourceSystem: selectedSource,
+          displayName: sourceName,
+          syncSchedule: 'daily',
+          config: {}
+        }),
       });
 
-      if (!res.ok) throw new Error('Failed to create connector');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to create connector');
+      }
 
       const data = await res.json();
-      setConnectors([...connectors, data.connector]);
+      const newConnector = {
+        id: data.connector.id,
+        name: data.connector.displayName,
+        sourceType: data.connector.sourceSystem,
+        destinationType: 'postgresql' as const,
+        status: 'active' as const,
+        lastSyncTime: new Date().toISOString(),
+        lastSyncStatus: 'success' as const,
+        recordsSynced: 0,
+        nextScheduledSync: new Date(Date.now() + 24*60*60*1000).toISOString(),
+        connectionId: data.connector.id
+      };
+      setConnectors([...connectors, newConnector]);
       setIsModalOpen(false);
       setSelectedSource('');
     } catch (err) {
