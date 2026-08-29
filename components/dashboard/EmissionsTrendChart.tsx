@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import {
   LineChart,
   Line,
@@ -15,6 +15,8 @@ import {
 } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChartExportButton } from "@/components/charts/chart-export-button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface EmissionDataPoint {
   date: string;
@@ -28,6 +30,8 @@ interface EmissionsTrendChartProps {
   data: EmissionDataPoint[];
   title?: string;
   description?: string;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 const COLORS = {
@@ -37,13 +41,25 @@ const COLORS = {
   total: "#1f2937",
 };
 
-function CustomTooltip({ active, payload }: any) {
+interface TooltipPayload {
+  name: string;
+  value: number;
+  color: string;
+  payload: EmissionDataPoint;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayload[];
+}
+
+function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
       <div className="bg-white p-3 border border-gray-200 rounded shadow-lg">
         <p className="font-semibold text-sm">{data.date}</p>
-        {payload.map((entry: any, idx: number) => (
+        {payload.map((entry, idx) => (
           <p key={idx} style={{ color: entry.color }} className="text-sm">
             {entry.name}: {entry.value.toFixed(2)} t CO₂e
           </p>
@@ -58,7 +74,10 @@ export function EmissionsTrendChart({
   data,
   title = "Emissions Trend",
   description = "Total CO₂e over time",
+  isLoading = false,
+  error = null,
 }: EmissionsTrendChartProps) {
+  const chartRef = useRef<HTMLDivElement>(null);
   const stats = useMemo(() => {
     if (!data || data.length === 0) {
       return { min: 0, max: 0, avg: 0, latest: 0 };
@@ -72,6 +91,39 @@ export function EmissionsTrendChart({
 
     return { min, max, avg, latest };
   }, [data]);
+
+  if (error) {
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardHeader>
+          <CardTitle className="text-red-900">{title}</CardTitle>
+          <CardDescription className="text-red-700">{error}</CardDescription>
+        </CardHeader>
+        <CardContent className="h-80 flex items-center justify-center text-red-600">
+          Failed to load chart data
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isLoading || !data) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-3 gap-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <Skeleton className="h-96 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!data || data.length === 0) {
     return (
@@ -95,15 +147,21 @@ export function EmissionsTrendChart({
             <CardTitle>{title}</CardTitle>
             <CardDescription>{description}</CardDescription>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-600">Latest</p>
-            <p className="text-2xl font-bold">{stats.latest.toFixed(2)}</p>
-            <p className="text-xs text-gray-500">t CO₂e</p>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-sm text-gray-600">Latest</p>
+              <p className="text-2xl font-bold">{stats.latest.toFixed(2)}</p>
+              <p className="text-xs text-gray-500">t CO₂e</p>
+            </div>
+            <ChartExportButton
+              chartRef={chartRef}
+              filename={`${title.toLowerCase().replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.png`}
+            />
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent ref={chartRef} className="space-y-6">
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded">

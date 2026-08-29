@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
@@ -8,6 +8,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError } from "@/lib/validation/api";
 import { createBusinessUnitSchema } from "@/lib/validation/org";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
   _req: NextRequest,
@@ -15,6 +16,13 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(
       orgId,
       "admin",
@@ -30,7 +38,7 @@ export async function GET(
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json(businessUnits);
+    return json(businessUnits, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -42,6 +50,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
     const { session } = await requireOrgMember(orgId, "admin", "editor");
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "business-units", session.user.id),
@@ -67,7 +76,7 @@ export async function POST(
       metadata: { name: businessUnit.name },
     });
 
-    return NextResponse.json(businessUnit, { status: 201 });
+    return json(businessUnit, { status: 201, version });
   } catch (err) {
     return handleRouteError(err);
   }

@@ -13,22 +13,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { subscribeToDashboardUpdates } from "@/lib/realtime/subscription-manager";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 type Params = { params: Promise<{ orgId: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
 
     // Verify org membership and role (viewers can see live dashboard)
     await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
-    // Set up SSE headers
+    // Set up SSE headers (versioning applied here for streaming response)
     const headers = new Headers({
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
       "X-Accel-Buffering": "no", // Disable Nginx buffering
+      "API-Version": version,
     });
 
     // Create custom readable stream

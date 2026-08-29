@@ -1,56 +1,67 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { requireOrgMember } from '@/lib/auth/session';
-import { handleRouteError } from '@/lib/validation/api';
-import { generateComplianceEvidence, createCompliancePDF } from '@/lib/compliance/evidence-generator';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { generateComplianceEvidence, createCompliancePDF } from "@/lib/compliance/evidence-generator";
+import { apiError, handleRouteError } from "@/lib/validation/api";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { z } from "zod";
 
-const exportSchema = z.object({
-  reportId: z.string().cuid(),
-  frameworks: z.array(
-    z.enum(['csrd', 'sbti', 'cdp', 'ghg-protocol', 'iso-14064'])
-  ).min(1),
-  includeCalculations: z.boolean().default(true),
-  includeAuditTrail: z.boolean().default(true),
-  format: z.enum(['pdf', 'json']).default('pdf'),
+const querySchema = z.object({
+  reportId: z.string().min(1),
+  frameworks: z.string().default("ghg-protocol,csrd,sbti"),
+  format: z.enum(["json", "pdf"]).default("pdf"),
 });
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> }
-) {
+type Params = { params: Promise<{ orgId: string }> };
+
+export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version } = await withApiVersion(_req);
 
-    await requireOrgMember(orgId, 'admin', 'auditor', 'reviewer');
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
 
-    const body = await req.json();
-    const { reportId, frameworks, includeCalculations, includeAuditTrail, format } =
-      exportSchema.parse(body);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.sustainability);
 
-    // Generate compliance evidence
-    const evidence = await generateComplianceEvidence(orgId, reportId, {
-      frameworks,
-      includeCalculations,
-      includeAuditTrail,
+    const query = querySchema.safeParse({
+      reportId: _req.nextUrl.searchParams.get("reportId") ?? undefined,
+      frameworks: _req.nextUrl.searchParams.get("frameworks") ?? undefined,
+      format: _req.nextUrl.searchParams.get("format") ?? undefined,
     });
 
-    if (format === 'json') {
-      return NextResponse.json({
-        success: true,
-        data: evidence,
+    if (!query.success) {
+      return apiError("INVALID_QUERY", "Invalid query parameters", 400, query.error.flatten());
+    }
+
+    const { reportId, frameworks, format } = query.data;
+    const frameworkList = frameworks.split(",") as Array<
+      "csrd" | "sbti" | "cdp" | "ghg-protocol" | "iso-14064"
+    >;
+
+    const evidence = await generateComplianceEvidence(orgId, reportId, {
+      frameworks: frameworkList,
+      includeCalculations: true,
+      includeAuditTrail: true,
+    });
+
+    if (format === "json") {
+      return NextResponse.json(evidence, {
+        headers: {
+          "API-Version": version,
+          "Content-Disposition": `attachment; filename="compliance-evidence-${reportId}.json"`,
+        },
       });
     }
 
-    // Generate PDF
     const pdfBytes = await createCompliancePDF(evidence);
-    const buffer = Buffer.from(pdfBytes);
 
-    return new Response(buffer, {
-      status: 200,
+    return new NextResponse(Buffer.from(pdfBytes), {
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="compliance-evidence-${reportId}.pdf"`,
-        'Content-Length': buffer.length.toString(),
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="compliance-evidence-${reportId}.pdf"`,
+        "API-Version": version,
       },
     });
   } catch (error) {

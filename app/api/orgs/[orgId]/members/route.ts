@@ -10,6 +10,7 @@ import { inviteMemberSchema } from "@/lib/validation/org";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
   _req: NextRequest,
@@ -17,6 +18,13 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const members = await prisma.organizationMembership.findMany({
@@ -34,7 +42,7 @@ export async function GET(
       orderBy: { createdAt: "asc" },
     });
 
-    return NextResponse.json(members);
+    return json(members, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -46,6 +54,13 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     const { session } = await requireOrgMember(orgId, "admin");
     const body = inviteMemberSchema.parse(await req.json());
     const limited = await rateLimitRequest(req, {
@@ -118,13 +133,13 @@ export async function POST(
         },
       });
 
-      return NextResponse.json(
+      return json(
         {
           action: "member_added",
           emailDelivery: delivery,
           membership,
         },
-        { status: 201 },
+        { version, status: 201 },
       );
     }
 
@@ -182,7 +197,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(
+    return json(
       {
         id: invite.id,
         email,
@@ -191,7 +206,7 @@ export async function POST(
         inviteUrl,
         emailDelivery: delivery,
       },
-      { status: existingInvite ? 200 : 201 },
+      { version, status: existingInvite ? 200 : 201 },
     );
   } catch (err) {
     return handleRouteError(err);

@@ -49,11 +49,11 @@ export default function InvoiceReviewPage() {
     setResolvingId(anomalyId);
     try {
       const res = await fetch(
-        `/api/orgs/${orgId}/invoices/anomalies/${anomalyId}/resolve`,
+        `/api/orgs/${orgId}/invoices/anomalies`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resolution, resolutionNotes: notes }),
+          body: JSON.stringify({ anomalyId, resolution, resolutionNotes: notes }),
         }
       );
 

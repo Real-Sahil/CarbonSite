@@ -1,87 +1,96 @@
-export const dynamic = "force-dynamic";
-
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { handleRouteError, apiError } from "@/lib/validation/api";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
-import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
+
+const querySchema = z.object({
+  resourceType: z.string().optional(),
+  action: z.string().optional(),
+  actorId: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  limit: z.string().default("50"),
+  offset: z.string().default("0"),
+});
 
 type Params = { params: Promise<{ orgId: string }> };
 
-const auditLogsQuerySchema = z.object({
-  cursor: z.string().optional(),
-  limit: z.string().default("50").pipe(z.coerce.number().min(1).max(100)),
-  resourceType: z.string().optional(),
-  action: z.string().optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-  resourceId: z.string().optional(),
-});
-
-export async function GET(
-  req: NextRequest,
-  { params }: Params,
-) {
+export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "auditor", "reviewer");
+    const { version, json } = await withApiVersion(_req);
 
-    const query = auditLogsQuerySchema.safeParse(
-      Object.fromEntries(req.nextUrl.searchParams.entries()),
-    );
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
+    await requireOrgMember(orgId, ...ROLE_GROUPS.sustainability);
+
+    const query = querySchema.safeParse({
+      resourceType: _req.nextUrl.searchParams.get("resourceType") ?? undefined,
+      action: _req.nextUrl.searchParams.get("action") ?? undefined,
+      actorId: _req.nextUrl.searchParams.get("actorId") ?? undefined,
+      startDate: _req.nextUrl.searchParams.get("startDate") ?? undefined,
+      endDate: _req.nextUrl.searchParams.get("endDate") ?? undefined,
+      limit: _req.nextUrl.searchParams.get("limit") ?? undefined,
+      offset: _req.nextUrl.searchParams.get("offset") ?? undefined,
+    });
 
     if (!query.success) {
-      return apiError("VALIDATION_ERROR", "Invalid query parameters", 400, query.error.flatten());
+      return apiError("INVALID_QUERY", "Invalid query parameters", 400, query.error.flatten());
     }
 
-    const { cursor, limit, resourceType, action, startDate, endDate, resourceId } = query.data;
+    const { resourceType, action, actorId, startDate, endDate, limit, offset } = query.data;
 
-    const where: any = {
-      organizationId: orgId,
-    };
-
+    const where: any = { organizationId: orgId };
     if (resourceType) where.resourceType = resourceType;
     if (action) where.action = action;
-    if (resourceId) where.resourceId = resourceId;
-
-    if (startDate || endDate) {
-      where.createdAt = {};
-      if (startDate) where.createdAt.gte = new Date(startDate);
-      if (endDate) where.createdAt.lte = new Date(endDate);
+    if (actorId) where.actorUserId = actorId;
+    if (startDate) where.createdAt = { gte: new Date(startDate) };
+    if (endDate) {
+      if (!where.createdAt) where.createdAt = {};
+      where.createdAt.lte = new Date(endDate);
     }
 
-    const auditLogs = await prisma.auditLog.findMany({
+    const logs = await prisma.auditLog.findMany({
       where,
+      include: {
+        actor: { select: { id: true, email: true, name: true } },
+      },
       orderBy: { createdAt: "desc" },
-      take: limit + 1,
-      skip: cursor ? 1 : 0,
-      cursor: cursor ? { id: cursor } : undefined,
-      select: {
-        id: true,
-        actorUserId: true,
-        action: true,
-        resourceType: true,
-        resourceId: true,
-        metadata: true,
-        createdAt: true,
-        ipAddress: true,
-        userAgent: true,
-      },
+      take: parseInt(limit),
+      skip: parseInt(offset),
     });
 
-    const hasMore = auditLogs.length > limit;
-    const items = hasMore ? auditLogs.slice(0, -1) : auditLogs;
-    const nextCursor = hasMore ? items[items.length - 1]?.id : null;
+    const total = await prisma.auditLog.count({ where });
 
-    return NextResponse.json({
-      items,
-      pagination: {
-        nextCursor,
-        hasMore,
-        limit,
+    return json(
+      {
+        data: logs.map((log) => ({
+          id: log.id,
+          timestamp: log.createdAt,
+          action: log.action,
+          resourceType: log.resourceType,
+          resourceId: log.resourceId,
+          actor: log.actor
+            ? { id: log.actor.id, email: log.actor.email, name: log.actor.name }
+            : null,
+          metadata: log.metadata,
+          ipAddress: log.ipAddress,
+          userAgent: log.userAgent,
+        })),
+        pagination: {
+          offset: parseInt(offset),
+          limit: parseInt(limit),
+          total,
+        },
       },
-    });
-  } catch (err) {
-    return handleRouteError(err);
+      { version }
+    );
+  } catch (error) {
+    return handleRouteError(error);
   }
 }

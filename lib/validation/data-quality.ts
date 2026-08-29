@@ -1,22 +1,34 @@
 import { prisma } from "@/lib/db";
 import { Decimal } from "@prisma/client/runtime/library";
 
+export interface ImportRecord {
+  rowNumber: number;
+  normalizedAmount?: number | null;
+  normalizedUnit?: string | null;
+  activityDate?: Date | null;
+  emissionCategoryId?: string | null;
+  createdAt?: Date | null;
+  [key: string]: unknown;
+}
+
+export interface FailureDetail {
+  rowNumber: number;
+  field: string;
+  value: unknown;
+  expected: string;
+}
+
 export interface QualityCheckResult {
   type: string;
   name: string;
   passed: boolean;
-  failures?: Array<{
-    rowNumber: number;
-    field: string;
-    value: any;
-    expected: string;
-  }>;
+  failures?: FailureDetail[];
 }
 
 export async function validateImportBatch(
   batchId: string,
   orgId: string,
-  records: any[],
+  records: ImportRecord[],
 ): Promise<QualityCheckResult[]> {
   const checks: QualityCheckResult[] = [];
 
@@ -60,11 +72,11 @@ export async function validateImportBatch(
   return checks;
 }
 
-function validateWeightRange(records: any[]): QualityCheckResult {
-  const failures: any[] = [];
+function validateWeightRange(records: ImportRecord[]): QualityCheckResult {
+  const failures: FailureDetail[] = [];
 
   records.forEach((record, idx) => {
-    const amount = parseFloat(record.normalizedAmount);
+    const amount = parseFloat(String(record.normalizedAmount));
     if (isNaN(amount) || amount <= 0 || amount > 10000000) {
       failures.push({
         rowNumber: idx + 1,
@@ -83,9 +95,9 @@ function validateWeightRange(records: any[]): QualityCheckResult {
   };
 }
 
-function validateUnitValidity(records: any[]): QualityCheckResult {
+function validateUnitValidity(records: ImportRecord[]): QualityCheckResult {
   const validUnits = ["kg", "tonnes", "litres", "kwh", "m3", "lbs", "gallons"];
-  const failures: any[] = [];
+  const failures: FailureDetail[] = [];
 
   records.forEach((record, idx) => {
     if (record.normalizedUnit && !validUnits.includes(record.normalizedUnit.toLowerCase())) {
@@ -106,9 +118,9 @@ function validateUnitValidity(records: any[]): QualityCheckResult {
   };
 }
 
-function validateDateRange(records: any[]): QualityCheckResult {
+function validateDateRange(records: ImportRecord[]): QualityCheckResult {
   const now = new Date();
-  const failures: any[] = [];
+  const failures: FailureDetail[] = [];
 
   records.forEach((record, idx) => {
     if (record.activityDate) {
@@ -132,8 +144,8 @@ function validateDateRange(records: any[]): QualityCheckResult {
   };
 }
 
-function validateCompleteness(records: any[]): QualityCheckResult {
-  const failures: any[] = [];
+function validateCompleteness(records: ImportRecord[]): QualityCheckResult {
+  const failures: FailureDetail[] = [];
 
   records.forEach((record, idx) => {
     if (!record.emissionCategoryId) {
@@ -154,9 +166,9 @@ function validateCompleteness(records: any[]): QualityCheckResult {
   };
 }
 
-function validateFreshness(records: any[]): QualityCheckResult {
+function validateFreshness(records: ImportRecord[]): QualityCheckResult {
   const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
-  const failures: any[] = [];
+  const failures: FailureDetail[] = [];
 
   records.forEach((record, idx) => {
     if (record.createdAt) {
@@ -192,8 +204,10 @@ export async function saveQualityCheckResults(
 
   // Save individual check results
   await Promise.all(
-    checks.map((check) =>
-      prisma.dataQualityCheck.create({
+    checks.map((check) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const failureSamples: any = check.failures && check.failures.length > 0 ? check.failures : undefined;
+      return prisma.dataQualityCheck.create({
         data: {
           organizationId: orgId,
           importBatchId: batchId,
@@ -201,11 +215,11 @@ export async function saveQualityCheckResults(
           checkName: check.name,
           passed: check.passed,
           failuresCount: check.failures?.length || 0,
-          failureSamples: check.failures && check.failures.length > 0 ? check.failures : undefined,
+          failureSamples,
           qualityScore: new Decimal(overallScore),
         },
-      }),
-    ),
+      });
+    }),
   );
 
   // Save overall score

@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { requireOrgMember, ROLE_GROUPS, requireSession } from "@/lib/auth/session";
 import { resolveInvoiceAnomaly } from "@/lib/jobs/workers/invoice-anomaly-detector";
-import { handleRouteError } from "@/lib/validation/api";
+import { handleRouteError, apiError } from "@/lib/validation/api";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
@@ -17,24 +18,20 @@ type Params = {
 export async function POST(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, anomalyId } = await params;
+    const { version, json } = await withApiVersion(_req);
 
-    // TODO: Implement invoice anomaly resolution after schema additions (Phase 2+)
-    return NextResponse.json(
-      { code: "NOT_IMPLEMENTED", message: "Invoice anomaly detection coming in Phase 2. Feature not yet available." },
-      { status: 501 }
-    );
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
 
-    /* DISABLED: Incomplete invoice anomaly feature
     await requireOrgMember(orgId, ...ROLE_GROUPS.reviewers);
 
     const body = await _req.json();
     const validation = bodySchema.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json(
-        { code: "INVALID_BODY", message: "Invalid request body", details: validation.error.errors },
-        { status: 400 }
-      );
+      return apiError("INVALID_BODY", "Invalid request body", 400, validation.error.flatten());
     }
 
     const { resolution, resolutionNotes } = validation.data;
@@ -46,17 +43,11 @@ export async function POST(_req: NextRequest, { params }: Params) {
     });
 
     if (!anomaly) {
-      return NextResponse.json(
-        { code: "NOT_FOUND", message: "Anomaly not found" },
-        { status: 404 }
-      );
+      return apiError("NOT_FOUND", "Anomaly not found", 404);
     }
 
     if (anomaly.invoice.organizationId !== orgId) {
-      return NextResponse.json(
-        { code: "FORBIDDEN", message: "Access denied" },
-        { status: 403 }
-      );
+      return apiError("FORBIDDEN", "Access denied", 403);
     }
 
     const session = await requireSession();
@@ -72,21 +63,19 @@ export async function POST(_req: NextRequest, { params }: Params) {
     if (resolution === "rejected") {
       await prisma.invoiceRecord.update({
         where: { id: anomaly.invoiceId },
-        data: { reconciliationStatus: "rejected" },
+        data: { scope3ReadyStatus: "rejected" },
       });
     }
 
-    return NextResponse.json({
+    return json({
       code: "OK",
       message: "Anomaly resolved",
       data: {
         id: updated.id,
         resolution: updated.resolution,
-        resolutionNotes: updated.resolutionNotes,
         resolvedAt: updated.resolvedAt?.toISOString(),
       },
-    });
-    */
+    }, { version });
   } catch (error) {
     return handleRouteError(error);
   }

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { calculationLogger } from "@/lib/logger";
 import { triggerFacilityRiskFlag } from "@/lib/automation/n8n-client";
+import { broadcastDashboardUpdate } from "@/lib/realtime/dashboard-broadcaster";
 import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
@@ -261,6 +262,17 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 
     // Rebuild DashboardAggregate for this period (live, snapshotId = null)
     await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId);
+
+    // Broadcast dashboard update to connected SSE clients
+    try {
+      await broadcastDashboardUpdate(orgId, calculationRunId, run.reportingPeriodId);
+    } catch (err) {
+      calculationLogger.warn("Failed to broadcast dashboard update", {
+        calculationRunId,
+        orgId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
 
     // Feature 4: Auto-create supplier data requests for high-uncertainty Scope 3 records
     await autoCreateSupplierDataRequests(

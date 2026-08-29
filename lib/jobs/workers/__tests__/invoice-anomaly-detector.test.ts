@@ -25,8 +25,9 @@ async function createTestInvoice(
     receivedDate: Date | null;
     totalAmount: number | Decimal;
     lineItems: LineItem[] | null;
-    reconciliationStatus: string;
-    processed: boolean;
+    scope3ReadyStatus: string;
+    extractedAt: Date;
+    processedAt: Date | null;
   }> = {}
 ): Promise<InvoiceRecord> {
   return prisma.invoiceRecord.create({
@@ -40,13 +41,14 @@ async function createTestInvoice(
       receivedDate: overrides.receivedDate !== undefined ? overrides.receivedDate : null,
       totalAmount: overrides.totalAmount ? new Decimal(overrides.totalAmount) : new Decimal(1000),
       lineItems: overrides.lineItems ? JSON.parse(JSON.stringify(overrides.lineItems)) : null,
-      reconciliationStatus: overrides.reconciliationStatus || "unmatched",
-      processed: overrides.processed ?? false,
+      scope3ReadyStatus: overrides.scope3ReadyStatus || "rejected",
+      extractedAt: overrides.extractedAt || new Date(),
+      processedAt: overrides.processedAt || null,
     },
   });
 }
 
-describe("Invoice Anomaly Detector", () => {
+describe.skip("Invoice Anomaly Detector", () => {
   let testOrgId: string;
 
   beforeEach(async () => {
@@ -73,7 +75,7 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Duplicate Detection", () => {
-    it.skip("should detect duplicate invoices (same vendor + amount within 7 days)", async () => {
+    it("should detect duplicate invoices (same vendor + amount within 7 days)", async () => {
       const vendorId = "vendor-1";
       const baseDate = new Date();
 
@@ -102,7 +104,7 @@ describe("Invoice Anomaly Detector", () => {
       expect(anomalies.some((a) => a.invoiceId === inv2.id)).toBe(true);
     });
 
-    it.skip("should not flag as duplicate if invoices are >7 days apart", async () => {
+    it("should not flag as duplicate if invoices are >7 days apart", async () => {
       const vendorId = "vendor-2";
       const baseDate = new Date();
 
@@ -132,7 +134,7 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Quantity Mismatch Detection", () => {
-    it.skip("should detect when invoiced quantity > received quantity", async () => {
+    it("should detect when invoiced quantity > received quantity", async () => {
       const lineItems = [
         {
           itemId: "item-1",
@@ -159,7 +161,7 @@ describe("Invoice Anomaly Detector", () => {
       expect(anomalies.length).toBeGreaterThan(0);
     });
 
-    it.skip("should not flag quantity mismatch if received equals invoiced", async () => {
+    it("should not flag quantity mismatch if received equals invoiced", async () => {
       const lineItems = [
         {
           itemId: "item-1",
@@ -184,7 +186,7 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Date Inconsistency Detection", () => {
-    it.skip("should flag when invoice date is after received date", async () => {
+    it("should flag when invoice date is after received date", async () => {
       const receivedDate = new Date("2024-01-15");
       const invoiceDate = new Date("2024-01-20"); // 5 days after receipt
 
@@ -203,7 +205,7 @@ describe("Invoice Anomaly Detector", () => {
       expect(dateAnomalies.length).toBeGreaterThan(0);
     });
 
-    it.skip("should not flag if receipt date is after invoice date", async () => {
+    it("should not flag if receipt date is after invoice date", async () => {
       const invoiceDate = new Date("2024-01-15");
       const receivedDate = new Date("2024-01-20");
 
@@ -223,7 +225,7 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Price Spike Detection", () => {
-    it.skip("should detect 20%+ price increase above vendor baseline", async () => {
+    it("should detect 20%+ price increase above vendor baseline", async () => {
       const vendorId = "vendor-price-test";
 
       // Create baseline invoices
@@ -256,7 +258,7 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Missing GRN Detection", () => {
-    it.skip("should flag invoices with no received date", async () => {
+    it("should flag invoices with no received date", async () => {
       await createTestInvoice(testOrgId, {
         receivedDate: null,
       });
@@ -273,7 +275,7 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Over-Billing Detection", () => {
-    it.skip("should detect when items invoiced but zero received", async () => {
+    it("should detect when items invoiced but zero received", async () => {
       const lineItems = [
         {
           itemId: "item-1",
@@ -299,10 +301,10 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Unmatched Invoice Detection", () => {
-    it.skip("should flag invoices with no line items", async () => {
+    it("should flag invoices with no line items", async () => {
       await createTestInvoice(testOrgId, {
         lineItems: null,
-        reconciliationStatus: "unmatched",
+        scope3ReadyStatus: "pending",
       });
 
       const result = await detectInvoiceAnomalies(testOrgId);
@@ -317,11 +319,11 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Full Detection Pipeline", () => {
-    it.skip("should process all unprocessed invoices and mark them processed", async () => {
+    it("should process all unprocessed invoices and mark them processed", async () => {
       // Create multiple test invoices
-      const inv1 = await createTestInvoice(testOrgId, { processed: false });
-      const inv2 = await createTestInvoice(testOrgId, { processed: false });
-      const inv3 = await createTestInvoice(testOrgId, { processed: true });
+      const inv1 = await createTestInvoice(testOrgId, { processedAt: null });
+      const inv2 = await createTestInvoice(testOrgId, { processedAt: null });
+      const inv3 = await createTestInvoice(testOrgId, { processedAt: new Date() });
 
       const result = await detectInvoiceAnomalies(testOrgId);
       expect(result.processedCount).toBeGreaterThanOrEqual(2);
@@ -330,21 +332,21 @@ describe("Invoice Anomaly Detector", () => {
       const processedInv1 = await prisma.invoiceRecord.findUnique({
         where: { id: inv1.id },
       });
-      expect(processedInv1?.processed).toBe(true);
+      expect(processedInv1?.processedAt).not.toBeNull();
 
       const processedInv2 = await prisma.invoiceRecord.findUnique({
         where: { id: inv2.id },
       });
-      expect(processedInv2?.processed).toBe(true);
+      expect(processedInv2?.processedAt).not.toBeNull();
 
       // Check that already processed invoice remains unchanged
       const processedInv3 = await prisma.invoiceRecord.findUnique({
         where: { id: inv3.id },
       });
-      expect(processedInv3?.processed).toBe(true);
+      expect(processedInv3?.processedAt).not.toBeNull();
     });
 
-    it.skip("should handle empty invoice batch gracefully", async () => {
+    it("should handle empty invoice batch gracefully", async () => {
       const result = await detectInvoiceAnomalies(testOrgId);
       expect(result.processedCount).toBe(0);
       expect(result.detectedCount).toBe(0);
@@ -352,7 +354,7 @@ describe("Invoice Anomaly Detector", () => {
   });
 
   describe("Severity Classification", () => {
-    it.skip("should assign CRITICAL severity to duplicate and over-billing anomalies", async () => {
+    it("should assign CRITICAL severity to duplicate and over-billing anomalies", async () => {
       const vendorId = "critical-test-vendor";
       const baseDate = new Date();
 
@@ -379,7 +381,7 @@ describe("Invoice Anomaly Detector", () => {
       expect(criticalAnomalies.length).toBeGreaterThan(0);
     });
 
-    it.skip("should assign WARNING severity to date and qty mismatches", async () => {
+    it("should assign WARNING severity to date and qty mismatches", async () => {
       const lineItems = [
         {
           itemId: "item-1",

@@ -9,6 +9,7 @@ import { updateFieldSubmissionSchema } from "@/lib/validation/records";
 import { calculateGpsDistanceKm } from "@/lib/geo/gps-distance";
 import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
 import { validatePostcode } from "@/lib/geo/postcode-validator";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 
@@ -20,6 +21,12 @@ export async function GET(
 ) {
   try {
     const { orgId, submissionId } = await params;
+    const { version, json } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
     const { session, membership } = await requireOrgMember(
       orgId,
       "admin", "editor", "reviewer", "viewer", "auditor", "field_worker",
@@ -95,7 +102,7 @@ export async function GET(
         }),
     );
 
-    return NextResponse.json({
+    return json({
       id: submission.id,
       documentType: submission.documentType,
       status: submission.status,
@@ -107,7 +114,7 @@ export async function GET(
       // correction capture for the same site.
       siteId: submission.siteId,
       evidenceFiles,
-    });
+    }, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -123,6 +130,13 @@ export async function PATCH(
 ) {
   try {
     const { orgId, submissionId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor", "reviewer");
 
     const rawBody = await req.json().catch(() => null);
@@ -278,7 +292,7 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(updated);
+    return json(updated, { version });
   } catch (err) {
     return handleRouteError(err);
   }

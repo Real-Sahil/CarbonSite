@@ -200,11 +200,11 @@ const unmatchedInvoiceRule: DetectionRule = {
     return (
       !lineItems ||
       lineItems.length === 0 ||
-      invoice.reconciliationStatus === "unmatched"
+      invoice.scope3ReadyStatus === "rejected"
     );
   },
   reason: (invoice) => {
-    return `Invoice not matched to purchase orders or goods receipts (status: ${invoice.reconciliationStatus})`;
+    return `Invoice not matched to purchase orders or goods receipts (status: ${invoice.scope3ReadyStatus})`;
   },
 };
 
@@ -227,7 +227,7 @@ export async function detectInvoiceAnomalies(
   try {
     // Fetch unprocessed invoices
     const unprocessedInvoices = await prisma.invoiceRecord.findMany({
-      where: { organizationId: orgId, processed: false },
+      where: { organizationId: orgId, processedAt: null },
       take: 500,
     });
 
@@ -285,6 +285,7 @@ export async function detectInvoiceAnomalies(
       for (const rule of detectedAnomalies) {
         await prisma.invoiceAnomaly.create({
           data: {
+            organizationId: orgId,
             invoiceId: invoice.id,
             anomalyType: rule.type,
             severity: rule.severity,
@@ -297,7 +298,7 @@ export async function detectInvoiceAnomalies(
       // Mark invoice as processed
       await prisma.invoiceRecord.update({
         where: { id: invoice.id },
-        data: { processed: true },
+        data: { processedAt: new Date() },
       });
     }
 
@@ -360,7 +361,7 @@ export async function getInvoiceAnomalies(
 
   return prisma.invoiceAnomaly.findMany({
     where,
-    include: { invoice: true, resolvedBy: { select: { name: true, email: true } } },
+    include: { invoice: true },
     orderBy: { detectedAt: "desc" },
   });
 }
@@ -368,15 +369,15 @@ export async function getInvoiceAnomalies(
 export async function resolveInvoiceAnomaly(
   anomalyId: string,
   resolution: string,
-  resolutionNotes?: string,
+  notes?: string,
   resolvedByUserId?: string
 ) {
   return prisma.invoiceAnomaly.update({
     where: { id: anomalyId },
     data: {
       resolution,
-      resolutionNotes,
-      resolvedByUserId,
+      notes,
+      resolvedBy: resolvedByUserId,
       resolvedAt: new Date(),
     },
   });

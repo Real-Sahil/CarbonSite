@@ -8,6 +8,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createFieldSubmissionSchema } from "@/lib/validation/records";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { calculateGpsDistanceKm } from "@/lib/geo/gps-distance";
 import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
 import { identifyDeliveryPostcode, validatePostcode } from "@/lib/geo/postcode-validator";
@@ -45,6 +46,13 @@ async function notifyReviewersOfSubmission(
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     const { session, membership } = await requireOrgMember(
       orgId,
       "admin",
@@ -167,7 +175,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       }),
     );
 
-    return NextResponse.json({ data, nextCursor, total });
+    return json({ data, nextCursor, total }, { version });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -176,6 +184,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const { version, json } = await withApiVersion(req);
     // field_workers can submit; org members can also submit on behalf
     const { session, membership } = await requireOrgMember(
       orgId,
@@ -346,7 +355,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         },
       });
       if (existing) {
-        return NextResponse.json(existing, { status: 200 });
+        return json(existing, { status: 200, version });
       }
     }
 
@@ -499,7 +508,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           },
         });
         if (existing) {
-          return NextResponse.json(existing, { status: 200 });
+          return json(existing, { status: 200, version });
         }
       }
       throw createErr;
@@ -531,7 +540,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       console.error("[field-submissions] reviewer notification failed:", err),
     );
 
-    return NextResponse.json(submission, { status: 201 });
+    return json(submission, { status: 201, version });
   } catch (err) {
     return handleRouteError(err);
   }

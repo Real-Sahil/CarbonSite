@@ -2,293 +2,266 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { handleRouteError, apiError } from "@/lib/validation/api";
-import { writeAuditLog } from "@/lib/db/audit";
+import { apiError, handleRouteError } from "@/lib/validation/api";
+import {
+  getSsoConfiguration,
+  exchangeOidcCodeForToken,
+  verifyOidcIdToken,
+  fetchOidcUserInfo,
+  validateSsoState,
+  recordSsoSession,
+  inferOidcEndpoint,
+} from "@/lib/auth/sso-handler";
 
-// OAuth2/OIDC callback handler — receives authorization code from IdP
 export async function GET(req: NextRequest) {
   try {
     const code = req.nextUrl.searchParams.get("code");
-    const state = req.nextUrl.searchParams.get("state");
+    const stateFromUrl = req.nextUrl.searchParams.get("state");
     const error = req.nextUrl.searchParams.get("error");
     const errorDescription = req.nextUrl.searchParams.get("error_description");
 
-    // Check for OAuth errors from IdP
+    // Handle OAuth provider errors
     if (error) {
-      console.error(`[sso-callback] OAuth error from IdP: ${error} - ${errorDescription}`);
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth/sso-error?error=${encodeURIComponent(error)}`,
+      return apiError(
+        "SSO_ERROR",
+        `SSO provider error: ${error}. ${errorDescription || ""}`,
+        400
       );
     }
 
-    if (!code || !state) {
-      return apiError("INVALID_REQUEST", "Missing code or state parameter", 400);
+    if (!code || !stateFromUrl) {
+      return apiError(
+        "INVALID_CALLBACK",
+        "Authorization code and state are required",
+        400
+      );
     }
 
-    // Verify state from secure cookie
-    const cookieState = req.cookies.get("sso_state")?.value;
-    const orgId = req.cookies.get("sso_org_id")?.value;
-    const provider = req.cookies.get("sso_provider")?.value;
+    // Extract state from cookie
+    const stateFromCookie = req.cookies.get("sso_state")?.value;
+    const orgIdFromCookie = req.cookies.get("sso_org_id")?.value;
+    const providerFromCookie = req.cookies.get("sso_provider")?.value;
+    const codeVerifierFromCookie = req.cookies.get("sso_code_verifier")?.value;
 
-    if (!cookieState || cookieState !== state) {
-      return apiError("STATE_MISMATCH", "Invalid state parameter (CSRF protection)", 403);
+    if (!stateFromCookie || !orgIdFromCookie || !providerFromCookie || !codeVerifierFromCookie) {
+      return apiError(
+        "MISSING_STATE",
+        "SSO session state not found. Please restart the SSO flow.",
+        400
+      );
     }
 
-    if (!orgId || !provider) {
-      return apiError("MISSING_SESSION", "Missing organization or provider info", 403);
+    // Validate state to prevent CSRF attacks
+    try {
+      if (!validateSsoState(stateFromCookie, stateFromUrl)) {
+        return apiError("STATE_MISMATCH", "State validation failed. CSRF attack detected.", 403);
+      }
+    } catch {
+      return apiError("STATE_VALIDATION_ERROR", "Failed to validate state", 400);
     }
 
     // Fetch SSO configuration
-    const ssoConfig = await prisma.ssoConfiguration.findUnique({
-      where: { organizationId: orgId },
-    });
+    const ssoConfig = await getSsoConfiguration(orgIdFromCookie);
 
     if (!ssoConfig || !ssoConfig.enabled) {
       return apiError("SSO_NOT_ENABLED", "SSO is not enabled for this organization", 403);
     }
 
-    // Exchange authorization code for access token
-    const tokenResponse = await exchangeCodeForToken(code, provider, ssoConfig);
-    if (!tokenResponse.success) {
-      console.error(`[sso-callback] Token exchange failed: ${tokenResponse.error}`);
-      return apiError("TOKEN_EXCHANGE_FAILED", "Failed to exchange authorization code", 403);
+    // Exchange authorization code for tokens
+    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/sso/callback`;
+
+    const tokenResponse = await exchangeOidcCodeForToken(
+      {
+        clientId: ssoConfig.clientId,
+        clientSecret: ssoConfig.clientSecret,
+        redirectUri,
+        issuer: ssoConfig.metadataUrl?.replace("/.well-known/openid-configuration", "") || "",
+        authorizationEndpoint: inferOidcEndpoint(ssoConfig.metadataUrl || "", "authorization_endpoint"),
+        tokenEndpoint: inferOidcEndpoint(ssoConfig.metadataUrl || "", "token_endpoint"),
+        userinfoEndpoint: inferOidcEndpoint(ssoConfig.metadataUrl || "", "userinfo_endpoint"),
+        jwksUri: inferOidcEndpoint(ssoConfig.metadataUrl || "", "jwks_uri"),
+      },
+      code,
+      redirectUri,
+      codeVerifierFromCookie
+    );
+
+    // Verify ID token
+    const idTokenPayload = await verifyOidcIdToken(
+      {
+        clientId: ssoConfig.clientId,
+        clientSecret: ssoConfig.clientSecret,
+        redirectUri,
+        issuer: ssoConfig.metadataUrl?.replace("/.well-known/openid-configuration", "") || "",
+        authorizationEndpoint: "",
+        tokenEndpoint: "",
+        userinfoEndpoint: "",
+        jwksUri: "",
+      },
+      tokenResponse.idToken || "",
+      ssoConfig.clientId
+    );
+
+    // Fetch user info from OIDC provider
+    const userInfo = await fetchOidcUserInfo(
+      {
+        clientId: ssoConfig.clientId,
+        clientSecret: ssoConfig.clientSecret,
+        redirectUri,
+        issuer: "",
+        authorizationEndpoint: "",
+        tokenEndpoint: "",
+        userinfoEndpoint: inferOidcEndpoint(ssoConfig.metadataUrl || "", "userinfo_endpoint"),
+        jwksUri: "",
+      },
+      tokenResponse.accessToken
+    );
+
+    const providerUserId = (userInfo.sub || idTokenPayload.sub) as string;
+    const email = (userInfo.email || idTokenPayload.email) as string;
+    const name = (userInfo.name || idTokenPayload.name) as string | undefined;
+
+    if (!providerUserId || !email) {
+      return apiError(
+        "MISSING_USER_INFO",
+        "SSO provider did not return required user information (sub, email)",
+        400
+      );
     }
 
-    // Verify ID token and extract user claims
-    if (!tokenResponse.idToken) {
-      console.error("[sso-callback] No ID token in token response");
-      return apiError("INVALID_CLAIMS", "No ID token received from provider", 403);
-    }
-
-    const claims = await verifyAndExtractClaims(tokenResponse.idToken, provider, ssoConfig);
-    if (!claims || !claims.email) {
-      console.error("[sso-callback] Failed to extract claims from ID token");
-      return apiError("INVALID_CLAIMS", "Failed to validate identity token", 403);
-    }
-
-    // Find or create user in the organization
-    let user = await prisma.user.findUnique({ where: { email: claims.email } });
+    // Find or create user in Better Auth
+    let user = await prisma.user.findUnique({
+      where: { email },
+    });
 
     if (!user) {
-      // Auto-create user if enabled
       if (!ssoConfig.autoCreateUsers) {
-        return apiError("USER_NOT_FOUND", "User not found and auto-creation is disabled", 403);
+        return apiError(
+          "USER_NOT_FOUND",
+          "User does not exist. Please contact your organization administrator.",
+          403
+        );
       }
 
+      // Auto-create user if enabled
       user = await prisma.user.create({
         data: {
-          email: claims.email,
-          name: claims.name || claims.email.split("@")[0],
+          email,
+          name: name || email.split("@")[0],
           emailVerified: true,
           emailVerifiedAt: new Date(),
         },
       });
     }
 
-    // Verify user is member of the organization or create membership
-    let membership = await prisma.organizationMembership.findFirst({
-      where: { organizationId: orgId, userId: user.id },
+    // Link SSO account if not already linked
+    const existingAccount = await prisma.account.findFirst({
+      where: {
+        userId: user.id,
+        providerId: providerFromCookie,
+      },
     });
 
-    if (!membership) {
-      if (!ssoConfig.autoCreateUsers) {
-        return apiError(
-          "NOT_MEMBER",
-          "User is not a member of this organization",
-          403,
-        );
-      }
-
-      // Auto-create membership with configured role
-      const roleValue = ssoConfig.autoAssignRole || "viewer";
-      membership = await prisma.organizationMembership.create({
+    if (!existingAccount) {
+      await prisma.account.create({
         data: {
-          organizationId: orgId,
           userId: user.id,
-          role: roleValue as import("@prisma/client").OrgRole,
+          accountId: providerUserId,
+          providerId: providerFromCookie,
         },
       });
     }
 
-    // Create SSO session record for audit trail
-    await prisma.ssoSession.create({
-      data: {
-        organizationId: orgId,
+    // Create organization membership record if user is not already a member
+    const orgMembership = await prisma.organizationMembership.findFirst({
+      where: {
         userId: user.id,
-        provider,
-        providerUserId: claims.sub,
-        idpSessionId: tokenResponse.sessionId,
-        accessToken: tokenResponse.accessToken,
-        refreshToken: tokenResponse.refreshToken,
-        tokenExpiresAt: tokenResponse.expiresAt,
+        organizationId: orgIdFromCookie,
       },
     });
 
-    // Log SSO login
-    await writeAuditLog({
-      organizationId: orgId,
-      actorUserId: user.id,
-      action: "auth.sso_login",
-      resourceType: "sso_session",
-      resourceId: user.id,
-      metadata: {
-        provider,
-        email: claims.email,
-        autoCreated: !membership,
+    if (!orgMembership) {
+      if (!ssoConfig.autoAssignRole) {
+        return apiError(
+          "NOT_ORG_MEMBER",
+          "Your SSO account is not associated with this organization. Please contact your administrator.",
+          403
+        );
+      }
+
+      // Auto-assign role if enabled
+      const roleToAssign = ssoConfig.autoAssignRole as "admin" | "editor" | "reviewer" | "viewer" | "auditor" | "field_worker" || "viewer";
+      await prisma.organizationMembership.create({
+        data: {
+          userId: user.id,
+          organizationId: orgIdFromCookie,
+          role: roleToAssign,
+        },
+      });
+    }
+
+    // Record SSO session
+    await recordSsoSession(
+      orgIdFromCookie,
+      user.id,
+      providerFromCookie,
+      providerUserId,
+      tokenResponse.accessToken,
+      tokenResponse.refreshToken,
+      undefined, // Session ID if available from IdP
+      tokenResponse.expiresIn ? new Date(Date.now() + tokenResponse.expiresIn * 1000) : undefined
+    );
+
+    // Create Better Auth session for the user
+    const session = await prisma.session.create({
+      data: {
+        id: generateSessionId(),
+        userId: user.id,
+        token: generateSessionToken(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        ipAddress: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || undefined,
+        userAgent: req.headers.get("user-agent") || undefined,
       },
     });
 
-    // Create a Better Auth session for the user
-    // NOTE: In production, this would integrate with Better Auth to create a proper session cookie
-    // For now, redirect to a session establishment endpoint or login flow
-    const sessionUrl = new URL(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/sso-session`,
-    );
-    sessionUrl.searchParams.set("userId", user.id);
-    sessionUrl.searchParams.set("orgId", orgId);
+    // Create response and clear temporary cookies
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/orgs/${orgIdFromCookie}/dashboard`;
+    const response = NextResponse.redirect(dashboardUrl);
 
-    const response = NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/orgs/${orgId}/dashboard`,
-    );
+    // Set session cookie
+    response.cookies.set("better-auth.session_token", session.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
 
     // Clear SSO cookies
     response.cookies.delete("sso_state");
     response.cookies.delete("sso_org_id");
     response.cookies.delete("sso_provider");
+    response.cookies.delete("sso_code_verifier");
 
     return response;
-  } catch (err) {
-    return handleRouteError(err);
+  } catch (error) {
+    return handleRouteError(error);
   }
 }
 
-// Exchange authorization code for access token
-async function exchangeCodeForToken(
-  code: string,
-  provider: string,
-  config: any,
-): Promise<{
-  success: boolean;
-  error?: string;
-  accessToken?: string;
-  idToken?: string;
-  refreshToken?: string;
-  sessionId?: string;
-  expiresAt?: Date;
-}> {
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/sso/callback`;
-
-  try {
-    let tokenEndpoint = "";
-    let body = {};
-
-    if (provider === "okta") {
-      const domain = extractOktaDomain(config.metadataUrl);
-      tokenEndpoint = `https://${domain}/oauth2/v1/token`;
-      body = {
-        grant_type: "authorization_code",
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
-        code,
-        redirect_uri: redirectUri,
-      };
-    } else if (provider === "azure_ad") {
-      const tenantId = extractAzureTenantId(config.metadataUrl);
-      tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-      body = {
-        grant_type: "authorization_code",
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
-        code,
-        redirect_uri: redirectUri,
-        scope: "openid profile email",
-      };
-    } else if (provider === "google_workspace") {
-      tokenEndpoint = "https://oauth2.googleapis.com/token";
-      body = {
-        grant_type: "authorization_code",
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
-        code,
-        redirect_uri: redirectUri,
-      };
-    } else if (provider === "generic_oidc") {
-      const baseUrl = config.metadataUrl.replace("/.well-known/openid-configuration", "");
-      tokenEndpoint = `${baseUrl}/oauth2/token`;
-      body = {
-        grant_type: "authorization_code",
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
-        code,
-        redirect_uri: redirectUri,
-      };
-    } else {
-      return { success: false, error: "Unsupported provider" };
-    }
-
-    const response = await fetch(tokenEndpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(body as Record<string, string>).toString(),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error(`[sso-callback] Token endpoint error: ${response.status} - ${text}`);
-      return { success: false, error: `HTTP ${response.status}` };
-    }
-
-    const tokenData = await response.json();
-
-    return {
-      success: true,
-      accessToken: tokenData.access_token,
-      idToken: tokenData.id_token,
-      refreshToken: tokenData.refresh_token,
-      expiresAt: tokenData.expires_in ? new Date(Date.now() + tokenData.expires_in * 1000) : undefined,
-    };
-  } catch (err) {
-    console.error(`[sso-callback] Token exchange exception: ${err}`);
-    return { success: false, error: String(err) };
+function generateSessionId(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let id = "";
+  for (let i = 0; i < 24; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
   }
+  return id;
 }
 
-// Verify and extract claims from ID token (simplified — real implementation should validate JWS signature)
-async function verifyAndExtractClaims(
-  idToken: string,
-  provider: string,
-  config: any,
-): Promise<{
-  sub: string;
-  email: string;
-  name?: string;
-} | null> {
-  try {
-    // Decode JWT (without verification for now — should verify signature in production)
-    const parts = idToken.split(".");
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    const payload = JSON.parse(Buffer.from(parts[1], "base64").toString());
-
-    return {
-      sub: payload.sub,
-      email: payload.email || payload.preferred_username,
-      name: payload.name || payload.given_name,
-    };
-  } catch (err) {
-    console.error(`[sso-callback] JWT decode error: ${err}`);
-    return null;
+function generateSessionToken(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let token = "";
+  for (let i = 0; i < 32; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-}
-
-function extractOktaDomain(metadataUrl: string): string {
-  const match = metadataUrl.match(/https:\/\/([^/]+)/);
-  return match ? match[1] : "okta.com";
-}
-
-function extractAzureTenantId(metadataUrl: string): string {
-  const match = metadataUrl.match(/\/([a-f0-9-]+)\//);
-  return match ? match[1] : "common";
+  return token;
 }

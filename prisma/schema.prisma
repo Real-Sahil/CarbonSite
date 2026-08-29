@@ -15,45 +15,62 @@ datasource db {
 // ─── Identity & Tenancy ──────────────────────────────────────────────────────
 
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  name            String?
-  emailVerified   Boolean   @default(false) @map("email_verified")
-  emailVerifiedAt DateTime? @map("email_verified_at")
-  image           String?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  name                 String?
+  emailVerified        Boolean   @default(false) @map("email_verified")
+  emailVerifiedAt      DateTime? @map("email_verified_at")
+  image                String?
+  twoFactorSecret      String?   @map("two_factor_secret")
+  twoFactorEnabled     Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorBackupCodes String?   @map("two_factor_backed_up_codes")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
 
-  memberships      OrganizationMembership[]
-  createdRecords   ActivityRecord[]         @relation("CreatedByUser")
-  createdImports   ImportBatch[]
-  reviewTasks      ReviewTask[]             @relation("AssignedTo")
-  createdTasks     ReviewTask[]             @relation("CreatedBy")
-  comments         Comment[]
-  uploadedEvidence EvidenceFile[]
-  auditLogs        AuditLog[]
-  calculationRuns  CalculationRun[]
-  reports          Report[]
-  snapshots        PublishedSnapshot[]
-  targets              ReductionTarget[]
-  ownedInitiatives     ReductionInitiative[] @relation("InitiativeOwner")
-  createdInitiatives   ReductionInitiative[] @relation("InitiativeCreator")
-  fieldSubmissions     FieldSubmission[]
-  fieldWorkerAssignments FieldWorkerAssignment[] @relation("AssignedFieldWorker")
-  createdFieldWorkerAssignments FieldWorkerAssignment[] @relation("FieldWorkerAssignmentCreator")
-  fieldWorkerSiteAssignments FieldWorkerSiteAssignment[] @relation("AssignedFieldWorkerSite")
-  createdFieldWorkerSiteAssignments FieldWorkerSiteAssignment[] @relation("FieldWorkerSiteAssignmentCreator")
-  contractsCreated          Contract[]               @relation("ContractCreator")
-  socialValueRecordsCreated SocialValueRecord[]      @relation("SocialValueCreator")
-  classificationReviews     EvidenceClassification[] @relation("ClassificationReviewer")
-  ocrCorrections            OcrCorrection[]          @relation("OcrCorrectionBy")
-  deviceTokens              DeviceToken[]
-  webhooks                  Webhook[]                @relation("WebhookCreator")
-  snapshotVerifications     PublishedSnapshot[]      @relation("SnapshotVerifiedBy")
-  embodiedCarbonRecords     EmbodiedCarbonRecord[]
-  supplierInvitesCreated    SupplierInvite[]         @relation("SupplierInviteCreatedBy")
-  supplierDataRequestsCreated SupplierDataRequest[]  @relation("SupplierDataRequestCreatedBy")
-  epdRecordsSubmitted       EpdRecord[]              @relation("EpdSubmittedBy")
+  memberships                       OrganizationMembership[]
+  createdRecords                    ActivityRecord[]             @relation("CreatedByUser")
+  createdImports                    ImportBatch[]
+  reviewTasks                       ReviewTask[]                 @relation("AssignedTo")
+  createdTasks                      ReviewTask[]                 @relation("CreatedBy")
+  comments                          Comment[]
+  uploadedEvidence                  EvidenceFile[]
+  auditLogs                         AuditLog[]
+  calculationRuns                   CalculationRun[]
+  scenarioRunsCreated               ScenarioRun[]                @relation("ScenarioRunsCreated")
+  reports                           Report[]
+  snapshots                         PublishedSnapshot[]
+  dsarRequestsAsSubject             DsarRequest[]                @relation("DsarSubject")
+  dsarRequestsCreated               DsarRequest[]                @relation("DsarRequestedBy")
+  targets                           ReductionTarget[]
+  ownedInitiatives                  ReductionInitiative[]        @relation("InitiativeOwner")
+  createdInitiatives                ReductionInitiative[]        @relation("InitiativeCreator")
+  fieldSubmissions                  FieldSubmission[]
+  fieldWorkerAssignments            FieldWorkerAssignment[]      @relation("AssignedFieldWorker")
+  createdFieldWorkerAssignments     FieldWorkerAssignment[]      @relation("FieldWorkerAssignmentCreator")
+  fieldWorkerSiteAssignments        FieldWorkerSiteAssignment[]  @relation("AssignedFieldWorkerSite")
+  createdFieldWorkerSiteAssignments FieldWorkerSiteAssignment[]  @relation("FieldWorkerSiteAssignmentCreator")
+  contractsCreated                  Contract[]                   @relation("ContractCreator")
+  socialValueRecordsCreated         SocialValueRecord[]          @relation("SocialValueCreator")
+  classificationReviews             EvidenceClassification[]     @relation("ClassificationReviewer")
+  ocrCorrections                    OcrCorrection[]              @relation("OcrCorrectionBy")
+  snapshotAssurances                SnapshotAssurance[]          @relation("SnapshotAuditor")
+  deviceTokens                      DeviceToken[]
+  webhooks                          Webhook[]                    @relation("WebhookCreator")
+  snapshotVerifications             PublishedSnapshot[]          @relation("SnapshotVerifiedBy")
+  embodiedCarbonRecords             EmbodiedCarbonRecord[]
+  supplierInvitesCreated            SupplierInvite[]             @relation("SupplierInviteCreatedBy")
+  supplierDataRequestsCreated       SupplierDataRequest[]        @relation("SupplierDataRequestCreatedBy")
+  supplierDataRequestsApproved      SupplierDataRequest[]        @relation("SupplierDataRequestApprovedBy")
+  epdRecordsSubmitted               EpdRecord[]                  @relation("EpdSubmittedBy")
+  projectRoleAssignments            ProjectRoleAssignment[]      @relation("ProjectAssignments")
+  createdProjectRoleAssignments     ProjectRoleAssignment[]      @relation("ProjectAssignmentsCreated")
+  supplierTagAssignments            SupplierTagAssignment[]      @relation("SupplierTagAssignments")
+  supplierCategoryAssignments       SupplierCategoryAssignment[] @relation("SupplierCategoryAssignments")
+  customEmissionFactorsCreated      OrganizationEmissionFactor[] @relation("CustomFactorCreator")
+  anomaliesAcknowledged             SupplierAnomaly[]            @relation("AnomalyAcknowledger")
+  scope3EstimatesAccepted           Scope3Estimate[]             @relation("Scope3EstimatesAccepted")
+  ssoSessions                       SsoSession[]                 @relation("SsoSessions")
+  invoiceAnomaliesResolved          InvoiceAnomaly[]             @relation("InvoiceAnomalyResolutions")
 
   platformMembership PlatformMembership?
 
@@ -91,6 +108,7 @@ model Account {
   scope                 String?
   idToken               String?   @map("id_token")
   password              String?
+  passwordChangedAt     DateTime? @map("password_changed_at")
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
 
@@ -111,57 +129,93 @@ model Verification {
 }
 
 model Organization {
-  id                String   @id @default(cuid())
-  name              String
-  industry          String?
-  hqCountry         String?  @map("hq_country")
-  reportingCurrency String   @default("GBP") @map("reporting_currency")
-  defaultUnits      Json?    @map("default_units")
-  plan              String   @default("trial") @map("plan")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id                           String   @id @default(cuid())
+  name                         String
+  industry                     String?
+  hqCountry                    String?  @map("hq_country")
+  reportingCurrency            String   @default("GBP") @map("reporting_currency")
+  defaultUnits                 Json?    @map("default_units")
+  plan                         String   @default("trial") @map("plan")
+  supplierPasswordRotationDays Int?     @map("supplier_password_rotation_days")
+  supplierAccountExpiryDays    Int?     @map("supplier_account_expiry_days")
+  createdAt                    DateTime @default(now()) @map("created_at")
+  updatedAt                    DateTime @updatedAt @map("updated_at")
 
-  memberships      OrganizationMembership[]
-  facilities       Facility[]
-  businessUnits    BusinessUnit[]
-  contracts        Contract[]
-  reportingPeriods ReportingPeriod[]
-  activityRecords  ActivityRecord[]
-  importBatches    ImportBatch[]
-  calculationRuns  CalculationRun[]
-  snapshots        PublishedSnapshot[]
-  aggregates       DashboardAggregate[]
-  routeDistances   RouteDistance[]
-  reports          Report[]
-  reviewTasks      ReviewTask[]
-  comments         Comment[]
-  auditLogs        AuditLog[]
-  targets          ReductionTarget[]
-  initiatives      ReductionInitiative[]
-  evidenceFiles    EvidenceFile[]
-  fieldSubmissions FieldSubmission[]
-  inviteLinks      InviteLink[]
-  supplierInvites         SupplierInvite[]
-  supplierDataRequests    SupplierDataRequest[]
-  integrationConnections  IntegrationConnection[]
-  fieldWorkerAssignments FieldWorkerAssignment[]
-  fieldWorkerSiteAssignments FieldWorkerSiteAssignment[]
-  socialValueRecords  SocialValueRecord[]
-  socialValueTargets  SocialValueTarget[]
-  sites               Site[]              @relation("OrgSites")
-  projects            Project[]           @relation("OrgProjects")
-  branding            TenantBranding?
-  webhooks            Webhook[]
-  epdRecords          EpdRecord[]
-  embodiedCarbonRecords EmbodiedCarbonRecord[]
-  apiKeys             ApiKey[]
-  billingSubscription BillingSubscription?
-  usageEvents         UsageEvent[]
-  carbonOffsets       CarbonOffset[]
-  complianceRecords   ComplianceRecord[]
-  carbonBudgets       CarbonBudget[]
-  wasteRecords        WasteRecord[]
-  sbtiTarget          SbtiTarget?
+  memberships                 OrganizationMembership[]
+  facilities                  Facility[]
+  businessUnits               BusinessUnit[]
+  contracts                   Contract[]
+  reportingPeriods            ReportingPeriod[]
+  activityRecords             ActivityRecord[]
+  importBatches               ImportBatch[]
+  calculationRuns             CalculationRun[]
+  snapshots                   PublishedSnapshot[]
+  aggregates                  DashboardAggregate[]
+  scenarioRuns                ScenarioRun[]
+  routeDistances              RouteDistance[]
+  reports                     Report[]
+  reviewTasks                 ReviewTask[]
+  comments                    Comment[]
+  auditLogs                   AuditLog[]
+  dsarRequests                DsarRequest[]
+  targets                     ReductionTarget[]
+  initiatives                 ReductionInitiative[]
+  evidenceFiles               EvidenceFile[]
+  fieldSubmissions            FieldSubmission[]
+  inviteLinks                 InviteLink[]
+  supplierInvites             SupplierInvite[]
+  supplierDataRequests        SupplierDataRequest[]
+  integrationConnections      IntegrationConnection[]
+  fieldWorkerAssignments      FieldWorkerAssignment[]
+  fieldWorkerSiteAssignments  FieldWorkerSiteAssignment[]
+  socialValueRecords          SocialValueRecord[]
+  socialValueTargets          SocialValueTarget[]
+  sites                       Site[]                       @relation("OrgSites")
+  projects                    Project[]                    @relation("OrgProjects")
+  branding                    TenantBranding?
+  webhooks                    Webhook[]
+  epdRecords                  EpdRecord[]
+  embodiedCarbonRecords       EmbodiedCarbonRecord[]
+  apiKeys                     ApiKey[]
+  billingSubscription         BillingSubscription?
+  paymentMethods              PaymentMethod[]
+  usageEvents                 UsageEvent[]
+  carbonOffsets               CarbonOffset[]
+  complianceRecords           ComplianceRecord[]
+  carbonBudgets               CarbonBudget[]
+  wasteRecords                WasteRecord[]
+  sbtiTarget                  SbtiTarget?
+  bulkOperations              BulkOperation[]
+  calculationSchedules        CalculationSchedule[]
+  digestPreferences           DigestPreference[]
+  projectRoleAssignments      ProjectRoleAssignment[]
+  snapshotAssurances          SnapshotAssurance[]
+  reportVerificationTokens    ReportVerificationToken[]
+  apiDataSources              ApiDataSource[]
+  supplierTags                SupplierTag[]
+  supplierCategoryAssignments SupplierCategoryAssignment[]
+  iotDevices                  IoTDevice[]
+  iotDeviceCredentials        IoTDeviceCredential[]
+  meterReadings               MeterReading[]
+  customEmissionFactors       OrganizationEmissionFactor[]
+  supplierAnomalies           SupplierAnomaly[]
+  zapierIntegration           ZapierIntegration?
+  auditEvents                 AuditEvent[]
+  dataQualityChecks           DataQualityCheck[]
+  importBatchQualityScores    ImportBatchQualityScore[]
+  stagedExternalData          StagedExternalData[]
+  airbyteSyncConnections      AirbyteSyncConnection[]
+  scope3EstimationModels      Scope3EstimationModel[]      @relation("EstimationModels")
+  scope3Estimates             Scope3Estimate[]             @relation("Scope3Estimates")
+  supplierPerformanceOrg      SupplierPerformance[]        @relation("supplierPerformanceOrg")
+  supplierPerformanceSupplier SupplierPerformance[]        @relation("supplierPerformanceSupplier")
+  supplierPerformanceHistory  SupplierPerformanceHistory[] @relation("supplierPerformanceHistoryOrg")
+  auditContexts               AuditContext[]               @relation("AuditContexts")
+  ssoConfiguration            SsoConfiguration?            @relation("SsoConfigurations")
+  ssoSessions                 SsoSession[]                 @relation("SsoSessions")
+  xeroSyncLogs                XeroSyncLog[]
+  invoiceRecords              InvoiceRecord[]              @relation("InvoiceRecords")
+  invoiceAnomalies            InvoiceAnomaly[]             @relation("InvoiceAnomalies")
 
   @@map("organizations")
 }
@@ -218,20 +272,20 @@ model PlatformMembership {
 // ─── White-Label Branding ─────────────────────────────────────────────────────
 
 model TenantBranding {
-  id                   String   @id @default(cuid())
-  organizationId       String   @unique @map("organization_id")
-  subdomain            String   @unique
-  customDomain         String?  @map("custom_domain")
-  primaryHex           String   @default("#0f4c8a") @map("primary_hex")
-  accentHex            String   @default("#e8f0fe") @map("accent_hex")
-  logoStorageKey       String?  @map("logo_storage_key")
-  faviconStorageKey    String?  @map("favicon_storage_key")
-  reportHeaderLogoKey  String?  @map("report_header_logo_key")
-  emailFromName        String?  @map("email_from_name")
-  emailFromDomain      String?  @map("email_from_domain")
-  fontFamily           String   @default("Inter") @map("font_family")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
+  id                  String   @id @default(cuid())
+  organizationId      String   @unique @map("organization_id")
+  subdomain           String   @unique
+  customDomain        String?  @map("custom_domain")
+  primaryHex          String   @default("#0f4c8a") @map("primary_hex")
+  accentHex           String   @default("#e8f0fe") @map("accent_hex")
+  logoStorageKey      String?  @map("logo_storage_key")
+  faviconStorageKey   String?  @map("favicon_storage_key")
+  reportHeaderLogoKey String?  @map("report_header_logo_key")
+  emailFromName       String?  @map("email_from_name")
+  emailFromDomain     String?  @map("email_from_domain")
+  fontFamily          String   @default("Inter") @map("font_family")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -239,12 +293,13 @@ model TenantBranding {
 }
 
 model OrganizationMembership {
-  id             String   @id @default(cuid())
-  organizationId String   @map("organization_id")
-  userId         String   @map("user_id")
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  userId         String    @map("user_id")
   role           OrgRole
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  terminatedAt   DateTime? @map("terminated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -276,16 +331,17 @@ model InviteLink {
 }
 
 model SupplierInvite {
-  id             String    @id @default(cuid())
-  organizationId String    @map("organization_id")
-  email          String
-  companyName    String?   @map("company_name")
-  token          String    @unique @default(cuid())
-  expiresAt      DateTime  @map("expires_at")
-  usedAt         DateTime? @map("used_at")
-  usedByUserId   String?   @map("used_by_user_id")
-  createdByUserId String   @map("created_by_user_id")
-  createdAt      DateTime  @default(now()) @map("created_at")
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  email           String
+  companyName     String?   @map("company_name")
+  token           String    @unique @default(cuid())
+  expiresAt       DateTime  @map("expires_at")
+  usedAt          DateTime? @map("used_at")
+  usedByUserId    String?   @map("used_by_user_id")
+  createdByUserId String    @map("created_by_user_id")
+  tags            Json?     @default("[]") // Array of supplier category tags
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdBy    User         @relation("SupplierInviteCreatedBy", fields: [createdByUserId], references: [id])
@@ -328,11 +384,12 @@ model Facility {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  activityRecords ActivityRecord[]
-  aggregates      DashboardAggregate[]
-  submissions     FieldSubmission[]
+  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecords        ActivityRecord[]
+  aggregates             DashboardAggregate[]
+  submissions            FieldSubmission[]
   fieldWorkerAssignments FieldWorkerAssignment[]
+  iotDevices             IoTDevice[]
 
   @@index([organizationId])
   @@map("facilities")
@@ -372,30 +429,36 @@ enum ReportingPeriodStatus {
 }
 
 model ReportingPeriod {
-  id             String                @id @default(cuid())
-  organizationId String                @map("organization_id")
-  type           ReportingPeriodType
-  startDate      DateTime              @map("start_date") @db.Date
-  endDate        DateTime              @map("end_date") @db.Date
-  label          String
-  status         ReportingPeriodStatus @default(draft)
-  createdAt      DateTime              @default(now()) @map("created_at")
-  updatedAt      DateTime              @updatedAt @map("updated_at")
+  id              String                @id @default(cuid())
+  organizationId  String                @map("organization_id")
+  type            ReportingPeriodType
+  startDate       DateTime              @map("start_date") @db.Date
+  endDate         DateTime              @map("end_date") @db.Date
+  label           String
+  status          ReportingPeriodStatus @default(draft)
+  /// Reference values for carbon intensity calculations
+  revenueAmount   Decimal?              @map("revenue_amount") @db.Decimal(18, 2)
+  revenueCurrency String?               @map("revenue_currency")
+  fteCount        Decimal?              @map("fte_count") @db.Decimal(10, 2)
+  facilityAreaM2  Decimal?              @map("facility_area_m2") @db.Decimal(15, 2)
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
 
-  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  activityRecords ActivityRecord[]
-  calculationRuns CalculationRun[]
-  snapshots       PublishedSnapshot[]
-  aggregates      DashboardAggregate[]
-  reports         Report[]
-  targets         ReductionTarget[]    @relation("BaselinePeriod")
-  targetPeriods   ReductionTarget[]    @relation("TargetPeriod")
-  submissions        FieldSubmission[]
+  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecords        ActivityRecord[]
+  calculationRuns        CalculationRun[]
+  snapshots              PublishedSnapshot[]
+  aggregates             DashboardAggregate[]
+  reports                Report[]
+  targets                ReductionTarget[]       @relation("BaselinePeriod")
+  targetPeriods          ReductionTarget[]       @relation("TargetPeriod")
+  submissions            FieldSubmission[]
   fieldWorkerAssignments FieldWorkerAssignment[]
-  socialValueRecords SocialValueRecord[]
-  socialValueTargets SocialValueTarget[]
-  embodiedCarbonRecords EmbodiedCarbonRecord[]
-  supplierDataRequests  SupplierDataRequest[]
+  socialValueRecords     SocialValueRecord[]
+  socialValueTargets     SocialValueTarget[]
+  embodiedCarbonRecords  EmbodiedCarbonRecord[]
+  supplierDataRequests   SupplierDataRequest[]
+  calculationSchedules   CalculationSchedule[]
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -410,10 +473,14 @@ model EmissionCategory {
   name         String
   activityType String? @map("activity_type")
 
-  activityRecords ActivityRecord[]
-  emissionFactors EmissionFactor[]
-  aggregates      DashboardAggregate[]
-  submissions     FieldSubmission[]
+  activityRecords             ActivityRecord[]
+  emissionFactors             EmissionFactor[]
+  customEmissionFactors       OrganizationEmissionFactor[]
+  aggregates                  DashboardAggregate[]
+  submissions                 FieldSubmission[]
+  supplierCategoryAssignments SupplierCategoryAssignment[]
+  scope3EstimationModels      Scope3EstimationModel[]      @relation("EstimationModels")
+  scope3Estimates             Scope3Estimate[]             @relation("Scope3Estimates")
 
   @@map("emission_categories")
 }
@@ -425,8 +492,8 @@ model MethodologyVersion {
   notes      String?
   createdAt  DateTime @default(now()) @map("created_at")
 
-  calculationRuns  CalculationRun[]
-  calculations     EmissionCalculation[]
+  calculationRuns CalculationRun[]
+  calculations    EmissionCalculation[]
 
   @@map("methodology_versions")
 }
@@ -447,30 +514,32 @@ enum ImportState {
 }
 
 model ImportBatch {
-  id                  String      @id @default(cuid())
-  organizationId      String      @map("organization_id")
-  reportingPeriodId   String      @map("reporting_period_id")
-  templateKey         String      @map("template_key")
-  state               ImportState @default(uploaded)
-  sourceFilename      String      @map("source_filename")
-  sourceStorageKey    String      @map("source_storage_key")
-  sourceChecksum      String      @map("source_checksum")
-  mapping             Json?
-  rowCount            Int?        @map("row_count")
-  errorCount          Int         @default(0) @map("error_count")
-  warningCount        Int         @default(0) @map("warning_count")
-  errorCsvStorageKey  String?     @map("error_csv_storage_key")
-  idempotencyKey           String?     @unique @map("idempotency_key")
-  lastProcessedRowIndex    Int?        @map("last_processed_row_index")
-  createdByUserId          String      @map("created_by_user_id")
-  createdAt                DateTime    @default(now()) @map("created_at")
-  updatedAt                DateTime    @updatedAt @map("updated_at")
+  id                    String      @id @default(cuid())
+  organizationId        String      @map("organization_id")
+  reportingPeriodId     String      @map("reporting_period_id")
+  templateKey           String      @map("template_key")
+  state                 ImportState @default(uploaded)
+  sourceFilename        String      @map("source_filename")
+  sourceStorageKey      String      @map("source_storage_key")
+  sourceChecksum        String      @map("source_checksum")
+  mapping               Json?
+  rowCount              Int?        @map("row_count")
+  errorCount            Int         @default(0) @map("error_count")
+  warningCount          Int         @default(0) @map("warning_count")
+  errorCsvStorageKey    String?     @map("error_csv_storage_key")
+  idempotencyKey        String?     @unique @map("idempotency_key")
+  lastProcessedRowIndex Int?        @map("last_processed_row_index")
+  createdByUserId       String?     @map("created_by_user_id")
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
 
-  organization    Organization         @relation(fields: [organizationId], references: [id])
-  createdBy       User                 @relation(fields: [createdByUserId], references: [id])
+  organization    Organization             @relation(fields: [organizationId], references: [id])
+  createdBy       User?                    @relation(fields: [createdByUserId], references: [id])
   stagedRecords   StagedActivityRecord[]
   activityRecords ActivityRecord[]
   evidence        ImportBatchEvidence[]
+  qualityChecks   DataQualityCheck[]
+  qualityScore    ImportBatchQualityScore?
 
   @@index([organizationId, reportingPeriodId, state])
   @@index([organizationId, sourceChecksum])
@@ -529,61 +598,66 @@ enum Scope2Method {
 }
 
 model ActivityRecord {
-  id                 String         @id @default(cuid())
-  organizationId     String         @map("organization_id")
-  reportingPeriodId  String         @map("reporting_period_id")
-  emissionCategoryId String         @map("emission_category_id")
-  activityDate       DateTime?      @map("activity_date") @db.Date
-  startDate          DateTime?      @map("start_date") @db.Date
-  endDate            DateTime?      @map("end_date") @db.Date
-  amount             Decimal        @db.Decimal(18, 6)
-  unit               String
-  sourceDescription  String?        @map("source_description")
-  facilityId         String?        @map("facility_id")
-  businessUnitId     String?        @map("business_unit_id")
-  supplierName       String?        @map("supplier_name")
-  country            String?
-  region             String?
-  spendAmount        Decimal?       @map("spend_amount") @db.Decimal(18, 2)
-  spendCurrency      String?        @map("spend_currency")
-  distanceAmount     Decimal?       @map("distance_amount") @db.Decimal(18, 4)
-  distanceUnit       String?        @map("distance_unit")
-  pickupPostcode     String?        @map("pickup_postcode")
-  deliveryPostcode   String?        @map("delivery_postcode")
-  pickupLat          Decimal?       @map("pickup_lat") @db.Decimal(10, 7)
-  pickupLng          Decimal?       @map("pickup_lng") @db.Decimal(10, 7)
-  deliveryLat        Decimal?       @map("delivery_lat") @db.Decimal(10, 7)
-  deliveryLng        Decimal?       @map("delivery_lng") @db.Decimal(10, 7)
-  routeDistanceId    String?        @map("route_distance_id")
-  routeDistanceSource String?       @map("route_distance_source")
-  distanceOverrideReason String?    @map("distance_override_reason")
-  transportMode      String?        @map("transport_mode")
-  fuelType           String?        @map("fuel_type")
-  refrigerantType    String?        @map("refrigerant_type")
-  scope2Method       Scope2Method?  @map("scope2_method")
-  biogenicCo2e       Decimal?       @map("biogenic_co2e") @db.Decimal(18, 8)
-  reviewStatus       ReviewStatus   @default(draft) @map("review_status")
-  evidenceStatus     EvidenceStatus @default(missing) @map("evidence_status")
-  assumptionNotes    String?        @map("assumption_notes")
-  siteId             String?        @map("site_id")
-  contractId         String?        @map("contract_id")
-  importBatchId      String?        @map("import_batch_id")
-  fieldSubmissionId  String?        @map("field_submission_id")
-  createdByUserId    String         @map("created_by_user_id")
-  createdAt          DateTime       @default(now()) @map("created_at")
-  updatedAt          DateTime       @updatedAt @map("updated_at")
+  id                        String         @id @default(cuid())
+  organizationId            String         @map("organization_id")
+  reportingPeriodId         String         @map("reporting_period_id")
+  emissionCategoryId        String         @map("emission_category_id")
+  activityDate              DateTime?      @map("activity_date") @db.Date
+  startDate                 DateTime?      @map("start_date") @db.Date
+  endDate                   DateTime?      @map("end_date") @db.Date
+  amount                    Decimal        @db.Decimal(18, 6)
+  unit                      String
+  sourceDescription         String?        @map("source_description")
+  facilityId                String?        @map("facility_id")
+  businessUnitId            String?        @map("business_unit_id")
+  supplierName              String?        @map("supplier_name")
+  country                   String?
+  region                    String?
+  spendAmount               Decimal?       @map("spend_amount") @db.Decimal(18, 2)
+  spendCurrency             String?        @map("spend_currency")
+  distanceAmount            Decimal?       @map("distance_amount") @db.Decimal(18, 4)
+  distanceUnit              String?        @map("distance_unit")
+  pickupPostcode            String?        @map("pickup_postcode")
+  deliveryPostcode          String?        @map("delivery_postcode")
+  pickupPostcodeEncrypted   Json?          @map("pickup_postcode_encrypted")
+  deliveryPostcodeEncrypted Json?          @map("delivery_postcode_encrypted")
+  pickupLat                 Decimal?       @map("pickup_lat") @db.Decimal(10, 7)
+  pickupLng                 Decimal?       @map("pickup_lng") @db.Decimal(10, 7)
+  deliveryLat               Decimal?       @map("delivery_lat") @db.Decimal(10, 7)
+  deliveryLng               Decimal?       @map("delivery_lng") @db.Decimal(10, 7)
+  routeDistanceId           String?        @map("route_distance_id")
+  routeDistanceSource       String?        @map("route_distance_source")
+  distanceOverrideReason    String?        @map("distance_override_reason")
+  transportMode             String?        @map("transport_mode")
+  fuelType                  String?        @map("fuel_type")
+  refrigerantType           String?        @map("refrigerant_type")
+  scope2Method              Scope2Method?  @map("scope2_method")
+  biogenicCo2e              Decimal?       @map("biogenic_co2e") @db.Decimal(18, 8)
+  reviewStatus              ReviewStatus   @default(draft) @map("review_status")
+  evidenceStatus            EvidenceStatus @default(missing) @map("evidence_status")
+  assumptionNotes           String?        @map("assumption_notes")
+  siteId                    String?        @map("site_id")
+  contractId                String?        @map("contract_id")
+  importBatchId             String?        @map("import_batch_id")
+  fieldSubmissionId         String?        @map("field_submission_id")
+  createdByUserId           String         @map("created_by_user_id")
+  createdAt                 DateTime       @default(now()) @map("created_at")
+  updatedAt                 DateTime       @updatedAt @map("updated_at")
 
-  organization     Organization          @relation(fields: [organizationId], references: [id])
-  reportingPeriod  ReportingPeriod       @relation(fields: [reportingPeriodId], references: [id])
-  emissionCategory EmissionCategory      @relation(fields: [emissionCategoryId], references: [id])
-  facility         Facility?             @relation(fields: [facilityId], references: [id])
-  businessUnit     BusinessUnit?         @relation(fields: [businessUnitId], references: [id])
-  site             Site?                 @relation(fields: [siteId], references: [id], onDelete: SetNull)
-  importBatch      ImportBatch?          @relation(fields: [importBatchId], references: [id])
-  routeDistance    RouteDistance?        @relation(fields: [routeDistanceId], references: [id])
-  createdBy        User                  @relation("CreatedByUser", fields: [createdByUserId], references: [id])
-  calculations EmissionCalculation[]
-  evidence     ActivityRecordEvidence[]
+  organization     Organization             @relation(fields: [organizationId], references: [id])
+  reportingPeriod  ReportingPeriod          @relation(fields: [reportingPeriodId], references: [id])
+  emissionCategory EmissionCategory         @relation(fields: [emissionCategoryId], references: [id])
+  facility         Facility?                @relation(fields: [facilityId], references: [id])
+  businessUnit     BusinessUnit?            @relation(fields: [businessUnitId], references: [id])
+  site             Site?                    @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  importBatch      ImportBatch?             @relation(fields: [importBatchId], references: [id])
+  routeDistance    RouteDistance?           @relation(fields: [routeDistanceId], references: [id])
+  createdBy        User                     @relation("CreatedByUser", fields: [createdByUserId], references: [id])
+  calculations     EmissionCalculation[]
+  evidence         ActivityRecordEvidence[]
+  scenarioDrafts   ScenarioDraft[]          @relation("ScenarioDraftActivityRecord")
+  meterReadings    MeterReading[]
+  scope3Estimates  Scope3Estimate[]         @relation("ActivityRecordEstimate")
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
   @@index([organizationId, routeDistanceId])
@@ -593,16 +667,18 @@ model ActivityRecord {
 }
 
 model PostcodeGeocode {
-  id                  String   @id @default(cuid())
-  normalizedPostcode  String   @unique @map("normalized_postcode")
-  displayPostcode     String   @map("display_postcode")
-  latitude            Decimal  @db.Decimal(10, 7)
-  longitude           Decimal  @db.Decimal(10, 7)
-  provider            String
-  providerPlaceId     String?  @map("provider_place_id")
-  quality             Json     @default("{}")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  id                          String   @id @default(cuid())
+  normalizedPostcode          String   @unique @map("normalized_postcode")
+  displayPostcode             String   @map("display_postcode")
+  normalizedPostcodeEncrypted Json?    @map("normalized_postcode_encrypted")
+  displayPostcodeEncrypted    Json?    @map("display_postcode_encrypted")
+  latitude                    Decimal  @db.Decimal(10, 7)
+  longitude                   Decimal  @db.Decimal(10, 7)
+  provider                    String
+  providerPlaceId             String?  @map("provider_place_id")
+  quality                     Json     @default("{}")
+  createdAt                   DateTime @default(now()) @map("created_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
 
   pickupRoutes   RouteDistance[] @relation("PickupGeocode")
   deliveryRoutes RouteDistance[] @relation("DeliveryGeocode")
@@ -611,24 +687,26 @@ model PostcodeGeocode {
 }
 
 model RouteDistance {
-  id                  String   @id @default(cuid())
-  organizationId      String   @map("organization_id")
-  pickupPostcode      String   @map("pickup_postcode")
-  deliveryPostcode    String   @map("delivery_postcode")
-  pickupGeocodeId     String   @map("pickup_geocode_id")
-  deliveryGeocodeId   String   @map("delivery_geocode_id")
-  distanceKm          Decimal  @map("distance_km") @db.Decimal(18, 4)
-  durationSeconds     Int?     @map("duration_seconds")
-  provider            String
-  providerRouteId     String?  @map("provider_route_id")
-  routeHash           String   @unique @map("route_hash")
-  calculationMethod   String   @map("calculation_method")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  id                        String   @id @default(cuid())
+  organizationId            String   @map("organization_id")
+  pickupPostcode            String   @map("pickup_postcode")
+  deliveryPostcode          String   @map("delivery_postcode")
+  pickupPostcodeEncrypted   Json?    @map("pickup_postcode_encrypted")
+  deliveryPostcodeEncrypted Json?    @map("delivery_postcode_encrypted")
+  pickupGeocodeId           String   @map("pickup_geocode_id")
+  deliveryGeocodeId         String   @map("delivery_geocode_id")
+  distanceKm                Decimal  @map("distance_km") @db.Decimal(18, 4)
+  durationSeconds           Int?     @map("duration_seconds")
+  provider                  String
+  providerRouteId           String?  @map("provider_route_id")
+  routeHash                 String   @unique @map("route_hash")
+  calculationMethod         String   @map("calculation_method")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
 
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  pickupGeocode   PostcodeGeocode @relation("PickupGeocode", fields: [pickupGeocodeId], references: [id])
-  deliveryGeocode PostcodeGeocode @relation("DeliveryGeocode", fields: [deliveryGeocodeId], references: [id])
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  pickupGeocode   PostcodeGeocode  @relation("PickupGeocode", fields: [pickupGeocodeId], references: [id])
+  deliveryGeocode PostcodeGeocode  @relation("DeliveryGeocode", fields: [deliveryGeocodeId], references: [id])
   activityRecords ActivityRecord[]
 
   @@index([organizationId, pickupPostcode, deliveryPostcode])
@@ -646,14 +724,14 @@ model EvidenceFile {
   uploadedByUserId String   @map("uploaded_by_user_id")
   createdAt        DateTime @default(now()) @map("created_at")
 
-  organization    Organization             @relation(fields: [organizationId], references: [id])
-  uploadedBy      User                     @relation(fields: [uploadedByUserId], references: [id])
-  recordEvidence      ActivityRecordEvidence[]
-  batchEvidence       ImportBatchEvidence[]
-  submissionFiles     FieldSubmissionFile[]
-  socialValueRecords  SocialValueRecord[]      @relation("SocialValueEvidence")
-  classifications     EvidenceClassification[]
-  ocrCorrections      OcrCorrection[]
+  organization       Organization             @relation(fields: [organizationId], references: [id])
+  uploadedBy         User                     @relation(fields: [uploadedByUserId], references: [id])
+  recordEvidence     ActivityRecordEvidence[]
+  batchEvidence      ImportBatchEvidence[]
+  submissionFiles    FieldSubmissionFile[]
+  socialValueRecords SocialValueRecord[]      @relation("SocialValueEvidence")
+  classifications    EvidenceClassification[]
+  ocrCorrections     OcrCorrection[]
 
   @@index([organizationId])
   @@map("evidence_files")
@@ -710,56 +788,61 @@ enum FieldDocumentType {
 }
 
 model FieldSubmission {
-  id                 String                @id @default(cuid())
-  organizationId     String                @map("organization_id")
-  reportingPeriodId  String                @map("reporting_period_id")
-  emissionCategoryId String?               @map("emission_category_id")
-  facilityId         String?               @map("facility_id")
-  submittedByUserId  String                @map("submitted_by_user_id")
-  documentType       FieldDocumentType     @map("document_type")
-  status             FieldSubmissionStatus @default(pending)
-  ocrExtractedData   Json?                 @map("ocr_extracted_data")
-  formData           Json                  @map("form_data")
-  gpsLat             Decimal?              @map("gps_lat") @db.Decimal(10, 7)
-  gpsLng             Decimal?              @map("gps_lng") @db.Decimal(10, 7)
-  pickupPostcode     String?               @map("pickup_postcode")
-  deliveryPostcode   String?               @map("delivery_postcode")
-  pickupLat          Decimal?              @map("pickup_lat") @db.Decimal(10, 7)
-  pickupLng          Decimal?              @map("pickup_lng") @db.Decimal(10, 7)
-  deliveryLat        Decimal?              @map("delivery_lat") @db.Decimal(10, 7)
-  deliveryLng        Decimal?              @map("delivery_lng") @db.Decimal(10, 7)
-  calculatedDistanceKm Decimal?            @map("calculated_distance_km") @db.Decimal(18, 4)
-  distanceSource     String?               @map("distance_source")
+  id                        String                @id @default(cuid())
+  organizationId            String                @map("organization_id")
+  reportingPeriodId         String                @map("reporting_period_id")
+  emissionCategoryId        String?               @map("emission_category_id")
+  facilityId                String?               @map("facility_id")
+  submittedByUserId         String                @map("submitted_by_user_id")
+  documentType              FieldDocumentType     @map("document_type")
+  status                    FieldSubmissionStatus @default(pending)
+  ocrExtractedData          Json?                 @map("ocr_extracted_data")
+  formData                  Json                  @map("form_data")
+  gpsLat                    Decimal?              @map("gps_lat") @db.Decimal(10, 7)
+  gpsLng                    Decimal?              @map("gps_lng") @db.Decimal(10, 7)
+  pickupPostcode            String?               @map("pickup_postcode")
+  deliveryPostcode          String?               @map("delivery_postcode")
+  pickupPostcodeEncrypted   Json?                 @map("pickup_postcode_encrypted")
+  deliveryPostcodeEncrypted Json?                 @map("delivery_postcode_encrypted")
+  pickupLat                 Decimal?              @map("pickup_lat") @db.Decimal(10, 7)
+  pickupLng                 Decimal?              @map("pickup_lng") @db.Decimal(10, 7)
+  deliveryLat               Decimal?              @map("delivery_lat") @db.Decimal(10, 7)
+  deliveryLng               Decimal?              @map("delivery_lng") @db.Decimal(10, 7)
+  calculatedDistanceKm      Decimal?              @map("calculated_distance_km") @db.Decimal(18, 4)
+  distanceSource            String?               @map("distance_source")
   // Postcode pipeline — server-side validation and OCR correction results
-  postcodeValidationStatus  String?         @map("postcode_validation_status")
-  deliveryPostcodeOriginal  String?         @map("delivery_postcode_original")
-  postcodeExtractionSource  String?         @map("postcode_extraction_source")
-  reviewNote           String?               @map("review_note")
-  reviewedByUserId     String?               @map("reviewed_by_user_id")
-  reviewedAt           DateTime?             @map("reviewed_at")
-  activityRecordId     String?               @map("activity_record_id")
-  resubmittedFromId    String?               @map("resubmitted_from_id")
-  siteId             String?               @map("site_id")
-  contractId         String?               @map("contract_id")
-  deviceSubmittedAt  DateTime?             @map("device_submitted_at")
-  idempotencyKey      String?               @map("idempotency_key")
-  createdAt          DateTime              @default(now()) @map("created_at")
-  updatedAt          DateTime              @updatedAt @map("updated_at")
+  postcodeValidationStatus  String?               @map("postcode_validation_status")
+  deliveryPostcodeOriginal  String?               @map("delivery_postcode_original")
+  postcodeExtractionSource  String?               @map("postcode_extraction_source")
+  reviewNote                String?               @map("review_note")
+  reviewedByUserId          String?               @map("reviewed_by_user_id")
+  reviewedAt                DateTime?             @map("reviewed_at")
+  activityRecordId          String?               @map("activity_record_id")
+  resubmittedFromId         String?               @map("resubmitted_from_id")
+  siteId                    String?               @map("site_id")
+  contractId                String?               @map("contract_id")
+  deviceSubmittedAt         DateTime?             @map("device_submitted_at")
+  requestedByDeadline       DateTime?             @map("requested_by_deadline")
+  submittedAt               DateTime?             @map("submitted_at")
+  idempotencyKey            String?               @map("idempotency_key")
+  createdAt                 DateTime              @default(now()) @map("created_at")
+  updatedAt                 DateTime              @updatedAt @map("updated_at")
 
-  organization     Organization       @relation(fields: [organizationId], references: [id])
-  reportingPeriod  ReportingPeriod    @relation(fields: [reportingPeriodId], references: [id])
-  emissionCategory EmissionCategory?  @relation(fields: [emissionCategoryId], references: [id])
-  facility         Facility?          @relation(fields: [facilityId], references: [id])
-  site             Site?              @relation("FieldSubmissionSite", fields: [siteId], references: [id], onDelete: SetNull)
-  contract         Contract?          @relation("FieldSubmissionContracts", fields: [contractId], references: [id], onDelete: SetNull)
-  submittedBy        User               @relation(fields: [submittedByUserId], references: [id])
-  resubmittedFrom    FieldSubmission?   @relation("FieldSubmissionResubmit", fields: [resubmittedFromId], references: [id])
-  resubmissions      FieldSubmission[]  @relation("FieldSubmissionResubmit")
-  files              FieldSubmissionFile[]
+  organization     Organization          @relation(fields: [organizationId], references: [id])
+  reportingPeriod  ReportingPeriod       @relation(fields: [reportingPeriodId], references: [id])
+  emissionCategory EmissionCategory?     @relation(fields: [emissionCategoryId], references: [id])
+  facility         Facility?             @relation(fields: [facilityId], references: [id])
+  site             Site?                 @relation("FieldSubmissionSite", fields: [siteId], references: [id], onDelete: SetNull)
+  contract         Contract?             @relation("FieldSubmissionContracts", fields: [contractId], references: [id], onDelete: SetNull)
+  submittedBy      User                  @relation(fields: [submittedByUserId], references: [id])
+  resubmittedFrom  FieldSubmission?      @relation("FieldSubmissionResubmit", fields: [resubmittedFromId], references: [id])
+  resubmissions    FieldSubmission[]     @relation("FieldSubmissionResubmit")
+  files            FieldSubmissionFile[]
 
+  @@unique([organizationId, submittedByUserId, idempotencyKey], map: "field_submission_idempotency_key")
   @@index([organizationId, status, createdAt])
   @@index([organizationId, submittedByUserId])
-  @@unique([organizationId, submittedByUserId, idempotencyKey], map: "field_submission_idempotency_key")
+  @@index([organizationId, requestedByDeadline, submittedAt])
   @@map("field_submissions")
 }
 
@@ -774,6 +857,52 @@ model FieldSubmissionFile {
 
   @@unique([fieldSubmissionId, evidenceFileId])
   @@map("field_submission_files")
+}
+
+// ─── Supplier Performance ────────────────────────────────────────────────────
+
+model SupplierPerformance {
+  id                   String   @id @default(cuid())
+  organizationId       String   @map("organization_id")
+  supplierId           String   @map("supplier_id") // References Organization.id (external supplier org)
+  submissionCount      Int      @default(0) @map("submission_count")
+  approvedCount        Int      @default(0) @map("approved_count")
+  rejectedCount        Int      @default(0) @map("rejected_count")
+  onTimeCount          Int      @default(0) @map("on_time_count")
+  completenessScore    Decimal? @map("completeness_score") @db.Decimal(5, 2)
+  dataQualityScore     Decimal? @map("data_quality_score") @db.Decimal(5, 2)
+  lastDataQualityTrend String?  @map("last_data_quality_trend") // "improving", "stable", "declining"
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  organization Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceOrg")
+  supplier     Organization                 @relation(fields: [supplierId], references: [id], onDelete: Cascade, name: "supplierPerformanceSupplier")
+  history      SupplierPerformanceHistory[]
+
+  @@unique([organizationId, supplierId])
+  @@index([organizationId])
+  @@index([organizationId, supplierId])
+  @@index([dataQualityScore(sort: Desc)])
+  @@index([submissionCount(sort: Desc)])
+  @@map("supplier_performance")
+}
+
+model SupplierPerformanceHistory {
+  id                    String   @id @default(cuid())
+  supplierPerformanceId String   @map("supplier_performance_id")
+  organizationId        String   @map("organization_id")
+  completenessScore     Decimal  @map("completeness_score") @db.Decimal(5, 2)
+  dataQualityScore      Decimal  @map("data_quality_score") @db.Decimal(5, 2)
+  submissionCount       Int      @map("submission_count")
+  approvedCount         Int      @map("approved_count")
+  recordedAt            DateTime @default(now()) @map("recorded_at")
+
+  supplierPerformance SupplierPerformance @relation(fields: [supplierPerformanceId], references: [id], onDelete: Cascade)
+  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierPerformanceHistoryOrg")
+
+  @@index([supplierPerformanceId, recordedAt(sort: Desc)])
+  @@index([organizationId, recordedAt(sort: Desc)])
+  @@map("supplier_performance_history")
 }
 
 // ─── Emission Factors ─────────────────────────────────────────────────────────
@@ -813,9 +942,9 @@ model EmissionFactor {
   uncertaintyRating  String?   @map("uncertainty_rating")
   usageNotes         String?   @map("usage_notes")
 
-  factorLibrary  FactorLibrary         @relation(fields: [factorLibraryId], references: [id])
-  emissionCategory EmissionCategory?   @relation(fields: [emissionCategoryId], references: [id])
-  calculations   EmissionCalculation[]
+  factorLibrary    FactorLibrary         @relation(fields: [factorLibraryId], references: [id])
+  emissionCategory EmissionCategory?     @relation(fields: [emissionCategoryId], references: [id])
+  calculations     EmissionCalculation[]
 
   @@index([scope, emissionCategoryId, geographyCountry, effectiveStartDate, effectiveEndDate])
   @@map("emission_factors")
@@ -862,6 +991,7 @@ model CalculationRun {
   triggeredBy        User                  @relation(fields: [triggeredByUserId], references: [id])
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
+  scenarioRuns       ScenarioRun[]
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -869,34 +999,37 @@ model CalculationRun {
 
 // Immutable — never update rows in this table
 model EmissionCalculation {
-  id                     String   @id @default(cuid())
-  organizationId         String   @map("organization_id")
-  activityRecordId       String   @map("activity_record_id")
-  calculationRunId       String   @map("calculation_run_id")
+  id                      String   @id @default(cuid())
+  organizationId          String   @map("organization_id")
+  activityRecordId        String   @map("activity_record_id")
+  calculationRunId        String   @map("calculation_run_id")
   /// Null when no matching factor existed — the record is included with
   /// totalCo2e 0 and a warning instead of failing the whole run.
-  emissionFactorId       String?  @map("emission_factor_id")
-  factorLibraryId        String   @map("factor_library_id")
-  factorLibraryVersion   String   @map("factor_library_version")
-  methodologyVersionName String   @map("methodology_version_name")
-  originalAmount         Decimal  @map("original_amount") @db.Decimal(18, 6)
-  originalUnit           String   @map("original_unit")
-  normalizedAmount       Decimal  @map("normalized_amount") @db.Decimal(18, 6)
-  normalizedUnit         String   @map("normalized_unit")
-  co2                    Decimal? @db.Decimal(18, 8)
-  ch4                    Decimal? @db.Decimal(18, 8)
-  n2o                    Decimal? @db.Decimal(18, 8)
-  biogenicCo2e           Decimal? @map("biogenic_co2e") @db.Decimal(18, 8)
-  totalCo2e              Decimal  @map("total_co2e") @db.Decimal(18, 8)
-  selectionReason        String?  @map("selection_reason")
-  factorValue            Decimal? @map("factor_value") @db.Decimal(18, 8)
-  formula                String
-  warnings               Json     @default("[]")
-  createdAt              DateTime @default(now()) @map("created_at")
+  emissionFactorId        String?  @map("emission_factor_id")
+  factorLibraryId         String   @map("factor_library_id")
+  factorLibraryVersion    String   @map("factor_library_version")
+  methodologyVersionName  String   @map("methodology_version_name")
+  originalAmount          Decimal  @map("original_amount") @db.Decimal(18, 6)
+  originalUnit            String   @map("original_unit")
+  normalizedAmount        Decimal  @map("normalized_amount") @db.Decimal(18, 6)
+  normalizedUnit          String   @map("normalized_unit")
+  co2                     Decimal? @db.Decimal(18, 8)
+  ch4                     Decimal? @db.Decimal(18, 8)
+  n2o                     Decimal? @db.Decimal(18, 8)
+  biogenicCo2e            Decimal? @map("biogenic_co2e") @db.Decimal(18, 8)
+  totalCo2e               Decimal  @map("total_co2e") @db.Decimal(18, 8)
+  selectionReason         String?  @map("selection_reason")
+  factorValue             Decimal? @map("factor_value") @db.Decimal(18, 8)
+  formula                 String
+  warnings                Json     @default("[]")
+  dataQualityScore        Int      @default(50) @map("data_quality_score")
+  confidenceIntervalLower Decimal? @map("confidence_interval_lower") @db.Decimal(18, 8)
+  confidenceIntervalUpper Decimal? @map("confidence_interval_upper") @db.Decimal(18, 8)
+  createdAt               DateTime @default(now()) @map("created_at")
 
-  activityRecord  ActivityRecord     @relation(fields: [activityRecordId], references: [id])
-  calculationRun  CalculationRun     @relation(fields: [calculationRunId], references: [id])
-  emissionFactor  EmissionFactor?    @relation(fields: [emissionFactorId], references: [id])
+  activityRecord     ActivityRecord     @relation(fields: [activityRecordId], references: [id])
+  calculationRun     CalculationRun     @relation(fields: [calculationRunId], references: [id])
+  emissionFactor     EmissionFactor?    @relation(fields: [emissionFactorId], references: [id])
   methodologyVersion MethodologyVersion @relation(fields: [methodologyVersionName], references: [name])
 
   @@index([calculationRunId])
@@ -905,16 +1038,16 @@ model EmissionCalculation {
 }
 
 model PublishedSnapshot {
-  id                     String                       @id @default(cuid())
-  organizationId         String                       @map("organization_id")
-  reportingPeriodId      String                       @map("reporting_period_id")
-  calculationRunId       String                       @map("calculation_run_id")
-  publishedByUserId      String                       @map("published_by_user_id")
-  publishedAt            DateTime                     @default(now()) @map("published_at")
-  version                Int                          @default(1)
-  verificationStatus     SnapshotVerificationStatus   @default(pending_review) @map("verification_status")
-  verifiedByUserId       String?                      @map("verified_by_user_id")
-  verifiedAt             DateTime?                    @map("verified_at")
+  id                 String                     @id @default(cuid())
+  organizationId     String                     @map("organization_id")
+  reportingPeriodId  String                     @map("reporting_period_id")
+  calculationRunId   String                     @map("calculation_run_id")
+  publishedByUserId  String                     @map("published_by_user_id")
+  publishedAt        DateTime                   @default(now()) @map("published_at")
+  version            Int                        @default(1)
+  verificationStatus SnapshotVerificationStatus @default(pending_review) @map("verification_status")
+  verifiedByUserId   String?                    @map("verified_by_user_id")
+  verifiedAt         DateTime?                  @map("verified_at")
 
   organization    Organization         @relation(fields: [organizationId], references: [id])
   reportingPeriod ReportingPeriod      @relation(fields: [reportingPeriodId], references: [id])
@@ -923,34 +1056,125 @@ model PublishedSnapshot {
   verifiedBy      User?                @relation("SnapshotVerifiedBy", fields: [verifiedByUserId], references: [id])
   aggregates      DashboardAggregate[]
   reports         Report[]
+  assurance       SnapshotAssurance?
 
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, verificationStatus])
   @@map("published_snapshots")
 }
 
+// ─── Auditor Assurance & Sign-Off ─────────────────────────────────────────────
+
+model SnapshotAssurance {
+  id              String          @id @default(cuid())
+  organizationId  String          @map("organization_id")
+  snapshotId      String          @unique @map("snapshot_id")
+  auditorUserId   String          @map("auditor_user_id")
+  status          AssuranceStatus @default(pending) // pending | approved | rejected
+  notes           String?
+  signatureBase64 String?         @map("signature_base64") // Optional e-signature data
+  signedAt        DateTime?       @map("signed_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  snapshot     PublishedSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  auditor      User              @relation("SnapshotAuditor", fields: [auditorUserId], references: [id])
+
+  @@index([organizationId, status])
+  @@index([auditorUserId, status])
+  @@map("snapshot_assurances")
+}
+
+enum AssuranceStatus {
+  pending
+  approved
+  rejected
+
+  @@map("assurance_status")
+}
+
+// ─── Scenario / What-If Modeling ──────────────────────────────────────────────
+// Ephemeral calculation runs with hypothetical data modifications.
+// Never persist to committed EmissionCalculation — only to ScenarioDraft for preview.
+
+model ScenarioRun {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  calculationRunId String   @map("calculation_run_id")
+  createdByUserId  String   @map("created_by_user_id")
+  /// Expiration timestamp — scenarios older than 1 hour are auto-purged
+  expiresAt        DateTime @map("expires_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  calculationRun CalculationRun  @relation(fields: [calculationRunId], references: [id])
+  createdBy      User            @relation("ScenarioRunsCreated", fields: [createdByUserId], references: [id])
+  drafts         ScenarioDraft[]
+
+  @@index([organizationId, expiresAt])
+  @@map("scenario_runs")
+}
+
+// Hypothetical calculation result — mirrors EmissionCalculation shape but never persisted
+model ScenarioDraft {
+  id                      String   @id @default(cuid())
+  organizationId          String   @map("organization_id")
+  scenarioRunId           String   @map("scenario_run_id")
+  activityRecordId        String   @map("activity_record_id")
+  emissionFactorId        String?  @map("emission_factor_id")
+  originalAmount          Decimal  @map("original_amount") @db.Decimal(18, 6)
+  originalUnit            String   @map("original_unit")
+  normalizedAmount        Decimal  @map("normalized_amount") @db.Decimal(18, 6)
+  normalizedUnit          String   @map("normalized_unit")
+  co2                     Decimal? @db.Decimal(18, 8)
+  ch4                     Decimal? @db.Decimal(18, 8)
+  n2o                     Decimal? @db.Decimal(18, 8)
+  totalCo2e               Decimal  @map("total_co2e") @db.Decimal(18, 8)
+  selectionReason         String?  @map("selection_reason")
+  factorValue             Decimal? @map("factor_value") @db.Decimal(18, 8)
+  formula                 String
+  warnings                Json     @default("[]")
+  dataQualityScore        Int      @default(50) @map("data_quality_score")
+  confidenceIntervalLower Decimal? @map("confidence_interval_lower") @db.Decimal(18, 8)
+  confidenceIntervalUpper Decimal? @map("confidence_interval_upper") @db.Decimal(18, 8)
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  scenarioRun    ScenarioRun    @relation(fields: [scenarioRunId], references: [id], onDelete: Cascade)
+  activityRecord ActivityRecord @relation("ScenarioDraftActivityRecord", fields: [activityRecordId], references: [id])
+
+  @@index([scenarioRunId])
+  @@index([organizationId])
+  @@map("scenario_drafts")
+}
+
 // ─── Dashboard Aggregates ─────────────────────────────────────────────────────
 
 // Rebuilt after each calculation run — never query EmissionCalculation for dashboards
 model DashboardAggregate {
-  id                 String   @id @default(cuid())
-  organizationId     String   @map("organization_id")
-  reportingPeriodId  String   @map("reporting_period_id")
-  snapshotId         String?  @map("snapshot_id")
-  scope              Int
-  emissionCategoryId String?  @map("emission_category_id")
-  facilityId         String?  @map("facility_id")
-  businessUnitId     String?  @map("business_unit_id")
-  totalCo2e          Decimal  @map("total_co2e") @db.Decimal(18, 8)
-  recordCount        Int      @map("record_count")
-  createdAt          DateTime @default(now()) @map("created_at")
+  id                      String        @id @default(cuid())
+  organizationId          String        @map("organization_id")
+  reportingPeriodId       String        @map("reporting_period_id")
+  snapshotId              String?       @map("snapshot_id")
+  scope                   Int
+  emissionCategoryId      String?       @map("emission_category_id")
+  facilityId              String?       @map("facility_id")
+  businessUnitId          String?       @map("business_unit_id")
+  scope2Method            Scope2Method? @map("scope2_method")
+  totalCo2e               Decimal       @map("total_co2e") @db.Decimal(18, 8)
+  recordCount             Int           @map("record_count")
+  /// Carbon intensity metrics: CO2e per unit of reference value
+  intensityPerRevenueUnit Decimal?      @map("intensity_per_revenue_unit") @db.Decimal(18, 8)
+  intensityPerFte         Decimal?      @map("intensity_per_fte") @db.Decimal(18, 8)
+  intensityPerM2          Decimal?      @map("intensity_per_m2") @db.Decimal(18, 8)
+  createdAt               DateTime      @default(now()) @map("created_at")
 
-  organization     Organization      @relation(fields: [organizationId], references: [id])
-  reportingPeriod  ReportingPeriod   @relation(fields: [reportingPeriodId], references: [id])
+  organization     Organization       @relation(fields: [organizationId], references: [id])
+  reportingPeriod  ReportingPeriod    @relation(fields: [reportingPeriodId], references: [id])
   snapshot         PublishedSnapshot? @relation(fields: [snapshotId], references: [id])
-  emissionCategory EmissionCategory? @relation(fields: [emissionCategoryId], references: [id])
-  facility         Facility?         @relation(fields: [facilityId], references: [id])
-  businessUnit     BusinessUnit?     @relation(fields: [businessUnitId], references: [id])
+  emissionCategory EmissionCategory?  @relation(fields: [emissionCategoryId], references: [id])
+  facility         Facility?          @relation(fields: [facilityId], references: [id])
+  businessUnit     BusinessUnit?      @relation(fields: [businessUnitId], references: [id])
 
   @@index([organizationId, reportingPeriodId, snapshotId])
   @@index([organizationId, snapshotId, scope])
@@ -997,20 +1221,20 @@ enum InitiativeStatus {
 }
 
 model ReductionInitiative {
-  id                  String           @id @default(cuid())
-  organizationId      String           @map("organization_id")
-  name                String
-  ownerUserId         String?          @map("owner_user_id")
-  status              InitiativeStatus @default(planned)
-  costAmount          Decimal?         @map("cost_amount") @db.Decimal(18, 2)
-  costCurrency        String?          @map("cost_currency")
-  expectedImpactCo2e  Decimal?         @map("expected_impact_co2e") @db.Decimal(18, 4)
-  expectedStartDate   DateTime?        @map("expected_start_date") @db.Date
-  notes               String?
-  methodology         String?          @map("methodology")
-  createdByUserId     String           @map("created_by_user_id")
-  createdAt           DateTime         @default(now()) @map("created_at")
-  updatedAt           DateTime         @updatedAt @map("updated_at")
+  id                 String           @id @default(cuid())
+  organizationId     String           @map("organization_id")
+  name               String
+  ownerUserId        String?          @map("owner_user_id")
+  status             InitiativeStatus @default(planned)
+  costAmount         Decimal?         @map("cost_amount") @db.Decimal(18, 2)
+  costCurrency       String?          @map("cost_currency")
+  expectedImpactCo2e Decimal?         @map("expected_impact_co2e") @db.Decimal(18, 4)
+  expectedStartDate  DateTime?        @map("expected_start_date") @db.Date
+  notes              String?
+  methodology        String?          @map("methodology")
+  createdByUserId    String           @map("created_by_user_id")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id])
   owner        User?        @relation("InitiativeOwner", fields: [ownerUserId], references: [id])
@@ -1074,12 +1298,32 @@ model Report {
 
   organization    Organization      @relation(fields: [organizationId], references: [id])
   reportingPeriod ReportingPeriod   @relation(fields: [reportingPeriodId], references: [id])
-  snapshot        PublishedSnapshot  @relation(fields: [snapshotId], references: [id])
+  snapshot        PublishedSnapshot @relation(fields: [snapshotId], references: [id])
   createdBy       User              @relation(fields: [createdByUserId], references: [id])
   contract        Contract?         @relation("ContractReports", fields: [contractId], references: [id], onDelete: SetNull)
 
+  verificationTokens ReportVerificationToken[]
+
   @@index([organizationId, reportingPeriodId, status])
   @@map("reports")
+}
+
+model ReportVerificationToken {
+  id             String   @id @default(cuid())
+  reportId       String   @map("report_id")
+  organizationId String   @map("organization_id")
+  token          String   @unique @default(cuid())
+  expiresAt      DateTime @map("expires_at")
+  accessCount    Int      @default(0) @map("access_count")
+  maxAccessCount Int?     @map("max_access_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  report       Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId])
+  @@index([organizationId, expiresAt])
+  @@map("report_verification_tokens")
 }
 
 // ─── Collaboration & Audit ────────────────────────────────────────────────────
@@ -1148,6 +1392,54 @@ model Comment {
   @@map("comments")
 }
 
+enum DsarRequestType {
+  export
+  erasure
+
+  @@map("dsar_request_type")
+}
+
+enum DsarRequestStatus {
+  pending
+  processing
+  completed
+  failed
+  rejected
+
+  @@map("dsar_request_status")
+}
+
+// Data Subject Access Requests (UK GDPR Art. 15 export / Art. 17 erasure).
+// Not organization-scoped in the usual multi-tenant sense — a subject's
+// data can span multiple orgs they're a member of, so organizationId is
+// optional context (e.g. an org-admin-initiated request on a field
+// worker's behalf), not the primary scope. See lib/compliance/pii-registry.ts.
+model DsarRequest {
+  id                String            @id @default(cuid())
+  userId            String            @map("user_id")
+  organizationId    String?           @map("organization_id")
+  type              DsarRequestType
+  status            DsarRequestStatus @default(pending)
+  requestedAt       DateTime          @default(now()) @map("requested_at")
+  // One calendar month from requestedAt (Art. 12(3) GDPR SLA), computed at
+  // creation time — see app/api/account/dsar/route.ts.
+  dueBy             DateTime          @map("due_by")
+  completedAt       DateTime?         @map("completed_at")
+  resultStorageKey  String?           @map("result_storage_key")
+  requestedByUserId String            @map("requested_by_user_id")
+  notes             String?
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  user            User          @relation("DsarSubject", fields: [userId], references: [id])
+  requestedByUser User          @relation("DsarRequestedBy", fields: [requestedByUserId], references: [id])
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([status, dueBy])
+  @@index([userId])
+  @@map("dsar_requests")
+}
+
 // Append-only — never update or delete rows
 model AuditLog {
   id             String   @id @default(cuid())
@@ -1157,13 +1449,25 @@ model AuditLog {
   resourceType   String   @map("resource_type")
   resourceId     String   @map("resource_id")
   metadata       Json     @default("{}")
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  // Hash chain: previousHash links to the prior row's hash within the same
+  // organization, and hash covers this row's own fields. Writes are
+  // serialized per-organization (pg advisory lock in writeAuditLog()) so the
+  // chain can't fork under concurrent writes. chainSeq gives a deterministic
+  // "latest row" ordering that doesn't depend on createdAt tie-breaking.
+  previousHash   String?  @map("previous_hash")
+  hash           String?  @map("hash")
+  chainSeq       BigInt   @default(autoincrement()) @map("chain_seq")
   createdAt      DateTime @default(now()) @map("created_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  actor        User?        @relation(fields: [actorUserId], references: [id])
+  organization  Organization   @relation(fields: [organizationId], references: [id])
+  actor         User?          @relation(fields: [actorUserId], references: [id])
+  auditContexts AuditContext[] @relation("AuditContexts")
 
   @@index([organizationId, resourceType, resourceId])
   @@index([organizationId, createdAt])
+  @@index([organizationId, chainSeq])
   @@map("audit_logs")
 }
 
@@ -1179,33 +1483,33 @@ enum ContractStatus {
 }
 
 model Contract {
-  id                    String         @id @default(cuid())
-  organizationId        String         @map("organization_id")
-  businessUnitId        String?        @map("business_unit_id")
-  name                  String
-  clientName            String?        @map("client_name")
-  contractReference     String?        @map("contract_reference")
-  contractValue         Decimal?       @map("contract_value") @db.Decimal(18, 2)
-  currency              String         @default("GBP")
-  startDate             DateTime?      @map("start_date") @db.Date
-  endDate               DateTime?      @map("end_date") @db.Date
-  ppn0621Required       Boolean        @default(false) @map("ppn0621_required")
-  nhsEvergreenRequired  Boolean        @default(false) @map("nhs_evergreen_required")
-  breeamRequired        Boolean        @default(false) @map("breeam_required")
-  status                ContractStatus @default(active)
-  notes                 String?
-  createdByUserId       String         @map("created_by_user_id")
-  createdAt             DateTime       @default(now()) @map("created_at")
-  updatedAt             DateTime       @updatedAt @map("updated_at")
+  id                   String         @id @default(cuid())
+  organizationId       String         @map("organization_id")
+  businessUnitId       String?        @map("business_unit_id")
+  name                 String
+  clientName           String?        @map("client_name")
+  contractReference    String?        @map("contract_reference")
+  contractValue        Decimal?       @map("contract_value") @db.Decimal(18, 2)
+  currency             String         @default("GBP")
+  startDate            DateTime?      @map("start_date") @db.Date
+  endDate              DateTime?      @map("end_date") @db.Date
+  ppn0621Required      Boolean        @default(false) @map("ppn0621_required")
+  nhsEvergreenRequired Boolean        @default(false) @map("nhs_evergreen_required")
+  breeamRequired       Boolean        @default(false) @map("breeam_required")
+  status               ContractStatus @default(active)
+  notes                String?
+  createdByUserId      String         @map("created_by_user_id")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
 
-  organization       Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  businessUnit       BusinessUnit?        @relation(fields: [businessUnitId], references: [id], onDelete: SetNull)
-  createdBy          User                 @relation("ContractCreator", fields: [createdByUserId], references: [id])
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  businessUnit       BusinessUnit?       @relation(fields: [businessUnitId], references: [id], onDelete: SetNull)
+  createdBy          User                @relation("ContractCreator", fields: [createdByUserId], references: [id])
   projects           Project[]
   socialValueRecords SocialValueRecord[]
   socialValueTargets SocialValueTarget[]
-  reports            Report[]             @relation("ContractReports")
-  fieldSubmissions   FieldSubmission[]    @relation("FieldSubmissionContracts")
+  reports            Report[]            @relation("ContractReports")
+  fieldSubmissions   FieldSubmission[]   @relation("FieldSubmissionContracts")
 
   @@index([organizationId, status])
   @@index([organizationId, businessUnitId])
@@ -1234,12 +1538,13 @@ model Project {
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
 
-  contract     Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  organization Organization @relation("OrgProjects", fields: [organizationId], references: [id], onDelete: Cascade)
-  sites        Site[]
+  contract              Contract                @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  organization          Organization            @relation("OrgProjects", fields: [organizationId], references: [id], onDelete: Cascade)
+  sites                 Site[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
-  carbonBudget  CarbonBudget?
-  wasteRecords  WasteRecord[]
+  carbonBudget          CarbonBudget?
+  wasteRecords          WasteRecord[]
+  roleAssignments       ProjectRoleAssignment[]
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -1258,11 +1563,11 @@ model Site {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  organization     Organization      @relation("OrgSites", fields: [organizationId], references: [id], onDelete: Cascade)
-  activityRecords  ActivityRecord[]
-  fieldSubmissions FieldSubmission[] @relation("FieldSubmissionSite")
-  inviteLinks      InviteLink[]
+  project           Project                     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization      Organization                @relation("OrgSites", fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecords   ActivityRecord[]
+  fieldSubmissions  FieldSubmission[]           @relation("FieldSubmissionSite")
+  inviteLinks       InviteLink[]
   workerAssignments FieldWorkerSiteAssignment[]
 
   @@index([organizationId, projectId])
@@ -1291,9 +1596,9 @@ model FieldWorkerSiteAssignment {
 // ─── Social Value Engine (National TOMS) ─────────────────────────────────────
 
 model SocialValueTheme {
-  id       String @id @default(cuid())
-  code     String @unique  // T1, T2, T3, T4, T5
-  name     String          // "Jobs & Skills", "Growth", etc.
+  id        String @id @default(cuid())
+  code      String @unique // T1, T2, T3, T4, T5
+  name      String // "Jobs & Skills", "Growth", etc.
   sortOrder Int    @default(0) @map("sort_order")
 
   measures SocialValueMeasure[]
@@ -1302,14 +1607,14 @@ model SocialValueTheme {
 }
 
 model SocialValueMeasure {
-  id            String  @id @default(cuid())
-  themeId       String  @map("theme_id")
-  tomsCode      String  @unique @map("toms_code")  // T1/M1, T1/M2, …
-  name          String
-  unit          String  // "FTE", "hours", "£", "starts", "tonnes"
-  valuePerUnit  Decimal @map("value_per_unit") @db.Decimal(18, 2)
-  notes         String?
-  active        Boolean @default(true)
+  id           String  @id @default(cuid())
+  themeId      String  @map("theme_id")
+  tomsCode     String  @unique @map("toms_code") // T1/M1, T1/M2, …
+  name         String
+  unit         String // "FTE", "hours", "£", "starts", "tonnes"
+  valuePerUnit Decimal @map("value_per_unit") @db.Decimal(18, 2)
+  notes        String?
+  active       Boolean @default(true)
 
   theme   SocialValueTheme    @relation(fields: [themeId], references: [id])
   records SocialValueRecord[]
@@ -1389,7 +1694,7 @@ model EvidenceClassification {
   evidenceFileId   String       @map("evidence_file_id")
   documentType     DocumentType @map("document_type")
   confidenceScore  Int          @map("confidence_score") // 0–100
-  extractedFields  Json         @map("extracted_fields")  // OcrExtractionResult JSON
+  extractedFields  Json         @map("extracted_fields") // OcrExtractionResult JSON
   modelVersion     String       @map("model_version")
   reviewedByUserId String?      @map("reviewed_by_user_id")
   reviewedAt       DateTime?    @map("reviewed_at")
@@ -1404,16 +1709,16 @@ model EvidenceClassification {
 }
 
 model OcrCorrection {
-  id               String   @id @default(cuid())
-  evidenceFileId   String   @map("evidence_file_id")
-  fieldName        String   @map("field_name")
-  originalValue    String?  @map("original_value")
-  correctedValue   String   @map("corrected_value")
-  correctedByUserId String  @map("corrected_by_user_id")
-  createdAt        DateTime @default(now()) @map("created_at")
+  id                String   @id @default(cuid())
+  evidenceFileId    String   @map("evidence_file_id")
+  fieldName         String   @map("field_name")
+  originalValue     String?  @map("original_value")
+  correctedValue    String   @map("corrected_value")
+  correctedByUserId String   @map("corrected_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
 
-  evidenceFile  EvidenceFile @relation(fields: [evidenceFileId], references: [id], onDelete: Cascade)
-  correctedBy   User         @relation("OcrCorrectionBy", fields: [correctedByUserId], references: [id])
+  evidenceFile EvidenceFile @relation(fields: [evidenceFileId], references: [id], onDelete: Cascade)
+  correctedBy  User         @relation("OcrCorrectionBy", fields: [correctedByUserId], references: [id])
 
   @@index([evidenceFileId])
   @@map("ocr_corrections")
@@ -1425,7 +1730,7 @@ model DeviceToken {
   id        String   @id @default(cuid())
   userId    String   @map("user_id")
   token     String   @unique
-  platform  String   // "android" | "ios"
+  platform  String // "android" | "ios"
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -1438,18 +1743,18 @@ model DeviceToken {
 // ─── Webhooks ─────────────────────────────────────────────────────────────────
 
 model Webhook {
-  id             String    @id @default(cuid())
-  organizationId String    @map("organization_id")
-  url            String
-  secret         String
-  events         String[]  // e.g. ["calculation_run.completed", "report.ready"]
-  enabled        Boolean   @default(true)
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  url             String
+  secret          String
+  events          String[] // e.g. ["calculation_run.completed", "report.ready"]
+  enabled         Boolean  @default(true)
   createdByUserId String   @map("created_by_user_id")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  createdBy    User         @relation("WebhookCreator", fields: [createdByUserId], references: [id])
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  createdBy    User              @relation("WebhookCreator", fields: [createdByUserId], references: [id])
   deliveries   WebhookDelivery[]
 
   @@index([organizationId])
@@ -1457,14 +1762,14 @@ model Webhook {
 }
 
 model WebhookDelivery {
-  id          String   @id @default(cuid())
-  webhookId   String   @map("webhook_id")
+  id          String    @id @default(cuid())
+  webhookId   String    @map("webhook_id")
   event       String
   payload     Json
-  statusCode  Int?     @map("status_code")
-  attempts    Int      @default(0)
+  statusCode  Int?      @map("status_code")
+  attempts    Int       @default(0)
   succeededAt DateTime? @map("succeeded_at")
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
@@ -1488,22 +1793,22 @@ model RateLimitBucket {
 // Global material library — seeded from ICE/CarboLifeCalc/RICS data.
 // GWP values in kgCO2e per kg unless unit specified otherwise.
 model EmbodiedMaterial {
-  id              String   @id @default(cuid())
-  name            String   @unique
-  category        String   // e.g. "concrete", "steel", "timber", "insulation"
-  description     String?
+  id           String   @id @default(cuid())
+  name         String   @unique
+  category     String // e.g. "concrete", "steel", "timber", "insulation"
+  description  String?
   // Lifecycle stage GWP factors (kgCO2e / declared unit)
-  gwpA1A3         Float    @map("gwp_a1_a3")  // cradle to gate (required)
-  gwpA4           Float?   @map("gwp_a4")     // transport to site
-  gwpA5           Float?   @map("gwp_a5")     // installation
-  gwpC1C4         Float?   @map("gwp_c1_c4")  // end of life
-  gwpD            Float?   @map("gwp_d")      // beyond system boundary (reuse/recycling)
-  declaredUnit    String   @default("kg") @map("declared_unit") // kg | m3 | m2
-  density         Float?   // kg/m3 — used to convert volume → mass
-  source          String   @default("ICE v3.0") // data source
-  sourceUrl       String?  @map("source_url")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  gwpA1A3      Float    @map("gwp_a1_a3") // cradle to gate (required)
+  gwpA4        Float?   @map("gwp_a4") // transport to site
+  gwpA5        Float?   @map("gwp_a5") // installation
+  gwpC1C4      Float?   @map("gwp_c1_c4") // end of life
+  gwpD         Float?   @map("gwp_d") // beyond system boundary (reuse/recycling)
+  declaredUnit String   @default("kg") @map("declared_unit") // kg | m3 | m2
+  density      Float? // kg/m3 — used to convert volume → mass
+  source       String   @default("ICE v3.0") // data source
+  sourceUrl    String?  @map("source_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   epdRecords    EpdRecord[]
   carbonRecords EmbodiedCarbonRecord[]
@@ -1514,27 +1819,27 @@ model EmbodiedMaterial {
 // Organisation-specific EPD (Environmental Product Declaration) uploads.
 // Overrides the global material factor for that org.
 model EpdRecord {
-  id              String   @id @default(cuid())
-  organizationId  String   @map("organization_id")
-  materialId      String?  @map("material_id")   // null = custom material not in global lib
-  productName     String   @map("product_name")
-  manufacturer    String?
-  validFrom       DateTime? @map("valid_from")
-  validUntil      DateTime? @map("valid_until")
-  gwpA1A3         Float    @map("gwp_a1_a3")
-  gwpA4           Float?   @map("gwp_a4")
-  gwpA5           Float?   @map("gwp_a5")
-  gwpC1C4         Float?   @map("gwp_c1_c4")
-  gwpD            Float?   @map("gwp_d")
-  declaredUnit      String   @default("kg") @map("declared_unit")
-  storageKey        String?  @map("storage_key")   // PDF stored in R2/db
-  submittedByUserId String?  @map("submitted_by_user_id")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  materialId        String?   @map("material_id") // null = custom material not in global lib
+  productName       String    @map("product_name")
+  manufacturer      String?
+  validFrom         DateTime? @map("valid_from")
+  validUntil        DateTime? @map("valid_until")
+  gwpA1A3           Float     @map("gwp_a1_a3")
+  gwpA4             Float?    @map("gwp_a4")
+  gwpA5             Float?    @map("gwp_a5")
+  gwpC1C4           Float?    @map("gwp_c1_c4")
+  gwpD              Float?    @map("gwp_d")
+  declaredUnit      String    @default("kg") @map("declared_unit")
+  storageKey        String?   @map("storage_key") // PDF stored in R2/db
+  submittedByUserId String?   @map("submitted_by_user_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  organization  Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  material      EmbodiedMaterial? @relation(fields: [materialId], references: [id])
-  submittedBy   User?            @relation("EpdSubmittedBy", fields: [submittedByUserId], references: [id])
+  organization  Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  material      EmbodiedMaterial?      @relation(fields: [materialId], references: [id])
+  submittedBy   User?                  @relation("EpdSubmittedBy", fields: [submittedByUserId], references: [id])
   carbonRecords EmbodiedCarbonRecord[]
 
   @@index([organizationId])
@@ -1543,26 +1848,26 @@ model EpdRecord {
 
 // Per-project embodied carbon record — each material quantity on a project.
 model EmbodiedCarbonRecord {
-  id               String   @id @default(cuid())
-  organizationId   String   @map("organization_id")
-  projectId        String?  @map("project_id")
-  reportingPeriodId String? @map("reporting_period_id")
-  materialId       String?  @map("material_id")
-  epdId            String?  @map("epd_id")        // EPD overrides global material
-  description      String?
-  quantity         Float
-  unit             String   @default("kg")
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  projectId         String?  @map("project_id")
+  reportingPeriodId String?  @map("reporting_period_id")
+  materialId        String?  @map("material_id")
+  epdId             String?  @map("epd_id") // EPD overrides global material
+  description       String?
+  quantity          Float
+  unit              String   @default("kg")
   // Computed outputs (stored for audit trail)
-  gwpA1A3Used      Float    @map("gwp_a1_a3_used")
-  gwpA4Used        Float?   @map("gwp_a4_used")
-  totalKgCo2e      Float    @map("total_kg_co2e")
-  lifecycleStages  String[] @map("lifecycle_stages") // ["A1-A3","A4","A5"]
-  source           String   @default("manual") // manual | ocr | import
-  fieldSubmissionId String? @map("field_submission_id")
-  notes            String?
-  createdByUserId  String   @map("created_by_user_id")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  gwpA1A3Used       Float    @map("gwp_a1_a3_used")
+  gwpA4Used         Float?   @map("gwp_a4_used")
+  totalKgCo2e       Float    @map("total_kg_co2e")
+  lifecycleStages   String[] @map("lifecycle_stages") // ["A1-A3","A4","A5"]
+  source            String   @default("manual") // manual | ocr | import
+  fieldSubmissionId String?  @map("field_submission_id")
+  notes             String?
+  createdByUserId   String   @map("created_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   project         Project?          @relation(fields: [projectId], references: [id])
@@ -1600,19 +1905,46 @@ model ApiKey {
 // ─── Billing ──────────────────────────────────────────────────────────────────
 
 model BillingSubscription {
-  id             String    @id @default(cuid())
-  organizationId String    @unique @map("organization_id")
-  plan           String    @default("trial")
-  status         String    @default("active")
-  trialEndsAt    DateTime? @map("trial_ends_at")
-  currentPeriodStart DateTime @default(now()) @map("current_period_start")
-  currentPeriodEnd   DateTime @map("current_period_end")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id                     String    @id @default(cuid())
+  organizationId         String    @unique @map("organization_id")
+  plan                   String    @default("trial")
+  status                 String    @default("active")
+  trialEndsAt            DateTime? @map("trial_ends_at")
+  currentPeriodStart     DateTime  @default(now()) @map("current_period_start")
+  currentPeriodEnd       DateTime  @map("current_period_end")
+  stripeCustomerId       String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId   String?   @map("stripe_subscription_id")
+  defaultPaymentMethodId String?   @map("default_payment_method_id")
+  lastPaymentStatus      String?   @map("last_payment_status")
+  lastPaymentDate        DateTime? @map("last_payment_date")
+  nextBillingDate        DateTime? @map("next_billing_date")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  paymentMethods PaymentMethod[]
 
   @@map("billing_subscriptions")
+}
+
+model PaymentMethod {
+  id                    String   @id @default(cuid())
+  organizationId        String   @map("organization_id")
+  billingSubscriptionId String   @map("billing_subscription_id")
+  stripePaymentMethodId String   @unique @map("stripe_payment_method_id")
+  brand                 String
+  last4                 String
+  expiryMonth           Int      @map("expiry_month")
+  expiryYear            Int      @map("expiry_year")
+  isDefault             Boolean  @default(false) @map("is_default")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  billingSubscription BillingSubscription @relation(fields: [billingSubscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([billingSubscriptionId])
+  @@map("payment_methods")
 }
 
 model UsageEvent {
@@ -1632,22 +1964,22 @@ model UsageEvent {
 // ─── Carbon Offsets ──────────────────────────────────────────────────────────
 
 model CarbonOffset {
-  id             String    @id @default(cuid())
-  organizationId String    @map("organization_id")
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
   provider       String
-  projectName    String    @map("project_name")
-  projectType    String    @map("project_type")
-  standard       String    @default("VCS")
+  projectName    String   @map("project_name")
+  projectType    String   @map("project_type")
+  standard       String   @default("VCS")
   vintage        Int
-  quantityTonnes Decimal   @map("quantity_tonnes") @db.Decimal(12, 4)
-  pricePerTonne  Decimal?  @map("price_per_tonne") @db.Decimal(10, 2)
-  currency       String    @default("GBP")
-  purchasedAt    DateTime  @map("purchased_at")
-  serialNumbers  String?   @map("serial_numbers")
-  retirementRef  String?   @map("retirement_ref")
+  quantityTonnes Decimal  @map("quantity_tonnes") @db.Decimal(12, 4)
+  pricePerTonne  Decimal? @map("price_per_tonne") @db.Decimal(10, 2)
+  currency       String   @default("GBP")
+  purchasedAt    DateTime @map("purchased_at")
+  serialNumbers  String?  @map("serial_numbers")
+  retirementRef  String?  @map("retirement_ref")
   notes          String?
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -1680,18 +2012,18 @@ model ComplianceRecord {
 // ─── Phase 6: Project Carbon Budgeting ───────────────────────────────────────
 
 model CarbonBudget {
-  id                String   @id @default(cuid())
-  organizationId    String   @map("organization_id")
-  projectId         String   @unique @map("project_id")
-  totalBudgetTco2e  Decimal  @map("total_budget_tco2e") @db.Decimal(18, 4)
-  floorAreaM2       Decimal? @map("floor_area_m2") @db.Decimal(12, 2)
-  contractValueGbp  Decimal? @map("contract_value_gbp") @db.Decimal(18, 2)
-  notes             String?
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  projectId        String   @unique @map("project_id")
+  totalBudgetTco2e Decimal  @map("total_budget_tco2e") @db.Decimal(18, 4)
+  floorAreaM2      Decimal? @map("floor_area_m2") @db.Decimal(12, 2)
+  contractValueGbp Decimal? @map("contract_value_gbp") @db.Decimal(18, 2)
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
-  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   phases       CarbonBudgetPhase[]
 
   @@index([organizationId])
@@ -1770,29 +2102,84 @@ model SbtiTarget {
 // Each request asks a supplier to self-report spend/activity data for a
 // specific category and period via a pre-filled form link.
 model SupplierDataRequest {
-  id               String    @id @default(cuid())
-  organizationId   String    @map("organization_id")
-  reportingPeriodId String   @map("reporting_period_id")
-  supplierEmail    String    @map("supplier_email")
-  supplierName     String?   @map("supplier_name")
-  categoryCode     String    @map("category_code")
-  token            String    @unique @default(cuid())
-  status           String    @default("sent") // sent | opened | submitted | expired
-  sentAt           DateTime  @default(now()) @map("sent_at")
-  openedAt         DateTime? @map("opened_at")
-  submittedAt      DateTime? @map("submitted_at")
-  expiresAt        DateTime  @map("expires_at")
-  notes            String?
-  createdByUserId  String    @map("created_by_user_id")
-  createdAt        DateTime  @default(now()) @map("created_at")
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  reportingPeriodId String    @map("reporting_period_id")
+  supplierEmail     String    @map("supplier_email")
+  supplierName      String?   @map("supplier_name")
+  categoryCode      String    @map("category_code")
+  token             String    @unique @default(cuid())
+  status            String    @default("sent") // sent | opened | submitted | flagged | approved | rejected | converted
+  sentAt            DateTime  @default(now()) @map("sent_at")
+  openedAt          DateTime? @map("opened_at")
+  submittedAt       DateTime? @map("submitted_at")
+  reviewedAt        DateTime? @map("reviewed_at")
+  expiresAt         DateTime  @map("expires_at")
+  notes             String?
+  submittedData     Json?     @map("submitted_data")
+  qualityFlags      Json?     @map("quality_flags") // Array of QualityFlag objects
+  rejectionReason   String?   @map("rejection_reason")
+  createdByUserId   String    @map("created_by_user_id")
+  approvedByUserId  String?   @map("approved_by_user_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
 
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id])
-  createdBy       User            @relation("SupplierDataRequestCreatedBy", fields: [createdByUserId], references: [id])
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod   @relation(fields: [reportingPeriodId], references: [id])
+  createdBy       User              @relation("SupplierDataRequestCreatedBy", fields: [createdByUserId], references: [id])
+  approvedBy      User?             @relation("SupplierDataRequestApprovedBy", fields: [approvedByUserId], references: [id])
+  anomalies       SupplierAnomaly[]
 
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, status])
   @@map("supplier_data_requests")
+}
+
+// ─── Supplier Management (Phase 2) ────────────────────────────────────────────
+
+model SupplierTag {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignments  SupplierTagAssignment[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("supplier_tags")
+}
+
+model SupplierTagAssignment {
+  id         String   @id @default(cuid())
+  tagId      String   @map("tag_id")
+  supplierId String   @map("supplier_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tag  SupplierTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  user User        @relation("SupplierTagAssignments", fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, supplierId])
+  @@index([supplierId])
+  @@map("supplier_tag_assignments")
+}
+
+model SupplierCategoryAssignment {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  supplierId     String   @map("supplier_id")
+  categoryCode   String   @map("category_code")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization       Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user               User              @relation("SupplierCategoryAssignments", fields: [supplierId], references: [id], onDelete: Cascade)
+  emissionCategory   EmissionCategory? @relation(fields: [emissionCategoryId], references: [id])
+  emissionCategoryId String?
+
+  @@unique([supplierId, categoryCode])
+  @@index([organizationId, supplierId])
+  @@map("supplier_category_assignments")
 }
 
 // ─── Integrations ────────────────────────────────────────────────────────────
@@ -1818,6 +2205,105 @@ model IntegrationConnection {
   @@map("integration_connections")
 }
 
+// ─── Xero Sync Audit Trail ───────────────────────────────────────────────────
+
+model XeroSyncLog {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  invoiceId       String   @map("invoice_id")
+  invoiceNumber   String   @map("invoice_number")
+  lineItemIndex   Int      @map("line_item_index") // Index of line item in invoice
+  supplierName    String   @map("supplier_name")
+  lineDescription String   @map("line_description")
+  amount          Decimal  @db.Decimal(18, 6)
+  category        String // s3-purchased-goods, s3-upstream-transport, s1-stationary, etc.
+  status          String   @default("processed") // processed, failed, skipped
+  errorMessage    String?  @map("error_message")
+  processedAt     DateTime @default(now()) @map("processed_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, invoiceId, lineItemIndex])
+  @@index([organizationId, processedAt])
+  @@map("xero_sync_logs")
+}
+
+// ─── IoT Devices & Real-Time Meter Data ──────────────────────────────────────
+
+enum IoTDeviceType {
+  electricity_meter
+  gas_meter
+  fuel_pump
+  water_meter
+
+  @@map("iot_device_type")
+}
+
+model IoTDevice {
+  id                   String        @id @default(cuid())
+  organizationId       String        @map("organization_id")
+  name                 String
+  deviceType           IoTDeviceType @map("device_type")
+  serialNumber         String        @map("serial_number")
+  emissionCategoryCode String        @map("emission_category_code")
+  facilityId           String?       @map("facility_id")
+  lastReadingAt        DateTime?     @map("last_reading_at")
+  isActive             Boolean       @default(true) @map("is_active")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility     Facility?             @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  readings     MeterReading[]
+  credentials  IoTDeviceCredential[]
+
+  @@unique([organizationId, serialNumber])
+  @@index([organizationId, isActive])
+  @@index([organizationId, facilityId])
+  @@map("iot_devices")
+}
+
+model IoTDeviceCredential {
+  id             String    @id @default(cuid())
+  iotDeviceId    String    @map("iot_device_id")
+  organizationId String    @map("organization_id")
+  keyHash        String    @unique @map("key_hash")
+  prefix         String    @unique
+  revokedAt      DateTime? @map("revoked_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  device       IoTDevice    @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([iotDeviceId])
+  @@index([organizationId])
+  @@map("iot_device_credentials")
+}
+
+model MeterReading {
+  id                 String   @id @default(cuid())
+  iotDeviceId        String   @map("iot_device_id")
+  organizationId     String   @map("organization_id")
+  timestamp          DateTime
+  rawValue           Decimal  @map("raw_value") @db.Decimal(18, 6)
+  rawUnit            String   @map("raw_unit")
+  normalizedQuantity Decimal  @map("normalized_quantity") @db.Decimal(18, 6)
+  normalizedUnit     String   @map("normalized_unit")
+  activityRecordId   String?  @map("activity_record_id")
+  isDuplicate        Boolean  @default(false) @map("is_duplicate")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  device         IoTDevice       @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecord ActivityRecord? @relation(fields: [activityRecordId], references: [id], onDelete: SetNull)
+
+  @@index([iotDeviceId, timestamp])
+  @@index([organizationId, createdAt])
+  @@index([activityRecordId])
+  @@map("meter_readings")
+}
+
 // no S3-compatible bucket is configured (R2 requires a credit card). Written
 // and served via HMAC-signed URLs — see lib/storage.
 model StorageObject {
@@ -1829,4 +2315,588 @@ model StorageObject {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("storage_objects")
+}
+
+// ─── Production Features: Bulk Operations, Scheduling, Digests ──────────────
+
+enum BulkOperationType {
+  review
+  categorize
+  export
+  calculate
+  delete
+
+  @@map("bulk_operation_type")
+}
+
+enum BulkOperationStatus {
+  queued
+  processing
+  completed
+  failed
+  cancelled
+
+  @@map("bulk_operation_status")
+}
+
+model BulkOperation {
+  id             String              @id @default(cuid())
+  organizationId String              @map("organization_id")
+  operationType  BulkOperationType   @map("operation_type")
+  status         BulkOperationStatus @default(queued)
+  totalCount     Int                 @map("total_count")
+  processedCount Int                 @default(0) @map("processed_count")
+  failedCount    Int                 @default(0) @map("failed_count")
+  recordIds      String[]            @map("record_ids")
+  parameters     Json
+  errors         Json?
+  startedAt      DateTime?           @map("started_at")
+  completedAt    DateTime?           @map("completed_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@index([organizationId, operationType])
+  @@index([createdAt])
+  @@map("bulk_operations")
+}
+
+enum CalculationScheduleFrequency {
+  manual
+  weekly
+  monthly
+  quarterly
+  annually
+
+  @@map("calculation_schedule_frequency")
+}
+
+model CalculationSchedule {
+  id                String                       @id @default(cuid())
+  organizationId    String                       @map("organization_id")
+  reportingPeriodId String                       @map("reporting_period_id")
+  name              String
+  description       String?
+  frequency         CalculationScheduleFrequency
+  enabled           Boolean                      @default(true)
+  dayOfWeek         Int?                         @map("day_of_week")
+  dayOfMonth        Int?                         @map("day_of_month")
+  quarterMonth      Int?                         @map("quarter_month")
+  nextRunAt         DateTime?                    @map("next_run_at")
+  lastRunAt         DateTime?                    @map("last_run_at")
+  createdAt         DateTime                     @default(now()) @map("created_at")
+  updatedAt         DateTime                     @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id])
+
+  @@index([organizationId, enabled])
+  @@index([organizationId, nextRunAt])
+  @@map("calculation_schedules")
+}
+
+enum DigestFrequency {
+  daily
+  weekly
+  monthly
+
+  @@map("digest_frequency")
+}
+
+model DigestPreference {
+  id             String          @id @default(cuid())
+  organizationId String          @map("organization_id")
+  userId         String          @map("user_id")
+  enabled        Boolean         @default(true)
+  frequency      DigestFrequency @default(weekly)
+  dayOfWeek      Int?            @map("day_of_week") // 0-6 for weekly
+  dayOfMonth     Int?            @map("day_of_month") // 1-31 for monthly
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId, enabled])
+  @@map("digest_preferences")
+}
+
+model ApiDataSource {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  name             String
+  description      String?
+  endpoint         String
+  authMethod       String    @default("none") @map("auth_method") // "none", "api_key", "bearer", "basic"
+  apiKey           String?   @map("api_key") // Encrypted
+  bearerToken      String?   @map("bearer_token") // Encrypted
+  basicUsername    String?   @map("basic_username")
+  basicPassword    String?   @map("basic_password") // Encrypted
+  dataFormat       String    @default("json") @map("data_format") // "json", "csv"
+  mappingConfig    Json      @map("mapping_config") // Field mapping for extracting activity data
+  enabled          Boolean   @default(true)
+  lastSyncAt       DateTime? @map("last_sync_at")
+  lastErrorAt      DateTime? @map("last_error_at")
+  lastErrorMessage String?   @map("last_error_message")
+  syncIntervalMins Int       @default(60) @map("sync_interval_mins")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, enabled])
+  @@index([organizationId, lastSyncAt])
+  @@map("api_data_sources")
+}
+
+model ProjectRoleAssignment {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  userId           String   @map("user_id")
+  projectId        String   @map("project_id")
+  role             String
+  assignedByUserId String   @map("assigned_by_user_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("ProjectAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedBy   User         @relation("ProjectAssignmentsCreated", fields: [assignedByUserId], references: [id])
+
+  @@unique([userId, projectId])
+  @@index([organizationId, projectId])
+  @@index([userId])
+  @@map("project_role_assignments")
+}
+
+// ─── PHASE 2: Custom Emission Factors, Anomaly Detection, Zapier Integration
+
+model OrganizationEmissionFactor {
+  id                 String    @id @default(cuid())
+  organizationId     String    @map("organization_id")
+  scope              Int
+  emissionCategoryId String?   @map("emission_category_id")
+  activityType       String?   @map("activity_type")
+  geographyCountry   String?   @map("geography_country")
+  geographyRegion    String?   @map("geography_region")
+  effectiveStartDate DateTime? @map("effective_start_date") @db.Date
+  effectiveEndDate   DateTime? @map("effective_end_date") @db.Date
+  inputUnit          String    @map("input_unit")
+  co2                Decimal?  @db.Decimal(18, 8)
+  ch4                Decimal?  @db.Decimal(18, 8)
+  n2o                Decimal?  @db.Decimal(18, 8)
+  co2e               Decimal?  @db.Decimal(18, 8)
+  uncertaintyRating  String?   @map("uncertainty_rating")
+  usageNotes         String?   @map("usage_notes")
+  source             String // e.g., "uploaded_csv", "admin_manual"
+  version            Int       @default(1) // For versioning org-specific factors
+  createdByUserId    String    @map("created_by_user_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  emissionCategory EmissionCategory? @relation(fields: [emissionCategoryId], references: [id])
+  createdBy        User              @relation("CustomFactorCreator", fields: [createdByUserId], references: [id])
+
+  @@unique([organizationId, scope, emissionCategoryId, activityType, geographyCountry, geographyRegion, inputUnit, version])
+  @@index([organizationId, scope, emissionCategoryId])
+  @@index([organizationId, effectiveStartDate, effectiveEndDate])
+  @@map("organization_emission_factors")
+}
+
+model SupplierAnomaly {
+  id                    String    @id @default(cuid())
+  organizationId        String    @map("organization_id")
+  supplierDataRequestId String    @map("supplier_data_request_id")
+  anomalyScore          Decimal   @map("anomaly_score") @db.Decimal(5, 4) // 0.0-1.0
+  anomalySeverity       String    @map("anomaly_severity") // "warning", "critical"
+  reason                String // Human-readable explanation
+  flaggedFields         Json      @map("flagged_fields") // Array of { field, value, expectedRange }
+  historicalAverage     Decimal?  @map("historical_average") @db.Decimal(18, 8)
+  historicalStdDev      Decimal?  @map("historical_std_dev") @db.Decimal(18, 8)
+  detectedAt            DateTime  @default(now()) @map("detected_at")
+  acknowledgedAt        DateTime? @map("acknowledged_at")
+  acknowledgedByUserId  String?   @map("acknowledged_by_user_id")
+  acknowledgedNote      String?   @map("acknowledged_note")
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplierDataRequest SupplierDataRequest @relation(fields: [supplierDataRequestId], references: [id], onDelete: Cascade)
+  acknowledgedBy      User?               @relation("AnomalyAcknowledger", fields: [acknowledgedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, anomalySeverity])
+  @@index([organizationId, detectedAt])
+  @@index([supplierDataRequestId])
+  @@map("supplier_anomalies")
+}
+
+model ZapierIntegration {
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  zapierCustomId    String    @unique @map("zapier_custom_id") // Zapier's unique ID for this app instance
+  encryptedSecret   String    @map("encrypted_secret") // Encrypted Zapier webhook secret
+  triggerEventTypes String[]  @map("trigger_event_types") // JSON array of enabled triggers
+  actionTypes       String[]  @map("action_types") // JSON array of enabled actions
+  enabled           Boolean   @default(true)
+  lastWebhookAt     DateTime? @map("last_webhook_at")
+  lastErrorAt       DateTime? @map("last_error_at")
+  lastErrorMessage  String?   @map("last_error_message")
+  installCount      Int       @default(0) @map("install_count") // How many times installed/reinstalled
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId])
+  @@map("zapier_integrations")
+}
+
+// ─── Phase 1B: Data Quality Checks ────────────────────────────────────────────
+
+model DataQualityCheck {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  importBatchId  String?  @map("import_batch_id") @db.Uuid
+  checkType      String   @map("check_type")
+  checkName      String   @map("check_name")
+  passed         Boolean
+  failuresCount  Int      @default(0) @map("failures_count")
+  failureSamples Json?    @map("failure_samples")
+  qualityScore   Decimal? @map("quality_score") @db.Decimal(5, 2)
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  importBatch  ImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, importBatchId])
+  @@index([organizationId, checkType])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("data_quality_checks")
+}
+
+model ImportBatchQualityScore {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  importBatchId  String   @unique @map("import_batch_id") @db.Uuid
+  overallScore   Decimal  @map("overall_score") @db.Decimal(5, 2)
+  checksPassed   Int      @map("checks_passed")
+  checksTotal    Int      @map("checks_total")
+  canCommit      Boolean  @map("can_commit")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  importBatch  ImportBatch  @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("import_batch_quality_scores")
+}
+
+// ─── Phase 1A: pgAudit Database-Level Audit Trail ────────────────────────────
+
+model AuditEvent {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  actorId        String?  @map("actor_id")
+  action         String
+  tableName      String   @map("table_name")
+  recordId       String?  @map("record_id")
+  oldValues      Json?    @map("old_values")
+  newValues      Json?    @map("new_values")
+  timestamp      DateTime @default(now())
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, timestamp(sort: Desc)])
+  @@index([organizationId, action])
+  @@index([organizationId, tableName])
+  @@index([organizationId, tableName, recordId])
+  @@map("audit_events")
+}
+
+// ─── Phase 2A: Airbyte Data Integration ──────────────────────────────────────
+
+model StagedExternalData {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  sourceSystem   String    @map("source_system") // 'salesforce', 'sap', 'aws_iot', etc.
+  sourceRecordId String    @map("source_record_id")
+  dataType       String    @map("data_type") // 'facility_spend', 'material_cost', 'energy_consumption'
+  payload        Json
+  extractedAt    DateTime  @map("extracted_at")
+  processed      Boolean   @default(false)
+  processedAt    DateTime? @map("processed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, sourceSystem, sourceRecordId])
+  @@index([organizationId, sourceSystem, processed])
+  @@index([organizationId, dataType, processed])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("staged_external_data")
+}
+
+model AirbyteSyncConnection {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId      String    @map("organization_id") @db.Uuid
+  sourceSystem        String    @map("source_system") // 'salesforce', 'sap', 'aws_iot'
+  airbytConnectionId  String?   @map("airbyte_connection_id")
+  airbytSourceId      String?   @map("airbyte_source_id")
+  airbytDestinationId String?   @map("airbyte_destination_id")
+  config              Json // Connection-specific configuration (credentials, mappings, etc.)
+  enabled             Boolean   @default(true)
+  lastSyncAt          DateTime? @map("last_sync_at")
+  lastSyncStatus      String?   @map("last_sync_status") // 'success', 'failed', 'partial'
+  syncFrequency       String    @default("daily") @map("sync_frequency") // 'daily', 'weekly', 'manual'
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, sourceSystem, enabled])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("airbyte_sync_connections")
+}
+
+// ─── Phase 3A: Scope 3 Estimation via ML ────────────────────────────────────
+
+model Scope3EstimationModel {
+  id                    String    @id @default(cuid())
+  organizationId        String    @map("organization_id")
+  emissionCategoryId    String    @map("emission_category_id")
+  facilityType          String?   @map("facility_type") // e.g., "manufacturing", "office", "warehouse"
+  modelType             String    @default("linear-regression") @map("model_type") // "linear-regression", "random-forest"
+  trainingRecordCount   Int       @map("training_record_count")
+  coefficients          Json // Model parameters: { intercept, features: {featureName: coefficient} }
+  modelMetrics          Json // R², RMSE, MAE, etc.
+  featureImportance     Json // Feature importance scores
+  trainingDataDateRange Json // { from: Date, to: Date }
+  confidenceThreshold   Decimal   @default("0.7") @map("confidence_threshold") @db.Decimal(3, 2)
+  lastTrainedAt         DateTime  @map("last_trained_at")
+  nextTrainAt           DateTime? @map("next_train_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization     Organization     @relation("EstimationModels", fields: [organizationId], references: [id], onDelete: Cascade)
+  emissionCategory EmissionCategory @relation("EstimationModels", fields: [emissionCategoryId], references: [id])
+  estimates        Scope3Estimate[] @relation("ModelEstimates")
+
+  @@unique([organizationId, emissionCategoryId, facilityType])
+  @@index([organizationId, lastTrainedAt])
+  @@map("scope3_estimation_models")
+}
+
+model Scope3Estimate {
+  id                    String    @id @default(cuid())
+  organizationId        String    @map("organization_id")
+  facilitId             String?   @map("facility_id") // Optional reference to facility
+  emissionCategoryId    String    @map("emission_category_id")
+  estimationModelId     String    @map("estimation_model_id")
+  estimatedValue        Decimal   @map("estimated_value") @db.Decimal(18, 6)
+  estimatedUnit         String    @map("estimated_unit") // e.g., "tonnes", "kwh"
+  confidenceScore       Decimal   @map("confidence_score") @db.Decimal(3, 2) // 0-1
+  confidenceInterval    Json // { lower: number, upper: number, percentile: 95 }
+  modelInputs           Json // Features used for prediction
+  predictionExplanation String?   @map("prediction_explanation") // Why this estimate?
+  basedOnRecordCount    Int       @default(0) @map("based_on_record_count")
+  status                String    @default("pending") @map("status") // "pending", "accepted", "rejected", "used"
+  acceptedAt            DateTime? @map("accepted_at")
+  acceptedByUserId      String?   @map("accepted_by_user_id")
+  rejectionReason       String?   @map("rejection_reason")
+  activityRecordId      String?   @map("activity_record_id") // If linked to actual record
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization     Organization          @relation("Scope3Estimates", fields: [organizationId], references: [id], onDelete: Cascade)
+  emissionCategory EmissionCategory      @relation("Scope3Estimates", fields: [emissionCategoryId], references: [id])
+  estimationModel  Scope3EstimationModel @relation("ModelEstimates", fields: [estimationModelId], references: [id], onDelete: Restrict)
+  acceptedBy       User?                 @relation("Scope3EstimatesAccepted", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  activityRecord   ActivityRecord?       @relation("ActivityRecordEstimate", fields: [activityRecordId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, emissionCategoryId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([estimationModelId])
+  @@map("scope3_estimates")
+}
+
+// ─── Invoice & Spend Tracking (Scope 3 Foundation) ──────────────────────────
+
+model InvoiceRecord {
+  id                String                  @id @default(cuid())
+  organizationId    String                  @map("organization_id")
+  externalInvoiceId String                  @map("external_invoice_id") // Vendor's invoice ID
+  sourceSystem      String                  @map("source_system") // 'xero', 'sap', 'quickbooks', 'manual'
+  vendorId          String                  @map("vendor_id")
+  vendorName        String                  @map("vendor_name")
+  invoiceDate       DateTime                @map("invoice_date")
+  receivedDate      DateTime?               @map("received_date") // Goods receipt date
+  dueDate           DateTime?               @map("due_date")
+  totalAmount       Decimal                 @map("total_amount") @db.Decimal(15, 2)
+  lineItems         Json                    @map("line_items") // [{itemId, qty, unitPrice, receivedQty?, description}]
+  paymentStatus     String                  @default("unpaid") @map("payment_status") // 'paid', 'unpaid', 'partial'
+  notes             String?
+  scope3ReadyStatus String                  @default("pending") @map("scope3_ready_status") // 'pending', 'approved', 'rejected', 'excluded'
+  extractedAt       DateTime                @map("extracted_at")
+  processedAt       DateTime?               @map("processed_at")
+  anomalies         InvoiceAnomaly[]
+  reconciliations   InvoiceReconciliation[]
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+
+  organization Organization @relation("InvoiceRecords", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, sourceSystem, externalInvoiceId])
+  @@index([organizationId, invoiceDate(sort: Desc)])
+  @@index([organizationId, scope3ReadyStatus])
+  @@index([organizationId, vendorId])
+  @@map("invoice_records")
+}
+
+model InvoiceAnomaly {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  invoiceId      String    @map("invoice_id")
+  anomalyType    String    @map("anomaly_type") // 'duplicate', 'qty_mismatch', 'price_spike', 'date_inconsistency', 'missing_grn', 'over_billing', 'orphaned', 'duplicate_line'
+  severity       String    @map("severity") // 'info', 'warning', 'critical'
+  reason         String    @map("reason") // Human-readable explanation
+  detectedAt     DateTime  @default(now()) @map("detected_at")
+  resolution     String?   @map("resolution") // 'approved', 'rejected', 'pending'
+  resolvedBy     String?   @map("resolved_by")
+  resolvedAt     DateTime? @map("resolved_at")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization   Organization  @relation("InvoiceAnomalies", fields: [organizationId], references: [id], onDelete: Cascade)
+  invoice        InvoiceRecord @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  resolvedByUser User?         @relation("InvoiceAnomalyResolutions", fields: [resolvedBy], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId, severity])
+  @@index([organizationId, resolution, detectedAt(sort: Desc)])
+  @@index([organizationId, anomalyType])
+  @@map("invoice_anomalies")
+}
+
+model InvoiceReconciliation {
+  id                 String   @id @default(cuid())
+  invoiceId          String   @map("invoice_id")
+  lineItemId         String   @map("line_item_id")
+  quantityOrdered    Int      @map("quantity_ordered")
+  quantityReceived   Int      @map("quantity_received")
+  quantityInvoiced   Int      @map("quantity_invoiced")
+  unitPrice          Decimal  @map("unit_price") @db.Decimal(15, 4)
+  matchStatus        String   @map("match_status") // 'matched', 'over_received', 'under_received', 'unreconciled'
+  discrepancyPercent Decimal? @map("discrepancy_percent") @db.Decimal(5, 2) // |(invoiced - received) / received| * 100
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  invoice InvoiceRecord @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_reconciliations")
+}
+
+// ─── Audit & Compliance ──────────────────────────────────────────────────────
+
+model AuditContext {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  auditLogId      String   @map("audit_log_id")
+  framework       String // 'csrd', 'sbti', 'cdp', 'ghg-protocol', 'iso-14064'
+  resourceType    String   @map("resource_type") // 'emission_calculation', 'activity_record', 'snapshot', 'report'
+  resourceId      String   @map("resource_id")
+  contextMetadata Json?    @map("context_metadata") // Framework-specific metadata
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation("AuditContexts", fields: [organizationId], references: [id], onDelete: Cascade)
+  auditLog     AuditLog     @relation("AuditContexts", fields: [auditLogId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, framework, resourceType, resourceId])
+  @@index([organizationId, auditLogId])
+  @@map("audit_contexts")
+}
+
+// ─── SSO & Enterprise Auth ───────────────────────────────────────────────────
+
+model SsoConfiguration {
+  id              String   @id @default(cuid())
+  organizationId  String   @unique @map("organization_id")
+  provider        String // 'okta', 'azure_ad', 'google_workspace', 'generic_oidc', 'saml'
+  enabled         Boolean  @default(true)
+  metadataUrl     String?  @map("metadata_url")
+  clientId        String   @map("client_id")
+  clientSecret    String   @map("client_secret") // Encrypted in transit
+  idpEntityId     String?  @map("idp_entity_id") // For SAML
+  ssoUrl          String?  @map("sso_url") // For SAML
+  certificateX509 String?  @map("certificate_x509") // For SAML validation
+  autoCreateUsers Boolean  @default(true) @map("auto_create_users")
+  autoAssignRole  String?  @default("viewer") @map("auto_assign_role") // admin | editor | reviewer | viewer | field_worker
+  requireMfa      Boolean  @default(false) @map("require_mfa")
+  syncAttributes  Json?    @map("sync_attributes") // Maps IdP claims to user fields
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation("SsoConfigurations", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("sso_configurations")
+}
+
+model SsoSession {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  userId         String    @map("user_id")
+  provider       String
+  providerUserId String    @map("provider_user_id")
+  idpSessionId   String?   @map("idp_session_id") // To track sessions at IdP level
+  accessToken    String?   @map("access_token")
+  refreshToken   String?   @map("refresh_token")
+  tokenExpiresAt DateTime? @map("token_expires_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  lastActivityAt DateTime  @default(now()) @updatedAt @map("last_activity_at")
+
+  organization Organization @relation("SsoSessions", fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("SsoSessions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, providerUserId])
+  @@index([organizationId, userId])
+  @@index([organizationId, provider])
+  @@map("sso_sessions")
+}
+
+// ─── Invoice Anomaly Detection ───────────────────────────────────────────────
+
+enum InvoiceAnomalyType {
+  duplicate
+  qty_mismatch
+  date_inconsistency
+  price_spike
+  missing_grn
+  over_billing
+  currency_mismatch
+  unmatched_invoice
+
+  @@map("invoice_anomaly_type")
+}
+
+enum AnomalySeverity {
+  info
+  warning
+  critical
+
+  @@map("anomaly_severity")
+}
+
+enum InvoiceReconciliationStatus {
+  matched
+  over_received
+  under_received
+  partial_match
+
+  @@map("invoice_reconciliation_status")
 }

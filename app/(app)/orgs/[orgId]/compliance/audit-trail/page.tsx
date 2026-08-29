@@ -1,15 +1,10 @@
-import { Suspense } from "react";
-import { Metadata } from "next";
-import { requireOrgMember } from "@/lib/auth/session";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -18,180 +13,213 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
 
-export const metadata: Metadata = {
-  title: "Audit Trail",
-};
-
-interface AuditLogEvent {
+interface AuditLogEntry {
   id: string;
-  actorUserId: string | null;
+  timestamp: string;
   action: string;
   resourceType: string;
   resourceId: string;
-  metadata: Record<string, unknown>;
-  createdAt: string;
-  ipAddress: string | null;
-  userAgent: string | null;
+  actor: {
+    id: string;
+    email: string;
+    name: string | null;
+  } | null;
+  metadata?: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
-interface AuditLogsResponse {
-  items: AuditLogEvent[];
+interface PaginatedResponse {
+  data: AuditLogEntry[];
   pagination: {
-    nextCursor: string | null;
-    hasMore: boolean;
+    offset: number;
     limit: number;
+    total: number;
   };
 }
 
-async function AuditTrailTable({
-  orgId,
-}: {
-  orgId: string;
-}) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/orgs/${orgId}/audit-logs?limit=25`, {
-    headers: {
-      Cookie: "session=test", // Server-side auth
-    },
+const actionColorMap: Record<string, string> = {
+  "org.created": "bg-blue-100 text-blue-800",
+  "org.updated": "bg-yellow-100 text-yellow-800",
+  "record.created": "bg-green-100 text-green-800",
+  "record.updated": "bg-yellow-100 text-yellow-800",
+  "record.deleted": "bg-red-100 text-red-800",
+  "calculation.run": "bg-purple-100 text-purple-800",
+  "snapshot.published": "bg-green-100 text-green-800",
+  "report.generated": "bg-blue-100 text-blue-800",
+  "field_submission.reviewed": "bg-indigo-100 text-indigo-800",
+  "auth.login": "bg-gray-100 text-gray-800",
+  "auth.logout": "bg-gray-100 text-gray-800",
+  "user.created": "bg-green-100 text-green-800",
+  "user.role_changed": "bg-orange-100 text-orange-800",
+};
+
+export default function AuditTrailPage() {
+  const params = useParams();
+  const orgId = params.orgId as string;
+
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const limit = 50;
+  const [filters, setFilters] = useState({
+    resourceType: "",
+    action: "",
   });
 
-  if (!res.ok) {
-    return <div className="text-red-600">Failed to load audit logs</div>;
-  }
+  useEffect(() => {
+    const loadLogs = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          limit: limit.toString(),
+          offset: offset.toString(),
+          ...(filters.resourceType && { resourceType: filters.resourceType }),
+          ...(filters.action && { action: filters.action }),
+        });
 
-  const data: AuditLogsResponse = await res.json();
+        const response = await fetch(`/api/orgs/${orgId}/audit-logs?${params}`);
+        const data: PaginatedResponse = await response.json();
+        setLogs(data.data);
+        setTotal(data.pagination.total);
+      } catch (error) {
+        console.error("Failed to fetch audit logs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const actionColors: Record<string, string> = {
-    create: "bg-green-100 text-green-800",
-    update: "bg-blue-100 text-blue-800",
-    delete: "bg-red-100 text-red-800",
-    approve: "bg-purple-100 text-purple-800",
-    reject: "bg-orange-100 text-orange-800",
-  };
+    loadLogs();
+  }, [orgId, offset, limit, filters]);
 
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Timestamp</TableHead>
-          <TableHead>Actor</TableHead>
-          <TableHead>Action</TableHead>
-          <TableHead>Resource Type</TableHead>
-          <TableHead>Resource ID</TableHead>
-          <TableHead>IP Address</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.items.map((event: AuditLogEvent) => (
-          <TableRow key={event.id}>
-            <TableCell className="text-sm">
-              {new Date(event.createdAt).toLocaleString()}
-            </TableCell>
-            <TableCell className="text-sm">{event.actorUserId || "System"}</TableCell>
-            <TableCell>
-              <Badge className={actionColors[event.action] || "bg-gray-100 text-gray-800"}>
-                {event.action}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-sm font-mono text-xs">{event.resourceType}</TableCell>
-            <TableCell className="text-sm font-mono text-xs truncate max-w-[150px]">
-              {event.resourceId || "—"}
-            </TableCell>
-            <TableCell className="text-sm text-gray-500">{event.ipAddress || "—"}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
-
-export default async function AuditTrailPage({
-  params,
-}: {
-  params: Promise<{ orgId: string }>;
-}) {
-  const { orgId } = await params;
-  const { membership } = await requireOrgMember(orgId, "admin", "auditor", "reviewer");
-
-  if (!["admin", "auditor", "reviewer"].includes(membership.role)) {
-    return <div className="text-red-600">Access denied</div>;
-  }
+  const pages = Math.ceil(total / limit);
+  const currentPage = Math.floor(offset / limit) + 1;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Audit Trail</h1>
-        <p className="text-gray-600 mt-2">Database-level activity log for compliance auditing</p>
+        <p className="text-gray-600 mt-2">
+          Complete record of all actions and changes in your organization.
+        </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Filter Audit Events</CardTitle>
-          <CardDescription>Filter by table, action, or date range</CardDescription>
+          <CardTitle>Filters</CardTitle>
+          <CardDescription>Search and filter audit logs by action or resource type</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Resource Type</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="All resources" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EmissionCalculation">Emission Calculations</SelectItem>
-                  <SelectItem value="PublishedSnapshot">Published Snapshots</SelectItem>
-                  <SelectItem value="Report">Reports</SelectItem>
-                  <SelectItem value="ImportBatch">Import Batches</SelectItem>
-                  <SelectItem value="FieldSubmission">Field Submissions</SelectItem>
-                  <SelectItem value="ActivityRecord">Activity Records</SelectItem>
-                  <SelectItem value="Organization">Organization</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                placeholder="e.g., activity_record, report"
+                value={filters.resourceType}
+                onChange={(e) => {
+                  setFilters({ ...filters, resourceType: e.target.value });
+                  setOffset(0);
+                }}
+              />
             </div>
-
             <div>
               <label className="text-sm font-medium">Action</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="All actions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="create">Create</SelectItem>
-                  <SelectItem value="update">Update</SelectItem>
-                  <SelectItem value="delete">Delete</SelectItem>
-                  <SelectItem value="approve">Approve</SelectItem>
-                  <SelectItem value="reject">Reject</SelectItem>
-                  <SelectItem value="publish">Publish</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Start Date</label>
-              <Input type="datetime-local" />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">End Date</label>
-              <Input type="datetime-local" />
+              <Input
+                placeholder="e.g., created, updated"
+                value={filters.action}
+                onChange={(e) => {
+                  setFilters({ ...filters, action: e.target.value });
+                  setOffset(0);
+                }}
+              />
             </div>
           </div>
-
-          <Button className="w-full md:w-auto">Apply Filters</Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Audit Events</CardTitle>
-          <CardDescription>Latest database changes across your organization</CardDescription>
+          <CardTitle>Activity Log</CardTitle>
+          <CardDescription>Showing {logs.length} of {total} entries</CardDescription>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<div className="text-gray-500">Loading audit logs...</div>}>
-            <AuditTrailTable orgId={orgId} />
-          </Suspense>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Resource</TableHead>
+                  <TableHead>Actor</TableHead>
+                  <TableHead>IP Address</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell colSpan={5}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : logs.length > 0 ? (
+                  logs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="text-sm">
+                        {format(new Date(log.timestamp), "MMM d, yyyy HH:mm:ss")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={actionColorMap[log.action] || "bg-gray-100 text-gray-800"}>
+                          {log.action}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {log.resourceType}#{log.resourceId.slice(0, 8)}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {log.actor?.name || log.actor?.email || "System"}
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-500">{log.ipAddress || "—"}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+                      No audit logs found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Page {currentPage} of {pages}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                disabled={offset === 0}
+                onClick={() => setOffset(Math.max(0, offset - limit))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                disabled={offset + limit >= total}
+                onClick={() => setOffset(offset + limit)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

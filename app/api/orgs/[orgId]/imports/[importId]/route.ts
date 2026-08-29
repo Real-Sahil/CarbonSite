@@ -5,12 +5,20 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { deleteObject } from "@/lib/storage";
+import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 type Params = { params: Promise<{ orgId: string; importId: string }> };
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, importId } = await params;
+    const { version } = await withApiVersion(_req);
+
+    const deprecationWarning = checkDeprecationWarning(version);
+    if (deprecationWarning) {
+      console.warn(`[API v${version}] ${deprecationWarning}`);
+    }
+
     await requireOrgMember(orgId, "admin", "editor");
 
     const batch = await prisma.importBatch.findFirst({
