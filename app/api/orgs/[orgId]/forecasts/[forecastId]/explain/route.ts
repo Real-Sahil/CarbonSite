@@ -4,23 +4,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { withApiVersion } from "@/lib/api/versioned-handler";
+import { generateForecastExplanation } from "@/lib/ml/forecast-explainability";
 
 type Params = { params: Promise<{ orgId: string; forecastId: string }> };
 
 /**
  * GET /api/orgs/[orgId]/forecasts/[forecastId]/explain
- * Retrieve explainability for a forecast
- * Explains why the forecast has its particular value using feature importance
+ * Generate interpretable explanation for a forecast prediction
+ * using feature importance analysis and confidence factors.
  */
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId, forecastId } = await params;
-    const { version, json } = await withApiVersion(req);
 
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
 
-    // Fetch forecast with explanation metadata
     const forecast = await prisma.forecast.findFirst({
       where: {
         id: forecastId,
@@ -29,13 +27,12 @@ export async function GET(req: NextRequest, { params }: Params) {
       select: {
         id: true,
         forecastType: true,
-        targetPeriodStart: true,
-        targetPeriodEnd: true,
         predictions: true,
         accuracy: true,
         method: true,
-        metadata: true,
+        trainingDataPoints: true,
         generatedAt: true,
+        metadata: true,
       },
     });
 
@@ -43,52 +40,68 @@ export async function GET(req: NextRequest, { params }: Params) {
       return apiError("NOT_FOUND", "Forecast not found", 404);
     }
 
-    // Extract explanation from metadata
-    const metadata = forecast.metadata as any;
-    const explanation = metadata?.explanation;
+    // Extract metadata for explanation generation
+    const metadata = forecast.metadata as Record<string, unknown> | null;
+    const historicalMean = (metadata?.historicalMean as number) || 0;
+    const historicalStdDev = (metadata?.historicalStdDev as number) || 1;
+    const historicalVolatility = (metadata?.historicalVolatility as number) || 10;
+    const predictions = Array.isArray(forecast.predictions) ? forecast.predictions : [];
 
-    if (!explanation) {
-      return json(
-        {
-          error: "Explanation not available for this forecast",
-          reason: "Forecast was generated before explainability was added",
-          forecastId,
-        },
-        { version, status: 400 }
-      );
-    }
+    // Calculate days since last update
+    const lastUpdateDays = Math.floor(
+      (Date.now() - new Date(forecast.generatedAt).getTime()) / (1000 * 60 * 60 * 24)
+    );
 
-    return json(
+    // Extract features from metadata
+    const trend = (metadata?.trend as number) || 0;
+    const seasonality = (metadata?.seasonality as number) || 0;
+    const recentChange = (metadata?.recentChange as number) || 0;
+    const volatility = (metadata?.volatility as number) || historicalVolatility;
+    const cyclicalPattern = (metadata?.cyclicalPattern as number) || 0;
+
+    // Get average forecast value from predictions
+    const forecastedValues = predictions.map((p) => {
+      const pred = p as Record<string, unknown>;
+      return (pred.forecast as number) || 0;
+    });
+    const averageForecast = forecastedValues.length > 0
+      ? forecastedValues.reduce((a, b) => a + b, 0) / forecastedValues.length
+      : historicalMean;
+
+    // Generate explanation
+    const explanation = generateForecastExplanation(
+      averageForecast,
+      historicalMean,
+      historicalStdDev,
+      forecast.trainingDataPoints,
+      parseFloat(String(forecast.accuracy)) || 75,
+      forecast.method,
+      lastUpdateDays,
+      historicalVolatility,
       {
-        forecastId,
-        forecastType: forecast.forecastType,
-        targetPeriodStart: forecast.targetPeriodStart,
-        targetPeriodEnd: forecast.targetPeriodEnd,
+        trend,
+        seasonality,
+        recentChange,
+        volatility,
+        cyclicalPattern,
+      },
+      predictions.map((p) => {
+        const pred = p as Record<string, unknown>;
+        return { confidence: (pred.confidence as number) || 0.5 };
+      })
+    );
+
+    return NextResponse.json({
+      forecastId,
+      explanation,
+      metadata: {
         method: forecast.method,
         accuracy: parseFloat(String(forecast.accuracy)),
+        trainingDataPoints: forecast.trainingDataPoints,
         generatedAt: forecast.generatedAt,
-        explanation: {
-          summary: explanation.summary,
-          components: explanation.components,
-          featureImportance: explanation.featureImportance.map((f: any) => ({
-            name: f.name,
-            contribution: f.contribution,
-            direction: f.direction,
-            significance: f.significance,
-            explanation: f.explanation,
-          })),
-          confidenceFactors: explanation.confidenceFactors,
-        },
-        predictions: (forecast.predictions as any[]).map((p) => ({
-          date: p.date,
-          forecast: p.forecast,
-          lowerBound: p.lowerBound,
-          upperBound: p.upperBound,
-          confidence: p.confidence,
-        })),
+        forecastType: forecast.forecastType,
       },
-      { version }
-    );
+    });
   } catch (error) {
     return handleRouteError(error);
   }
