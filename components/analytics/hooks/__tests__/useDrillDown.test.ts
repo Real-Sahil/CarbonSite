@@ -208,10 +208,7 @@ describe('useDrillDown', () => {
     };
 
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockData),
-      })
+      Promise.resolve(createMockResponse(mockData))
     );
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
@@ -262,7 +259,7 @@ describe('useDrillDown', () => {
             byCategory: [],
             byFacility: [],
           }),
-      });
+      } as any);
     });
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
@@ -294,7 +291,7 @@ describe('useDrillDown', () => {
             byCategory: [],
             byFacility: [],
           }),
-      })
+      } as any)
     );
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
@@ -340,7 +337,7 @@ describe('useDrillDown', () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve(mockData),
-      })
+      } as any)
     );
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
@@ -375,7 +372,7 @@ describe('useDrillDown', () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve(mockData),
-      })
+      } as any)
     );
 
     const { result } = renderHook(() => useDrillDown('org-123'), {

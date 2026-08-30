@@ -96,7 +96,7 @@ async function buildReportData(
     scope1: 0,
     scope2: 0,
     scope3: 0,
-    recordCount: totalAgg._count || 0,
+    recordCount: totalAgg._count?.id || 0,
   };
 
   // Get scope breakdown via raw SQL (activity records joined with categories)
