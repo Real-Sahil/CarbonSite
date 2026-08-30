@@ -4,6 +4,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 
+const createMockResponse = (data: any, ok = true, status = 200): Response => {
+  return new Response(JSON.stringify(data), {
+    status,
+    statusText: ok ? 'OK' : 'Error',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -22,16 +30,14 @@ describe('useAnomalies', () => {
 
   it('should initialize with empty arrays and loading state', () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: [],
-            totalAnomalies: 0,
-            summary: { critical: 0, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: [],
+          totalAnomalies: 0,
+          summary: { critical: 0, warning: 0, info: 0 },
+        })
+      )
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
@@ -60,16 +66,14 @@ describe('useAnomalies', () => {
     ];
 
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: mockAnomalies,
-            totalAnomalies: 1,
-            summary: { critical: 1, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: mockAnomalies,
+          totalAnomalies: 1,
+          summary: { critical: 1, warning: 0, info: 0 },
+        })
+      )
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
@@ -122,16 +126,14 @@ describe('useAnomalies', () => {
     ];
 
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: mockAnomalies,
-            totalAnomalies: 3,
-            summary: { critical: 1, warning: 1, info: 1 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: mockAnomalies,
+          totalAnomalies: 3,
+          summary: { critical: 1, warning: 1, info: 1 },
+        })
+      )
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
@@ -174,16 +176,14 @@ describe('useAnomalies', () => {
     ];
 
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: mockAnomalies,
-            totalAnomalies: 2,
-            summary: { critical: 1, warning: 1, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: mockAnomalies,
+          totalAnomalies: 2,
+          summary: { critical: 1, warning: 1, info: 0 },
+        })
+      )
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
@@ -202,16 +202,14 @@ describe('useAnomalies', () => {
 
   it('should return summary counts', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: [],
-            totalAnomalies: 0,
-            summary: { critical: 5, warning: 10, info: 15 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: [],
+          totalAnomalies: 0,
+          summary: { critical: 5, warning: 10, info: 15 },
+        })
+      )
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
@@ -229,16 +227,14 @@ describe('useAnomalies', () => {
 
   it('should accept period filter', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: [],
-            totalAnomalies: 0,
-            summary: { critical: 0, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: [],
+          totalAnomalies: 0,
+          summary: { critical: 0, warning: 0, info: 0 },
+        })
+      )
     );
 
     renderHook(() => useAnomalies('org-123', { periodId: 'p1' }), {
@@ -252,16 +248,14 @@ describe('useAnomalies', () => {
 
   it('should accept severity filter', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: [],
-            totalAnomalies: 0,
-            summary: { critical: 0, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: [],
+          totalAnomalies: 0,
+          summary: { critical: 0, warning: 0, info: 0 },
+        })
+      )
     );
 
     renderHook(() => useAnomalies('org-123', { severity: 'critical' }), {
@@ -275,16 +269,14 @@ describe('useAnomalies', () => {
 
   it('should accept anomaly type filter', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: [],
-            totalAnomalies: 0,
-            summary: { critical: 0, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: [],
+          totalAnomalies: 0,
+          summary: { critical: 0, warning: 0, info: 0 },
+        })
+      )
     );
 
     renderHook(() => useAnomalies('org-123', { anomalyType: 'statistical' }), {
@@ -298,16 +290,14 @@ describe('useAnomalies', () => {
 
   it('should accept limit parameter', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: [],
-            totalAnomalies: 0,
-            summary: { critical: 0, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: [],
+          totalAnomalies: 0,
+          summary: { critical: 0, warning: 0, info: 0 },
+        })
+      )
     );
 
     renderHook(() => useAnomalies('org-123', { limit: 50 }), {
@@ -321,10 +311,7 @@ describe('useAnomalies', () => {
 
   it('should handle API errors', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: false,
-        statusText: 'Internal Server Error',
-      })
+      Promise.resolve(createMockResponse({}, false, 500))
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
@@ -342,16 +329,14 @@ describe('useAnomalies', () => {
 
   it('should provide refetch function', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: [],
-            totalAnomalies: 0,
-            summary: { critical: 0, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: [],
+          totalAnomalies: 0,
+          summary: { critical: 0, warning: 0, info: 0 },
+        })
+      )
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
@@ -391,16 +376,14 @@ describe('useAnomalies', () => {
     ];
 
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: mockAnomalies,
-            totalAnomalies: 1,
-            summary: { critical: 1, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: mockAnomalies,
+          totalAnomalies: 1,
+          summary: { critical: 1, warning: 0, info: 0 },
+        })
+      )
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
@@ -430,16 +413,14 @@ describe('useAnomalies', () => {
     ];
 
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: mockAnomalies,
-            totalAnomalies: 1,
-            summary: { critical: 0, warning: 1, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: mockAnomalies,
+          totalAnomalies: 1,
+          summary: { critical: 0, warning: 1, info: 0 },
+        })
+      )
     );
 
     const { result } = renderHook(() => useAnomalies('org-123'), {
