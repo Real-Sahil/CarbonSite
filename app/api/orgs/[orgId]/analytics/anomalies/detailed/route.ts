@@ -114,11 +114,11 @@ export async function GET(
       },
       select: {
         id: true,
-        normalizedAmount: true,
+        amount: true,
         sourceDescription: true,
         facilityId: true,
         facility: { select: { name: true } },
-        category: { select: { id: true, name: true, scope: true } },
+        emissionCategory: { select: { id: true, name: true, scope: true } },
       },
     });
 
@@ -129,13 +129,13 @@ export async function GET(
     >();
 
     for (const record of records) {
-      if (!record.category) continue;
-      const catId = record.category.id;
+      if (!record.emissionCategory) continue;
+      const catId = record.emissionCategory.id;
 
       if (!categoryStats.has(catId)) {
         categoryStats.set(catId, { values: [], mean: 0, stdDev: 0 });
       }
-      categoryStats.get(catId)!.values.push(record.normalizedAmount);
+      categoryStats.get(catId)!.values.push(Number(record.amount));
     }
 
     // Calculate mean and std dev for each category
@@ -149,11 +149,11 @@ export async function GET(
     // Detect statistical anomalies
     if (!query.anomalyType || query.anomalyType === "statistical") {
       for (const record of records) {
-        if (!record.category) continue;
-        const stat = categoryStats.get(record.category.id);
+        if (!record.emissionCategory) continue;
+        const stat = categoryStats.get(record.emissionCategory.id);
         if (!stat || stat.stdDev === 0) continue;
 
-        const zScore = calculateZScore(record.normalizedAmount, stat.mean, stat.stdDev);
+        const zScore = calculateZScore(Number(record.amount), stat.mean, stat.stdDev);
         const severity = getAnomaloySeverity(zScore);
 
         if (zScore > 1 && (!query.severity || severity === query.severity)) {
@@ -161,11 +161,11 @@ export async function GET(
             id: record.id,
             severity,
             type: "statistical",
-            description: `${record.category.name} value is ${zScore.toFixed(1)}σ from mean`,
-            value: record.normalizedAmount,
+            description: `${record.emissionCategory.name} value is ${zScore.toFixed(1)}σ from mean`,
+            value: Number(record.amount),
             baseline: stat.mean,
-            deviation: ((record.normalizedAmount - stat.mean) / stat.mean) * 100,
-            explanation: `This record's ${record.category.name.toLowerCase()} value (${record.normalizedAmount.toFixed(2)}) is ${zScore > 0 ? "significantly higher" : "significantly lower"} than the category average (${stat.mean.toFixed(2)}).`,
+            deviation: ((Number(record.amount) - stat.mean) / stat.mean) * 100,
+            explanation: `This record's ${record.emissionCategory.name.toLowerCase()} value (${Number(record.amount).toFixed(2)}) is ${zScore > 0 ? "significantly higher" : "significantly lower"} than the category average (${stat.mean.toFixed(2)}).`,
             recordId: record.id,
             facilityId: record.facilityId || undefined,
             facilityName: record.facility?.name,
@@ -186,7 +186,7 @@ export async function GET(
       }
 
       for (const [facilityId, fRecords] of facilityRecords) {
-        const facilityTotal = fRecords.reduce((sum, r) => sum + r.normalizedAmount, 0);
+        const facilityTotal = fRecords.reduce((sum, r) => sum + Number(r.amount), 0);
         const facilityStats = facilityMap.get(facilityId);
         if (!facilityStats) continue;
 

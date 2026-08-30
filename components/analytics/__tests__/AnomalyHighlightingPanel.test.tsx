@@ -66,13 +66,18 @@ const mockAnomaliesData = {
   },
 };
 
+const createMockResponse = (data: any, ok = true, status = 200): Response => {
+  return new Response(JSON.stringify(data), {
+    status,
+    statusText: ok ? 'OK' : 'Error',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 describe('AnomalyHighlightingPanel', () => {
   beforeEach(() => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockAnomaliesData),
-      })
+      Promise.resolve(createMockResponse(mockAnomaliesData))
     );
   });
 
@@ -302,16 +307,14 @@ describe('AnomalyHighlightingPanel', () => {
 
   it('should handle empty anomaly list', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            anomalies: [],
-            totalAnomalies: 0,
-            summary: { critical: 0, warning: 0, info: 0 },
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          anomalies: [],
+          totalAnomalies: 0,
+          summary: { critical: 0, warning: 0, info: 0 },
+        })
+      )
     );
 
     render(
@@ -330,25 +333,18 @@ describe('AnomalyHighlightingPanel', () => {
 
   it('should handle API errors', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: false,
-        statusText: 'Server Error',
-        json: () => Promise.resolve({}),
-      })
+      Promise.resolve(createMockResponse({}, false, 500))
     );
 
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <AnomalyHighlightingPanel orgId="org-123" />
-      </QueryClientProvider>,
+      <AnomalyHighlightingPanel orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
+    // Wait for the error card to be rendered (it contains the error message)
     await waitFor(() => {
-      // Component should show error state when fetch fails
-      // The error will be "Failed to fetch anomalies: Server Error"
-      const errorContent = screen.queryByText(/Failed to fetch anomalies/i);
-      expect(errorContent).toBeInTheDocument();
+      const errorCard = screen.getByText(/Failed to fetch anomalies/i);
+      expect(errorCard).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
