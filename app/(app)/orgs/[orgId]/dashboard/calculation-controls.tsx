@@ -43,6 +43,7 @@ export function CalculationControls({
   const [isPending, startTransition] = useTransition();
   const [run, setRun] = useState<RunResult | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const failureCountRef = useRef<number>(0);
 
   function stopPolling() {
     if (pollRef.current) {
@@ -58,7 +59,19 @@ export function CalculationControls({
   async function pollRunStatus(runId: string) {
     try {
       const res = await fetch(`/api/orgs/${orgId}/calculation-runs/${runId}`);
-      if (!res.ok) return;
+      if (!res.ok) {
+        failureCountRef.current += 1;
+        if (failureCountRef.current >= 3) {
+          stopPolling();
+          setRun((prev) => ({
+            ...prev!,
+            status: "failed",
+            errorMessage: "Failed to fetch calculation status. Please refresh the page.",
+          }));
+        }
+        return;
+      }
+      failureCountRef.current = 0;
       const found: RunResult = await res.json();
       setRun(found);
       if (found.status === "succeeded" || found.status === "failed") {
@@ -66,12 +79,21 @@ export function CalculationControls({
         router.refresh();
       }
     } catch {
-      // network blip — keep polling
+      failureCountRef.current += 1;
+      if (failureCountRef.current >= 3) {
+        stopPolling();
+        setRun((prev) => ({
+          ...prev!,
+          status: "failed",
+          errorMessage: "Network error. Unable to fetch calculation status. Please refresh the page.",
+        }));
+      }
     }
   }
 
   function startPolling(runId: string) {
     stopPolling();
+    failureCountRef.current = 0;
     pollRef.current = setInterval(() => pollRunStatus(runId), 3000);
   }
 
