@@ -6,13 +6,14 @@ process.env.BETTER_AUTH_SECRET ??= "carbonsite-test-secret";
 
 export default defineConfig({
   test: {
-    environment: "node",
+    environment: "jsdom",
     globals: true,
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
       "tests/api/**",
     ],
+    setupFiles: ["./vitest.setup.ts"],
   },
   resolve: {
     alias: {
