@@ -17,7 +17,19 @@ export interface BlogPost extends BlogPostMeta {
   content: string;
 }
 
-const postsDirectory = path.join(process.cwd(), 'content/blog');
+// Resolve blog directory path reliably in Next.js context
+const POSTS_DIR = (() => {
+  const cwd = process.cwd();
+  const postsPath = path.join(cwd, 'content', 'blog');
+
+  if (!fs.existsSync(postsPath)) {
+    console.warn(`[Blog] Posts directory not found at ${postsPath}`);
+  }
+
+  return postsPath;
+})();
+
+const postsDirectory = POSTS_DIR;
 
 export function getPosts(): BlogPostMeta[] {
   if (!fs.existsSync(postsDirectory)) return [];
@@ -46,34 +58,53 @@ export function getPosts(): BlogPostMeta[] {
 }
 
 export function getPost(slug: string): BlogPost | null {
-  if (!fs.existsSync(postsDirectory)) return null;
-
-  const fullPath = path.join(postsDirectory, `${slug}.mdx`);
-  
-  if (!fs.existsSync(fullPath)) {
+  if (!fs.existsSync(postsDirectory)) {
+    console.warn(`[getPost] Directory not found: ${postsDirectory}`);
     return null;
   }
 
-  const fileContents = fs.readFileSync(fullPath, 'utf8');
-  const { data, content } = matter(fileContents);
-  const readingTime = Math.ceil(content.split(/\s+/).length / 200);
+  const fullPath = path.join(postsDirectory, `${slug}.mdx`);
 
-  return {
-    slug,
-    title: data.title || slug,
-    excerpt: data.excerpt || '',
-    date: data.date || new Date().toISOString().split('T')[0],
-    author: data.author || 'CarbonSite',
-    readingTime,
-    tags: data.tags || [],
-    image: data.image,
-    content,
-  };
+  if (!fs.existsSync(fullPath)) {
+    console.warn(`[getPost] File not found: ${fullPath}`);
+    return null;
+  }
+
+  try {
+    const fileContents = fs.readFileSync(fullPath, 'utf8');
+    const { data, content } = matter(fileContents);
+    const readingTime = Math.ceil(content.split(/\s+/).length / 200);
+
+    console.log(`[getPost] Successfully loaded: ${slug}`);
+
+    return {
+      slug,
+      title: data.title || slug,
+      excerpt: data.excerpt || '',
+      date: data.date || new Date().toISOString().split('T')[0],
+      author: data.author || 'CarbonSite',
+      readingTime,
+      tags: data.tags || [],
+      image: data.image,
+      content,
+    };
+  } catch (error) {
+    console.error(`[getPost] Error reading ${slug}:`, error);
+    return null;
+  }
 }
 
 export function getPostSlugs(): string[] {
-  if (!fs.existsSync(postsDirectory)) return [];
-  return fs.readdirSync(postsDirectory)
-    .filter((f) => f.endsWith('.mdx'))
-    .map((f) => f.replace(/\.mdx?$/, ''));
+  if (!fs.existsSync(postsDirectory)) {
+    console.warn(`[getPostSlugs] Directory not found: ${postsDirectory}`);
+    return [];
+  }
+  const files = fs.readdirSync(postsDirectory);
+  const mdxFiles = files.filter((f) => f.endsWith('.mdx'));
+  const slugs = mdxFiles.map((f) => f.replace(/\.mdx?$/, ''));
+  console.log(`[getPostSlugs] Directory: ${postsDirectory}`);
+  console.log(`[getPostSlugs] Files found: ${files.length}`);
+  console.log(`[getPostSlugs] MDX files: ${mdxFiles.length}`);
+  console.log(`[getPostSlugs] Slugs: ${JSON.stringify(slugs)}`);
+  return slugs;
 }
