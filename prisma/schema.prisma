@@ -224,6 +224,7 @@ model Organization {
   airbiteConnectors           AirbiteConnector[]           @relation("AirbiteConnectors")
   airbyteSyncLogs             AirbyteSyncLog[]             @relation("AirbyteSyncLogs")
   forecasts                   Forecast[]                   @relation("Forecasts")
+  causalInferenceRuns         CausalInferenceRun[]         @relation("CausalInferenceRuns")
 
   @@map("organizations")
 }
@@ -3109,5 +3110,37 @@ model Forecast {
   @@index([organizationId, forecastType, generatedAt(sort: Desc)])
   @@index([organizationId, validUntil])
   @@map("forecasts")
+}
+
+// Causal Inference Runs — Root cause analysis via DoWhy
+// Stores results of causal analysis (facility upgrades, supplier switches, process changes)
+model CausalInferenceRun {
+  id                            String    @id @default(cuid())
+  organizationId                String    @map("organization_id")
+  question                      String    // Natural language question (e.g., "What impact did our facility upgrade have?")
+  treatment                     String    // Treatment variable (e.g., "upgraded_facility")
+  outcome                       String    // Outcome variable (e.g., "emissions_reduction_pct")
+  treatmentEffect               Decimal?  @db.Decimal(10, 4) // ATE — Average Treatment Effect
+  confidenceIntervalLower       Decimal?  @db.Decimal(10, 4)
+  confidenceIntervalUpper       Decimal?  @db.Decimal(10, 4)
+  pValue                        Decimal?  @db.Decimal(5, 4) // Statistical significance
+  robustnessToUnmeasuredConf    Decimal?  @db.Decimal(3, 2) // 0-1 scale; robustness to hidden confounders
+  sampleSize                    Int? // N of matched pairs used in estimation
+  method                        String? // "backdoor", "propensity_score", "iv", "sensitivity"
+  causalGraph                   Json? // Graph structure and confounders
+  modelId                       String? @map("model_id") // Reference to predefined model (facility_upgrade, etc)
+  confounders                   Json? // Array of confounder variable names
+  resultSummary                 String? @map("result_summary") // Plain-language interpretation
+  status                        String @default("completed") // "queued", "processing", "completed", "failed"
+  errorMessage                  String? @map("error_message")
+  createdAt                     DateTime @default(now()) @map("created_at")
+  updatedAt                     DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation("CausalInferenceRuns", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([organizationId, status])
+  @@index([organizationId, modelId])
+  @@map("causal_inference_runs")
 }
 

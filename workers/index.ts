@@ -9,6 +9,7 @@ import type {
   CalculationJobData,
   ReportJobData,
   NotificationJobData,
+  CausalAnalysisJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -20,6 +21,7 @@ import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detec
 import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
 import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
 import type { ForecastingJobData } from "@/lib/jobs/workers/forecasting";
+import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
 
 interface InvoiceAnomalyJobData {
   organizationId: string;
@@ -151,7 +153,21 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, supplier-performance, forecasting)");
+  // ── Causal Analysis ───────────────────────────────────────────────────────
+  await boss.work<CausalAnalysisJobData>(
+    "causal-analysis",
+    { localConcurrency: 2 },
+    async (jobs: Job<CausalAnalysisJobData>[]) => {
+      for (const job of jobs) {
+        const { causalInferenceRunId, orgId } = job.data;
+        console.log(`[causal-analysis] processing run ${causalInferenceRunId}`);
+        await processCausalAnalysisRun(causalInferenceRunId, orgId);
+        console.log(`[causal-analysis] finished run ${causalInferenceRunId}`);
+      }
+    },
+  );
+
+  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, supplier-performance, forecasting, causal-analysis)");
 }
 
 start().catch((err) => {
