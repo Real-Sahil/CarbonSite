@@ -212,7 +212,7 @@ describe('useDrillDown', () => {
         ok: true,
         json: () => Promise.resolve(mockData),
       })
-    );
+    ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
@@ -263,7 +263,7 @@ describe('useDrillDown', () => {
             byFacility: [],
           }),
       });
-    });
+    }) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
@@ -295,7 +295,7 @@ describe('useDrillDown', () => {
             byFacility: [],
           }),
       })
-    );
+    ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
@@ -341,7 +341,7 @@ describe('useDrillDown', () => {
         ok: true,
         json: () => Promise.resolve(mockData),
       })
-    );
+    ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
@@ -376,7 +376,7 @@ describe('useDrillDown', () => {
         ok: true,
         json: () => Promise.resolve(mockData),
       })
-    );
+    ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),

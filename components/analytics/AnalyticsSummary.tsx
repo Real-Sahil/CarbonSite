@@ -32,11 +32,11 @@ export function AnalyticsSummary({ orgId }: { orgId: string }) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const scopeItems = scopeData?.data || [];
-  const trendItems = trendData?.data || [];
+  const scopeItems: Array<{ name: string; value: number; scope: number }> = scopeData?.data || [];
+  const trendItems: Array<{ date: string; totalCo2e: number }> = trendData?.data || [];
 
   const totalEmissions =
-    scopeItems.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
+    scopeItems.reduce((sum: number, item: typeof scopeItems[0]) => sum + (item.value || 0), 0) || 0;
 
   const lastWeekEnd = trendItems.slice(-1)[0]?.totalCo2e || 0;
   const lastWeekStart = trendItems.slice(-8, -1)[0]?.totalCo2e || 0;

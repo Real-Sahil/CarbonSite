@@ -52,7 +52,7 @@ export function CategoryBreakdownChart({ orgId }: { orgId: string }) {
             fill="#8884d8"
             dataKey="value"
           >
-            {chartData.map((entry, index) => (
+            {chartData.map((entry: typeof chartData[0], index: number) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>

@@ -322,8 +322,8 @@ describe('useAnomalies', () => {
       expect(result.current.error).toBeDefined();
     });
 
-    if (result.current.error instanceof Error) {
-      expect(result.current.error.message).toContain('Failed to fetch anomalies');
+    if (result.current.error) {
+      expect(((result.current.error as unknown) as Error).message).toContain('Failed to fetch anomalies');
     }
   });
 

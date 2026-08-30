@@ -12,34 +12,33 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
 
-    const categories = await prisma.emissionCalculation.groupBy({
-      by: ["emissionCategoryId"],
-      where: {
-        organizationId: orgId,
-      },
-      _sum: {
-        totalCo2e: true,
-      },
-      orderBy: {
-        _sum: {
-          totalCo2e: "desc",
-        },
-      },
+    // Get latest calculation run
+    const latestRun = await prisma.calculationRun.findFirst({
+      where: { organizationId: orgId },
+      orderBy: { createdAt: "desc" },
+      select: { id: true },
     });
 
-    // Get category names
-    const categoryIds = categories.map((c) => c.emissionCategoryId);
-    const categoryNames = await prisma.emissionCategory.findMany({
-      where: { id: { in: categoryIds } },
-      select: { id: true, name: true },
-    });
+    if (!latestRun) {
+      return NextResponse.json({ data: [] });
+    }
 
-    const nameMap = new Map(categoryNames.map((c) => [c.id, c.name]));
+    // Raw SQL query to get emissions by category
+    const result = await prisma.$queryRaw<Array<{ category_id: string; category_name: string; total: bigint }>>`
+      SELECT ec.id as category_id, ec.name as category_name, SUM(CAST(em.total_co2e AS BIGINT)) as total
+      FROM emission_calculations em
+      JOIN activity_records ar ON em.activity_record_id = ar.id
+      JOIN emission_categories ec ON ar.emission_category_id = ec.id
+      WHERE em.organization_id = ${orgId}
+      AND em.calculation_run_id = ${latestRun.id}
+      GROUP BY ec.id, ec.name
+      ORDER BY total DESC
+    `;
 
-    const data = categories.map((item) => ({
-      categoryId: item.emissionCategoryId,
-      name: nameMap.get(item.emissionCategoryId) || "Unknown",
-      value: item._sum.totalCo2e ?? 0,
+    const data = result.map((item) => ({
+      categoryId: item.category_id,
+      name: item.category_name,
+      value: Number(item.total || 0) / 1000000, // Convert from smallest unit
     }));
 
     return NextResponse.json({ data });

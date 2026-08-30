@@ -14,43 +14,36 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
 
-    const facilities = await prisma.emissionCalculation.groupBy({
-      by: ["facilityId"],
-      where: {
-        organizationId: orgId,
-        facilityId: { not: null },
-      },
-      _sum: {
-        totalCo2e: true,
-      },
-      _count: {
-        id: true,
-      },
-      orderBy: {
-        _sum: {
-          totalCo2e: "desc",
-        },
-      },
-      take: limit,
+    // Get latest calculation run
+    const latestRun = await prisma.calculationRun.findFirst({
+      where: { organizationId: orgId },
+      orderBy: { createdAt: "desc" },
+      select: { id: true },
     });
 
-    // Get facility names
-    const facilityIds = facilities
-      .map((f) => f.facilityId)
-      .filter((id) => id !== null) as string[];
+    if (!latestRun) {
+      return NextResponse.json({ data: [] });
+    }
 
-    const facilityNames = await prisma.facility.findMany({
-      where: { id: { in: facilityIds } },
-      select: { id: true, name: true },
-    });
+    // Raw SQL query to get emissions by facility
+    const result = await prisma.$queryRaw<Array<{ facility_id: string; facility_name: string; total: bigint; record_count: bigint }>>`
+      SELECT ar.facility_id, f.name as facility_name, SUM(CAST(em.total_co2e AS BIGINT)) as total, COUNT(em.id) as record_count
+      FROM emission_calculations em
+      JOIN activity_records ar ON em.activity_record_id = ar.id
+      LEFT JOIN facilities f ON ar.facility_id = f.id
+      WHERE em.organization_id = ${orgId}
+      AND em.calculation_run_id = ${latestRun.id}
+      AND ar.facility_id IS NOT NULL
+      GROUP BY ar.facility_id, f.name
+      ORDER BY total DESC
+      LIMIT ${limit}
+    `;
 
-    const nameMap = new Map(facilityNames.map((f) => [f.id, f.name]));
-
-    const data = facilities.map((item) => ({
-      facilityId: item.facilityId,
-      name: nameMap.get(item.facilityId) || "Unknown",
-      totalCo2e: item._sum.totalCo2e ?? 0,
-      recordCount: item._count.id,
+    const data = result.map((item) => ({
+      facilityId: item.facility_id,
+      name: item.facility_name || "Unknown",
+      totalCo2e: Number(item.total || 0) / 1000000, // Convert from smallest unit
+      recordCount: Number(item.record_count),
     }));
 
     return NextResponse.json({ data });

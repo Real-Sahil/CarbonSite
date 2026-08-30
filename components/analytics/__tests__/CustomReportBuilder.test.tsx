@@ -300,16 +300,17 @@ describe('CustomReportBuilder', () => {
 
   it('should show loading state while generating', async () => {
     let reportRequestMade = false;
-    global.fetch = vi.fn((url) => {
-      if (url.includes('reporting-periods')) {
+    global.fetch = vi.fn(((url: string | URL | Request) => {
+      const urlString = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url;
+      if (urlString.includes('reporting-periods')) {
         return Promise.resolve(createMockResponse(mockPeriods));
       }
-      if (url.includes('reports')) {
+      if (urlString.includes('reports')) {
         reportRequestMade = true;
         return new Promise(() => {}); // Never resolves for report generation
       }
       return Promise.resolve(createMockResponse({}));
-    });
+    }) as typeof fetch);
 
     render(
       <CustomReportBuilder orgId="org-123" />,
