@@ -62,7 +62,18 @@ export function DrillDownDashboard({
     return (
       <Card className="border-red-200 bg-red-50">
         <CardContent className="pt-6">
-          <p className="text-sm text-red-800">{error}</p>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-red-800">Error loading analytics</p>
+              <p className="mt-1 text-sm text-red-700">{error}</p>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-sm font-medium text-red-600 hover:text-red-700 underline"
+            >
+              Reload page
+            </button>
+          </div>
         </CardContent>
       </Card>
     );

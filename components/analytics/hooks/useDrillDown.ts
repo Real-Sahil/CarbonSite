@@ -57,7 +57,7 @@ export function useDrillDown(orgId: string, initialFilters?: DrillDownFilters) {
   const [filters, setFilters] = useState<DrillDownFilters>(initialFilters || {});
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['drill-down', orgId, filters],
+    queryKey: ['drill-down', orgId, JSON.stringify(filters)],
     queryFn: async () => {
       const response = await fetch(`/api/orgs/${orgId}/analytics/drill-down`, {
         method: 'POST',
@@ -69,11 +69,22 @@ export function useDrillDown(orgId: string, initialFilters?: DrillDownFilters) {
       });
 
       if (!response.ok) {
-        throw new Error(`Drill-down query failed: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Drill-down query failed: ${response.statusText}`
+        );
       }
 
-      return response.json() as Promise<DrillDownResult>;
+      const result = await response.json();
+      if (!result.period) {
+        throw new Error('Invalid drill-down response: missing period data');
+      }
+      return result as DrillDownResult;
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
+    retry: 1,
+    retryDelay: 1000,
   });
 
   const updateFilters = useCallback((newFilters: Partial<DrillDownFilters>) => {

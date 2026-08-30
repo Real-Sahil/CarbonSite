@@ -228,6 +228,7 @@ describe('useDrillDown', () => {
       Promise.resolve({
         ok: false,
         statusText: 'Internal Server Error',
+        json: () => Promise.resolve({ message: 'Server error' }),
       }) as any
     );
 
@@ -236,13 +237,16 @@ describe('useDrillDown', () => {
     });
 
     // Wait for the error to be captured and error state to be set
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.isLoading).toBe(false);
+      },
+      { timeout: 3000 }
+    );
 
     // Error should be captured as a string from the Error message
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error).toContain('Drill-down query failed');
+    expect(result.current.error).toMatch(/Server error|Drill-down query failed/);
   });
 
   it('should refetch data', async () => {
