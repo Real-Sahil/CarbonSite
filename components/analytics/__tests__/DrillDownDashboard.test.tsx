@@ -4,6 +4,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 
+const createMockResponse = (data: any, ok = true, status = 200): Response => {
+  return new Response(JSON.stringify(data), {
+    status,
+    statusText: ok ? 'OK' : 'Error',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -67,10 +75,7 @@ const mockDrillDownData = {
 describe('DrillDownDashboard', () => {
   beforeEach(() => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockDrillDownData),
-      })
+      Promise.resolve(createMockResponse(mockDrillDownData))
     );
   });
 
@@ -240,10 +245,7 @@ describe('DrillDownDashboard', () => {
 
   it('should handle error state', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: false,
-        statusText: 'Error',
-      })
+      Promise.resolve(createMockResponse({}, false, 500))
     );
 
     render(

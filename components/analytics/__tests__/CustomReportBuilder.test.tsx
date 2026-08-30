@@ -4,6 +4,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 
+const createMockResponse = (data: any, ok = true, status = 200): Response => {
+  return new Response(JSON.stringify(data), {
+    status,
+    statusText: ok ? 'OK' : 'Error',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -25,28 +33,20 @@ describe('CustomReportBuilder', () => {
   beforeEach(() => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
 
       if (url.includes('reports')) {
-        return Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              id: 'rpt1',
-              status: 'ready',
-              downloadUrl: 'https://example.com/report.pdf',
-            }),
-        });
+        return Promise.resolve(
+          createMockResponse({
+            id: 'rpt1',
+            status: 'ready',
+            downloadUrl: 'https://example.com/report.pdf',
+          })
+        );
       }
 
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     // Mock URL.createObjectURL
@@ -57,15 +57,9 @@ describe('CustomReportBuilder', () => {
   it('should render report builder form', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -81,15 +75,9 @@ describe('CustomReportBuilder', () => {
   it('should have title input field', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -106,15 +94,9 @@ describe('CustomReportBuilder', () => {
   it('should have description input field', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -135,15 +117,9 @@ describe('CustomReportBuilder', () => {
   it('should load and display reporting periods', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -161,15 +137,9 @@ describe('CustomReportBuilder', () => {
   it('should allow selecting multiple periods', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -286,15 +256,9 @@ describe('CustomReportBuilder', () => {
   it('should disable generate button when no periods selected', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -313,15 +277,9 @@ describe('CustomReportBuilder', () => {
   it('should enable generate button when periods selected', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -344,19 +302,13 @@ describe('CustomReportBuilder', () => {
     let reportRequestMade = false;
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
       if (url.includes('reports')) {
         reportRequestMade = true;
         return new Promise(() => {}); // Never resolves for report generation
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -381,21 +333,12 @@ describe('CustomReportBuilder', () => {
   it('should show error message on generation failure', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
       if (url.includes('reports')) {
-        return Promise.resolve({
-          ok: false,
-          statusText: 'Internal Server Error',
-        });
+        return Promise.resolve(createMockResponse({}, false, 500));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -417,15 +360,9 @@ describe('CustomReportBuilder', () => {
   it('should validate period selection', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -446,15 +383,9 @@ describe('CustomReportBuilder', () => {
   it('should show tips section', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -473,15 +404,9 @@ describe('CustomReportBuilder', () => {
   it('should handle PDF format selection', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -496,15 +421,9 @@ describe('CustomReportBuilder', () => {
   it('should handle CSV format selection', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -520,15 +439,9 @@ describe('CustomReportBuilder', () => {
   it('should handle JSON format selection', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -544,15 +457,9 @@ describe('CustomReportBuilder', () => {
   it('should toggle content options', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -576,10 +483,7 @@ describe('CustomReportBuilder', () => {
 
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
       if (url.includes('reports')) {
         return Promise.resolve({
@@ -592,10 +496,7 @@ describe('CustomReportBuilder', () => {
             }),
         });
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(
@@ -620,10 +521,7 @@ describe('CustomReportBuilder', () => {
   it('should format report title for filename', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
       if (url.includes('reports')) {
         return Promise.resolve({
@@ -637,10 +535,7 @@ describe('CustomReportBuilder', () => {
             }),
         });
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     // This tests the internal logic of generating filenames
@@ -676,15 +571,9 @@ describe('CustomReportBuilder', () => {
   it('should handle default content options', async () => {
     global.fetch = vi.fn((url) => {
       if (url.includes('reporting-periods')) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockPeriods),
-        });
+        return Promise.resolve(createMockResponse(mockPeriods));
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      });
+      return Promise.resolve(createMockResponse({}));
     });
 
     render(

@@ -97,41 +97,41 @@ export async function POST(
 
     // By scope
     if (query.dimensions.includes("scope")) {
-      const scopeData = await prisma.dashboardAggregate.groupBy({
-        by: ["scope"],
-        where: whereClause,
-        _sum: {
-          totalCo2e: true,
-          scope1Co2e: true,
-          scope2Co2e: true,
-          scope3Co2e: true,
-        },
-        orderBy: { _sum: { totalCo2e: "desc" } },
-      });
+      const scopeData = await prisma.$queryRaw<
+        Array<{ scope: number; totalCo2e: number }>
+      >`
+        SELECT ec.scope, COALESCE(CAST(SUM(ar.amount) AS NUMERIC), 0) as totalCo2e
+        FROM activity_records ar
+        JOIN emission_categories ec ON ar.emission_category_id = ec.id
+        WHERE ar.organization_id = ${orgId}
+          AND ar.reporting_period_id = ${activePeriod.id}
+          AND ar.review_status = 'approved'
+        GROUP BY ec.scope
+        ORDER BY totalCo2e DESC
+      `;
 
       drillDownResults.byScope = scopeData.map((item) => ({
         scope: item.scope,
-        totalCo2e: item._sum.totalCo2e || 0,
-        scope1: item._sum.scope1Co2e || 0,
-        scope2: item._sum.scope2Co2e || 0,
-        scope3: item._sum.scope3Co2e || 0,
+        totalCo2e: Number(item.totalCo2e),
       }));
     }
 
     // By category
     if (query.dimensions.includes("category")) {
-      const categoryData = await prisma.dashboardAggregate.groupBy({
-        by: ["categoryId"],
+      const categoryData = await prisma.activityRecord.groupBy({
+        by: ["emissionCategoryId"],
         where: whereClause,
-        _sum: { totalCo2e: true },
+        _sum: { amount: true },
         _count: { id: true },
-        orderBy: { _sum: { totalCo2e: "desc" } },
+        orderBy: { _sum: { amount: "desc" } },
         take: query.limit,
         skip: query.offset,
       });
 
       // Fetch category names
-      const categoryIds = categoryData.map((c) => c.categoryId).filter(Boolean) as string[];
+      const categoryIds = categoryData
+        .map((c) => c.emissionCategoryId)
+        .filter(Boolean) as string[];
       const categories = await prisma.emissionCategory.findMany({
         where: { id: { in: categoryIds } },
         select: { id: true, name: true, scope: true },
@@ -140,12 +140,14 @@ export async function POST(
       const categoryMap = new Map(categories.map((c) => [c.id, c]));
 
       drillDownResults.byCategory = categoryData.map((item) => {
-        const cat = item.categoryId ? categoryMap.get(item.categoryId) : null;
+        const cat = item.emissionCategoryId
+          ? categoryMap.get(item.emissionCategoryId)
+          : null;
         return {
-          categoryId: item.categoryId,
+          categoryId: item.emissionCategoryId,
           categoryName: cat?.name || "Unknown",
           scope: cat?.scope,
-          totalCo2e: item._sum.totalCo2e || 0,
+          totalCo2e: Number(item._sum.amount) || 0,
           recordCount: item._count.id,
         };
       });
@@ -153,21 +155,23 @@ export async function POST(
 
     // By facility
     if (query.dimensions.includes("facility")) {
-      const facilityData = await prisma.dashboardAggregate.groupBy({
+      const facilityData = await prisma.activityRecord.groupBy({
         by: ["facilityId"],
         where: whereClause,
-        _sum: { totalCo2e: true },
+        _sum: { amount: true },
         _count: { id: true },
-        orderBy: { _sum: { totalCo2e: "desc" } },
+        orderBy: { _sum: { amount: "desc" } },
         take: query.limit,
         skip: query.offset,
       });
 
       // Fetch facility names
-      const facilityIds = facilityData.map((f) => f.facilityId).filter(Boolean) as string[];
+      const facilityIds = facilityData
+        .map((f) => f.facilityId)
+        .filter(Boolean) as string[];
       const facilities = await prisma.facility.findMany({
         where: { id: { in: facilityIds } },
-        select: { id: true, name: true, location: true },
+        select: { id: true, name: true, country: true, region: true },
       });
 
       const facilityMap = new Map(facilities.map((f) => [f.id, f]));
@@ -177,8 +181,8 @@ export async function POST(
         return {
           facilityId: item.facilityId,
           facilityName: fac?.name || "Unknown",
-          location: fac?.location,
-          totalCo2e: item._sum.totalCo2e || 0,
+          location: fac?.region || fac?.country || null,
+          totalCo2e: Number(item._sum.amount) || 0,
           recordCount: item._count.id,
         };
       });
@@ -191,15 +195,43 @@ export async function POST(
         select: {
           id: true,
           sourceDescription: true,
-          normalizedAmount: true,
-          category: { select: { id: true, name: true } },
-          facility: { select: { id: true, name: true } },
+          amount: true,
+          emissionCategoryId: true,
+          facilityId: true,
         },
-        orderBy: { normalizedAmount: "desc" },
+        orderBy: { amount: "desc" },
         take: 10,
       });
 
-      drillDownResults.topContributors = topRecords;
+      // Fetch category and facility names
+      const categoryIds = topRecords
+        .map((r) => r.emissionCategoryId)
+        .filter(Boolean) as string[];
+      const facilityIds = topRecords
+        .map((r) => r.facilityId)
+        .filter(Boolean) as string[];
+
+      const categories = await prisma.emissionCategory.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true, name: true },
+      });
+      const facilityNames = await prisma.facility.findMany({
+        where: { id: { in: facilityIds } },
+        select: { id: true, name: true },
+      });
+
+      const categoryMap = new Map(categories.map((c) => [c.id, c]));
+      const facilityMap = new Map(facilityNames.map((f) => [f.id, f]));
+
+      drillDownResults.topContributors = topRecords.map((r) => ({
+        id: r.id,
+        sourceDescription: r.sourceDescription,
+        amount: Number(r.amount),
+        category: r.emissionCategoryId
+          ? categoryMap.get(r.emissionCategoryId)
+          : null,
+        facility: r.facilityId ? facilityMap.get(r.facilityId) : null,
+      }));
     }
 
     // Comparison with previous period (if requested)
@@ -208,19 +240,28 @@ export async function POST(
         where: {
           organizationId: orgId,
           reportingPeriodId: query.comparisonPeriodId,
-          reviewStatus: "approved",
         },
         _sum: { totalCo2e: true },
       });
 
       const currentAgg = await prisma.dashboardAggregate.aggregate({
-        where: whereClause,
+        where: {
+          organizationId: orgId,
+          reportingPeriodId: activePeriod.id,
+        },
         _sum: { totalCo2e: true },
       });
 
-      const comparisonCo2e = comparisonAgg._sum.totalCo2e || 0;
-      const currentCo2e = currentAgg._sum.totalCo2e || 0;
-      const change = comparisonCo2e > 0 ? ((currentCo2e - comparisonCo2e) / comparisonCo2e) * 100 : 0;
+      const comparisonCo2e = comparisonAgg._sum?.totalCo2e
+        ? Number(comparisonAgg._sum.totalCo2e)
+        : 0;
+      const currentCo2e = currentAgg._sum?.totalCo2e
+        ? Number(currentAgg._sum.totalCo2e)
+        : 0;
+      const change =
+        comparisonCo2e > 0
+          ? ((currentCo2e - comparisonCo2e) / comparisonCo2e) * 100
+          : 0;
 
       drillDownResults.comparison = {
         previousCo2e: comparisonCo2e,
