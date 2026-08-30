@@ -34,6 +34,7 @@ export type AirbyteSyncJobData = { connectionId: string; syncRunId?: string; rec
 export type SupplierPerformanceJobData = { orgId: string; supplierId: string };
 export type InvoiceAnomalyJobData = { orgId: string };
 export type XeroSyncJobData = { orgId: string; fromDate?: string };
+export type CausalAnalysisJobData = { causalInferenceRunId: string; orgId: string };
 
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
@@ -89,4 +90,9 @@ export async function enqueueInvoiceAnomalyDetection(data: InvoiceAnomalyJobData
 export async function enqueueXeroSync(data: XeroSyncJobData) {
   await ensureBossStarted();
   await boss.send("xero-sync", data, retry);
+}
+
+export async function enqueueCausalAnalysis(data: CausalAnalysisJobData) {
+  await ensureBossStarted();
+  await boss.send("causal-analysis", data, retry);
 }
