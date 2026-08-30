@@ -486,15 +486,13 @@ describe('CustomReportBuilder', () => {
         return Promise.resolve(createMockResponse(mockPeriods));
       }
       if (url.includes('reports')) {
-        return Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              id: 'rpt1',
-              status: 'ready',
-              downloadUrl: 'https://example.com/report.pdf',
-            }),
-        });
+        return Promise.resolve(
+          createMockResponse({
+            id: 'rpt1',
+            status: 'ready',
+            downloadUrl: 'https://example.com/report.pdf',
+          })
+        );
       }
       return Promise.resolve(createMockResponse({}));
     });
@@ -524,16 +522,13 @@ describe('CustomReportBuilder', () => {
         return Promise.resolve(createMockResponse(mockPeriods));
       }
       if (url.includes('reports')) {
-        return Promise.resolve({
-          ok: true,
-          blob: () => Promise.resolve(new Blob(['mock pdf'], { type: 'application/pdf' })),
-          json: () =>
-            Promise.resolve({
-              id: 'rpt1',
-              status: 'ready',
-              downloadUrl: 'https://example.com/report.pdf',
-            }),
-        });
+        return Promise.resolve(
+          createMockResponse({
+            id: 'rpt1',
+            status: 'ready',
+            downloadUrl: 'https://example.com/report.pdf',
+          })
+        );
       }
       return Promise.resolve(createMockResponse({}));
     });

@@ -4,6 +4,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 
+const createMockResponse = (data: any, ok = true, status = 200): Response => {
+  return new Response(JSON.stringify(data), {
+    status,
+    statusText: ok ? 'OK' : 'Error',
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -32,24 +40,22 @@ describe('useDrillDown', () => {
 
   it('should fetch drill-down data with POST request', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            dimensions: ['scope', 'category', 'facility'],
-            byScope: [
-              {
-                scope: 1,
-                totalCo2e: 1000,
-                percentage: 50,
-              },
-            ],
-            byCategory: [],
-            byFacility: [],
-            topContributors: [],
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          dimensions: ['scope', 'category', 'facility'],
+          byScope: [
+            {
+              scope: 1,
+              totalCo2e: 1000,
+              percentage: 50,
+            },
+          ],
+          byCategory: [],
+          byFacility: [],
+          topContributors: [],
+        })
+      )
     );
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
@@ -66,17 +72,15 @@ describe('useDrillDown', () => {
 
   it('should handle initial filters', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            dimensions: ['scope', 'category', 'facility'],
-            byScope: [],
-            byCategory: [],
-            byFacility: [],
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          dimensions: ['scope', 'category', 'facility'],
+          byScope: [],
+          byCategory: [],
+          byFacility: [],
+        })
+      )
     );
 
     const initialFilters = {
@@ -94,17 +98,15 @@ describe('useDrillDown', () => {
 
   it('should update filters', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            dimensions: ['scope', 'category', 'facility'],
-            byScope: [],
-            byCategory: [],
-            byFacility: [],
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          dimensions: ['scope', 'category', 'facility'],
+          byScope: [],
+          byCategory: [],
+          byFacility: [],
+        })
+      )
     );
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
@@ -126,17 +128,15 @@ describe('useDrillDown', () => {
 
   it('should clear filters', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
-            dimensions: ['scope', 'category', 'facility'],
-            byScope: [],
-            byCategory: [],
-            byFacility: [],
-          }),
-      })
+      Promise.resolve(
+        createMockResponse({
+          period: { id: 'p1', label: 'Q1 2024', startDate: '2024-01-01' },
+          dimensions: ['scope', 'category', 'facility'],
+          byScope: [],
+          byCategory: [],
+          byFacility: [],
+        })
+      )
     );
 
     const { result } = renderHook(
@@ -176,10 +176,7 @@ describe('useDrillDown', () => {
     };
 
     global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockData),
-      })
+      Promise.resolve(createMockResponse(mockData))
     );
 
     const { result } = renderHook(() => useDrillDown('org-123'), {

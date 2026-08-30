@@ -264,7 +264,7 @@ describe('DrillDownDashboard', () => {
   });
 
   it('should display loading skeleton', async () => {
-    global.fetch = vi.fn(() => new Promise(() => {})); // Never resolves
+    global.fetch = vi.fn(() => new Promise<Response>(() => {})); // Never resolves
 
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>

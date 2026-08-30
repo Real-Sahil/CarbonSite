@@ -36,9 +36,9 @@ export async function GET(
   { params }: { params: Promise<{ orgId: string }> }
 ) {
   const { orgId } = await params;
-  const userId = (await requireOrgMember(orgId)).userId;
+  const auth = await requireOrgMember(orgId);
 
-  if (!userId) {
+  if (!auth || !auth.session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
