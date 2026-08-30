@@ -55,10 +55,21 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should render report builder form', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
@@ -68,10 +79,21 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should have title input field', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
@@ -82,10 +104,21 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should have description input field', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
@@ -100,10 +133,21 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should load and display reporting periods', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
@@ -115,10 +159,21 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should allow selecting multiple periods', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
@@ -127,7 +182,7 @@ describe('CustomReportBuilder', () => {
       expect(checkboxes.length).toBeGreaterThanOrEqual(3);
     });
 
-    const firstPeriodCheckbox = screen.getByLabelText('Q1 2024') as HTMLInputElement;
+    const firstPeriodCheckbox = await screen.findByLabelText('Q1 2024') as HTMLInputElement;
     fireEvent.click(firstPeriodCheckbox);
 
     expect(firstPeriodCheckbox.checked).toBe(true);
@@ -229,10 +284,21 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should disable generate button when no periods selected', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
@@ -245,17 +311,26 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should enable generate button when periods selected', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      const periodCheckbox = screen.getByLabelText('Q1 2024');
-      fireEvent.click(periodCheckbox);
-    });
+    const periodCheckbox = await screen.findByLabelText('Q1 2024');
+    fireEvent.click(periodCheckbox);
 
     await waitFor(() => {
       const generateButton = screen.getByText(
@@ -266,19 +341,31 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should show loading state while generating', async () => {
-    global.fetch = vi.fn(() => new Promise(() => {})); // Never resolves
+    let reportRequestMade = false;
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      if (url.includes('reports')) {
+        reportRequestMade = true;
+        return new Promise(() => {}); // Never resolves for report generation
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
 
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      const periodCheckbox = screen.getByLabelText('Q1 2024');
-      fireEvent.click(periodCheckbox);
-    });
+    const periodCheckbox = await screen.findByLabelText('Q1 2024');
+    fireEvent.click(periodCheckbox);
 
     const generateButton = screen.getByText('Generate Report');
     fireEvent.click(generateButton);
@@ -293,6 +380,12 @@ describe('CustomReportBuilder', () => {
 
   it('should show error message on generation failure', async () => {
     global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
       if (url.includes('reports')) {
         return Promise.resolve({
           ok: false,
@@ -301,21 +394,17 @@ describe('CustomReportBuilder', () => {
       }
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve(mockPeriods),
+        json: () => Promise.resolve({}),
       });
     });
 
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      const periodCheckbox = screen.getByLabelText('Q1 2024');
-      fireEvent.click(periodCheckbox);
-    });
+    const periodCheckbox = await screen.findByLabelText('Q1 2024');
+    fireEvent.click(periodCheckbox);
 
     const generateButton = screen.getByText('Generate Report');
     fireEvent.click(generateButton);
@@ -326,17 +415,26 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should validate period selection', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      const generateButton = screen.getByText('Generate Report');
-      fireEvent.click(generateButton);
-    });
+    const generateButton = await screen.findByText('Generate Report');
+    fireEvent.click(generateButton);
 
     await waitFor(() => {
       expect(
@@ -346,10 +444,21 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should show tips section', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
@@ -362,54 +471,92 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should handle PDF format selection', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      const formatDropdown = screen.getByDisplayValue('PDF Document');
-      expect(formatDropdown).toBeInTheDocument();
-    });
+    const formatDropdown = await screen.findByDisplayValue('PDF Document');
+    expect(formatDropdown).toBeInTheDocument();
   });
 
   it('should handle CSV format selection', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      const formatDropdown = screen.getByDisplayValue('PDF Document') as HTMLSelectElement;
-      fireEvent.change(formatDropdown, { target: { value: 'csv' } });
-      expect(formatDropdown.value).toBe('csv');
-    });
+    const formatDropdown = await screen.findByDisplayValue('PDF Document') as HTMLSelectElement;
+    fireEvent.change(formatDropdown, { target: { value: 'csv' } });
+    expect(formatDropdown.value).toBe('csv');
   });
 
   it('should handle JSON format selection', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      const formatDropdown = screen.getByDisplayValue('PDF Document') as HTMLSelectElement;
-      fireEvent.change(formatDropdown, { target: { value: 'json' } });
-      expect(formatDropdown.value).toBe('json');
-    });
+    const formatDropdown = await screen.findByDisplayValue('PDF Document') as HTMLSelectElement;
+    fireEvent.change(formatDropdown, { target: { value: 'json' } });
+    expect(formatDropdown.value).toBe('json');
   });
 
   it('should toggle content options', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
@@ -427,20 +574,40 @@ describe('CustomReportBuilder', () => {
   it('should call onReportGenerated callback', async () => {
     const onReportGenerated = vi.fn();
 
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      if (url.includes('reports')) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              id: 'rpt1',
+              status: 'ready',
+              downloadUrl: 'https://example.com/report.pdf',
+            }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder
-          orgId="org-123"
-          onReportGenerated={onReportGenerated}
-        />
-      </QueryClientProvider>,
+      <CustomReportBuilder
+        orgId="org-123"
+        onReportGenerated={onReportGenerated}
+      />,
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      const periodCheckbox = screen.getByLabelText('Q1 2024');
-      fireEvent.click(periodCheckbox);
-    });
+    const periodCheckbox = await screen.findByLabelText('Q1 2024');
+    fireEvent.click(periodCheckbox);
 
     const generateButton = screen.getByText('Generate Report');
     fireEvent.click(generateButton);
@@ -451,25 +618,51 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should format report title for filename', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      if (url.includes('reports')) {
+        return Promise.resolve({
+          ok: true,
+          blob: () => Promise.resolve(new Blob(['mock pdf'], { type: 'application/pdf' })),
+          json: () =>
+            Promise.resolve({
+              id: 'rpt1',
+              status: 'ready',
+              downloadUrl: 'https://example.com/report.pdf',
+            }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     // This tests the internal logic of generating filenames
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 
+    // Wait for the form elements to appear
     await waitFor(() => {
-      const titleInput = screen.getByDisplayValue(
-        'Emissions Report'
-      ) as HTMLInputElement;
-      fireEvent.change(titleInput, {
-        target: { value: 'Q1 2024 Emissions Report!' },
-      });
-
-      const periodCheckbox = screen.getByLabelText('Q1 2024');
-      fireEvent.click(periodCheckbox);
+      expect(screen.getByDisplayValue('Emissions Report')).toBeInTheDocument();
     });
+
+    const titleInput = screen.getByDisplayValue(
+      'Emissions Report'
+    ) as HTMLInputElement;
+    fireEvent.change(titleInput, {
+      target: { value: 'Q1 2024 Emissions Report!' },
+    });
+
+    const periodCheckbox = await screen.findByLabelText('Q1 2024');
+    fireEvent.click(periodCheckbox);
 
     const generateButton = screen.getByText('Generate Report');
     fireEvent.click(generateButton);
@@ -481,10 +674,21 @@ describe('CustomReportBuilder', () => {
   });
 
   it('should handle default content options', async () => {
+    global.fetch = vi.fn((url) => {
+      if (url.includes('reporting-periods')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockPeriods),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+    });
+
     render(
-      <QueryClientProvider client={new QueryClient()}>
-        <CustomReportBuilder orgId="org-123" />
-      </QueryClientProvider>,
+      <CustomReportBuilder orgId="org-123" />,
       { wrapper: createWrapper() }
     );
 

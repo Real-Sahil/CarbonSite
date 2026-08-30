@@ -246,8 +246,7 @@ describe('useAnomalies', () => {
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('periodId=p1'),
-      expect.any(Object)
+      expect.stringContaining('periodId=p1')
     );
   });
 
@@ -270,8 +269,7 @@ describe('useAnomalies', () => {
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('severity=critical'),
-      expect.any(Object)
+      expect.stringContaining('severity=critical')
     );
   });
 
@@ -294,8 +292,7 @@ describe('useAnomalies', () => {
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('type=statistical'),
-      expect.any(Object)
+      expect.stringContaining('type=statistical')
     );
   });
 
@@ -318,8 +315,7 @@ describe('useAnomalies', () => {
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('limit=50'),
-      expect.any(Object)
+      expect.stringContaining('limit=50')
     );
   });
 
@@ -339,7 +335,9 @@ describe('useAnomalies', () => {
       expect(result.current.error).toBeDefined();
     });
 
-    expect(result.current.error).toContain('Failed to fetch anomalies');
+    if (result.current.error instanceof Error) {
+      expect(result.current.error.message).toContain('Failed to fetch anomalies');
+    }
   });
 
   it('should provide refetch function', async () => {

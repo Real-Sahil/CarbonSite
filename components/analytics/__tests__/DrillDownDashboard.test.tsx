@@ -271,8 +271,8 @@ describe('DrillDownDashboard', () => {
       { wrapper: createWrapper() }
     );
 
-    // Look for skeleton elements
-    const skeletons = container.querySelectorAll('[class*="skeleton"]');
+    // Look for skeleton elements (they have animate-pulse class)
+    const skeletons = container.querySelectorAll('[class*="animate-pulse"]');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 

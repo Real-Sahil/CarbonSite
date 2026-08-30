@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useDrillDown } from '../useDrillDown';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -115,9 +115,13 @@ describe('useDrillDown', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    result.current.updateFilters({ scopes: [1] });
+    await act(async () => {
+      result.current.updateFilters({ scopes: [1] });
+    });
 
-    expect(result.current.filters.scopes).toEqual([1]);
+    await waitFor(() => {
+      expect(result.current.filters.scopes).toEqual([1]);
+    });
   });
 
   it('should clear filters', async () => {
@@ -146,9 +150,13 @@ describe('useDrillDown', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    result.current.clearFilters();
+    await act(async () => {
+      result.current.clearFilters();
+    });
 
-    expect(result.current.filters).toEqual({});
+    await waitFor(() => {
+      expect(result.current.filters).toEqual({});
+    });
   });
 
   it('should include period comparison data', async () => {
@@ -226,17 +234,20 @@ describe('useDrillDown', () => {
       Promise.resolve({
         ok: false,
         statusText: 'Internal Server Error',
-      })
+      }) as any
     );
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
     });
 
+    // Wait for the error to be captured and error state to be set
     await waitFor(() => {
-      expect(result.current.error).toBeDefined();
+      expect(result.current.isLoading).toBe(false);
     });
 
+    // Error should be captured as a string from the Error message
+    expect(result.current.error).toBeTruthy();
     expect(result.current.error).toContain('Drill-down query failed');
   });
 
@@ -297,11 +308,15 @@ describe('useDrillDown', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    result.current.updateFilters({ scopes: [1] });
-    result.current.updateFilters({ categoryIds: ['cat1'] });
+    await act(async () => {
+      result.current.updateFilters({ scopes: [1] });
+      result.current.updateFilters({ categoryIds: ['cat1'] });
+    });
 
-    expect(result.current.filters.scopes).toEqual([1]);
-    expect(result.current.filters.categoryIds).toEqual(['cat1']);
+    await waitFor(() => {
+      expect(result.current.filters.scopes).toEqual([1]);
+      expect(result.current.filters.categoryIds).toEqual(['cat1']);
+    });
   });
 
   it('should handle scope breakdown with percentage calculation', async () => {
