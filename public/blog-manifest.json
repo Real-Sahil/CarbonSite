@@ -2,119 +2,173 @@
   {
     "slug": "emissions-data-journey",
     "title": "From Field to Finance: The Complete Emissions Data Journey",
-    "description": "",
+    "description": "Data quality issues happen at every handoff. We designed CarbonSite to catch errors at each stage of the emissions pipeline.",
     "date": "2026-10-13",
     "author": "CarbonSite Team",
-    "readingTime": 8,
+    "readingTime": "5 min read",
     "keywords": []
   },
   {
     "slug": "building-for-audit",
     "title": "Building for Audit: How CarbonSite Ensures Immutability",
-    "description": "",
+    "description": "Carbon reports must survive auditor scrutiny. We built immutable snapshots, append-only logs, and versioned formulas so every number is traceable and defensible.",
     "date": "2026-09-29",
     "author": "CarbonSite Team",
-    "readingTime": 9,
+    "readingTime": "5 min read",
     "keywords": []
   },
   {
     "slug": "scope3-from-silence-to-data",
     "title": "Scope 3 Emissions: From Supplier Silence to Collaborative Data",
-    "description": "",
+    "description": "Tier-1 suppliers won't fill out surveys. They will photograph an invoice when a field worker asks. Scope 3 is not a survey problem — it's an operational problem.",
     "date": "2026-09-15",
     "author": "CarbonSite Team",
-    "readingTime": 8,
+    "readingTime": "5 min read",
     "keywords": []
   },
   {
     "slug": "why-carbon-accounting-still-fails",
     "title": "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
-    "description": "",
+    "description": "Most carbon accounting platforms assume data is pre-cleaned and arrives from spreadsheets. The reality is messier — and that's where most errors originate.",
     "date": "2026-09-01",
     "author": "CarbonSite Team",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "anomaly-detection-carbon-data",
-    "title": "Anomaly Detection in Carbon Data: Catching the Outliers",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "building-for-audit-immutability",
-    "title": "Building for Audit: How CarbonSite Ensures Immutability",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "carbon-accounting-at-scale",
-    "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "open-source-carbon-accounting",
-    "title": "Open-Source Carbon Accounting: Why Transparency Matters",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "scope-3-emissions-supplier-data",
-    "title": "Scope 3 Emissions: From Supplier Silence to Collaborative Data",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "supplier-carbon-data-wrong",
-    "title": "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "why-carbon-accounting-fails",
-    "title": "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
+    "readingTime": "5 min read",
     "keywords": []
   },
   {
     "slug": "carbon-accounting-scale-dashboard",
     "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
-    "description": "",
-    "date": "2026-02-12",
+    "description": "Dashboard queries that take 30 seconds at 100k records will take 5 minutes at 1M records. Here's how CarbonSite optimizes for scale.",
+    "date": "2026-08-30T06:03:13.344Z",
     "author": "CarbonSite",
     "readingTime": "5 min read",
-    "keywords": []
+    "keywords": [
+      "performance",
+      "dashboards",
+      "database",
+      "materialized views",
+      "emissions"
+    ]
   },
   {
     "slug": "audit-immutability-carbon",
     "title": "Building for Audit: How CarbonSite Ensures Immutability",
-    "description": "",
-    "date": "2026-02-05",
+    "description": "Auditors need to verify that your carbon data can't be retroactively changed. Immutable audit logs, hash chains, and versioning are non-negotiable.",
+    "date": "2026-08-30T06:03:13.342Z",
     "author": "CarbonSite",
     "readingTime": "5 min read",
-    "keywords": []
+    "keywords": [
+      "audit",
+      "immutability",
+      "hash chains",
+      "compliance",
+      "carbon accounting"
+    ]
+  },
+  {
+    "slug": "anomaly-detection-carbon-data",
+    "title": "Anomaly Detection in Carbon Data: Catching the Outliers",
+    "description": "Carbon data errors slip through validation until they appear in published reports. Machine learning catches them before they damage credibility.",
+    "date": "2026-08-29",
+    "author": "CarbonSite",
+    "readingTime": "7 minutes",
+    "keywords": [
+      "anomaly detection",
+      "data quality",
+      "machine learning",
+      "error detection",
+      "carbon accounting"
+    ]
+  },
+  {
+    "slug": "building-for-audit-immutability",
+    "title": "Building for Audit: How CarbonSite Ensures Immutability",
+    "description": "Carbon audits fail because calculations can't be verified. Immutable snapshots, hash chains, and append-only logs make audit-ready accounting.",
+    "date": "2026-08-29",
+    "author": "CarbonSite",
+    "readingTime": "7 minutes",
+    "keywords": [
+      "audit trail",
+      "immutability",
+      "compliance",
+      "carbon reporting",
+      "verification"
+    ]
+  },
+  {
+    "slug": "carbon-accounting-at-scale",
+    "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
+    "description": "At 100k+ records, most carbon dashboards calculate on-demand and timeout. Here's how pre-calculation and caching fix it.",
+    "date": "2026-08-29",
+    "author": "CarbonSite",
+    "readingTime": "7 minutes",
+    "keywords": [
+      "performance",
+      "dashboard",
+      "scale",
+      "database optimization",
+      "analytics"
+    ]
+  },
+  {
+    "slug": "open-source-carbon-accounting",
+    "title": "Open-Source Carbon Accounting: Why Transparency Matters",
+    "description": "Carbon accounting locked in black boxes fails audits. Transparent, verifiable methodology wins compliance and investor confidence.",
+    "date": "2026-08-29",
+    "author": "CarbonSite",
+    "readingTime": "8 minutes",
+    "keywords": [
+      "open source",
+      "carbon accounting",
+      "transparency",
+      "audit trail",
+      "compliance"
+    ]
+  },
+  {
+    "slug": "scope-3-emissions-supplier-data",
+    "title": "Scope 3 Emissions: From Supplier Silence to Collaborative Data",
+    "description": "70-90% of emissions come from suppliers, but supplier data is impossible to collect. Here's how field workers fix it.",
+    "date": "2026-08-29",
+    "author": "CarbonSite",
+    "readingTime": "8 minutes",
+    "keywords": [
+      "Scope 3",
+      "supplier emissions",
+      "supply chain",
+      "data collection",
+      "emissions tracking"
+    ]
+  },
+  {
+    "slug": "supplier-carbon-data-wrong",
+    "title": "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)",
+    "description": "Supplier carbon data is estimates and guesses until you can't afford auditor questions. Here's the evidence-based approach.",
+    "date": "2026-08-29",
+    "author": "CarbonSite",
+    "readingTime": "7 minutes",
+    "keywords": [
+      "supplier emissions",
+      "Scope 3",
+      "data accuracy",
+      "evidence-based",
+      "supplier collaboration"
+    ]
+  },
+  {
+    "slug": "why-carbon-accounting-fails",
+    "title": "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
+    "description": "Most carbon data never reaches the people who actually work with it. Here's why spreadsheets fail, and how field capture fixes it.",
+    "date": "2026-08-29",
+    "author": "CarbonSite",
+    "readingTime": "7 minutes",
+    "keywords": [
+      "carbon accounting",
+      "data quality",
+      "field capture",
+      "emissions data",
+      "carbon reporting"
+    ]
   },
   {
     "slug": "supplier-data-quality-fix",

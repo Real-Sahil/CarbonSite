@@ -208,8 +208,11 @@ describe('useDrillDown', () => {
     };
 
     global.fetch = vi.fn(() =>
-      Promise.resolve(createMockResponse(mockData))
-    );
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockData),
+      })
+    ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
@@ -228,7 +231,6 @@ describe('useDrillDown', () => {
       Promise.resolve({
         ok: false,
         statusText: 'Internal Server Error',
-        json: () => Promise.resolve({ message: 'Server error' }),
       }) as any
     );
 
@@ -237,16 +239,13 @@ describe('useDrillDown', () => {
     });
 
     // Wait for the error to be captured and error state to be set
-    await waitFor(
-      () => {
-        expect(result.current.isLoading).toBe(false);
-      },
-      { timeout: 3000 }
-    );
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
     // Error should be captured as a string from the Error message
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error).toMatch(/Server error|Drill-down query failed/);
+    expect(result.current.error).toContain('Drill-down query failed');
   });
 
   it('should refetch data', async () => {
@@ -263,8 +262,8 @@ describe('useDrillDown', () => {
             byCategory: [],
             byFacility: [],
           }),
-      } as any);
-    });
+      });
+    }) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
@@ -295,8 +294,8 @@ describe('useDrillDown', () => {
             byCategory: [],
             byFacility: [],
           }),
-      } as any)
-    );
+      })
+    ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
@@ -341,8 +340,8 @@ describe('useDrillDown', () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve(mockData),
-      } as any)
-    );
+      })
+    ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),
@@ -376,8 +375,8 @@ describe('useDrillDown', () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve(mockData),
-      } as any)
-    );
+      })
+    ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useDrillDown('org-123'), {
       wrapper: createWrapper(),

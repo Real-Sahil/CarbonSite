@@ -300,16 +300,17 @@ describe('CustomReportBuilder', () => {
 
   it('should show loading state while generating', async () => {
     let reportRequestMade = false;
-    global.fetch = vi.fn((url) => {
-      if (url.includes('reporting-periods')) {
+    global.fetch = vi.fn(((url: string | URL | Request) => {
+      const urlString = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url;
+      if (urlString.includes('reporting-periods')) {
         return Promise.resolve(createMockResponse(mockPeriods));
       }
-      if (url.includes('reports')) {
+      if (urlString.includes('reports')) {
         reportRequestMade = true;
         return new Promise(() => {}); // Never resolves for report generation
       }
       return Promise.resolve(createMockResponse({}));
-    }) as any;
+    }) as typeof fetch);
 
     render(
       <CustomReportBuilder orgId="org-123" />,
@@ -373,10 +374,10 @@ describe('CustomReportBuilder', () => {
     const generateButton = await screen.findByText('Generate Report');
     fireEvent.click(generateButton);
 
-    // Button should still be enabled and visible (validation doesn't disable it)
     await waitFor(() => {
-      expect(screen.getByText('Generate Report')).toBeInTheDocument();
-      expect(screen.getByText('Report Tips')).toBeInTheDocument();
+      expect(
+        screen.getByText('At least one period is required')
+      ).toBeInTheDocument();
     });
   });
 
@@ -414,10 +415,8 @@ describe('CustomReportBuilder', () => {
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('Export Format')).toBeInTheDocument();
-      expect(screen.getByText('Report Contents')).toBeInTheDocument();
-    });
+    const formatDropdown = await screen.findByDisplayValue('PDF Document');
+    expect(formatDropdown).toBeInTheDocument();
   });
 
   it('should handle CSV format selection', async () => {
@@ -433,10 +432,9 @@ describe('CustomReportBuilder', () => {
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('Export Format')).toBeInTheDocument();
-      expect(screen.getByText('Reporting Periods *')).toBeInTheDocument();
-    });
+    const formatDropdown = await screen.findByDisplayValue('PDF Document') as HTMLSelectElement;
+    fireEvent.change(formatDropdown, { target: { value: 'csv' } });
+    expect(formatDropdown.value).toBe('csv');
   });
 
   it('should handle JSON format selection', async () => {
@@ -452,10 +450,9 @@ describe('CustomReportBuilder', () => {
       { wrapper: createWrapper() }
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('Export Format')).toBeInTheDocument();
-      expect(screen.getByText('Build Custom Report')).toBeInTheDocument();
-    });
+    const formatDropdown = await screen.findByDisplayValue('PDF Document') as HTMLSelectElement;
+    fireEvent.change(formatDropdown, { target: { value: 'json' } });
+    expect(formatDropdown.value).toBe('json');
   });
 
   it('should toggle content options', async () => {
@@ -472,16 +469,14 @@ describe('CustomReportBuilder', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Summary Statistics')).toBeInTheDocument();
+      const summaryCheckbox = screen.getByLabelText(
+        'Summary Statistics'
+      ) as HTMLInputElement;
+      expect(summaryCheckbox.checked).toBe(true);
+
+      fireEvent.click(summaryCheckbox);
+      expect(summaryCheckbox.checked).toBe(false);
     });
-
-    const summaryCheckbox = screen.getByLabelText(
-      'Summary Statistics'
-    ) as HTMLInputElement;
-    expect(summaryCheckbox.checked).toBe(true);
-
-    fireEvent.click(summaryCheckbox);
-    expect(summaryCheckbox.checked).toBe(false);
   });
 
   it('should call onReportGenerated callback', async () => {

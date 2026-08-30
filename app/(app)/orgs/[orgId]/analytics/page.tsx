@@ -1,17 +1,11 @@
-import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
-import { prisma } from "@/lib/db";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, AlertCircle, FileText } from "lucide-react";
-import { DrillDownDashboard } from "@/components/analytics/DrillDownDashboard";
-import { AnomalyHighlightingPanel } from "@/components/analytics/AnomalyHighlightingPanel";
-import { CustomReportBuilder } from "@/components/analytics/CustomReportBuilder";
+import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
+import { BarChart3 } from "lucide-react";
+import { AnalyticsSummary } from "@/components/analytics/AnalyticsSummary";
+import { EmissionsByScopeChart } from "@/components/analytics/EmissionsByScopeChart";
+import { EmissionsTrendChart } from "@/components/analytics/EmissionsTrendChart";
+import { FacilityComparisonChart } from "@/components/analytics/FacilityComparisonChart";
+import { CategoryBreakdownChart } from "@/components/analytics/CategoryBreakdownChart";
 
 interface AnalyticsPageProps {
   params: Promise<{ orgId: string }>;
@@ -19,136 +13,96 @@ interface AnalyticsPageProps {
 
 export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   const { orgId } = await params;
-  await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
-  const currentPeriod = await prisma.reportingPeriod.findFirst({
-    where: { organizationId: orgId },
-    orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-    select: { id: true, label: true },
-  });
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Advanced Analytics</h1>
-        <p className="text-gray-600 mt-2">
-          Explore, analyze, and report on your emissions data with powerful drill-down capabilities,
-          anomaly detection, and custom report generation.
+  try {
+    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+  } catch (err) {
+    if (err instanceof AuthError) {
+      if (err.status === 401) redirect("/sign-in");
+      return (
+        <div className="p-8">
+          <p className="text-red-600">
+            You do not have permission to view analytics.
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="p-8">
+        <p className="text-red-600 text-sm">
+          Failed to load analytics. Please try again.
         </p>
       </div>
+    );
+  }
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Drill-Down Analysis
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-gray-600">
-              Multi-dimensional filtering and analysis by scope, category, and facility.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" />
-              Anomaly Detection
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-gray-600">
-              Automatically identify statistical outliers, trends, and data quality issues.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Custom Reports
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-gray-600">
-              Generate and export comprehensive reports in PDF, CSV, or JSON formats.
-            </p>
-          </CardContent>
-        </Card>
+  return (
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1400px] mx-auto px-8 py-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+              <BarChart3 className="h-4 w-4 text-blue-600" />
+            </div>
+            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+              Analytics
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+            Emissions Analytics
+          </h1>
+          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+            Track your organization's emissions across scopes, facilities, and categories with detailed insights and trends.
+          </p>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="drill-down" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="drill-down" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            <span className="hidden sm:inline">Drill-Down</span>
-          </TabsTrigger>
-          <TabsTrigger value="anomalies" className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" />
-            <span className="hidden sm:inline">Anomalies</span>
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">Reports</span>
-          </TabsTrigger>
-        </TabsList>
+      {/* Content */}
+      <div className="max-w-[1400px] mx-auto px-8 py-8 space-y-8">
+        {/* Summary metrics */}
+        <div>
+          <h2 className="text-lg font-semibold text-[#111827] mb-4">
+            Key Metrics
+          </h2>
+          <AnalyticsSummary orgId={orgId} />
+        </div>
 
-        {/* Drill-Down Tab */}
-        <TabsContent value="drill-down" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Multi-Dimensional Analysis</CardTitle>
-              <CardDescription>
-                Explore your emissions data across different dimensions with interactive filtering
-                and comparison capabilities.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        {/* Charts grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Emissions by Scope */}
+          <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-[#111827] mb-4">
+              Emissions by Scope
+            </h3>
+            <EmissionsByScopeChart orgId={orgId} />
+          </div>
 
-          <DrillDownDashboard
-            orgId={orgId}
-            initialPeriodId={currentPeriod?.id}
-            onFilterChange={(filters) => {
-              console.log("Filters changed:", filters);
-            }}
-          />
-        </TabsContent>
+          {/* Category Breakdown */}
+          <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-[#111827] mb-4">
+              Category Breakdown
+            </h3>
+            <CategoryBreakdownChart orgId={orgId} />
+          </div>
+        </div>
 
-        {/* Anomalies Tab */}
-        <TabsContent value="anomalies" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Anomaly Detection & Analysis</CardTitle>
-              <CardDescription>
-                Automatically detect statistical outliers, unusual patterns, and data quality issues
-                in your emissions records. Critical anomalies indicate potential errors or fraud.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        {/* Emissions Trend */}
+        <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 shadow-sm">
+          <h3 className="text-base font-semibold text-[#111827] mb-4">
+            Emissions Trend (Last 30 Days)
+          </h3>
+          <EmissionsTrendChart orgId={orgId} days={30} />
+        </div>
 
-          <AnomalyHighlightingPanel
-            orgId={orgId}
-            initialPeriodId={currentPeriod?.id}
-          />
-        </TabsContent>
-
-        {/* Reports Tab */}
-        <TabsContent value="reports" className="space-y-4">
-          <CustomReportBuilder
-            orgId={orgId}
-            onReportGenerated={(url, format) => {
-              console.log(`Report generated in ${format} format`);
-            }}
-          />
-        </TabsContent>
-      </Tabs>
+        {/* Facility Comparison */}
+        <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 shadow-sm">
+          <h3 className="text-base font-semibold text-[#111827] mb-4">
+            Top Facilities by Emissions
+          </h3>
+          <FacilityComparisonChart orgId={orgId} limit={10} />
+        </div>
+      </div>
     </div>
   );
 }

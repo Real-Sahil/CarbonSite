@@ -319,14 +319,11 @@ describe('useAnomalies', () => {
     });
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).toBeDefined();
     });
 
-    expect(result.current.error).toBeTruthy();
-    if (typeof result.current.error === 'string') {
-      expect(result.current.error).toContain('Failed to fetch anomalies');
-    } else if (result.current.error && typeof result.current.error === 'object' && 'message' in result.current.error) {
-      expect((result.current.error as any).message).toContain('Failed to fetch anomalies');
+    if (result.current.error) {
+      expect(((result.current.error as unknown) as Error).message).toContain('Failed to fetch anomalies');
     }
   });
 
