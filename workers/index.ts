@@ -10,6 +10,7 @@ import type {
   ReportJobData,
   NotificationJobData,
   CausalAnalysisJobData,
+  XeroSyncJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -22,6 +23,7 @@ import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-pe
 import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
 import type { ForecastingJobData } from "@/lib/jobs/workers/forecasting";
 import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
+import { syncXeroInvoices } from "@/lib/integrations/xero";
 
 interface InvoiceAnomalyJobData {
   organizationId: string;
@@ -125,6 +127,27 @@ async function start() {
     },
   );
 
+  // ── Xero Invoice Sync ─────────────────────────────────────────────────────
+  await boss.work<XeroSyncJobData>(
+    "xero-sync",
+    { localConcurrency: 2 },
+    async (jobs: Job<XeroSyncJobData>[]) => {
+      for (const job of jobs) {
+        const { orgId, fromDate } = job.data;
+        console.log(`[xero-sync] processing sync for org ${orgId}${fromDate ? ` from ${fromDate}` : ""}`);
+        try {
+          const result = await syncXeroInvoices(orgId, fromDate);
+          console.log(
+            `[xero-sync] finished sync for org ${orgId}: created=${result.created}, updated=${result.updated}, skipped=${result.skipped}`
+          );
+        } catch (err) {
+          console.error(`[xero-sync] failed sync for org ${orgId}:`, err);
+          throw err;
+        }
+      }
+    },
+  );
+
   // ── Supplier Performance ──────────────────────────────────────────────────
   await boss.work<SupplierPerformanceJobData>(
     "supplier-performance",
@@ -167,7 +190,7 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, supplier-performance, forecasting, causal-analysis)");
+  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, xero-sync, supplier-performance, forecasting, causal-analysis)");
 }
 
 start().catch((err) => {

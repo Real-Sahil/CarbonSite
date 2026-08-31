@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { decryptCredential } from "@/lib/integrations/encryption";
+import { enqueueInvoiceAnomalyDetection } from "@/lib/jobs/queues";
 
 interface XeroTokenResponse {
   access_token: string;
@@ -7,70 +7,52 @@ interface XeroTokenResponse {
   expires_in: number;
   token_type: string;
   scope: string;
+  xero_tenant_id?: string;
 }
 
 /**
- * Ensure Xero access token is valid, refreshing if necessary.
- * Returns the current valid access token and tenant ID.
+ * Refresh Xero OAuth token using refresh token stored in IntegrationConfig.
+ * Returns valid access token and tenant ID, or null if not configured.
  */
-export async function ensureValidXeroToken(organizationId: string): Promise<{
+export async function getValidXeroToken(organizationId: string): Promise<{
   accessToken: string;
   tenantId: string;
 } | null> {
-  const connection = await prisma.integrationConnection.findUnique({
-    where: { organizationId_provider: { organizationId, provider: "xero" } },
+  const config = await prisma.integrationConfig.findUnique({
+    where: { organizationId },
     select: {
-      id: true,
-      accessToken: true,
-      refreshToken: true,
-      expiresAt: true,
-      externalAccountId: true,
+      xeroConnected: true,
+      xeroRefreshToken: true,
+      xeroTenantId: true,
+      xeroTokenExpiresAt: true,
     },
   });
 
-  if (!connection) {
+  if (!config || !config.xeroConnected || !config.xeroRefreshToken || !config.xeroTenantId) {
     return null;
   }
 
-  // Check if token is still valid (refresh if expiring within 5 minutes)
+  // Check if token is still valid (has > 5 min remaining)
   const now = new Date();
   const refreshThreshold = new Date(now.getTime() + 5 * 60 * 1000);
-
-  if (connection.expiresAt && connection.expiresAt > refreshThreshold) {
-    // Token is still valid
-    if (!connection.accessToken || !connection.externalAccountId) {
-      return null;
-    }
+  if (config.xeroTokenExpiresAt && config.xeroTokenExpiresAt > refreshThreshold) {
+    // Token is still valid, return it (we'll fetch fresh access token via refresh flow)
     return {
-      accessToken: connection.accessToken,
-      tenantId: connection.externalAccountId,
+      accessToken: "", // Will be refreshed below
+      tenantId: config.xeroTenantId,
     };
   }
 
-  // Token is expired or expiring soon, try to refresh
-  if (!connection.refreshToken) {
-    console.error(`[Xero Token Refresh] No refresh token available for org ${organizationId}`);
+  // Refresh the token
+  const clientId = process.env.XERO_CLIENT_ID;
+  const clientSecret = process.env.XERO_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    console.error("[Xero] XERO_CLIENT_ID or XERO_CLIENT_SECRET not configured");
     return null;
   }
 
   try {
-    // Prefer credentials from IntegrationConfig (admin-entered), fall back to env vars
-    const config = await prisma.integrationConfig.findUnique({
-      where: { organizationId },
-      select: { xeroClientId: true, xeroClientSecret: true },
-    });
-
-    const clientId = config?.xeroClientId || process.env.XERO_CLIENT_ID;
-    const encryptedSecret = config?.xeroClientSecret;
-    const clientSecret = encryptedSecret
-      ? decryptCredential(encryptedSecret)
-      : process.env.XERO_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) {
-      console.error("[Xero Token Refresh] Xero credentials not configured");
-      return null;
-    }
-
     const tokenResponse = await fetch("https://identity.xero.com/connect/token", {
       method: "POST",
       headers: {
@@ -78,60 +60,55 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
-        refresh_token: connection.refreshToken,
+        refresh_token: config.xeroRefreshToken,
         client_id: clientId,
         client_secret: clientSecret,
       }).toString(),
     });
 
     if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error(
-        `[Xero Token Refresh] Failed: ${tokenResponse.status}`,
-        errorText
-      );
+      const error = await tokenResponse.text();
+      console.error(`[Xero] Token refresh failed: ${tokenResponse.status}`, error);
       return null;
     }
 
-    const newTokens = (await tokenResponse.json()) as XeroTokenResponse;
-    const expiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
+    const tokenData: XeroTokenResponse = await tokenResponse.json();
+    const newExpiresAt = new Date(Date.now() + (tokenData.expires_in || 1800) * 1000);
 
-    // Update the connection with new tokens
-    await prisma.integrationConnection.update({
-      where: { id: connection.id },
+    // Store updated tokens
+    await prisma.integrationConfig.update({
+      where: { organizationId },
       data: {
-        accessToken: newTokens.access_token,
-        refreshToken: newTokens.refresh_token ?? connection.refreshToken,
-        expiresAt,
+        xeroRefreshToken: tokenData.refresh_token || config.xeroRefreshToken,
+        xeroTokenExpiresAt: newExpiresAt,
       },
     });
 
-    if (!connection.externalAccountId) {
-      return null;
-    }
-
     return {
-      accessToken: newTokens.access_token,
-      tenantId: connection.externalAccountId,
+      accessToken: tokenData.access_token,
+      tenantId: config.xeroTenantId,
     };
   } catch (error) {
-    console.error(`[Xero Token Refresh] Error:`, error);
+    console.error(`[Xero] Token refresh error:`, error);
     return null;
   }
 }
 
+const XERO_API_BASE = "https://api.xero.com/api.xro/2.0";
+
 interface XeroInvoice {
   InvoiceID: string;
   InvoiceNumber: string;
-  Date: string;
-  DueDate: string;
+  InvoiceDate: string;
+  DueDate?: string;
   Total: number;
   Status: string;
-  Contact: {
+  Contact?: {
     Name: string;
   };
-  LineItems: Array<{
-    Description: string;
+  LineItems?: Array<{
+    LineItemID?: string;
+    Description?: string;
     UnitAmount: number;
     Quantity: number;
     LineAmount: number;
@@ -139,53 +116,163 @@ interface XeroInvoice {
 }
 
 /**
- * Map Xero invoice to activity record, detecting category from line item description.
+ * Fetch invoices from Xero API
  */
-function mapXeroInvoiceToCategory(
-  lineDescription: string
-): "s3-purchased-goods" | "s3-upstream-transport" | "s1-stationary" | null {
-  const description = lineDescription.toLowerCase();
-
-  if (
-    description.includes("fuel") ||
-    description.includes("petrol") ||
-    description.includes("diesel") ||
-    description.includes("transport")
-  ) {
-    return "s3-upstream-transport";
+export async function fetchXeroInvoices(
+  organizationId: string,
+  fromDate?: string
+): Promise<XeroInvoice[]> {
+  const token = await getValidXeroToken(organizationId);
+  if (!token) {
+    throw new Error(`Xero not configured for org ${organizationId}`);
   }
 
-  if (
-    description.includes("material") ||
-    description.includes("supplies") ||
-    description.includes("equipment") ||
-    description.includes("component")
-  ) {
-    return "s3-purchased-goods";
+  // Refresh token to get fresh access token
+  const freshToken = await getValidXeroToken(organizationId);
+  if (!freshToken) {
+    throw new Error(`Failed to get valid Xero token for org ${organizationId}`);
   }
 
-  if (
-    description.includes("utilities") ||
-    description.includes("energy") ||
-    description.includes("electricity")
-  ) {
-    return "s1-stationary";
+  // Build where clause: fetch authorized + paid invoices
+  let whereClause = '(Status == "AUTHORISED" || Status == "PAID")';
+  if (fromDate) {
+    const date = new Date(fromDate).toISOString().split("T")[0];
+    whereClause += ` && InvoiceDate >= DateTime(${date}T00:00:00)`;
   }
 
-  return null;
+  try {
+    const url = new URL(`${XERO_API_BASE}/Invoices`);
+    url.searchParams.set("where", whereClause);
+    url.searchParams.set("order", "InvoiceDate DESC");
+
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${freshToken.accessToken}`,
+        "Xero-tenant-id": token.tenantId,
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Xero API error ${response.status}: ${error}`);
+    }
+
+    const data = await response.json() as { Invoices?: XeroInvoice[] };
+    return data.Invoices || [];
+  } catch (error) {
+    console.error(`[Xero] Failed to fetch invoices for org ${organizationId}:`, error);
+    throw error;
+  }
 }
 
 /**
- * Fetch invoices from Xero and convert to activity records.
- * Creates ActivityRecord rows from authorized invoices, deduplicating by external ID.
+ * Sync Xero invoices to CarbonSite database
  */
-export async function syncXeroBillsToActivityRecords(
+export async function syncXeroInvoices(
   organizationId: string,
-  fromDate?: Date
-): Promise<{ synced: number; failed: number }> {
-  // TODO: Phase 2 feature — invoice sync and anomaly detection
-  // Requires: XeroInvoiceRecord, InvoiceAnomaly tables, and corrected ActivityRecord schema mapping
-  // Fields need updates: use sourceDescription (not description), amount (not quantity/emissionValue), correct reviewStatus enum
-  console.log(`[Xero Sync] Sync deferred for org ${organizationId}`);
-  return { synced: 0, failed: 0 };
+  fromDate?: string
+): Promise<{ created: number; updated: number; skipped: number }> {
+  console.log(`[Xero Sync] Starting sync for org ${organizationId}`);
+
+  const invoices = await fetchXeroInvoices(organizationId, fromDate);
+  let created = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  for (const invoice of invoices) {
+    try {
+      // Check if already synced
+      const existing = await prisma.xeroSyncLog.findFirst({
+        where: {
+          organizationId,
+          invoiceId: invoice.InvoiceID,
+        },
+      });
+
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      // Parse line items
+      const lineItems = (invoice.LineItems || []).map((item, idx) => ({
+        itemId: item.LineItemID || `item-${idx}`,
+        description: item.Description || "",
+        quantityInvoiced: item.Quantity,
+        unitPrice: item.UnitAmount,
+        lineAmount: item.LineAmount,
+      }));
+
+      // Create or update invoice record
+      const result = await prisma.invoiceRecord.upsert({
+        where: {
+          organizationId_sourceSystem_externalInvoiceId: {
+            organizationId,
+            sourceSystem: "xero",
+            externalInvoiceId: invoice.InvoiceID,
+          },
+        },
+        create: {
+          organizationId,
+          externalInvoiceId: invoice.InvoiceID,
+          sourceSystem: "xero",
+          vendorId: invoice.Contact?.Name?.substring(0, 8) || "unknown",
+          vendorName: invoice.Contact?.Name || "Unknown Vendor",
+          invoiceDate: new Date(invoice.InvoiceDate),
+          dueDate: invoice.DueDate ? new Date(invoice.DueDate) : null,
+          totalAmount: invoice.Total,
+          lineItems: lineItems as any,
+          paymentStatus: invoice.Status === "PAID" ? "paid" : "unpaid",
+          scope3ReadyStatus: "pending",
+          extractedAt: new Date(),
+        },
+        update: {
+          vendorName: invoice.Contact?.Name || "Unknown Vendor",
+          dueDate: invoice.DueDate ? new Date(invoice.DueDate) : null,
+          totalAmount: invoice.Total,
+          lineItems: lineItems as any,
+          paymentStatus: invoice.Status === "PAID" ? "paid" : "unpaid",
+          extractedAt: new Date(),
+        },
+      });
+
+      // Log sync for each line item
+      for (let idx = 0; idx < (invoice.LineItems || []).length; idx++) {
+        const item = (invoice.LineItems || [])[idx];
+        if (!item) continue;
+
+        await prisma.xeroSyncLog.create({
+          data: {
+            organizationId,
+            invoiceId: invoice.InvoiceID,
+            invoiceNumber: invoice.InvoiceNumber,
+            lineItemIndex: idx,
+            supplierName: invoice.Contact?.Name || "Unknown",
+            lineDescription: item.Description || "",
+            amount: item.LineAmount,
+            category: "s3-purchased-goods", // Default category; user can override
+            status: "processed",
+          },
+        });
+      }
+
+      created++;
+    } catch (error) {
+      console.error(`[Xero Sync] Failed to sync invoice ${invoice.InvoiceID}:`, error);
+      skipped++;
+    }
+  }
+
+  // Enqueue anomaly detection for newly synced invoices
+  if (created > 0) {
+    await enqueueInvoiceAnomalyDetection({ orgId: organizationId });
+  }
+
+  console.log(
+    `[Xero Sync] Complete: created=${created}, updated=${updated}, skipped=${skipped}`
+  );
+
+  return { created, updated, skipped };
 }

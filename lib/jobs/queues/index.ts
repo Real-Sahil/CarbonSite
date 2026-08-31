@@ -84,7 +84,7 @@ export async function enqueueSupplierPerformanceUpdate(data: SupplierPerformance
 
 export async function enqueueInvoiceAnomalyDetection(data: InvoiceAnomalyJobData) {
   await ensureBossStarted();
-  await boss.send("invoice-anomalies", data, retry);
+  await boss.send("invoice-anomaly-jobs", data, retry);
 }
 
 export async function enqueueXeroSync(data: XeroSyncJobData) {

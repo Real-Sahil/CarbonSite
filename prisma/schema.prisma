@@ -2943,6 +2943,24 @@ model IntegrationConfig {
   xeroRefreshToken             String?   @map("xero_refresh_token") // Encrypted
   xeroTokenExpiresAt           DateTime? @map("xero_token_expires_at")
 
+  // QuickBooks OAuth
+  quickbooksClientId           String?   @map("quickbooks_client_id")
+  quickbooksClientSecret       String?   @map("quickbooks_client_secret") // Encrypted
+  quickbooksConnected          Boolean   @default(false) @map("quickbooks_connected")
+  quickbooksConnectedAt        DateTime? @map("quickbooks_connected_at")
+  quickbooksRealmId            String?   @map("quickbooks_realm_id") // From OAuth flow
+  quickbooksRefreshToken       String?   @map("quickbooks_refresh_token") // Encrypted
+  quickbooksTokenExpiresAt     DateTime? @map("quickbooks_token_expires_at")
+
+  // Sage OAuth
+  sageClientId                 String?   @map("sage_client_id")
+  sageClientSecret             String?   @map("sage_client_secret") // Encrypted
+  sageConnected                Boolean   @default(false) @map("sage_connected")
+  sageConnectedAt              DateTime? @map("sage_connected_at")
+  sageTenantId                 String?   @map("sage_tenant_id") // From OAuth flow
+  sageRefreshToken             String?   @map("sage_refresh_token") // Encrypted
+  sageTokenExpiresAt           DateTime? @map("sage_token_expires_at")
+
   // OIDC/SSO Configuration
   oidcProvider                 String?   @map("oidc_provider") // "google" | "okta" | "azure" | "generic"
   oidcClientId                 String?   @map("oidc_client_id")
