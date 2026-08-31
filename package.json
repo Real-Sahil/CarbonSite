@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "tsx scripts/generate-blog-manifest.ts && next build",
-    "vercel-build": "prisma migrate resolve --applied 1787848735_add_dbt_runs 2>/dev/null; prisma migrate resolve --applied 20260825000004_production_features 2>/dev/null; prisma migrate resolve --applied 20260827_add_airbyte_staging 2>/dev/null; prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && next build",
+    "vercel-build": "prisma migrate resolve --applied 1787848735_add_dbt_runs 2>/dev/null; prisma migrate resolve --applied 20260825000004_production_features 2>/dev/null; prisma migrate resolve --applied 20260827000009_add_airbyte_staging 2>/dev/null; prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && next build",
     "migrate:prod": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "start": "next start",
