@@ -66,6 +66,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Records",     href: `/orgs/${orgId}/records`,     icon: FileText,   roles: CORE_ROLES },
       { label: "Submissions",       href: `/orgs/${orgId}/submissions`,       icon: Inbox,         roles: ["admin", "editor", "reviewer"] },
       { label: "Supplier Reports",  href: `/orgs/${orgId}/supplier-reports`,  icon: PackageSearch, roles: ["admin", "editor", "reviewer", "auditor"] },
+      { label: "Integrations",      href: `/orgs/${orgId}/integrations`,       icon: Plug,         roles: ["admin", "editor"] },
       { label: "Tasks",       href: `/orgs/${orgId}/tasks`,       icon: ListChecks },
     ]},
     { label: "Calculations", items: [
