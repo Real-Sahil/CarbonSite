@@ -13,46 +13,46 @@ const CAPABILITIES = [
   {
     n: "01",
     icon: Smartphone,
-    title: "Field evidence capture",
-    text: "Field workers photograph waste tickets and delivery notes. On-device OCR extracts weight, EWC codes, dates, and vehicle registrations — offline, no connectivity required.",
+    title: "Mobile field capture",
+    text: "Field workers photograph documents on-site. Our technology automatically extracts the key data — weight, dates, supplier names, locations. Works without internet.",
   },
   {
     n: "02",
     icon: ClipboardCheck,
-    title: "Review and approval queue",
-    text: "Every submission enters a triage queue. Reviewers inspect evidence, assign categories, add notes, and promote to committed records. Full comment thread and audit trail.",
+    title: "Review and approval",
+    text: "Every submission goes to a review queue. Your team inspects the data, assigns categories, adds notes, and approves. Full history and comments are kept for compliance.",
   },
   {
     n: "03",
     icon: Calculator,
-    title: "Calculation engine",
-    text: "DEFRA 2025 and EPA GHG Hub factors. Scope 1, 2, and 3. Every result stores the factor used, the formula string, and the methodology version — immutable, traceable.",
+    title: "Emissions calculation",
+    text: "Our engine uses the latest emissions standards (DEFRA 2025, EPA). It covers Scope 1, 2, and 3 emissions. Every calculation is recorded with which factors were used and when.",
   },
   {
     n: "04",
     icon: FileText,
-    title: "Immutable snapshots",
-    text: "Publishing locks a calculation run. Dashboard aggregates are pre-computed. Reports always match the dashboard for the same snapshot version — no reconciliation risk.",
+    title: "Locked records",
+    text: "Once you publish a calculation, it's locked and can't be changed. This protects your historical data and makes audits simpler. Previous versions are always available.",
   },
   {
     n: "05",
     icon: ShieldCheck,
-    title: "Audit-ready reports",
-    text: "Puppeteer-rendered PDF and CSV. SHA-256 checksums. 15-minute presigned download URLs. Every figure traces back to a factor, formula, and methodology version.",
+    title: "Reports for auditors",
+    text: "Generate PDF and Excel reports that auditors expect. Every number in the report traces back to its source — the data you entered, the standards used, and when you made changes.",
   },
   {
     n: "06",
     icon: Users,
-    title: "Six-role access control",
-    text: "admin, editor, reviewer, viewer, auditor, field_worker — each precisely scoped. Field workers see only their own submissions. Auditors see completed periods only.",
+    title: "Role-based access",
+    text: "Admins manage settings. Editors and reviewers handle data. Field workers submit from the job site. Viewers read reports. Auditors see completed periods only.",
   },
 ];
 
 const HOW_IT_WORKS = [
-  { step: "Collect", n: "01", text: "Mobile OCR capture or CSV/XLSX import. Staged rows are validated row-by-row before commit." },
-  { step: "Review", n: "02", text: "Human oversight before any calculation. Assign categories, inspect evidence, approve or reject." },
-  { step: "Calculate", n: "03", text: "Select factor library and period. The engine normalises units, selects factors, computes CO2e with AR6 GWPs." },
-  { step: "Publish", n: "04", text: "Immutable snapshot links the period to a calculation run. Generate PDF and CSV reports." },
+  { step: "Collect", n: "01", text: "Capture data from mobile phones or upload spreadsheets. Everything is checked for accuracy before it enters your system." },
+  { step: "Review", n: "02", text: "Your team reviews every piece of data before it counts. Check the evidence, assign categories, approve or request changes." },
+  { step: "Calculate", n: "03", text: "Select your reporting period and run the calculation. The system converts all your data to standard units and calculates emissions using current standards." },
+  { step: "Publish", n: "04", text: "Lock in your results and generate reports. Once published, the numbers can't be accidentally changed. Share reports with stakeholders or auditors." },
 ];
 
 export default function RootPage() {

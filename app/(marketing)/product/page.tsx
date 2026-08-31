@@ -16,42 +16,42 @@ const STAGES = [
   {
     num: "01",
     title: "Collect and import",
-    text: "Field workers submit evidence via the mobile app — offline-first, on-device OCR. Desktop users upload CSV or XLSX files through the import centre. Each file is parsed, validated row by row, and staged. Rows with errors are quarantined with an error CSV download. No partial commits.",
-    tags: ["CSV / XLSX import", "Mobile OCR capture", "Row-level validation", "Error export CSV"],
+    text: "Field workers use the mobile app to submit data from job sites. They can also work without internet — data saves on their phone and syncs later. Desktop users can upload spreadsheets (CSV or Excel). Bad data is flagged and can be fixed before it enters your system.",
+    tags: ["Mobile app", "Upload spreadsheets", "Auto-check for errors", "Offline ready"],
   },
   {
     num: "02",
     title: "Review and approve",
-    text: "All field submissions and staged import rows enter a review queue. Reviewers inspect evidence files, assign emission categories and facilities, add comments, request changes, or reject with notes. Approval promotes a staged record to a committed ActivityRecord.",
-    tags: ["Review task queue", "Evidence viewer", "Comment threads", "Audit trail"],
+    text: "All submissions go to a review queue. Your team checks the data, categorizes it, leaves comments, and approves or requests changes. Once approved, it becomes part of your official record.",
+    tags: ["Review queue", "View evidence", "Comment threads", "Full history"],
   },
   {
     num: "03",
     title: "Calculate emissions",
-    text: "Trigger a calculation run for a reporting period. The engine normalises units, selects the best-scoring emission factor by geography and activity type, and computes CO2e using IPCC AR6 GWP-100 values. Every result is immutable: stored with the factor used, formula string, and methodology version.",
-    tags: ["DEFRA 2025 factors", "EPA GHG Hub factors", "AR6 GWPs", "Per-record formula trace"],
+    text: "Run a calculation for your reporting period. The system converts everything to standard units and calculates emissions using the latest standards (DEFRA 2025 and EPA). Every result includes which factors were used and when.",
+    tags: ["Latest standards", "Automatic conversion", "Full traceability", "Multiple scopes"],
   },
   {
     num: "04",
-    title: "Publish snapshot",
-    text: "Publishing creates an immutable PublishedSnapshot linking the reporting period to a specific calculation run. Snapshots are versioned — v1, v2 — so previous published figures are never overwritten. Dashboard aggregates rebuild automatically.",
-    tags: ["Immutable versioning", "Pre-computed aggregates", "Scope 1/2/3 breakdown", "Facility breakdown"],
+    title: "Lock in your results",
+    text: "Publish your calculation to lock it in. Once published, the numbers can't be accidentally changed. You can publish multiple versions, so your previous results are always available.",
+    tags: ["Locked records", "Version history", "No accidental changes", "Previous records"],
   },
   {
     num: "05",
     title: "Generate reports",
-    text: "Select a snapshot and report type. Puppeteer renders a branded PDF from the snapshot data. Both PDF and CSV are uploaded with SHA-256 checksums. Download links are 15-minute presigned URLs generated server-side. Report totals always match the dashboard for the same snapshot.",
-    tags: ["Puppeteer PDF", "Data export CSV", "SHA-256 checksums", "15-min signed URLs"],
+    text: "Create branded reports in PDF or Excel for sharing with your team, board, or auditors. Every number in the report traces back to where it came from. You control who can see what.",
+    tags: ["PDF and Excel", "Full traceability", "Share easily", "Audit ready"],
   },
 ];
 
 const ROLES = [
-  { role: "admin", can: "Full access: org settings, members, all records and reports." },
-  { role: "editor", can: "Create and edit records, trigger calculations, publish snapshots, generate reports." },
-  { role: "reviewer", can: "Review and approve field submissions and import batches. Comment on records." },
-  { role: "viewer", can: "Read-only access to records, dashboards, and published reports." },
-  { role: "auditor", can: "Read-only access scoped to completed periods. Cannot see draft or in-progress data." },
-  { role: "field_worker", can: "Submit field evidence and view their own submission status only. No org data." },
+  { role: "Admin", can: "Full access to settings, team, and all data. Manage who can do what." },
+  { role: "Editor", can: "Create and update records, run calculations, publish results, and generate reports." },
+  { role: "Reviewer", can: "Review and approve field submissions. Comment and ask questions." },
+  { role: "Viewer", can: "See records, dashboards, and published reports. Can't make changes." },
+  { role: "Auditor", can: "View only completed periods and final reports. Can't see work in progress." },
+  { role: "Field Worker", can: "Submit data from the job site. See only their own submissions and status." },
 ];
 
 export default function ProductPage() {

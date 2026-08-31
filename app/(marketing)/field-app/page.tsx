@@ -7,23 +7,23 @@ import { FieldAppCtaBg } from "@/components/marketing/section-backgrounds";
 
 export const metadata: Metadata = {
   title: "Field App - CarbonSite",
-  description: "Offline-first mobile app for field workers. On-device OCR, PIN onboarding, offline queue, and sync when connectivity returns.",
+  description: "Mobile app for field workers. Capture data from job sites, works without internet, syncs automatically when online.",
 };
 
 const CAPTURE_STEPS = [
-  { n: "01", title: "Receive invite link", text: "Admin sends a signed invite link by SMS or email. The link opens in a browser and prompts install on iOS and Android. No App Store account needed first." },
-  { n: "02", title: "Set a PIN", text: "On first launch the field worker sets a 6-digit PIN stored in the device secure enclave. No username or password. Biometric unlock optional." },
-  { n: "03", title: "Select a project", text: "Home screen shows only the reporting periods and organisations this user was invited to contribute to. Zero access to any other org data." },
-  { n: "04", title: "Photograph a document", text: "Choose document type (Waste Ticket, Delivery Note, Fuel Receipt, Other). Camera or gallery. On-device ML Kit OCR runs in 1-2 seconds without a network request." },
-  { n: "05", title: "Confirm extracted fields", text: "Auto-extracted fields are highlighted. Wrong? Just edit. Empty fields left blank for manual entry. Add GPS location optionally." },
-  { n: "06", title: "Submit (works offline)", text: "Submission is saved to local SQLite first. A background sync service drains the queue when connectivity returns. Status: pending, syncing, submitted." },
+  { n: "01", title: "Receive invite link", text: "Your admin sends a unique invite link by text or email. Click it and install the app on iOS or Android. No app store account needed." },
+  { n: "02", title: "Set a PIN", text: "On first launch, create a 4 or 6 digit PIN to access the app. That's it — no username or password. Optional: unlock with your fingerprint." },
+  { n: "03", title: "Select a project", text: "See only the projects you've been invited to. Each project is separate — you'll only see work related to you." },
+  { n: "04", title: "Take a photo", text: "Choose what you're capturing (Waste Ticket, Delivery Note, Receipt, or Other). Photograph the document with your phone camera or upload from your gallery." },
+  { n: "05", title: "Review the data", text: "The app automatically reads the key numbers from your photo — weight, dates, supplier name. Check it's right and edit if needed." },
+  { n: "06", title: "Send it in (works offline)", text: "Tap submit. The data is saved on your phone first. When you connect to WiFi or mobile data, it syncs automatically to your team." },
 ];
 
 const OCR_FIELDS = [
-  { doc: "Waste ticket", fields: "Weight (kg/t), EWC code (XX XX XX), date (UK formats), vehicle registration, site address" },
-  { doc: "Delivery note", fields: "Material type, quantity and unit, delivery address, supplier name, date" },
-  { doc: "Fuel receipt", fields: "Fuel type, volume (litres), vehicle registration, date, total cost" },
-  { doc: "Other documents", fields: "Raw text blocks presented for manual field assignment" },
+  { doc: "Waste ticket", fields: "Weight, waste type, date, vehicle number, location" },
+  { doc: "Delivery note", fields: "What was delivered, how much, where it went, who sent it, when it arrived" },
+  { doc: "Fuel receipt", fields: "Fuel type, amount, vehicle number, date, cost" },
+  { doc: "Other documents", fields: "Upload any document — the app will extract the text for you to categorize" },
 ];
 
 export default function FieldAppPage() {
@@ -48,8 +48,8 @@ export default function FieldAppPage() {
               </span>
             </h1>
             <p className="text-base text-[#94A3B8] leading-relaxed max-w-[48ch] mb-8">
-              Field workers photograph documents on-site. On-device OCR extracts the data.
-              Works without internet. Syncs automatically when connectivity returns.
+              Field workers photograph documents on the job site. The app automatically reads the important numbers.
+              Works without internet. Syncs automatically when you're back online.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/sign-up" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-[0_0_28px_rgba(245,158,11,0.4)] hover:shadow-[0_0_40px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]">
@@ -69,9 +69,9 @@ export default function FieldAppPage() {
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
             {[
-              { stat: "On-device", label: "OCR processing", note: "No server round-trip, no API cost, works in a basement" },
-              { stat: "Offline-first", label: "SQLite queue", note: "Every submission drafts locally before any network attempt" },
-              { stat: "Auto-sync", label: "Background service", note: "Drains the queue with exponential backoff when online" },
+              { stat: "Works offline", label: "No internet needed", note: "Capture data anywhere — in a basement, a vehicle, or a remote site" },
+              { stat: "Auto-sync", label: "Saves locally first", note: "Your data is saved on your phone before being sent to the team" },
+              { stat: "Smart extraction", label: "Reads documents", note: "The app reads weight, dates, and names from photos automatically" },
             ].map((item) => (
               <div key={item.stat} className="px-0 md:px-8 py-8 md:py-4 first:pl-0 last:pr-0">
                 <div className="text-xl font-semibold text-amber-600 mb-1">{item.stat}</div>
