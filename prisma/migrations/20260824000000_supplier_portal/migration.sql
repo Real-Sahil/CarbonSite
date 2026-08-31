@@ -27,13 +27,17 @@ CREATE UNIQUE INDEX IF NOT EXISTS "supplier_invites_token_key" ON "supplier_invi
 CREATE INDEX IF NOT EXISTS "supplier_invites_organization_id_idx" ON "supplier_invites"("organization_id");
 CREATE INDEX IF NOT EXISTS "supplier_invites_email_idx" ON "supplier_invites"("email");
 
-ALTER TABLE "supplier_invites"
-    ADD CONSTRAINT "supplier_invites_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "supplier_invites" ADD CONSTRAINT "supplier_invites_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "supplier_invites"
-    ADD CONSTRAINT "supplier_invites_created_by_user_id_fkey"
-    FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id");
+DO $$
+BEGIN
+  ALTER TABLE "supplier_invites" ADD CONSTRAINT "supplier_invites_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id");
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Track which supplier submitted each EPD
 DO $$

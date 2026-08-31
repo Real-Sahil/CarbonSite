@@ -33,12 +33,14 @@ CREATE INDEX IF NOT EXISTS "usage_events_organization_id_event_type_recorded_at_
     ON "usage_events"("organization_id", "event_type", "recorded_at");
 
 -- AddForeignKey
-ALTER TABLE "billing_subscriptions"
-    ADD CONSTRAINT "billing_subscriptions_organization_id_fkey"
-    FOREIGN KEY ("organization_id")
-    REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "billing_subscriptions" ADD CONSTRAINT "billing_subscriptions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "usage_events"
-    ADD CONSTRAINT "usage_events_organization_id_fkey"
-    FOREIGN KEY ("organization_id")
-    REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "usage_events" ADD CONSTRAINT "usage_events_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

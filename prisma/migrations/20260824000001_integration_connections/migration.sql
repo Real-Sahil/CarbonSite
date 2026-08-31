@@ -21,7 +21,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS "integration_connections_organization_id_provi
 CREATE INDEX IF NOT EXISTS "integration_connections_organization_id_idx"
     ON "integration_connections"("organization_id");
 
-ALTER TABLE "integration_connections"
-    ADD CONSTRAINT "integration_connections_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id")
-    ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "integration_connections" ADD CONSTRAINT "integration_connections_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

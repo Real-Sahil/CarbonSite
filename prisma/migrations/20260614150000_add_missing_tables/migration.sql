@@ -89,11 +89,11 @@ CREATE TABLE IF NOT EXISTS "platform_memberships" (
 CREATE UNIQUE INDEX IF NOT EXISTS "platform_memberships_user_id_key"
     ON "platform_memberships"("user_id");
 
-ALTER TABLE "platform_memberships"
-    ADD CONSTRAINT "platform_memberships_user_id_fkey"
-    FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "platform_memberships" VALIDATE CONSTRAINT "platform_memberships_user_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "platform_memberships" ADD CONSTRAINT "platform_memberships_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- tenant_branding (depends on organizations)
 CREATE TABLE IF NOT EXISTS "tenant_branding" (
@@ -121,11 +121,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS "tenant_branding_organization_id_key"
 CREATE UNIQUE INDEX IF NOT EXISTS "tenant_branding_subdomain_key"
     ON "tenant_branding"("subdomain");
 
-ALTER TABLE "tenant_branding"
-    ADD CONSTRAINT "tenant_branding_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "tenant_branding" VALIDATE CONSTRAINT "tenant_branding_organization_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "tenant_branding" ADD CONSTRAINT "tenant_branding_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- contracts (depends on organizations, business_units, users)
 CREATE TABLE IF NOT EXISTS "contracts" (
@@ -157,23 +157,23 @@ CREATE INDEX IF NOT EXISTS "contracts_organization_id_status_idx"
 CREATE INDEX IF NOT EXISTS "contracts_organization_id_business_unit_id_idx"
     ON "contracts"("organization_id", "business_unit_id");
 
-ALTER TABLE "contracts"
-    ADD CONSTRAINT "contracts_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "contracts" VALIDATE CONSTRAINT "contracts_organization_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "contracts" ADD CONSTRAINT "contracts_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "contracts"
-    ADD CONSTRAINT "contracts_business_unit_id_fkey"
-    FOREIGN KEY ("business_unit_id") REFERENCES "business_units"("id") ON DELETE SET NULL ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "contracts" VALIDATE CONSTRAINT "contracts_business_unit_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "contracts" ADD CONSTRAINT "contracts_business_unit_id_fkey" FOREIGN KEY ("business_unit_id") REFERENCES "business_units"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "contracts"
-    ADD CONSTRAINT "contracts_created_by_user_id_fkey"
-    FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "contracts" VALIDATE CONSTRAINT "contracts_created_by_user_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "contracts" ADD CONSTRAINT "contracts_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- projects (depends on contracts, organizations)
 CREATE TABLE IF NOT EXISTS "projects" (
@@ -195,17 +195,17 @@ CREATE TABLE IF NOT EXISTS "projects" (
 CREATE INDEX IF NOT EXISTS "projects_organization_id_contract_id_idx"
     ON "projects"("organization_id", "contract_id");
 
-ALTER TABLE "projects"
-    ADD CONSTRAINT "projects_contract_id_fkey"
-    FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "projects" VALIDATE CONSTRAINT "projects_contract_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "projects" ADD CONSTRAINT "projects_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "projects"
-    ADD CONSTRAINT "projects_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "projects" VALIDATE CONSTRAINT "projects_organization_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "projects" ADD CONSTRAINT "projects_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- sites (depends on projects, organizations)
 CREATE TABLE IF NOT EXISTS "sites" (
@@ -227,17 +227,17 @@ CREATE TABLE IF NOT EXISTS "sites" (
 CREATE INDEX IF NOT EXISTS "sites_organization_id_project_id_idx"
     ON "sites"("organization_id", "project_id");
 
-ALTER TABLE "sites"
-    ADD CONSTRAINT "sites_project_id_fkey"
-    FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "sites" VALIDATE CONSTRAINT "sites_project_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "sites" ADD CONSTRAINT "sites_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "sites"
-    ADD CONSTRAINT "sites_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "sites" VALIDATE CONSTRAINT "sites_organization_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "sites" ADD CONSTRAINT "sites_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- social_value_themes (no foreign keys)
 CREATE TABLE IF NOT EXISTS "social_value_themes" (
@@ -269,11 +269,11 @@ CREATE TABLE IF NOT EXISTS "social_value_measures" (
 CREATE UNIQUE INDEX IF NOT EXISTS "social_value_measures_toms_code_key"
     ON "social_value_measures"("toms_code");
 
-ALTER TABLE "social_value_measures"
-    ADD CONSTRAINT "social_value_measures_theme_id_fkey"
-    FOREIGN KEY ("theme_id") REFERENCES "social_value_themes"("id") ON DELETE RESTRICT ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_measures" VALIDATE CONSTRAINT "social_value_measures_theme_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_measures" ADD CONSTRAINT "social_value_measures_theme_id_fkey" FOREIGN KEY ("theme_id") REFERENCES "social_value_themes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- social_value_records (depends on organizations, contracts, reporting_periods, social_value_measures, evidence_files, users)
 CREATE TABLE IF NOT EXISTS "social_value_records" (
@@ -296,41 +296,41 @@ CREATE TABLE IF NOT EXISTS "social_value_records" (
 CREATE INDEX IF NOT EXISTS "social_value_records_organization_id_contract_id_reporting_period_id_idx"
     ON "social_value_records"("organization_id", "contract_id", "reporting_period_id");
 
-ALTER TABLE "social_value_records"
-    ADD CONSTRAINT "social_value_records_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_records" VALIDATE CONSTRAINT "social_value_records_organization_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_records" ADD CONSTRAINT "social_value_records_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "social_value_records"
-    ADD CONSTRAINT "social_value_records_contract_id_fkey"
-    FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_records" VALIDATE CONSTRAINT "social_value_records_contract_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_records" ADD CONSTRAINT "social_value_records_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "social_value_records"
-    ADD CONSTRAINT "social_value_records_reporting_period_id_fkey"
-    FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_records" VALIDATE CONSTRAINT "social_value_records_reporting_period_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_records" ADD CONSTRAINT "social_value_records_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "social_value_records"
-    ADD CONSTRAINT "social_value_records_measure_id_fkey"
-    FOREIGN KEY ("measure_id") REFERENCES "social_value_measures"("id") ON DELETE RESTRICT ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_records" VALIDATE CONSTRAINT "social_value_records_measure_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_records" ADD CONSTRAINT "social_value_records_measure_id_fkey" FOREIGN KEY ("measure_id") REFERENCES "social_value_measures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "social_value_records"
-    ADD CONSTRAINT "social_value_records_evidence_file_id_fkey"
-    FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE SET NULL ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_records" VALIDATE CONSTRAINT "social_value_records_evidence_file_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_records" ADD CONSTRAINT "social_value_records_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "social_value_records"
-    ADD CONSTRAINT "social_value_records_created_by_user_id_fkey"
-    FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_records" VALIDATE CONSTRAINT "social_value_records_created_by_user_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_records" ADD CONSTRAINT "social_value_records_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- social_value_targets (depends on organizations, contracts, reporting_periods)
 CREATE TABLE IF NOT EXISTS "social_value_targets" (
@@ -350,23 +350,23 @@ CREATE TABLE IF NOT EXISTS "social_value_targets" (
 CREATE UNIQUE INDEX IF NOT EXISTS "social_value_targets_organization_id_contract_id_reporting_period_id_key"
     ON "social_value_targets"("organization_id", "contract_id", "reporting_period_id");
 
-ALTER TABLE "social_value_targets"
-    ADD CONSTRAINT "social_value_targets_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_targets" VALIDATE CONSTRAINT "social_value_targets_organization_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_targets" ADD CONSTRAINT "social_value_targets_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "social_value_targets"
-    ADD CONSTRAINT "social_value_targets_contract_id_fkey"
-    FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_targets" VALIDATE CONSTRAINT "social_value_targets_contract_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_targets" ADD CONSTRAINT "social_value_targets_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "social_value_targets"
-    ADD CONSTRAINT "social_value_targets_reporting_period_id_fkey"
-    FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "social_value_targets" VALIDATE CONSTRAINT "social_value_targets_reporting_period_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "social_value_targets" ADD CONSTRAINT "social_value_targets_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- evidence_classifications (depends on evidence_files, users)
 CREATE TABLE IF NOT EXISTS "evidence_classifications" (
@@ -386,17 +386,17 @@ CREATE TABLE IF NOT EXISTS "evidence_classifications" (
 CREATE INDEX IF NOT EXISTS "evidence_classifications_evidence_file_id_idx"
     ON "evidence_classifications"("evidence_file_id");
 
-ALTER TABLE "evidence_classifications"
-    ADD CONSTRAINT "evidence_classifications_evidence_file_id_fkey"
-    FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "evidence_classifications" VALIDATE CONSTRAINT "evidence_classifications_evidence_file_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "evidence_classifications" ADD CONSTRAINT "evidence_classifications_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "evidence_classifications"
-    ADD CONSTRAINT "evidence_classifications_reviewed_by_user_id_fkey"
-    FOREIGN KEY ("reviewed_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "evidence_classifications" VALIDATE CONSTRAINT "evidence_classifications_reviewed_by_user_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "evidence_classifications" ADD CONSTRAINT "evidence_classifications_reviewed_by_user_id_fkey" FOREIGN KEY ("reviewed_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ocr_corrections (depends on evidence_files, users)
 CREATE TABLE IF NOT EXISTS "ocr_corrections" (
@@ -414,17 +414,17 @@ CREATE TABLE IF NOT EXISTS "ocr_corrections" (
 CREATE INDEX IF NOT EXISTS "ocr_corrections_evidence_file_id_idx"
     ON "ocr_corrections"("evidence_file_id");
 
-ALTER TABLE "ocr_corrections"
-    ADD CONSTRAINT "ocr_corrections_evidence_file_id_fkey"
-    FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "ocr_corrections" VALIDATE CONSTRAINT "ocr_corrections_evidence_file_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "ocr_corrections" ADD CONSTRAINT "ocr_corrections_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "ocr_corrections"
-    ADD CONSTRAINT "ocr_corrections_corrected_by_user_id_fkey"
-    FOREIGN KEY ("corrected_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "ocr_corrections" VALIDATE CONSTRAINT "ocr_corrections_corrected_by_user_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "ocr_corrections" ADD CONSTRAINT "ocr_corrections_corrected_by_user_id_fkey" FOREIGN KEY ("corrected_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ─── 4. New columns on existing tables ───────────────────────────────────────
 
@@ -451,11 +451,11 @@ CREATE INDEX IF NOT EXISTS "activity_records_organization_id_contract_id_idx"
     ON "activity_records"("organization_id", "contract_id");
 
 -- FK for site_id (explicit Prisma relation exists)
-ALTER TABLE "activity_records"
-    ADD CONSTRAINT "activity_records_site_id_fkey"
-    FOREIGN KEY ("site_id") REFERENCES "sites"("id") ON DELETE SET NULL ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "activity_records" VALIDATE CONSTRAINT "activity_records_site_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_site_id_fkey" FOREIGN KEY ("site_id") REFERENCES "sites"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- field_submissions: site_id, contract_id
 DO $$
@@ -473,18 +473,18 @@ EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
 -- FK for site_id (explicit Prisma relation exists)
-ALTER TABLE "field_submissions"
-    ADD CONSTRAINT "field_submissions_site_id_fkey"
-    FOREIGN KEY ("site_id") REFERENCES "sites"("id") ON DELETE SET NULL ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "field_submissions" VALIDATE CONSTRAINT "field_submissions_site_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_site_id_fkey" FOREIGN KEY ("site_id") REFERENCES "sites"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- FK for contract_id (explicit Prisma relation exists)
-ALTER TABLE "field_submissions"
-    ADD CONSTRAINT "field_submissions_contract_id_fkey"
-    FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE SET NULL ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "field_submissions" VALIDATE CONSTRAINT "field_submissions_contract_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- reports: contract_id
 DO $$
@@ -495,8 +495,8 @@ EXCEPTION WHEN duplicate_column THEN NULL;
 END $$;
 
 -- FK for contract_id (explicit Prisma relation exists)
-ALTER TABLE "reports"
-    ADD CONSTRAINT "reports_contract_id_fkey"
-    FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE SET NULL ON UPDATE CASCADE
-    NOT VALID;
-ALTER TABLE "reports" VALIDATE CONSTRAINT "reports_contract_id_fkey";
+DO $$
+BEGIN
+  ALTER TABLE "reports" ADD CONSTRAINT "reports_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

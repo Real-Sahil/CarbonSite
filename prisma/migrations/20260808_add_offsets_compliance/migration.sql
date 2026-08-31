@@ -47,12 +47,14 @@ CREATE INDEX IF NOT EXISTS "compliance_records_organization_id_reporting_year_id
     ON "compliance_records"("organization_id", "reporting_year");
 
 -- AddForeignKey
-ALTER TABLE "carbon_offsets"
-    ADD CONSTRAINT "carbon_offsets_organization_id_fkey"
-    FOREIGN KEY ("organization_id")
-    REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "carbon_offsets" ADD CONSTRAINT "carbon_offsets_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "compliance_records"
-    ADD CONSTRAINT "compliance_records_organization_id_fkey"
-    FOREIGN KEY ("organization_id")
-    REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "compliance_records" ADD CONSTRAINT "compliance_records_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

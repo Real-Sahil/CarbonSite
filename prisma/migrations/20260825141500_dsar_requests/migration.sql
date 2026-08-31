@@ -30,14 +30,20 @@ CREATE TABLE IF NOT EXISTS "dsar_requests" (
 CREATE INDEX IF NOT EXISTS "dsar_requests_status_due_by_idx" ON "dsar_requests"("status", "due_by");
 CREATE INDEX IF NOT EXISTS "dsar_requests_user_id_idx" ON "dsar_requests"("user_id");
 
-ALTER TABLE "dsar_requests"
-    ADD CONSTRAINT "dsar_requests_user_id_fkey"
-    FOREIGN KEY ("user_id") REFERENCES "users"("id");
+DO $$
+BEGIN
+  ALTER TABLE "dsar_requests" ADD CONSTRAINT "dsar_requests_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id");
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "dsar_requests"
-    ADD CONSTRAINT "dsar_requests_requested_by_user_id_fkey"
-    FOREIGN KEY ("requested_by_user_id") REFERENCES "users"("id");
+DO $$
+BEGIN
+  ALTER TABLE "dsar_requests" ADD CONSTRAINT "dsar_requests_requested_by_user_id_fkey" FOREIGN KEY ("requested_by_user_id") REFERENCES "users"("id");
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "dsar_requests"
-    ADD CONSTRAINT "dsar_requests_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id");
+DO $$
+BEGIN
+  ALTER TABLE "dsar_requests" ADD CONSTRAINT "dsar_requests_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id");
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

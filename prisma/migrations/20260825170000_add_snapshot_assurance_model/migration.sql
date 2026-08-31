@@ -28,14 +28,20 @@ CREATE INDEX IF NOT EXISTS "snapshot_assurances_organization_id_status_idx" ON "
 CREATE INDEX IF NOT EXISTS "snapshot_assurances_auditor_user_id_status_idx" ON "snapshot_assurances"("auditor_user_id", "status");
 
 -- Add foreign keys
-ALTER TABLE "snapshot_assurances"
-ADD CONSTRAINT "snapshot_assurances_organization_id_fkey"
-FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "snapshot_assurances" ADD CONSTRAINT "snapshot_assurances_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "snapshot_assurances"
-ADD CONSTRAINT "snapshot_assurances_snapshot_id_fkey"
-FOREIGN KEY ("snapshot_id") REFERENCES "published_snapshots"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "snapshot_assurances" ADD CONSTRAINT "snapshot_assurances_snapshot_id_fkey" FOREIGN KEY ("snapshot_id") REFERENCES "published_snapshots"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "snapshot_assurances"
-ADD CONSTRAINT "snapshot_assurances_auditor_user_id_fkey"
-FOREIGN KEY ("auditor_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "snapshot_assurances" ADD CONSTRAINT "snapshot_assurances_auditor_user_id_fkey" FOREIGN KEY ("auditor_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

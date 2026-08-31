@@ -53,11 +53,11 @@ CREATE TABLE IF NOT EXISTS "webhooks" (
 
 CREATE INDEX IF NOT EXISTS "webhooks_organization_id_idx" ON "webhooks"("organization_id");
 
-ALTER TABLE "webhooks"
-  ADD CONSTRAINT "webhooks_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-  ADD CONSTRAINT "webhooks_created_by_user_id_fkey"
-    FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "webhooks" ADD CONSTRAINT "webhooks_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE, ADD CONSTRAINT "webhooks_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- WebhookDelivery model
 CREATE TABLE IF NOT EXISTS "webhook_deliveries" (
@@ -76,6 +76,8 @@ CREATE TABLE IF NOT EXISTS "webhook_deliveries" (
 CREATE INDEX IF NOT EXISTS "webhook_deliveries_webhook_id_created_at_idx"
   ON "webhook_deliveries"("webhook_id", "created_at");
 
-ALTER TABLE "webhook_deliveries"
-  ADD CONSTRAINT "webhook_deliveries_webhook_id_fkey"
-    FOREIGN KEY ("webhook_id") REFERENCES "webhooks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "webhook_deliveries" ADD CONSTRAINT "webhook_deliveries_webhook_id_fkey" FOREIGN KEY ("webhook_id") REFERENCES "webhooks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
