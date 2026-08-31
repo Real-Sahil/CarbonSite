@@ -58,15 +58,28 @@ export function getPosts(): BlogPostMeta[] {
 }
 
 export function getPost(slug: string): BlogPost | null {
+  console.log(`[getPost] Attempting to load slug: "${slug}"`);
+  console.log(`[getPost] Posts directory: ${postsDirectory}`);
+
+  if (!slug) {
+    console.warn(`[getPost] Invalid slug: "${slug}"`);
+    return null;
+  }
+
   if (!fs.existsSync(postsDirectory)) {
     console.warn(`[getPost] Directory not found: ${postsDirectory}`);
     return null;
   }
 
   const fullPath = path.join(postsDirectory, `${slug}.mdx`);
+  console.log(`[getPost] Full path: ${fullPath}`);
+  console.log(`[getPost] File exists: ${fs.existsSync(fullPath)}`);
 
   if (!fs.existsSync(fullPath)) {
     console.warn(`[getPost] File not found: ${fullPath}`);
+    // List available files for debugging
+    const files = fs.readdirSync(postsDirectory).filter(f => f.endsWith('.mdx'));
+    console.warn(`[getPost] Available files: ${files.slice(0, 5).join(', ')}... (total: ${files.length})`);
     return null;
   }
 

@@ -7,7 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
 
-type Params = { params: Promise<{ orgId: string; id: string }> };
+type Params = { params: Promise<{ orgId: string; snapshotId: string }> };
 
 const verifySnapshotSchema = z.object({
   action: z.enum(["approved", "changes_requested"]),
@@ -16,7 +16,7 @@ const verifySnapshotSchema = z.object({
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const { orgId, id } = await params;
+    const { orgId, snapshotId: id } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "reviewer");
 
     const body = verifySnapshotSchema.parse(await req.json());
