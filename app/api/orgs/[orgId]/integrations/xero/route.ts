@@ -57,24 +57,38 @@ export async function GET(
 
 // POST /api/orgs/[orgId]/integrations/xero — initiate OAuth flow
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string }> },
 ) {
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
-    const clientId = process.env.XERO_CLIENT_ID;
-    const redirectUri = process.env.XERO_REDIRECT_URI;
+    // Read credentials from IntegrationConfig (admin-entered via settings page)
+    const config = await prisma.integrationConfig.findUnique({
+      where: { organizationId: orgId },
+      select: { xeroClientId: true },
+    });
 
-    if (!clientId || !redirectUri) {
+    const clientId = config?.xeroClientId || process.env.XERO_CLIENT_ID;
+
+    // Build redirect URI from app URL
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.BETTER_AUTH_URL ||
+      `https://${req.headers.get("host")}`;
+    const redirectUri =
+      process.env.XERO_REDIRECT_URI || `${appUrl}/api/auth/xero/callback`;
+
+    if (!clientId) {
       return apiError(
         "XERO_NOT_CONFIGURED",
-        "Xero integration is not configured on this server.",
-        501,
+        "Xero Client ID is not configured. Please add it in Integration Settings first.",
+        400,
       );
     }
 
+    // Encode orgId in state so the callback knows which org to associate the token with
     const state = Buffer.from(JSON.stringify({ orgId })).toString("base64url");
     const scopes = [
       "openid",
