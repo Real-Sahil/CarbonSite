@@ -12,6 +12,9 @@ const UpsertSchema = z.object({
   status:        z.enum(["draft", "in_progress", "submitted", "verified"]).default("draft"),
   dueDate:       z.string().datetime().optional(),
   notes:         z.string().max(5000).optional(),
+  owner:         z.string().max(200).optional(),
+  actionSteps:   z.string().max(5000).optional(),
+  externalLink:  z.string().url().max(500).optional(),
 });
 
 export async function GET(
@@ -61,12 +64,18 @@ export async function POST(
         status: body.data.status,
         dueDate: body.data.dueDate ? new Date(body.data.dueDate) : null,
         notes: body.data.notes ?? null,
+        owner: body.data.owner ?? null,
+        actionSteps: body.data.actionSteps ?? null,
+        externalLink: body.data.externalLink ?? null,
         submittedAt: body.data.status === "submitted" ? new Date() : null,
       },
       update: {
         status: body.data.status,
         dueDate: body.data.dueDate ? new Date(body.data.dueDate) : null,
         notes: body.data.notes ?? null,
+        owner: body.data.owner ?? null,
+        actionSteps: body.data.actionSteps ?? null,
+        externalLink: body.data.externalLink ?? null,
         submittedAt: body.data.status === "submitted" ? new Date() : undefined,
       },
     });

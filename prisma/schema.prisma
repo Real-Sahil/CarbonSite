@@ -2012,6 +2012,9 @@ model ComplianceRecord {
   dueDate        DateTime? @map("due_date")
   submittedAt    DateTime? @map("submitted_at")
   notes          String?
+  owner          String?   // person or team responsible for this obligation
+  actionSteps    String?   @map("action_steps") // checklist / next steps for the admin
+  externalLink   String?   @map("external_link") // guidance URL (e.g. HMRC, CDP portal)
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 

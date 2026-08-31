@@ -8,7 +8,7 @@ import {
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
-  Zap, Eye, PackageSearch,
+  Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -78,7 +78,10 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
       { label: "SBTi Roadmap", href: `/orgs/${orgId}/sbti`,         icon: TrendingDown, roles: CORE_ROLES },
       { label: "Offsets",      href: `/orgs/${orgId}/offsets`,      icon: Leaf,         roles: CORE_ROLES },
-      { label: "Compliance",   href: `/orgs/${orgId}/compliance`,   icon: ShieldCheck,  roles: CORE_ROLES },
+      { label: "Compliance",         href: `/orgs/${orgId}/compliance`,                       icon: ShieldCheck,   roles: CORE_ROLES },
+      { label: "Reg. Calendar",      href: `/orgs/${orgId}/compliance/deadlines`,              icon: CalendarClock, roles: CORE_ROLES },
+      { label: "Assurance",          href: `/orgs/${orgId}/compliance/assurance-readiness`,    icon: BadgeCheck,    roles: CORE_ROLES },
+      { label: "ESRS E1 Gap",        href: `/orgs/${orgId}/compliance/esrs-e1`,                icon: BookOpen,      roles: CORE_ROLES },
       { label: "Waste",        href: `/orgs/${orgId}/waste`,        icon: Trash2,       roles: CORE_ROLES },
       { label: "Social Value", href: `/orgs/${orgId}/social-value`, icon: Heart,        roles: EXTENDED_VIEW_ROLES },
     ]},
