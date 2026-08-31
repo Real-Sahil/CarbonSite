@@ -137,7 +137,9 @@ type AuditAction =
   | "security.alert_bulk_data_mutation"
   | "security.alert_bulk_submission_review"
   | "security.alert_suspicious_location_jump"
-  | "causal_analysis.run_triggered";
+  | "causal_analysis.run_triggered"
+  | "supplier_report.accepted"
+  | "supplier_report.rejected";
 
 export async function writeAuditLog(params: {
   organizationId: string;

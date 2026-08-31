@@ -61,6 +61,7 @@ model User {
   supplierInvitesCreated            SupplierInvite[]             @relation("SupplierInviteCreatedBy")
   supplierDataRequestsCreated       SupplierDataRequest[]        @relation("SupplierDataRequestCreatedBy")
   supplierDataRequestsApproved      SupplierDataRequest[]        @relation("SupplierDataRequestApprovedBy")
+  supplierReportsReviewed           SupplierReport[]             @relation("SupplierReportReviewedBy")
   epdRecordsSubmitted               EpdRecord[]                  @relation("EpdSubmittedBy")
   projectRoleAssignments            ProjectRoleAssignment[]      @relation("ProjectAssignments")
   createdProjectRoleAssignments     ProjectRoleAssignment[]      @relation("ProjectAssignmentsCreated")
@@ -165,6 +166,7 @@ model Organization {
   inviteLinks                 InviteLink[]
   supplierInvites             SupplierInvite[]
   supplierDataRequests        SupplierDataRequest[]
+  supplierReports             SupplierReport[]
   integrationConnections      IntegrationConnection[]
   fieldWorkerAssignments      FieldWorkerAssignment[]
   fieldWorkerSiteAssignments  FieldWorkerSiteAssignment[]
@@ -490,6 +492,7 @@ model EmissionCategory {
   supplierCategoryAssignments SupplierCategoryAssignment[]
   scope3EstimationModels      Scope3EstimationModel[]      @relation("EstimationModels")
   scope3Estimates             Scope3Estimate[]             @relation("Scope3Estimates")
+  supplierReports             SupplierReport[]
 
   @@map("emission_categories")
 }
@@ -3142,5 +3145,52 @@ model CausalInferenceRun {
   @@index([organizationId, status])
   @@index([organizationId, modelId])
   @@map("causal_inference_runs")
+}
+
+// ─── Supplier Reports (Scope 3 anonymous form submissions) ────────────────────
+
+model SupplierReport {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  // Link to the request that generated the token (nullable for future direct submissions)
+  supplierDataRequestId String? @map("supplier_data_request_id")
+  // Supplier identity (email + name from token; no account required)
+  supplierEmail       String    @map("supplier_email")
+  supplierName        String?   @map("supplier_name")
+  supplierDomain      String?   @map("supplier_domain") // extracted from email for grouping
+  // What was reported
+  emissionCategoryId  String    @map("emission_category_id")
+  reportingYear       Int       @map("reporting_year")
+  totalAmount         Decimal   @map("total_amount") @db.Decimal(18, 6)
+  unit                String    // e.g. "tCO2e", "kgCO2e", "GBP" (spend-based)
+  calculationMethod   String    @map("calculation_method") // "spend_based" | "activity_based" | "direct_measurement"
+  // Supporting narrative
+  notes               String?
+  supportingFileKeys  String[]  @map("supporting_file_keys") // R2 storage keys
+  // Quality scoring (run inline on submission)
+  qualityScore        Int?      @map("quality_score") // 0-100
+  qualityFlags        Json?     @map("quality_flags") // [{type, message, severity}]
+  // Review workflow
+  status              String    @default("submitted") // submitted | under_review | accepted | rejected
+  reviewedByUserId    String?   @map("reviewed_by_user_id")
+  reviewedAt          DateTime? @map("reviewed_at")
+  rejectionReason     String?   @map("rejection_reason")
+  // Conversion tracking
+  convertedToRecordId String?   @map("converted_to_record_id") // ActivityRecord.id after acceptance
+  convertedAt         DateTime? @map("converted_at")
+  // Timestamps
+  submittedAt         DateTime  @default(now()) @map("submitted_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  organization        Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  emissionCategory    EmissionCategory    @relation(fields: [emissionCategoryId], references: [id])
+  reviewedBy          User?               @relation("SupplierReportReviewedBy", fields: [reviewedByUserId], references: [id])
+
+  @@index([organizationId, status])
+  @@index([organizationId, reportingYear])
+  @@index([organizationId, supplierEmail])
+  @@index([supplierDataRequestId])
+  @@map("supplier_reports")
 }
 
