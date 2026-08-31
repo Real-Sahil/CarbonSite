@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "tsx scripts/generate-blog-manifest.ts && next build",
+    "vercel-build": "prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && next build",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
