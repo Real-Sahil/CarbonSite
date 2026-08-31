@@ -78,18 +78,47 @@ FROM dashboard_aggregates
 WHERE organization_id = 'org_123'
   AND period_id = 'q3_2024';
 
--- With indexes: <100ms query time
+-- With indexes: &lt;100ms query time
 ```
 
 ## Real Performance Benchmarks
 
-| Organization Size | Records | Dashboard Load | Filter | Export |
-|---|---|---|---|---|
-| **Startup** | 10k | 200ms | 150ms | 500ms |
-| **Mid-market** | 100k | 300ms | 200ms | 1.2s |
-| **Enterprise** | 1M | 400ms | 250ms | 2.5s |
+<table>
+  <thead>
+    <tr>
+      <th>Organization Size</th>
+      <th>Records</th>
+      <th>Dashboard Load</th>
+      <th>Filter</th>
+      <th>Export</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Startup</strong></td>
+      <td>10k</td>
+      <td>200ms</td>
+      <td>150ms</td>
+      <td>500ms</td>
+    </tr>
+    <tr>
+      <td><strong>Mid-market</strong></td>
+      <td>100k</td>
+      <td>300ms</td>
+      <td>200ms</td>
+      <td>1.2s</td>
+    </tr>
+    <tr>
+      <td><strong>Enterprise</strong></td>
+      <td>1M</td>
+      <td>400ms</td>
+      <td>250ms</td>
+      <td>2.5s</td>
+    </tr>
+  </tbody>
+</table>
 
-**Target:** <2 second dashboard load for any org size.
+**Target:** &lt;2 second dashboard load for any org size.
 
 <ProofPoint>
 **Verified:** Tested with 2M emissions records (10x largest customer). Dashboard loads in 450ms.
@@ -127,8 +156,8 @@ async function rebuildDashboardAggregates(calculationRunId: string) {
 
 ### Caching Layer
 Dashboard data is also cached in Redis (5-minute TTL):
-- Cache hits: <10ms
-- Cache misses (new data): Query pre-computed aggregates: <300ms
+- Cache hits: &lt;10ms
+- Cache misses (new data): Query pre-computed aggregates: &lt;300ms
 
 ### Partitioning
 For orgs with 10M+ records, use table partitioning by period (quarter):
@@ -150,22 +179,52 @@ Queries against specific periods skip partitions they don't need.
 ## Dashboard Features That Scale
 
 ✅ **Real-time Updates:** SSE pushes new data as calculations finish
-✅ **Fast Drill-Down:** Click facility → loads sub-aggregates in <300ms
-✅ **Historical Comparison:** Compare Q1 vs Q4 in <200ms
-✅ **Export to CSV:** 100k records → Excel in <3 seconds
+✅ **Fast Drill-Down:** Click facility → loads sub-aggregates in &lt;300ms
+✅ **Historical Comparison:** Compare Q1 vs Q4 in &lt;200ms
+✅ **Export to CSV:** 100k records → Excel in &lt;3 seconds
 ✅ **Trending Graphs:** Multi-period analysis instant
-✅ **Supplier Performance:** 500 suppliers, 10k records each → <500ms
+✅ **Supplier Performance:** 500 suppliers, 10k records each → &lt;500ms
 
 ---
 
 ## Competitor Comparison
 
-| Platform | 100k Records | 1M Records | Architecture |
-|---|---|---|---|
-| **CarbonSite** | 300ms | 400ms | Pre-computed aggregates |
-| **Persefoni** | 500ms | 1.2s | Partial caching |
-| **Watershed** | 400ms | 900ms | Query optimization |
-| **Gaia** | 2s | Timeout | No optimization |
+<table>
+  <thead>
+    <tr>
+      <th>Platform</th>
+      <th>100k Records</th>
+      <th>1M Records</th>
+      <th>Architecture</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>CarbonSite</strong></td>
+      <td>300ms</td>
+      <td>400ms</td>
+      <td>Pre-computed aggregates</td>
+    </tr>
+    <tr>
+      <td><strong>Persefoni</strong></td>
+      <td>500ms</td>
+      <td>1.2s</td>
+      <td>Partial caching</td>
+    </tr>
+    <tr>
+      <td><strong>Watershed</strong></td>
+      <td>400ms</td>
+      <td>900ms</td>
+      <td>Query optimization</td>
+    </tr>
+    <tr>
+      <td><strong>Gaia</strong></td>
+      <td>2s</td>
+      <td>Timeout</td>
+      <td>No optimization</td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
