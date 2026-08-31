@@ -83,11 +83,40 @@ WHERE organization_id = 'org_123'
 
 ## Real Performance Benchmarks
 
-| Organization Size | Records | Dashboard Load | Filter | Export |
-|---|---|---|---|---|
-| **Startup** | 10k | 200ms | 150ms | 500ms |
-| **Mid-market** | 100k | 300ms | 200ms | 1.2s |
-| **Enterprise** | 1M | 400ms | 250ms | 2.5s |
+<table>
+  <thead>
+    <tr>
+      <th>Organization Size</th>
+      <th>Records</th>
+      <th>Dashboard Load</th>
+      <th>Filter</th>
+      <th>Export</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Startup</strong></td>
+      <td>10k</td>
+      <td>200ms</td>
+      <td>150ms</td>
+      <td>500ms</td>
+    </tr>
+    <tr>
+      <td><strong>Mid-market</strong></td>
+      <td>100k</td>
+      <td>300ms</td>
+      <td>200ms</td>
+      <td>1.2s</td>
+    </tr>
+    <tr>
+      <td><strong>Enterprise</strong></td>
+      <td>1M</td>
+      <td>400ms</td>
+      <td>250ms</td>
+      <td>2.5s</td>
+    </tr>
+  </tbody>
+</table>
 
 **Target:** <2 second dashboard load for any org size.
 
@@ -160,12 +189,42 @@ Queries against specific periods skip partitions they don't need.
 
 ## Competitor Comparison
 
-| Platform | 100k Records | 1M Records | Architecture |
-|---|---|---|---|
-| **CarbonSite** | 300ms | 400ms | Pre-computed aggregates |
-| **Persefoni** | 500ms | 1.2s | Partial caching |
-| **Watershed** | 400ms | 900ms | Query optimization |
-| **Gaia** | 2s | Timeout | No optimization |
+<table>
+  <thead>
+    <tr>
+      <th>Platform</th>
+      <th>100k Records</th>
+      <th>1M Records</th>
+      <th>Architecture</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>CarbonSite</strong></td>
+      <td>300ms</td>
+      <td>400ms</td>
+      <td>Pre-computed aggregates</td>
+    </tr>
+    <tr>
+      <td><strong>Persefoni</strong></td>
+      <td>500ms</td>
+      <td>1.2s</td>
+      <td>Partial caching</td>
+    </tr>
+    <tr>
+      <td><strong>Watershed</strong></td>
+      <td>400ms</td>
+      <td>900ms</td>
+      <td>Query optimization</td>
+    </tr>
+    <tr>
+      <td><strong>Gaia</strong></td>
+      <td>2s</td>
+      <td>Timeout</td>
+      <td>No optimization</td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 

@@ -29,7 +29,7 @@ CarbonSite prevents these with:
 
 ### Stage 2: Extraction (OCR)
 
-OCR extracts structured data from the photograph. Expected result: {weight: 2450, unit: "kg", category: "plastic waste", date: "2026-01-15"}
+OCR extracts structured data from the photograph. Expected result: `{weight: 2450, unit: "kg", category: "plastic waste", date: "2026-01-15"}`
 
 Possible errors:
 - "2,450" misread as "24,50" or "2450" with wrong unit
@@ -46,7 +46,7 @@ CarbonSite prevents these with:
 A sustainability manager reviews the extracted data and the original photo.
 
 Review flow:
-1. See OCR result: {weight: 2450, unit: "kg", category: "plastic waste"}
+1. See OCR result: `{weight: 2450, unit: "kg", category: "plastic waste"}`
 2. See original photo to verify
 3. Approve (OCR was correct), Correct (OCR had error), or Reject (entire submission is wrong)
 
@@ -65,7 +65,7 @@ CarbonSite prevents these with:
 
 The calculation engine applies emission factors:
 
-Input: {weight: 2450 kg, category: "plastic waste"}
+Input: `{weight: 2450 kg, category: "plastic waste"}`
 Factor: 2.8 kg CO2e per kg (plastic waste to landfill)
 Result: 2450 × 2.8 = 6,860 kg CO2e
 

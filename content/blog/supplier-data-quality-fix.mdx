@@ -12,14 +12,47 @@ image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&f
 
 You invited 50 suppliers to submit emissions data. Here's what you got:
 
-| Supplier | Status | Issues |
-|---|---|---|
-| GlobalTech | Submitted | ✓ Complete |
-| SupplyCo | Submitted | Emissions 5x normal (typo in zeros?) |
-| LocalVendor | Submitted | 40% fields blank (missing production data) |
-| TierTwo | Submitted | Date is in the future (2025) |
-| Subcontractor | Submitted | Same data as last quarter (copy-paste?) |
-| MissingCo | No response | — |
+<table>
+  <thead>
+    <tr>
+      <th>Supplier</th>
+      <th>Status</th>
+      <th>Issues</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GlobalTech</td>
+      <td>Submitted</td>
+      <td>✓ Complete</td>
+    </tr>
+    <tr>
+      <td>SupplyCo</td>
+      <td>Submitted</td>
+      <td>Emissions 5x normal (typo in zeros?)</td>
+    </tr>
+    <tr>
+      <td>LocalVendor</td>
+      <td>Submitted</td>
+      <td>40% fields blank (missing production data)</td>
+    </tr>
+    <tr>
+      <td>TierTwo</td>
+      <td>Submitted</td>
+      <td>Date is in the future (2025)</td>
+    </tr>
+    <tr>
+      <td>Subcontractor</td>
+      <td>Submitted</td>
+      <td>Same data as last quarter (copy-paste?)</td>
+    </tr>
+    <tr>
+      <td>MissingCo</td>
+      <td>No response</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
 
 **Result:** Of 50 suppliers, 2 are usable, 3 are suspect, 45 unreliable or missing.
 
@@ -228,13 +261,48 @@ ML model trained on:
 
 ## From Suspect Data to Trustworthy Scope 3
 
-| Stage | Status | Action | Owner |
-|---|---|---|---|
-| **Submitted** | 50 suppliers | Auto-detect anomalies | System |
-| **Flagged** | 3 suspicious, 2 incomplete | Request corrections | Procurement |
-| **Corrected** | +5 suppliers now usable | Accept corrected data | System |
-| **Unresponsive** | 45 suppliers (original 50) | Use ML estimation | System |
-| **Final** | 10 actual + 40 estimated | Publish with transparency | Report |
+<table>
+  <thead>
+    <tr>
+      <th>Stage</th>
+      <th>Status</th>
+      <th>Action</th>
+      <th>Owner</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Submitted</strong></td>
+      <td>50 suppliers</td>
+      <td>Auto-detect anomalies</td>
+      <td>System</td>
+    </tr>
+    <tr>
+      <td><strong>Flagged</strong></td>
+      <td>3 suspicious, 2 incomplete</td>
+      <td>Request corrections</td>
+      <td>Procurement</td>
+    </tr>
+    <tr>
+      <td><strong>Corrected</strong></td>
+      <td>+5 suppliers now usable</td>
+      <td>Accept corrected data</td>
+      <td>System</td>
+    </tr>
+    <tr>
+      <td><strong>Unresponsive</strong></td>
+      <td>45 suppliers (original 50)</td>
+      <td>Use ML estimation</td>
+      <td>System</td>
+    </tr>
+    <tr>
+      <td><strong>Final</strong></td>
+      <td>10 actual + 40 estimated</td>
+      <td>Publish with transparency</td>
+      <td>Report</td>
+    </tr>
+  </tbody>
+</table>
 
 **Result:** Scope 3 you can defend in external audits.
 

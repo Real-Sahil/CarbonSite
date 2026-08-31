@@ -98,14 +98,40 @@ You can segment suppliers by performance:
 - **Laggards:** Never respond, require phone follow-ups
 - **Unresponsive:** After 3 requests, use industry average
 
-<ComparisonTable
-  headers={["Supplier", "Response Rate", "Quality Score", "Status", "Action"]}
-  rows={[
-    ["GlobalTech Inc", "100%", "95", "Excellent", "Use actual data"],
-    ["SupplyCo Ltd", "75%", "82", "Good", "Use actual data"],
-    ["LocalVendor", "0%", "—", "Unresponsive", "Use industry avg"],
-  ]}
-/>
+<table>
+  <thead>
+    <tr>
+      <th>Supplier</th>
+      <th>Response Rate</th>
+      <th>Quality Score</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GlobalTech Inc</td>
+      <td>100%</td>
+      <td>95</td>
+      <td>Excellent</td>
+      <td>Use actual data</td>
+    </tr>
+    <tr>
+      <td>SupplyCo Ltd</td>
+      <td>75%</td>
+      <td>82</td>
+      <td>Good</td>
+      <td>Use actual data</td>
+    </tr>
+    <tr>
+      <td>LocalVendor</td>
+      <td>0%</td>
+      <td>—</td>
+      <td>Unresponsive</td>
+      <td>Use industry avg</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Scope 3 Estimation (ML Backup Plan)
 

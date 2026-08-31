@@ -117,12 +117,37 @@ This scales to **millions of records** without dashboard slowness.
 
 Same customer (500 facilities, 100k+ records):
 
-| Dashboard View | Query Time (Before) | Query Time (After) |
-|---|---|---|
-| Annual emissions by scope | 45 seconds | 200ms |
-| Monthly trend (year) | 60 seconds | 300ms |
-| Facility breakdown | 90 seconds | 500ms |
-| Filtered (Q4 only, Scope 3) | 30 seconds | 150ms |
+<table>
+  <thead>
+    <tr>
+      <th>Dashboard View</th>
+      <th>Query Time (Before)</th>
+      <th>Query Time (After)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Annual emissions by scope</td>
+      <td>45 seconds</td>
+      <td>200ms</td>
+    </tr>
+    <tr>
+      <td>Monthly trend (year)</td>
+      <td>60 seconds</td>
+      <td>300ms</td>
+    </tr>
+    <tr>
+      <td>Facility breakdown</td>
+      <td>90 seconds</td>
+      <td>500ms</td>
+    </tr>
+    <tr>
+      <td>Filtered (Q4 only, Scope 3)</td>
+      <td>30 seconds</td>
+      <td>150ms</td>
+    </tr>
+  </tbody>
+</table>
 
 Users went from "the dashboard is broken" to "the dashboard is instant."
 
@@ -166,11 +191,40 @@ No batch jobs. No waiting overnight for aggregates. Incremental updates.
 
 ## The Scaling Strategy
 
-| Scale | Activity Records | Aggregates Table | Query Time | Update Time |
-|---|---|---|---|---|
-| SMB | 10k | 200 rows | 50ms | 10ms |
-| Mid-Market | 100k | 2k rows | 200ms | 25ms |
-| Enterprise | 1M | 20k rows | 500ms | 50ms |
+<table>
+  <thead>
+    <tr>
+      <th>Scale</th>
+      <th>Activity Records</th>
+      <th>Aggregates Table</th>
+      <th>Query Time</th>
+      <th>Update Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SMB</td>
+      <td>10k</td>
+      <td>200 rows</td>
+      <td>50ms</td>
+      <td>10ms</td>
+    </tr>
+    <tr>
+      <td>Mid-Market</td>
+      <td>100k</td>
+      <td>2k rows</td>
+      <td>200ms</td>
+      <td>25ms</td>
+    </tr>
+    <tr>
+      <td>Enterprise</td>
+      <td>1M</td>
+      <td>20k rows</td>
+      <td>500ms</td>
+      <td>50ms</td>
+    </tr>
+  </tbody>
+</table>
 
 Even at 1 million records, dashboard queries are under 1 second because we're not scanning the activity table. We're reading pre-computed aggregates.
 
