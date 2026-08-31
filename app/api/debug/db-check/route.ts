@@ -1,30 +1,53 @@
 import { NextResponse } from "next/server";
 
 // Diagnostic endpoint to verify DATABASE_URL configuration in Vercel.
-// Shows masked URL (password hidden) and connection port so you can
-// confirm env vars are set correctly without exposing credentials.
+// Does NOT attempt database connection — only reads env vars.
 export async function GET() {
-  const raw = process.env.DATABASE_URL ?? "";
+  const dbUrl = process.env.DATABASE_URL ?? "";
+  const directUrl = process.env.DIRECT_URL ?? "";
 
-  let host = "not set";
-  let port = "not set";
-  let masked = "DATABASE_URL is not set";
+  let dbHost = "not set";
+  let dbPort = "not set";
+  let dbMasked = "not set";
 
-  if (raw) {
-    try {
-      const url = new URL(raw);
-      host = url.hostname;
-      port = url.port || "5432";
-      masked = raw.replace(/:([^@]+)@/, ":[HIDDEN]@");
-    } catch {
-      masked = "DATABASE_URL is set but could not be parsed as a URL";
+  let directHost = "not set";
+  let directPort = "not set";
+  let directMasked = "not set";
+
+  try {
+    if (dbUrl) {
+      const url = new URL(dbUrl);
+      dbHost = url.hostname;
+      dbPort = url.port || "5432";
+      dbMasked = dbUrl.replace(/:([^@]+)@/, ":[HIDDEN]@");
     }
+  } catch {
+    dbMasked = "invalid URL format";
+  }
+
+  try {
+    if (directUrl) {
+      const url = new URL(directUrl);
+      directHost = url.hostname;
+      directPort = url.port || "5432";
+      directMasked = directUrl.replace(/:([^@]+)@/, ":[HIDDEN]@");
+    }
+  } catch {
+    directMasked = "invalid URL format";
   }
 
   return NextResponse.json({
-    host,
-    port,
-    masked,
-    note: "port should be 5432 (direct) — if you see 6543, update Vercel env var and redeploy",
+    environment: process.env.NODE_ENV,
+    database_url: {
+      host: dbHost,
+      port: dbPort,
+      masked: dbMasked,
+    },
+    direct_url: {
+      host: directHost,
+      port: directPort,
+      masked: directMasked,
+    },
+    note: "If ports show 5432, env vars are correct. If 6543, update Vercel and redeploy. Database connectivity is a separate network issue.",
   });
 }
