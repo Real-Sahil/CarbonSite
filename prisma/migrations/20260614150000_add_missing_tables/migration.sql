@@ -25,31 +25,21 @@ ALTER TYPE "report_type" ADD VALUE IF NOT EXISTS 'contract_carbon';
 -- ─── 2. New enums ─────────────────────────────────────────────────────────────
 
 DO $$ BEGIN
-  DO $$ BEGIN
   CREATE TYPE "platform_role" AS ENUM ('platform_owner', 'platform_support', 'platform_analyst');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
 
 DO $$ BEGIN
-  DO $$ BEGIN
   CREATE TYPE "contract_status" AS ENUM ('active', 'completed', 'suspended', 'cancelled');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
 
 DO $$ BEGIN
-  DO $$ BEGIN
   CREATE TYPE "project_status" AS ENUM ('active', 'completed', 'on_hold', 'cancelled');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
 
 DO $$ BEGIN
-  DO $$ BEGIN
   CREATE TYPE "document_type" AS ENUM (
     'waste_transfer_note',
     'waste_collection_ticket',
@@ -68,8 +58,6 @@ DO $$ BEGIN
     'hazardous_waste_record',
     'other'
   );
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
