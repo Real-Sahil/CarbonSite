@@ -78,6 +78,11 @@ export async function GET(
               console.warn(
                 `[field-submissions/${submissionId}] evidence file ${f.evidenceFile!.id} has empty storageKey`,
               );
+            } else if (f.evidenceFile.storageKey.startsWith('http://') || f.evidenceFile.storageKey.startsWith('https://')) {
+              // Corrupted storageKey containing raw URL — log and skip
+              console.error(
+                `[field-submissions/${submissionId}] evidence file ${f.evidenceFile!.id} has corrupted storageKey (contains URL): "${f.evidenceFile.storageKey.substring(0, 50)}..."`,
+              );
             } else {
               downloadUrl = await presignDownload(f.evidenceFile.storageKey);
             }
