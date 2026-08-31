@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { XeroConnectButton } from "@/components/integrations/xero-connect-button";
 import {
   Card,
   CardContent,
@@ -10,11 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
-  ArrowRight,
   CheckCircle,
   AlertCircle,
   BarChart3,
@@ -94,9 +93,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   <p className="text-sm text-slate-300">
                     Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
-                  <Button className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold">
-                    Connect Xero
-                  </Button>
+                  <XeroConnectButton orgId={orgId} />
                   <p className="text-xs text-slate-400">
                     Secure OAuth login. We never store your Xero password.
                   </p>
