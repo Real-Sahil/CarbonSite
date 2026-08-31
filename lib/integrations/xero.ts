@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { decryptCredential } from "@/lib/integrations/encryption";
 
 interface XeroTokenResponse {
   access_token: string;
@@ -53,8 +54,17 @@ export async function ensureValidXeroToken(organizationId: string): Promise<{
   }
 
   try {
-    const clientId = process.env.XERO_CLIENT_ID;
-    const clientSecret = process.env.XERO_CLIENT_SECRET;
+    // Prefer credentials from IntegrationConfig (admin-entered), fall back to env vars
+    const config = await prisma.integrationConfig.findUnique({
+      where: { organizationId },
+      select: { xeroClientId: true, xeroClientSecret: true },
+    });
+
+    const clientId = config?.xeroClientId || process.env.XERO_CLIENT_ID;
+    const encryptedSecret = config?.xeroClientSecret;
+    const clientSecret = encryptedSecret
+      ? decryptCredential(encryptedSecret)
+      : process.env.XERO_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
       console.error("[Xero Token Refresh] Xero credentials not configured");

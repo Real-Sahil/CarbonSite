@@ -2,11 +2,11 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, AlertCircle, Loader2, Settings } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2, Settings, Link2, Link2Off, RefreshCw } from "lucide-react";
 
 interface IntegrationConfig {
   llmProvider: string | null;
@@ -22,16 +22,22 @@ interface IntegrationConfig {
   lastTestedAt: string | null;
 }
 
-interface TestResult {
-  status: "success" | "failed";
-  error?: string;
+interface XeroConnection {
+  connected: boolean;
+  connectedAt?: string | null;
+  accountName?: string | null;
+  scopes?: string[];
+  tokenExpired?: boolean;
 }
 
 export default function IntegrationsPage() {
   const { orgId } = useParams<{ orgId: string }>();
+  const searchParams = useSearchParams();
   const [config, setConfig] = useState<IntegrationConfig | null>(null);
+  const [xeroConn, setXeroConn] = useState<XeroConnection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Form states
   const [llmProvider, setLlmProvider] = useState<"huggingface" | "nvidia">("huggingface");
@@ -48,36 +54,59 @@ export default function IntegrationsPage() {
   // UI states
   const [saving, setSaving] = useState(false);
   const [testingLlm, setTestingLlm] = useState(false);
-  const [testingXero, setTestingXero] = useState(false);
+  const [connectingXero, setConnectingXero] = useState(false);
+  const [disconnectingXero, setDisconnectingXero] = useState(false);
+  const [syncingXero, setSyncingXero] = useState(false);
   const [testingOidc, setTestingOidc] = useState(false);
   const [testingN8n, setTestingN8n] = useState<"reports" | "submissions" | null>(null);
 
-  async function fetchConfig() {
+  const fetchConfig = useCallback(async () => {
     try {
-      const res = await fetch(`/api/orgs/${orgId}/integrations/config`);
-      if (!res.ok) throw new Error("Failed to fetch config");
-      const data = await res.json();
+      const [cfgRes, xeroRes] = await Promise.all([
+        fetch(`/api/orgs/${orgId}/integrations/config`),
+        fetch(`/api/orgs/${orgId}/integrations/xero`),
+      ]);
+      if (!cfgRes.ok) throw new Error("Failed to fetch config");
+      const data = await cfgRes.json();
       setConfig(data);
       if (data.llmProvider) setLlmProvider(data.llmProvider);
       if (data.xeroClientId) setXeroClientId(data.xeroClientId);
       if (data.oidcProvider) setOidcProvider(data.oidcProvider);
       if (data.oidcClientId) setOidcClientId(data.oidcClientId);
       if (data.oidcIssuerUrl) setOidcIssuerUrl(data.oidcIssuerUrl);
+
+      if (xeroRes.ok) {
+        setXeroConn(await xeroRes.json());
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load integrations");
     } finally {
       setLoading(false);
     }
-  }
+  }, [orgId]);
 
   useEffect(() => {
+    // Handle OAuth callback result from URL params
+    const xeroSuccess = searchParams.get("xero_success");
+    const xeroError = searchParams.get("xero_error");
+    if (xeroSuccess) setSuccess("Xero connected successfully.");
+    if (xeroError) {
+      const messages: Record<string, string> = {
+        credentials_missing: "Xero credentials not configured. Save Client ID and Secret first.",
+        token_exchange_failed: "Xero OAuth token exchange failed. Check your credentials.",
+        invalid_state: "Invalid OAuth state. Please try connecting again.",
+        missing_params: "OAuth callback missing required parameters.",
+        unexpected_error: "An unexpected error occurred during Xero connection.",
+      };
+      setError(messages[xeroError] ?? `Xero connection error: ${xeroError}`);
+    }
     fetchConfig();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId]);
+  }, [orgId, searchParams, fetchConfig]);
 
   async function handleSaveConfig() {
     setSaving(true);
     setError("");
+    setSuccess("");
     try {
       const payload: any = { llmProvider };
       if (llmToken) payload.llmToken = llmToken;
@@ -106,6 +135,7 @@ export default function IntegrationsPage() {
       setOidcClientSecret("");
       setN8nWebhookReports("");
       setN8nWebhookSubmissions("");
+      setSuccess("Settings saved.");
       await fetchConfig();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save config");
@@ -114,10 +144,63 @@ export default function IntegrationsPage() {
     }
   }
 
-  async function testIntegration(type: "llm" | "xero" | "oidc" | "n8n", webhookType?: "reports" | "submissions") {
+  async function handleConnectXero() {
+    setConnectingXero(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/integrations/xero`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to start Xero OAuth");
+      // Redirect to Xero's OAuth authorization page
+      window.location.href = json.authUrl;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to connect Xero");
+      setConnectingXero(false);
+    }
+  }
+
+  async function handleDisconnectXero() {
+    if (!confirm("Disconnect Xero? Invoice sync will stop until you reconnect.")) return;
+    setDisconnectingXero(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/integrations/xero`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.message || "Failed to disconnect Xero");
+      }
+      setSuccess("Xero disconnected.");
+      await fetchConfig();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to disconnect Xero");
+    } finally {
+      setDisconnectingXero(false);
+    }
+  }
+
+  async function handleSyncXero() {
+    setSyncingXero(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/integrations/xero/sync`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Sync failed");
+      setSuccess(`Xero sync complete: ${json.synced} invoices imported.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Xero sync failed");
+    } finally {
+      setSyncingXero(false);
+    }
+  }
+
+  async function testIntegration(type: "llm" | "oidc" | "n8n", webhookType?: "reports" | "submissions") {
+    setError("");
+    setSuccess("");
     try {
       if (type === "llm") setTestingLlm(true);
-      if (type === "xero") setTestingXero(true);
       if (type === "oidc") setTestingOidc(true);
       if (type === "n8n") setTestingN8n(webhookType || null);
 
@@ -140,7 +223,6 @@ export default function IntegrationsPage() {
       setError(err instanceof Error ? err.message : "Test failed");
     } finally {
       setTestingLlm(false);
-      setTestingXero(false);
       setTestingOidc(false);
       setTestingN8n(null);
     }
@@ -154,7 +236,7 @@ export default function IntegrationsPage() {
     );
   }
 
-  const testResults = config?.testResults || {};
+  const isXeroConnected = xeroConn?.connected === true;
 
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
@@ -171,6 +253,12 @@ export default function IntegrationsPage() {
       {error && (
         <div className="rounded-[10px] border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="rounded-[10px] border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-sm text-emerald-700">{success}</p>
         </div>
       )}
 
@@ -236,21 +324,25 @@ export default function IntegrationsPage() {
         <div className="rounded-[10px] border border-[#E5E7EB] p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-medium text-zinc-900">Xero Accounting</h3>
-            {config?.xeroConnected && (
+            {isXeroConnected ? (
               <div className="flex items-center gap-1.5 text-emerald-700 text-sm">
                 <CheckCircle className="h-4 w-4" />
-                Connected
+                {xeroConn?.accountName ? `Connected: ${xeroConn.accountName}` : "Connected"}
               </div>
-            )}
-            {!config?.xeroConnected && config?.xeroClientId && (
+            ) : config?.xeroClientId ? (
               <div className="flex items-center gap-1.5 text-amber-700 text-sm">
                 <AlertCircle className="h-4 w-4" />
-                Not tested
+                Credentials saved, not connected
               </div>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-4">
+            <p className="text-xs text-zinc-500">
+              Enter your Xero OAuth 2.0 app credentials, save them, then click Connect to authorise
+              invoice access. Invoices are used for Scope 3 spend-based anomaly detection.
+            </p>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-zinc-500">Client ID</label>
@@ -273,17 +365,69 @@ export default function IntegrationsPage() {
               </div>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => testIntegration("xero")}
-              disabled={testingXero}
-              className="gap-1.5"
-            >
-              {testingXero && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              {!testingXero && "Test Connection"}
-            </Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              {!isXeroConnected ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleConnectXero}
+                  disabled={connectingXero || !config?.xeroClientId}
+                  className="gap-1.5"
+                  title={!config?.xeroClientId ? "Save your Client ID first" : undefined}
+                >
+                  {connectingXero ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Link2 className="h-3.5 w-3.5" />
+                  )}
+                  Connect with Xero
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSyncXero}
+                    disabled={syncingXero}
+                    variant="outline"
+                    className="gap-1.5"
+                  >
+                    {syncingXero ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-3.5 w-3.5" />
+                    )}
+                    Sync Invoices Now
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleDisconnectXero}
+                    disabled={disconnectingXero}
+                    className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    {disconnectingXero ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Link2Off className="h-3.5 w-3.5" />
+                    )}
+                    Disconnect
+                  </Button>
+                </>
+              )}
+
+              {isXeroConnected && xeroConn?.connectedAt && (
+                <span className="text-xs text-zinc-400">
+                  Connected {new Date(xeroConn.connectedAt).toLocaleDateString()}
+                </span>
+              )}
+              {isXeroConnected && xeroConn?.tokenExpired && (
+                <span className="text-xs text-amber-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> Token expired - reconnect to restore sync
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
