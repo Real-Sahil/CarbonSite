@@ -85,6 +85,8 @@ export default function SupplierPerformancePage(props: PageProps) {
       const searchParams = await props.searchParams;
       if (searchParams.supplierId) {
         setSupplierId(searchParams.supplierId);
+      } else {
+        setLoading(false);
       }
     }
     resolveParams();
@@ -117,6 +119,16 @@ export default function SupplierPerformancePage(props: PageProps) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (!supplierId && !data) {
+    return (
+      <div className="p-8">
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
+          <p className="text-gray-600">Select a supplier to view performance analytics.</p>
+        </div>
       </div>
     );
   }
