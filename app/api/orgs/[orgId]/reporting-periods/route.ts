@@ -1,115 +1,51 @@
 export const dynamic = "force-dynamic";
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember } from "@/lib/auth/session";
-import { writeAuditLog } from "@/lib/db/audit";
-import { rateLimitRequest } from "@/lib/security/rate-limit-async";
-import { rateLimitKey } from "@/lib/security/rate-limit";
-import { handleRouteError, apiError } from "@/lib/validation/api";
-import { createReportingPeriodSchema } from "@/lib/validation/org";
-import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { handleRouteError } from "@/lib/validation/api";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+type Params = { params: Promise<{ orgId: string }> };
+
+// GET /api/orgs/[orgId]/reporting-periods — list reporting periods for approval dropdowns
+export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    const { version, json } = await withApiVersion(_req);
+    await requireOrgMember(orgId, "admin", "editor", "reviewer");
 
-    const deprecationWarning = checkDeprecationWarning(version);
-    if (deprecationWarning) {
-      console.warn(`[API v${version}] ${deprecationWarning}`);
-    }
-
-    const { session, membership } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-      "field_worker",
-    );
-
-    let periods;
-    try {
-      periods = await prisma.reportingPeriod.findMany({
-        where: {
-          organizationId: orgId,
-          ...(membership.role === "field_worker"
-            ? {
-                fieldWorkerAssignments: {
-                  some: { userId: session.user.id, organizationId: orgId },
-                },
-              }
-            : {}),
-        },
-        orderBy: { startDate: "desc" },
-      });
-    } catch (err) {
-      if (membership.role === "field_worker" && isMissingDatabaseObjectError(err)) {
-        return json([]);
-      }
-      throw err;
-    }
-
-    return json(periods, { version });
-  } catch (err) {
-    return handleRouteError(err);
-  }
-}
-
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
-  try {
-    const { orgId } = await params;
-    const { version, json } = await withApiVersion(req);
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
-    const limited = await rateLimitRequest(req, {
-      key: rateLimitKey(orgId, "reporting-periods", session.user.id),
-      limit: 30,
-      windowMs: 60_000,
-    });
-    if (limited) return limited;
-    const body = createReportingPeriodSchema.parse(await req.json());
-
-    const start = new Date(body.startDate);
-    const end = new Date(body.endDate);
-
-    if (start >= end) {
-      return apiError(
-        "INVALID_DATE_RANGE",
-        "startDate must be before endDate.",
-        422,
-      );
-    }
-
-    const period = await prisma.reportingPeriod.create({
-      data: {
-        organizationId: orgId,
-        type: body.type,
-        startDate: start,
-        endDate: end,
-        label: body.label,
-        status: "draft",
+    const periods = await prisma.reportingPeriod.findMany({
+      where: { organizationId: orgId },
+      select: {
+        id: true,
+        type: true,
+        startDate: true,
+        endDate: true,
       },
+      orderBy: { startDate: "desc" },
     });
 
-    await writeAuditLog({
-      organizationId: orgId,
-      actorUserId: session.user.id,
-      action: "reporting_period.created",
-      resourceType: "reporting_period",
-      resourceId: period.id,
-      metadata: { label: period.label, type: period.type },
+    const formatted = periods.map((p) => {
+      const year = p.startDate.getFullYear();
+      let label = `${year}`;
+
+      if (p.type === "quarter") {
+        const month = p.startDate.getMonth();
+        const quarter = Math.floor(month / 3) + 1;
+        label += ` Q${quarter}`;
+      } else if (p.type === "month") {
+        label += ` ${p.startDate.toLocaleString("en-US", { month: "short" })}`;
+      }
+
+      return {
+        id: p.id,
+        label,
+        startDate: p.startDate.toISOString().split("T")[0],
+        endDate: p.endDate.toISOString().split("T")[0],
+        type: p.type,
+      };
     });
 
-    return json(period, { status: 201, version });
+    return NextResponse.json({ periods: formatted });
   } catch (err) {
     return handleRouteError(err);
   }
