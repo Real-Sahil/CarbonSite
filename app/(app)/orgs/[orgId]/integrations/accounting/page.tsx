@@ -4,6 +4,8 @@ import Link from "next/link";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { XeroConnectButton } from "@/components/integrations/xero-connect-button";
+import { QuickBooksConnectButton } from "@/components/integrations/quickbooks-connect-button";
+import { SageConnectButton } from "@/components/integrations/sage-connect-button";
 import {
   Card,
   CardContent,
@@ -184,70 +186,160 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
           <div className="border-t border-slate-800 pt-12">
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-2">
-                <AlertCircle className="h-5 w-5 text-slate-500" />
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
                 QuickBooks
               </h2>
-              <p className="text-slate-400">Coming soon — QuickBooks Online and QuickBooks Desktop support</p>
+              <p className="text-slate-400">Cloud accounting software — fully integrated for invoice sync and Scope 3 calculation</p>
             </div>
 
-            <Link href={`/orgs/${orgId}/integrations/accounting/quickbooks`}>
-              <Card className="border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 transition-all cursor-pointer">
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* QuickBooks Status Card */}
+              <Card className="border-slate-700 bg-slate-800/50">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-white">QuickBooks</CardTitle>
-                      <CardDescription>Accounting software</CardDescription>
+                      <CardDescription>Online accounting software</CardDescription>
                     </div>
                     <Badge variant="outline" className="border-blue-500/50 text-blue-400 bg-blue-500/10">
-                      Coming Soon
+                      Active
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-slate-300">
-                    Sync invoice data from QuickBooks Online to track supplier spending and calculate emissions from business travel and purchased goods.
+                    Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
-                  <div className="flex items-center text-slate-500 text-sm font-medium cursor-not-allowed">
-                    Coming Soon
-                  </div>
+                  <QuickBooksConnectButton orgId={orgId} />
+                  <p className="text-xs text-slate-400">
+                    Secure OAuth login. We never store your QuickBooks password.
+                  </p>
                 </CardContent>
               </Card>
-            </Link>
+
+              {/* Feature Cards */}
+              <Card className="border-slate-700 bg-slate-800/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-blue-400" />
+                    Automatic Sync
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-300">
+                    Invoices sync automatically twice daily. No manual data entry needed.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-700 bg-slate-800/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-blue-400" />
+                    Enterprise Security
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-300">
+                    OAuth 2.0 authentication. Encrypted data at rest and in transit.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-700 bg-slate-800/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <RotateCw className="h-5 w-5 text-blue-400" />
+                    Recalculate Anytime
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-300">
+                    Re-run calculations with updated invoices or factors anytime.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* Sage Section */}
           <div className="border-t border-slate-800 pt-12">
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-2">
-                <AlertCircle className="h-5 w-5 text-slate-500" />
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
                 Sage
               </h2>
-              <p className="text-slate-400">Coming soon — Sage 50 and Sage Intacct support</p>
+              <p className="text-slate-400">ERP and accounting software — fully integrated for invoice sync and Scope 3 calculation</p>
             </div>
 
-            <Link href={`/orgs/${orgId}/integrations/accounting/sage`}>
-              <Card className="border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 transition-all cursor-pointer">
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* Sage Status Card */}
+              <Card className="border-slate-700 bg-slate-800/50">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-white">Sage</CardTitle>
-                      <CardDescription>ERP and accounting</CardDescription>
+                      <CardDescription>ERP and accounting software</CardDescription>
                     </div>
                     <Badge variant="outline" className="border-purple-500/50 text-purple-400 bg-purple-500/10">
-                      Coming Soon
+                      Active
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-slate-300">
-                    Integrate with Sage ERP to collect comprehensive spend data and map to emissions categories automatically.
+                    Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
-                  <div className="flex items-center text-slate-500 text-sm font-medium cursor-not-allowed">
-                    Coming Soon
-                  </div>
+                  <SageConnectButton orgId={orgId} />
+                  <p className="text-xs text-slate-400">
+                    Secure OAuth login. We never store your Sage password.
+                  </p>
                 </CardContent>
               </Card>
-            </Link>
+
+              {/* Feature Cards */}
+              <Card className="border-slate-700 bg-slate-800/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-purple-400" />
+                    Automatic Sync
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-300">
+                    Invoices sync automatically twice daily. No manual data entry needed.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-700 bg-slate-800/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-purple-400" />
+                    Enterprise Security
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-300">
+                    OAuth 2.0 authentication. Encrypted data at rest and in transit.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-700 bg-slate-800/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <RotateCw className="h-5 w-5 text-purple-400" />
+                    Recalculate Anytime
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-300">
+                    Re-run calculations with updated invoices or factors anytime.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
