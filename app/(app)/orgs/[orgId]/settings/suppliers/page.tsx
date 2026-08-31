@@ -17,7 +17,22 @@ export default async function SuppliersSettingsPage({ params, searchParams }: Pa
   try {
     await requireOrgMember(orgId, "admin");
   } catch (err) {
-    if (err instanceof AuthError) redirect("/sign-in");
+    if (err instanceof AuthError) {
+      if (err.status === 401) redirect("/sign-in");
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-8">
+          <div className="rounded-full bg-amber-50 p-4 mb-4">
+            <svg className="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+          </div>
+          <h2 className="text-sm font-semibold text-gray-900 mb-1">Admin access required</h2>
+          <p className="text-sm text-gray-500 max-w-sm">
+            Managing supplier data requests requires admin access. Contact your organisation admin to request elevated permissions.
+          </p>
+        </div>
+      );
+    }
     throw err;
   }
 

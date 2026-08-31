@@ -203,6 +203,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Published by</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Published at</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Calculation run</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Assurance</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right pr-6">Reports</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -227,6 +228,14 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                             className="text-sm text-[#111827] hover:underline underline-offset-2"
                           >
                             View run
+                          </Link>
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          <Link
+                            href={`/orgs/${orgId}/snapshots/${snapshot.id}/assurance`}
+                            className="text-sm text-[#111827] hover:underline underline-offset-2"
+                          >
+                            Review
                           </Link>
                         </TableCell>
                         <TableCell className="py-3.5 text-right pr-6 text-sm text-[#9CA3AF] tabular-nums">
