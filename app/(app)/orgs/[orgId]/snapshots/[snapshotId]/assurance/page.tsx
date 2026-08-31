@@ -36,26 +36,37 @@ export default async function SnapshotAssurancePage({ params }: Props) {
     throw err;
   }
 
-  const snapshot = await prisma.publishedSnapshot.findUnique({
-    where: { id: snapshotId, organizationId: orgId },
-    select: {
-      id: true,
-      version: true,
-      publishedAt: true,
-      reportingPeriod: { select: { label: true } },
-      publishedBy: { select: { name: true, email: true } },
-      assurance: {
-        select: {
-          id: true,
-          status: true,
-          notes: true,
-          signedAt: true,
-          createdAt: true,
-          auditor: { select: { name: true, email: true } },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let snapshot: any = null;
+  try {
+    snapshot = await prisma.publishedSnapshot.findUnique({
+      where: { id: snapshotId, organizationId: orgId },
+      select: {
+        id: true,
+        version: true,
+        publishedAt: true,
+        reportingPeriod: { select: { label: true } },
+        publishedBy: { select: { name: true, email: true } },
+        assurance: {
+          select: {
+            id: true,
+            status: true,
+            notes: true,
+            signedAt: true,
+            createdAt: true,
+            auditor: { select: { name: true, email: true } },
+          },
         },
       },
-    },
-  });
+    });
+  } catch (err) {
+    console.error("[Assurance] Database error:", err);
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-8">
+        <p className="text-sm text-gray-500">Unable to load assurance data. Please try again later.</p>
+      </div>
+    );
+  }
 
   if (!snapshot) {
     return (
@@ -72,8 +83,8 @@ export default async function SnapshotAssurancePage({ params }: Props) {
       snapshot={{
         version: snapshot.version,
         publishedAt: snapshot.publishedAt.toISOString(),
-        periodLabel: snapshot.reportingPeriod.label,
-        publishedBy: snapshot.publishedBy.name ?? snapshot.publishedBy.email,
+        periodLabel: snapshot.reportingPeriod?.label ?? "",
+        publishedBy: snapshot.publishedBy?.name ?? snapshot.publishedBy?.email ?? "Unknown",
       }}
       existingAssurance={
         snapshot.assurance
@@ -83,7 +94,7 @@ export default async function SnapshotAssurancePage({ params }: Props) {
               notes: snapshot.assurance.notes,
               signedAt: snapshot.assurance.signedAt?.toISOString() ?? null,
               createdAt: snapshot.assurance.createdAt.toISOString(),
-              auditorName: snapshot.assurance.auditor.name ?? snapshot.assurance.auditor.email,
+              auditorName: snapshot.assurance.auditor?.name ?? snapshot.assurance.auditor?.email ?? "Unknown",
             }
           : null
       }

@@ -34,62 +34,91 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
 
   const limit = 25;
 
-  const reports = await prisma.supplierReport.findMany({
-    where: {
-      organizationId: orgId,
-      ...(status !== "all" ? { status } : {}),
-    },
-    orderBy: { submittedAt: "desc" },
-    take: limit + 1,
-    ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-    select: {
-      id: true,
-      supplierEmail: true,
-      supplierName: true,
-      supplierDomain: true,
-      reportingYear: true,
-      totalAmount: true,
-      unit: true,
-      calculationMethod: true,
-      qualityScore: true,
-      qualityFlags: true,
-      status: true,
-      submittedAt: true,
-      reviewedAt: true,
-      rejectionReason: true,
-      convertedToRecordId: true,
-      notes: true,
-      emissionCategory: { select: { code: true, name: true, scope: true } },
-      reviewedBy: { select: { name: true, email: true } },
-    },
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let serialized: any[] = [];
+  let nextCursor: string | null = null;
+  let countMap: Record<string, number> = {};
+  let total = 0;
+  let reportingPeriods: { id: string; label: string; startDate: string; endDate: string }[] = [];
+  let dbError: string | null = null;
 
-  const hasMore = reports.length > limit;
-  const page = hasMore ? reports.slice(0, limit) : reports;
-  const nextCursor = hasMore ? page[page.length - 1].id : null;
+  try {
+    const reports = await prisma.supplierReport.findMany({
+      where: {
+        organizationId: orgId,
+        ...(status !== "all" ? { status } : {}),
+      },
+      orderBy: { submittedAt: "desc" },
+      take: limit + 1,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+      select: {
+        id: true,
+        supplierEmail: true,
+        supplierName: true,
+        supplierDomain: true,
+        reportingYear: true,
+        totalAmount: true,
+        unit: true,
+        calculationMethod: true,
+        qualityScore: true,
+        qualityFlags: true,
+        status: true,
+        submittedAt: true,
+        reviewedAt: true,
+        rejectionReason: true,
+        convertedToRecordId: true,
+        notes: true,
+        emissionCategory: { select: { code: true, name: true, scope: true } },
+        reviewedBy: { select: { name: true, email: true } },
+      },
+    });
 
-  // Count across all statuses for tabs
-  const counts = await prisma.supplierReport.groupBy({
-    by: ["status"],
-    where: { organizationId: orgId },
-    _count: { id: true },
-  });
-  const countMap = Object.fromEntries(counts.map((c) => [c.status, c._count.id]));
-  const total = counts.reduce((sum, c) => sum + c._count.id, 0);
+    const hasMore = reports.length > limit;
+    const page = hasMore ? reports.slice(0, limit) : reports;
+    nextCursor = hasMore ? page[page.length - 1].id : null;
 
-  // Reporting periods for the accept dialog
-  const reportingPeriods = await prisma.reportingPeriod.findMany({
-    where: { organizationId: orgId },
-    select: { id: true, label: true, startDate: true, endDate: true },
-    orderBy: { startDate: "desc" },
-  });
+    const counts = await prisma.supplierReport.groupBy({
+      by: ["status"],
+      where: { organizationId: orgId },
+      _count: { id: true },
+    });
+    countMap = Object.fromEntries(counts.map((c) => [c.status, c._count.id]));
+    total = counts.reduce((sum, c) => sum + c._count.id, 0);
 
-  const serialized = page.map((r) => ({
-    ...r,
-    totalAmount: r.totalAmount.toString(),
-    submittedAt: r.submittedAt.toISOString(),
-    reviewedAt: r.reviewedAt?.toISOString() ?? null,
-  }));
+    const periods = await prisma.reportingPeriod.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, label: true, startDate: true, endDate: true },
+      orderBy: { startDate: "desc" },
+    });
+    reportingPeriods = periods.map((p) => ({
+      ...p,
+      startDate: p.startDate.toISOString(),
+      endDate: p.endDate.toISOString(),
+    }));
+
+    serialized = page.map((r) => ({
+      ...r,
+      totalAmount: r.totalAmount.toString(),
+      submittedAt: r.submittedAt.toISOString(),
+      reviewedAt: r.reviewedAt?.toISOString() ?? null,
+    }));
+  } catch (err) {
+    console.error("[SupplierReports] Database error:", err);
+    dbError = "Unable to load supplier reports. Please try again later.";
+  }
+
+  if (dbError) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="border-b border-slate-700/60 px-6 py-4">
+          <h1 className="text-lg font-semibold text-slate-100">Supplier Reports</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center px-8">
+          <p className="text-sm text-slate-400">{dbError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -140,15 +169,12 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
 
       <SupplierReportsClient
         orgId={orgId}
-        reports={serialized}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        reports={serialized as any}
         nextCursor={nextCursor}
         status={status}
         role={role ?? "viewer"}
-        reportingPeriods={reportingPeriods.map((p) => ({
-          ...p,
-          startDate: p.startDate.toISOString(),
-          endDate: p.endDate.toISOString(),
-        }))}
+        reportingPeriods={reportingPeriods}
       />
     </div>
   );
