@@ -78,7 +78,7 @@ FROM dashboard_aggregates
 WHERE organization_id = 'org_123'
   AND period_id = 'q3_2024';
 
--- With indexes: <100ms query time
+-- With indexes: &lt;100ms query time
 ```
 
 ## Real Performance Benchmarks
@@ -118,7 +118,7 @@ WHERE organization_id = 'org_123'
   </tbody>
 </table>
 
-**Target:** <2 second dashboard load for any org size.
+**Target:** &lt;2 second dashboard load for any org size.
 
 <ProofPoint>
 **Verified:** Tested with 2M emissions records (10x largest customer). Dashboard loads in 450ms.
@@ -156,8 +156,8 @@ async function rebuildDashboardAggregates(calculationRunId: string) {
 
 ### Caching Layer
 Dashboard data is also cached in Redis (5-minute TTL):
-- Cache hits: <10ms
-- Cache misses (new data): Query pre-computed aggregates: <300ms
+- Cache hits: &lt;10ms
+- Cache misses (new data): Query pre-computed aggregates: &lt;300ms
 
 ### Partitioning
 For orgs with 10M+ records, use table partitioning by period (quarter):
@@ -179,11 +179,11 @@ Queries against specific periods skip partitions they don't need.
 ## Dashboard Features That Scale
 
 ✅ **Real-time Updates:** SSE pushes new data as calculations finish
-✅ **Fast Drill-Down:** Click facility → loads sub-aggregates in <300ms
-✅ **Historical Comparison:** Compare Q1 vs Q4 in <200ms
-✅ **Export to CSV:** 100k records → Excel in <3 seconds
+✅ **Fast Drill-Down:** Click facility → loads sub-aggregates in &lt;300ms
+✅ **Historical Comparison:** Compare Q1 vs Q4 in &lt;200ms
+✅ **Export to CSV:** 100k records → Excel in &lt;3 seconds
 ✅ **Trending Graphs:** Multi-period analysis instant
-✅ **Supplier Performance:** 500 suppliers, 10k records each → <500ms
+✅ **Supplier Performance:** 500 suppliers, 10k records each → &lt;500ms
 
 ---
 
