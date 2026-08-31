@@ -27,7 +27,7 @@ export async function GET(
 
     const state = Buffer.from(JSON.stringify({ orgId, userId: user.session.user.id })).toString("base64");
     const scope = "com.intuit.quickbooks.accounting";
-    const redirectUri = `${APP_URL}/api/orgs/${orgId}/integrations/quickbooks/callback`;
+    const redirectUri = `${APP_URL}/api/auth/quickbooks/callback`;
 
     const authUrl = new URL(QUICKBOOKS_AUTH_URL);
     authUrl.searchParams.set("client_id", QUICKBOOKS_CLIENT_ID);

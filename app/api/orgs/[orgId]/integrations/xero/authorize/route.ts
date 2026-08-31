@@ -27,7 +27,7 @@ export async function GET(
 
     const state = Buffer.from(JSON.stringify({ orgId, userId: user.session.user.id })).toString("base64");
     const scope = "offline_access openid profile email accounting.transactions accounting.settings";
-    const redirectUri = `${APP_URL}/api/orgs/${orgId}/integrations/xero/callback`;
+    const redirectUri = `${APP_URL}/api/auth/xero/callback`;
 
     const authUrl = new URL(XERO_AUTH_URL);
     authUrl.searchParams.set("response_type", "code");

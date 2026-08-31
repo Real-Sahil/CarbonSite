@@ -27,7 +27,7 @@ export async function GET(
 
     const state = Buffer.from(JSON.stringify({ orgId, userId: user.session.user.id })).toString("base64");
     const scope = "full_access";
-    const redirectUri = `${APP_URL}/api/orgs/${orgId}/integrations/sage/callback`;
+    const redirectUri = `${APP_URL}/api/auth/sage/callback`;
 
     const authUrl = new URL(SAGE_AUTH_URL);
     authUrl.searchParams.set("client_id", SAGE_CLIENT_ID);
