@@ -22,7 +22,7 @@ interface IntegrationConfig {
   lastTestedAt: string | null;
 }
 
-interface XeroConnection {
+interface OAuthConnection {
   connected: boolean;
   connectedAt?: string | null;
   accountName?: string | null;
@@ -34,7 +34,9 @@ export default function IntegrationsPage() {
   const { orgId } = useParams<{ orgId: string }>();
   const searchParams = useSearchParams();
   const [config, setConfig] = useState<IntegrationConfig | null>(null);
-  const [xeroConn, setXeroConn] = useState<XeroConnection | null>(null);
+  const [xeroConn, setXeroConn] = useState<OAuthConnection | null>(null);
+  const [quickbooksConn, setQuickbooksConn] = useState<OAuthConnection | null>(null);
+  const [sageConn, setSageConn] = useState<OAuthConnection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -57,14 +59,20 @@ export default function IntegrationsPage() {
   const [connectingXero, setConnectingXero] = useState(false);
   const [disconnectingXero, setDisconnectingXero] = useState(false);
   const [syncingXero, setSyncingXero] = useState(false);
+  const [connectingQuickbooks, setConnectingQuickbooks] = useState(false);
+  const [disconnectingQuickbooks, setDisconnectingQuickbooks] = useState(false);
+  const [connectingSage, setConnectingSage] = useState(false);
+  const [disconnectingSage, setDisconnectingSage] = useState(false);
   const [testingOidc, setTestingOidc] = useState(false);
   const [testingN8n, setTestingN8n] = useState<"reports" | "submissions" | null>(null);
 
   const fetchConfig = useCallback(async () => {
     try {
-      const [cfgRes, xeroRes] = await Promise.all([
+      const [cfgRes, xeroRes, qbRes, sageRes] = await Promise.all([
         fetch(`/api/orgs/${orgId}/integrations/config`),
         fetch(`/api/orgs/${orgId}/integrations/xero`),
+        fetch(`/api/orgs/${orgId}/integrations/quickbooks`),
+        fetch(`/api/orgs/${orgId}/integrations/sage`),
       ]);
       if (!cfgRes.ok) throw new Error("Failed to fetch config");
       const data = await cfgRes.json();
@@ -75,9 +83,9 @@ export default function IntegrationsPage() {
       if (data.oidcClientId) setOidcClientId(data.oidcClientId);
       if (data.oidcIssuerUrl) setOidcIssuerUrl(data.oidcIssuerUrl);
 
-      if (xeroRes.ok) {
-        setXeroConn(await xeroRes.json());
-      }
+      if (xeroRes.ok) setXeroConn(await xeroRes.json());
+      if (qbRes.ok) setQuickbooksConn(await qbRes.json());
+      if (sageRes.ok) setSageConn(await sageRes.json());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load integrations");
     } finally {
@@ -89,7 +97,15 @@ export default function IntegrationsPage() {
     // Handle OAuth callback result from URL params
     const xeroSuccess = searchParams.get("xero_success");
     const xeroError = searchParams.get("xero_error");
+    const qbSuccess = searchParams.get("quickbooks_success");
+    const qbError = searchParams.get("quickbooks_error");
+    const sageSuccess = searchParams.get("sage_success");
+    const sageError = searchParams.get("sage_error");
+
     if (xeroSuccess) setSuccess("Xero connected successfully.");
+    if (qbSuccess) setSuccess("QuickBooks connected successfully.");
+    if (sageSuccess) setSuccess("Sage connected successfully.");
+
     if (xeroError) {
       const messages: Record<string, string> = {
         credentials_missing: "Xero credentials not configured. Save Client ID and Secret first.",
@@ -99,6 +115,26 @@ export default function IntegrationsPage() {
         unexpected_error: "An unexpected error occurred during Xero connection.",
       };
       setError(messages[xeroError] ?? `Xero connection error: ${xeroError}`);
+    }
+    if (qbError) {
+      const messages: Record<string, string> = {
+        credentials_missing: "QuickBooks credentials not configured on this server.",
+        token_exchange_failed: "QuickBooks OAuth token exchange failed. Check your credentials.",
+        invalid_state: "Invalid OAuth state. Please try connecting again.",
+        missing_params: "OAuth callback missing required parameters.",
+        unexpected_error: "An unexpected error occurred during QuickBooks connection.",
+      };
+      setError(messages[qbError] ?? `QuickBooks connection error: ${qbError}`);
+    }
+    if (sageError) {
+      const messages: Record<string, string> = {
+        credentials_missing: "Sage credentials not configured on this server.",
+        token_exchange_failed: "Sage OAuth token exchange failed. Check your credentials.",
+        invalid_state: "Invalid OAuth state. Please try connecting again.",
+        missing_params: "OAuth callback missing required parameters.",
+        unexpected_error: "An unexpected error occurred during Sage connection.",
+      };
+      setError(messages[sageError] ?? `Sage connection error: ${sageError}`);
     }
     fetchConfig();
   }, [orgId, searchParams, fetchConfig]);
@@ -196,6 +232,76 @@ export default function IntegrationsPage() {
     }
   }
 
+  async function handleConnectQuickbooks() {
+    setConnectingQuickbooks(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/integrations/quickbooks`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to start QuickBooks OAuth");
+      window.location.href = json.authUrl;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to connect QuickBooks");
+      setConnectingQuickbooks(false);
+    }
+  }
+
+  async function handleDisconnectQuickbooks() {
+    if (!confirm("Disconnect QuickBooks? Invoice sync will stop until you reconnect.")) return;
+    setDisconnectingQuickbooks(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/integrations/quickbooks`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.message || "Failed to disconnect QuickBooks");
+      }
+      setSuccess("QuickBooks disconnected.");
+      await fetchConfig();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to disconnect QuickBooks");
+    } finally {
+      setDisconnectingQuickbooks(false);
+    }
+  }
+
+  async function handleConnectSage() {
+    setConnectingSage(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/integrations/sage`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to start Sage OAuth");
+      window.location.href = json.authUrl;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to connect Sage");
+      setConnectingSage(false);
+    }
+  }
+
+  async function handleDisconnectSage() {
+    if (!confirm("Disconnect Sage? Invoice sync will stop until you reconnect.")) return;
+    setDisconnectingSage(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/integrations/sage`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.message || "Failed to disconnect Sage");
+      }
+      setSuccess("Sage disconnected.");
+      await fetchConfig();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to disconnect Sage");
+    } finally {
+      setDisconnectingSage(false);
+    }
+  }
+
   async function testIntegration(type: "llm" | "oidc" | "n8n", webhookType?: "reports" | "submissions") {
     setError("");
     setSuccess("");
@@ -237,6 +343,8 @@ export default function IntegrationsPage() {
   }
 
   const isXeroConnected = xeroConn?.connected === true;
+  const isQuickbooksConnected = quickbooksConn?.connected === true;
+  const isSageConnected = sageConn?.connected === true;
 
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
@@ -426,6 +534,142 @@ export default function IntegrationsPage() {
                 <span className="text-xs text-amber-600 flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" /> Token expired - reconnect to restore sync
                 </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* QuickBooks Integration */}
+        <div className="rounded-[10px] border border-[#E5E7EB] p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-medium text-zinc-900">QuickBooks Online</h3>
+            {isQuickbooksConnected ? (
+              <div className="flex items-center gap-1.5 text-emerald-700 text-sm">
+                <CheckCircle className="h-4 w-4" />
+                {quickbooksConn?.accountName ? `Connected: ${quickbooksConn.accountName}` : "Connected"}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-xs text-zinc-500">
+              Connect QuickBooks Online to automatically pull invoice data for Scope 3 spend-based
+              anomaly detection. Requires <code>QUICKBOOKS_CLIENT_ID</code> and{" "}
+              <code>QUICKBOOKS_CLIENT_SECRET</code> environment variables on the server.
+            </p>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {!isQuickbooksConnected ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleConnectQuickbooks}
+                  disabled={connectingQuickbooks}
+                  className="gap-1.5"
+                >
+                  {connectingQuickbooks ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Link2 className="h-3.5 w-3.5" />
+                  )}
+                  Connect with QuickBooks
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleDisconnectQuickbooks}
+                    disabled={disconnectingQuickbooks}
+                    className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    {disconnectingQuickbooks ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Link2Off className="h-3.5 w-3.5" />
+                    )}
+                    Disconnect
+                  </Button>
+                  {quickbooksConn?.connectedAt && (
+                    <span className="text-xs text-zinc-400">
+                      Connected {new Date(quickbooksConn.connectedAt).toLocaleDateString()}
+                    </span>
+                  )}
+                  {quickbooksConn?.tokenExpired && (
+                    <span className="text-xs text-amber-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" /> Token expired - reconnect to restore sync
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Sage Integration */}
+        <div className="rounded-[10px] border border-[#E5E7EB] p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-medium text-zinc-900">Sage Accounting</h3>
+            {isSageConnected ? (
+              <div className="flex items-center gap-1.5 text-emerald-700 text-sm">
+                <CheckCircle className="h-4 w-4" />
+                {sageConn?.accountName ? `Connected: ${sageConn.accountName}` : "Connected"}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-xs text-zinc-500">
+              Connect Sage to automatically pull invoice data for Scope 3 spend-based anomaly
+              detection. Requires <code>SAGE_CLIENT_ID</code> and{" "}
+              <code>SAGE_CLIENT_SECRET</code> environment variables on the server.
+            </p>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {!isSageConnected ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleConnectSage}
+                  disabled={connectingSage}
+                  className="gap-1.5"
+                >
+                  {connectingSage ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Link2 className="h-3.5 w-3.5" />
+                  )}
+                  Connect with Sage
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleDisconnectSage}
+                    disabled={disconnectingSage}
+                    className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    {disconnectingSage ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Link2Off className="h-3.5 w-3.5" />
+                    )}
+                    Disconnect
+                  </Button>
+                  {sageConn?.connectedAt && (
+                    <span className="text-xs text-zinc-400">
+                      Connected {new Date(sageConn.connectedAt).toLocaleDateString()}
+                    </span>
+                  )}
+                  {sageConn?.tokenExpired && (
+                    <span className="text-xs text-amber-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" /> Token expired - reconnect to restore sync
+                    </span>
+                  )}
+                </>
               )}
             </div>
           </div>

@@ -57,7 +57,7 @@ export async function GET(
 
 // POST /api/orgs/[orgId]/integrations/quickbooks — initiate OAuth flow
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string }> },
 ) {
   try {
@@ -65,12 +65,18 @@ export async function POST(
     await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const clientId = process.env.QUICKBOOKS_CLIENT_ID;
-    const redirectUri = process.env.QUICKBOOKS_REDIRECT_URI;
 
-    if (!clientId || !redirectUri) {
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.BETTER_AUTH_URL ||
+      `https://${req.headers.get("host")}`;
+    const redirectUri =
+      process.env.QUICKBOOKS_REDIRECT_URI || `${appUrl}/api/auth/quickbooks/callback`;
+
+    if (!clientId) {
       return apiError(
         "QUICKBOOKS_NOT_CONFIGURED",
-        "QuickBooks integration is not configured on this server.",
+        "QuickBooks Client ID is not configured on this server.",
         501,
       );
     }

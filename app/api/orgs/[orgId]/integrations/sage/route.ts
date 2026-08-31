@@ -57,7 +57,7 @@ export async function GET(
 
 // POST /api/orgs/[orgId]/integrations/sage — initiate OAuth flow
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ orgId: string }> },
 ) {
   try {
@@ -65,20 +65,24 @@ export async function POST(
     await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const clientId = process.env.SAGE_CLIENT_ID;
-    const redirectUri = process.env.SAGE_REDIRECT_URI;
 
-    if (!clientId || !redirectUri) {
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.BETTER_AUTH_URL ||
+      `https://${req.headers.get("host")}`;
+    const redirectUri =
+      process.env.SAGE_REDIRECT_URI || `${appUrl}/api/auth/sage/callback`;
+
+    if (!clientId) {
       return apiError(
         "SAGE_NOT_CONFIGURED",
-        "Sage integration is not configured on this server.",
+        "Sage Client ID is not configured on this server.",
         501,
       );
     }
 
     const state = Buffer.from(JSON.stringify({ orgId })).toString("base64url");
-    const scopes = [
-      "full_access",
-    ].join(" ");
+    const scopes = ["full_access"].join(" ");
 
     const authUrl = new URL("https://www.sageone.com/oauth2/auth");
     authUrl.searchParams.set("client_id", clientId);
