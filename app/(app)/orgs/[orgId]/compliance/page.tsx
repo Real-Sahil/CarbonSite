@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ShieldCheck, Plus, ChevronDown } from "lucide-react";
+import { ShieldCheck, Plus, ChevronDown, ChevronUp, ExternalLink, User, ListChecks, FileText } from "lucide-react";
 
 interface ComplianceRecord {
   id: string;
@@ -14,6 +14,9 @@ interface ComplianceRecord {
   dueDate: string | null;
   submittedAt: string | null;
   notes: string | null;
+  owner: string | null;
+  actionSteps: string | null;
+  externalLink: string | null;
 }
 
 const FRAMEWORKS = [
@@ -41,9 +44,16 @@ export default function CompliancePage() {
   const [records, setRecords] = useState<ComplianceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState({
-    framework: "SECR", reportingYear: new Date().getFullYear() - 1,
-    status: "draft", dueDate: "", notes: "",
+    framework: "SECR",
+    reportingYear: new Date().getFullYear() - 1,
+    status: "draft",
+    dueDate: "",
+    notes: "",
+    owner: "",
+    actionSteps: "",
+    externalLink: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -57,7 +67,7 @@ export default function CompliancePage() {
     setLoading(false);
   }
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [orgId]);
 
   async function handleSave(e: React.FormEvent) {
@@ -73,6 +83,9 @@ export default function CompliancePage() {
           reportingYear: Number(form.reportingYear),
           dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : undefined,
           notes: form.notes || undefined,
+          owner: form.owner || undefined,
+          actionSteps: form.actionSteps || undefined,
+          externalLink: form.externalLink || undefined,
         }),
       });
       if (!res.ok) {
@@ -81,6 +94,16 @@ export default function CompliancePage() {
         return;
       }
       setShowAdd(false);
+      setForm({
+        framework: "SECR",
+        reportingYear: new Date().getFullYear() - 1,
+        status: "draft",
+        dueDate: "",
+        notes: "",
+        owner: "",
+        actionSteps: "",
+        externalLink: "",
+      });
       load();
     } finally {
       setSaving(false);
@@ -89,12 +112,15 @@ export default function CompliancePage() {
 
   const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
 
+  const hasGuidance = (r: ComplianceRecord) =>
+    r.notes || r.owner || r.actionSteps || r.externalLink;
+
   return (
     <div className="p-8 max-w-5xl mx-auto bg-[#F9FAFB]">
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Compliance</h1>
-          <p className="text-sm text-gray-500 mt-1">Track regulatory and framework disclosure obligations.</p>
+          <p className="text-sm text-gray-500 mt-1">Track regulatory and framework disclosure obligations, owners, and next steps.</p>
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
@@ -131,10 +157,40 @@ export default function CompliancePage() {
               <label className="block text-xs font-medium text-gray-600 mb-1">Due date <span className="text-gray-400">(optional)</span></label>
               <input type="date" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))} className={inputCls} />
             </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Owner <span className="text-gray-400">(optional)</span></label>
+              <input
+                type="text"
+                placeholder="e.g. Jane Smith / Finance team"
+                value={form.owner}
+                onChange={(e) => setForm((f) => ({ ...f, owner: e.target.value }))}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Guidance link <span className="text-gray-400">(optional)</span></label>
+              <input
+                type="url"
+                placeholder="https://..."
+                value={form.externalLink}
+                onChange={(e) => setForm((f) => ({ ...f, externalLink: e.target.value }))}
+                className={inputCls}
+              />
+            </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-400">(optional)</span></label>
               <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                 className={`${inputCls} resize-none`} />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">Action steps <span className="text-gray-400">(optional - what needs to happen next)</span></label>
+              <textarea
+                rows={3}
+                placeholder="e.g. 1. Gather scope 1 data&#10;2. Request scope 2 invoices&#10;3. Submit to HMRC portal by deadline"
+                value={form.actionSteps}
+                onChange={(e) => setForm((f) => ({ ...f, actionSteps: e.target.value }))}
+                className={`${inputCls} resize-none`}
+              />
             </div>
             {error && <p className="col-span-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
             <div className="col-span-2 flex gap-3">
@@ -167,30 +223,101 @@ export default function CompliancePage() {
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
               <tr>
-                {["Framework", "Year", "Status", "Due date", "Submitted"].map((h) => (
-                  <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide first:pl-6">{h}</th>
+                {["Framework", "Year", "Status", "Owner", "Due date", "Submitted", ""].map((h, i) => (
+                  <th key={i} className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide first:pl-6">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {records.map((r) => {
                 const sc = STATUS_CONFIG[r.status] ?? STATUS_CONFIG.draft;
+                const isExpanded = expandedId === r.id;
+                const showExpander = hasGuidance(r);
                 return (
-                  <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="py-3 pl-6 pr-4 font-medium text-gray-900">
-                      {FRAMEWORKS.find((f) => f.value === r.framework)?.label.split(" (")[0] ?? r.framework}
-                    </td>
-                    <td className="py-3 px-4 text-gray-600 tabular-nums">{r.reportingYear}</td>
-                    <td className="py-3 px-4">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${sc.cls}`}>{sc.label}</span>
-                    </td>
-                    <td className="py-3 px-4 text-gray-500 tabular-nums">
-                      {r.dueDate ? new Date(r.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
-                    </td>
-                    <td className="py-3 px-4 text-gray-500 tabular-nums">
-                      {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
-                    </td>
-                  </tr>
+                  <>
+                    <tr key={r.id} className={`transition-colors ${isExpanded ? "bg-gray-50" : "hover:bg-gray-50"}`}>
+                      <td className="py-3 pl-6 pr-4 font-medium text-gray-900">
+                        {FRAMEWORKS.find((f) => f.value === r.framework)?.label.split(" (")[0] ?? r.framework}
+                      </td>
+                      <td className="py-3 px-4 text-gray-600 tabular-nums">{r.reportingYear}</td>
+                      <td className="py-3 px-4">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${sc.cls}`}>{sc.label}</span>
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 max-w-[140px] truncate" title={r.owner ?? undefined}>
+                        {r.owner ? (
+                          <span className="inline-flex items-center gap-1">
+                            <User className="h-3 w-3 shrink-0" />
+                            {r.owner}
+                          </span>
+                        ) : (
+                          <span className="text-gray-300">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 tabular-nums">
+                        {r.dueDate ? new Date(r.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 tabular-nums">
+                        {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
+                      </td>
+                      <td className="py-3 px-4 pr-6">
+                        {showExpander && (
+                          <button
+                            onClick={() => setExpandedId(isExpanded ? null : r.id)}
+                            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                            aria-label={isExpanded ? "Collapse guidance" : "Show guidance"}
+                          >
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            <span>{isExpanded ? "Hide" : "Guidance"}</span>
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+
+                    {/* Expanded guidance row */}
+                    {isExpanded && (
+                      <tr key={`${r.id}-detail`} className="bg-gray-50">
+                        <td colSpan={7} className="px-6 pb-5 pt-0">
+                          <div className="rounded-lg border border-gray-200 bg-white p-4 grid gap-4 md:grid-cols-2">
+                            {r.notes && (
+                              <div>
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <FileText className="h-3.5 w-3.5 text-gray-400" />
+                                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notes</span>
+                                </div>
+                                <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{r.notes}</p>
+                              </div>
+                            )}
+                            {r.actionSteps && (
+                              <div>
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <ListChecks className="h-3.5 w-3.5 text-gray-400" />
+                                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Action steps</span>
+                                </div>
+                                <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{r.actionSteps}</p>
+                              </div>
+                            )}
+                            {r.externalLink && (
+                              <div className="md:col-span-2">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Guidance link</span>
+                                </div>
+                                <a
+                                  href={r.externalLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-[#f97316] hover:underline inline-flex items-center gap-1"
+                                >
+                                  {r.externalLink}
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 );
               })}
             </tbody>
