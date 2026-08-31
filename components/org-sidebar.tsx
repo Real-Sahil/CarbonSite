@@ -8,7 +8,7 @@ import {
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
-  Zap, Eye, CalendarClock, BadgeCheck, BookOpen,
+  Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -64,7 +64,8 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     { label: "Data", items: [
       { label: "Imports",     href: `/orgs/${orgId}/imports`,     icon: Upload,     roles: CORE_ROLES },
       { label: "Records",     href: `/orgs/${orgId}/records`,     icon: FileText,   roles: CORE_ROLES },
-      { label: "Submissions", href: `/orgs/${orgId}/submissions`, icon: Inbox,      roles: ["admin", "editor", "reviewer"] },
+      { label: "Submissions",       href: `/orgs/${orgId}/submissions`,       icon: Inbox,         roles: ["admin", "editor", "reviewer"] },
+      { label: "Supplier Reports",  href: `/orgs/${orgId}/supplier-reports`,  icon: PackageSearch, roles: ["admin", "editor", "reviewer", "auditor"] },
       { label: "Tasks",       href: `/orgs/${orgId}/tasks`,       icon: ListChecks },
     ]},
     { label: "Calculations", items: [
