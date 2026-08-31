@@ -6,4 +6,8 @@ ALTER TABLE "emission_calculations" ALTER COLUMN "emission_factor_id" DROP NOT N
 
 -- 2. Store a human-readable failure reason on calculation runs so failed
 --    runs are debuggable from the UI instead of showing a bare "failed".
-ALTER TABLE "calculation_runs" ADD COLUMN IF NOT EXISTS "error_message" TEXT;
+DO $$
+BEGIN
+  ALTER TABLE "calculation_runs" ADD COLUMN IF NOT EXISTS "error_message" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;

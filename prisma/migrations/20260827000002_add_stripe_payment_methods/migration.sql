@@ -1,10 +1,34 @@
 -- Add Stripe fields to billing_subscriptions
-ALTER TABLE "billing_subscriptions" ADD COLUMN "stripe_customer_id" TEXT UNIQUE;
-ALTER TABLE "billing_subscriptions" ADD COLUMN "stripe_subscription_id" TEXT;
-ALTER TABLE "billing_subscriptions" ADD COLUMN "default_payment_method_id" TEXT;
-ALTER TABLE "billing_subscriptions" ADD COLUMN "last_payment_status" TEXT;
-ALTER TABLE "billing_subscriptions" ADD COLUMN "last_payment_date" TIMESTAMP(3);
-ALTER TABLE "billing_subscriptions" ADD COLUMN "next_billing_date" TIMESTAMP(3);
+DO $$
+BEGIN
+  ALTER TABLE "billing_subscriptions" ADD COLUMN "stripe_customer_id" TEXT UNIQUE;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+DO $$
+BEGIN
+  ALTER TABLE "billing_subscriptions" ADD COLUMN "stripe_subscription_id" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+DO $$
+BEGIN
+  ALTER TABLE "billing_subscriptions" ADD COLUMN "default_payment_method_id" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+DO $$
+BEGIN
+  ALTER TABLE "billing_subscriptions" ADD COLUMN "last_payment_status" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+DO $$
+BEGIN
+  ALTER TABLE "billing_subscriptions" ADD COLUMN "last_payment_date" TIMESTAMP(3);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+DO $$
+BEGIN
+  ALTER TABLE "billing_subscriptions" ADD COLUMN "next_billing_date" TIMESTAMP(3);
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- Create payment_methods table
 CREATE TABLE IF NOT EXISTS "payment_methods" (

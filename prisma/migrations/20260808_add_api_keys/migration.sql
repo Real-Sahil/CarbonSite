@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "api_keys" (
+CREATE TABLE IF NOT EXISTS "api_keys" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -13,11 +13,15 @@ CREATE TABLE "api_keys" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "api_keys_key_hash_key" ON "api_keys"("key_hash");
+CREATE UNIQUE INDEX IF NOT EXISTS "api_keys_key_hash_key" ON "api_keys"("key_hash");
 
 -- CreateIndex
-CREATE INDEX "api_keys_organization_id_idx" ON "api_keys"("organization_id");
+CREATE INDEX IF NOT EXISTS "api_keys_organization_id_idx" ON "api_keys"("organization_id");
 
 -- AddForeignKey
-ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_organization_id_fkey"
+  FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

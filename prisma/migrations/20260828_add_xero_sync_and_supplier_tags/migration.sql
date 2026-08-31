@@ -1,8 +1,12 @@
 -- Add tags field to supplier_invites for category assignment
-ALTER TABLE "supplier_invites" ADD COLUMN "tags" JSONB DEFAULT '[]'::jsonb;
+DO $$
+BEGIN
+  ALTER TABLE "supplier_invites" ADD COLUMN "tags" JSONB DEFAULT '[]'::jsonb;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- Create xero_sync_logs table for tracking processed invoices
-CREATE TABLE "xero_sync_logs" (
+CREATE TABLE IF NOT EXISTS "xero_sync_logs" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "organization_id" TEXT NOT NULL,
     "invoice_id" TEXT NOT NULL,
@@ -20,7 +24,7 @@ CREATE TABLE "xero_sync_logs" (
 );
 
 -- Create unique index to prevent duplicate processing of same invoice line item
-CREATE UNIQUE INDEX "xero_sync_logs_organizationId_invoiceId_lineItemIndex_key" ON "xero_sync_logs"("organization_id", "invoice_id", "line_item_index");
+CREATE UNIQUE INDEX IF NOT EXISTS "xero_sync_logs_organizationId_invoiceId_lineItemIndex_key" ON "xero_sync_logs"("organization_id", "invoice_id", "line_item_index");
 
 -- Create index for querying recent syncs by org and date
-CREATE INDEX "xero_sync_logs_organizationId_processedAt_idx" ON "xero_sync_logs"("organization_id", "processed_at");
+CREATE INDEX IF NOT EXISTS "xero_sync_logs_organizationId_processedAt_idx" ON "xero_sync_logs"("organization_id", "processed_at");

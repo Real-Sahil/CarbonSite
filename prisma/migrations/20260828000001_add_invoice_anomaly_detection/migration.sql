@@ -1,5 +1,5 @@
 -- Add invoice record tracking table for accounting API integrations
-CREATE TABLE "invoice_records" (
+CREATE TABLE IF NOT EXISTS "invoice_records" (
   id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL REFERENCES "Organization"(id) ON DELETE CASCADE,
   external_invoice_id TEXT NOT NULL,
@@ -22,12 +22,12 @@ CREATE TABLE "invoice_records" (
   CONSTRAINT "InvoiceRecord_organizationId_sourceSystem_externalInvoiceId_key" UNIQUE(organization_id, source_system, external_invoice_id)
 );
 
-CREATE INDEX "InvoiceRecord_organizationId_invoiceDate_idx" ON "invoice_records"(organization_id DESC, invoice_date DESC);
-CREATE INDEX "InvoiceRecord_organizationId_scope3ReadyStatus_idx" ON "invoice_records"(organization_id, scope3_ready_status);
-CREATE INDEX "InvoiceRecord_organizationId_vendorId_idx" ON "invoice_records"(organization_id, vendor_id);
+CREATE INDEX IF NOT EXISTS "InvoiceRecord_organizationId_invoiceDate_idx" ON "invoice_records"(organization_id DESC, invoice_date DESC);
+CREATE INDEX IF NOT EXISTS "InvoiceRecord_organizationId_scope3ReadyStatus_idx" ON "invoice_records"(organization_id, scope3_ready_status);
+CREATE INDEX IF NOT EXISTS "InvoiceRecord_organizationId_vendorId_idx" ON "invoice_records"(organization_id, vendor_id);
 
 -- Add invoice anomaly detection table
-CREATE TABLE "InvoiceAnomaly" (
+CREATE TABLE IF NOT EXISTS "InvoiceAnomaly" (
   id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL REFERENCES "Organization"(id) ON DELETE CASCADE,
   invoice_id TEXT NOT NULL REFERENCES "invoice_records"(id) ON DELETE CASCADE,
@@ -45,12 +45,12 @@ CREATE TABLE "InvoiceAnomaly" (
   CONSTRAINT "InvoiceAnomaly_resolved_by_fkey" FOREIGN KEY (resolved_by) REFERENCES "User"(id) ON DELETE SET NULL
 );
 
-CREATE INDEX "InvoiceAnomaly_invoiceId_severity_idx" ON "InvoiceAnomaly"(invoice_id, severity);
-CREATE INDEX "InvoiceAnomaly_organizationId_resolution_detectedAt_idx" ON "InvoiceAnomaly"(organization_id, resolution, detected_at DESC);
-CREATE INDEX "InvoiceAnomaly_organizationId_anomalyType_idx" ON "InvoiceAnomaly"(organization_id, anomaly_type);
+CREATE INDEX IF NOT EXISTS "InvoiceAnomaly_invoiceId_severity_idx" ON "InvoiceAnomaly"(invoice_id, severity);
+CREATE INDEX IF NOT EXISTS "InvoiceAnomaly_organizationId_resolution_detectedAt_idx" ON "InvoiceAnomaly"(organization_id, resolution, detected_at DESC);
+CREATE INDEX IF NOT EXISTS "InvoiceAnomaly_organizationId_anomalyType_idx" ON "InvoiceAnomaly"(organization_id, anomaly_type);
 
 -- Add invoice reconciliation detail table
-CREATE TABLE "InvoiceReconciliation" (
+CREATE TABLE IF NOT EXISTS "InvoiceReconciliation" (
   id TEXT PRIMARY KEY,
   invoice_id TEXT NOT NULL REFERENCES "invoice_records"(id) ON DELETE CASCADE,
   line_item_id TEXT NOT NULL,
@@ -62,5 +62,5 @@ CREATE TABLE "InvoiceReconciliation" (
   created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX "InvoiceReconciliation_invoiceId_idx" ON "InvoiceReconciliation"(invoice_id);
-CREATE INDEX "InvoiceReconciliation_matchStatus_idx" ON "InvoiceReconciliation"(match_status);
+CREATE INDEX IF NOT EXISTS "InvoiceReconciliation_invoiceId_idx" ON "InvoiceReconciliation"(invoice_id);
+CREATE INDEX IF NOT EXISTS "InvoiceReconciliation_matchStatus_idx" ON "InvoiceReconciliation"(match_status);

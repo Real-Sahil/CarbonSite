@@ -1,5 +1,5 @@
 -- Add supplier performance history table for trend tracking
-CREATE TABLE "supplier_performance_history" (
+CREATE TABLE IF NOT EXISTS "supplier_performance_history" (
   id VARCHAR(191) PRIMARY KEY,
   supplier_performance_id VARCHAR(191) NOT NULL,
   organization_id VARCHAR(191) NOT NULL,
@@ -14,13 +14,17 @@ CREATE TABLE "supplier_performance_history" (
 );
 
 -- Create indexes for efficient trend queries
-CREATE INDEX "idx_supplier_performance_history_supplier" ON "supplier_performance_history"(supplier_performance_id, recorded_at DESC);
-CREATE INDEX "idx_supplier_performance_history_organization" ON "supplier_performance_history"(organization_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS "idx_supplier_performance_history_supplier" ON "supplier_performance_history"(supplier_performance_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS "idx_supplier_performance_history_organization" ON "supplier_performance_history"(organization_id, recorded_at DESC);
 
 -- Add submission tracking columns to field_submissions if not already present
-ALTER TABLE "field_submissions"
-ADD COLUMN IF NOT EXISTS requested_by_deadline TIMESTAMP,
-ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions"
+  ADD COLUMN IF NOT EXISTS requested_by_deadline TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- Create index for on-time tracking
 CREATE INDEX IF NOT EXISTS "idx_field_submissions_deadline" ON "field_submissions"(organization_id, requested_by_deadline, submitted_at);

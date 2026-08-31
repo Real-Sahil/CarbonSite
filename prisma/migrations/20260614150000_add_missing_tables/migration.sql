@@ -25,21 +25,31 @@ ALTER TYPE "report_type" ADD VALUE IF NOT EXISTS 'contract_carbon';
 -- ─── 2. New enums ─────────────────────────────────────────────────────────────
 
 DO $$ BEGIN
+  DO $$ BEGIN
   CREATE TYPE "platform_role" AS ENUM ('platform_owner', 'platform_support', 'platform_analyst');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 DO $$ BEGIN
+  DO $$ BEGIN
   CREATE TYPE "contract_status" AS ENUM ('active', 'completed', 'suspended', 'cancelled');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
-DO $$ BEGIN
-  CREATE TYPE "project_status" AS ENUM ('active', 'completed', 'on_hold', 'cancelled');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  DO $$ BEGIN
+  CREATE TYPE "project_status" AS ENUM ('active', 'completed', 'on_hold', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  DO $$ BEGIN
   CREATE TYPE "document_type" AS ENUM (
     'waste_transfer_note',
     'waste_collection_ticket',
@@ -58,6 +68,8 @@ DO $$ BEGIN
     'hazardous_waste_record',
     'other'
   );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -417,11 +429,19 @@ ALTER TABLE "ocr_corrections" VALIDATE CONSTRAINT "ocr_corrections_corrected_by_
 -- ─── 4. New columns on existing tables ───────────────────────────────────────
 
 -- activity_records: site_id, contract_id
-ALTER TABLE "activity_records"
-    ADD COLUMN IF NOT EXISTS "site_id" TEXT;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records"
+  ADD COLUMN IF NOT EXISTS "site_id" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
-ALTER TABLE "activity_records"
-    ADD COLUMN IF NOT EXISTS "contract_id" TEXT;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records"
+  ADD COLUMN IF NOT EXISTS "contract_id" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- Indexes for new activity_records columns
 CREATE INDEX IF NOT EXISTS "activity_records_organization_id_site_id_idx"
@@ -438,11 +458,19 @@ ALTER TABLE "activity_records"
 ALTER TABLE "activity_records" VALIDATE CONSTRAINT "activity_records_site_id_fkey";
 
 -- field_submissions: site_id, contract_id
-ALTER TABLE "field_submissions"
-    ADD COLUMN IF NOT EXISTS "site_id" TEXT;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions"
+  ADD COLUMN IF NOT EXISTS "site_id" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
-ALTER TABLE "field_submissions"
-    ADD COLUMN IF NOT EXISTS "contract_id" TEXT;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions"
+  ADD COLUMN IF NOT EXISTS "contract_id" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- FK for site_id (explicit Prisma relation exists)
 ALTER TABLE "field_submissions"
@@ -459,8 +487,12 @@ ALTER TABLE "field_submissions"
 ALTER TABLE "field_submissions" VALIDATE CONSTRAINT "field_submissions_contract_id_fkey";
 
 -- reports: contract_id
-ALTER TABLE "reports"
-    ADD COLUMN IF NOT EXISTS "contract_id" TEXT;
+DO $$
+BEGIN
+  ALTER TABLE "reports"
+  ADD COLUMN IF NOT EXISTS "contract_id" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- FK for contract_id (explicit Prisma relation exists)
 ALTER TABLE "reports"

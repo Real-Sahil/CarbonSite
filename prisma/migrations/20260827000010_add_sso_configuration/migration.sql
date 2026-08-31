@@ -50,10 +50,22 @@ CREATE INDEX IF NOT EXISTS "sso_sessions_organizationId_provider_idx" ON "sso_se
 CREATE UNIQUE INDEX IF NOT EXISTS "sso_sessions_organizationId_providerUserId_key" ON "sso_sessions"("organization_id", "provider_user_id");
 
 -- AddForeignKey for sso_configurations
-ALTER TABLE "sso_configurations" ADD CONSTRAINT "sso_configurations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "sso_configurations" ADD CONSTRAINT "sso_configurations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey for sso_sessions to organizations
-ALTER TABLE "sso_sessions" ADD CONSTRAINT "sso_sessions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "sso_sessions" ADD CONSTRAINT "sso_sessions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey for sso_sessions to users
-ALTER TABLE "sso_sessions" ADD CONSTRAINT "sso_sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "sso_sessions" ADD CONSTRAINT "sso_sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

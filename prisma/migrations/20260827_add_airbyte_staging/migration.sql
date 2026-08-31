@@ -16,13 +16,13 @@ CREATE TABLE IF NOT EXISTS "staged_external_data" (
 );
 
 -- Indexes for common queries
-CREATE INDEX "idx_staged_external_data_org_source_processed"
+CREATE INDEX IF NOT EXISTS "idx_staged_external_data_org_source_processed"
   ON "staged_external_data"(organization_id, source_system, processed);
 
-CREATE INDEX "idx_staged_external_data_org_type_processed"
+CREATE INDEX IF NOT EXISTS "idx_staged_external_data_org_type_processed"
   ON "staged_external_data"(organization_id, data_type, processed);
 
-CREATE INDEX "idx_staged_external_data_org_created"
+CREATE INDEX IF NOT EXISTS "idx_staged_external_data_org_created"
   ON "staged_external_data"(organization_id, created_at DESC);
 
 -- AirbyteSyncConnection table for tracking Airbyte connections per organization
@@ -43,8 +43,8 @@ CREATE TABLE IF NOT EXISTS "airbyte_sync_connections" (
 );
 
 -- Indexes for common queries
-CREATE INDEX "idx_airbyte_sync_connections_org_system_enabled"
+CREATE INDEX IF NOT EXISTS "idx_airbyte_sync_connections_org_system_enabled"
   ON "airbyte_sync_connections"(organization_id, source_system, enabled);
 
-CREATE INDEX "idx_airbyte_sync_connections_org_created"
+CREATE INDEX IF NOT EXISTS "idx_airbyte_sync_connections_org_created"
   ON "airbyte_sync_connections"(organization_id, created_at DESC);

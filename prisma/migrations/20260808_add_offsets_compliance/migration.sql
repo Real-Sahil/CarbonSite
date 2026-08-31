@@ -1,5 +1,5 @@
 -- CreateTable: carbon_offsets
-CREATE TABLE "carbon_offsets" (
+CREATE TABLE IF NOT EXISTS "carbon_offsets" (
     "id"              TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "provider"        TEXT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE "carbon_offsets" (
 );
 
 -- CreateTable: compliance_records
-CREATE TABLE "compliance_records" (
+CREATE TABLE IF NOT EXISTS "compliance_records" (
     "id"              TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "framework"       TEXT NOT NULL,
@@ -37,13 +37,13 @@ CREATE TABLE "compliance_records" (
 );
 
 -- CreateIndex
-CREATE INDEX "carbon_offsets_organization_id_purchased_at_idx"
+CREATE INDEX IF NOT EXISTS "carbon_offsets_organization_id_purchased_at_idx"
     ON "carbon_offsets"("organization_id", "purchased_at");
 
-CREATE UNIQUE INDEX "compliance_records_organization_id_framework_reporting_year_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "compliance_records_organization_id_framework_reporting_year_key"
     ON "compliance_records"("organization_id", "framework", "reporting_year");
 
-CREATE INDEX "compliance_records_organization_id_reporting_year_idx"
+CREATE INDEX IF NOT EXISTS "compliance_records_organization_id_reporting_year_idx"
     ON "compliance_records"("organization_id", "reporting_year");
 
 -- AddForeignKey

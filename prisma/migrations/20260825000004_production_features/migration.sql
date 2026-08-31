@@ -1,14 +1,26 @@
 -- CreateEnum for BulkOperationType
-CREATE TYPE "bulk_operation_type" AS ENUM ('review', 'categorize', 'export', 'calculate', 'delete');
+DO $$ BEGIN
+  CREATE TYPE "bulk_operation_type" AS ENUM ('review', 'categorize', 'export', 'calculate', 'delete');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum for BulkOperationStatus
-CREATE TYPE "bulk_operation_status" AS ENUM ('queued', 'processing', 'completed', 'failed', 'cancelled');
+DO $$ BEGIN
+  CREATE TYPE "bulk_operation_status" AS ENUM ('queued', 'processing', 'completed', 'failed', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum for CalculationScheduleFrequency
-CREATE TYPE "calculation_schedule_frequency" AS ENUM ('manual', 'weekly', 'monthly', 'quarterly', 'annually');
+DO $$ BEGIN
+  CREATE TYPE "calculation_schedule_frequency" AS ENUM ('manual', 'weekly', 'monthly', 'quarterly', 'annually');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum for DigestFrequency
-CREATE TYPE "digest_frequency" AS ENUM ('daily', 'weekly', 'monthly');
+DO $$ BEGIN
+  CREATE TYPE "digest_frequency" AS ENUM ('daily', 'weekly', 'monthly');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateTable BulkOperation
 CREATE TABLE IF NOT EXISTS "bulk_operations" (
@@ -111,32 +123,64 @@ CREATE INDEX IF NOT EXISTS "project_role_assignments_user_id_idx" ON "project_ro
 
 -- AddForeignKey
 ALTER TABLE "bulk_operations" DROP CONSTRAINT IF EXISTS "bulk_operations_organization_id_fkey";
-ALTER TABLE "bulk_operations" ADD CONSTRAINT "bulk_operations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "bulk_operations" ADD CONSTRAINT "bulk_operations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "calculation_schedules" DROP CONSTRAINT IF EXISTS "calculation_schedules_organization_id_fkey";
-ALTER TABLE "calculation_schedules" ADD CONSTRAINT "calculation_schedules_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "calculation_schedules" ADD CONSTRAINT "calculation_schedules_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "calculation_schedules" DROP CONSTRAINT IF EXISTS "calculation_schedules_reporting_period_id_fkey";
-ALTER TABLE "calculation_schedules" ADD CONSTRAINT "calculation_schedules_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "calculation_schedules" ADD CONSTRAINT "calculation_schedules_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "digest_preferences" DROP CONSTRAINT IF EXISTS "digest_preferences_organization_id_fkey";
-ALTER TABLE "digest_preferences" ADD CONSTRAINT "digest_preferences_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "digest_preferences" ADD CONSTRAINT "digest_preferences_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "project_role_assignments" DROP CONSTRAINT IF EXISTS "project_role_assignments_organization_id_fkey";
-ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "project_role_assignments" DROP CONSTRAINT IF EXISTS "project_role_assignments_user_id_fkey";
-ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "project_role_assignments" DROP CONSTRAINT IF EXISTS "project_role_assignments_project_id_fkey";
-ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "project_role_assignments" DROP CONSTRAINT IF EXISTS "project_role_assignments_assigned_by_user_id_fkey";
-ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_assigned_by_user_id_fkey" FOREIGN KEY ("assigned_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_assigned_by_user_id_fkey" FOREIGN KEY ("assigned_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

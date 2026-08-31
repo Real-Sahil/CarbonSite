@@ -1,4 +1,4 @@
-CREATE TABLE "supplier_data_requests" (
+CREATE TABLE IF NOT EXISTS "supplier_data_requests" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -18,13 +18,13 @@ CREATE TABLE "supplier_data_requests" (
     CONSTRAINT "supplier_data_requests_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "supplier_data_requests_token_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "supplier_data_requests_token_key"
     ON "supplier_data_requests"("token");
 
-CREATE INDEX "supplier_data_requests_organization_id_reporting_period_id_idx"
+CREATE INDEX IF NOT EXISTS "supplier_data_requests_organization_id_reporting_period_id_idx"
     ON "supplier_data_requests"("organization_id", "reporting_period_id");
 
-CREATE INDEX "supplier_data_requests_organization_id_status_idx"
+CREATE INDEX IF NOT EXISTS "supplier_data_requests_organization_id_status_idx"
     ON "supplier_data_requests"("organization_id", "status");
 
 ALTER TABLE "supplier_data_requests"

@@ -1,4 +1,4 @@
-CREATE TABLE "integration_connections" (
+CREATE TABLE IF NOT EXISTS "integration_connections" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
@@ -15,10 +15,10 @@ CREATE TABLE "integration_connections" (
     CONSTRAINT "integration_connections_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "integration_connections_organization_id_provider_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "integration_connections_organization_id_provider_key"
     ON "integration_connections"("organization_id", "provider");
 
-CREATE INDEX "integration_connections_organization_id_idx"
+CREATE INDEX IF NOT EXISTS "integration_connections_organization_id_idx"
     ON "integration_connections"("organization_id");
 
 ALTER TABLE "integration_connections"

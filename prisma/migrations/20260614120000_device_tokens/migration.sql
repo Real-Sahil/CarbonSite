@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "device_tokens" (
+CREATE TABLE IF NOT EXISTS "device_tokens" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "token" TEXT NOT NULL,
@@ -11,10 +11,14 @@ CREATE TABLE "device_tokens" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "device_tokens_token_key" ON "device_tokens"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "device_tokens_token_key" ON "device_tokens"("token");
 
 -- CreateIndex
-CREATE INDEX "device_tokens_user_id_idx" ON "device_tokens"("user_id");
+CREATE INDEX IF NOT EXISTS "device_tokens_user_id_idx" ON "device_tokens"("user_id");
 
 -- AddForeignKey
-ALTER TABLE "device_tokens" ADD CONSTRAINT "device_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "device_tokens" ADD CONSTRAINT "device_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

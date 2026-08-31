@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "api_data_sources" (
+CREATE TABLE IF NOT EXISTS "api_data_sources" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -24,10 +24,14 @@ CREATE TABLE "api_data_sources" (
 );
 
 -- CreateIndex
-CREATE INDEX "api_data_sources_organization_id_enabled_idx" ON "api_data_sources"("organization_id", "enabled");
+CREATE INDEX IF NOT EXISTS "api_data_sources_organization_id_enabled_idx" ON "api_data_sources"("organization_id", "enabled");
 
 -- CreateIndex
-CREATE INDEX "api_data_sources_organization_id_last_sync_at_idx" ON "api_data_sources"("organization_id", "last_sync_at");
+CREATE INDEX IF NOT EXISTS "api_data_sources_organization_id_last_sync_at_idx" ON "api_data_sources"("organization_id", "last_sync_at");
 
 -- AddForeignKey
-ALTER TABLE "api_data_sources" ADD CONSTRAINT "api_data_sources_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "api_data_sources" ADD CONSTRAINT "api_data_sources_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

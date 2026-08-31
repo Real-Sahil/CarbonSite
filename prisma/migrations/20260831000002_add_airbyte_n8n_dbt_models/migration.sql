@@ -49,13 +49,25 @@ CREATE INDEX IF NOT EXISTS "n8n_executions_triggered_at_idx" ON "n8n_executions"
 
 -- AddForeignKey (drop first to avoid duplicate constraint errors)
 ALTER TABLE "n8n_workflows" DROP CONSTRAINT IF EXISTS "n8n_workflows_organization_id_fkey";
-ALTER TABLE "n8n_workflows" ADD CONSTRAINT "n8n_workflows_organization_id_fkey"
+DO $$
+BEGIN
+  ALTER TABLE "n8n_workflows" ADD CONSTRAINT "n8n_workflows_organization_id_fkey"
   FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 ALTER TABLE "n8n_executions" DROP CONSTRAINT IF EXISTS "n8n_executions_workflow_id_fkey";
-ALTER TABLE "n8n_executions" ADD CONSTRAINT "n8n_executions_workflow_id_fkey"
+DO $$
+BEGIN
+  ALTER TABLE "n8n_executions" ADD CONSTRAINT "n8n_executions_workflow_id_fkey"
   FOREIGN KEY ("workflow_id") REFERENCES "n8n_workflows"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 ALTER TABLE "n8n_executions" DROP CONSTRAINT IF EXISTS "n8n_executions_organization_id_fkey";
-ALTER TABLE "n8n_executions" ADD CONSTRAINT "n8n_executions_organization_id_fkey"
+DO $$
+BEGIN
+  ALTER TABLE "n8n_executions" ADD CONSTRAINT "n8n_executions_organization_id_fkey"
   FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

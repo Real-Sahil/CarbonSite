@@ -52,11 +52,19 @@ CREATE INDEX IF NOT EXISTS "invoice_anomalies_organization_id_anomaly_type_resol
 CREATE INDEX IF NOT EXISTS "invoice_anomalies_organization_id_created_at_idx" ON "invoice_anomalies"("organization_id", "created_at" DESC);
 
 -- Update invoice_reconciliations table to add organizationId if not exists
-ALTER TABLE "invoice_reconciliations" ADD COLUMN IF NOT EXISTS "organization_id" TEXT;
+DO $$
+BEGIN
+  ALTER TABLE "invoice_reconciliations" ADD COLUMN IF NOT EXISTS "organization_id" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- Add foreign key constraint for organization_id if not exists
-ALTER TABLE "invoice_reconciliations" ADD CONSTRAINT "invoice_reconciliations_organization_id_fkey"
-    FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "invoice_reconciliations" ADD CONSTRAINT "invoice_reconciliations_organization_id_fkey"
+  FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Add index on organization_id and match_status if not exists
 CREATE INDEX IF NOT EXISTS "invoice_reconciliations_organization_id_match_status_idx" ON "invoice_reconciliations"("organization_id", "match_status");

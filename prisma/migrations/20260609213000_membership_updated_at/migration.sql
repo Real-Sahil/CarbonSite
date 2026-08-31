@@ -1,2 +1,6 @@
-ALTER TABLE "organization_memberships"
-ADD COLUMN "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+DO $$
+BEGIN
+  ALTER TABLE "organization_memberships"
+  ADD COLUMN "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;

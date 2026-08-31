@@ -1,7 +1,7 @@
 -- Add Causal Inference capability for root cause analysis
 -- Stores results of causal analysis runs (facility upgrades, supplier switches, process changes)
 
-CREATE TABLE "causal_inference_runs" (
+CREATE TABLE IF NOT EXISTS "causal_inference_runs" (
   "id" TEXT NOT NULL PRIMARY KEY,
   "organization_id" TEXT NOT NULL,
   "question" TEXT NOT NULL,
@@ -26,10 +26,10 @@ CREATE TABLE "causal_inference_runs" (
 );
 
 -- Index for querying by organization and creation time
-CREATE INDEX "causal_inference_runs_organization_id_created_at_idx" ON "causal_inference_runs"("organization_id", "created_at" DESC);
+CREATE INDEX IF NOT EXISTS "causal_inference_runs_organization_id_created_at_idx" ON "causal_inference_runs"("organization_id", "created_at" DESC);
 
 -- Index for querying by status
-CREATE INDEX "causal_inference_runs_organization_id_status_idx" ON "causal_inference_runs"("organization_id", "status");
+CREATE INDEX IF NOT EXISTS "causal_inference_runs_organization_id_status_idx" ON "causal_inference_runs"("organization_id", "status");
 
 -- Index for model-based queries
-CREATE INDEX "causal_inference_runs_organization_id_model_id_idx" ON "causal_inference_runs"("organization_id", "model_id");
+CREATE INDEX IF NOT EXISTS "causal_inference_runs_organization_id_model_id_idx" ON "causal_inference_runs"("organization_id", "model_id");

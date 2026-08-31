@@ -15,4 +15,8 @@ ALTER TABLE "field_submissions" ADD COLUMN IF NOT EXISTS "pickup_postcode_encryp
 ADD COLUMN IF NOT EXISTS "delivery_postcode_encrypted" JSONB;
 
 -- ActivityRecord: encrypted version of postcode
-ALTER TABLE "activity_records" ADD COLUMN IF NOT EXISTS "postcode_encrypted" JSONB;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD COLUMN IF NOT EXISTS "postcode_encrypted" JSONB;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;

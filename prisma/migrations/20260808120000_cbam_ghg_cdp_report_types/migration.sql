@@ -9,5 +9,13 @@ ALTER TYPE "report_type" ADD VALUE IF NOT EXISTS 'cdp';
 ALTER TYPE "report_type" ADD VALUE IF NOT EXISTS 'cbam';
 
 -- XML artefact storage for CBAM reports
-ALTER TABLE "reports" ADD COLUMN IF NOT EXISTS "xml_storage_key" TEXT;
-ALTER TABLE "reports" ADD COLUMN IF NOT EXISTS "xml_checksum" TEXT;
+DO $$
+BEGIN
+  ALTER TABLE "reports" ADD COLUMN IF NOT EXISTS "xml_storage_key" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+DO $$
+BEGIN
+  ALTER TABLE "reports" ADD COLUMN IF NOT EXISTS "xml_checksum" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;

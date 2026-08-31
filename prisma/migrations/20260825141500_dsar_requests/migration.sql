@@ -1,9 +1,15 @@
 -- Data Subject Access Requests (UK GDPR Art. 15 export / Art. 17 erasure).
 
-CREATE TYPE "dsar_request_type" AS ENUM ('export', 'erasure');
-CREATE TYPE "dsar_request_status" AS ENUM ('pending', 'processing', 'completed', 'failed', 'rejected');
+DO $$ BEGIN
+  CREATE TYPE "dsar_request_type" AS ENUM ('export', 'erasure');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE TYPE "dsar_request_status" AS ENUM ('pending', 'processing', 'completed', 'failed', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE "dsar_requests" (
+CREATE TABLE IF NOT EXISTS "dsar_requests" (
     "id"                  TEXT NOT NULL,
     "user_id"             TEXT NOT NULL,
     "organization_id"     TEXT,
@@ -21,8 +27,8 @@ CREATE TABLE "dsar_requests" (
     CONSTRAINT "dsar_requests_pkey" PRIMARY KEY ("id")
 );
 
-CREATE INDEX "dsar_requests_status_due_by_idx" ON "dsar_requests"("status", "due_by");
-CREATE INDEX "dsar_requests_user_id_idx" ON "dsar_requests"("user_id");
+CREATE INDEX IF NOT EXISTS "dsar_requests_status_due_by_idx" ON "dsar_requests"("status", "due_by");
+CREATE INDEX IF NOT EXISTS "dsar_requests_user_id_idx" ON "dsar_requests"("user_id");
 
 ALTER TABLE "dsar_requests"
     ADD CONSTRAINT "dsar_requests_user_id_fkey"

@@ -1,4 +1,4 @@
-CREATE TABLE "field_worker_assignments" (
+CREATE TABLE IF NOT EXISTS "field_worker_assignments" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -11,13 +11,13 @@ CREATE TABLE "field_worker_assignments" (
     CONSTRAINT "field_worker_assignments_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "field_worker_assignments_organization_id_user_id_reporting_period_id_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "field_worker_assignments_organization_id_user_id_reporting_period_id_key"
 ON "field_worker_assignments"("organization_id", "user_id", "reporting_period_id");
 
-CREATE INDEX "field_worker_assignments_organization_id_user_id_idx"
+CREATE INDEX IF NOT EXISTS "field_worker_assignments_organization_id_user_id_idx"
 ON "field_worker_assignments"("organization_id", "user_id");
 
-CREATE INDEX "field_worker_assignments_organization_id_reporting_period_id_idx"
+CREATE INDEX IF NOT EXISTS "field_worker_assignments_organization_id_reporting_period_id_idx"
 ON "field_worker_assignments"("organization_id", "reporting_period_id");
 
 ALTER TABLE "field_worker_assignments"

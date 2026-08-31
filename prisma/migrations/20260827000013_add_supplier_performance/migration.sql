@@ -1,5 +1,5 @@
 -- Add supplier performance tracking table
-CREATE TABLE "supplier_performance" (
+CREATE TABLE IF NOT EXISTS "supplier_performance" (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
   supplier_id UUID NOT NULL,
@@ -21,9 +21,13 @@ CREATE INDEX idx_supplier_performance_org ON "supplier_performance"(organization
 CREATE INDEX idx_supplier_performance_org_supplier ON "supplier_performance"(organization_id, supplier_id);
 
 -- Add submission deadline tracking to field submissions
-ALTER TABLE "field_submissions"
-ADD COLUMN IF NOT EXISTS requested_by_deadline TIMESTAMP,
-ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions"
+  ADD COLUMN IF NOT EXISTS requested_by_deadline TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- Create index for on-time tracking
 CREATE INDEX IF NOT EXISTS idx_field_submissions_deadline ON "field_submissions"(organization_id, requested_by_deadline, submitted_at);

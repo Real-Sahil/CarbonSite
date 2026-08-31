@@ -32,10 +32,14 @@ CREATE TABLE IF NOT EXISTS "integration_configs" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "integration_configs_organization_id_key" ON "integration_configs"("organization_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "integration_configs_organization_id_key" ON "integration_configs"("organization_id");
 
 -- CreateIndex
-CREATE INDEX "integration_configs_organization_id_idx" ON "integration_configs"("organization_id");
+CREATE INDEX IF NOT EXISTS "integration_configs_organization_id_idx" ON "integration_configs"("organization_id");
 
 -- AddForeignKey
-ALTER TABLE "integration_configs" ADD CONSTRAINT "integration_configs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "integration_configs" ADD CONSTRAINT "integration_configs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

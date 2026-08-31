@@ -1,5 +1,5 @@
 -- CreateTable ReportVerificationToken
-CREATE TABLE "report_verification_tokens" (
+CREATE TABLE IF NOT EXISTS "report_verification_tokens" (
     "id" TEXT NOT NULL,
     "report_id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
@@ -13,16 +13,24 @@ CREATE TABLE "report_verification_tokens" (
 );
 
 -- CreateIndex unique token
-CREATE UNIQUE INDEX "report_verification_tokens_token_key" ON "report_verification_tokens"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "report_verification_tokens_token_key" ON "report_verification_tokens"("token");
 
 -- CreateIndex unique report_id (one token per report)
-CREATE UNIQUE INDEX "report_verification_tokens_report_id_key" ON "report_verification_tokens"("report_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "report_verification_tokens_report_id_key" ON "report_verification_tokens"("report_id");
 
 -- CreateIndex for queries by org and expiry
-CREATE INDEX "report_verification_tokens_organization_id_expires_at_idx" ON "report_verification_tokens"("organization_id", "expires_at");
+CREATE INDEX IF NOT EXISTS "report_verification_tokens_organization_id_expires_at_idx" ON "report_verification_tokens"("organization_id", "expires_at");
 
 -- AddForeignKey
-ALTER TABLE "report_verification_tokens" ADD CONSTRAINT "report_verification_tokens_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "report_verification_tokens" ADD CONSTRAINT "report_verification_tokens_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "report_verification_tokens" ADD CONSTRAINT "report_verification_tokens_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "report_verification_tokens" ADD CONSTRAINT "report_verification_tokens_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

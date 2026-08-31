@@ -60,22 +60,50 @@ CREATE INDEX IF NOT EXISTS "scope3_estimates_organization_id_created_at_idx" ON 
 CREATE INDEX IF NOT EXISTS "scope3_estimates_estimation_model_id_idx" ON "scope3_estimates"("estimation_model_id");
 
 -- AddForeignKey scope3_estimation_models -> organizations
-ALTER TABLE "scope3_estimation_models" ADD CONSTRAINT "scope3_estimation_models_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "scope3_estimation_models" ADD CONSTRAINT "scope3_estimation_models_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey scope3_estimation_models -> emission_categories
-ALTER TABLE "scope3_estimation_models" ADD CONSTRAINT "scope3_estimation_models_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "scope3_estimation_models" ADD CONSTRAINT "scope3_estimation_models_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey scope3_estimates -> organizations
-ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey scope3_estimates -> emission_categories
-ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey scope3_estimates -> scope3_estimation_models
-ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_estimation_model_id_fkey" FOREIGN KEY ("estimation_model_id") REFERENCES "scope3_estimation_models"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_estimation_model_id_fkey" FOREIGN KEY ("estimation_model_id") REFERENCES "scope3_estimation_models"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey scope3_estimates -> users
-ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_accepted_by_user_id_fkey" FOREIGN KEY ("accepted_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_accepted_by_user_id_fkey" FOREIGN KEY ("accepted_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey scope3_estimates -> activity_records
-ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_activity_record_id_fkey" FOREIGN KEY ("activity_record_id") REFERENCES "activity_records"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "scope3_estimates" ADD CONSTRAINT "scope3_estimates_activity_record_id_fkey" FOREIGN KEY ("activity_record_id") REFERENCES "activity_records"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

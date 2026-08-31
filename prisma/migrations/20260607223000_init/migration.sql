@@ -2,61 +2,115 @@
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
-CREATE TYPE "org_role" AS ENUM ('admin', 'editor', 'reviewer', 'viewer', 'auditor', 'field_worker');
+DO $$ BEGIN
+  CREATE TYPE "org_role" AS ENUM ('admin', 'editor', 'reviewer', 'viewer', 'auditor', 'field_worker');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "reporting_period_type" AS ENUM ('month', 'quarter', 'year', 'custom');
+DO $$ BEGIN
+  CREATE TYPE "reporting_period_type" AS ENUM ('month', 'quarter', 'year', 'custom');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "reporting_period_status" AS ENUM ('draft', 'published', 'locked');
+DO $$ BEGIN
+  CREATE TYPE "reporting_period_status" AS ENUM ('draft', 'published', 'locked');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "import_state" AS ENUM ('uploaded', 'parsing', 'mapped', 'validating', 'needs_attention', 'ready_to_commit', 'committed', 'failed');
+DO $$ BEGIN
+  CREATE TYPE "import_state" AS ENUM ('uploaded', 'parsing', 'mapped', 'validating', 'needs_attention', 'ready_to_commit', 'committed', 'failed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "staged_record_status" AS ENUM ('staged', 'excluded', 'ready');
+DO $$ BEGIN
+  CREATE TYPE "staged_record_status" AS ENUM ('staged', 'excluded', 'ready');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "review_status" AS ENUM ('draft', 'in_review', 'approved', 'rejected');
+DO $$ BEGIN
+  CREATE TYPE "review_status" AS ENUM ('draft', 'in_review', 'approved', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "evidence_status" AS ENUM ('missing', 'partial', 'complete');
+DO $$ BEGIN
+  CREATE TYPE "evidence_status" AS ENUM ('missing', 'partial', 'complete');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "scope2_method" AS ENUM ('location_based', 'market_based');
+DO $$ BEGIN
+  CREATE TYPE "scope2_method" AS ENUM ('location_based', 'market_based');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "field_submission_status" AS ENUM ('pending', 'submitted', 'under_review', 'approved', 'rejected', 'needs_info');
+DO $$ BEGIN
+  CREATE TYPE "field_submission_status" AS ENUM ('pending', 'submitted', 'under_review', 'approved', 'rejected', 'needs_info');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "field_document_type" AS ENUM ('waste_ticket', 'delivery_note', 'fuel_receipt', 'other');
+DO $$ BEGIN
+  CREATE TYPE "field_document_type" AS ENUM ('waste_ticket', 'delivery_note', 'fuel_receipt', 'other');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "calculation_run_status" AS ENUM ('queued', 'running', 'succeeded', 'failed');
+DO $$ BEGIN
+  CREATE TYPE "calculation_run_status" AS ENUM ('queued', 'running', 'succeeded', 'failed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "target_type" AS ENUM ('absolute', 'intensity');
+DO $$ BEGIN
+  CREATE TYPE "target_type" AS ENUM ('absolute', 'intensity');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "initiative_status" AS ENUM ('planned', 'in_progress', 'complete', 'canceled');
+DO $$ BEGIN
+  CREATE TYPE "initiative_status" AS ENUM ('planned', 'in_progress', 'complete', 'canceled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "report_type" AS ENUM ('inventory', 'monthly_snapshot', 'audit_package');
+DO $$ BEGIN
+  CREATE TYPE "report_type" AS ENUM ('inventory', 'monthly_snapshot', 'audit_package');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "report_status" AS ENUM ('queued', 'generating', 'ready', 'failed');
+DO $$ BEGIN
+  CREATE TYPE "report_status" AS ENUM ('queued', 'generating', 'ready', 'failed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "review_task_type" AS ENUM ('import_batch', 'activity_record', 'report');
+DO $$ BEGIN
+  CREATE TYPE "review_task_type" AS ENUM ('import_batch', 'activity_record', 'report');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "review_task_status" AS ENUM ('open', 'completed', 'blocked');
+DO $$ BEGIN
+  CREATE TYPE "review_task_status" AS ENUM ('open', 'completed', 'blocked');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "comment_target_type" AS ENUM ('import_batch', 'activity_record', 'report', 'initiative', 'field_submission');
+DO $$ BEGIN
+  CREATE TYPE "comment_target_type" AS ENUM ('import_batch', 'activity_record', 'report', 'initiative', 'field_submission');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateTable
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT,
@@ -68,7 +122,7 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
-CREATE TABLE "sessions" (
+CREATE TABLE IF NOT EXISTS "sessions" (
     "id" TEXT NOT NULL,
     "expires_at" TIMESTAMP(3) NOT NULL,
     "token" TEXT NOT NULL,
@@ -80,7 +134,7 @@ CREATE TABLE "sessions" (
 );
 
 -- CreateTable
-CREATE TABLE "accounts" (
+CREATE TABLE IF NOT EXISTS "accounts" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "account_id" TEXT NOT NULL,
@@ -99,7 +153,7 @@ CREATE TABLE "accounts" (
 );
 
 -- CreateTable
-CREATE TABLE "verifications" (
+CREATE TABLE IF NOT EXISTS "verifications" (
     "id" TEXT NOT NULL,
     "identifier" TEXT NOT NULL,
     "value" TEXT NOT NULL,
@@ -111,7 +165,7 @@ CREATE TABLE "verifications" (
 );
 
 -- CreateTable
-CREATE TABLE "organizations" (
+CREATE TABLE IF NOT EXISTS "organizations" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "industry" TEXT,
@@ -125,7 +179,7 @@ CREATE TABLE "organizations" (
 );
 
 -- CreateTable
-CREATE TABLE "organization_memberships" (
+CREATE TABLE IF NOT EXISTS "organization_memberships" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -136,7 +190,7 @@ CREATE TABLE "organization_memberships" (
 );
 
 -- CreateTable
-CREATE TABLE "invite_links" (
+CREATE TABLE IF NOT EXISTS "invite_links" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "role" "org_role" NOT NULL DEFAULT 'field_worker',
@@ -150,7 +204,7 @@ CREATE TABLE "invite_links" (
 );
 
 -- CreateTable
-CREATE TABLE "facilities" (
+CREATE TABLE IF NOT EXISTS "facilities" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -163,7 +217,7 @@ CREATE TABLE "facilities" (
 );
 
 -- CreateTable
-CREATE TABLE "business_units" (
+CREATE TABLE IF NOT EXISTS "business_units" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -174,7 +228,7 @@ CREATE TABLE "business_units" (
 );
 
 -- CreateTable
-CREATE TABLE "reporting_periods" (
+CREATE TABLE IF NOT EXISTS "reporting_periods" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "type" "reporting_period_type" NOT NULL,
@@ -189,7 +243,7 @@ CREATE TABLE "reporting_periods" (
 );
 
 -- CreateTable
-CREATE TABLE "emission_categories" (
+CREATE TABLE IF NOT EXISTS "emission_categories" (
     "id" TEXT NOT NULL,
     "scope" INTEGER NOT NULL,
     "code" TEXT NOT NULL,
@@ -200,7 +254,7 @@ CREATE TABLE "emission_categories" (
 );
 
 -- CreateTable
-CREATE TABLE "methodology_versions" (
+CREATE TABLE IF NOT EXISTS "methodology_versions" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "gwp_version" TEXT NOT NULL,
@@ -211,7 +265,7 @@ CREATE TABLE "methodology_versions" (
 );
 
 -- CreateTable
-CREATE TABLE "import_batches" (
+CREATE TABLE IF NOT EXISTS "import_batches" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -234,7 +288,7 @@ CREATE TABLE "import_batches" (
 );
 
 -- CreateTable
-CREATE TABLE "staged_activity_records" (
+CREATE TABLE IF NOT EXISTS "staged_activity_records" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "import_batch_id" TEXT NOT NULL,
@@ -249,7 +303,7 @@ CREATE TABLE "staged_activity_records" (
 );
 
 -- CreateTable
-CREATE TABLE "activity_records" (
+CREATE TABLE IF NOT EXISTS "activity_records" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -295,7 +349,7 @@ CREATE TABLE "activity_records" (
 );
 
 -- CreateTable
-CREATE TABLE "postcode_geocodes" (
+CREATE TABLE IF NOT EXISTS "postcode_geocodes" (
     "id" TEXT NOT NULL,
     "normalized_postcode" TEXT NOT NULL,
     "display_postcode" TEXT NOT NULL,
@@ -311,7 +365,7 @@ CREATE TABLE "postcode_geocodes" (
 );
 
 -- CreateTable
-CREATE TABLE "route_distances" (
+CREATE TABLE IF NOT EXISTS "route_distances" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "pickup_postcode" TEXT NOT NULL,
@@ -331,7 +385,7 @@ CREATE TABLE "route_distances" (
 );
 
 -- CreateTable
-CREATE TABLE "evidence_files" (
+CREATE TABLE IF NOT EXISTS "evidence_files" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "filename" TEXT NOT NULL,
@@ -346,7 +400,7 @@ CREATE TABLE "evidence_files" (
 );
 
 -- CreateTable
-CREATE TABLE "activity_record_evidence" (
+CREATE TABLE IF NOT EXISTS "activity_record_evidence" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "activity_record_id" TEXT NOT NULL,
@@ -357,7 +411,7 @@ CREATE TABLE "activity_record_evidence" (
 );
 
 -- CreateTable
-CREATE TABLE "import_batch_evidence" (
+CREATE TABLE IF NOT EXISTS "import_batch_evidence" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "import_batch_id" TEXT NOT NULL,
@@ -368,7 +422,7 @@ CREATE TABLE "import_batch_evidence" (
 );
 
 -- CreateTable
-CREATE TABLE "field_submissions" (
+CREATE TABLE IF NOT EXISTS "field_submissions" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -401,7 +455,7 @@ CREATE TABLE "field_submissions" (
 );
 
 -- CreateTable
-CREATE TABLE "field_submission_files" (
+CREATE TABLE IF NOT EXISTS "field_submission_files" (
     "id" TEXT NOT NULL,
     "field_submission_id" TEXT NOT NULL,
     "evidence_file_id" TEXT NOT NULL,
@@ -411,7 +465,7 @@ CREATE TABLE "field_submission_files" (
 );
 
 -- CreateTable
-CREATE TABLE "factor_libraries" (
+CREATE TABLE IF NOT EXISTS "factor_libraries" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "version" TEXT NOT NULL,
@@ -424,7 +478,7 @@ CREATE TABLE "factor_libraries" (
 );
 
 -- CreateTable
-CREATE TABLE "emission_factors" (
+CREATE TABLE IF NOT EXISTS "emission_factors" (
     "id" TEXT NOT NULL,
     "factor_library_id" TEXT NOT NULL,
     "external_id" TEXT,
@@ -447,7 +501,7 @@ CREATE TABLE "emission_factors" (
 );
 
 -- CreateTable
-CREATE TABLE "calculation_runs" (
+CREATE TABLE IF NOT EXISTS "calculation_runs" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -464,7 +518,7 @@ CREATE TABLE "calculation_runs" (
 );
 
 -- CreateTable
-CREATE TABLE "emission_calculations" (
+CREATE TABLE IF NOT EXISTS "emission_calculations" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "activity_record_id" TEXT NOT NULL,
@@ -489,7 +543,7 @@ CREATE TABLE "emission_calculations" (
 );
 
 -- CreateTable
-CREATE TABLE "published_snapshots" (
+CREATE TABLE IF NOT EXISTS "published_snapshots" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -502,7 +556,7 @@ CREATE TABLE "published_snapshots" (
 );
 
 -- CreateTable
-CREATE TABLE "dashboard_aggregates" (
+CREATE TABLE IF NOT EXISTS "dashboard_aggregates" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -519,7 +573,7 @@ CREATE TABLE "dashboard_aggregates" (
 );
 
 -- CreateTable
-CREATE TABLE "reduction_targets" (
+CREATE TABLE IF NOT EXISTS "reduction_targets" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "baseline_period_id" TEXT NOT NULL,
@@ -534,7 +588,7 @@ CREATE TABLE "reduction_targets" (
 );
 
 -- CreateTable
-CREATE TABLE "reduction_initiatives" (
+CREATE TABLE IF NOT EXISTS "reduction_initiatives" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -553,7 +607,7 @@ CREATE TABLE "reduction_initiatives" (
 );
 
 -- CreateTable
-CREATE TABLE "reports" (
+CREATE TABLE IF NOT EXISTS "reports" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -576,7 +630,7 @@ CREATE TABLE "reports" (
 );
 
 -- CreateTable
-CREATE TABLE "review_tasks" (
+CREATE TABLE IF NOT EXISTS "review_tasks" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "type" "review_task_type" NOT NULL,
@@ -591,7 +645,7 @@ CREATE TABLE "review_tasks" (
 );
 
 -- CreateTable
-CREATE TABLE "comments" (
+CREATE TABLE IF NOT EXISTS "comments" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "target_type" "comment_target_type" NOT NULL,
@@ -604,7 +658,7 @@ CREATE TABLE "comments" (
 );
 
 -- CreateTable
-CREATE TABLE "audit_logs" (
+CREATE TABLE IF NOT EXISTS "audit_logs" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "actor_user_id" TEXT,
@@ -618,349 +672,645 @@ CREATE TABLE "audit_logs" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "sessions_token_key" ON "sessions"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "sessions_token_key" ON "sessions"("token");
 
 -- CreateIndex
-CREATE INDEX "organization_memberships_organization_id_idx" ON "organization_memberships"("organization_id");
+CREATE INDEX IF NOT EXISTS "organization_memberships_organization_id_idx" ON "organization_memberships"("organization_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "organization_memberships_organization_id_user_id_key" ON "organization_memberships"("organization_id", "user_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "organization_memberships_organization_id_user_id_key" ON "organization_memberships"("organization_id", "user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "invite_links_token_key" ON "invite_links"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "invite_links_token_key" ON "invite_links"("token");
 
 -- CreateIndex
-CREATE INDEX "invite_links_organization_id_idx" ON "invite_links"("organization_id");
+CREATE INDEX IF NOT EXISTS "invite_links_organization_id_idx" ON "invite_links"("organization_id");
 
 -- CreateIndex
-CREATE INDEX "facilities_organization_id_idx" ON "facilities"("organization_id");
+CREATE INDEX IF NOT EXISTS "facilities_organization_id_idx" ON "facilities"("organization_id");
 
 -- CreateIndex
-CREATE INDEX "business_units_organization_id_idx" ON "business_units"("organization_id");
+CREATE INDEX IF NOT EXISTS "business_units_organization_id_idx" ON "business_units"("organization_id");
 
 -- CreateIndex
-CREATE INDEX "reporting_periods_organization_id_start_date_end_date_idx" ON "reporting_periods"("organization_id", "start_date", "end_date");
+CREATE INDEX IF NOT EXISTS "reporting_periods_organization_id_start_date_end_date_idx" ON "reporting_periods"("organization_id", "start_date", "end_date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "emission_categories_code_key" ON "emission_categories"("code");
+CREATE UNIQUE INDEX IF NOT EXISTS "emission_categories_code_key" ON "emission_categories"("code");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "methodology_versions_name_key" ON "methodology_versions"("name");
+CREATE UNIQUE INDEX IF NOT EXISTS "methodology_versions_name_key" ON "methodology_versions"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "import_batches_idempotency_key_key" ON "import_batches"("idempotency_key");
+CREATE UNIQUE INDEX IF NOT EXISTS "import_batches_idempotency_key_key" ON "import_batches"("idempotency_key");
 
 -- CreateIndex
-CREATE INDEX "import_batches_organization_id_reporting_period_id_state_idx" ON "import_batches"("organization_id", "reporting_period_id", "state");
+CREATE INDEX IF NOT EXISTS "import_batches_organization_id_reporting_period_id_state_idx" ON "import_batches"("organization_id", "reporting_period_id", "state");
 
 -- CreateIndex
-CREATE INDEX "import_batches_organization_id_source_checksum_idx" ON "import_batches"("organization_id", "source_checksum");
+CREATE INDEX IF NOT EXISTS "import_batches_organization_id_source_checksum_idx" ON "import_batches"("organization_id", "source_checksum");
 
 -- CreateIndex
-CREATE INDEX "staged_activity_records_import_batch_id_status_idx" ON "staged_activity_records"("import_batch_id", "status");
+CREATE INDEX IF NOT EXISTS "staged_activity_records_import_batch_id_status_idx" ON "staged_activity_records"("import_batch_id", "status");
 
 -- CreateIndex
-CREATE INDEX "activity_records_organization_id_reporting_period_id_emissi_idx" ON "activity_records"("organization_id", "reporting_period_id", "emission_category_id", "facility_id", "review_status", "created_at");
+CREATE INDEX IF NOT EXISTS "activity_records_organization_id_reporting_period_id_emissi_idx" ON "activity_records"("organization_id", "reporting_period_id", "emission_category_id", "facility_id", "review_status", "created_at");
 
 -- CreateIndex
-CREATE INDEX "activity_records_organization_id_route_distance_id_idx" ON "activity_records"("organization_id", "route_distance_id");
+CREATE INDEX IF NOT EXISTS "activity_records_organization_id_route_distance_id_idx" ON "activity_records"("organization_id", "route_distance_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "postcode_geocodes_normalized_postcode_key" ON "postcode_geocodes"("normalized_postcode");
+CREATE UNIQUE INDEX IF NOT EXISTS "postcode_geocodes_normalized_postcode_key" ON "postcode_geocodes"("normalized_postcode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "route_distances_route_hash_key" ON "route_distances"("route_hash");
+CREATE UNIQUE INDEX IF NOT EXISTS "route_distances_route_hash_key" ON "route_distances"("route_hash");
 
 -- CreateIndex
-CREATE INDEX "route_distances_organization_id_pickup_postcode_delivery_po_idx" ON "route_distances"("organization_id", "pickup_postcode", "delivery_postcode");
+CREATE INDEX IF NOT EXISTS "route_distances_organization_id_pickup_postcode_delivery_po_idx" ON "route_distances"("organization_id", "pickup_postcode", "delivery_postcode");
 
 -- CreateIndex
-CREATE INDEX "evidence_files_organization_id_idx" ON "evidence_files"("organization_id");
+CREATE INDEX IF NOT EXISTS "evidence_files_organization_id_idx" ON "evidence_files"("organization_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "activity_record_evidence_activity_record_id_evidence_file_i_key" ON "activity_record_evidence"("activity_record_id", "evidence_file_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "activity_record_evidence_activity_record_id_evidence_file_i_key" ON "activity_record_evidence"("activity_record_id", "evidence_file_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "import_batch_evidence_import_batch_id_evidence_file_id_key" ON "import_batch_evidence"("import_batch_id", "evidence_file_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "import_batch_evidence_import_batch_id_evidence_file_id_key" ON "import_batch_evidence"("import_batch_id", "evidence_file_id");
 
 -- CreateIndex
-CREATE INDEX "field_submissions_organization_id_status_created_at_idx" ON "field_submissions"("organization_id", "status", "created_at");
+CREATE INDEX IF NOT EXISTS "field_submissions_organization_id_status_created_at_idx" ON "field_submissions"("organization_id", "status", "created_at");
 
 -- CreateIndex
-CREATE INDEX "field_submissions_organization_id_submitted_by_user_id_idx" ON "field_submissions"("organization_id", "submitted_by_user_id");
+CREATE INDEX IF NOT EXISTS "field_submissions_organization_id_submitted_by_user_id_idx" ON "field_submissions"("organization_id", "submitted_by_user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "field_submission_files_field_submission_id_evidence_file_id_key" ON "field_submission_files"("field_submission_id", "evidence_file_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "field_submission_files_field_submission_id_evidence_file_id_key" ON "field_submission_files"("field_submission_id", "evidence_file_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "factor_libraries_name_version_key" ON "factor_libraries"("name", "version");
+CREATE UNIQUE INDEX IF NOT EXISTS "factor_libraries_name_version_key" ON "factor_libraries"("name", "version");
 
 -- CreateIndex
-CREATE INDEX "emission_factors_scope_emission_category_id_geography_count_idx" ON "emission_factors"("scope", "emission_category_id", "geography_country", "effective_start_date", "effective_end_date");
+CREATE INDEX IF NOT EXISTS "emission_factors_scope_emission_category_id_geography_count_idx" ON "emission_factors"("scope", "emission_category_id", "geography_country", "effective_start_date", "effective_end_date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "calculation_runs_trigger_hash_key" ON "calculation_runs"("trigger_hash");
+CREATE UNIQUE INDEX IF NOT EXISTS "calculation_runs_trigger_hash_key" ON "calculation_runs"("trigger_hash");
 
 -- CreateIndex
-CREATE INDEX "calculation_runs_organization_id_reporting_period_id_status_idx" ON "calculation_runs"("organization_id", "reporting_period_id", "status");
+CREATE INDEX IF NOT EXISTS "calculation_runs_organization_id_reporting_period_id_status_idx" ON "calculation_runs"("organization_id", "reporting_period_id", "status");
 
 -- CreateIndex
-CREATE INDEX "emission_calculations_calculation_run_id_idx" ON "emission_calculations"("calculation_run_id");
+CREATE INDEX IF NOT EXISTS "emission_calculations_calculation_run_id_idx" ON "emission_calculations"("calculation_run_id");
 
 -- CreateIndex
-CREATE INDEX "emission_calculations_activity_record_id_idx" ON "emission_calculations"("activity_record_id");
+CREATE INDEX IF NOT EXISTS "emission_calculations_activity_record_id_idx" ON "emission_calculations"("activity_record_id");
 
 -- CreateIndex
-CREATE INDEX "published_snapshots_organization_id_reporting_period_id_idx" ON "published_snapshots"("organization_id", "reporting_period_id");
+CREATE INDEX IF NOT EXISTS "published_snapshots_organization_id_reporting_period_id_idx" ON "published_snapshots"("organization_id", "reporting_period_id");
 
 -- CreateIndex
-CREATE INDEX "dashboard_aggregates_organization_id_reporting_period_id_sn_idx" ON "dashboard_aggregates"("organization_id", "reporting_period_id", "snapshot_id");
+CREATE INDEX IF NOT EXISTS "dashboard_aggregates_organization_id_reporting_period_id_sn_idx" ON "dashboard_aggregates"("organization_id", "reporting_period_id", "snapshot_id");
 
 -- CreateIndex
-CREATE INDEX "reduction_targets_organization_id_idx" ON "reduction_targets"("organization_id");
+CREATE INDEX IF NOT EXISTS "reduction_targets_organization_id_idx" ON "reduction_targets"("organization_id");
 
 -- CreateIndex
-CREATE INDEX "reduction_initiatives_organization_id_status_idx" ON "reduction_initiatives"("organization_id", "status");
+CREATE INDEX IF NOT EXISTS "reduction_initiatives_organization_id_status_idx" ON "reduction_initiatives"("organization_id", "status");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "reports_request_hash_key" ON "reports"("request_hash");
+CREATE UNIQUE INDEX IF NOT EXISTS "reports_request_hash_key" ON "reports"("request_hash");
 
 -- CreateIndex
-CREATE INDEX "reports_organization_id_reporting_period_id_status_idx" ON "reports"("organization_id", "reporting_period_id", "status");
+CREATE INDEX IF NOT EXISTS "reports_organization_id_reporting_period_id_status_idx" ON "reports"("organization_id", "reporting_period_id", "status");
 
 -- CreateIndex
-CREATE INDEX "review_tasks_organization_id_assignee_user_id_status_idx" ON "review_tasks"("organization_id", "assignee_user_id", "status");
+CREATE INDEX IF NOT EXISTS "review_tasks_organization_id_assignee_user_id_status_idx" ON "review_tasks"("organization_id", "assignee_user_id", "status");
 
 -- CreateIndex
-CREATE INDEX "comments_organization_id_target_type_target_id_idx" ON "comments"("organization_id", "target_type", "target_id");
+CREATE INDEX IF NOT EXISTS "comments_organization_id_target_type_target_id_idx" ON "comments"("organization_id", "target_type", "target_id");
 
 -- CreateIndex
-CREATE INDEX "audit_logs_organization_id_resource_type_resource_id_idx" ON "audit_logs"("organization_id", "resource_type", "resource_id");
+CREATE INDEX IF NOT EXISTS "audit_logs_organization_id_resource_type_resource_id_idx" ON "audit_logs"("organization_id", "resource_type", "resource_id");
 
 -- CreateIndex
-CREATE INDEX "audit_logs_organization_id_created_at_idx" ON "audit_logs"("organization_id", "created_at");
+CREATE INDEX IF NOT EXISTS "audit_logs_organization_id_created_at_idx" ON "audit_logs"("organization_id", "created_at");
 
 -- AddForeignKey
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "invite_links" ADD CONSTRAINT "invite_links_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "invite_links" ADD CONSTRAINT "invite_links_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "facilities" ADD CONSTRAINT "facilities_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "facilities" ADD CONSTRAINT "facilities_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "business_units" ADD CONSTRAINT "business_units_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "business_units" ADD CONSTRAINT "business_units_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reporting_periods" ADD CONSTRAINT "reporting_periods_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reporting_periods" ADD CONSTRAINT "reporting_periods_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "import_batches" ADD CONSTRAINT "import_batches_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "import_batches" ADD CONSTRAINT "import_batches_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "import_batches" ADD CONSTRAINT "import_batches_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "import_batches" ADD CONSTRAINT "import_batches_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "staged_activity_records" ADD CONSTRAINT "staged_activity_records_import_batch_id_fkey" FOREIGN KEY ("import_batch_id") REFERENCES "import_batches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "staged_activity_records" ADD CONSTRAINT "staged_activity_records_import_batch_id_fkey" FOREIGN KEY ("import_batch_id") REFERENCES "import_batches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_facility_id_fkey" FOREIGN KEY ("facility_id") REFERENCES "facilities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_facility_id_fkey" FOREIGN KEY ("facility_id") REFERENCES "facilities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_business_unit_id_fkey" FOREIGN KEY ("business_unit_id") REFERENCES "business_units"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_business_unit_id_fkey" FOREIGN KEY ("business_unit_id") REFERENCES "business_units"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_import_batch_id_fkey" FOREIGN KEY ("import_batch_id") REFERENCES "import_batches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_import_batch_id_fkey" FOREIGN KEY ("import_batch_id") REFERENCES "import_batches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_route_distance_id_fkey" FOREIGN KEY ("route_distance_id") REFERENCES "route_distances"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_route_distance_id_fkey" FOREIGN KEY ("route_distance_id") REFERENCES "route_distances"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_records" ADD CONSTRAINT "activity_records_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "route_distances" ADD CONSTRAINT "route_distances_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "route_distances" ADD CONSTRAINT "route_distances_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "route_distances" ADD CONSTRAINT "route_distances_pickup_geocode_id_fkey" FOREIGN KEY ("pickup_geocode_id") REFERENCES "postcode_geocodes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "route_distances" ADD CONSTRAINT "route_distances_pickup_geocode_id_fkey" FOREIGN KEY ("pickup_geocode_id") REFERENCES "postcode_geocodes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "route_distances" ADD CONSTRAINT "route_distances_delivery_geocode_id_fkey" FOREIGN KEY ("delivery_geocode_id") REFERENCES "postcode_geocodes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "route_distances" ADD CONSTRAINT "route_distances_delivery_geocode_id_fkey" FOREIGN KEY ("delivery_geocode_id") REFERENCES "postcode_geocodes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "evidence_files" ADD CONSTRAINT "evidence_files_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "evidence_files" ADD CONSTRAINT "evidence_files_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "evidence_files" ADD CONSTRAINT "evidence_files_uploaded_by_user_id_fkey" FOREIGN KEY ("uploaded_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "evidence_files" ADD CONSTRAINT "evidence_files_uploaded_by_user_id_fkey" FOREIGN KEY ("uploaded_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_record_evidence" ADD CONSTRAINT "activity_record_evidence_activity_record_id_fkey" FOREIGN KEY ("activity_record_id") REFERENCES "activity_records"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_record_evidence" ADD CONSTRAINT "activity_record_evidence_activity_record_id_fkey" FOREIGN KEY ("activity_record_id") REFERENCES "activity_records"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "activity_record_evidence" ADD CONSTRAINT "activity_record_evidence_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "activity_record_evidence" ADD CONSTRAINT "activity_record_evidence_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "import_batch_evidence" ADD CONSTRAINT "import_batch_evidence_import_batch_id_fkey" FOREIGN KEY ("import_batch_id") REFERENCES "import_batches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "import_batch_evidence" ADD CONSTRAINT "import_batch_evidence_import_batch_id_fkey" FOREIGN KEY ("import_batch_id") REFERENCES "import_batches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "import_batch_evidence" ADD CONSTRAINT "import_batch_evidence_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "import_batch_evidence" ADD CONSTRAINT "import_batch_evidence_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_facility_id_fkey" FOREIGN KEY ("facility_id") REFERENCES "facilities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_facility_id_fkey" FOREIGN KEY ("facility_id") REFERENCES "facilities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_submitted_by_user_id_fkey" FOREIGN KEY ("submitted_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "field_submissions" ADD CONSTRAINT "field_submissions_submitted_by_user_id_fkey" FOREIGN KEY ("submitted_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "field_submission_files" ADD CONSTRAINT "field_submission_files_field_submission_id_fkey" FOREIGN KEY ("field_submission_id") REFERENCES "field_submissions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "field_submission_files" ADD CONSTRAINT "field_submission_files_field_submission_id_fkey" FOREIGN KEY ("field_submission_id") REFERENCES "field_submissions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "field_submission_files" ADD CONSTRAINT "field_submission_files_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "field_submission_files" ADD CONSTRAINT "field_submission_files_evidence_file_id_fkey" FOREIGN KEY ("evidence_file_id") REFERENCES "evidence_files"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "emission_factors" ADD CONSTRAINT "emission_factors_factor_library_id_fkey" FOREIGN KEY ("factor_library_id") REFERENCES "factor_libraries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "emission_factors" ADD CONSTRAINT "emission_factors_factor_library_id_fkey" FOREIGN KEY ("factor_library_id") REFERENCES "factor_libraries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "emission_factors" ADD CONSTRAINT "emission_factors_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "emission_factors" ADD CONSTRAINT "emission_factors_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_methodology_version_id_fkey" FOREIGN KEY ("methodology_version_id") REFERENCES "methodology_versions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_methodology_version_id_fkey" FOREIGN KEY ("methodology_version_id") REFERENCES "methodology_versions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_factor_library_id_fkey" FOREIGN KEY ("factor_library_id") REFERENCES "factor_libraries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_factor_library_id_fkey" FOREIGN KEY ("factor_library_id") REFERENCES "factor_libraries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_triggered_by_user_id_fkey" FOREIGN KEY ("triggered_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "calculation_runs" ADD CONSTRAINT "calculation_runs_triggered_by_user_id_fkey" FOREIGN KEY ("triggered_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "emission_calculations" ADD CONSTRAINT "emission_calculations_activity_record_id_fkey" FOREIGN KEY ("activity_record_id") REFERENCES "activity_records"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "emission_calculations" ADD CONSTRAINT "emission_calculations_activity_record_id_fkey" FOREIGN KEY ("activity_record_id") REFERENCES "activity_records"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "emission_calculations" ADD CONSTRAINT "emission_calculations_calculation_run_id_fkey" FOREIGN KEY ("calculation_run_id") REFERENCES "calculation_runs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "emission_calculations" ADD CONSTRAINT "emission_calculations_calculation_run_id_fkey" FOREIGN KEY ("calculation_run_id") REFERENCES "calculation_runs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "emission_calculations" ADD CONSTRAINT "emission_calculations_emission_factor_id_fkey" FOREIGN KEY ("emission_factor_id") REFERENCES "emission_factors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "emission_calculations" ADD CONSTRAINT "emission_calculations_emission_factor_id_fkey" FOREIGN KEY ("emission_factor_id") REFERENCES "emission_factors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "emission_calculations" ADD CONSTRAINT "emission_calculations_methodology_version_name_fkey" FOREIGN KEY ("methodology_version_name") REFERENCES "methodology_versions"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "emission_calculations" ADD CONSTRAINT "emission_calculations_methodology_version_name_fkey" FOREIGN KEY ("methodology_version_name") REFERENCES "methodology_versions"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "published_snapshots" ADD CONSTRAINT "published_snapshots_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "published_snapshots" ADD CONSTRAINT "published_snapshots_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "published_snapshots" ADD CONSTRAINT "published_snapshots_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "published_snapshots" ADD CONSTRAINT "published_snapshots_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "published_snapshots" ADD CONSTRAINT "published_snapshots_calculation_run_id_fkey" FOREIGN KEY ("calculation_run_id") REFERENCES "calculation_runs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "published_snapshots" ADD CONSTRAINT "published_snapshots_calculation_run_id_fkey" FOREIGN KEY ("calculation_run_id") REFERENCES "calculation_runs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "published_snapshots" ADD CONSTRAINT "published_snapshots_published_by_user_id_fkey" FOREIGN KEY ("published_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "published_snapshots" ADD CONSTRAINT "published_snapshots_published_by_user_id_fkey" FOREIGN KEY ("published_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_snapshot_id_fkey" FOREIGN KEY ("snapshot_id") REFERENCES "published_snapshots"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_snapshot_id_fkey" FOREIGN KEY ("snapshot_id") REFERENCES "published_snapshots"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_facility_id_fkey" FOREIGN KEY ("facility_id") REFERENCES "facilities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_facility_id_fkey" FOREIGN KEY ("facility_id") REFERENCES "facilities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_business_unit_id_fkey" FOREIGN KEY ("business_unit_id") REFERENCES "business_units"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "dashboard_aggregates" ADD CONSTRAINT "dashboard_aggregates_business_unit_id_fkey" FOREIGN KEY ("business_unit_id") REFERENCES "business_units"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reduction_targets" ADD CONSTRAINT "reduction_targets_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reduction_targets" ADD CONSTRAINT "reduction_targets_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reduction_targets" ADD CONSTRAINT "reduction_targets_baseline_period_id_fkey" FOREIGN KEY ("baseline_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reduction_targets" ADD CONSTRAINT "reduction_targets_baseline_period_id_fkey" FOREIGN KEY ("baseline_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reduction_targets" ADD CONSTRAINT "reduction_targets_target_period_id_fkey" FOREIGN KEY ("target_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reduction_targets" ADD CONSTRAINT "reduction_targets_target_period_id_fkey" FOREIGN KEY ("target_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reduction_targets" ADD CONSTRAINT "reduction_targets_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reduction_targets" ADD CONSTRAINT "reduction_targets_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reduction_initiatives" ADD CONSTRAINT "reduction_initiatives_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reduction_initiatives" ADD CONSTRAINT "reduction_initiatives_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reduction_initiatives" ADD CONSTRAINT "reduction_initiatives_owner_user_id_fkey" FOREIGN KEY ("owner_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reduction_initiatives" ADD CONSTRAINT "reduction_initiatives_owner_user_id_fkey" FOREIGN KEY ("owner_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reduction_initiatives" ADD CONSTRAINT "reduction_initiatives_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reduction_initiatives" ADD CONSTRAINT "reduction_initiatives_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reports" ADD CONSTRAINT "reports_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reports" ADD CONSTRAINT "reports_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reports" ADD CONSTRAINT "reports_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reports" ADD CONSTRAINT "reports_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reports" ADD CONSTRAINT "reports_snapshot_id_fkey" FOREIGN KEY ("snapshot_id") REFERENCES "published_snapshots"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reports" ADD CONSTRAINT "reports_snapshot_id_fkey" FOREIGN KEY ("snapshot_id") REFERENCES "published_snapshots"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "reports" ADD CONSTRAINT "reports_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "reports" ADD CONSTRAINT "reports_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "review_tasks" ADD CONSTRAINT "review_tasks_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "review_tasks" ADD CONSTRAINT "review_tasks_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "review_tasks" ADD CONSTRAINT "review_tasks_assignee_user_id_fkey" FOREIGN KEY ("assignee_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "review_tasks" ADD CONSTRAINT "review_tasks_assignee_user_id_fkey" FOREIGN KEY ("assignee_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "review_tasks" ADD CONSTRAINT "review_tasks_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "review_tasks" ADD CONSTRAINT "review_tasks_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "comments" ADD CONSTRAINT "comments_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "comments" ADD CONSTRAINT "comments_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "comments" ADD CONSTRAINT "comments_author_user_id_fkey" FOREIGN KEY ("author_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "comments" ADD CONSTRAINT "comments_author_user_id_fkey" FOREIGN KEY ("author_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_actor_user_id_fkey" FOREIGN KEY ("actor_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_actor_user_id_fkey" FOREIGN KEY ("actor_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

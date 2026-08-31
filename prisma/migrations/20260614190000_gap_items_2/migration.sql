@@ -1,27 +1,43 @@
 -- Gap items batch 2: plan field, webhook, import resumability, dashboard index, initiative methodology, evidence certified
 
 -- Organization: add plan field
-ALTER TABLE "organizations"
+DO $$
+BEGIN
+  ALTER TABLE "organizations"
   ADD COLUMN "plan" TEXT NOT NULL DEFAULT 'trial';
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- ImportBatch: add last_processed_row_index for resumable imports
-ALTER TABLE "import_batches"
+DO $$
+BEGIN
+  ALTER TABLE "import_batches"
   ADD COLUMN "last_processed_row_index" INTEGER;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- DashboardAggregate: add compound index for scope-scoped snapshot queries
-CREATE INDEX "dashboard_aggregates_org_snapshot_scope_idx"
+CREATE INDEX IF NOT EXISTS "dashboard_aggregates_org_snapshot_scope_idx"
   ON "dashboard_aggregates"("organization_id", "snapshot_id", "scope");
 
 -- ReductionInitiative: add methodology field
-ALTER TABLE "reduction_initiatives"
+DO $$
+BEGIN
+  ALTER TABLE "reduction_initiatives"
   ADD COLUMN "methodology" TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- EvidenceClassification: add certified flag
-ALTER TABLE "evidence_classifications"
+DO $$
+BEGIN
+  ALTER TABLE "evidence_classifications"
   ADD COLUMN "certified" BOOLEAN NOT NULL DEFAULT FALSE;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- Webhook model
-CREATE TABLE "webhooks" (
+CREATE TABLE IF NOT EXISTS "webhooks" (
   "id"               TEXT NOT NULL,
   "organization_id"  TEXT NOT NULL,
   "url"              TEXT NOT NULL,
@@ -35,7 +51,7 @@ CREATE TABLE "webhooks" (
   CONSTRAINT "webhooks_pkey" PRIMARY KEY ("id")
 );
 
-CREATE INDEX "webhooks_organization_id_idx" ON "webhooks"("organization_id");
+CREATE INDEX IF NOT EXISTS "webhooks_organization_id_idx" ON "webhooks"("organization_id");
 
 ALTER TABLE "webhooks"
   ADD CONSTRAINT "webhooks_organization_id_fkey"
@@ -44,7 +60,7 @@ ALTER TABLE "webhooks"
     FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- WebhookDelivery model
-CREATE TABLE "webhook_deliveries" (
+CREATE TABLE IF NOT EXISTS "webhook_deliveries" (
   "id"           TEXT NOT NULL,
   "webhook_id"   TEXT NOT NULL,
   "event"        TEXT NOT NULL,
@@ -57,7 +73,7 @@ CREATE TABLE "webhook_deliveries" (
   CONSTRAINT "webhook_deliveries_pkey" PRIMARY KEY ("id")
 );
 
-CREATE INDEX "webhook_deliveries_webhook_id_created_at_idx"
+CREATE INDEX IF NOT EXISTS "webhook_deliveries_webhook_id_created_at_idx"
   ON "webhook_deliveries"("webhook_id", "created_at");
 
 ALTER TABLE "webhook_deliveries"

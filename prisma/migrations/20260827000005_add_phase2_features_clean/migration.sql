@@ -1,7 +1,7 @@
 -- Phase 2: Custom Emission Factors, Supplier Anomaly Detection, Zapier Integration
 
 -- CreateTable organization_emission_factors
-CREATE TABLE "organization_emission_factors" (
+CREATE TABLE IF NOT EXISTS "organization_emission_factors" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "scope" INTEGER NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE "organization_emission_factors" (
 );
 
 -- CreateTable supplier_anomalies
-CREATE TABLE "supplier_anomalies" (
+CREATE TABLE IF NOT EXISTS "supplier_anomalies" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "supplier_data_request_id" TEXT NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE "supplier_anomalies" (
 );
 
 -- CreateTable zapier_integrations
-CREATE TABLE "zapier_integrations" (
+CREATE TABLE IF NOT EXISTS "zapier_integrations" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "zapier_custom_id" TEXT NOT NULL,
@@ -84,16 +84,44 @@ CREATE UNIQUE INDEX IF NOT EXISTS "zapier_integrations_zapier_custom_id_key" ON 
 CREATE UNIQUE INDEX IF NOT EXISTS "zapier_integrations_organization_id_key" ON "zapier_integrations"("organization_id");
 
 -- AddForeignKey
-ALTER TABLE "organization_emission_factors" ADD CONSTRAINT "organization_emission_factors_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "organization_emission_factors" ADD CONSTRAINT "organization_emission_factors_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "organization_emission_factors" ADD CONSTRAINT "organization_emission_factors_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "organization_emission_factors" ADD CONSTRAINT "organization_emission_factors_emission_category_id_fkey" FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "organization_emission_factors" ADD CONSTRAINT "organization_emission_factors_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "organization_emission_factors" ADD CONSTRAINT "organization_emission_factors_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "supplier_anomalies" ADD CONSTRAINT "supplier_anomalies_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "supplier_anomalies" ADD CONSTRAINT "supplier_anomalies_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "supplier_anomalies" ADD CONSTRAINT "supplier_anomalies_supplier_data_request_id_fkey" FOREIGN KEY ("supplier_data_request_id") REFERENCES "supplier_data_requests"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "supplier_anomalies" ADD CONSTRAINT "supplier_anomalies_supplier_data_request_id_fkey" FOREIGN KEY ("supplier_data_request_id") REFERENCES "supplier_data_requests"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "supplier_anomalies" ADD CONSTRAINT "supplier_anomalies_acknowledged_by_user_id_fkey" FOREIGN KEY ("acknowledged_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "supplier_anomalies" ADD CONSTRAINT "supplier_anomalies_acknowledged_by_user_id_fkey" FOREIGN KEY ("acknowledged_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE "zapier_integrations" ADD CONSTRAINT "zapier_integrations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "zapier_integrations" ADD CONSTRAINT "zapier_integrations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

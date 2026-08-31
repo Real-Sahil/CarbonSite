@@ -17,10 +17,10 @@ CREATE TABLE IF NOT EXISTS "n8n_workflows" (
 );
 
 -- Indexes for common queries
-CREATE INDEX "idx_n8n_workflows_org_trigger"
+CREATE INDEX IF NOT EXISTS "idx_n8n_workflows_org_trigger"
   ON "n8n_workflows"(organization_id, trigger_type, enabled);
 
-CREATE INDEX "idx_n8n_workflows_org_created"
+CREATE INDEX IF NOT EXISTS "idx_n8n_workflows_org_created"
   ON "n8n_workflows"(organization_id, created_at DESC);
 
 -- N8nWorkflowExecution: Audit trail of workflow runs
@@ -40,14 +40,14 @@ CREATE TABLE IF NOT EXISTS "n8n_workflow_executions" (
 );
 
 -- Indexes for audit trail queries
-CREATE INDEX "idx_n8n_workflow_executions_org_workflow"
+CREATE INDEX IF NOT EXISTS "idx_n8n_workflow_executions_org_workflow"
   ON "n8n_workflow_executions"(organization_id, n8n_workflow_id);
 
-CREATE INDEX "idx_n8n_workflow_executions_org_trigger"
+CREATE INDEX IF NOT EXISTS "idx_n8n_workflow_executions_org_trigger"
   ON "n8n_workflow_executions"(organization_id, trigger_type);
 
-CREATE INDEX "idx_n8n_workflow_executions_org_status"
+CREATE INDEX IF NOT EXISTS "idx_n8n_workflow_executions_org_status"
   ON "n8n_workflow_executions"(organization_id, status);
 
-CREATE INDEX "idx_n8n_workflow_executions_executed"
+CREATE INDEX IF NOT EXISTS "idx_n8n_workflow_executions_executed"
   ON "n8n_workflow_executions"(organization_id, executed_at DESC);

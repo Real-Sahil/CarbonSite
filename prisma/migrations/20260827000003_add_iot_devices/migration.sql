@@ -1,5 +1,8 @@
 -- CreateEnum
-CREATE TYPE "iot_device_type" AS ENUM ('electricity_meter', 'gas_meter', 'fuel_pump', 'water_meter');
+DO $$ BEGIN
+  CREATE TYPE "iot_device_type" AS ENUM ('electricity_meter', 'gas_meter', 'fuel_pump', 'water_meter');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateTable
 CREATE TABLE IF NOT EXISTS "iot_devices" (
@@ -79,22 +82,50 @@ CREATE INDEX IF NOT EXISTS "meter_readings_organization_id_created_at_idx" ON "m
 CREATE INDEX IF NOT EXISTS "meter_readings_activity_record_id_idx" ON "meter_readings"("activity_record_id");
 
 -- AddForeignKey
-ALTER TABLE "iot_devices" ADD CONSTRAINT "iot_devices_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "iot_devices" ADD CONSTRAINT "iot_devices_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "iot_devices" ADD CONSTRAINT "iot_devices_facility_id_fkey" FOREIGN KEY ("facility_id") REFERENCES "facilities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "iot_devices" ADD CONSTRAINT "iot_devices_facility_id_fkey" FOREIGN KEY ("facility_id") REFERENCES "facilities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "iot_device_credentials" ADD CONSTRAINT "iot_device_credentials_iot_device_id_fkey" FOREIGN KEY ("iot_device_id") REFERENCES "iot_devices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "iot_device_credentials" ADD CONSTRAINT "iot_device_credentials_iot_device_id_fkey" FOREIGN KEY ("iot_device_id") REFERENCES "iot_devices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "iot_device_credentials" ADD CONSTRAINT "iot_device_credentials_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "iot_device_credentials" ADD CONSTRAINT "iot_device_credentials_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "meter_readings" ADD CONSTRAINT "meter_readings_iot_device_id_fkey" FOREIGN KEY ("iot_device_id") REFERENCES "iot_devices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "meter_readings" ADD CONSTRAINT "meter_readings_iot_device_id_fkey" FOREIGN KEY ("iot_device_id") REFERENCES "iot_devices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "meter_readings" ADD CONSTRAINT "meter_readings_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "meter_readings" ADD CONSTRAINT "meter_readings_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "meter_readings" ADD CONSTRAINT "meter_readings_activity_record_id_fkey" FOREIGN KEY ("activity_record_id") REFERENCES "activity_records"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "meter_readings" ADD CONSTRAINT "meter_readings_activity_record_id_fkey" FOREIGN KEY ("activity_record_id") REFERENCES "activity_records"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

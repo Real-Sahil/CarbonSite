@@ -19,7 +19,15 @@ CREATE INDEX IF NOT EXISTS "audit_contexts_organizationId_framework_resourceType
 CREATE INDEX IF NOT EXISTS "audit_contexts_organizationId_auditLogId_idx" ON "audit_contexts"("organization_id", "audit_log_id");
 
 -- AddForeignKey
-ALTER TABLE "audit_contexts" ADD CONSTRAINT "audit_contexts_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "audit_contexts" ADD CONSTRAINT "audit_contexts_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "audit_contexts" ADD CONSTRAINT "audit_contexts_audit_log_id_fkey" FOREIGN KEY ("audit_log_id") REFERENCES "audit_logs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE "audit_contexts" ADD CONSTRAINT "audit_contexts_audit_log_id_fkey" FOREIGN KEY ("audit_log_id") REFERENCES "audit_logs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
