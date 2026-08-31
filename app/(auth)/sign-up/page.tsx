@@ -60,8 +60,27 @@ export default function SignUpPage() {
       const result = await authClient.signUp.email({ name: name.trim(), email: email.trim().toLowerCase(), password });
       if (result.error) { setStep("account"); setError(mapSignUpError(result.error)); return; }
       if (result.data?.token === null) { setError("Check your email to verify your account, then sign in."); return; }
-      const orgRes = await fetch("/api/orgs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: orgName.trim(), industry: industry.trim() || undefined }) });
-      if (!orgRes.ok) { router.push("/orgs/new"); return; }
+
+      // Small delay to ensure session is established from Better Auth
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const orgRes = await fetch("/api/orgs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: orgName.trim(), industry: industry.trim() || undefined })
+      });
+
+      if (!orgRes.ok) {
+        if (orgRes.status === 401) {
+          setStep("account");
+          setError("Session expired. Please try signing up again.");
+          return;
+        }
+        router.push("/orgs/new");
+        return;
+      }
+
       const org = await orgRes.json();
       router.push(`/orgs/${org.id}/dashboard`);
     } catch (err) {
