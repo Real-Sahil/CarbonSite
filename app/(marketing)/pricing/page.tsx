@@ -131,7 +131,12 @@ export default function PricingPage() {
                 </p>
 
                 {/* Price */}
-                <div className="mt-6 flex items-baseline gap-2">
+                <div className="mt-6 flex items-baseline gap-1">
+                  {tier.price !== 'Free' && tier.price !== 'Custom' && (
+                    <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
+                      £
+                    </span>
+                  )}
                   <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
                     {tier.price}
                   </span>
