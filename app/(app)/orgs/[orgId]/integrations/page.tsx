@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: IntegrationsPageProps) {
 export default async function IntegrationsPage({ params }: IntegrationsPageProps) {
   const { orgId } = await params;
 
-  const user = await requireOrgMember(orgId, ["admin", "editor"]);
+  const user = await requireOrgMember(orgId, "admin", "editor");
 
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: orgId },
