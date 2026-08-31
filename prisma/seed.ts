@@ -29,6 +29,18 @@ async function main() {
     // tickets are reviewed into. Without it (and mass-based factors below),
     // the platform's flagship capture flow could never be calculated.
     { scope: 3, code: "s3-waste", name: "Waste Generated in Operations", activityType: "waste_disposal" },
+    // GHG Protocol Scope 3 — all 15 categories (Cat 1 = purchased-goods, Cat 4 = upstream-transport,
+    // Cat 5 = waste, Cat 6 = business-travel, Cat 7 = commuting are above; adding remaining 10)
+    { scope: 3, code: "s3-capital-goods", name: "Capital Goods", activityType: "capital_goods_spend" },
+    { scope: 3, code: "s3-fuel-energy", name: "Fuel- and Energy-Related Activities", activityType: "fuel_energy_activities" },
+    { scope: 3, code: "s3-upstream-leased", name: "Upstream Leased Assets", activityType: "upstream_leased_assets" },
+    { scope: 3, code: "s3-downstream-transport", name: "Downstream Transportation & Distribution", activityType: "downstream_transport" },
+    { scope: 3, code: "s3-processing-sold", name: "Processing of Sold Products", activityType: "processing_sold_products" },
+    { scope: 3, code: "s3-use-sold", name: "Use of Sold Products", activityType: "use_of_sold_products" },
+    { scope: 3, code: "s3-end-of-life", name: "End-of-Life Treatment of Sold Products", activityType: "end_of_life_sold" },
+    { scope: 3, code: "s3-downstream-leased", name: "Downstream Leased Assets", activityType: "downstream_leased_assets" },
+    { scope: 3, code: "s3-franchises", name: "Franchises", activityType: "franchise_emissions" },
+    { scope: 3, code: "s3-investments", name: "Investments", activityType: "investment_emissions" },
   ];
 
   for (const cat of categories) {
