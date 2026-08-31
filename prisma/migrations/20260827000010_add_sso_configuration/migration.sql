@@ -1,5 +1,5 @@
 -- CreateTable SsoConfiguration
-CREATE TABLE "sso_configurations" (
+CREATE TABLE IF NOT EXISTS "sso_configurations" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE "sso_configurations" (
 );
 
 -- CreateTable SsoSession
-CREATE TABLE "sso_sessions" (
+CREATE TABLE IF NOT EXISTS "sso_sessions" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -38,16 +38,16 @@ CREATE TABLE "sso_sessions" (
 );
 
 -- CreateIndex on sso_configurations
-CREATE UNIQUE INDEX "sso_configurations_organization_id_key" ON "sso_configurations"("organization_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "sso_configurations_organization_id_key" ON "sso_configurations"("organization_id");
 
 -- CreateIndex on sso_sessions organization, user
-CREATE INDEX "sso_sessions_organizationId_userId_idx" ON "sso_sessions"("organization_id", "user_id");
+CREATE INDEX IF NOT EXISTS "sso_sessions_organizationId_userId_idx" ON "sso_sessions"("organization_id", "user_id");
 
 -- CreateIndex on sso_sessions provider
-CREATE INDEX "sso_sessions_organizationId_provider_idx" ON "sso_sessions"("organization_id", "provider");
+CREATE INDEX IF NOT EXISTS "sso_sessions_organizationId_provider_idx" ON "sso_sessions"("organization_id", "provider");
 
 -- CreateIndex unique provider user
-CREATE UNIQUE INDEX "sso_sessions_organizationId_providerUserId_key" ON "sso_sessions"("organization_id", "provider_user_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "sso_sessions_organizationId_providerUserId_key" ON "sso_sessions"("organization_id", "provider_user_id");
 
 -- AddForeignKey for sso_configurations
 ALTER TABLE "sso_configurations" ADD CONSTRAINT "sso_configurations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;

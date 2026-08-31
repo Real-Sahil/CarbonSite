@@ -2,7 +2,7 @@
 CREATE TYPE "iot_device_type" AS ENUM ('electricity_meter', 'gas_meter', 'fuel_pump', 'water_meter');
 
 -- CreateTable
-CREATE TABLE "iot_devices" (
+CREATE TABLE IF NOT EXISTS "iot_devices" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE "iot_devices" (
 );
 
 -- CreateTable
-CREATE TABLE "iot_device_credentials" (
+CREATE TABLE IF NOT EXISTS "iot_device_credentials" (
     "id" TEXT NOT NULL,
     "iot_device_id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE "iot_device_credentials" (
 );
 
 -- CreateTable
-CREATE TABLE "meter_readings" (
+CREATE TABLE IF NOT EXISTS "meter_readings" (
     "id" TEXT NOT NULL,
     "iot_device_id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
@@ -49,34 +49,34 @@ CREATE TABLE "meter_readings" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "iot_devices_organization_id_serial_number_key" ON "iot_devices"("organization_id", "serial_number");
+CREATE UNIQUE INDEX IF NOT EXISTS "iot_devices_organization_id_serial_number_key" ON "iot_devices"("organization_id", "serial_number");
 
 -- CreateIndex
-CREATE INDEX "iot_devices_organization_id_is_active_idx" ON "iot_devices"("organization_id", "is_active");
+CREATE INDEX IF NOT EXISTS "iot_devices_organization_id_is_active_idx" ON "iot_devices"("organization_id", "is_active");
 
 -- CreateIndex
-CREATE INDEX "iot_devices_organization_id_facility_id_idx" ON "iot_devices"("organization_id", "facility_id");
+CREATE INDEX IF NOT EXISTS "iot_devices_organization_id_facility_id_idx" ON "iot_devices"("organization_id", "facility_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "iot_device_credentials_key_hash_key" ON "iot_device_credentials"("key_hash");
+CREATE UNIQUE INDEX IF NOT EXISTS "iot_device_credentials_key_hash_key" ON "iot_device_credentials"("key_hash");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "iot_device_credentials_prefix_key" ON "iot_device_credentials"("prefix");
+CREATE UNIQUE INDEX IF NOT EXISTS "iot_device_credentials_prefix_key" ON "iot_device_credentials"("prefix");
 
 -- CreateIndex
-CREATE INDEX "iot_device_credentials_iot_device_id_idx" ON "iot_device_credentials"("iot_device_id");
+CREATE INDEX IF NOT EXISTS "iot_device_credentials_iot_device_id_idx" ON "iot_device_credentials"("iot_device_id");
 
 -- CreateIndex
-CREATE INDEX "iot_device_credentials_organization_id_idx" ON "iot_device_credentials"("organization_id");
+CREATE INDEX IF NOT EXISTS "iot_device_credentials_organization_id_idx" ON "iot_device_credentials"("organization_id");
 
 -- CreateIndex
-CREATE INDEX "meter_readings_iot_device_id_timestamp_idx" ON "meter_readings"("iot_device_id", "timestamp");
+CREATE INDEX IF NOT EXISTS "meter_readings_iot_device_id_timestamp_idx" ON "meter_readings"("iot_device_id", "timestamp");
 
 -- CreateIndex
-CREATE INDEX "meter_readings_organization_id_created_at_idx" ON "meter_readings"("organization_id", "created_at");
+CREATE INDEX IF NOT EXISTS "meter_readings_organization_id_created_at_idx" ON "meter_readings"("organization_id", "created_at");
 
 -- CreateIndex
-CREATE INDEX "meter_readings_activity_record_id_idx" ON "meter_readings"("activity_record_id");
+CREATE INDEX IF NOT EXISTS "meter_readings_activity_record_id_idx" ON "meter_readings"("activity_record_id");
 
 -- AddForeignKey
 ALTER TABLE "iot_devices" ADD CONSTRAINT "iot_devices_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;

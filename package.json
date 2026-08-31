@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "tsx scripts/generate-blog-manifest.ts && next build",
-    "vercel-build": "prisma migrate resolve --applied 1787848735_add_dbt_runs 2>/dev/null; prisma migrate resolve --applied 20260825000004_production_features 2>/dev/null; prisma migrate resolve --applied 20260825000002_project_level_rbac 2>/dev/null; prisma migrate resolve --applied 20260827_add_airbyte_staging 2>/dev/null; prisma migrate resolve --applied 20260827_add_n8n_workflows 2>/dev/null; prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && next build",
+    "vercel-build": "prisma migrate resolve --applied 1787848735_add_dbt_runs 2>/dev/null; prisma migrate resolve --applied 20260825000004_production_features 2>/dev/null; prisma migrate resolve --applied 20260825000002_project_level_rbac 2>/dev/null; prisma migrate resolve --applied 20260827000001_add_phase2_supplier_management 2>/dev/null; prisma migrate resolve --applied 20260827000002_add_stripe_payment_methods 2>/dev/null; prisma migrate resolve --applied 20260827000003_add_iot_devices 2>/dev/null; prisma migrate resolve --applied 20260827_add_airbyte_staging 2>/dev/null; prisma migrate resolve --applied 20260827000010_add_sso_configuration 2>/dev/null; prisma migrate resolve --applied 20260827000011_add_audit_context 2>/dev/null; prisma migrate resolve --applied 20260827000012_add_scope3_estimation 2>/dev/null; prisma migrate resolve --applied 20260827_add_n8n_workflows 2>/dev/null; prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && next build",
     "migrate:prod": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "start": "next start",

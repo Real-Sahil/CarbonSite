@@ -7,7 +7,7 @@ ALTER TABLE "billing_subscriptions" ADD COLUMN "last_payment_date" TIMESTAMP(3);
 ALTER TABLE "billing_subscriptions" ADD COLUMN "next_billing_date" TIMESTAMP(3);
 
 -- Create payment_methods table
-CREATE TABLE "payment_methods" (
+CREATE TABLE IF NOT EXISTS "payment_methods" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "billing_subscription_id" TEXT NOT NULL,
@@ -26,5 +26,5 @@ CREATE TABLE "payment_methods" (
 );
 
 -- Create indexes for payment_methods
-CREATE INDEX "payment_methods_organization_id_idx" ON "payment_methods"("organization_id");
-CREATE INDEX "payment_methods_billing_subscription_id_idx" ON "payment_methods"("billing_subscription_id");
+CREATE INDEX IF NOT EXISTS "payment_methods_organization_id_idx" ON "payment_methods"("organization_id");
+CREATE INDEX IF NOT EXISTS "payment_methods_billing_subscription_id_idx" ON "payment_methods"("billing_subscription_id");

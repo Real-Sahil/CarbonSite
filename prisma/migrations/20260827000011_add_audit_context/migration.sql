@@ -1,5 +1,5 @@
 -- CreateTable AuditContext
-CREATE TABLE "audit_contexts" (
+CREATE TABLE IF NOT EXISTS "audit_contexts" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "audit_log_id" TEXT NOT NULL,
@@ -13,10 +13,10 @@ CREATE TABLE "audit_contexts" (
 );
 
 -- CreateIndex on organization_id, framework, resource_type, resource_id
-CREATE INDEX "audit_contexts_organizationId_framework_resourceType_resourceId_idx" ON "audit_contexts"("organization_id", "framework", "resource_type", "resource_id");
+CREATE INDEX IF NOT EXISTS "audit_contexts_organizationId_framework_resourceType_resourceId_idx" ON "audit_contexts"("organization_id", "framework", "resource_type", "resource_id");
 
 -- CreateIndex on organization_id, audit_log_id
-CREATE INDEX "audit_contexts_organizationId_auditLogId_idx" ON "audit_contexts"("organization_id", "audit_log_id");
+CREATE INDEX IF NOT EXISTS "audit_contexts_organizationId_auditLogId_idx" ON "audit_contexts"("organization_id", "audit_log_id");
 
 -- AddForeignKey
 ALTER TABLE "audit_contexts" ADD CONSTRAINT "audit_contexts_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -1,5 +1,5 @@
 -- CreateTable scope3_estimation_models
-CREATE TABLE "scope3_estimation_models" (
+CREATE TABLE IF NOT EXISTS "scope3_estimation_models" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "emission_category_id" TEXT NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE "scope3_estimation_models" (
 );
 
 -- CreateTable scope3_estimates
-CREATE TABLE "scope3_estimates" (
+CREATE TABLE IF NOT EXISTS "scope3_estimates" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "facility_id" TEXT,
@@ -45,19 +45,19 @@ CREATE TABLE "scope3_estimates" (
 );
 
 -- CreateIndex scope3_estimation_models_organization_id_emission_category_id_facility_type_key
-CREATE UNIQUE INDEX "scope3_estimation_models_organization_id_emission_category_id_facility_type_key" ON "scope3_estimation_models"("organization_id", "emission_category_id", "facility_type");
+CREATE UNIQUE INDEX IF NOT EXISTS "scope3_estimation_models_organization_id_emission_category_id_facility_type_key" ON "scope3_estimation_models"("organization_id", "emission_category_id", "facility_type");
 
 -- CreateIndex scope3_estimation_models_organization_id_last_trained_at_idx
-CREATE INDEX "scope3_estimation_models_organization_id_last_trained_at_idx" ON "scope3_estimation_models"("organization_id", "last_trained_at");
+CREATE INDEX IF NOT EXISTS "scope3_estimation_models_organization_id_last_trained_at_idx" ON "scope3_estimation_models"("organization_id", "last_trained_at");
 
 -- CreateIndex scope3_estimates_organization_id_emission_category_id_status_idx
-CREATE INDEX "scope3_estimates_organization_id_emission_category_id_status_idx" ON "scope3_estimates"("organization_id", "emission_category_id", "status");
+CREATE INDEX IF NOT EXISTS "scope3_estimates_organization_id_emission_category_id_status_idx" ON "scope3_estimates"("organization_id", "emission_category_id", "status");
 
 -- CreateIndex scope3_estimates_organization_id_created_at_idx
-CREATE INDEX "scope3_estimates_organization_id_created_at_idx" ON "scope3_estimates"("organization_id", "created_at" DESC);
+CREATE INDEX IF NOT EXISTS "scope3_estimates_organization_id_created_at_idx" ON "scope3_estimates"("organization_id", "created_at" DESC);
 
 -- CreateIndex scope3_estimates_estimation_model_id_idx
-CREATE INDEX "scope3_estimates_estimation_model_id_idx" ON "scope3_estimates"("estimation_model_id");
+CREATE INDEX IF NOT EXISTS "scope3_estimates_estimation_model_id_idx" ON "scope3_estimates"("estimation_model_id");
 
 -- AddForeignKey scope3_estimation_models -> organizations
 ALTER TABLE "scope3_estimation_models" ADD CONSTRAINT "scope3_estimation_models_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
