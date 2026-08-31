@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { enqueueSageSync } from "@/lib/jobs/queues";
 
 interface SyncParams {
   orgId: string;
@@ -12,6 +13,8 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
+    const fromDate = req.nextUrl.searchParams.get("fromDate") || undefined;
+
     await requireOrgMember(orgId, "admin", "editor");
 
     // Check if Sage is connected
@@ -27,11 +30,20 @@ export async function POST(
       );
     }
 
-    // TODO: Implement Sage sync once SDK available
-    // Sage API requires separate OAuth flow and API client
+    // Enqueue sync job
+    await enqueueSageSync({ orgId, fromDate });
+
     return NextResponse.json(
-      { error: "Sage invoice sync is not yet implemented" },
-      { status: 501 }
+      {
+        status: "queued",
+        message: "Sage invoice sync job queued successfully",
+        details: {
+          orgId,
+          fromDate: fromDate || null,
+          timestamp: new Date().toISOString(),
+        },
+      },
+      { status: 202 }
     );
   } catch (error) {
     console.error("[sage-sync-api] error:", error);

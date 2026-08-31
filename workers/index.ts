@@ -11,6 +11,8 @@ import type {
   NotificationJobData,
   CausalAnalysisJobData,
   XeroSyncJobData,
+  QuickBooksSyncJobData,
+  SageSyncJobData,
 } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -24,6 +26,8 @@ import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
 import type { ForecastingJobData } from "@/lib/jobs/workers/forecasting";
 import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
+import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
+import { syncSageInvoices } from "@/lib/integrations/sage";
 
 interface InvoiceAnomalyJobData {
   organizationId: string;
@@ -148,6 +152,48 @@ async function start() {
     },
   );
 
+  // ── QuickBooks Invoice Sync ───────────────────────────────────────────────
+  await boss.work<QuickBooksSyncJobData>(
+    "quickbooks-sync",
+    { localConcurrency: 2 },
+    async (jobs: Job<QuickBooksSyncJobData>[]) => {
+      for (const job of jobs) {
+        const { orgId, fromDate } = job.data;
+        console.log(`[quickbooks-sync] processing sync for org ${orgId}${fromDate ? ` from ${fromDate}` : ""}`);
+        try {
+          const result = await syncQuickBooksInvoices(orgId, fromDate);
+          console.log(
+            `[quickbooks-sync] finished sync for org ${orgId}: created=${result.created}, updated=${result.updated}, skipped=${result.skipped}`
+          );
+        } catch (err) {
+          console.error(`[quickbooks-sync] failed sync for org ${orgId}:`, err);
+          throw err;
+        }
+      }
+    },
+  );
+
+  // ── Sage Invoice Sync ─────────────────────────────────────────────────────
+  await boss.work<SageSyncJobData>(
+    "sage-sync",
+    { localConcurrency: 2 },
+    async (jobs: Job<SageSyncJobData>[]) => {
+      for (const job of jobs) {
+        const { orgId, fromDate } = job.data;
+        console.log(`[sage-sync] processing sync for org ${orgId}${fromDate ? ` from ${fromDate}` : ""}`);
+        try {
+          const result = await syncSageInvoices(orgId, fromDate);
+          console.log(
+            `[sage-sync] finished sync for org ${orgId}: created=${result.created}, updated=${result.updated}, skipped=${result.skipped}`
+          );
+        } catch (err) {
+          console.error(`[sage-sync] failed sync for org ${orgId}:`, err);
+          throw err;
+        }
+      }
+    },
+  );
+
   // ── Supplier Performance ──────────────────────────────────────────────────
   await boss.work<SupplierPerformanceJobData>(
     "supplier-performance",
@@ -190,7 +236,7 @@ async function start() {
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, xero-sync, supplier-performance, forecasting, causal-analysis)");
+  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, xero-sync, quickbooks-sync, sage-sync, supplier-performance, forecasting, causal-analysis)");
 }
 
 start().catch((err) => {
