@@ -1,52 +1,41 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { requireOrgMember } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
-interface Params {
-  params: Promise<{ orgId: string }>;
-}
-
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ orgId: string }> }
+) {
   try {
     const { orgId } = await params;
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
+    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    const limit = Math.min(
+      parseInt(req.nextUrl.searchParams.get("limit") ?? "10", 10),
+      50
+    );
 
-    // Get latest calculation run
-    const latestRun = await prisma.calculationRun.findFirst({
-      where: { organizationId: orgId },
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
-    });
-
-    if (!latestRun) {
-      return NextResponse.json({ data: [] });
-    }
-
-    // Raw SQL query to get emissions by facility
-    const result = await prisma.$queryRaw<Array<{ facility_id: string; facility_name: string; total: bigint; record_count: bigint }>>`
-      SELECT ar.facility_id, f.name as facility_name, SUM(CAST(em.total_co2e AS BIGINT)) as total, COUNT(em.id) as record_count
-      FROM emission_calculations em
-      JOIN activity_records ar ON em.activity_record_id = ar.id
-      LEFT JOIN facilities f ON ar.facility_id = f.id
-      WHERE em.organization_id = ${orgId}
-      AND em.calculation_run_id = ${latestRun.id}
-      AND ar.facility_id IS NOT NULL
-      GROUP BY ar.facility_id, f.name
-      ORDER BY total DESC
+    const rows = await prisma.$queryRaw<
+      { id: string; name: string; totalCo2e: number }[]
+    >`
+      SELECT
+        f.id,
+        f.name,
+        COALESCE(SUM(calc.total_co2e), 0)::float AS "totalCo2e"
+      FROM emission_calculations calc
+      JOIN activity_records ar ON ar.id = calc.activity_record_id
+      JOIN facilities f ON f.id = ar.facility_id
+      WHERE calc.organization_id = ${orgId}
+        AND ar.facility_id IS NOT NULL
+      GROUP BY f.id, f.name
+      ORDER BY "totalCo2e" DESC
       LIMIT ${limit}
     `;
 
-    const data = result.map((item) => ({
-      facilityId: item.facility_id,
-      name: item.facility_name || "Unknown",
-      totalCo2e: Number(item.total || 0) / 1000000, // Convert from smallest unit
-      recordCount: Number(item.record_count),
-    }));
-
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: rows });
   } catch (err) {
     return handleRouteError(err);
   }

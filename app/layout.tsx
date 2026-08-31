@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { MotionProvider } from "@/components/motion-provider";
 import { ScrollProvider } from "@/components/scroll-provider";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 import "@designcodeio/threeui/style.css";
 
@@ -20,9 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <ScrollProvider>
-          <MotionProvider>{children}</MotionProvider>
-        </ScrollProvider>
+        <Providers>
+          <ScrollProvider>
+            <MotionProvider>{children}</MotionProvider>
+          </ScrollProvider>
+        </Providers>
       </body>
     </html>
   );

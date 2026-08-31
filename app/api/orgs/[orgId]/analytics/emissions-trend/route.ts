@@ -1,53 +1,35 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { requireOrgMember } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
-interface Params {
-  params: Promise<{ orgId: string }>;
-}
-
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ orgId: string }> }
+) {
   try {
     const { orgId } = await params;
-    const days = parseInt(req.nextUrl.searchParams.get("days") || "30");
+    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    const days = parseInt(req.nextUrl.searchParams.get("days") ?? "30", 10);
+    const clampedDays = Math.min(Math.max(days, 1), 365);
 
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    // Get latest calculation run
-    const latestRun = await prisma.calculationRun.findFirst({
-      where: { organizationId: orgId },
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
-    });
-
-    if (!latestRun) {
-      return NextResponse.json({ data: [] });
-    }
-
-    // Raw SQL query to get emissions by date
-    const result = await prisma.$queryRaw<Array<{ date: string; total: bigint }>>`
+    const rows = await prisma.$queryRaw<
+      { date: string; totalCo2e: number }[]
+    >`
       SELECT
-        CAST(ar.activity_date AS VARCHAR) as date,
-        SUM(CAST(em.total_co2e AS BIGINT)) as total
-      FROM emission_calculations em
-      JOIN activity_records ar ON em.activity_record_id = ar.id
-      WHERE em.organization_id = ${orgId}
-      AND em.calculation_run_id = ${latestRun.id}
-      AND ar.activity_date >= ${startDate.toISOString().split('T')[0]}::date
-      GROUP BY ar.activity_date
-      ORDER BY ar.activity_date ASC
+        DATE(calc.created_at)::text AS date,
+        COALESCE(SUM(calc.total_co2e), 0)::float AS "totalCo2e"
+      FROM emission_calculations calc
+      WHERE calc.organization_id = ${orgId}
+        AND calc.created_at >= NOW() - INTERVAL '1 day' * ${clampedDays}
+      GROUP BY DATE(calc.created_at)
+      ORDER BY DATE(calc.created_at)
     `;
 
-    const data = result.map((item) => ({
-      date: item.date,
-      totalCo2e: Number(item.total || 0) / 1000000, // Convert from smallest unit
-    }));
-
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: rows });
   } catch (err) {
     return handleRouteError(err);
   }
