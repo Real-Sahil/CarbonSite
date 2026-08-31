@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,8 @@ interface RequestData {
   reviewedAt: string | null;
 }
 
-export default function RequestDetailPage({ params }: { params: { requestId: string } }) {
+export default function RequestDetailPage({ params }: { params: Promise<{ requestId: string }> }) {
+  const { requestId } = use(params);
   const router = useRouter();
   const [request, setRequest] = useState<RequestData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +46,7 @@ export default function RequestDetailPage({ params }: { params: { requestId: str
     // Fetch request details from API
     const fetchRequest = async () => {
       try {
-        const res = await fetch(`/api/supplier-portal/requests/${params.requestId}`);
+        const res = await fetch(`/api/supplier-portal/requests/${requestId}`);
         if (!res.ok) {
           throw new Error("Failed to load request");
         }
@@ -64,7 +65,7 @@ export default function RequestDetailPage({ params }: { params: { requestId: str
     };
 
     fetchRequest();
-  }, [params.requestId]);
+  }, [requestId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +79,7 @@ export default function RequestDetailPage({ params }: { params: { requestId: str
 
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/supplier-portal/requests/${params.requestId}/submit`, {
+      const res = await fetch(`/api/supplier-portal/requests/${requestId}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

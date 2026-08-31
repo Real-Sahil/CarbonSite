@@ -79,8 +79,9 @@ const CASE_STUDIES = {
   },
 };
 
-export default function CaseStudyPage({ params }: { params: { slug: string } }) {
-  const caseStudy = CASE_STUDIES[params.slug as keyof typeof CASE_STUDIES];
+export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const caseStudy = CASE_STUDIES[slug as keyof typeof CASE_STUDIES];
 
   if (!caseStudy) {
     notFound();
