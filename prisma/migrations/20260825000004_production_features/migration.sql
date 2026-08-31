@@ -11,7 +11,7 @@ CREATE TYPE "calculation_schedule_frequency" AS ENUM ('manual', 'weekly', 'month
 CREATE TYPE "digest_frequency" AS ENUM ('daily', 'weekly', 'monthly');
 
 -- CreateTable BulkOperation
-CREATE TABLE "bulk_operations" (
+CREATE TABLE IF NOT EXISTS "bulk_operations" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "operation_type" "bulk_operation_type" NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE "bulk_operations" (
 );
 
 -- CreateTable CalculationSchedule
-CREATE TABLE "calculation_schedules" (
+CREATE TABLE IF NOT EXISTS "calculation_schedules" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "reporting_period_id" TEXT NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE "calculation_schedules" (
 );
 
 -- CreateTable DigestPreference
-CREATE TABLE "digest_preferences" (
+CREATE TABLE IF NOT EXISTS "digest_preferences" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE "digest_preferences" (
 );
 
 -- CreateTable ProjectRoleAssignment
-CREATE TABLE "project_role_assignments" (
+CREATE TABLE IF NOT EXISTS "project_role_assignments" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -80,55 +80,63 @@ CREATE TABLE "project_role_assignments" (
 );
 
 -- CreateIndex
-CREATE INDEX "bulk_operations_organization_id_status_idx" ON "bulk_operations"("organization_id", "status");
+CREATE INDEX IF NOT EXISTS "bulk_operations_organization_id_status_idx" ON "bulk_operations"("organization_id", "status");
 
 -- CreateIndex
-CREATE INDEX "bulk_operations_organization_id_operation_type_idx" ON "bulk_operations"("organization_id", "operation_type");
+CREATE INDEX IF NOT EXISTS "bulk_operations_organization_id_operation_type_idx" ON "bulk_operations"("organization_id", "operation_type");
 
 -- CreateIndex
-CREATE INDEX "bulk_operations_created_at_idx" ON "bulk_operations"("created_at");
+CREATE INDEX IF NOT EXISTS "bulk_operations_created_at_idx" ON "bulk_operations"("created_at");
 
 -- CreateIndex
-CREATE INDEX "calculation_schedules_organization_id_enabled_idx" ON "calculation_schedules"("organization_id", "enabled");
+CREATE INDEX IF NOT EXISTS "calculation_schedules_organization_id_enabled_idx" ON "calculation_schedules"("organization_id", "enabled");
 
 -- CreateIndex
-CREATE INDEX "calculation_schedules_organization_id_next_run_at_idx" ON "calculation_schedules"("organization_id", "next_run_at");
+CREATE INDEX IF NOT EXISTS "calculation_schedules_organization_id_next_run_at_idx" ON "calculation_schedules"("organization_id", "next_run_at");
 
 -- CreateIndex
-CREATE INDEX "digest_preferences_organization_id_enabled_idx" ON "digest_preferences"("organization_id", "enabled");
+CREATE INDEX IF NOT EXISTS "digest_preferences_organization_id_enabled_idx" ON "digest_preferences"("organization_id", "enabled");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "digest_preferences_organization_id_user_id_key" ON "digest_preferences"("organization_id", "user_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "digest_preferences_organization_id_user_id_key" ON "digest_preferences"("organization_id", "user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "project_role_assignments_user_id_project_id_key" ON "project_role_assignments"("user_id", "project_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "project_role_assignments_user_id_project_id_key" ON "project_role_assignments"("user_id", "project_id");
 
 -- CreateIndex
-CREATE INDEX "project_role_assignments_organization_id_project_id_idx" ON "project_role_assignments"("organization_id", "project_id");
+CREATE INDEX IF NOT EXISTS "project_role_assignments_organization_id_project_id_idx" ON "project_role_assignments"("organization_id", "project_id");
 
 -- CreateIndex
-CREATE INDEX "project_role_assignments_user_id_idx" ON "project_role_assignments"("user_id");
+CREATE INDEX IF NOT EXISTS "project_role_assignments_user_id_idx" ON "project_role_assignments"("user_id");
 
 -- AddForeignKey
+ALTER TABLE "bulk_operations" DROP CONSTRAINT IF EXISTS "bulk_operations_organization_id_fkey";
 ALTER TABLE "bulk_operations" ADD CONSTRAINT "bulk_operations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "calculation_schedules" DROP CONSTRAINT IF EXISTS "calculation_schedules_organization_id_fkey";
 ALTER TABLE "calculation_schedules" ADD CONSTRAINT "calculation_schedules_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "calculation_schedules" DROP CONSTRAINT IF EXISTS "calculation_schedules_reporting_period_id_fkey";
 ALTER TABLE "calculation_schedules" ADD CONSTRAINT "calculation_schedules_reporting_period_id_fkey" FOREIGN KEY ("reporting_period_id") REFERENCES "reporting_periods"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "digest_preferences" DROP CONSTRAINT IF EXISTS "digest_preferences_organization_id_fkey";
 ALTER TABLE "digest_preferences" ADD CONSTRAINT "digest_preferences_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "project_role_assignments" DROP CONSTRAINT IF EXISTS "project_role_assignments_organization_id_fkey";
 ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "project_role_assignments" DROP CONSTRAINT IF EXISTS "project_role_assignments_user_id_fkey";
 ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "project_role_assignments" DROP CONSTRAINT IF EXISTS "project_role_assignments_project_id_fkey";
 ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "project_role_assignments" DROP CONSTRAINT IF EXISTS "project_role_assignments_assigned_by_user_id_fkey";
 ALTER TABLE "project_role_assignments" ADD CONSTRAINT "project_role_assignments_assigned_by_user_id_fkey" FOREIGN KEY ("assigned_by_user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
