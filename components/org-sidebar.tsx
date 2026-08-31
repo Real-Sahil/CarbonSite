@@ -8,7 +8,7 @@ import {
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
-  Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen,
+  Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -87,6 +87,10 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     ]},
     { label: "Contracts", items: [
       { label: "Contracts", href: `/orgs/${orgId}/contracts`, icon: Briefcase, roles: EXTENDED_VIEW_ROLES },
+    ]},
+    { label: "Integrations", items: [
+      { label: "Accounting Software", href: `/orgs/${orgId}/integrations/accounting`, icon: Plug, roles: ["admin", "editor"] },
+      { label: "Supplier Management", href: `/orgs/${orgId}/integrations/suppliers`,  icon: Truck, roles: ["admin", "editor"] },
     ]},
     { label: "Admin", items: [
       { label: "Suppliers",      href: `/orgs/${orgId}/settings/suppliers`,           icon: Truck,      roles: ["admin"] },
