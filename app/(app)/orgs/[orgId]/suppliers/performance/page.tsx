@@ -1,11 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, TrendingUp, TrendingDown, Minus, CheckCircle, AlertCircle } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2, TrendingUp, TrendingDown, Minus, CheckCircle, AlertCircle, Building2 } from 'lucide-react';
+
+const OWN_COMPANY_VALUE = '__own__';
 
 interface SupplierPerformance {
   id: string;
@@ -49,6 +58,11 @@ interface SupplierPerformanceResponse {
   };
 }
 
+interface SupplierListEntry {
+  supplierId: string;
+  supplierName: string;
+}
+
 function getQualityBadge(score: number) {
   if (score >= 85) return { label: 'Excellent', color: 'bg-green-100 text-green-800' };
   if (score >= 70) return { label: 'Good', color: 'bg-blue-100 text-blue-800' };
@@ -67,67 +81,113 @@ function getTrendIcon(trend: string | null) {
   }
 }
 
-interface PageProps {
-  searchParams: Promise<{ supplierId?: string }>;
-}
-
-export default function SupplierPerformancePage(props: PageProps) {
+export default function SupplierPerformancePage() {
   const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const orgId = Array.isArray(params.orgId) ? params.orgId[0] : params.orgId;
 
-  const [supplierId, setSupplierId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string>(
+    () => searchParams.get('supplierId') || OWN_COMPANY_VALUE
+  );
+  const [suppliers, setSuppliers] = useState<SupplierListEntry[]>([]);
+  const [suppliersLoading, setSuppliersLoading] = useState(true);
   const [data, setData] = useState<SupplierPerformanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function resolveParams() {
-      const searchParams = await props.searchParams;
-      if (searchParams.supplierId) {
-        setSupplierId(searchParams.supplierId);
-      } else {
-        setLoading(false);
+    if (!orgId) return;
+
+    async function fetchSuppliers() {
+      try {
+        const response = await fetch(`/api/orgs/${orgId}/suppliers`);
+        if (!response.ok) throw new Error('Failed to fetch suppliers');
+        const json = await response.json();
+        setSuppliers(
+          (json.suppliers || []).map((s: { supplierId: string; supplierName: string }) => ({
+            supplierId: s.supplierId,
+            supplierName: s.supplierName,
+          }))
+        );
+      } catch {
+        setSuppliers([]);
+      } finally {
+        setSuppliersLoading(false);
       }
     }
-    resolveParams();
-  }, [props.searchParams]);
+
+    fetchSuppliers();
+  }, [orgId]);
 
   useEffect(() => {
-    if (!supplierId || !orgId) return;
+    if (!orgId) return;
 
     async function fetchData() {
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/orgs/${orgId}/suppliers/${supplierId}/performance`
-        );
+        const url =
+          selected === OWN_COMPANY_VALUE
+            ? `/api/orgs/${orgId}/performance/own`
+            : `/api/orgs/${orgId}/suppliers/${selected}/performance`;
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch performance data');
         const json = await response.json();
         setData(json);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
+        setData(null);
       } finally {
         setLoading(false);
       }
     }
 
     fetchData();
-  }, [orgId, supplierId]);
+  }, [orgId, selected]);
+
+  function handleSelect(value: string) {
+    setSelected(value);
+    const url = new URL(window.location.href);
+    if (value === OWN_COMPANY_VALUE) {
+      url.searchParams.delete('supplierId');
+    } else {
+      url.searchParams.set('supplierId', value);
+    }
+    router.replace(url.pathname + url.search, { scroll: false });
+  }
+
+  const selector = (
+    <div className="flex items-center gap-3">
+      <Building2 className="h-5 w-5 text-gray-400" />
+      <Select value={selected} onValueChange={handleSelect} disabled={suppliersLoading}>
+        <SelectTrigger className="w-72">
+          <SelectValue placeholder="Select entity" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={OWN_COMPANY_VALUE}>My Organization</SelectItem>
+          {suppliers.map((s) => (
+            <SelectItem key={s.supplierId} value={s.supplierId}>
+              {s.supplierName}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  if (!supplierId && !data) {
-    return (
-      <div className="p-8">
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-          <p className="text-gray-600">Select a supplier to view performance analytics.</p>
+      <div className="space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Performance Analytics</h1>
+            <p className="mt-2 text-gray-600">Track submission quality across your organization and suppliers</p>
+          </div>
+          {selector}
+        </div>
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
       </div>
     );
@@ -135,7 +195,14 @@ export default function SupplierPerformancePage(props: PageProps) {
 
   if (error || !data) {
     return (
-      <div className="p-8">
+      <div className="space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Performance Analytics</h1>
+            <p className="mt-2 text-gray-600">Track submission quality across your organization and suppliers</p>
+          </div>
+          {selector}
+        </div>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-red-800">Error: {error || 'Failed to load performance data'}</p>
         </div>
@@ -158,14 +225,26 @@ export default function SupplierPerformancePage(props: PageProps) {
     { name: 'Approved', value: metrics.approvedSubmissions, fill: '#10b981' },
     { name: 'Rejected', value: metrics.rejectedSubmissions, fill: '#ef4444' },
   ];
+  const hasSubmissionData = metrics.totalSubmissions > 0;
 
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">{performance.supplier.name}</h1>
-        <p className="mt-2 text-gray-600">Supplier Performance Analytics</p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{performance.supplier.name}</h1>
+          <p className="mt-2 text-gray-600">
+            {selected === OWN_COMPANY_VALUE ? 'Organization-wide submission performance' : 'Supplier Performance Analytics'}
+          </p>
+        </div>
+        {selector}
       </div>
+
+      {!hasSubmissionData && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
+          <p className="text-gray-600">No submissions recorded in the last 90 days.</p>
+        </div>
+      )}
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -285,9 +364,9 @@ export default function SupplierPerformancePage(props: PageProps) {
                   data={metricsChartData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`}
-                  outerRadius={80}
+                  innerRadius="45%"
+                  outerRadius="75%"
+                  paddingAngle={1}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -296,6 +375,7 @@ export default function SupplierPerformancePage(props: PageProps) {
                   ))}
                 </Pie>
                 <Tooltip />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
