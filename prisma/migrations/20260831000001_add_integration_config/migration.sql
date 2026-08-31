@@ -1,5 +1,5 @@
 -- CreateTable "IntegrationConfig"
-CREATE TABLE "integration_configs" (
+CREATE TABLE IF NOT EXISTS "integration_configs" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "llm_provider" TEXT,
