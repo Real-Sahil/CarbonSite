@@ -1,6 +1,6 @@
 -- Catch-up migration: create supplier_reports table which was previously marked
 -- as applied by reset-migrations.ts without actually running the SQL.
--- Uses IF NOT EXISTS throughout to be fully idempotent.
+-- Creates table and indexes only; FKs are deferred to a separate migration once table exists.
 
 CREATE TABLE IF NOT EXISTS "supplier_reports" (
     "id" TEXT NOT NULL,
@@ -26,33 +26,12 @@ CREATE TABLE IF NOT EXISTS "supplier_reports" (
     "converted_at" TIMESTAMP(3),
     "submitted_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "supplier_reports_pkey" PRIMARY KEY ("id")
 );
 
 CREATE INDEX IF NOT EXISTS "supplier_reports_organization_id_status_idx" ON "supplier_reports"("organization_id", "status");
-
 CREATE INDEX IF NOT EXISTS "supplier_reports_organization_id_reporting_year_idx" ON "supplier_reports"("organization_id", "reporting_year");
-
 CREATE INDEX IF NOT EXISTS "supplier_reports_organization_id_supplier_email_idx" ON "supplier_reports"("organization_id", "supplier_email");
-
 CREATE INDEX IF NOT EXISTS "supplier_reports_supplier_data_request_id_idx" ON "supplier_reports"("supplier_data_request_id");
-
-DO $$ BEGIN
-    ALTER TABLE "supplier_reports" ADD CONSTRAINT "supplier_reports_organization_id_fkey"
-        FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-    ALTER TABLE "supplier_reports" ADD CONSTRAINT "supplier_reports_emission_category_id_fkey"
-        FOREIGN KEY ("emission_category_id") REFERENCES "emission_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-    ALTER TABLE "supplier_reports" ADD CONSTRAINT "supplier_reports_reviewed_by_user_id_fkey"
-        FOREIGN KEY ("reviewed_by_user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
