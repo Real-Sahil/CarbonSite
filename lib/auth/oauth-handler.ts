@@ -1,5 +1,4 @@
-import { db } from '@/lib/db';
-import { jwtDecode } from 'jwt-decode';
+import { prisma } from '@/lib/db';
 
 interface OAuthCallbackParams {
   code?: string;
@@ -22,14 +21,14 @@ export async function handleOAuthCallback(
     const stateData = JSON.parse(decodedState);
     orgId = stateData.orgId;
     userId = stateData.userId;
-  } catch {
+  } catch (error) {
     throw new Error('Invalid state parameter');
   }
 
   // Get OAuth tokens from provider
   let accessToken: string;
-  let refreshToken?: string;
-  let expiresIn?: number;
+  let refreshToken: string | undefined;
+  let expiresIn: number | undefined;
 
   if (provider === 'quickbooks') {
     if (!code) throw new Error('Missing authorization code');
@@ -54,7 +53,7 @@ export async function handleOAuthCallback(
   }
 
   // Store integration connection in database
-  await db.integrationConnection.upsert({
+  await prisma.integrationConnection.upsert({
     where: {
       organizationId_provider: {
         organizationId: orgId,
@@ -64,32 +63,31 @@ export async function handleOAuthCallback(
     create: {
       organizationId: orgId,
       provider: provider.toUpperCase(),
-      externalId: realmId || null,
+      externalAccountId: realmId || null,
       accessToken,
       refreshToken: refreshToken || null,
       expiresAt: expiresIn ? new Date(Date.now() + expiresIn * 1000) : null,
-      connectedBy: userId,
       connectedAt: new Date(),
     },
     update: {
       accessToken,
       refreshToken: refreshToken || null,
       expiresAt: expiresIn ? new Date(Date.now() + expiresIn * 1000) : null,
-      externalId: realmId || undefined,
+      externalAccountId: realmId || undefined,
     },
   });
 
   // Log the connection to audit log
-  await db.auditLog.create({
+  await prisma.auditLog.create({
     data: {
       organizationId: orgId,
       action: `${provider.toUpperCase()}_OAUTH_CONNECTED`,
-      actor: userId,
-      targetId: orgId,
-      targetType: 'INTEGRATION',
+      actorUserId: userId,
+      resourceId: orgId,
+      resourceType: 'INTEGRATION',
       metadata: {
         provider,
-        realmId: realmId || null,
+        externalAccountId: realmId || null,
         connectedAt: new Date().toISOString(),
       },
       ipAddress: null,
