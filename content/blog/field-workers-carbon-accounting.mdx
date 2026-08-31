@@ -4,7 +4,7 @@ excerpt: "70% of imported emissions data has quality issues. Most platforms assu
 date: "2024-09-15"
 author: "CarbonSite"
 readingTime: 8
-tags: ["Field Operations", "Data Quality", "Mobile", "OCR"]
+tags: ["Field Operations", "Data Quality", "Mobile"]
 image: "https://images.unsplash.com/photo-1556740731-a08ac24c93c6?w=1200&h=630&fit=crop"
 ---
 
@@ -50,7 +50,7 @@ When a waste contractor documents a delivery, the receipt has:
 - Waste code (printed)
 - Supplier/facility (printed or written)
 
-Instead of asking humans to type this into a form, CarbonSite's mobile app uses **on-device ML Kit OCR** to extract it instantly.
+Instead of asking humans to type this into a form, CarbonSite's mobile app automatically reads and extracts it instantly from the photo.
 
 ### Here's the Workflow
 
@@ -76,15 +76,11 @@ Field workers aren't always online. A waste tipper in a remote landfill might ha
 
 **Problem with competitors:** No offline support. If the portal can't reach their servers, the submission is lost.
 
-**CarbonSite solution:** Every submission is saved locally to SQLite (drift database) first. Then synced when the phone reconnects. If the sync fails, it retries in the background. **Zero lost data.**
-
-<Callout type="tip">
-**SQLite drift** provides offline-first architecture for Flutter. It's a local Dart database that syncs to the server when online. Same pattern used by high-reliability field apps (e.g., Uber driver app, Grab).
-</Callout>
+**CarbonSite solution:** Every submission is saved on your phone first. Then synced to your team when the phone reconnects. If the sync fails, it retries in the background. **Zero lost data.** This same approach is used by reliable field apps like Uber and Grab — your data is always saved locally before being sent to servers.
 
 ## Immutable Audit Trail
 
-Every OCR extraction is logged with:
+Every extraction is logged with:
 - Image hash (to prove we scanned the original)
 - Extraction confidence score (95%+, 80%+, or &lt;80%)
 - Timestamp

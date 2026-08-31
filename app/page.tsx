@@ -192,7 +192,7 @@ export default function RootPage() {
                 </h2>
                 <p className="text-base text-[#6B7280] leading-relaxed mb-5">
                   Field workers photograph waste tickets and delivery notes on-site.
-                  On-device ML Kit OCR extracts the data instantly — weight, EWC code,
+                  The app automatically reads the data instantly — weight, EWC code,
                   vehicle registration, date. No connectivity required.
                 </p>
                 <p className="text-base text-[#6B7280] leading-relaxed mb-8">
@@ -216,7 +216,7 @@ export default function RootPage() {
                 <div className="relative space-y-4">
                   {/* Mock OCR result card */}
                   <div className="rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-                    <p className="text-[10px] font-mono text-amber-600 uppercase tracking-widest mb-3">OCR extracted</p>
+                    <p className="text-[10px] font-mono text-amber-600 uppercase tracking-widest mb-3">Data extracted</p>
                     <div className="grid grid-cols-2 gap-3">
                       {[
                         ["Weight", "4.2 t"],

@@ -115,13 +115,13 @@ export default function FieldAppPage() {
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">OCR extraction</span>
+              <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">Data extraction</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
-              What the extractor reads.
+              What the app reads.
             </h2>
             <p className="text-sm text-[#6B7280] mb-12 max-w-[55ch]">
-              ML Kit text recognition runs on-device. A regex and heuristic extractor finds structured fields from the raw text blocks. Unrecognised fields are left blank for manual entry.
+              The app automatically identifies and extracts structured fields from photos of your documents. If the app is unsure about a value, it flags it for you to confirm manually.
             </p>
           </AnimateIn>
           <div className="border border-[#E5E7EB] divide-y divide-[#E5E7EB] rounded-2xl overflow-hidden">

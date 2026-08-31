@@ -7,7 +7,7 @@ const CASE_STUDIES = [
     industry: 'Logistics & Waste Management',
     logo: '♻️',
     challenge: 'Field workers manually entering waste ticket data, 45 hours/month on data entry, no audit trail',
-    solution: 'Mobile app with on-device OCR + offline sync, automated anomaly detection',
+    solution: 'Mobile app with automatic data capture + offline sync, automated anomaly detection',
     result: '82% reduction in manual work (8 hours/month), 100% audit trail immutability, 0 duplicate invoices',
     metrics: [
       { label: 'Time saved', value: '37 hours/month' },

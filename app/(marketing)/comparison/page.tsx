@@ -17,22 +17,22 @@ type Feature = {
 
 const FEATURES: Feature[] = [
   // Field Capture
-  { id: 'ocr', name: 'On-device OCR capture', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
-  { id: 'offline', name: 'Offline-first sync', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'ocr', name: 'Mobile data capture', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'offline', name: 'Offline sync capability', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
   { id: 'mobile-app', name: 'Mobile field app', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
   { id: 'photo-upload', name: 'Photo/document upload', category: 'Field Capture', carbonsite: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
   { id: 'gps-tagging', name: 'GPS auto-tagging', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: 'partial', watershed: false, emitwise: false },
 
   // Calculation
   { id: 'audit-trail', name: 'Append-only audit trail', category: 'Calculation', carbonsite: true, gaia: 'partial', persefoni: true, watershed: 'partial', emitwise: 'partial', differentiator: true },
-  { id: 'hash-chain', name: 'SHA-256 hash chain', category: 'Calculation', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
-  { id: 'scope3-estimation', name: 'Scope 3 ML estimation', category: 'Calculation', carbonsite: true, gaia: false, persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'hash-chain', name: 'Immutable audit trail', category: 'Calculation', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'scope3-estimation', name: 'Scope 3 smart estimation', category: 'Calculation', carbonsite: true, gaia: false, persefoni: true, watershed: true, emitwise: 'partial' },
   { id: 'invoice-sync', name: 'Invoice sync (Xero/SAP/QB)', category: 'Calculation', carbonsite: true, gaia: false, persefoni: 'partial', watershed: 'partial', emitwise: false },
   { id: 'anomaly-detection', name: 'Anomaly detection', category: 'Calculation', carbonsite: true, gaia: false, persefoni: 'partial', watershed: false, emitwise: false },
   { id: 'custom-factors', name: 'Custom emission factors', category: 'Calculation', carbonsite: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
 
   // Reporting
-  { id: 'real-time-dashboard', name: 'Real-time dashboard (SSE)', category: 'Reporting', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'real-time-dashboard', name: 'Real-time dashboard updates', category: 'Reporting', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },
   { id: 'data-lineage', name: 'Data lineage visualization', category: 'Reporting', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
   { id: 'compliance-export', name: 'Compliance evidence export', category: 'Reporting', carbonsite: true, gaia: false, persefoni: 'partial', watershed: 'partial', emitwise: false },
   { id: 'multi-framework', name: 'Multi-framework (CSRD/SBTi)', category: 'Reporting', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },

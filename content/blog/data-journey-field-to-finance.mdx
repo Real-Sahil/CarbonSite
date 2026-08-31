@@ -33,7 +33,7 @@ STAGE 1: CAPTURE         STAGE 2: REVIEW          STAGE 3: CALCULATION     STAGE
 - Invoice data missing required fields
 
 **CarbonSite mitigation:**
-- On-device OCR with confidence scoring
+- Automatic data reading with confidence scoring
 - Automatic unit normalization (all converted to canonical units)
 - Validation rules (check ranges, required fields)
 - Audit log records extraction confidence + timestamp
@@ -43,13 +43,13 @@ STAGE 1: CAPTURE         STAGE 2: REVIEW          STAGE 3: CALCULATION     STAGE
 ### Stage 1 Lineage Tracking
 ```
 Original: "367" (from delivery ticket, handwritten)
-├── Extracted by: google_mlkit_ocr
+├── Extracted by: Mobile app
 ├── Confidence: 89%
 ├── Unit detected: kg
 ├── Normalized: 367 kg → 0.367 tonnes
 ├── Timestamp: 2024-10-01 14:32:15
-├── GPS: facility_id = fac_456
-└── Audit entry: hash_abc123xyz
+├── Location: facility_id = fac_456
+└── Audit record: immutable hash recorded
 ```
 
 ---
