@@ -1,120 +1,249 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { acceptSupplierInvite } from "./actions";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, Loader2 } from "lucide-react";
 
-export default function SupplierInviteAcceptPage() {
+const schema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+});
+
+interface InviteData {
+  id: string;
+  email: string;
+  companyName: string | null;
+  organizationName: string;
+  organizationId: string;
+  expiresAt: string;
+  usedAt: string | null;
+}
+
+export default function SupplierInvitePage() {
   const params = useParams();
-  const token = params?.token as string;
   const router = useRouter();
-  const [state, formAction, isPending] = useActionState(acceptSupplierInvite, null);
-  const [displayName, setDisplayName] = useState("");
-  const [localError, setLocalError] = useState<string | null>(null);
+  const token = params.token as string;
 
-  const handleSubmit = async (formData: FormData) => {
-    setLocalError(null);
-    if (!displayName.trim()) {
-      setLocalError("Please enter your name or company name");
+  const [loading, setLoading] = useState(true);
+  const [inviteData, setInviteData] = useState<InviteData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function validateInvite() {
+      try {
+        const res = await fetch(`/api/public/supplier-invites/${token}/validate`, {
+          method: "GET",
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          setError(data.message || "Invalid or expired invitation");
+          return;
+        }
+
+        const data = await res.json();
+        setInviteData(data);
+      } catch (err) {
+        setError("Failed to validate invitation. Please try again.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    validateInvite();
+  }, [token]);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!inviteData) return;
+
+    setValidationError(null);
+
+    // Validate form
+    const validationResult = schema.safeParse({
+      password,
+      confirmPassword,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      setValidationError(firstError.message);
       return;
     }
-    formData.append("token", token);
-    formData.append("displayName", displayName);
-    await formAction(formData);
-  };
 
-  // Handle redirect after success
-  if (state?.success && state?.portalToken) {
-    router.push(`/supplier-verify/${state.portalToken}`);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/supplier/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: inviteData.email,
+          password,
+          inviteToken: token,
+          organizationId: inviteData.organizationId,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Registration failed");
+        return;
+      }
+
+      router.push("/sign-in?supplier=true&email=" + encodeURIComponent(inviteData.email));
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md border-0 shadow-lg">
-          <div className="p-8 text-center">
-            <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-slate-900 mb-2">Welcome!</h1>
-            <p className="text-sm text-slate-600">Redirecting to your portal...</p>
-          </div>
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-red-600">Invitation Invalid</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+            <Button className="mt-4 w-full" onClick={() => router.push("/")}>
+              Back to Home
+            </Button>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md border-0 shadow-lg">
-        <div className="p-8">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-slate-900 mb-2">Accept Data Request</h1>
-            <p className="text-sm text-slate-600">
-              You've been invited to share emissions data. Enter your name to get started.
-            </p>
-          </div>
+  if (!inviteData) {
+    return null;
+  }
 
-          {/* Error Messages */}
-          {(state?.error || localError) && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-red-900">{state?.error || localError}</p>
-                {state?.details && (
-                  <p className="text-xs text-red-700 mt-1">{state.details}</p>
-                )}
-              </div>
+  const expiresAt = new Date(inviteData.expiresAt);
+  const isExpired = expiresAt < new Date();
+  const daysUntilExpiry = Math.floor((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Join {inviteData.organizationName}</CardTitle>
+          <CardDescription>
+            Set up your supplier account to submit emissions data
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          {isExpired ? (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                This invitation has expired. Please contact {inviteData.organizationName} to request a new one.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="mb-4 space-y-3 rounded-lg bg-blue-50 p-3">
+              <p className="text-sm font-medium text-gray-700">
+                Email: <span className="font-semibold">{inviteData.email}</span>
+              </p>
+              {inviteData.companyName && (
+                <p className="text-sm font-medium text-gray-700">
+                  Company: <span className="font-semibold">{inviteData.companyName}</span>
+                </p>
+              )}
+              <p className="text-xs text-gray-600">
+                Invitation expires in {daysUntilExpiry} days
+              </p>
             </div>
           )}
 
-          {/* Form */}
-          <form action={handleSubmit} className="space-y-4">
+          {!isExpired && (
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <Input
+                  type="password"
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={submitting}
+                />
+                <p className="text-xs text-gray-600 mt-2">
+                  Use a strong password with uppercase, lowercase, numbers, and symbols
+                </p>
+              </div>
 
-            <div>
-              <label htmlFor="displayName" className="block text-sm font-medium text-slate-900 mb-1.5">
-                Your Name or Company <span className="text-red-600">*</span>
-              </label>
-              <Input
-                id="displayName"
-                type="text"
-                placeholder="e.g., John Doe or Acme Corp"
-                value={displayName}
-                onChange={(e) => {
-                  setDisplayName(e.target.value);
-                  setLocalError(null);
-                }}
-                disabled={isPending}
-                className="h-10"
-              />
-              {localError && <p className="text-xs text-red-600 mt-1">{localError}</p>}
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password
+                </label>
+                <Input
+                  type="password"
+                  placeholder="Re-enter your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={submitting}
+                />
+              </div>
 
-            <Button
-              type="submit"
-              disabled={isPending || !displayName.trim()}
-              className="w-full h-10 bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-600 hover:to-amber-500 text-white font-medium"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Accepting...
-                </>
-              ) : (
-                "Accept Invitation"
+              {validationError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{validationError}</AlertDescription>
+                </Alert>
               )}
-            </Button>
-          </form>
 
-          {/* Help Text */}
-          <div className="mt-6 pt-6 border-t border-slate-200">
-            <p className="text-xs text-slate-600">
-              By accepting, you agree to securely share emissions data with the requesting organization.
-            </p>
-          </div>
-        </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={submitting || isExpired}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
+              </Button>
+            </form>
+          )}
+
+          <p className="mt-4 text-center text-xs text-gray-500">
+            Already have an account?{" "}
+            <a href="/sign-in" className="text-blue-600 hover:underline">
+              Sign in
+            </a>
+          </p>
+        </CardContent>
       </Card>
     </div>
   );

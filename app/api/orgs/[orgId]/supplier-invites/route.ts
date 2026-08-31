@@ -106,6 +106,24 @@ export async function POST(
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite-rosy.vercel.app";
     const inviteUrl = `${appUrl}/supplier-invite/${invite.token}`;
 
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { name: true },
+    });
+
+    try {
+      const { sendSupplierInviteEmail } = await import("@/workers/supplier-invite-email");
+      await sendSupplierInviteEmail({
+        supplierEmail: body.email,
+        inviteUrl,
+        invitedByName: session.user.name || session.user.email,
+        organizationName: org?.name || "CarbonSite",
+        companyName: body.companyName,
+      });
+    } catch (emailError) {
+      console.error("[SupplierInvite] Email dispatch failed:", emailError);
+    }
+
     dispatchNotification({
       type: "task_assigned",
       recipientUserId: session.user.id,
