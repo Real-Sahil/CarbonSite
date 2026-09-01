@@ -317,6 +317,71 @@ ${FROM_NAME}`;
   };
 }
 
+// ─── Supplier Credentials Email (Admin-created account) ──────────────────────
+export function supplierCredentialsEmail(params: {
+  supplierEmail: string;
+  temporaryPassword: string;
+  loginUrl: string;
+  companyName?: string;
+  organizationName: string;
+  invitedByName: string;
+}): TransactionalEmailPayload {
+  const { supplierEmail, temporaryPassword, loginUrl, companyName, organizationName, invitedByName } = params;
+
+  const supplierName = companyName || supplierEmail.split("@")[0];
+
+  const text = `Hi ${supplierName},
+
+${invitedByName} from ${organizationName} has created an account for you to submit and manage emissions data.
+
+Account Details:
+Email: ${supplierEmail}
+Temporary Password: ${temporaryPassword}
+
+To login and get started, visit:
+${loginUrl}
+
+When you first login, you'll be prompted to change your password.
+
+Questions? Contact ${organizationName} directly.
+
+Best regards,
+CarbonSite`;
+
+  const html = `
+<p>Hi ${supplierName},</p>
+
+<p><strong>${invitedByName}</strong> from <strong>${organizationName}</strong> has created an account for you to submit and manage emissions data.</p>
+
+<div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin: 20px 0;">
+  <p><strong>Account Details</strong></p>
+  <p>
+    <strong>Email:</strong> ${supplierEmail}<br>
+    <strong>Temporary Password:</strong> <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">${temporaryPassword}</code>
+  </p>
+</div>
+
+<p><strong>To login and get started:</strong></p>
+
+<div style="margin: 24px 0; text-align: center;">
+  <a href="${loginUrl}" style="background: linear-gradient(to right, #f97316, #fbbf24); color: white; padding: 12px 28px; border-radius: 9999px; text-decoration: none; font-weight: 600; display: inline-block;">Login to Your Account</a>
+</div>
+
+<p><em>When you first login, you'll be prompted to change your temporary password.</em></p>
+
+<p>Questions? Contact ${organizationName} directly.</p>
+
+<p>Best regards,<br>CarbonSite</p>
+  `.trim();
+
+  return {
+    to: supplierEmail,
+    subject: `Your ${organizationName} account is ready`,
+    text,
+    html,
+  };
+}
+
 // ─── Invite Accepted (Admin Notification) Email ──────────────────────────────
 export function inviteAcceptedEmail(params: {
   adminEmail: string;
