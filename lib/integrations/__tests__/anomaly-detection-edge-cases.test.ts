@@ -93,7 +93,21 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
           id: 'sub-4',
           organizationId: orgId,
           createdAt: new Date('2024-01-04'),
-          formData: { normalizedAmount: 500 }, // Clear outlier
+          formData: { normalizedAmount: 98 },
+          ocrExtractedData: null,
+        },
+        {
+          id: 'sub-5',
+          organizationId: orgId,
+          createdAt: new Date('2024-01-05'),
+          formData: { normalizedAmount: 101 },
+          ocrExtractedData: null,
+        },
+        {
+          id: 'sub-6',
+          organizationId: orgId,
+          createdAt: new Date('2024-01-06'),
+          formData: { normalizedAmount: 1000 }, // Clear outlier (z-score > 2)
           ocrExtractedData: null,
         },
       ];
@@ -102,10 +116,10 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
-      // Should flag the outlier (500 vs ~100)
+      // Should flag the outlier (1000 vs ~100)
       const valueOutliers = anomalies.filter((a) => a.anomalyType === 'value_outlier');
       expect(valueOutliers.length).toBeGreaterThan(0);
-      expect(valueOutliers[0].submissionId).toBe('sub-4');
+      expect(valueOutliers[0].submissionId).toBe('sub-6');
     });
 
     it('should skip submissions with missing or zero emission values', async () => {
@@ -235,28 +249,28 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         {
           id: 'sub-1',
           organizationId: orgId,
-          createdAt: new Date('2024-01-10T10:00:00Z'), // 10-day gap
+          createdAt: new Date('2024-04-03T10:00:00Z'), // 100-day gap
           formData: { normalizedAmount: 100 },
           ocrExtractedData: null,
         },
         {
           id: 'sub-2',
           organizationId: orgId,
-          createdAt: new Date('2024-01-01T10:00:00Z'), // 1-day gap
+          createdAt: new Date('2023-12-24T10:00:00Z'), // 1-day gap
           formData: { normalizedAmount: 100 },
           ocrExtractedData: null,
         },
         {
           id: 'sub-3',
           organizationId: orgId,
-          createdAt: new Date('2023-12-31T10:00:00Z'), // 1-day gap
+          createdAt: new Date('2023-12-23T10:00:00Z'), // 1-day gap
           formData: { normalizedAmount: 100 },
           ocrExtractedData: null,
         },
         {
           id: 'sub-4',
           organizationId: orgId,
-          createdAt: new Date('2023-12-30T10:00:00Z'), // 1-day gap
+          createdAt: new Date('2023-12-22T10:00:00Z'), // 1-day gap
           formData: { normalizedAmount: 100 },
           ocrExtractedData: null,
         },
@@ -266,7 +280,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
-      // Should flag the 10-day gap as a frequency anomaly
+      // Should flag the 45-day gap as a frequency anomaly
       const frequencyAnomalies = anomalies.filter((a) => a.anomalyType === 'frequency_anomaly');
       expect(frequencyAnomalies.length).toBeGreaterThan(0);
       if (frequencyAnomalies.length > 0) {

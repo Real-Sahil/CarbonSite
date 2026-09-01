@@ -15,6 +15,7 @@ const testSupplierId = 'supplier-456';
 describe('Supplier Analytics', () => {
   describe('calculateSupplierScore', () => {
     it('returns zero scores for supplier with no submissions', async () => {
+      vi.spyOn(prisma.supplierAnalytic, 'findUnique').mockResolvedValueOnce(null);
       vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce([]);
 
       const score = await calculateSupplierScore(testOrgId, testSupplierId);
@@ -32,47 +33,39 @@ describe('Supplier Analytics', () => {
           id: 'sub-1',
           organizationId: testOrgId,
           supplierId: testSupplierId,
-          reviewStatus: 'approved',
+          status: 'approved',
           createdAt: new Date(),
-          normalizedAmount: 100,
-          activityDate: new Date(),
-          emissionCategoryId: 's3-purchased-goods',
-          assignedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          dueDate: new Date(),
-          activityRecords: [],
+          formData: { normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods' },
+          ocrExtractedData: {},
+          submittedAt: new Date(),
+          requestedByDeadline: new Date(),
         },
         {
           id: 'sub-2',
           organizationId: testOrgId,
           supplierId: testSupplierId,
-          reviewStatus: 'approved',
+          status: 'approved',
           createdAt: new Date(),
-          normalizedAmount: 150,
-          activityDate: new Date(),
-          emissionCategoryId: 's3-purchased-goods',
-          assignedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          dueDate: new Date(),
-          activityRecords: [],
+          formData: { normalizedAmount: 150, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods' },
+          ocrExtractedData: {},
+          submittedAt: new Date(),
+          requestedByDeadline: new Date(),
         },
         {
           id: 'sub-3',
           organizationId: testOrgId,
           supplierId: testSupplierId,
-          reviewStatus: 'rejected',
+          status: 'rejected',
           createdAt: new Date(),
-          normalizedAmount: 80,
-          activityDate: new Date(),
-          emissionCategoryId: 's3-purchased-goods',
-          assignedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-          dueDate: new Date(),
-          activityRecords: [],
+          formData: { normalizedAmount: 80, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods' },
+          ocrExtractedData: {},
+          submittedAt: new Date(),
+          requestedByDeadline: new Date(),
         },
       ];
 
-      const mockAnalytic = null;
-
       vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as any);
-      vi.spyOn(prisma.supplierAnalytic, 'findUnique').mockResolvedValueOnce(mockAnalytic);
+      vi.spyOn(prisma.supplierAnalytic, 'findUnique').mockResolvedValueOnce(null); // Previous score lookup
 
       const score = await calculateSupplierScore(testOrgId, testSupplierId);
 
@@ -87,21 +80,21 @@ describe('Supplier Analytics', () => {
 
       const mockSubmissions = [
         // Recent submissions: 80% approval (4/5)
-        { id: 'sub-1', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'approved', createdAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
-        { id: 'sub-2', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'approved', createdAt: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
-        { id: 'sub-3', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'approved', createdAt: new Date(now.getTime() - 20 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
-        { id: 'sub-4', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'approved', createdAt: new Date(now.getTime() - 25 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
-        { id: 'sub-5', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'rejected', createdAt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
+        { id: 'sub-1', organizationId: testOrgId, supplierId: testSupplierId, status: 'approved', createdAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
+        { id: 'sub-2', organizationId: testOrgId, supplierId: testSupplierId, status: 'approved', createdAt: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
+        { id: 'sub-3', organizationId: testOrgId, supplierId: testSupplierId, status: 'approved', createdAt: new Date(now.getTime() - 20 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
+        { id: 'sub-4', organizationId: testOrgId, supplierId: testSupplierId, status: 'approved', createdAt: new Date(now.getTime() - 25 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
+        { id: 'sub-5', organizationId: testOrgId, supplierId: testSupplierId, status: 'rejected', createdAt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
         // Prior submissions: 40% approval (2/5)
-        { id: 'sub-6', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'approved', createdAt: new Date(now.getTime() - 50 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
-        { id: 'sub-7', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'rejected', createdAt: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
-        { id: 'sub-8', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'rejected', createdAt: new Date(now.getTime() - 70 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
-        { id: 'sub-9', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'rejected', createdAt: new Date(now.getTime() - 80 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
-        { id: 'sub-10', organizationId: testOrgId, supplierId: testSupplierId, reviewStatus: 'approved', createdAt: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000), normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods', assignedAt: new Date(), dueDate: new Date(), activityRecords: [] },
+        { id: 'sub-6', organizationId: testOrgId, supplierId: testSupplierId, status: 'approved', createdAt: new Date(now.getTime() - 50 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
+        { id: 'sub-7', organizationId: testOrgId, supplierId: testSupplierId, status: 'rejected', createdAt: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
+        { id: 'sub-8', organizationId: testOrgId, supplierId: testSupplierId, status: 'rejected', createdAt: new Date(now.getTime() - 70 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
+        { id: 'sub-9', organizationId: testOrgId, supplierId: testSupplierId, status: 'rejected', createdAt: new Date(now.getTime() - 80 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
+        { id: 'sub-10', organizationId: testOrgId, supplierId: testSupplierId, status: 'approved', createdAt: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000), formData: { normalizedAmount: 100 }, ocrExtractedData: {}, submittedAt: new Date(), requestedByDeadline: new Date() },
       ];
 
       // Mock previous analytic with lower score to show improvement
-      const mockAnalytic = { overallScore: 50 } as any;
+      const mockAnalytic = { overallScore: 30 } as any;
 
       vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as any);
       vi.spyOn(prisma.supplierAnalytic, 'findUnique').mockResolvedValueOnce(mockAnalytic);
@@ -169,10 +162,12 @@ describe('Supplier Analytics', () => {
     it('detects value outliers using Z-score', async () => {
       const baseDate = new Date();
       const mockSubmissions = [
-        { id: 'sub-1', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 0), activityRecords: [{ normalizedAmount: 100 }] },
-        { id: 'sub-2', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 1000000), activityRecords: [{ normalizedAmount: 105 }] },
-        { id: 'sub-3', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 2000000), activityRecords: [{ normalizedAmount: 95 }] },
-        { id: 'sub-4', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 3000000), activityRecords: [{ normalizedAmount: 500 }] }, // Outlier
+        { id: 'sub-1', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 0), formData: { normalizedAmount: 100 }, ocrExtractedData: {} },
+        { id: 'sub-2', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 1000000), formData: { normalizedAmount: 105 }, ocrExtractedData: {} },
+        { id: 'sub-3', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 2000000), formData: { normalizedAmount: 95 }, ocrExtractedData: {} },
+        { id: 'sub-4', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 2500000), formData: { normalizedAmount: 98 }, ocrExtractedData: {} },
+        { id: 'sub-5', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 3000000), formData: { normalizedAmount: 101 }, ocrExtractedData: {} },
+        { id: 'sub-6', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 3500000), formData: { normalizedAmount: 1000 }, ocrExtractedData: {} }, // Outlier
       ];
 
       vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as any);
@@ -189,9 +184,10 @@ describe('Supplier Analytics', () => {
       const now = new Date();
       const dayMs = 1000 * 60 * 60 * 24;
       const mockSubmissions = [
-        { id: 'sub-1', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(now.getTime() - 1 * dayMs), activityRecords: [{ normalizedAmount: 100 }] }, // 1 day ago
-        { id: 'sub-2', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(now.getTime() - 2.5 * dayMs), activityRecords: [{ normalizedAmount: 100 }] }, // 2.5 days ago (1.5 day interval)
-        { id: 'sub-3', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(now.getTime() - 32 * dayMs), activityRecords: [{ normalizedAmount: 100 }] }, // 32 days ago (29.5 day interval - anomaly)
+        { id: 'sub-1', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(now.getTime() - 1 * dayMs), formData: { normalizedAmount: 100 }, ocrExtractedData: {} }, // 1 day ago
+        { id: 'sub-2', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(now.getTime() - 2 * dayMs), formData: { normalizedAmount: 100 }, ocrExtractedData: {} }, // 2 days ago (1 day interval)
+        { id: 'sub-3', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(now.getTime() - 3 * dayMs), formData: { normalizedAmount: 100 }, ocrExtractedData: {} }, // 3 days ago (1 day interval)
+        { id: 'sub-4', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(now.getTime() - 203 * dayMs), formData: { normalizedAmount: 100 }, ocrExtractedData: {} }, // 203 days ago (200 day interval - anomaly)
       ];
 
       vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as any);
@@ -231,14 +227,12 @@ describe('Supplier Analytics', () => {
           id: 'sub-1',
           organizationId: testOrgId,
           supplierId: testSupplierId,
-          reviewStatus: 'approved',
+          status: 'approved',
           createdAt: new Date(),
-          normalizedAmount: 100,
-          activityDate: new Date(),
-          emissionCategoryId: 's3-purchased-goods',
-          assignedAt: new Date(),
-          dueDate: new Date(),
-          activityRecords: [{ normalizedAmount: 100 }],
+          formData: { normalizedAmount: 100, activityDate: new Date(), emissionCategoryId: 's3-purchased-goods' },
+          ocrExtractedData: {},
+          submittedAt: new Date(),
+          requestedByDeadline: new Date(),
         },
       ] as any);
 
