@@ -94,75 +94,132 @@ export async function POST(
     };
 
     // Generate all 6 PDFs
-    const [
-      executiveSummaryPdf,
-      sustainabilityManagerPdf,
-      financeLeadPdf,
-      fieldWorkerPdf,
-      technicalIntegrationPdf,
-      compliancePdf,
-    ] = await Promise.all([
-      generateExecutiveSummary(context),
-      generateSustainabilityManagerGuide(context),
-      generateFinanceLeadGuide(context),
-      generateFieldWorkerGuide(context),
-      generateTechnicalIntegrationGuide(context),
-      generateComplianceGuide(context),
-    ]);
+    let executiveSummaryPdf: Buffer;
+    let sustainabilityManagerPdf: Buffer;
+    let financeLeadPdf: Buffer;
+    let fieldWorkerPdf: Buffer;
+    let technicalIntegrationPdf: Buffer;
+    let compliancePdf: Buffer;
+
+    try {
+      console.log("[PILOT-KIT] Starting PDF generation for org:", orgId);
+      [
+        executiveSummaryPdf,
+        sustainabilityManagerPdf,
+        financeLeadPdf,
+        fieldWorkerPdf,
+        technicalIntegrationPdf,
+        compliancePdf,
+      ] = await Promise.all([
+        generateExecutiveSummary(context),
+        generateSustainabilityManagerGuide(context),
+        generateFinanceLeadGuide(context),
+        generateFieldWorkerGuide(context),
+        generateTechnicalIntegrationGuide(context),
+        generateComplianceGuide(context),
+      ]);
+      console.log("[PILOT-KIT] PDF generation completed, total size:", {
+        executiveSummary: executiveSummaryPdf?.length,
+        sustainabilityManager: sustainabilityManagerPdf?.length,
+        financeLead: financeLeadPdf?.length,
+        fieldWorker: fieldWorkerPdf?.length,
+        technicalIntegration: technicalIntegrationPdf?.length,
+        compliance: compliancePdf?.length,
+      });
+    } catch (err) {
+      console.error("[PILOT-KIT] PDF generation failed:", {
+        stage: "pdf_generation",
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
+      throw err;
+    }
 
     // Upload PDFs to R2 storage
     const timestamp = new Date().toISOString().split("T")[0];
-    const uploadResults = await Promise.all([
-      putObject(
-        `org/${orgId}/pilot-kit/01-executive-summary-${timestamp}.pdf`,
-        executiveSummaryPdf,
-        "application/pdf"
-      ),
-      putObject(
-        `org/${orgId}/pilot-kit/02-sustainability-manager-${timestamp}.pdf`,
-        sustainabilityManagerPdf,
-        "application/pdf"
-      ),
-      putObject(
-        `org/${orgId}/pilot-kit/03-finance-lead-${timestamp}.pdf`,
-        financeLeadPdf,
-        "application/pdf"
-      ),
-      putObject(
-        `org/${orgId}/pilot-kit/04-field-worker-${timestamp}.pdf`,
-        fieldWorkerPdf,
-        "application/pdf"
-      ),
-      putObject(
-        `org/${orgId}/pilot-kit/05-technical-integration-${timestamp}.pdf`,
-        technicalIntegrationPdf,
-        "application/pdf"
-      ),
-      putObject(
-        `org/${orgId}/pilot-kit/06-compliance-guide-${timestamp}.pdf`,
-        compliancePdf,
-        "application/pdf"
-      ),
-    ]);
+
+    try {
+      console.log("[PILOT-KIT] Starting R2 upload for org:", orgId);
+      await Promise.all([
+        putObject(
+          `org/${orgId}/pilot-kit/01-executive-summary-${timestamp}.pdf`,
+          executiveSummaryPdf,
+          "application/pdf"
+        ),
+        putObject(
+          `org/${orgId}/pilot-kit/02-sustainability-manager-${timestamp}.pdf`,
+          sustainabilityManagerPdf,
+          "application/pdf"
+        ),
+        putObject(
+          `org/${orgId}/pilot-kit/03-finance-lead-${timestamp}.pdf`,
+          financeLeadPdf,
+          "application/pdf"
+        ),
+        putObject(
+          `org/${orgId}/pilot-kit/04-field-worker-${timestamp}.pdf`,
+          fieldWorkerPdf,
+          "application/pdf"
+        ),
+        putObject(
+          `org/${orgId}/pilot-kit/05-technical-integration-${timestamp}.pdf`,
+          technicalIntegrationPdf,
+          "application/pdf"
+        ),
+        putObject(
+          `org/${orgId}/pilot-kit/06-compliance-guide-${timestamp}.pdf`,
+          compliancePdf,
+          "application/pdf"
+        ),
+      ]);
+      console.log("[PILOT-KIT] R2 upload completed successfully");
+    } catch (err) {
+      console.error("[PILOT-KIT] R2 upload failed:", {
+        stage: "r2_upload",
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
+      throw err;
+    }
 
     // Log to audit trail
-    await writeAuditLog({
-      organizationId: orgId,
-      action: "pilot.kit_generated",
-      actorUserId: req.headers.get("x-user-id") || "system",
-      resourceType: "pilot_kit",
-      resourceId: orgId,
-      metadata: {
-        context: {
-          organizationName: context.organizationName,
-          industry: context.industry,
-          facilityCount: context.facilityCount,
-          complianceFrameworks: context.complianceFrameworks,
+    try {
+      console.log("[PILOT-KIT] Writing audit log for org:", orgId);
+      await writeAuditLog({
+        organizationId: orgId,
+        action: "pilot.kit_generated",
+        actorUserId: req.headers.get("x-user-id") || "system",
+        resourceType: "pilot_kit",
+        resourceId: orgId,
+        metadata: {
+          context: {
+            organizationName: context.organizationName,
+            industry: context.industry,
+            facilityCount: context.facilityCount,
+            complianceFrameworks: context.complianceFrameworks,
+          },
+          uploadedFiles: 6,
+          timestamp,
         },
-        uploadedFiles: 6,
-        timestamp,
-      },
-    });
+      });
+      console.log("[PILOT-KIT] Audit log written successfully");
+    } catch (err) {
+      console.error("[PILOT-KIT] Audit log write failed:", {
+        stage: "audit_log",
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
+      throw err;
+    }
+
+    const storageKeys = [
+      `org/${orgId}/pilot-kit/01-executive-summary-${timestamp}.pdf`,
+      `org/${orgId}/pilot-kit/02-sustainability-manager-${timestamp}.pdf`,
+      `org/${orgId}/pilot-kit/03-finance-lead-${timestamp}.pdf`,
+      `org/${orgId}/pilot-kit/04-field-worker-${timestamp}.pdf`,
+      `org/${orgId}/pilot-kit/05-technical-integration-${timestamp}.pdf`,
+      `org/${orgId}/pilot-kit/06-compliance-guide-${timestamp}.pdf`,
+    ];
 
     return NextResponse.json(
       {
@@ -175,32 +232,32 @@ export async function POST(
           documents: [
             {
               name: "Executive Summary",
-              storageKey: uploadResults[0],
+              storageKey: storageKeys[0],
               audience: "Executive Stakeholders",
             },
             {
               name: "Sustainability Manager Guide",
-              storageKey: uploadResults[1],
+              storageKey: storageKeys[1],
               audience: "Sustainability Lead",
             },
             {
               name: "Finance Lead Guide",
-              storageKey: uploadResults[2],
+              storageKey: storageKeys[2],
               audience: "Finance Lead",
             },
             {
               name: "Field Worker Guide",
-              storageKey: uploadResults[3],
+              storageKey: storageKeys[3],
               audience: "Field Workers",
             },
             {
               name: "Technical Integration Guide",
-              storageKey: uploadResults[4],
+              storageKey: storageKeys[4],
               audience: "IT Administrator",
             },
             {
               name: "Compliance Guide",
-              storageKey: uploadResults[5],
+              storageKey: storageKeys[5],
               audience: "Compliance & Audit",
             },
           ],
@@ -240,11 +297,21 @@ export async function POST(
       );
     }
 
-    console.error("[PILOT-KIT] Generation error:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error("[PILOT-KIT] Generation error:", {
+      message: errorMessage,
+      stack: errorStack,
+      type: error?.constructor?.name,
+    });
     return NextResponse.json(
       {
         code: "GENERATION_ERROR",
         message: "Failed to generate pilot documentation kit",
+        details: {
+          error: errorMessage,
+          debug: process.env.NODE_ENV === "development" ? errorStack : undefined,
+        },
       },
       { status: 500 }
     );
