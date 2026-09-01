@@ -8,10 +8,10 @@
 -- ─── 5A: Emissions Forecasting ───────────────────────────────────────────────
 
 CREATE TABLE emissions_forecasts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
-  facility_id UUID REFERENCES "facilities"(id) ON DELETE SET NULL,
-  category_id UUID NOT NULL REFERENCES "emission_categories"(id),
+  id TEXT PRIMARY KEY DEFAULT cuid(),
+  organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
+  facility_id TEXT REFERENCES "facilities"(id) ON DELETE SET NULL,
+  category_id TEXT NOT NULL REFERENCES "emission_categories"(id),
 
   -- Historical data used for forecast
   training_period_months INT NOT NULL, -- e.g., 12 for last 12 months
@@ -47,9 +47,9 @@ CREATE TABLE emissions_forecasts (
 -- ─── 5B: Model Explainability & Feature Importance ──────────────────────────
 
 CREATE TABLE model_explanations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
-  emission_calculation_id UUID NOT NULL REFERENCES "emission_calculations"(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT cuid(),
+  organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
+  emission_calculation_id TEXT NOT NULL REFERENCES "emission_calculations"(id) ON DELETE CASCADE,
 
   -- Feature importance scores (SHAP-like)
   feature_importance JSONB NOT NULL, -- [{feature_name, importance_value, impact_direction, confidence}, ...]
@@ -81,9 +81,9 @@ CREATE TABLE model_explanations (
 -- ─── 5C: Root Cause Analysis & Causal Inference ──────────────────────────────
 
 CREATE TABLE causal_analyses (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
-  facility_id UUID REFERENCES "facilities"(id) ON DELETE SET NULL,
+  id TEXT PRIMARY KEY DEFAULT cuid(),
+  organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
+  facility_id TEXT REFERENCES "facilities"(id) ON DELETE SET NULL,
 
   -- Anomaly/change being analyzed
   anomaly_type TEXT NOT NULL, -- 'spike' | 'drop' | 'trend_change' | 'unexpected_value'
@@ -113,7 +113,7 @@ CREATE TABLE causal_analyses (
 
   -- Status
   status TEXT DEFAULT 'pending_review' NOT NULL, -- 'pending_review' | 'investigated' | 'resolved' | 'dismissed'
-  investigated_by_user_id UUID REFERENCES "users"(id),
+  investigated_by_user_id TEXT REFERENCES "users"(id),
   investigated_at TIMESTAMP,
   resolution_notes TEXT,
 
@@ -124,8 +124,8 @@ CREATE TABLE causal_analyses (
 -- ─── 5D: Distributed Processing & Batching ──────────────────────────────────
 
 CREATE TABLE batch_jobs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT cuid(),
+  organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
 
   -- Job metadata
   job_type TEXT NOT NULL, -- 'forecast_generation' | 'explanation_generation' | 'causal_analysis'
@@ -156,9 +156,9 @@ CREATE TABLE batch_jobs (
 -- ─── 5E: Dashboard Aggregates (for fast queries) ────────────────────────────
 
 CREATE TABLE analytics_dashboard_cache (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
-  reporting_period_id UUID NOT NULL REFERENCES "reporting_periods"(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT cuid(),
+  organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
+  reporting_period_id TEXT NOT NULL REFERENCES "reporting_periods"(id) ON DELETE CASCADE,
 
   -- Forecast summary
   forecast_total_co2e DECIMAL(15, 2), -- forecasted total for next 12 months
