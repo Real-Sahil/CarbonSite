@@ -232,6 +232,8 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
 
   void _showImageViewer(String filename, String? localPath, [String? remoteUrl]) {
     final isLocal = localPath?.isNotEmpty == true;
+    final hasRemote = remoteUrl?.isNotEmpty == true;
+    final canDisplay = isLocal || hasRemote;
 
     showDialog(
       context: context,
@@ -252,14 +254,16 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
                 foregroundColor: Colors.white,
               ),
               Expanded(
-                child: !isLocal && remoteUrl?.isEmpty != false
+                child: !canDisplay
                     ? Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.image_not_supported, size: 48, color: Theme.of(context).colorScheme.error),
                             const SizedBox(height: 16),
-                            const Text('No image available'),
+                            const Text('Image temporarily unavailable'),
+                            const SizedBox(height: 8),
+                            const Text('Pull to refresh submission details', style: TextStyle(fontSize: 12)),
                           ],
                         ),
                       )
@@ -267,37 +271,55 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
                         ? Image.file(
                             File(localPath!),
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
-                                  const SizedBox(height: 16),
-                                  const Text('Could not load image'),
-                                ],
-                              ),
-                            ),
-                          )
-                        : Image.network(
-                            remoteUrl!,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
-                                  const SizedBox(height: 16),
-                                  const Text('Could not load image'),
-                                ],
-                              ),
-                            ),
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
+                            errorBuilder: (context, error, stackTrace) {
+                              // If local fails and remote available, try remote
+                              if (hasRemote) {
+                                return _buildNetworkImage(remoteUrl!, context);
+                              }
                               return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                      : null,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+                                    const SizedBox(height: 16),
+                                    const Text('Could not load image'),
+                                  ],
+                                ),
+                              );
+                            },
+                          )
+                        : _buildNetworkImage(remoteUrl!, context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNetworkImage(String remoteUrl, BuildContext context) {
+    return Image.network(
+      remoteUrl,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+            const SizedBox(height: 16),
+            const Text('Could not load image from server'),
+            const SizedBox(height: 8),
+            const Text('Check your internet connection', style: TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Center(
+          child: CircularProgressIndicator(
+            value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                : null,
                                 ),
                               );
                             },

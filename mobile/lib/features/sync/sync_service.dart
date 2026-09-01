@@ -171,15 +171,9 @@ class SyncService {
       }
 
       await _db.updateDraftStatus(draft.id, DraftStatus.submitted);
-      // Evidence is on the server now — free the local photo (best-effort).
-      if (photoPath != null && photoPath.isNotEmpty) {
-        try {
-          final file = File(photoPath);
-          if (await file.exists()) await file.delete();
-        } catch (_) {
-          // Non-fatal — the row keeps working without the local file.
-        }
-      }
+      // Keep the local photo after sync — provides fallback if presigned URL fails.
+      // Device storage is typically not space-constrained; instant offline access
+      // is more valuable than saving a few MB.
       return false;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
