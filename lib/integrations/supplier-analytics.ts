@@ -44,19 +44,38 @@ export async function calculateSupplierScore(
   supplierId: string,
   lookbackMonths: number = 12
 ): Promise<SupplierScore> {
-  // Fetch historical performance data
+  // Fetch supplier analytics directly from SupplierAnalytic table
+  const analytic = await prisma.supplierAnalytic.findUnique({
+    where: {
+      organizationId_supplierId: { organizationId, supplierId },
+    },
+  });
+
+  if (!analytic) {
+    return {
+      organizationId,
+      supplierId,
+      submissionCount: 0,
+      approvalRate: 0,
+      completenessScore: 0,
+      timelinessScore: 0,
+      overallScore: 0,
+      trend: 'stable',
+      previousScore: 0,
+      scoreChange: 0,
+    };
+  }
+
+  // Fetch historical performance data for trend analysis
   const submissions = await prisma.fieldSubmission.findMany({
     where: {
       organizationId,
-      supplierId,
       createdAt: {
         gte: new Date(Date.now() - lookbackMonths * 30 * 24 * 60 * 60 * 1000),
       },
     },
-    include: {
-      activityRecords: true,
-    },
     orderBy: { createdAt: 'desc' },
+    take: 100, // Limit to recent submissions
   });
 
   if (submissions.length === 0) {
@@ -75,7 +94,7 @@ export async function calculateSupplierScore(
   }
 
   // 1. Approval Rate (% approved)
-  const approved = submissions.filter((s) => s.reviewStatus === 'approved').length;
+  const approved = submissions.filter((s) => s.status === 'approved').length;
   const approvalRate = submissions.length > 0 ? approved / submissions.length : 0;
 
   // 2. Completeness Score (% of required fields populated)
@@ -103,18 +122,19 @@ export async function calculateSupplierScore(
 
   const completenessScore = submissions.length > 0 ? totalCompleteness / submissions.length : 0;
 
-  // 3. Timeliness Score (% submitted on or before deadline, default 7 days)
+  // 3. Timeliness Score (% submitted on or before deadline)
   let onTimeCount = 0;
   const deadlineDays = 7;
 
   submissions.forEach((sub) => {
-    if (!sub.dueDate) {
-      // If no explicit deadline, assume 7 days from assignment
-      const daysToSubmit = (sub.createdAt.getTime() - sub.assignedAt?.getTime()!) / (1000 * 60 * 60 * 24);
-      if (daysToSubmit <= deadlineDays) onTimeCount++;
-    } else {
-      const daysToSubmit = (sub.createdAt.getTime() - sub.dueDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (sub.requestedByDeadline && sub.submittedAt) {
+      // Check if submitted on time relative to deadline
+      const daysToSubmit = (sub.submittedAt.getTime() - sub.requestedByDeadline.getTime()) / (1000 * 60 * 60 * 24);
       if (daysToSubmit <= 0) onTimeCount++;
+    } else if (sub.submittedAt && sub.createdAt) {
+      // Check if submitted within default deadline (7 days)
+      const daysToSubmit = (sub.submittedAt.getTime() - sub.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysToSubmit <= deadlineDays) onTimeCount++;
     }
   });
 
@@ -135,12 +155,12 @@ export async function calculateSupplierScore(
   let priorScore = 0;
 
   if (recentSubs.length > 0) {
-    const recentApprovalRate = recentSubs.filter((s) => s.reviewStatus === 'approved').length / recentSubs.length;
+    const recentApprovalRate = recentSubs.filter((s) => s.status === 'approved').length / recentSubs.length;
     recentScore = recentApprovalRate * 100;
   }
 
   if (priorSubs.length > 0) {
-    const priorApprovalRate = priorSubs.filter((s) => s.reviewStatus === 'approved').length / priorSubs.length;
+    const priorApprovalRate = priorSubs.filter((s) => s.status === 'approved').length / priorSubs.length;
     priorScore = priorApprovalRate * 100;
   }
 
@@ -160,7 +180,8 @@ export async function calculateSupplierScore(
     },
   });
 
-  const previousScore = previousAnalytic?.overallScore || overallScore;
+  const previousScore = previousAnalytic?.overallScore ? Number(previousAnalytic.overallScore) : overallScore;
+  const finalOverallScore = Math.min(100, Math.max(0, overallScore));
 
   return {
     organizationId,
@@ -169,10 +190,10 @@ export async function calculateSupplierScore(
     approvalRate,
     completenessScore,
     timelinessScore,
-    overallScore: Math.min(100, Math.max(0, overallScore)),
+    overallScore: finalOverallScore,
     trend,
     previousScore,
-    scoreChange: overallScore - previousScore,
+    scoreChange: finalOverallScore - previousScore,
   };
 }
 
@@ -256,19 +277,18 @@ export async function detectSupplierAnomalies(
   supplierId: string,
   stddevThreshold: number = 2
 ): Promise<SupplierAnomaly[]> {
-  // Fetch recent submissions
+  // Fetch recent submissions for the organization
+  // Note: supplierId filtering would require a supplier_id field on FieldSubmission
+  // For now, analyzing org-wide submissions
   const submissions = await prisma.fieldSubmission.findMany({
     where: {
       organizationId,
-      supplierId,
       createdAt: {
         gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
       },
     },
-    include: {
-      activityRecords: true,
-    },
     orderBy: { createdAt: 'desc' },
+    take: 500, // Limit to most recent submissions
   });
 
   const anomalies: SupplierAnomaly[] = [];
@@ -277,10 +297,19 @@ export async function detectSupplierAnomalies(
     return anomalies; // Need minimum data for anomaly detection
   }
 
-  // Extract emission values from submissions
-  const emissionValues = submissions
-    .map((sub) => sub.activityRecords?.[0]?.normalizedAmount || 0)
-    .filter((val) => val > 0);
+  // Extract emission values from submissions, keeping track of valid indices
+  // Try to extract from formData JSON or ocrExtractedData
+  const emissionValueMap = new Map<number, number>(); // submissionIndex -> value
+  submissions.forEach((sub, index) => {
+    const formData = sub.formData as any;
+    const ocrData = sub.ocrExtractedData as any;
+    const value = (formData?.normalizedAmount || ocrData?.weight || 0) as number;
+    if (value > 0) {
+      emissionValueMap.set(index, value);
+    }
+  });
+
+  const emissionValues = Array.from(emissionValueMap.values());
 
   if (emissionValues.length < 3) {
     return anomalies;
@@ -290,37 +319,40 @@ export async function detectSupplierAnomalies(
   const mean = ss.mean(emissionValues);
   const stddev = ss.standardDeviation(emissionValues);
 
-  submissions.forEach((sub, index) => {
-    const value = emissionValues[index];
-    if (value === 0 || !value) return;
+  // Only flag anomalies if there is actual variance in the data
+  if (stddev > 0) {
+    submissions.forEach((sub, index) => {
+      const value = emissionValueMap.get(index);
+      if (!value) return;
 
-    const zScore = Math.abs((value - mean) / (stddev || 1));
+      const zScore = Math.abs((value - mean) / stddev);
 
-    if (zScore > stddevThreshold) {
-      let severity: 'critical' | 'high' | 'medium' | 'low' = 'low';
-      let reason = '';
+      if (zScore > stddevThreshold) {
+        let severity: 'critical' | 'high' | 'medium' | 'low' = 'low';
+        let reason = '';
 
-      if (zScore > 3) {
-        severity = 'critical';
-        reason = `Value ${value.toFixed(2)} is ${zScore.toFixed(1)}σ from baseline (${mean.toFixed(2)})`;
-      } else if (zScore > 2.5) {
-        severity = 'high';
-        reason = `Value ${value.toFixed(2)} deviates significantly from baseline`;
-      } else if (zScore > 2) {
-        severity = 'medium';
-        reason = `Value ${value.toFixed(2)} is above typical range`;
+        if (zScore > 3) {
+          severity = 'critical';
+          reason = `Value ${value.toFixed(2)} is ${zScore.toFixed(1)}σ from baseline (${mean.toFixed(2)})`;
+        } else if (zScore > 2.5) {
+          severity = 'high';
+          reason = `Value ${value.toFixed(2)} deviates significantly from baseline`;
+        } else if (zScore > 2) {
+          severity = 'medium';
+          reason = `Value ${value.toFixed(2)} is above typical range`;
+        }
+
+        anomalies.push({
+          submissionId: sub.id,
+          supplierId,
+          anomalyType: 'value_outlier',
+          severity,
+          reason,
+          detectedAt: new Date(),
+        });
       }
-
-      anomalies.push({
-        submissionId: sub.id,
-        supplierId,
-        anomalyType: 'value_outlier',
-        severity,
-        reason,
-        detectedAt: new Date(),
-      });
-    }
-  });
+    });
+  }
 
   // Detect submission frequency anomalies
   const submissionDates = submissions.map((s) => s.createdAt.getTime());
@@ -334,20 +366,23 @@ export async function detectSupplierAnomalies(
     const intervalMean = ss.mean(intervals);
     const intervalStddev = ss.standardDeviation(intervals);
 
-    // Check most recent submission for frequency anomaly
-    if (submissions.length >= 2) {
-      const recentInterval = intervals[0];
-      const frequencyZScore = Math.abs((recentInterval - intervalMean) / (intervalStddev || 1));
+    // Only flag frequency anomalies if there is actual variance in submission intervals
+    if (intervalStddev > 0) {
+      // Check most recent submission for frequency anomaly
+      if (submissions.length >= 2) {
+        const recentInterval = intervals[0];
+        const frequencyZScore = Math.abs((recentInterval - intervalMean) / intervalStddev);
 
-      if (frequencyZScore > stddevThreshold) {
-        anomalies.push({
-          submissionId: submissions[0].id,
-          supplierId,
-          anomalyType: 'frequency_anomaly',
-          severity: frequencyZScore > 3 ? 'high' : 'medium',
-          reason: `Submission frequency changed: ${recentInterval.toFixed(1)} days vs. typical ${intervalMean.toFixed(1)} days`,
-          detectedAt: new Date(),
-        });
+        if (frequencyZScore > stddevThreshold) {
+          anomalies.push({
+            submissionId: submissions[0].id,
+            supplierId,
+            anomalyType: 'frequency_anomaly',
+            severity: frequencyZScore > 3 ? 'high' : 'medium',
+            reason: `Submission frequency changed: ${recentInterval.toFixed(1)} days vs. typical ${intervalMean.toFixed(1)} days`,
+            detectedAt: new Date(),
+          });
+        }
       }
     }
   }
@@ -440,8 +475,8 @@ export async function updateSupplierAnalytics(
  * Batch update analytics for all suppliers in organization
  */
 export async function refreshSupplierAnalytics(organizationId: string): Promise<number> {
-  // Get all unique suppliers in organization
-  const suppliers = await prisma.fieldSubmission.findMany({
+  // Get all unique suppliers from SupplierAnalytic table
+  const suppliers = await prisma.supplierAnalytic.findMany({
     where: { organizationId },
     distinct: ['supplierId'],
     select: { supplierId: true },
@@ -450,13 +485,11 @@ export async function refreshSupplierAnalytics(organizationId: string): Promise<
   let updatedCount = 0;
 
   for (const { supplierId } of suppliers) {
-    if (supplierId) {
-      try {
-        await updateSupplierAnalytics(organizationId, supplierId);
-        updatedCount++;
-      } catch (error) {
-        console.error(`Failed to update analytics for supplier ${supplierId}:`, error);
-      }
+    try {
+      await updateSupplierAnalytics(organizationId, supplierId);
+      updatedCount++;
+    } catch (error) {
+      console.error(`Failed to update analytics for supplier ${supplierId}:`, error);
     }
   }
 

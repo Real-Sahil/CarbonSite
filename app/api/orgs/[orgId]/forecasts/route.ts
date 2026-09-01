@@ -50,11 +50,11 @@ export async function GET(
 
       const forecastSummary = {
         totalSuppliers: analytics.length,
-        avgScore: analytics.length > 0 ? ss.mean(analytics.map((a) => a.overallScore)) : 0,
+        avgScore: analytics.length > 0 ? ss.mean(analytics.map((a) => Number(a.overallScore))) : 0,
         improvingCount: analytics.filter((a) => a.trend === "improving").length,
         declineCount: analytics.filter((a) => a.trend === "declining").length,
-        totalForecastedEmissions: analytics.reduce((sum, a) => sum + (a.forecastedEmissions || 0), 0),
-        avgConfidence: analytics.length > 0 ? ss.mean(analytics.map((a) => a.forecastConfidence)) : 0,
+        totalForecastedEmissions: analytics.reduce((sum, a) => sum + Number(a.forecastedEmissions || 0), 0),
+        avgConfidence: analytics.length > 0 ? ss.mean(analytics.map((a) => Number(a.forecastConfidence))) : 0,
         emissionsTrend: emissionsTrend.slice(0, 12).reverse(),
       };
 
@@ -126,10 +126,7 @@ export async function POST(
     // Handle supplier analytics refresh
     if (forecastType === "supplier_quality" || triggerType) {
       if (triggerType === "single" && !supplierId) {
-        return NextResponse.json(
-          apiError("INVALID_REQUEST", "supplierId required for single forecast"),
-          { status: 400 }
-        );
+        return apiError("INVALID_REQUEST", "supplierId required for single forecast", 400);
       }
 
       let result: any;
@@ -142,9 +139,8 @@ export async function POST(
           data: { supplierId, analytics: result },
         }, { status: 202 });
       } else if (triggerType === "full") {
-        const suppliers = await prisma.fieldSubmission.findMany({
+        const suppliers = await prisma.supplierAnalytic.findMany({
           where: { organizationId: orgId },
-          distinct: ["supplierId"],
           select: { supplierId: true },
         });
 
