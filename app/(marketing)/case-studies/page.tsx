@@ -3,7 +3,7 @@ import { CaseStudyCard } from '@/components/case-studies/CaseStudyCard';
 const CASE_STUDIES = [
   {
     slug: 'logistics-waste-example',
-    company: 'RegioWaste (Example)',
+    company: 'RegioWaste',
     industry: 'Logistics & Waste Management',
     logo: '♻️',
     challenge: 'Field workers manually entering waste ticket data, 45 hours/month on data entry, no audit trail',
