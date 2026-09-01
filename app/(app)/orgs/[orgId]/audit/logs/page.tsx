@@ -50,6 +50,7 @@ export default function AuditLogsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
 
   const resourceType = searchParams.get('resourceType') || '';
   const action = searchParams.get('action') || '';

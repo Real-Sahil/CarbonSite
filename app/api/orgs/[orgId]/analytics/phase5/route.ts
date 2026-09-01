@@ -9,7 +9,7 @@ import { handleRouteError } from '@/lib/validation/api';
 import { z } from 'zod';
 import { PythonOrchestrator } from '@/lib/jobs/python-orchestrator';
 import { AnalyticsDashboardCacheManager } from '@/lib/analytics/dashboard-cache-manager';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logging';
 
 // Schema validation
@@ -40,11 +40,39 @@ interface Params {
 
 /**
  * POST /api/orgs/[orgId]/analytics/phase5/forecast
- * Trigger emissions forecasting job
+ * POST /api/orgs/[orgId]/analytics/phase5/explain
+ * POST /api/orgs/[orgId]/analytics/phase5/root-cause
+ * POST /api/orgs/[orgId]/analytics/phase5/batch
  */
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
+    const pathname = req.nextUrl.pathname;
+
+    if (pathname.includes('/forecast')) {
+      return handleForecast(req, orgId);
+    } else if (pathname.includes('/explain')) {
+      return handleExplanation(req, orgId);
+    } else if (pathname.includes('/root-cause')) {
+      return handleRootCause(req, orgId);
+    } else if (pathname.includes('/batch')) {
+      return handleBatchJob(req, orgId);
+    }
+
+    return NextResponse.json(
+      { code: 'NOT_FOUND', message: 'Endpoint not found' },
+      { status: 404 }
+    );
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}
+
+/**
+ * Handle forecast request
+ */
+async function handleForecast(req: NextRequest, orgId: string) {
+  try {
     await requireOrgMember(orgId, ['admin', 'editor']);
 
     const body = await req.json();
@@ -100,183 +128,154 @@ export async function POST(req: NextRequest, { params }: Params) {
 }
 
 /**
- * POST /api/orgs/[orgId]/analytics/phase5/explain
- * Trigger model explainability job
+ * Handle explanation request
  */
-export async function POST(req: NextRequest, { params }: Params) {
-  if (req.nextUrl.pathname.includes('/explain')) {
-    try {
-      const { orgId } = await params;
-      await requireOrgMember(orgId, ['admin', 'editor']);
+async function handleExplanation(req: NextRequest, orgId: string) {
+  try {
+    await requireOrgMember(orgId, ['admin', 'editor']);
 
-      const body = await req.json();
-      const { emissionCalculationId } =
-        ExplanationRequestSchema.parse(body);
+    const body = await req.json();
+    const { emissionCalculationId } = ExplanationRequestSchema.parse(body);
 
-      logger.info(
-        `Triggering explainability for org=${orgId}, calc=${emissionCalculationId}`
+    logger.info(
+      `Triggering explainability for org=${orgId}, calc=${emissionCalculationId}`
+    );
+
+    const result = await PythonOrchestrator.queueExplanation(
+      orgId,
+      emissionCalculationId
+    );
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          code: 'EXPLANATION_FAILED',
+          message: 'Failed to generate explanations',
+          details: result.error,
+        },
+        { status: 500 }
       );
-
-      const result = await PythonOrchestrator.queueExplanation(
-        orgId,
-        emissionCalculationId
-      );
-
-      if (!result.success) {
-        return NextResponse.json(
-          {
-            code: 'EXPLANATION_FAILED',
-            message: 'Failed to generate explanations',
-            details: result.error,
-          },
-          { status: 500 }
-        );
-      }
-
-      await AnalyticsDashboardCacheManager.invalidateOrgCache(orgId);
-
-      return NextResponse.json({
-        success: true,
-        message: 'Explainability job queued successfully',
-        jobType: 'explanation_generation',
-        orgId,
-        emissionCalculationId,
-      });
-    } catch (error) {
-      return handleRouteError(error);
     }
-  }
 
-  return NextResponse.json(
-    { code: 'NOT_FOUND', message: 'Endpoint not found' },
-    { status: 404 }
-  );
+    await AnalyticsDashboardCacheManager.invalidateOrgCache(orgId);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Explainability job queued successfully',
+      jobType: 'explanation_generation',
+      orgId,
+      emissionCalculationId,
+    });
+  } catch (error) {
+    return handleRouteError(error);
+  }
 }
 
 /**
- * POST /api/orgs/[orgId]/analytics/phase5/root-cause
- * Trigger root cause analysis job
+ * Handle root cause analysis request
  */
-export async function POST(req: NextRequest, { params }: Params) {
-  if (req.nextUrl.pathname.includes('/root-cause')) {
-    try {
-      const { orgId } = await params;
-      await requireOrgMember(orgId, ['admin', 'editor', 'reviewer']);
+async function handleRootCause(req: NextRequest, orgId: string) {
+  try {
+    await requireOrgMember(orgId, ['admin', 'editor', 'reviewer']);
 
-      const body = await req.json();
-      const { facilityId } = RootCauseRequestSchema.parse(body);
+    const body = await req.json();
+    const { facilityId } = RootCauseRequestSchema.parse(body);
 
-      logger.info(
-        `Triggering root cause analysis for org=${orgId}, facility=${facilityId}`
+    logger.info(
+      `Triggering root cause analysis for org=${orgId}, facility=${facilityId}`
+    );
+
+    const result = await PythonOrchestrator.queueRootCauseAnalysis(
+      orgId,
+      facilityId
+    );
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          code: 'ANALYSIS_FAILED',
+          message: 'Failed to perform root cause analysis',
+          details: result.error,
+        },
+        { status: 500 }
       );
-
-      const result = await PythonOrchestrator.queueRootCauseAnalysis(
-        orgId,
-        facilityId
-      );
-
-      if (!result.success) {
-        return NextResponse.json(
-          {
-            code: 'ANALYSIS_FAILED',
-            message: 'Failed to perform root cause analysis',
-            details: result.error,
-          },
-          { status: 500 }
-        );
-      }
-
-      await AnalyticsDashboardCacheManager.invalidateOrgCache(orgId);
-
-      return NextResponse.json({
-        success: true,
-        message: 'Root cause analysis job queued successfully',
-        jobType: 'causal_analysis',
-        orgId,
-        facilityId,
-      });
-    } catch (error) {
-      return handleRouteError(error);
     }
-  }
 
-  return NextResponse.json(
-    { code: 'NOT_FOUND', message: 'Endpoint not found' },
-    { status: 404 }
-  );
+    await AnalyticsDashboardCacheManager.invalidateOrgCache(orgId);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Root cause analysis job queued successfully',
+      jobType: 'causal_analysis',
+      orgId,
+      facilityId,
+    });
+  } catch (error) {
+    return handleRouteError(error);
+  }
 }
 
 /**
- * POST /api/orgs/[orgId]/analytics/phase5/batch
- * Trigger batch processing job
+ * Handle batch job request
  */
-export async function POST(req: NextRequest, { params }: Params) {
-  if (req.nextUrl.pathname.includes('/batch')) {
-    try {
-      const { orgId } = await params;
-      await requireOrgMember(orgId, ['admin']);
+async function handleBatchJob(req: NextRequest, orgId: string) {
+  try {
+    await requireOrgMember(orgId, ['admin']);
 
-      const body = await req.json();
-      const { jobType } = BatchJobRequestSchema.parse(body);
+    const body = await req.json();
+    const { jobType } = BatchJobRequestSchema.parse(body);
 
-      logger.info(`Triggering batch job for org=${orgId}, type=${jobType}`);
+    logger.info(`Triggering batch job for org=${orgId}, type=${jobType}`);
 
-      // Create batch job in database
-      const batchJob = await db.batchJob.create({
+    // Create batch job in database
+    const batchJob = await prisma.batchJob.create({
+      data: {
+        id: `batch_${orgId}_${jobType}_${Date.now()}`,
+        organizationId: orgId,
+        jobType,
+        status: 'queued',
+        totalItems: 0,
+        processedItems: 0,
+        batchSize: 100,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    const result = await PythonOrchestrator.queueBatchJob(orgId, jobType);
+
+    if (!result.success) {
+      await prisma.batchJob.update({
+        where: { id: batchJob.id },
         data: {
-          id: `batch_${orgId}_${jobType}_${Date.now()}`,
-          organizationId: orgId,
-          jobType,
-          status: 'queued',
-          totalItems: 0, // Will be populated by worker
-          processedItems: 0,
-          batchSize: 100,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          status: 'failed',
+          errorMessage: result.error,
+          completedAt: new Date(),
         },
       });
 
-      const result = await PythonOrchestrator.queueBatchJob(orgId, jobType);
-
-      if (!result.success) {
-        // Update batch job status
-        await db.batchJob.update({
-          where: { id: batchJob.id },
-          data: {
-            status: 'failed',
-            errorMessage: result.error,
-            completedAt: new Date(),
-          },
-        });
-
-        return NextResponse.json(
-          {
-            code: 'BATCH_FAILED',
-            message: 'Failed to queue batch job',
-            details: result.error,
-          },
-          { status: 500 }
-        );
-      }
-
-      await AnalyticsDashboardCacheManager.invalidateOrgCache(orgId);
-
-      return NextResponse.json({
-        success: true,
-        message: 'Batch job queued successfully',
-        jobType,
-        jobId: batchJob.id,
-        orgId,
-      });
-    } catch (error) {
-      return handleRouteError(error);
+      return NextResponse.json(
+        {
+          code: 'BATCH_FAILED',
+          message: 'Failed to queue batch job',
+          details: result.error,
+        },
+        { status: 500 }
+      );
     }
-  }
 
-  return NextResponse.json(
-    { code: 'NOT_FOUND', message: 'Endpoint not found' },
-    { status: 404 }
-  );
+    await AnalyticsDashboardCacheManager.invalidateOrgCache(orgId);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Batch job queued successfully',
+      jobType,
+      jobId: batchJob.id,
+      orgId,
+    });
+  } catch (error) {
+    return handleRouteError(error);
+  }
 }
 
 /**
@@ -288,8 +287,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     await requireOrgMember(orgId, ['admin']);
 
-    const pythonAvailable =
-      await PythonOrchestrator.checkPythonEnvironment();
+    const pythonAvailable = await PythonOrchestrator.checkPythonEnvironment();
     const packages = await PythonOrchestrator.checkRequiredPackages();
 
     return NextResponse.json({
@@ -309,8 +307,7 @@ export async function GET(req: NextRequest, { params }: Params) {
             : `Missing packages: ${packages.missing.join(', ')}`,
         },
         phase5: {
-          available:
-            pythonAvailable && packages.available,
+          available: pythonAvailable && packages.available,
           components: [
             { name: 'Phase 5A: Forecasting', available: pythonAvailable },
             { name: 'Phase 5B: Explainability', available: pythonAvailable },

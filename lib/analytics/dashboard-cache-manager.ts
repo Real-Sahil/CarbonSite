@@ -4,7 +4,7 @@
  */
 
 import { Prisma, PrismaClient } from '@prisma/client';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logging';
 
 export interface DashboardCacheUpdate {
@@ -32,7 +32,7 @@ export class AnalyticsDashboardCacheManager {
    */
   static async invalidateOrgCache(organizationId: string): Promise<void> {
     try {
-      await db.analyticsDashboardCache.updateMany({
+      await prisma.analyticsDashboardCache.updateMany({
         where: { organizationId },
         data: {
           expiresAt: new Date(), // Expire immediately
@@ -55,7 +55,7 @@ export class AnalyticsDashboardCacheManager {
     reportingPeriodId: string
   ): Promise<void> {
     try {
-      await db.analyticsDashboardCache.updateMany({
+      await prisma.analyticsDashboardCache.updateMany({
         where: { organizationId, reportingPeriodId },
         data: {
           expiresAt: new Date(),
@@ -77,7 +77,7 @@ export class AnalyticsDashboardCacheManager {
    */
   static async updateCache(update: DashboardCacheUpdate): Promise<void> {
     try {
-      const existingCache = await db.analyticsDashboardCache.findUnique({
+      const existingCache = await prisma.analyticsDashboardCache.findUnique({
         where: {
           organization_id_reporting_period_id: {
             organizationId: update.organizationId,
@@ -88,7 +88,7 @@ export class AnalyticsDashboardCacheManager {
 
       if (existingCache) {
         // Update existing cache
-        await db.analyticsDashboardCache.update({
+        await prisma.analyticsDashboardCache.update({
           where: {
             organization_id_reporting_period_id: {
               organizationId: update.organizationId,
@@ -122,7 +122,7 @@ export class AnalyticsDashboardCacheManager {
         });
       } else {
         // Create new cache entry
-        await db.analyticsDashboardCache.create({
+        await prisma.analyticsDashboardCache.create({
           data: {
             id: `cache_${update.organizationId}_${update.reportingPeriodId}_${Date.now()}`,
             organizationId: update.organizationId,
@@ -163,7 +163,7 @@ export class AnalyticsDashboardCacheManager {
     reportingPeriodId: string
   ): Promise<any | null> {
     try {
-      const cache = await db.analyticsDashboardCache.findUnique({
+      const cache = await prisma.analyticsDashboardCache.findUnique({
         where: {
           organization_id_reporting_period_id: {
             organizationId,
@@ -196,28 +196,28 @@ export class AnalyticsDashboardCacheManager {
   static async refreshOrgDashboards(organizationId: string): Promise<void> {
     try {
       // Get all active reporting periods for the org
-      const periods = await db.reportingPeriod.findMany({
+      const periods = await prisma.reportingPeriod.findMany({
         where: { organizationId },
         orderBy: { endDate: 'desc' },
         take: 5, // Only refresh last 5 periods
       });
 
       // Collect forecast data
-      const forecasts = await db.emissionsForecast.findMany({
+      const forecasts = await prisma.emissionsForecast.findMany({
         where: { organizationId },
         orderBy: { createdAt: 'desc' },
         take: 1,
       });
 
       // Collect explanation data
-      const explanations = await db.modelExplanation.findMany({
+      const explanations = await prisma.modelExplanation.findMany({
         where: { organizationId },
         orderBy: { createdAt: 'desc' },
         take: 1,
       });
 
       // Collect causal analysis data
-      const analyses = await db.causalAnalysis.findMany({
+      const analyses = await prisma.causalAnalysis.findMany({
         where: { organizationId, status: 'pending_review' },
         orderBy: { createdAt: 'desc' },
         take: 5,
@@ -277,7 +277,7 @@ export class AnalyticsDashboardCacheManager {
     reportingPeriodId: string
   ): Promise<boolean> {
     try {
-      const cache = await db.analyticsDashboardCache.findUnique({
+      const cache = await prisma.analyticsDashboardCache.findUnique({
         where: {
           organization_id_reporting_period_id: {
             organizationId,
@@ -295,7 +295,7 @@ export class AnalyticsDashboardCacheManager {
       }
 
       // Check if underlying data is newer than cache
-      const latestCalculation = await db.emissionCalculation.findFirst({
+      const latestCalculation = await prisma.emissionCalculation.findFirst({
         where: {
           emissionRecord: {
             organizationId,
