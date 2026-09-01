@@ -16,7 +16,7 @@ import { z } from "zod";
 
 // Validation schema for PilotClientContext
 const PilotClientContextSchema = z.object({
-  organizationId: z.string().uuid(),
+  organizationId: z.string().min(1),
   organizationName: z.string().min(1).max(255),
   industry: z.string().min(1).max(100),
   facilityCount: z.number().int().positive(),
