@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AddPaymentMethodDialog } from '@/components/billing/add-payment-method-dialog';
@@ -22,7 +22,7 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  const fetchPaymentMethods = async () => {
+  const fetchPaymentMethods = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -43,11 +43,11 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
 
   useEffect(() => {
     fetchPaymentMethods();
-  }, [orgId]);
+  }, [fetchPaymentMethods]);
 
   const handleDelete = async (methodId: string) => {
     try {

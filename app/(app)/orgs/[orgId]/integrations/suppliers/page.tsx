@@ -156,7 +156,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
                 <Users className="h-5 w-5 text-amber-400" />
                 Active Suppliers
               </CardTitle>
-              <CardDescription>Suppliers you've invited to collaborate</CardDescription>
+              <CardDescription>Suppliers you&apos;ve invited to collaborate</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
@@ -178,7 +178,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">1</div>
                   <div>
                     <h4 className="font-semibold text-white mb-1">You Send Invitation</h4>
-                    <p className="text-sm text-slate-300">Create an invitation with the supplier's email and send them a secure link.</p>
+                    <p className="text-sm text-slate-300">Create an invitation with the supplier&apos;s email and send them a secure link.</p>
                   </div>
                 </div>
 
@@ -234,7 +234,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Use estimates:</strong> CarbonSite estimates Scope 3 if suppliers don't respond</span>
+                  <span><strong className="text-white">Use estimates:</strong> CarbonSite estimates Scope 3 if suppliers don&apos;t respond</span>
                 </li>
               </ul>
             </CardContent>

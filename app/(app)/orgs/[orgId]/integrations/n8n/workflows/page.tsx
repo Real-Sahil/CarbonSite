@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import {
   Card,
@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Trash2, Plus, CheckCircle2, XCircle } from 'lucide-react';
+import { AlertCircle, Trash2, Plus, XCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Workflow {
@@ -74,11 +74,7 @@ export default function N8nWorkflowsPage() {
     action: '',
   });
 
-  useEffect(() => {
-    fetchWorkflows();
-  }, [orgId]);
-
-  async function fetchWorkflows() {
+  const fetchWorkflows = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -93,7 +89,11 @@ export default function N8nWorkflowsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [orgId]);
+
+  useEffect(() => {
+    fetchWorkflows();
+  }, [fetchWorkflows]);
 
   async function handleCreateWorkflow() {
     if (!newWorkflow.name.trim() || !newWorkflow.trigger || !newWorkflow.action) {

@@ -62,11 +62,9 @@ export default function WorkflowsPage() {
   }, [orgId]);
 
   useEffect(() => {
-    // fetchWorkflows is wrapped in useCallback with orgId dependency
-    // This pattern is valid for data fetching
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchWorkflows();
-  }, []);
+  }, [fetchWorkflows]);
 
   const handleTriggerWorkflow = async (workflowName: string) => {
     setTriggeringWorkflow(workflowName);

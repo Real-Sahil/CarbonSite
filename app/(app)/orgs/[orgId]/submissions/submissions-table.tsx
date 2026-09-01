@@ -209,7 +209,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
   const columns: ColumnDef<Submission>[] = [
     {
       id: "checkbox",
-      header: ({ table }) => (
+      header: ({ table: _table }) => (
         <>
           {eligible.length > 0 && (
             <Checkbox

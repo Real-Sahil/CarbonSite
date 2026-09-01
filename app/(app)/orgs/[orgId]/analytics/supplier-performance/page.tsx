@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -20,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, Target, AlertCircle, CheckCircle } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
+import { TrendingUp, TrendingDown, Activity, AlertCircle, CheckCircle } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 interface SupplierPerformance {
@@ -64,11 +63,7 @@ export default function SupplierPerformancePage() {
   const [sortBy, setSortBy] = useState<'quality' | 'completeness' | 'submissions'>('quality');
   const [filterTrend, setFilterTrend] = useState<'all' | 'improving' | 'stable' | 'declining'>('all');
 
-  useEffect(() => {
-    fetchPerformanceData();
-  }, [orgId, sortBy, filterTrend]);
-
-  const fetchPerformanceData = async () => {
+  const fetchPerformanceData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -110,7 +105,13 @@ export default function SupplierPerformancePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId, sortBy, filterTrend]);
+
+  useEffect(() => {
+    // fetchPerformanceData is wrapped in useCallback and properly memoized
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPerformanceData();
+  }, [fetchPerformanceData]);
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -138,18 +139,24 @@ export default function SupplierPerformancePage() {
   };
 
   // Sample trend data for chart
-  const trendChartData = Array.from({ length: 12 }, (_, i) => ({
-    date: format(subDays(new Date(), 30 - i), 'MMM d'),
-    quality: 65 + Math.random() * 30,
-    completeness: 70 + Math.random() * 25,
-  }));
+  const trendChartData = useMemo(() =>
+    Array.from({ length: 12 }, (_, i) => ({
+      date: format(subDays(new Date(), 30 - i), 'MMM d'),
+      quality: 65 + ((i * 7) % 30),
+      completeness: 70 + ((i * 5) % 25),
+    })),
+    []
+  );
 
   // Scatter data for quality vs completeness correlation
-  const scatterData = suppliers.slice(0, 10).map(s => ({
-    quality: s.dataQualityScore,
-    completeness: s.completenessScore,
-    name: s.supplierName,
-  }));
+  const scatterData = useMemo(() =>
+    suppliers.slice(0, 10).map(s => ({
+      quality: s.dataQualityScore,
+      completeness: s.completenessScore,
+      name: s.supplierName,
+    })),
+    [suppliers]
+  );
 
   return (
     <div className="space-y-6">
@@ -248,7 +255,7 @@ export default function SupplierPerformancePage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-4">
-            <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as 'quality' | 'completeness' | 'submissions')}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
@@ -258,7 +265,7 @@ export default function SupplierPerformancePage() {
                 <SelectItem value="submissions">Sort by Submissions</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterTrend} onValueChange={(v: any) => setFilterTrend(v)}>
+            <Select value={filterTrend} onValueChange={(v: string) => setFilterTrend(v as 'all' | 'improving' | 'stable' | 'declining')}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>

@@ -38,6 +38,7 @@ export function RecordActions({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const error = new Error(data.message ?? "Failed.");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (error as any).status = res.status;
         const { action, message } = handleSupabaseError(error);
 
@@ -69,6 +70,7 @@ export function RecordActions({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const error = new Error(data.message ?? "Delete failed.");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (error as any).status = res.status;
         const { action, message } = handleSupabaseError(error);
 

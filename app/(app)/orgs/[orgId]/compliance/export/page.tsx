@@ -125,7 +125,7 @@ export default function EvidenceExportPage() {
       {/* What's Included Section */}
       <Card>
         <CardHeader>
-          <CardTitle>What's Included in Your Evidence Package</CardTitle>
+          <CardTitle>What&apos;s Included in Your Evidence Package</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -266,7 +266,7 @@ export default function EvidenceExportPage() {
       <Card className="bg-gray-50">
         <CardContent className="pt-6">
           <p className="text-sm text-gray-600">
-            <strong>Note:</strong> All evidence packages are generated on-demand and include only data from the date range you specify. Each export includes a verification timestamp and digital signature. Your organization's data remains completely private and secure.
+            <strong>Note:</strong> All evidence packages are generated on-demand and include only data from the date range you specify. Each export includes a verification timestamp and digital signature. Your organization&apos;s data remains completely private and secure.
           </p>
         </CardContent>
       </Card>

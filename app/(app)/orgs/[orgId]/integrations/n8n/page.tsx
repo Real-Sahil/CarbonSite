@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,11 +37,7 @@ export default function N8nPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchWorkflows();
-  }, [orgId]);
-
-  const fetchWorkflows = async () => {
+  const fetchWorkflows = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`/api/orgs/${orgId}/integrations/n8n/workflows`);
@@ -53,7 +49,12 @@ export default function N8nPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchWorkflows();
+  }, [fetchWorkflows]);
 
   const handleTestWorkflow = async (workflowId: string) => {
     try {
@@ -314,13 +315,13 @@ export default function N8nPage() {
           <div>
             <strong>3. Testing</strong>
             <p className="text-muted-foreground">
-              Use the "Test" button to simulate a workflow trigger and verify it executes correctly.
+              Use the &quot;Test&quot; button to simulate a workflow trigger and verify it executes correctly.
             </p>
           </div>
           <div>
             <strong>4. Monitoring</strong>
             <p className="text-muted-foreground">
-              Workflow execution logs are tracked in CarbonSite. Check "Last Triggered" and "Failures" to
+              Workflow execution logs are tracked in CarbonSite. Check &quot;Last Triggered&quot; and &quot;Failures&quot; to
               monitor health.
             </p>
           </div>

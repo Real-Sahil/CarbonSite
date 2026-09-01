@@ -53,7 +53,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
             Emissions Analytics
           </h1>
           <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
-            Track your organization's emissions across scopes, facilities, and categories with detailed insights and trends.
+            Track your organization&apos;s emissions across scopes, facilities, and categories with detailed insights and trends.
           </p>
         </div>
       </div>

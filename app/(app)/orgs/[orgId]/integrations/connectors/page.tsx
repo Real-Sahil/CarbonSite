@@ -109,6 +109,7 @@ export default function AirbyteConnectorsPage() {
   }, [orgId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchConnectors();
   }, [fetchConnectors]);
 
@@ -435,7 +436,7 @@ export default function AirbyteConnectorsPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded p-3">
               <p className="text-sm text-blue-900">
-                You'll be prompted to enter API credentials for the selected source. Credentials
+                You&apos;ll be prompted to enter API credentials for the selected source. Credentials
                 are encrypted and stored securely.
               </p>
             </div>

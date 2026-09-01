@@ -17,7 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   CheckCircle,
-  AlertCircle,
   BarChart3,
   Zap,
   Lock,
@@ -39,12 +38,7 @@ export async function generateMetadata({ params }: AccountingPageProps) {
 export default async function AccountingPage({ params }: AccountingPageProps) {
   const { orgId } = await params;
 
-  const user = await requireOrgMember(orgId, "admin", "editor");
-
-  const org = await prisma.organization.findUniqueOrThrow({
-    where: { id: orgId },
-    select: { name: true },
-  });
+  await requireOrgMember(orgId, "admin", "editor");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900">

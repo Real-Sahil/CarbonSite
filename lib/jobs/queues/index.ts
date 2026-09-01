@@ -37,6 +37,12 @@ export type XeroSyncJobData = { orgId: string; fromDate?: string };
 export type QuickBooksSyncJobData = { orgId: string; fromDate?: string };
 export type SageSyncJobData = { orgId: string; fromDate?: string };
 export type CausalAnalysisJobData = { causalInferenceRunId: string; orgId: string };
+export type ForecastingJobData = {
+  orgId: string;
+  forecastType: "emissions" | "supplier_quality" | "anomaly_rate";
+  lookbackMonths?: number;
+  forecastMonths?: number;
+};
 
 export async function enqueueImport(data: ImportJobData) {
   await ensureBossStarted();
@@ -107,4 +113,9 @@ export async function enqueueSageSync(data: SageSyncJobData) {
 export async function enqueueCausalAnalysis(data: CausalAnalysisJobData) {
   await ensureBossStarted();
   await boss.send("causal-analysis", data, retry);
+}
+
+export async function enqueueForecasting(data: ForecastingJobData) {
+  await ensureBossStarted();
+  await boss.send("forecasting", data, retry);
 }

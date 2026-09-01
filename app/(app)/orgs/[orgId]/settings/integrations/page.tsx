@@ -144,6 +144,7 @@ export default function IntegrationsPage() {
     setError("");
     setSuccess("");
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = { llmProvider };
       if (llmToken) payload.llmToken = llmToken;
       if (xeroClientId) payload.xeroClientId = xeroClientId;
@@ -310,6 +311,7 @@ export default function IntegrationsPage() {
       if (type === "oidc") setTestingOidc(true);
       if (type === "n8n") setTestingN8n(webhookType || null);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = { type };
       if (webhookType) payload.webhookType = webhookType;
 
@@ -395,6 +397,7 @@ export default function IntegrationsPage() {
                 <label className="text-xs text-zinc-500">Provider</label>
                 <select
                   value={llmProvider}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange={(e) => setLlmProvider(e.target.value as any)}
                   className="h-8 text-sm border border-[#E5E7EB] rounded px-2"
                 >
@@ -693,6 +696,7 @@ export default function IntegrationsPage() {
                 <label className="text-xs text-zinc-500">Provider</label>
                 <select
                   value={oidcProvider}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange={(e) => setOidcProvider(e.target.value as any)}
                   className="h-8 text-sm border border-[#E5E7EB] rounded px-2"
                 >

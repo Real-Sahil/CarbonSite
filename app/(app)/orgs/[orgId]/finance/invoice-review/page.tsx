@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,11 +61,7 @@ export default function InvoiceReviewPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
 
-  useEffect(() => {
-    fetchAnomalies();
-  }, [orgId, severityFilter, typeFilter, resolutionFilter]);
-
-  const fetchAnomalies = async () => {
+  const fetchAnomalies = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -85,7 +81,12 @@ export default function InvoiceReviewPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId, severityFilter, typeFilter, resolutionFilter]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchAnomalies();
+  }, [fetchAnomalies]);
 
   const handleBulkResolve = async (resolution: 'approved' | 'rejected') => {
     if (selectedIds.size === 0) return;
@@ -219,6 +220,7 @@ export default function InvoiceReviewPage() {
         <CardContent className="grid gap-4 md:grid-cols-4">
           <div>
             <label className="text-sm font-medium">Severity</label>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <Select value={severityFilter} onValueChange={(v: any) => setSeverityFilter(v)}>
               <SelectTrigger>
                 <SelectValue />
@@ -250,6 +252,7 @@ export default function InvoiceReviewPage() {
           </div>
           <div>
             <label className="text-sm font-medium">Status</label>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <Select value={resolutionFilter} onValueChange={(v: any) => setResolutionFilter(v)}>
               <SelectTrigger>
                 <SelectValue />
@@ -420,7 +423,7 @@ export default function InvoiceReviewPage() {
             <strong>Critical Issues:</strong> Likely fraud, over-billing, or duplicate invoices. Must be resolved before approval.
           </div>
           <div>
-            <strong>Warnings:</strong> Data quality issues like date inconsistencies or missing receipts. Approve if you've verified the invoice manually.
+            <strong>Warnings:</strong> Data quality issues like date inconsistencies or missing receipts. Approve if you&apos;ve verified the invoice manually.
           </div>
           <div>
             <strong>Info:</strong> Minor FYI items like price fluctuations. Generally safe to approve in bulk.

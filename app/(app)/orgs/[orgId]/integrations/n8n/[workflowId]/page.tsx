@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,11 +37,7 @@ export default function WorkflowDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchExecutions();
-  }, [orgId, workflowId]);
-
-  const fetchExecutions = async () => {
+  const fetchExecutions = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(
@@ -55,7 +51,12 @@ export default function WorkflowDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId, workflowId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchExecutions();
+  }, [fetchExecutions]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
