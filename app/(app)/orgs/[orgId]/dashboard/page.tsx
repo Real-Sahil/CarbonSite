@@ -9,6 +9,7 @@ import {
   Building2,
   ClipboardCheck,
   Clock,
+  Download,
   FileText,
   Gauge,
   Handshake,
@@ -460,6 +461,14 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
   const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
     dataQualityBatch;
+
+  // Fetch pilot kit documents
+  const pilotKitResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000"}/api/orgs/${orgId}/pilot/kit-documents`,
+    { next: { revalidate: 3600 } } // Cache for 1 hour
+  ).catch(() => null);
+  const pilotKitData = pilotKitResponse?.ok ? await pilotKitResponse.json().catch(() => null) : null;
+  const pilotKitDocuments = pilotKitData?.data?.documents ?? [];
 
   // Industry-specific data
   const industry = organization.industry ?? null;
@@ -1524,6 +1533,63 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </div>
           </CardContent>
         </Card>
+
+        {pilotKitDocuments.length > 0 && (
+          <Card className="overflow-hidden">
+            <CardHeader>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base">Pilot kit documentation</CardTitle>
+                  <CardDescription>
+                    Onboarding and setup guides tailored for your organization.
+                  </CardDescription>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#EFF6FF] text-[#0369A1]">
+                  <FileText aria-hidden="true" className="h-5 w-5" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {pilotKitDocuments.map((doc: any) => (
+                <div
+                  key={doc.storageKey}
+                  className="flex items-center justify-between rounded-lg border border-[#E5E7EB] p-3 hover:bg-[#F9FAFB] transition-colors"
+                >
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-[#111827]">{doc.name}</p>
+                    <p className="text-xs text-[#6B7280]">{doc.audience}</p>
+                  </div>
+                  {doc.downloadUrl ? (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="ghost"
+                      className="gap-2"
+                    >
+                      <a href={doc.downloadUrl} download>
+                        <Download className="h-4 w-4" />
+                        Download
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="ghost" disabled>
+                      <span className="text-xs text-[#9CA3AF]">Unavailable</span>
+                    </Button>
+                  )}
+                </div>
+              ))}
+              {pilotKitData?.data?.generatedAt && (
+                <div className="pt-2 text-xs text-[#6B7280]">
+                  Generated {new Date(pilotKitData.data.generatedAt).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
