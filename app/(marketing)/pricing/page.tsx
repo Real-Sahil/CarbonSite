@@ -4,10 +4,10 @@ import { Check, X } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Pricing | CarbonSite',
-  description: 'Simple, transparent pricing for carbon accounting. Free tier included.',
+  description: 'Simple, transparent pricing for carbon accounting. 30-day free trial included.',
   openGraph: {
     title: 'Pricing | CarbonSite',
-    description: 'Simple, transparent pricing. No hidden fees.',
+    description: 'Simple, transparent pricing. 30-day free trial. No hidden fees.',
     type: 'website',
     url: 'https://carbonsite.ai/pricing',
   },
@@ -26,29 +26,9 @@ interface PricingTier {
 
 const tiers: PricingTier[] = [
   {
-    name: 'Starter',
-    price: 'Free',
-    description: 'Perfect for pilots and startups',
-    cta: 'Get Started',
-    ctaUrl: '/auth/signup',
-    features: [
-      { name: 'Up to 100 emissions records', included: true },
-      { name: '1 facility', included: true },
-      { name: '1 reporting period', included: true },
-      { name: 'Core calculation engine', included: true },
-      { name: 'Community support', included: true },
-      { name: 'Mobile app for field teams', included: false },
-      { name: 'Supplier portal', included: false },
-      { name: 'Accounting software integration', included: false },
-      { name: 'Live dashboard', included: false },
-      { name: 'Enterprise security', included: false },
-      { name: 'Uptime guarantee', included: false },
-    ],
-  },
-  {
     name: 'Growth',
-    price: 50,
-    period: '/month',
+    price: '30 days free',
+    period: ', then £50/month',
     description: 'For mid-market organizations',
     cta: 'Start Free Trial',
     ctaUrl: '/auth/signup',
@@ -99,14 +79,14 @@ export default function PricingPage() {
             Simple, Transparent Pricing
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
-            Start free. Scale with your organization. No hidden fees.
+            Try free for 30 days. Scale with your organization. No credit card required.
           </p>
         </div>
       </div>
 
       {/* Pricing Cards */}
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 lg:max-w-3xl lg:mx-auto">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -196,15 +176,15 @@ export default function PricingPage() {
           {[
             {
               q: 'Can I change plans anytime?',
-              a: 'Yes. Upgrade, downgrade, or cancel anytime. No long-term contracts required.',
+              a: 'Yes. After your free trial ends, you can upgrade to Growth, downgrade, or cancel anytime. No long-term contracts required.',
             },
             {
               q: 'Do you offer annual discounts?',
               a: 'Yes. Growth tier is 20% off when paid annually. Contact sales for Enterprise discounts.',
             },
             {
-              q: 'Is there a free trial for Growth tier?',
-              a: 'Yes. 14-day free trial with all Growth features. No credit card required.',
+              q: 'Is there a free trial?',
+              a: 'Yes. 30-day free trial with all Growth features. No credit card required to start.',
             },
             {
               q: 'Who owns my data?',
@@ -212,11 +192,11 @@ export default function PricingPage() {
             },
             {
               q: 'What calculation engines are included?',
-              a: 'All tiers include Scope 1, 2, and basic Scope 3. Growth+ includes ML-based Scope 3 estimation and supplier collaboration.',
+              a: 'Growth tier includes Scope 1, 2, and ML-based Scope 3 estimation. Enterprise tier includes all advanced features plus custom calculations.',
             },
             {
-              q: 'Can I use Starter tier for production?',
-              a: 'Yes, but limited to 100 records. For production use with 100+ records, Growth tier recommended.',
+              q: 'What happens after the free trial ends?',
+              a: 'Your trial expires after 30 days. You can start a paid Growth subscription to continue, or export your data and cancel.',
             },
           ].map((faq, i) => (
             <div key={i} className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
@@ -237,20 +217,20 @@ export default function PricingPage() {
               Ready to get started?
             </h2>
             <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
-              Start free today. No credit card required.
+              Try CarbonSite free for 30 days. No credit card required.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Link
                 href="/auth/signup"
                 className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
               >
-                Start Free Trial
+                Start 30-Day Trial
               </Link>
               <Link
                 href="/contact-sales"
                 className="rounded-lg border border-zinc-300 px-6 py-3 font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-50 dark:hover:bg-zinc-800"
               >
-                Schedule Demo
+                Talk to Sales
               </Link>
             </div>
           </div>
