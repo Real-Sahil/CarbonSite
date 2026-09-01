@@ -44,28 +44,6 @@ export async function calculateSupplierScore(
   supplierId: string,
   lookbackMonths: number = 12
 ): Promise<SupplierScore> {
-  // Fetch supplier analytics directly from SupplierAnalytic table
-  const analytic = await prisma.supplierAnalytic.findUnique({
-    where: {
-      organizationId_supplierId: { organizationId, supplierId },
-    },
-  });
-
-  if (!analytic) {
-    return {
-      organizationId,
-      supplierId,
-      submissionCount: 0,
-      approvalRate: 0,
-      completenessScore: 0,
-      timelinessScore: 0,
-      overallScore: 0,
-      trend: 'stable',
-      previousScore: 0,
-      scoreChange: 0,
-    };
-  }
-
   // Fetch historical performance data for trend analysis
   const submissions = await prisma.fieldSubmission.findMany({
     where: {
@@ -101,21 +79,19 @@ export async function calculateSupplierScore(
   let totalCompleteness = 0;
   submissions.forEach((sub) => {
     let filledFields = 0;
-    let totalFields = 0;
+    let totalFields = 6;
+
+    // Extract data from JSON fields
+    const formData = sub.formData as any;
+    const ocrData = sub.ocrExtractedData as any;
 
     // Check required fields per submission type
-    const requiredFields = ['normalizedAmount', 'activityDate', 'emissionCategoryId'];
-    const optionalFields = ['facilityId', 'businessUnitId', 'sourceDescription'];
-
-    for (const field of requiredFields) {
-      totalFields++;
-      if (sub[field as keyof typeof sub]) filledFields++;
-    }
-
-    for (const field of optionalFields) {
-      totalFields++;
-      if (sub[field as keyof typeof sub]) filledFields++;
-    }
+    if (formData?.normalizedAmount || ocrData?.weight) filledFields++;
+    if (formData?.activityDate || ocrData?.date) filledFields++;
+    if (formData?.emissionCategoryId) filledFields++;
+    if (formData?.facilityId) filledFields++;
+    if (formData?.businessUnitId) filledFields++;
+    if (formData?.sourceDescription) filledFields++;
 
     totalCompleteness += (filledFields / totalFields) * 100;
   });
