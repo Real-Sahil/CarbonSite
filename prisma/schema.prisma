@@ -227,6 +227,8 @@ model Organization {
   airbyteSyncLogs             AirbyteSyncLog[]             @relation("AirbyteSyncLogs")
   forecasts                   Forecast[]                   @relation("Forecasts")
   causalInferenceRuns         CausalInferenceRun[]         @relation("CausalInferenceRuns")
+  supplierAnalyticOrg         SupplierAnalytic[]           @relation("supplierAnalyticOrg")
+  supplierAnalyticSupplier    SupplierAnalytic[]           @relation("supplierAnalyticSupplier")
 
   @@map("organizations")
 }
@@ -3213,5 +3215,47 @@ model SupplierReport {
   @@index([organizationId, supplierEmail])
   @@index([supplierDataRequestId])
   @@map("supplier_reports")
+}
+
+// ─── Supplier Analytics (Phase 5A) ──────────────────────────────────────
+// Real-time supplier performance scoring, trending, and anomaly detection
+
+model SupplierAnalytic {
+  id String @id @default(cuid())
+  organizationId String @map("organization_id")
+  supplierId String @map("supplier_id") // References Organization.id (external supplier org)
+
+  // Performance metrics
+  submissionCount Int @default(0) @map("submission_count")
+  approvalRate Decimal @db.Decimal(3, 2) @default(0) @map("approval_rate") // 0-1
+  completenessScore Decimal @db.Decimal(3, 2) @default(0) @map("completeness_score") // 0-1
+  timelinessScore Decimal @db.Decimal(3, 2) @default(0) @map("timeliness_score") // 0-1
+  overallScore Decimal @db.Decimal(5, 2) @default(0) @map("overall_score") // 0-100
+
+  // Trending
+  trend String @default("stable") @map("trend") // 'improving' | 'stable' | 'declining'
+  previousScore Decimal @db.Decimal(5, 2) @map("previous_score")
+  scoreChange Decimal @db.Decimal(5, 2) @map("score_change")
+
+  // Forecasting
+  forecastedEmissions Decimal @db.Decimal(15, 2) @map("forecasted_emissions") // 12-month total
+  forecastConfidence Decimal @db.Decimal(3, 2) @map("forecast_confidence") // 0-1
+
+  // Anomalies
+  lastAnomalyDetected DateTime? @map("last_anomaly_detected")
+  anomalyCount Int @default(0) @map("anomaly_count")
+
+  // Lifecycle
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "supplierAnalyticOrg")
+  supplier Organization @relation(fields: [supplierId], references: [id], onDelete: Cascade, name: "supplierAnalyticSupplier")
+
+  @@unique([organizationId, supplierId])
+  @@index([organizationId, overallScore(sort: Desc)])
+  @@index([organizationId, trend])
+  @@index([organizationId, updatedAt(sort: Desc)])
+  @@map("supplier_analytics")
 }
 
