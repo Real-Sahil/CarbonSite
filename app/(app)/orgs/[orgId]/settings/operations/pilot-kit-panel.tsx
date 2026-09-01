@@ -67,12 +67,12 @@ export function PilotKitPanel({
       setError('Please enter at least one facility name');
       return;
     }
-    if (!sustainabilityLeadName.trim() || !sustainabilityLeadEmail.trim()) {
-      setError('Please provide sustainability lead details');
+    if (!sustainabilityLeadName.trim() || !sustainabilityLeadEmail.trim() || !sustainabilityLeadRole.trim()) {
+      setError('Please provide complete sustainability lead details (name, email, role)');
       return;
     }
-    if (!financeLeadName.trim() || !financeLeadEmail.trim()) {
-      setError('Please provide finance lead details');
+    if (!financeLeadName.trim() || !financeLeadEmail.trim() || !financeLeadRole.trim()) {
+      setError('Please provide complete finance lead details (name, email, role)');
       return;
     }
     if (!itAdminName.trim() || !itAdminEmail.trim()) {
@@ -84,10 +84,23 @@ export function PilotKitPanel({
       return;
     }
 
+    // Validate auditor: either all fields filled or all empty
+    const auditorNameTrimmed = auditorName.trim();
+    const auditorFirmTrimmed = auditorFirm.trim();
+    const auditorEmailTrimmed = auditorEmail.trim();
+
+    const auditorFieldsCount = [auditorNameTrimmed, auditorFirmTrimmed, auditorEmailTrimmed].filter(Boolean).length;
+    if (auditorFieldsCount > 0 && auditorFieldsCount < 3) {
+      setError('Please provide all auditor details (name, firm, email) or leave all empty');
+      return;
+    }
+
     const facilityNamesList = facilityNames
       .split(',')
       .map((name) => name.trim())
       .filter((name) => name.length > 0);
+
+    const hasAuditor = auditorNameTrimmed && auditorFirmTrimmed && auditorEmailTrimmed;
 
     const payload = {
       organizationId: orgId,
@@ -95,7 +108,6 @@ export function PilotKitPanel({
       industry: industry || 'General',
       facilityCount: parseInt(facilityCount, 10) || 1,
       facilityNames: facilityNamesList,
-      accountingSystem: '',
       stakeholders: {
         sustainabilityLead: {
           name: sustainabilityLeadName.trim(),
@@ -111,11 +123,11 @@ export function PilotKitPanel({
           name: itAdminName.trim(),
           email: itAdminEmail.trim(),
         },
-        ...(auditorName.trim() && {
+        ...(hasAuditor && {
           externalAuditor: {
-            name: auditorName.trim(),
-            firm: auditorFirm.trim(),
-            email: auditorEmail.trim(),
+            name: auditorNameTrimmed,
+            firm: auditorFirmTrimmed,
+            email: auditorEmailTrimmed,
           },
         }),
       },
