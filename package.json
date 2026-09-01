@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "tsx scripts/generate-blog-manifest.ts && next build",
-    "vercel-build": "prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && next build",
+    "vercel-build": "prisma migrate resolve --rolled-back 20260901_phase5_rls_policies && prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && next build",
     "migrate:prod": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "start": "next start",
