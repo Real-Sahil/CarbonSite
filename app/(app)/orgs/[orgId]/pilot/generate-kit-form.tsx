@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,7 +15,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 interface FormData {
@@ -199,11 +200,6 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
       }
 
       setSuccess(true);
-
-      // Redirect to success page after 2 seconds
-      setTimeout(() => {
-        router.push(`/orgs/${orgId}/pilot/kit-ready`);
-      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -214,11 +210,19 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {success && (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            Pilot documentation kit generated successfully! Redirecting...
-          </AlertDescription>
+        <Alert className="border-green-200 bg-green-50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <AlertDescription className="text-green-800">
+              Pilot documentation kit generated successfully! Your guides are ready on the dashboard.
+            </AlertDescription>
+          </div>
+          <Link href={`/orgs/${orgId}/dashboard`}>
+            <Button variant="outline" size="sm" className="border-green-300 hover:bg-green-100">
+              View on Dashboard
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </Alert>
       )}
 

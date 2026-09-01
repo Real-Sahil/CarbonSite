@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Download, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { Download, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -404,7 +405,17 @@ export function PilotKitPanel({
 
         {/* Messages */}
         {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded">{error}</p>}
-        {success && <p className="text-sm text-green-700 bg-green-50 p-3 rounded">{success}</p>}
+        {success && (
+          <div className="text-sm text-green-700 bg-green-50 p-3 rounded flex items-center justify-between">
+            <span>{success}</span>
+            <Link href={`/orgs/${orgId}/dashboard`}>
+              <Button variant="outline" size="sm" className="border-green-300 hover:bg-green-100 ml-2">
+                View on Dashboard
+                <ArrowRight className="ml-2 h-3 w-3" />
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Action */}
