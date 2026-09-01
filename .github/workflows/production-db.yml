@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_DATABASE_URL }}
       NO_COLOR: "1"
     steps:
       - name: Check DATABASE_URL secret
@@ -25,7 +25,7 @@ jobs:
             echo "::error::Use Supabase Settings → Database → Connection Pooling → Session mode (pooler.supabase.com:6543)"
             exit 1
           fi
-          if [ -z "$DIRECT_DATABASE_URL" ]; then
+          if [ -z "$DIRECT_URL" ]; then
             echo "::error::Add the Supabase direct connection string as a GitHub Actions secret named DIRECT_DATABASE_URL."
             echo "::error::Use Supabase Settings → Database → Connection string (db.*.supabase.co:5432)"
             exit 1
