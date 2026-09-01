@@ -1544,42 +1544,29 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     Onboarding and setup guides tailored for your organization.
                   </CardDescription>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#EFF6FF] text-[#0369A1]">
-                  <FileText aria-hidden="true" className="h-5 w-5" />
-                </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {pilotKitDocuments.map((doc: any) => (
-                <div
+                <a
                   key={doc.storageKey}
-                  className="flex items-center justify-between rounded-lg border border-[#E5E7EB] p-3 hover:bg-[#F9FAFB] transition-colors"
+                  href={doc.downloadUrl || "#"}
+                  download={doc.downloadUrl ? true : false}
+                  className={`flex items-center justify-between rounded-lg border p-3 transition-all ${
+                    doc.downloadUrl
+                      ? "border-[#E5E7EB] hover:border-[#3B82F6] hover:bg-[#EFF6FF] cursor-pointer"
+                      : "border-[#F3F4F6] bg-[#F9FAFB] cursor-not-allowed opacity-50"
+                  }`}
                 >
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[#111827]">{doc.name}</p>
                     <p className="text-xs text-[#6B7280]">{doc.audience}</p>
                   </div>
-                  {doc.downloadUrl ? (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="ghost"
-                      className="gap-2"
-                    >
-                      <a href={doc.downloadUrl} download>
-                        <Download className="h-4 w-4" />
-                        Download
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="ghost" disabled>
-                      <span className="text-xs text-[#9CA3AF]">Unavailable</span>
-                    </Button>
-                  )}
-                </div>
+                  <Download className="h-4 w-4 text-[#3B82F6] ml-3 flex-shrink-0" />
+                </a>
               ))}
               {pilotKitData?.data?.generatedAt && (
-                <div className="pt-2 text-xs text-[#6B7280]">
+                <div className="pt-1 text-xs text-[#9CA3AF]">
                   Generated {new Date(pilotKitData.data.generatedAt).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "short",
