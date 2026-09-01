@@ -91,15 +91,24 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
       prisma.organization.findUnique({
         where: { id: orgId },
         select: { id: true, name: true },
+      }).catch((err) => {
+        console.error("[OrgLayout] Organization query failed for orgId:", orgId, err);
+        throw err;
       }),
       // Graceful fallback: tenant_branding table may not exist during DB migrations.
       prisma.tenantBranding.findUnique({
         where: { organizationId: orgId },
-        select: { primaryHex: true, accentHex: true, fontFamily: true, logoStorageKey: true },
-      }).catch(() => null),
+        select: { primaryHex: true, accentHex: true, fontFamily: true },
+      }).catch((err) => {
+        console.error("[OrgLayout] Branding query failed for orgId:", orgId, err);
+        return null;
+      }),
     ]);
   } catch (err) {
-    console.error("[OrgLayout] Failed to load org/branding:", err);
+    console.error("[OrgLayout] Failed to load org/branding for orgId:", orgId, {
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
     dataFetchError = "Failed to load organization data. Please refresh the page.";
   }
 
