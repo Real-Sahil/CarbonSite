@@ -38,14 +38,7 @@ export async function generateMetadata({ params }: AccountingPageProps) {
 export default async function AccountingPage({ params }: AccountingPageProps) {
   const { orgId } = await params;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const user = await requireOrgMember(orgId, "admin", "editor");
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const org = await prisma.organization.findUniqueOrThrow({
-    where: { id: orgId },
-    select: { name: true },
-  });
+  await requireOrgMember(orgId, "admin", "editor");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900">

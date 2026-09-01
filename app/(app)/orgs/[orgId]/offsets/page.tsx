@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Leaf, Plus, Trash2, ExternalLink, X } from "lucide-react";
 
@@ -167,7 +167,7 @@ export default function OffsetsPage() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     const res = await fetch(`/api/orgs/${orgId}/offsets`);
     if (res.ok) {
       const d = await res.json();
@@ -175,10 +175,9 @@ export default function OffsetsPage() {
       setTotalTonnes(d.totalTonnes);
     }
     setLoading(false);
-  }
+  }, [orgId]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load(); }, [orgId]);
+  useEffect(() => { load(); }, [load]);
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this offset record?")) return;

@@ -26,7 +26,6 @@ export function CreateRecordForm({
   periods,
   categories,
   facilities,
-  businessUnits: _businessUnits,
 }: CreateRecordFormProps) {
   const [open, setOpen] = useState(false);
   const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");

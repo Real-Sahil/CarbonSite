@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,11 +57,7 @@ export function IoTDevicesSettings({ orgId, facilities }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    loadDevices();
-  }, []);
-
-  const loadDevices = async () => {
+  const loadDevices = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/orgs/${orgId}/iot-devices`);
@@ -73,7 +69,11 @@ export function IoTDevicesSettings({ orgId, facilities }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
+
+  useEffect(() => {
+    loadDevices();
+  }, [loadDevices]);
 
   const handleDeleteDevice = async (deviceId: string) => {
     if (!confirm("Are you sure you want to deactivate this device?")) return;

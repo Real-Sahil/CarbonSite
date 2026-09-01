@@ -10,14 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight,
   Zap,
-  Users,
   BarChart3,
-  TrendingUp,
   FileText,
   Truck,
 } from "lucide-react";
@@ -37,15 +34,7 @@ export async function generateMetadata({ params }: IntegrationsPageProps) {
 export default async function IntegrationsPage({ params }: IntegrationsPageProps) {
   const { orgId } = await params;
 
-  const user = await requireOrgMember(orgId, "admin", "editor");
-
-  const org = await prisma.organization.findUniqueOrThrow({
-    where: { id: orgId },
-    select: {
-      name: true,
-      plan: true,
-    },
-  });
+  await requireOrgMember(orgId, "admin", "editor");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900">
