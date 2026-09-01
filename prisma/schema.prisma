@@ -72,6 +72,7 @@ model User {
   scope3EstimatesAccepted           Scope3Estimate[]             @relation("Scope3EstimatesAccepted")
   ssoSessions                       SsoSession[]                 @relation("SsoSessions")
   invoiceAnomaliesResolved          InvoiceAnomaly[]             @relation("InvoiceAnomalyResolutions")
+  investigatedAnalyses              CausalAnalysis[]             @relation("causalInvestigator")
 
   platformMembership PlatformMembership?
 
@@ -229,6 +230,11 @@ model Organization {
   causalInferenceRuns         CausalInferenceRun[]         @relation("CausalInferenceRuns")
   supplierAnalyticOrg         SupplierAnalytic[]           @relation("supplierAnalyticOrg")
   supplierAnalyticSupplier    SupplierAnalytic[]           @relation("supplierAnalyticSupplier")
+  emissionsForecasts          EmissionsForecast[]          @relation("forecastOrg")
+  modelExplanations           ModelExplanation[]           @relation("explanationOrg")
+  causalAnalyses              CausalAnalysis[]             @relation("causalOrg")
+  batchJobs                   BatchJob[]                   @relation("batchJobOrg")
+  analyticsDashboardCaches    AnalyticsDashboardCache[]    @relation("dashboardCacheOrg")
 
   @@map("organizations")
 }
@@ -403,6 +409,8 @@ model Facility {
   submissions            FieldSubmission[]
   fieldWorkerAssignments FieldWorkerAssignment[]
   iotDevices             IoTDevice[]
+  emissionsForecasts     EmissionsForecast[]    @relation("forecastFacility")
+  causalAnalyses         CausalAnalysis[]       @relation("causalFacility")
 
   @@index([organizationId])
   @@map("facilities")
@@ -457,21 +465,22 @@ model ReportingPeriod {
   createdAt       DateTime              @default(now()) @map("created_at")
   updatedAt       DateTime              @updatedAt @map("updated_at")
 
-  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  activityRecords        ActivityRecord[]
-  calculationRuns        CalculationRun[]
-  snapshots              PublishedSnapshot[]
-  aggregates             DashboardAggregate[]
-  reports                Report[]
-  targets                ReductionTarget[]       @relation("BaselinePeriod")
-  targetPeriods          ReductionTarget[]       @relation("TargetPeriod")
-  submissions            FieldSubmission[]
-  fieldWorkerAssignments FieldWorkerAssignment[]
-  socialValueRecords     SocialValueRecord[]
-  socialValueTargets     SocialValueTarget[]
-  embodiedCarbonRecords  EmbodiedCarbonRecord[]
-  supplierDataRequests   SupplierDataRequest[]
-  calculationSchedules   CalculationSchedule[]
+  organization              Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityRecords           ActivityRecord[]
+  calculationRuns           CalculationRun[]
+  snapshots                 PublishedSnapshot[]
+  aggregates                DashboardAggregate[]
+  reports                   Report[]
+  targets                   ReductionTarget[]        @relation("BaselinePeriod")
+  targetPeriods             ReductionTarget[]        @relation("TargetPeriod")
+  submissions               FieldSubmission[]
+  fieldWorkerAssignments    FieldWorkerAssignment[]
+  socialValueRecords        SocialValueRecord[]
+  socialValueTargets        SocialValueTarget[]
+  embodiedCarbonRecords     EmbodiedCarbonRecord[]
+  supplierDataRequests      SupplierDataRequest[]
+  calculationSchedules      CalculationSchedule[]
+  analyticsDashboardCaches  AnalyticsDashboardCache[]   @relation("dashboardCachePeriod")
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -495,6 +504,7 @@ model EmissionCategory {
   scope3EstimationModels      Scope3EstimationModel[]      @relation("EstimationModels")
   scope3Estimates             Scope3Estimate[]             @relation("Scope3Estimates")
   supplierReports             SupplierReport[]
+  emissionsForecasts          EmissionsForecast[]          @relation("forecastCategory")
 
   @@map("emission_categories")
 }
@@ -1047,6 +1057,7 @@ model EmissionCalculation {
   calculationRun     CalculationRun     @relation(fields: [calculationRunId], references: [id])
   emissionFactor     EmissionFactor?    @relation(fields: [emissionFactorId], references: [id])
   methodologyVersion MethodologyVersion @relation(fields: [methodologyVersionName], references: [name])
+  modelExplanations  ModelExplanation[]  @relation("explanationCalc")
 
   @@index([calculationRunId])
   @@index([activityRecordId])
