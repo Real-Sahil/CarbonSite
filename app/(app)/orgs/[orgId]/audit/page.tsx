@@ -32,6 +32,7 @@ interface AuditPageProps {
     actor?: string;
     resource?: string;
     since?: string;
+    offset?: string;
   }>;
 }
 
@@ -40,6 +41,7 @@ const PAGE_SIZE = 100;
 export default async function AuditPage({ params, searchParams }: AuditPageProps) {
   const { orgId } = await params;
   const filters = await searchParams;
+  const offset = Math.max(0, parseInt(filters.offset || "0", 10));
 
   try {
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
@@ -63,6 +65,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       where,
       include: { actor: { select: { name: true, email: true } } },
       orderBy: { createdAt: "desc" },
+      skip: offset,
       take: PAGE_SIZE,
     }),
     prisma.auditLog.findMany({
@@ -86,6 +89,8 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
     );
   }
   const [logs, actionOptions, resourceOptions, totalCount] = dbResult;
+  const pageCount = Math.ceil(totalCount / PAGE_SIZE);
+  const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFB]">
@@ -122,7 +127,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">Event filters</CardTitle>
             <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
-              Filter directly against stored audit rows. Results show the newest {PAGE_SIZE} matching events.
+              Filter directly against stored audit rows. Page size: {PAGE_SIZE} events per page.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 py-5">
@@ -174,55 +179,94 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
             {logs.length === 0 ? (
               <EmptyState />
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Time</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Action</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Actor</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Resource</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Metadata</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {logs.map((log) => (
-                      <TableRow key={log.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                        <TableCell className="whitespace-nowrap text-sm text-[#9CA3AF] tabular-nums py-3.5 pl-6">
-                          <time dateTime={log.createdAt.toISOString()}>
-                            {log.createdAt.toLocaleString("en-GB", {
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </time>
-                        </TableCell>
-                        <TableCell className="py-3.5">
-                          <Badge variant={badgeVariant(log.action)}>{formatLabel(log.action)}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">
-                          {log.actor?.name ?? log.actor?.email ?? "System"}
-                        </TableCell>
-                        <TableCell className="py-3.5">
-                          <div className="max-w-64">
-                            <p className="text-sm font-medium text-[#111827]">{formatLabel(log.resourceType)}</p>
-                            <p className="truncate text-xs text-[#9CA3AF]" title={log.resourceId}>
-                              {log.resourceId}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-3.5 pr-6">
-                          <pre className="max-h-28 max-w-xl overflow-auto rounded-md bg-[#F9FAFB] border border-[#E5E7EB] p-2 text-xs leading-5 text-[#374151]">
-                            {formatMetadata(log.metadata)}
-                          </pre>
-                        </TableCell>
+              <>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Time</TableHead>
+                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Action</TableHead>
+                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Actor</TableHead>
+                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Resource</TableHead>
+                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Metadata</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {logs.map((log) => (
+                        <TableRow key={log.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                          <TableCell className="whitespace-nowrap text-sm text-[#9CA3AF] tabular-nums py-3.5 pl-6">
+                            <time dateTime={log.createdAt.toISOString()}>
+                              {log.createdAt.toLocaleString("en-GB", {
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </time>
+                          </TableCell>
+                          <TableCell className="py-3.5">
+                            <Badge variant={badgeVariant(log.action)}>{formatLabel(log.action)}</Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-[#374151] py-3.5">
+                            {log.actor?.name ?? log.actor?.email ?? "System"}
+                          </TableCell>
+                          <TableCell className="py-3.5">
+                            <div className="max-w-64">
+                              <p className="text-sm font-medium text-[#111827]">{formatLabel(log.resourceType)}</p>
+                              <p className="truncate text-xs text-[#9CA3AF]" title={log.resourceId}>
+                                {log.resourceId}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-3.5 pr-6">
+                            <pre className="max-h-28 max-w-xl overflow-auto rounded-md bg-[#F9FAFB] border border-[#E5E7EB] p-2 text-xs leading-5 text-[#374151]">
+                              {formatMetadata(log.metadata)}
+                            </pre>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="border-t border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
+                  <div className="text-xs text-[#374151]">
+                    Page {currentPage} of {pageCount} ({totalCount.toLocaleString("en-GB")} total events)
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      asChild
+                      variant="outline"
+                      disabled={offset === 0}
+                      className={offset === 0 ? "opacity-50 cursor-not-allowed" : ""}
+                    >
+                      <a
+                        href={`/orgs/${orgId}/audit?action=${filters.action ?? ""}&resource=${filters.resource ?? ""}&actor=${filters.actor ?? ""}&since=${filters.since ?? ""}&offset=${Math.max(0, offset - PAGE_SIZE)}`}
+                        onClick={(e) => {
+                          if (offset === 0) e.preventDefault();
+                        }}
+                      >
+                        Previous
+                      </a>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      disabled={offset + PAGE_SIZE >= totalCount}
+                      className={offset + PAGE_SIZE >= totalCount ? "opacity-50 cursor-not-allowed" : ""}
+                    >
+                      <a
+                        href={`/orgs/${orgId}/audit?action=${filters.action ?? ""}&resource=${filters.resource ?? ""}&actor=${filters.actor ?? ""}&since=${filters.since ?? ""}&offset=${offset + PAGE_SIZE}`}
+                        onClick={(e) => {
+                          if (offset + PAGE_SIZE >= totalCount) e.preventDefault();
+                        }}
+                      >
+                        Next
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
