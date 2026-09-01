@@ -8,7 +8,7 @@
 -- ─── 5A: Emissions Forecasting ───────────────────────────────────────────────
 
 CREATE TABLE emissions_forecasts (
-  id TEXT PRIMARY KEY DEFAULT cuid(),
+  id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
   facility_id TEXT REFERENCES "facilities"(id) ON DELETE SET NULL,
   category_id TEXT NOT NULL REFERENCES "emission_categories"(id),
@@ -47,7 +47,7 @@ CREATE TABLE emissions_forecasts (
 -- ─── 5B: Model Explainability & Feature Importance ──────────────────────────
 
 CREATE TABLE model_explanations (
-  id TEXT PRIMARY KEY DEFAULT cuid(),
+  id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
   emission_calculation_id TEXT NOT NULL REFERENCES "emission_calculations"(id) ON DELETE CASCADE,
 
@@ -81,7 +81,7 @@ CREATE TABLE model_explanations (
 -- ─── 5C: Root Cause Analysis & Causal Inference ──────────────────────────────
 
 CREATE TABLE causal_analyses (
-  id TEXT PRIMARY KEY DEFAULT cuid(),
+  id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
   facility_id TEXT REFERENCES "facilities"(id) ON DELETE SET NULL,
 
@@ -124,7 +124,7 @@ CREATE TABLE causal_analyses (
 -- ─── 5D: Distributed Processing & Batching ──────────────────────────────────
 
 CREATE TABLE batch_jobs (
-  id TEXT PRIMARY KEY DEFAULT cuid(),
+  id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
 
   -- Job metadata
@@ -156,7 +156,7 @@ CREATE TABLE batch_jobs (
 -- ─── 5E: Dashboard Aggregates (for fast queries) ────────────────────────────
 
 CREATE TABLE analytics_dashboard_cache (
-  id TEXT PRIMARY KEY DEFAULT cuid(),
+  id TEXT PRIMARY KEY,
   organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
   reporting_period_id TEXT NOT NULL REFERENCES "reporting_periods"(id) ON DELETE CASCADE,
 
