@@ -95,6 +95,8 @@ export const keys = {
     `org/${orgId}/reports/${reportId}/report.xml`,
   brandingLogo: (orgId: string, filename: string) =>
     `org/${orgId}/branding/${filename}`,
+  pilotKitPdf: (orgId: string, filename: string) =>
+    `org/${orgId}/pilot-kit/${filename}`,
   // A DSAR subject's data spans every org they belong to, not one tenant —
   // scoped under user/, not org/, unlike every other key above.
   dsarExport: (userId: string, requestId: string) =>
@@ -124,7 +126,7 @@ export function isValidStorageKey(key: string) {
   if (segments.length < 4) return false;
 
   if (segments[0] === "org") {
-    if (!["evidence", "imports", "reports", "branding"].includes(segments[2])) return false;
+    if (!["evidence", "imports", "reports", "branding", "pilot-kit"].includes(segments[2])) return false;
   } else if (segments[0] === "user") {
     // DSAR exports — not tenant-scoped, see keys.dsarExport().
     if (segments[2] !== "dsar") return false;
