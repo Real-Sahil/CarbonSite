@@ -3,7 +3,6 @@
  * Manages cache invalidation and updates for the advanced analytics dashboard.
  */
 
-import { Prisma, PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logging';
 
@@ -86,6 +85,7 @@ export class AnalyticsDashboardCacheManager {
 
       if (existingCache) {
         // Update existing cache
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updateData: Record<string, any> = {
           forecastTotalCo2e: update.forecastTotalCo2e ?? existingCache.forecastTotalCo2e,
           forecastTrend: update.forecastTrend ?? existingCache.forecastTrend,
@@ -128,6 +128,7 @@ export class AnalyticsDashboardCacheManager {
         });
       } else {
         // Create new cache entry
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const createData: Record<string, any> = {
           id: `cache_${update.organizationId}_${update.reportingPeriodId}_${Date.now()}`,
           organizationId: update.organizationId,
@@ -152,7 +153,8 @@ export class AnalyticsDashboardCacheManager {
         if (update.scenarioResults !== undefined) createData.scenarioResults = update.scenarioResults;
 
         await prisma.analyticsDashboardCache.create({
-          data: createData,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data: createData as any,
         });
       }
 
@@ -171,6 +173,7 @@ export class AnalyticsDashboardCacheManager {
   static async getCache(
     organizationId: string,
     reportingPeriodId: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any | null> {
     try {
       const cache = await prisma.analyticsDashboardCache.findUnique({
@@ -236,6 +239,7 @@ export class AnalyticsDashboardCacheManager {
       // Update cache for each period
       for (const period of periods) {
         const topDrivers = explanations.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ? (explanations[0].featureImportance as any[])?.slice(0, 5) || []
           : [];
 
@@ -243,6 +247,7 @@ export class AnalyticsDashboardCacheManager {
           organizationId,
           reportingPeriodId: period.id,
           forecastTotalCo2e: forecasts[0]?.forecastData
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ? (forecasts[0].forecastData as any[])[0]?.predicted_value || null
             : null,
           forecastTrend: forecasts[0] ? 'stable' : null,
