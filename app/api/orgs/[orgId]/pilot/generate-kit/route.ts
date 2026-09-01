@@ -217,14 +217,24 @@ export async function POST(
     }
 
     if (error instanceof z.ZodError) {
+      const details = error.errors.map((e) => {
+        const detail: any = {
+          path: e.path.join("."),
+          message: e.message,
+          code: e.code,
+        };
+        // Add received value if available (varies by error type)
+        if ("received" in e) {
+          detail.received = (e as any).received?.toString();
+        }
+        return detail;
+      });
+      console.error("[PILOT-KIT] Validation errors:", JSON.stringify(details, null, 2));
       return NextResponse.json(
         {
           code: "VALIDATION_ERROR",
           message: "Invalid pilot client context",
-          details: error.errors.map((e) => ({
-            field: e.path.join("."),
-            message: e.message,
-          })),
+          details,
         },
         { status: 400 }
       );

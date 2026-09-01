@@ -102,42 +102,57 @@ export function PilotKitPanel({
 
     const hasAuditor = auditorNameTrimmed && auditorFirmTrimmed && auditorEmailTrimmed;
 
+    // Defensive parsing for numbers
+    const parsedFacilityCount = parseInt(facilityCount, 10);
+    const parsedTimelineDays = parseInt(timelineDays, 10);
+    const parsedSupplierCount = parseInt(supplierCount, 10);
+    const parsedFieldWorkerCount = parseInt(fieldWorkerCount, 10);
+
+    // Ensure all required string fields are non-empty after trimming
+    const finalCurrency = (reportingCurrency || 'GBP').trim().toUpperCase();
+    const finalTimezone = (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC').trim();
+
+    if (!finalTimezone || finalTimezone.length === 0) {
+      setError('Failed to detect system timezone');
+      return;
+    }
+
     const payload = {
       organizationId: orgId,
-      organizationName: orgName || 'Organization',
-      industry: industry || 'General',
-      facilityCount: parseInt(facilityCount, 10) || 1,
+      organizationName: (orgName || 'Organization').trim(),
+      industry: (industry || 'General').trim(),
+      facilityCount: parsedFacilityCount > 0 ? parsedFacilityCount : 1,
       facilityNames: facilityNamesList,
       stakeholders: {
         sustainabilityLead: {
           name: sustainabilityLeadName.trim(),
-          email: sustainabilityLeadEmail.trim(),
+          email: sustainabilityLeadEmail.trim().toLowerCase(),
           role: sustainabilityLeadRole.trim(),
         },
         financeLead: {
           name: financeLeadName.trim(),
-          email: financeLeadEmail.trim(),
+          email: financeLeadEmail.trim().toLowerCase(),
           role: financeLeadRole.trim(),
         },
         itAdmin: {
           name: itAdminName.trim(),
-          email: itAdminEmail.trim(),
+          email: itAdminEmail.trim().toLowerCase(),
         },
         ...(hasAuditor && {
           externalAuditor: {
             name: auditorNameTrimmed,
             firm: auditorFirmTrimmed,
-            email: auditorEmailTrimmed,
+            email: auditorEmailTrimmed.toLowerCase(),
           },
         }),
       },
       complianceFrameworks: selectedFrameworks,
-      timelineDays: parseInt(timelineDays, 10) || 90,
+      timelineDays: Math.max(30, Math.min(365, parsedTimelineDays || 90)),
       pilotStartDate: new Date().toISOString(),
-      supplierCount: parseInt(supplierCount, 10) || 0,
-      fieldWorkerCount: parseInt(fieldWorkerCount, 10) || 0,
-      reportingCurrency: reportingCurrency || 'GBP',
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      supplierCount: Math.max(0, parsedSupplierCount || 0),
+      fieldWorkerCount: Math.max(0, parsedFieldWorkerCount || 0),
+      reportingCurrency: finalCurrency,
+      timezone: finalTimezone,
     };
 
     startTransition(async () => {
@@ -150,16 +165,29 @@ export function PilotKitPanel({
 
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw new Error(body?.message || `Failed to generate kit (${res.status})`);
+          const errorMsg = formatApiError(res, body);
+          throw new Error(errorMsg);
         }
 
         const result = await res.json();
         setSuccess(`Pilot kit generated successfully at ${new Date().toLocaleTimeString()}`);
         setGeneratedAt(new Date().toISOString());
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to generate pilot kit');
+        const errorMsg = err instanceof Error ? err.message : 'Failed to generate pilot kit';
+        setError(errorMsg);
       }
     });
+  }
+
+  // Helper to format API error response with field details
+  function formatApiError(response: Response, body: any): string {
+    if (body?.code === 'VALIDATION_ERROR' && body?.details && Array.isArray(body.details)) {
+      const fieldErrors = body.details
+        .map((e: any) => `${e.path}: ${e.message}${e.received ? ` (received: ${e.received})` : ''}`)
+        .join('; ');
+      return `Validation error: ${fieldErrors}`;
+    }
+    return body?.message || `Request failed (${response.status})`;
   }
 
   return (
