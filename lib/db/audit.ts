@@ -139,7 +139,8 @@ type AuditAction =
   | "security.alert_suspicious_location_jump"
   | "causal_analysis.run_triggered"
   | "supplier_report.accepted"
-  | "supplier_report.rejected";
+  | "supplier_report.rejected"
+  | "pilot.kit_generated";
 
 export async function writeAuditLog(params: {
   organizationId: string;
