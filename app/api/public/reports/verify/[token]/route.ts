@@ -79,6 +79,37 @@ export async function GET(
       data: { accessCount: { increment: 1 } },
     });
 
+    // Import presignDownload for public access
+    const { presignDownload } = await import("@/lib/storage");
+
+    // Generate presigned URLs for downloads if report is ready
+    let downloads: { pdf?: string | null; csv?: string | null } | null = null;
+    if (report.status === "ready") {
+      downloads = {};
+
+      if (report.pdfStorageKey) {
+        try {
+          downloads.pdf = await presignDownload(report.pdfStorageKey);
+        } catch (err) {
+          console.error("[Report Verification] Failed to presign PDF:", err);
+          downloads.pdf = null;
+        }
+      } else {
+        downloads.pdf = null;
+      }
+
+      if (report.csvStorageKey) {
+        try {
+          downloads.csv = await presignDownload(report.csvStorageKey);
+        } catch (err) {
+          console.error("[Report Verification] Failed to presign CSV:", err);
+          downloads.csv = null;
+        }
+      } else {
+        downloads.csv = null;
+      }
+    }
+
     const verificationData = {
       report: {
         id: report.id,
@@ -106,16 +137,7 @@ export async function GET(
           ? "Report integrity verified"
           : "Report integrity cannot be verified",
       },
-      downloads: report.status === "ready"
-        ? {
-            pdf: report.pdfStorageKey
-              ? `/api/public/reports/${report.id}/download?format=pdf`
-              : null,
-            csv: report.csvStorageKey
-              ? `/api/public/reports/${report.id}/download?format=csv`
-              : null,
-          }
-        : null,
+      downloads,
     };
 
     return NextResponse.json(verificationData);
