@@ -60,7 +60,7 @@ export async function POST(
     const { orgId } = await params;
 
     // Authorization: admin or editor role only (PDFs are sensitive setup docs)
-    await requireOrgMember(orgId, "admin", "editor");
+    const auth = await requireOrgMember(orgId, "admin", "editor");
 
     // Parse and validate request body
     const body = await req.json();
@@ -173,7 +173,7 @@ export async function POST(
       await writeAuditLog({
         organizationId: orgId,
         action: "pilot.kit_generated",
-        actorUserId: req.headers.get("x-user-id") || "system",
+        actorUserId: auth.session.user.id,
         resourceType: "pilot_kit",
         resourceId: orgId,
         metadata: {
