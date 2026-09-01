@@ -73,7 +73,7 @@ export async function POST(req: NextRequest, { params }: Params) {
  */
 async function handleForecast(req: NextRequest, orgId: string) {
   try {
-    await requireOrgMember(orgId, ['admin', 'editor']);
+    await requireOrgMember(orgId, 'admin', 'editor');
 
     const body = await req.json();
     const { facilityId, categoryId } = ForecastRequestSchema.parse(body);
@@ -132,7 +132,7 @@ async function handleForecast(req: NextRequest, orgId: string) {
  */
 async function handleExplanation(req: NextRequest, orgId: string) {
   try {
-    await requireOrgMember(orgId, ['admin', 'editor']);
+    await requireOrgMember(orgId, 'admin', 'editor');
 
     const body = await req.json();
     const { emissionCalculationId } = ExplanationRequestSchema.parse(body);
@@ -176,7 +176,7 @@ async function handleExplanation(req: NextRequest, orgId: string) {
  */
 async function handleRootCause(req: NextRequest, orgId: string) {
   try {
-    await requireOrgMember(orgId, ['admin', 'editor', 'reviewer']);
+    await requireOrgMember(orgId, 'admin', 'editor', 'reviewer');
 
     const body = await req.json();
     const { facilityId } = RootCauseRequestSchema.parse(body);
@@ -220,7 +220,7 @@ async function handleRootCause(req: NextRequest, orgId: string) {
  */
 async function handleBatchJob(req: NextRequest, orgId: string) {
   try {
-    await requireOrgMember(orgId, ['admin']);
+    await requireOrgMember(orgId, 'admin');
 
     const body = await req.json();
     const { jobType } = BatchJobRequestSchema.parse(body);
@@ -285,7 +285,7 @@ async function handleBatchJob(req: NextRequest, orgId: string) {
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, ['admin']);
+    await requireOrgMember(orgId, 'admin');
 
     const pythonAvailable = await PythonOrchestrator.checkPythonEnvironment();
     const packages = await PythonOrchestrator.checkRequiredPackages();

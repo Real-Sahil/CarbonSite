@@ -36,7 +36,6 @@ export class AnalyticsDashboardCacheManager {
         where: { organizationId },
         data: {
           expiresAt: new Date(), // Expire immediately
-          updatedAt: new Date(),
         },
       });
 
@@ -59,7 +58,6 @@ export class AnalyticsDashboardCacheManager {
         where: { organizationId, reportingPeriodId },
         data: {
           expiresAt: new Date(),
-          updatedAt: new Date(),
         },
       });
 
@@ -79,7 +77,7 @@ export class AnalyticsDashboardCacheManager {
     try {
       const existingCache = await prisma.analyticsDashboardCache.findUnique({
         where: {
-          organization_id_reporting_period_id: {
+          organizationId_reportingPeriodId: {
             organizationId: update.organizationId,
             reportingPeriodId: update.reportingPeriodId,
           },
@@ -88,61 +86,73 @@ export class AnalyticsDashboardCacheManager {
 
       if (existingCache) {
         // Update existing cache
+        const updateData: Record<string, any> = {
+          forecastTotalCo2e: update.forecastTotalCo2e ?? existingCache.forecastTotalCo2e,
+          forecastTrend: update.forecastTrend ?? existingCache.forecastTrend,
+          forecastConfidence:
+            update.forecastConfidence ?? existingCache.forecastConfidence,
+          topDriverFeature: update.topDriverFeature ?? existingCache.topDriverFeature,
+          topDriverPct: update.topDriverPct ?? existingCache.topDriverPct,
+          recentAnomaliesCount:
+            update.recentAnomaliesCount ?? existingCache.recentAnomaliesCount,
+          unresolvedAnomaliesCount:
+            update.unresolvedAnomaliesCount ??
+            existingCache.unresolvedAnomaliesCount,
+          lastForecastRun: update.lastForecastRun ?? existingCache.lastForecastRun,
+          lastExplanationRun:
+            update.lastExplanationRun ?? existingCache.lastExplanationRun,
+          lastCausalAnalysisRun:
+            update.lastCausalAnalysis ?? existingCache.lastCausalAnalysisRun,
+          cachedAt: new Date(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        };
+
+        // Handle JSON fields separately to avoid null type issues
+        if (update.top5Features !== undefined) updateData.topFiveFeatures = update.top5Features;
+        else if (existingCache.topFiveFeatures !== null) updateData.topFiveFeatures = existingCache.topFiveFeatures;
+
+        if (update.recentRootCauses !== undefined) updateData.recentRootCauses = update.recentRootCauses;
+        else if (existingCache.recentRootCauses !== null) updateData.recentRootCauses = existingCache.recentRootCauses;
+
+        if (update.scenarioResults !== undefined) updateData.scenarioResults = update.scenarioResults;
+        else if (existingCache.scenarioResults !== null) updateData.scenarioResults = existingCache.scenarioResults;
+
         await prisma.analyticsDashboardCache.update({
           where: {
-            organization_id_reporting_period_id: {
+            organizationId_reportingPeriodId: {
               organizationId: update.organizationId,
               reportingPeriodId: update.reportingPeriodId,
             },
           },
-          data: {
-            forecastTotalCo2e: update.forecastTotalCo2e ?? existingCache.forecastTotalCo2e,
-            forecastTrend: update.forecastTrend ?? existingCache.forecastTrend,
-            forecastConfidence:
-              update.forecastConfidence ?? existingCache.forecastConfidence,
-            topDriverFeature: update.topDriverFeature ?? existingCache.topDriverFeature,
-            topDriverPct: update.topDriverPct ?? existingCache.topDriverPct,
-            top5Features: update.top5Features ?? existingCache.top5Features,
-            recentAnomaliesCount:
-              update.recentAnomaliesCount ?? existingCache.recentAnomaliesCount,
-            unresolvedAnomaliesCount:
-              update.unresolvedAnomaliesCount ??
-              existingCache.unresolvedAnomaliesCount,
-            recentRootCauses:
-              update.recentRootCauses ?? existingCache.recentRootCauses,
-            scenarioResults: update.scenarioResults ?? existingCache.scenarioResults,
-            lastForecastRun: update.lastForecastRun ?? existingCache.lastForecastRun,
-            lastExplanationRun:
-              update.lastExplanationRun ?? existingCache.lastExplanationRun,
-            lastCausalAnalysis:
-              update.lastCausalAnalysis ?? existingCache.lastCausalAnalysis,
-            cachedAt: new Date(),
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-          },
+          data: updateData,
         });
       } else {
         // Create new cache entry
+        const createData: Record<string, any> = {
+          id: `cache_${update.organizationId}_${update.reportingPeriodId}_${Date.now()}`,
+          organizationId: update.organizationId,
+          reportingPeriodId: update.reportingPeriodId,
+          forecastTotalCo2e: update.forecastTotalCo2e,
+          forecastTrend: update.forecastTrend,
+          forecastConfidence: update.forecastConfidence,
+          topDriverFeature: update.topDriverFeature,
+          topDriverPct: update.topDriverPct,
+          recentAnomaliesCount: update.recentAnomaliesCount ?? 0,
+          unresolvedAnomaliesCount: update.unresolvedAnomaliesCount ?? 0,
+          lastForecastRun: update.lastForecastRun,
+          lastExplanationRun: update.lastExplanationRun,
+          lastCausalAnalysisRun: update.lastCausalAnalysis,
+          cachedAt: new Date(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        };
+
+        // Handle JSON fields - only include if defined
+        if (update.top5Features !== undefined) createData.topFiveFeatures = update.top5Features;
+        if (update.recentRootCauses !== undefined) createData.recentRootCauses = update.recentRootCauses;
+        if (update.scenarioResults !== undefined) createData.scenarioResults = update.scenarioResults;
+
         await prisma.analyticsDashboardCache.create({
-          data: {
-            id: `cache_${update.organizationId}_${update.reportingPeriodId}_${Date.now()}`,
-            organizationId: update.organizationId,
-            reportingPeriodId: update.reportingPeriodId,
-            forecastTotalCo2e: update.forecastTotalCo2e,
-            forecastTrend: update.forecastTrend,
-            forecastConfidence: update.forecastConfidence,
-            topDriverFeature: update.topDriverFeature,
-            topDriverPct: update.topDriverPct,
-            top5Features: update.top5Features,
-            recentAnomaliesCount: update.recentAnomaliesCount ?? 0,
-            unresolvedAnomaliesCount: update.unresolvedAnomaliesCount ?? 0,
-            recentRootCauses: update.recentRootCauses,
-            scenarioResults: update.scenarioResults,
-            lastForecastRun: update.lastForecastRun,
-            lastExplanationRun: update.lastExplanationRun,
-            lastCausalAnalysis: update.lastCausalAnalysis,
-            cachedAt: new Date(),
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-          },
+          data: createData,
         });
       }
 
@@ -165,7 +175,7 @@ export class AnalyticsDashboardCacheManager {
     try {
       const cache = await prisma.analyticsDashboardCache.findUnique({
         where: {
-          organization_id_reporting_period_id: {
+          organizationId_reportingPeriodId: {
             organizationId,
             reportingPeriodId,
           },
@@ -279,7 +289,7 @@ export class AnalyticsDashboardCacheManager {
     try {
       const cache = await prisma.analyticsDashboardCache.findUnique({
         where: {
-          organization_id_reporting_period_id: {
+          organizationId_reportingPeriodId: {
             organizationId,
             reportingPeriodId,
           },
@@ -297,8 +307,8 @@ export class AnalyticsDashboardCacheManager {
       // Check if underlying data is newer than cache
       const latestCalculation = await prisma.emissionCalculation.findFirst({
         where: {
-          emissionRecord: {
-            organizationId,
+          organizationId,
+          activityRecord: {
             reportingPeriodId,
           },
         },
