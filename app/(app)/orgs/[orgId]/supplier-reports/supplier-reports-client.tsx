@@ -192,7 +192,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                   </div>
 
                   {/* Category */}
-                  <div className="hidden sm:block shrink-0 text-xs text-slate-400 w-36 truncate">
+                  <div className="hidden sm:block shrink-0 text-xs text-slate-300 w-36 truncate">
                     {report.emissionCategory?.name ?? "—"}
                   </div>
 
@@ -207,7 +207,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                   </div>
 
                   {/* Year */}
-                  <div className="hidden sm:flex shrink-0 items-center gap-1 text-xs text-slate-500 w-12">
+                  <div className="hidden sm:flex shrink-0 items-center gap-1 text-xs text-slate-300 w-12">
                     <Calendar className="h-3 w-3" />
                     {report.reportingYear}
                   </div>
@@ -351,7 +351,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
           <div className="mt-4 flex justify-center">
             <a
               href={`?status=${status}&cursor=${nextCursor}`}
-              className="text-xs text-slate-400 hover:text-slate-200 px-4 py-2 rounded-lg border border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+              className="text-xs text-slate-300 hover:text-slate-100 px-4 py-2 rounded-lg border border-slate-700/50 hover:bg-slate-700/30 transition-colors"
             >
               Load more
             </a>
