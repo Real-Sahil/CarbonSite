@@ -1,5 +1,9 @@
 name: Mobile release builds
 
+concurrency:
+  group: mobile-release-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
