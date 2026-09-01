@@ -10,7 +10,7 @@ import {
   type PilotClientContext,
 } from "@/lib/pilot/pdf-kit-generator";
 import { prisma } from "@/lib/db";
-import { putObject } from "@/lib/storage";
+import { putObject, keys } from "@/lib/storage";
 import { writeAuditLog } from "@/lib/db/audit";
 import { z } from "zod";
 
@@ -138,39 +138,24 @@ export async function POST(
     // Upload PDFs to R2 storage
     const timestamp = new Date().toISOString().split("T")[0];
 
+    const storageKeys = [
+      keys.pilotKitPdf(orgId, `01-executive-summary-${timestamp}.pdf`),
+      keys.pilotKitPdf(orgId, `02-sustainability-manager-${timestamp}.pdf`),
+      keys.pilotKitPdf(orgId, `03-finance-lead-${timestamp}.pdf`),
+      keys.pilotKitPdf(orgId, `04-field-worker-${timestamp}.pdf`),
+      keys.pilotKitPdf(orgId, `05-technical-integration-${timestamp}.pdf`),
+      keys.pilotKitPdf(orgId, `06-compliance-guide-${timestamp}.pdf`),
+    ];
+
     try {
       console.log("[PILOT-KIT] Starting R2 upload for org:", orgId);
       await Promise.all([
-        putObject(
-          `org/${orgId}/pilot-kit/01-executive-summary-${timestamp}.pdf`,
-          executiveSummaryPdf,
-          "application/pdf"
-        ),
-        putObject(
-          `org/${orgId}/pilot-kit/02-sustainability-manager-${timestamp}.pdf`,
-          sustainabilityManagerPdf,
-          "application/pdf"
-        ),
-        putObject(
-          `org/${orgId}/pilot-kit/03-finance-lead-${timestamp}.pdf`,
-          financeLeadPdf,
-          "application/pdf"
-        ),
-        putObject(
-          `org/${orgId}/pilot-kit/04-field-worker-${timestamp}.pdf`,
-          fieldWorkerPdf,
-          "application/pdf"
-        ),
-        putObject(
-          `org/${orgId}/pilot-kit/05-technical-integration-${timestamp}.pdf`,
-          technicalIntegrationPdf,
-          "application/pdf"
-        ),
-        putObject(
-          `org/${orgId}/pilot-kit/06-compliance-guide-${timestamp}.pdf`,
-          compliancePdf,
-          "application/pdf"
-        ),
+        putObject(storageKeys[0], executiveSummaryPdf, "application/pdf"),
+        putObject(storageKeys[1], sustainabilityManagerPdf, "application/pdf"),
+        putObject(storageKeys[2], financeLeadPdf, "application/pdf"),
+        putObject(storageKeys[3], fieldWorkerPdf, "application/pdf"),
+        putObject(storageKeys[4], technicalIntegrationPdf, "application/pdf"),
+        putObject(storageKeys[5], compliancePdf, "application/pdf"),
       ]);
       console.log("[PILOT-KIT] R2 upload completed successfully");
     } catch (err) {
@@ -211,15 +196,6 @@ export async function POST(
       });
       throw err;
     }
-
-    const storageKeys = [
-      `org/${orgId}/pilot-kit/01-executive-summary-${timestamp}.pdf`,
-      `org/${orgId}/pilot-kit/02-sustainability-manager-${timestamp}.pdf`,
-      `org/${orgId}/pilot-kit/03-finance-lead-${timestamp}.pdf`,
-      `org/${orgId}/pilot-kit/04-field-worker-${timestamp}.pdf`,
-      `org/${orgId}/pilot-kit/05-technical-integration-${timestamp}.pdf`,
-      `org/${orgId}/pilot-kit/06-compliance-guide-${timestamp}.pdf`,
-    ];
 
     return NextResponse.json(
       {
