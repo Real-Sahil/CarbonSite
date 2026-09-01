@@ -12,7 +12,7 @@ CarbonSite is a multi-tenant GHG emissions tracking platform for small-to-mid-ma
 **Stack:**
 - **Frontend/Backend:** Next.js 16 (App Router) + React 19 + TypeScript
 - **Auth:** Better Auth (Postgres sessions for web; JWT for Flutter mobile)
-- **Database:** PostgreSQL via Prisma ORM. Dev: local Postgres. Prod: Neon free tier (no credit card).
+- **Database:** PostgreSQL via Prisma ORM. Dev: local Postgres. Prod: Supabase.
 - **Queue/Workers:** `pg-boss` — PostgreSQL-based job queue. No Docker. Uses the same Postgres instance.
 - **Rate Limiting:** Fixed-window counters backed by Redis (optional) with automatic Postgres fallback. Persists rate limits across serverless cold starts. Recommended for production.
 - **Object Storage:** Cloudflare R2 (S3-compatible, free tier — 10 GB/month, zero egress, no credit card). Dev: local filesystem adapter.
@@ -26,7 +26,7 @@ CarbonSite is a multi-tenant GHG emissions tracking platform for small-to-mid-ma
 - **Flutter state:** Riverpod; routing: go_router; HTTP: Dio; offline: drift/SQLite; OCR: google_mlkit_text_recognition (on-device, free, offline)
 
 **No Docker. No Python services. No paid subscriptions.**
-External accounts required: Neon (Postgres) + Cloudflare (R2) + Resend (email) + Google (FCM).
+External accounts required: Supabase (Postgres) + Cloudflare (R2) + Resend (email) + Google (FCM).
 Optional: Redis for production rate limiting (recommended but automatic Postgres fallback provided).
 
 ## Commands
@@ -258,10 +258,12 @@ Use deterministic fixture factor libraries. Do not use real customer evidence fi
 
 All services are free tier, no credit card required except Cloudflare R2.
 
-### Neon Postgres (production database)
-- Sign up at neon.tech — free tier: 0.5 GB storage, 100 compute-hours/month
-- No local Docker needed in prod; for local dev just install Postgres natively
-- Set `DATABASE_URL` in `.env`
+### Supabase (production database)
+- PostgreSQL database hosted on Supabase (supabase.com)
+- Connection: Set `DATABASE_URL` in `.env` with Supabase connection string
+- For local dev, install Postgres natively or use Supabase CLI for local development
+- Supabase provides: Postgres, real-time subscriptions, auth (optional), vector/pgvector support
+- For production migrations: `pnpm prisma migrate deploy`
 
 ### Cloudflare R2 (object storage)
 - Free tier: 10 GB/month, zero egress fees, S3-compatible API
