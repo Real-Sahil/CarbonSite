@@ -462,13 +462,77 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
     dataQualityBatch;
 
-  // Fetch pilot kit documents
-  const pilotKitResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000"}/api/orgs/${orgId}/pilot/kit-documents`,
-    { next: { revalidate: 3600 } } // Cache for 1 hour
-  ).catch(() => null);
-  const pilotKitData = pilotKitResponse?.ok ? await pilotKitResponse.json().catch(() => null) : null;
-  const pilotKitDocuments = pilotKitData?.data?.documents ?? [];
+  // Fetch pilot kit documents directly from database
+  let pilotKitData: any = null;
+  let pilotKitDocuments: any[] = [];
+
+  try {
+    const recentGeneration = await prisma.auditLog.findFirst({
+      where: {
+        organizationId: orgId,
+        action: "pilot.kit_generated",
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        createdAt: true,
+        metadata: true,
+      },
+    });
+
+    if (recentGeneration) {
+      const metadata = typeof recentGeneration.metadata === "object" && recentGeneration.metadata !== null
+        ? recentGeneration.metadata
+        : {};
+      const timestamp = (metadata as any).timestamp || recentGeneration.createdAt.toISOString().split("T")[0];
+
+      // Generate presigned URLs for documents
+      const { presignDownload, keys } = await import("@/lib/storage");
+
+      const documents = [
+        { name: "Executive Summary", audience: "Executive Stakeholders", key: `org/${orgId}/pilot-kit/01-executive-summary-${timestamp}.pdf` },
+        { name: "Sustainability Manager Guide", audience: "Sustainability Lead", key: `org/${orgId}/pilot-kit/02-sustainability-manager-${timestamp}.pdf` },
+        { name: "Finance Lead Guide", audience: "Finance Lead", key: `org/${orgId}/pilot-kit/03-finance-lead-${timestamp}.pdf` },
+        { name: "Field Worker Guide", audience: "Field Workers", key: `org/${orgId}/pilot-kit/04-field-worker-${timestamp}.pdf` },
+        { name: "Technical Integration Guide", audience: "IT Administrator", key: `org/${orgId}/pilot-kit/05-technical-integration-${timestamp}.pdf` },
+        { name: "Compliance Guide", audience: "Compliance & Audit", key: `org/${orgId}/pilot-kit/06-compliance-guide-${timestamp}.pdf` },
+      ];
+
+      const documentsWithUrls = await Promise.all(
+        documents.map(async (doc) => {
+          try {
+            const downloadUrl = await presignDownload(doc.key);
+            return {
+              name: doc.name,
+              audience: doc.audience,
+              storageKey: doc.key,
+              downloadUrl,
+            };
+          } catch (err) {
+            console.error(`Failed to presign download for ${doc.key}:`, err);
+            return {
+              name: doc.name,
+              audience: doc.audience,
+              storageKey: doc.key,
+              downloadUrl: null,
+              error: "Failed to generate download link",
+            };
+          }
+        })
+      );
+
+      pilotKitData = {
+        code: "OK",
+        data: {
+          generatedAt: recentGeneration.createdAt.toISOString(),
+          documents: documentsWithUrls,
+          context: (metadata as any).context || null,
+        },
+      };
+      pilotKitDocuments = documentsWithUrls;
+    }
+  } catch (err) {
+    console.error("Failed to fetch pilot kit documents:", err);
+  }
 
   // Industry-specific data
   const industry = organization.industry ?? null;
