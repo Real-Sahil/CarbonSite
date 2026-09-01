@@ -41,9 +41,7 @@ CREATE TABLE emissions_forecasts (
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-  UNIQUE(organization_id, facility_id, category_id, forecast_start_date),
-  INDEX (organization_id, forecast_start_date DESC),
-  INDEX (organization_id, model_confidence DESC)
+  UNIQUE(organization_id, facility_id, category_id, forecast_start_date)
 );
 
 -- ─── 5B: Model Explainability & Feature Importance ──────────────────────────
@@ -77,8 +75,7 @@ CREATE TABLE model_explanations (
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-  UNIQUE(emission_calculation_id),
-  INDEX (organization_id, created_at DESC)
+  UNIQUE(emission_calculation_id)
 );
 
 -- ─── 5C: Root Cause Analysis & Causal Inference ──────────────────────────────
@@ -121,11 +118,7 @@ CREATE TABLE causal_analyses (
   resolution_notes TEXT,
 
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-
-  INDEX (organization_id, anomaly_date DESC),
-  INDEX (organization_id, status),
-  INDEX (organization_id, primary_cause_confidence DESC)
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- ─── 5D: Distributed Processing & Batching ──────────────────────────────────
@@ -157,10 +150,7 @@ CREATE TABLE batch_jobs (
   started_at TIMESTAMP,
   completed_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-
-  INDEX (organization_id, status),
-  INDEX (organization_id, created_at DESC)
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- ─── 5E: Dashboard Aggregates (for fast queries) ────────────────────────────
@@ -196,9 +186,7 @@ CREATE TABLE analytics_dashboard_cache (
   cached_at TIMESTAMP NOT NULL DEFAULT NOW(),
   expires_at TIMESTAMP NOT NULL DEFAULT (NOW() + INTERVAL '24 hours'),
 
-  UNIQUE(organization_id, reporting_period_id),
-  INDEX (organization_id, cached_at DESC),
-  INDEX (organization_id, expires_at)
+  UNIQUE(organization_id, reporting_period_id)
 );
 
 -- Create indices for common queries
