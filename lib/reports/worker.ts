@@ -113,10 +113,20 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       });
 
       // Construct verification URL — must point to HTML page, NOT /api endpoint
-      const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/api\/?$/, "").replace(/\/$/, "");
-      if (!baseUrl) {
-        throw new Error("NEXT_PUBLIC_APP_URL not configured for QR code generation");
+      let baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "").trim();
+
+      // Remove trailing slashes and /api if present
+      baseUrl = baseUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+
+      // Ensure we have a valid base URL with protocol
+      if (!baseUrl || !baseUrl.startsWith("http")) {
+        throw new Error(
+          "NEXT_PUBLIC_APP_URL not configured correctly for QR code generation. " +
+          `Expected absolute URL (e.g., https://example.com), got: "${baseUrl}"`
+        );
       }
+
+      // QR code points to public verification page, NOT API endpoint
       const verificationUrl = `${baseUrl}/public/reports/verify/${verificationTokenData.token}`;
 
       let pdfBuffer = await stampAuditMetadata(rawPdfBuffer, {

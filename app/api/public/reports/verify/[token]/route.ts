@@ -15,6 +15,18 @@ export async function GET(
       );
     }
 
+    // If accessed from a browser (not Accept: application/json), redirect to HTML page
+    const acceptHeader = request.headers.get("accept") || "";
+    const isJsonRequest = acceptHeader.includes("application/json");
+
+    if (!isJsonRequest && acceptHeader.includes("text/html")) {
+      // Redirect browser requests to the HTML verification page
+      return NextResponse.redirect(
+        new URL(`/public/reports/verify/${token}`, request.url),
+        { status: 307 }
+      );
+    }
+
     const verificationToken = await prisma.reportVerificationToken.findUnique({
       where: { token },
       include: {
