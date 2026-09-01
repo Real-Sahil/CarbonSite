@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiDataSourcesPanel } from "./api-data-sources";
+import { PilotKitPanel } from "./pilot-kit-panel";
 
 type ReportingPeriod = {
   id: string;
@@ -124,6 +125,14 @@ export function OperationsSetup({
       </section>
       <section className="xl:col-span-2">
         <ApiDataSourcesPanel orgId={orgId} sources={apiDataSources} />
+      </section>
+      <section className="xl:col-span-2">
+        <PilotKitPanel
+          orgId={orgId}
+          orgName={orgProfile.name}
+          industry={orgProfile.industry}
+          reportingCurrency={orgProfile.reportingCurrency}
+        />
       </section>
     </div>
   );
