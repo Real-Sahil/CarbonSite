@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { ShieldCheck, Plus, ChevronDown, ChevronUp, ExternalLink, User, ListChecks, FileText } from "lucide-react";
 
@@ -58,17 +58,17 @@ export default function CompliancePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  async function load() {
+  const load = useCallback(async () => {
     const res = await fetch(`/api/orgs/${orgId}/compliance`);
     if (res.ok) {
       const d = await res.json();
       setRecords(d.data);
     }
     setLoading(false);
-  }
+  }, [orgId]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { load(); }, [orgId]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
@@ -29,11 +29,7 @@ export default function ConnectionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchConnection();
-  }, [orgId, connectionId]);
-
-  const fetchConnection = async () => {
+  const fetchConnection = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(
@@ -58,7 +54,12 @@ export default function ConnectionDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId, connectionId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchConnection();
+  }, [fetchConnection]);
 
   const handleToggleEnabled = async () => {
     if (!connection) return;

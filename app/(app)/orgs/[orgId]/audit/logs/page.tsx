@@ -20,6 +20,7 @@ interface AuditEntry {
   } | null;
   ipAddress: string | null;
   frameworks: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: Record<string, any>;
 }
 
@@ -48,7 +49,6 @@ export default function AuditLogsPage() {
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
 
   const resourceType = searchParams.get('resourceType') || '';

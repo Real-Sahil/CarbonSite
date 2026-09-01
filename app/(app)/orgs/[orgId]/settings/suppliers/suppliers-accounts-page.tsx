@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SupplierAccountsTable } from "./accounts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,7 +29,7 @@ export function SupplierAccountsPage({ orgId }: { orgId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     try {
       setError("");
       const res = await fetch(`/api/orgs/${orgId}/supplier-accounts`);
@@ -41,9 +41,9 @@ export function SupplierAccountsPage({ orgId }: { orgId: string }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load accounts");
     }
-  };
+  }, [orgId]);
 
-  const fetchPolicies = async () => {
+  const fetchPolicies = useCallback(async () => {
     try {
       const res = await fetch(`/api/orgs/${orgId}/settings/account-policies`);
       if (!res.ok) {
@@ -54,12 +54,13 @@ export function SupplierAccountsPage({ orgId }: { orgId: string }) {
     } catch (err) {
       console.error("Failed to load policies:", err);
     }
-  };
+  }, [orgId]);
 
   useEffect(() => {
     setLoading(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     Promise.all([fetchAccounts(), fetchPolicies()]).finally(() => setLoading(false));
-  }, [orgId]);
+  }, [fetchAccounts, fetchPolicies]);
 
   if (error) {
     return (

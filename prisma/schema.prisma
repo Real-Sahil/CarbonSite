@@ -3259,3 +3259,213 @@ model SupplierAnalytic {
   @@map("supplier_analytics")
 }
 
+// ─── PHASE 5A: Time-Series Forecasting (Prophet/Exponential Smoothing) ──────
+
+model EmissionsForecast {
+  id String @id @default(cuid())
+  organizationId String @db.Uuid @map("organization_id")
+  facilityId String? @db.Uuid @map("facility_id")
+  categoryId String @db.Uuid @map("category_id")
+
+  // Training parameters
+  trainingPeriodMonths Int @map("training_period_months")
+  trainingDataPoints Int @map("training_data_points")
+
+  // Forecast range
+  forecastHorizonMonths Int @default(12) @map("forecast_horizon_months")
+  forecastStartDate DateTime @map("forecast_start_date")
+  forecastEndDate DateTime @map("forecast_end_date")
+
+  // Forecast results: [{date, predicted_value, lower_ci, upper_ci, confidence}]
+  forecastData Json @map("forecast_data")
+  forecastMethod String @default("exponential_smoothing") @map("forecast_method")
+
+  // Accuracy metrics
+  mape Decimal? @db.Decimal(5, 2) // Mean Absolute Percentage Error
+  rmse Decimal? @db.Decimal(15, 2) // Root Mean Squared Error
+  mae Decimal? @db.Decimal(15, 2) // Mean Absolute Error
+  rSquared Decimal? @db.Decimal(3, 2) @map("r_squared")
+
+  // Quality scoring
+  modelConfidence Decimal @default(0.5) @db.Decimal(3, 2) @map("model_confidence")
+  dataQualityScore Decimal @default(0.5) @db.Decimal(3, 2) @map("data_quality_score")
+  anomalyDetectionApplied Boolean @default(false) @map("anomaly_detection_applied")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "forecastOrg")
+  facility Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull, name: "forecastFacility")
+  category EmissionCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict, name: "forecastCategory")
+
+  @@unique([organizationId, facilityId, categoryId, forecastStartDate])
+  @@index([organizationId, forecastStartDate(sort: Desc)])
+  @@index([organizationId, modelConfidence(sort: Desc)])
+  @@map("emissions_forecasts")
+}
+
+// ─── PHASE 5B: Model Explainability (SHAP-like Feature Importance) ────────────
+
+model ModelExplanation {
+  id String @id @default(cuid())
+  organizationId String @db.Uuid @map("organization_id")
+  emissionCalculationId String @db.Uuid @map("emission_calculation_id")
+
+  // Feature importance: [{feature_name, importance_value, impact_direction, confidence}]
+  featureImportance Json @map("feature_importance")
+
+  // Top driver
+  topDriverFeature String @map("top_driver_feature")
+  topDriverContributionPct Decimal @db.Decimal(5, 2) @map("top_driver_contribution_pct")
+
+  // Prediction breakdown
+  baseValue Decimal @db.Decimal(15, 2) @map("base_value")
+  predictionValue Decimal @db.Decimal(15, 2) @map("prediction_value")
+  predictionDelta Decimal @db.Decimal(15, 2) @map("prediction_delta")
+
+  // Individual contributions
+  factorContribution Decimal @db.Decimal(15, 2) @map("factor_contribution")
+  activityContribution Decimal @db.Decimal(15, 2) @map("activity_contribution")
+  methodologyContribution Decimal @db.Decimal(15, 2) @map("methodology_contribution")
+
+  // Human-readable explanation & what-if scenarios
+  explanationText String?
+  whatIfScenarios Json? @map("what_if_scenarios") // [{scenario_name, predicted_value, change_pct}]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "explanationOrg")
+  calculation EmissionCalculation @relation(fields: [emissionCalculationId], references: [id], onDelete: Cascade, name: "explanationCalc")
+
+  @@unique([emissionCalculationId])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("model_explanations")
+}
+
+// ─── PHASE 5C: Root Cause Analysis & Causal Inference ────────────────────────
+
+model CausalAnalysis {
+  id String @id @default(cuid())
+  organizationId String @db.Uuid @map("organization_id")
+  facilityId String? @db.Uuid @map("facility_id")
+
+  // Anomaly being analyzed
+  anomalyType String @map("anomaly_type") // 'spike' | 'drop' | 'trend_change' | 'unexpected_value'
+  anomalyDate DateTime @map("anomaly_date")
+  observedValue Decimal @db.Decimal(15, 2) @map("observed_value")
+  expectedValue Decimal @db.Decimal(15, 2) @map("expected_value")
+  deviationPct Decimal @db.Decimal(5, 2) @map("deviation_pct")
+
+  // Root cause analysis: [{cause, probability, evidence, recommendation}]
+  likelyCauses Json @map("likely_causes")
+  primaryCause String? @map("primary_cause")
+  primaryCauseConfidence Decimal? @db.Decimal(3, 2) @map("primary_cause_confidence")
+
+  // Causal inference: DAG + treatment effects
+  causalGraph Json? @map("causal_graph")
+  treatmentVariable String? @map("treatment_variable")
+  treatmentEffect Decimal? @db.Decimal(15, 2) @map("treatment_effect")
+  treatmentEffectCiLower Decimal? @db.Decimal(15, 2) @map("treatment_effect_ci_lower")
+  treatmentEffectCiUpper Decimal? @db.Decimal(15, 2) @map("treatment_effect_ci_upper")
+
+  // Impact
+  affectedCategories String[] @map("affected_categories")
+  impactOnTotalEmissions Decimal @db.Decimal(5, 2) @map("impact_on_total_emissions")
+
+  // Recommendations: [{action, expected_impact_pct, effort_level}]
+  recommendations Json @map("recommendations")
+
+  // Status & resolution
+  status String @default("pending_review") @map("status") // 'pending_review' | 'investigated' | 'resolved' | 'dismissed'
+  investigatedByUserId String? @db.Uuid @map("investigated_by_user_id")
+  investigatedAt DateTime? @map("investigated_at")
+  resolutionNotes String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "causalOrg")
+  facility Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull, name: "causalFacility")
+  investigatedByUser User? @relation(fields: [investigatedByUserId], references: [id], onDelete: SetNull, name: "causalInvestigator")
+
+  @@index([organizationId, anomalyDate(sort: Desc)])
+  @@index([organizationId, status])
+  @@index([organizationId, primaryCauseConfidence(sort: Desc)])
+  @@map("causal_analyses")
+}
+
+// ─── PHASE 5D: Distributed Processing & Batching ─────────────────────────────
+
+model BatchJob {
+  id String @id @default(cuid())
+  organizationId String @db.Uuid @map("organization_id")
+
+  jobType String @map("job_type") // 'forecast_generation' | 'explanation_generation' | 'causal_analysis'
+  status String @default("queued") @map("status") // 'queued' | 'processing' | 'completed' | 'failed'
+
+  // Batching metrics
+  totalItems Int @map("total_items")
+  processedItems Int @default(0) @map("processed_items")
+  batchSize Int @default(100) @map("batch_size")
+  estimatedDurationSeconds Int? @map("estimated_duration_seconds")
+
+  // Results & errors
+  results Json? @map("results")
+  errorMessage String?
+
+  // Timing
+  startedAt DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "batchJobOrg")
+
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@map("batch_jobs")
+}
+
+// ─── PHASE 5E: Dashboard Cache (Fast Queries for Analytics) ───────────────────
+
+model AnalyticsDashboardCache {
+  id String @id @default(cuid())
+  organizationId String @db.Uuid @map("organization_id")
+  reportingPeriodId String @db.Uuid @map("reporting_period_id")
+
+  // Forecast summary
+  forecastTotalCo2e Decimal? @db.Decimal(15, 2) @map("forecast_total_co2e")
+  forecastTrend String? @map("forecast_trend") // 'increasing' | 'decreasing' | 'stable'
+  forecastConfidence Decimal? @db.Decimal(3, 2) @map("forecast_confidence")
+
+  // Top drivers from explainability
+  topDriverFeature String? @map("top_driver_feature")
+  topDriverPct Decimal? @db.Decimal(5, 2) @map("top_driver_pct")
+  topFiveFeatures Json? @map("top_five_features") // [{name, importance_pct}]
+
+  // Anomalies & root causes
+  recentAnomaliesCount Int @default(0) @map("recent_anomalies_count")
+  unresolvedAnomaliesCount Int @default(0) @map("unresolved_anomalies_count")
+  recentRootCauses Json? @map("recent_root_causes") // [{anomaly, primary_cause, confidence}]
+
+  // What-if scenarios
+  scenarioResults Json? @map("scenario_results") // [{scenario_name, forecasted_value, change_pct}]
+
+  // Last run timestamps
+  lastForecastRun DateTime? @map("last_forecast_run")
+  lastExplanationRun DateTime? @map("last_explanation_run")
+  lastCausalAnalysisRun DateTime? @map("last_causal_analysis")
+
+  cachedAt DateTime @default(now()) @map("cached_at")
+  expiresAt DateTime @default(dbgenerated("NOW() + INTERVAL '24 hours'")) @map("expires_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, name: "dashboardCacheOrg")
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id], onDelete: Cascade, name: "dashboardCachePeriod")
+
+  @@unique([organizationId, reportingPeriodId])
+  @@index([organizationId, cachedAt(sort: Desc)])
+  @@index([organizationId, expiresAt])
+  @@map("analytics_dashboard_cache")
+}
+

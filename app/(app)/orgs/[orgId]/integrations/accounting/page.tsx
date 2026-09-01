@@ -17,7 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   CheckCircle,
-  AlertCircle,
   BarChart3,
   Zap,
   Lock,
@@ -39,8 +38,10 @@ export async function generateMetadata({ params }: AccountingPageProps) {
 export default async function AccountingPage({ params }: AccountingPageProps) {
   const { orgId } = await params;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const user = await requireOrgMember(orgId, "admin", "editor");
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: orgId },
     select: { name: true },

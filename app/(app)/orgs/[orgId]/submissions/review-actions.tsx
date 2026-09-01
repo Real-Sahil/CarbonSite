@@ -60,6 +60,7 @@ export function SubmissionReviewActions({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const err = new Error(data.message ?? "Review failed.");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (err as any).status = res.status;
         throw err;
       }

@@ -46,7 +46,6 @@ import { BklitScopeRing } from "@/components/charts/bklit-scope-ring";
 import { BklitCategoryBar } from "@/components/charts/bklit-category-bar";
 import { BklitTrendArea, type TrendLineDatum } from "@/components/charts/bklit-trend-area";
 import { BklitDataGauge } from "@/components/charts/bklit-data-gauge";
-import { OnboardingChecklist } from "./onboarding-checklist";
 import { CalculationRunsLive } from "./calculation-runs-live";
 import { LiveDashboard } from "@/components/dashboard/LiveDashboard";
 
@@ -131,9 +130,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     orderBy: { createdAt: "desc" },
     select: { id: true, finishedAt: true, reportingPeriodId: true },
   });
-
-  // Fetch onboarding progress (disabled - onboardingProgress model not yet added)
-  const onboardingProgress = null;
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
   const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch] = await Promise.all([
@@ -456,8 +452,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     topCategoryAggregates,
     reportStatusRows,
     socialValueStats,
-    siteCount,
-    fieldWorkerCount,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _siteCount,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _fieldWorkerCount,
   ] = batchB;
 
   const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
@@ -2065,11 +2063,4 @@ function ActionCard({
       </Card>
     </Link>
   );
-}
-
-function isStepCompleted(stepState: unknown, stepKey: string): boolean {
-  if (!stepState || typeof stepState !== "object") return false;
-  const step = (stepState as Record<string, unknown>)[stepKey];
-  if (!step || typeof step !== "object") return false;
-  return (step as Record<string, unknown>).completed === true;
 }

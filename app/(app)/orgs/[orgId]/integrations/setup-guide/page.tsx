@@ -72,7 +72,7 @@ export default function SetupGuidePage() {
                 <h3 className="font-semibold">Step 3: Create PostgreSQL Destination</h3>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p>
-                    Create a new <strong>Destination</strong> pointing to CarbonSite's PostgreSQL database:
+                    Create a new <strong>Destination</strong> pointing to CarbonSite&apos;s PostgreSQL database:
                   </p>
                   <code className="block bg-slate-100 p-3 rounded text-xs mt-2 text-black">
                     {`Database: your-neon-postgres.neon.tech
@@ -173,7 +173,7 @@ Table prefix: staged_external_`}
                       <strong>Authentication:</strong> Use if needed (optional)
                     </li>
                     <li>
-                      <strong>Save the webhook URL</strong> (you'll register it in CarbonSite)
+                      <strong>Save the webhook URL</strong> (you&apos;ll register it in CarbonSite)
                     </li>
                   </ul>
                 </div>
@@ -212,7 +212,7 @@ Table prefix: staged_external_`}
                   </p>
                   <ul className="list-disc list-inside space-y-1 ml-2">
                     <li>
-                      <strong>Workflow Name:</strong> e.g., "Report Ready Email"
+                      <strong>Workflow Name:</strong> e.g., &quot;Report Ready Email&quot;
                     </li>
                     <li>
                       <strong>Trigger:</strong> Report Ready, Field Submission, etc.

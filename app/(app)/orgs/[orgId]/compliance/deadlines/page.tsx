@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarClock, AlertTriangle, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface StatutoryDeadline {
