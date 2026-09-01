@@ -3274,9 +3274,9 @@ model SupplierAnalytic {
 
 model EmissionsForecast {
   id String @id @default(cuid())
-  organizationId String @db.Uuid @map("organization_id")
-  facilityId String? @db.Uuid @map("facility_id")
-  categoryId String @db.Uuid @map("category_id")
+  organizationId String @map("organization_id")
+  facilityId String? @map("facility_id")
+  categoryId String @map("category_id")
 
   // Training parameters
   trainingPeriodMonths Int @map("training_period_months")
@@ -3319,8 +3319,8 @@ model EmissionsForecast {
 
 model ModelExplanation {
   id String @id @default(cuid())
-  organizationId String @db.Uuid @map("organization_id")
-  emissionCalculationId String @db.Uuid @map("emission_calculation_id")
+  organizationId String @map("organization_id")
+  emissionCalculationId String @map("emission_calculation_id")
 
   // Feature importance: [{feature_name, importance_value, impact_direction, confidence}]
   featureImportance Json @map("feature_importance")
@@ -3358,8 +3358,8 @@ model ModelExplanation {
 
 model CausalAnalysis {
   id String @id @default(cuid())
-  organizationId String @db.Uuid @map("organization_id")
-  facilityId String? @db.Uuid @map("facility_id")
+  organizationId String @map("organization_id")
+  facilityId String? @map("facility_id")
 
   // Anomaly being analyzed
   anomalyType String @map("anomaly_type") // 'spike' | 'drop' | 'trend_change' | 'unexpected_value'
@@ -3389,7 +3389,7 @@ model CausalAnalysis {
 
   // Status & resolution
   status String @default("pending_review") @map("status") // 'pending_review' | 'investigated' | 'resolved' | 'dismissed'
-  investigatedByUserId String? @db.Uuid @map("investigated_by_user_id")
+  investigatedByUserId String? @map("investigated_by_user_id")
   investigatedAt DateTime? @map("investigated_at")
   resolutionNotes String?
 
@@ -3410,7 +3410,7 @@ model CausalAnalysis {
 
 model BatchJob {
   id String @id @default(cuid())
-  organizationId String @db.Uuid @map("organization_id")
+  organizationId String @map("organization_id")
 
   jobType String @map("job_type") // 'forecast_generation' | 'explanation_generation' | 'causal_analysis'
   status String @default("queued") @map("status") // 'queued' | 'processing' | 'completed' | 'failed'
@@ -3442,8 +3442,8 @@ model BatchJob {
 
 model AnalyticsDashboardCache {
   id String @id @default(cuid())
-  organizationId String @db.Uuid @map("organization_id")
-  reportingPeriodId String @db.Uuid @map("reporting_period_id")
+  organizationId String @map("organization_id")
+  reportingPeriodId String @map("reporting_period_id")
 
   // Forecast summary
   forecastTotalCo2e Decimal? @db.Decimal(15, 2) @map("forecast_total_co2e")
