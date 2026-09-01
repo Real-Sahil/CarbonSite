@@ -21,6 +21,8 @@ import {
   Truck,
   Send,
 } from "lucide-react";
+import { SupplierInviteForm } from "@/components/suppliers/invite-form";
+import { SupplierInvitesList } from "@/components/suppliers/invites-list";
 
 interface SuppliersPageProps {
   params: Promise<{ orgId: string }>;
@@ -42,6 +44,21 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: orgId },
     select: { name: true },
+  });
+
+  const invites = await prisma.supplierInvite.findMany({
+    where: { organizationId: orgId },
+    select: {
+      id: true,
+      email: true,
+      companyName: true,
+      expiresAt: true,
+      usedAt: true,
+      createdAt: true,
+      inviteMethod: true,
+      createdBy: { select: { name: true, email: true } },
+    },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
@@ -66,106 +83,10 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-8">
           {/* Invite Section */}
-          <Card className="border-slate-700 bg-slate-800/50">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Mail className="h-5 w-5 text-amber-400" />
-                Send Supplier Invitation
-              </CardTitle>
-              <CardDescription>Create a secure link and send to suppliers via email</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="supplier-email" className="block text-sm font-medium text-white mb-2">
-                    Supplier Email Address
-                  </label>
-                  <input
-                    id="supplier-email"
-                    type="email"
-                    placeholder="contact@supplier.com"
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="supplier-name" className="block text-sm font-medium text-white mb-2">
-                    Supplier Name
-                  </label>
-                  <input
-                    id="supplier-name"
-                    type="text"
-                    placeholder="e.g., Acme Supply Co."
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="supplier-category" className="block text-sm font-medium text-white mb-2">
-                    Category (Optional)
-                  </label>
-                  <select
-                    id="supplier-category"
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="">Select category</option>
-                    <option value="logistics">Logistics & Transport</option>
-                    <option value="raw-materials">Raw Materials</option>
-                    <option value="packaging">Packaging</option>
-                    <option value="subcontractors">Subcontractors</option>
-                    <option value="services">Professional Services</option>
-                    <option value="facilities">Facilities & Utilities</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <Button className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold">
-                  <Send className="h-4 w-4 mr-2" />
-                  Send Invitation
-                </Button>
-              </div>
-
-              <div className="border-t border-slate-700 pt-6">
-                <h4 className="font-semibold text-white mb-3">What suppliers will see:</h4>
-                <ul className="space-y-2 text-sm text-slate-300">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                    <span>Secure link to submit emissions data without creating an account</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                    <span>Simple form to enter facility information, waste, energy, and travel data</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                    <span>Option to upload supporting documents (invoices, receipts, certifications)</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                    <span>Confirmation email when their submission is received and reviewed</span>
-                  </li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+          <SupplierInviteForm orgId={orgId} />
 
           {/* Pending Invitations */}
-          <Card className="border-slate-700 bg-slate-800/50">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Users className="h-5 w-5 text-amber-400" />
-                Active Suppliers
-              </CardTitle>
-              <CardDescription>Suppliers you&apos;ve invited to collaborate</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Truck className="h-12 w-12 text-slate-700 mx-auto mb-3" />
-                <p className="text-slate-400">No suppliers invited yet</p>
-                <p className="text-sm text-slate-500 mt-1">Send your first invitation above to get started</p>
-              </div>
-            </CardContent>
-          </Card>
+          <SupplierInvitesList orgId={orgId} invites={invites} />
 
           {/* How It Works */}
           <Card className="border-slate-700 bg-slate-800/50">

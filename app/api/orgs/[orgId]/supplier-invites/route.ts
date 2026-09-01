@@ -11,6 +11,7 @@ import { dispatchNotification } from "@/lib/jobs/dispatch";
 const createSchema = z.object({
   email: z.string().email().trim().toLowerCase(),
   companyName: z.string().max(200).trim().optional(),
+  inviteMethod: z.enum(["magic-link", "credentials"]).default("magic-link"),
   expiresInDays: z.number().int().min(1).max(30).default(7),
 });
 
@@ -32,6 +33,7 @@ export async function GET(
         expiresAt: true,
         usedAt: true,
         createdAt: true,
+        inviteMethod: true,
         createdBy: { select: { name: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -45,6 +47,7 @@ export async function GET(
         expiresAt: inv.expiresAt.toISOString(),
         usedAt: inv.usedAt?.toISOString() ?? null,
         createdAt: inv.createdAt.toISOString(),
+        inviteMethod: inv.inviteMethod,
         createdBy: inv.createdBy.name ?? inv.createdBy.email,
         status: inv.usedAt ? "accepted" : inv.expiresAt <= new Date() ? "expired" : "pending",
       })),
@@ -84,6 +87,62 @@ export async function POST(
       Date.now() + body.expiresInDays * 24 * 60 * 60 * 1000,
     );
 
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { name: true },
+    });
+
+    let userId: string | undefined;
+    let temporaryPassword: string | undefined;
+
+    // If admin wants to create credentials, generate password and create user account
+    if (body.inviteMethod === "credentials") {
+      const tempPwd = generateTemporaryPassword();
+      const hashedPassword = await hashPassword(tempPwd);
+      temporaryPassword = tempPwd;
+
+      // Create or fetch user
+      let user = await prisma.user.findUnique({
+        where: { email: body.email },
+      });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email: body.email,
+            name: body.companyName || body.email.split("@")[0],
+            password: hashedPassword,
+          },
+        });
+      } else {
+        // Update password if user already exists
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { password: hashedPassword },
+        });
+      }
+
+      // Create organization membership
+      const existingMembership = await prisma.organizationMembership.findFirst({
+        where: {
+          organizationId: orgId,
+          userId: user.id,
+        },
+      });
+
+      if (!existingMembership) {
+        await prisma.organizationMembership.create({
+          data: {
+            organizationId: orgId,
+            userId: user.id,
+            role: "supplier",
+          },
+        });
+      }
+
+      userId = user.id;
+    }
+
     const invite = await prisma.supplierInvite.create({
       data: {
         organizationId: orgId,
@@ -91,6 +150,9 @@ export async function POST(
         companyName: body.companyName ?? null,
         expiresAt,
         createdByUserId: session.user.id,
+        inviteMethod: body.inviteMethod,
+        usedByUserId: userId, // Mark as used if credentials method
+        usedAt: userId ? new Date() : undefined,
       },
     });
 
@@ -100,26 +162,40 @@ export async function POST(
       action: "supplier_invite.created",
       resourceType: "SupplierInvite",
       resourceId: invite.id,
-      metadata: { email: invite.email, companyName: invite.companyName },
+      metadata: {
+        email: invite.email,
+        companyName: invite.companyName,
+        inviteMethod: body.inviteMethod,
+      },
     });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite-rosy.vercel.app";
+    const loginUrl = `${appUrl}/sign-in`;
     const inviteUrl = `${appUrl}/supplier-invite/${invite.token}`;
 
-    const org = await prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { name: true },
-    });
-
     try {
-      const { sendSupplierInviteEmail } = await import("@/workers/supplier-invite-email");
-      await sendSupplierInviteEmail({
-        supplierEmail: body.email,
-        inviteUrl,
-        invitedByName: session.user.name || session.user.email,
-        organizationName: org?.name || "CarbonSite",
-        companyName: body.companyName,
-      });
+      if (body.inviteMethod === "credentials" && temporaryPassword) {
+        // Send credentials email
+        const { sendSupplierCredentialsEmail } = await import("@/workers/supplier-invite-email");
+        await sendSupplierCredentialsEmail({
+          supplierEmail: body.email,
+          temporaryPassword,
+          loginUrl,
+          invitedByName: session.user.name || session.user.email,
+          organizationName: org?.name || "CarbonSite",
+          companyName: body.companyName,
+        });
+      } else {
+        // Send magic link email
+        const { sendSupplierInviteEmail } = await import("@/workers/supplier-invite-email");
+        await sendSupplierInviteEmail({
+          supplierEmail: body.email,
+          inviteUrl,
+          invitedByName: session.user.name || session.user.email,
+          organizationName: org?.name || "CarbonSite",
+          companyName: body.companyName,
+        });
+      }
     } catch (emailError) {
       console.error("[SupplierInvite] Email dispatch failed:", emailError);
     }
@@ -129,7 +205,7 @@ export async function POST(
       recipientUserId: session.user.id,
       orgId,
       resourceId: invite.id,
-      metadata: { targetLabel: `Supplier invite for ${body.email}` },
+      metadata: { targetLabel: `Supplier invite for ${body.email} (${body.inviteMethod})` },
     }).catch(() => {});
 
     return NextResponse.json(
@@ -137,12 +213,32 @@ export async function POST(
         id: invite.id,
         email: invite.email,
         companyName: invite.companyName,
-        inviteUrl,
+        inviteMethod: body.inviteMethod,
+        inviteUrl: body.inviteMethod === "magic-link" ? inviteUrl : undefined,
+        loginUrl: body.inviteMethod === "credentials" ? loginUrl : undefined,
         expiresAt: invite.expiresAt.toISOString(),
+        message:
+          body.inviteMethod === "credentials"
+            ? "Supplier account created. Temporary password sent via email."
+            : "Magic link invitation sent via email.",
       },
       { status: 201 },
     );
   } catch (err) {
     return handleRouteError(err);
   }
+}
+
+function generateTemporaryPassword(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+  let password = "";
+  for (let i = 0; i < 16; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const { hash } = await import("@node-rs/argon2");
+  return hash(password);
 }

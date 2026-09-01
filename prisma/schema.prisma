@@ -355,6 +355,7 @@ model SupplierInvite {
   email           String
   companyName     String?   @map("company_name")
   token           String    @unique @default(cuid())
+  inviteMethod    String    @default("magic-link") @map("invite_method") // "magic-link" or "credentials"
   expiresAt       DateTime  @map("expires_at")
   usedAt          DateTime? @map("used_at")
   usedByUserId    String?   @map("used_by_user_id")
