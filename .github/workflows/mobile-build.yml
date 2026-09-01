@@ -61,7 +61,13 @@ jobs:
           fi
       - run: flutter pub get
       - name: Generate code (drift)
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --verbose --delete-conflicting-outputs 2>&1 | tee build_runner.log
+      - name: Upload build_runner logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-runner-logs-android
+          path: mobile/build_runner.log
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
       - name: Check Android release signing secrets
@@ -131,8 +137,16 @@ jobs:
             echo '{"project_info":{"project_number":"000000000000","project_id":"carbonsite-stub","storage_bucket":"carbonsite-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.carbonsite.carbonsite_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
           fi
       - run: flutter pub get
+      - name: Clean pub cache (macOS)
+        run: flutter pub cache repair
       - name: Generate code (drift)
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --verbose --delete-conflicting-outputs 2>&1 | tee build_runner.log
+      - name: Upload build_runner logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-runner-logs-ios
+          path: mobile/build_runner.log
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
       - run: flutter build ios --release --no-codesign --no-tree-shake-icons --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
