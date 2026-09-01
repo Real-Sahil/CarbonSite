@@ -67,41 +67,47 @@ export async function GET(
       if (latestCalc) co2eKg = Number(latestCalc.totalCo2e);
     }
 
-    // Generate 1-hour presigned download URLs for evidence files
+    // Generate presigned download URLs for evidence files.
+    // Fallback gracefully if presignDownload fails — mobile app can retry or use alternative sources.
     const evidenceFiles = await Promise.all(
       submission.files
         .filter((f) => f.evidenceFile !== null)
         .map(async (f) => {
           let downloadUrl: string | null = null;
-          try {
-            if (!f.evidenceFile?.storageKey) {
-              console.warn(
-                `[field-submissions/${submissionId}] evidence file ${f.evidenceFile!.id} has empty storageKey`,
-              );
-            } else if (f.evidenceFile.storageKey.startsWith('http://') || f.evidenceFile.storageKey.startsWith('https://')) {
-              // Corrupted storageKey containing raw URL — log and skip
-              console.error(
-                `[field-submissions/${submissionId}] evidence file ${f.evidenceFile!.id} has corrupted storageKey (contains URL): "${f.evidenceFile.storageKey.substring(0, 50)}..."`,
-              );
-            } else {
-              downloadUrl = await presignDownload(f.evidenceFile.storageKey);
-            }
-          } catch (err) {
-            const errorMsg = err instanceof Error ? err.message : String(err);
-            const storageKey = f.evidenceFile?.storageKey || "(empty)";
-            console.error(
-              `[field-submissions/${submissionId}] presignDownload failed for file ${f.evidenceFile!.id} (key: "${storageKey}"): ${errorMsg}`,
+          const storageKey = f.evidenceFile?.storageKey || "";
+
+          // Validate storageKey format (should be org/{orgId}/evidence/{id}/filename, never http/https)
+          if (!storageKey) {
+            console.warn(
+              `[field-submissions/${submissionId}] evidence file ${f.evidenceFile!.id} has empty storageKey`,
             );
-            if (err instanceof Error) {
+          } else if (storageKey.startsWith('http://') || storageKey.startsWith('https://')) {
+            // Corrupted storageKey containing raw URL — never return raw URLs to client
+            console.error(
+              `[field-submissions/${submissionId}] evidence file ${f.evidenceFile!.id} has corrupted storageKey (URL detected): "${storageKey.substring(0, 80)}..."`,
+            );
+          } else {
+            // Attempt to generate presigned URL
+            try {
+              downloadUrl = await presignDownload(storageKey);
+            } catch (err) {
+              const errorMsg = err instanceof Error ? err.message : String(err);
               console.error(
-                `[field-submissions/${submissionId}] error details:`,
-                err.stack,
+                `[field-submissions/${submissionId}] presignDownload failed for file ${f.evidenceFile!.id}`,
+                {
+                  storageKey: storageKey.substring(0, 80),
+                  error: errorMsg,
+                  stack: err instanceof Error ? err.stack : undefined,
+                },
               );
+              // Return null downloadUrl — mobile app should gracefully handle and use local cache if available
             }
           }
+
           return {
             id: f.evidenceFile!.id,
             filename: f.evidenceFile!.filename,
+            // NEVER return raw storageKey to client — mobile should only get valid presigned URLs or null
             downloadUrl,
           };
         }),
