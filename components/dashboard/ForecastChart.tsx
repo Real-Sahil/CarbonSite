@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
-import { Spinner } from '@/components/ui/spinner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ForecastData {
   month: string;
@@ -57,7 +57,7 @@ export function ForecastChart({ orgId, supplierId }: { orgId: string; supplierId
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Spinner />
+        <Skeleton className="h-full w-full" />
       </div>
     );
   }
@@ -134,7 +134,7 @@ export function SupplierScorecard({ orgId }: { orgId: string }) {
   });
 
   if (isLoading) {
-    return <Spinner />;
+    return <Skeleton className="h-48 w-full" />;
   }
 
   const summary = data?.data?.summary || {};
@@ -175,7 +175,7 @@ export function Scope3SpendForecast({ orgId, supplierId }: { orgId: string; supp
   });
 
   if (isLoading) {
-    return <Spinner />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   const forecast = data?.data?.forecasts?.[0];
@@ -229,7 +229,7 @@ export function VolatilityHeatmap({ orgId }: { orgId: string }) {
   });
 
   if (isLoading) {
-    return <Spinner />;
+    return <Skeleton className="h-96 w-full" />;
   }
 
   const suppliers = data?.data?.forecasts || [];
