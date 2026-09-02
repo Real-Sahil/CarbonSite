@@ -83,6 +83,12 @@ jobs:
         working-directory: mobile
         run: flutter pub get
 
+      # Upgrade generators to the latest major that bundles an analyzer
+      # compatible with the installed Dart SDK before running build_runner.
+      - name: Upgrade generators for installed Dart SDK
+        working-directory: mobile
+        run: flutter pub upgrade --major-versions build_runner freezed json_serializable riverpod_generator riverpod_annotation freezed_annotation json_annotation drift drift_dev
+
       - name: Generate code (drift)
         working-directory: mobile
         timeout-minutes: 10
