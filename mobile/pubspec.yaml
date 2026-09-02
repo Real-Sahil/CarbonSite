@@ -69,7 +69,7 @@ dev_dependencies:
   freezed: ">=2.5.7 <6.0.0"
   json_serializable: ">=6.8.0 <9.0.0"
   riverpod_generator: ">=2.6.2 <6.0.0"
-  drift_dev: ">=2.20.2 <6.0.0"
+  drift_dev: "^2.20.2"
 
 flutter:
   uses-material-design: true
