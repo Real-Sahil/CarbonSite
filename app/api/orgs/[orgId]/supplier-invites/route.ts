@@ -98,7 +98,6 @@ export async function POST(
     // If admin wants to create credentials, generate password and create user account
     if (body.inviteMethod === "credentials") {
       const tempPwd = generateTemporaryPassword();
-      const hashedPassword = await hashPassword(tempPwd);
       temporaryPassword = tempPwd;
 
       // Create or fetch user
@@ -111,14 +110,29 @@ export async function POST(
           data: {
             email: body.email,
             name: body.companyName || body.email.split("@")[0],
-            password: hashedPassword,
           },
         });
-      } else {
-        // Update password if user already exists
-        await prisma.user.update({
-          where: { id: user.id },
+      }
+
+      // Store password in Account table (Better Auth credential provider)
+      const bcrypt = await import("bcryptjs");
+      const hashedPassword = await bcrypt.hash(tempPwd, 10);
+      const existingAccount = await prisma.account.findFirst({
+        where: { userId: user.id, providerId: "credential" },
+      });
+      if (existingAccount) {
+        await prisma.account.update({
+          where: { id: existingAccount.id },
           data: { password: hashedPassword },
+        });
+      } else {
+        await prisma.account.create({
+          data: {
+            userId: user.id,
+            accountId: user.id,
+            providerId: "credential",
+            password: hashedPassword,
+          },
         });
       }
 
@@ -238,7 +252,3 @@ function generateTemporaryPassword(): string {
   return password;
 }
 
-async function hashPassword(password: string): Promise<string> {
-  const { hash } = await import("@node-rs/argon2");
-  return hash(password);
-}
