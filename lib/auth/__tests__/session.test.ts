@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   authGetSession: vi.fn(),
   membershipFindUnique: vi.fn(),
   sessionFindUnique: vi.fn(),
+  accountFindFirst: vi.fn(),
 }));
 
 vi.mock("next/headers", () => ({
@@ -25,6 +26,9 @@ vi.mock("@/lib/db", () => ({
     },
     session: {
       findUnique: mocks.sessionFindUnique,
+    },
+    account: {
+      findFirst: mocks.accountFindFirst,
     },
   },
 }));
@@ -56,7 +60,10 @@ describe("requireOrgMember", () => {
     mocks.authGetSession.mockReset();
     mocks.membershipFindUnique.mockReset();
     mocks.sessionFindUnique.mockReset();
+    mocks.accountFindFirst.mockReset();
     mocks.authGetSession.mockResolvedValue(session);
+    // Default: account has already changed password (non-null passwordChangedAt)
+    mocks.accountFindFirst.mockResolvedValue({ passwordChangedAt: new Date("2026-01-01") });
   });
 
   test("queries membership by the requested organisation and current user", async () => {
@@ -121,7 +128,9 @@ describe("ROLE_GROUPS", () => {
     mocks.authGetSession.mockReset();
     mocks.membershipFindUnique.mockReset();
     mocks.sessionFindUnique.mockReset();
+    mocks.accountFindFirst.mockReset();
     mocks.authGetSession.mockResolvedValue(session);
+    mocks.accountFindFirst.mockResolvedValue({ passwordChangedAt: new Date("2026-01-01") });
   });
 
   const makeMembership = (role: string) => ({

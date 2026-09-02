@@ -1,0 +1,44 @@
+[
+  {
+    "description": "Diesel fuel receipt — litres",
+    "text": "Fuel Receipt\n42.5 litres diesel\nDate: 10-06-2026\nVehicle: AB12 CDE",
+    "expected": {
+      "volume": "42.5",
+      "volumeUnit": "litres",
+      "fuelType": "diesel",
+      "date": "10-06-2026",
+      "vehicleReg": "AB12CDE"
+    }
+  },
+  {
+    "description": "Unleaded petrol with L shorthand",
+    "text": "Forecourt 7\nUnleaded 38.20 L\n12/05/2026",
+    "expected": {
+      "volume": "38.20",
+      "volumeUnit": "litres",
+      "fuelType": "unleaded",
+      "date": "12/05/2026"
+    }
+  },
+  {
+    "description": "Red diesel preferred over generic diesel",
+    "text": "Red Diesel 120 litres delivered to generator\nDate 14 Jun 2026",
+    "expected": {
+      "volume": "120",
+      "volumeUnit": "litres",
+      "fuelType": "red diesel",
+      "date": "14 Jun 2026"
+    }
+  },
+  {
+    "description": "Large HGV diesel fill — whole number",
+    "text": "HGV Fleet Fill\nDiesel 350 litres\nVehicle: HX20 KLM\n01/07/2026",
+    "expected": {
+      "volume": "350",
+      "volumeUnit": "litres",
+      "fuelType": "diesel",
+      "vehicleReg": "HX20KLM",
+      "date": "01/07/2026"
+    }
+  }
+]

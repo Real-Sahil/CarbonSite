@@ -12,6 +12,10 @@ export async function GET(
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
+    const url = new URL(req.url);
+    const cursor = url.searchParams.get("cursor") ?? undefined;
+    const take = Math.min(parseInt(url.searchParams.get("take") ?? "50", 10), 100);
+
     // Get all supplier members
     const accounts = await prisma.organizationMembership.findMany({
       where: {
@@ -39,9 +43,15 @@ export async function GET(
         },
       },
       orderBy: { createdAt: "desc" },
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
 
-    const formattedAccounts = accounts.map((membership) => ({
+    const hasMore = accounts.length > take;
+    const data = hasMore ? accounts.slice(0, take) : accounts;
+    const nextCursor = hasMore ? data[data.length - 1]?.id : null;
+
+    const formattedAccounts = data.map((membership) => ({
       userId: membership.userId,
       email: membership.user.email,
       name: membership.user.name || "Unknown",
@@ -52,7 +62,11 @@ export async function GET(
       terminatedAt: membership.terminatedAt?.toISOString(),
     }));
 
-    const response = NextResponse.json({ accounts: formattedAccounts });
+    const response = NextResponse.json({
+      accounts: formattedAccounts,
+      nextCursor,
+      hasMore,
+    });
     response.headers.set("Cache-Control", "private, max-age=300");
     return response;
   } catch (err) {

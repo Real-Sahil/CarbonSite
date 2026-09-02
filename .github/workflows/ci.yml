@@ -50,6 +50,27 @@ jobs:
           JOB_PROCESSING_MODE: inline
           ROUTING_PROVIDER: none
 
+  smoke:
+    name: Smoke — Playwright e2e
+    runs-on: ubuntu-latest
+    needs: web
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ env.CARBONSITE_API_BASE_URL }}
+      PLAYWRIGHT_BROWSERS_PATH: /opt/pw-browsers
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm playwright install chromium --with-deps
+      - name: Run smoke tests
+        run: pnpm playwright test
+
   android:
     name: Android — release APK
     runs-on: ubuntu-latest
