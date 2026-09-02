@@ -69,7 +69,12 @@ export function useDrillDown(orgId: string, initialFilters?: DrillDownFilters) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        let errorData: { message?: string } = {};
+        try {
+          errorData = await response.json();
+        } catch {
+          // response.json unavailable or body unparseable — use statusText fallback
+        }
         throw new Error(
           errorData.message || `Drill-down query failed: ${response.statusText}`
         );
@@ -83,8 +88,6 @@ export function useDrillDown(orgId: string, initialFilters?: DrillDownFilters) {
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
-    retry: 1,
-    retryDelay: 1000,
   });
 
   const updateFilters = useCallback((newFilters: Partial<DrillDownFilters>) => {

@@ -320,15 +320,9 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
             value: loadingProgress.expectedTotalBytes != null
                 ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                 : null,
-                                ),
-                              );
-                            },
-                          ),
-              ),
-            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
