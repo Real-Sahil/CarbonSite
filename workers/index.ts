@@ -28,6 +28,7 @@ import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
 import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
 import { syncSageInvoices } from "@/lib/integrations/sage";
+import { getLogger } from "@/lib/observability";
 
 interface InvoiceAnomalyJobData {
   organizationId: string;
@@ -44,108 +45,123 @@ const boss = new PgBoss({
   max: 10,
 });
 
-boss.on("error", (err: Error) => console.error("[pg-boss]", err));
+const workerLogger = getLogger("worker");
+
+boss.on("error", (err: Error) => workerLogger.error("pg-boss internal error", err));
 
 async function start() {
   await boss.start();
 
   // ── Imports ──────────────────────────────────────────────────────────────
+  const importsLogger = getLogger("imports");
   await boss.work<ImportJobData>(
     "imports",
     { localConcurrency: 2 },
     async (jobs: Job<ImportJobData>[]) => {
       for (const job of jobs) {
         const { importBatchId, orgId } = job.data;
-        console.log(`[imports] processing batch ${importBatchId}`);
+        importsLogger.info("processing batch", { importBatchId, orgId });
         await processImportBatch(importBatchId, orgId);
-        console.log(`[imports] finished batch ${importBatchId}`);
+        importsLogger.info("finished batch", { importBatchId, orgId });
       }
     },
   );
 
   // ── Calculations ──────────────────────────────────────────────────────────
+  const calculationsLogger = getLogger("calculations");
   await boss.work<CalculationJobData>(
     "calculations",
     { localConcurrency: 4 },
     async (jobs: Job<CalculationJobData>[]) => {
       for (const job of jobs) {
         const { calculationRunId, orgId } = job.data;
-        console.log(`[calculations] processing run ${calculationRunId}`);
+        calculationsLogger.info("processing run", { calculationRunId, orgId });
         await processCalculationRun(calculationRunId, orgId);
-        console.log(`[calculations] finished run ${calculationRunId}`);
+        calculationsLogger.info("finished run", { calculationRunId, orgId });
       }
     },
   );
 
   // ── Reports ───────────────────────────────────────────────────────────────
+  const reportsLogger = getLogger("reports");
   await boss.work<ReportJobData>(
     "reports",
     { localConcurrency: 1 },
     async (jobs: Job<ReportJobData>[]) => {
       for (const job of jobs) {
         const { reportId, orgId } = job.data;
-        console.log(`[reports] processing report ${reportId}`);
+        reportsLogger.info("processing report", { reportId, orgId });
         await processReport(reportId, orgId);
-        console.log(`[reports] finished report ${reportId}`);
+        reportsLogger.info("finished report", { reportId, orgId });
       }
     },
   );
 
   // ── Notifications ─────────────────────────────────────────────────────────
+  const notificationsLogger = getLogger("notifications");
   await boss.work<NotificationJobData>(
     "notifications",
     { localConcurrency: 5 },
     async (jobs: Job<NotificationJobData>[]) => {
       for (const job of jobs) {
-        console.log(`[notifications] processing ${job.data.type} for user ${job.data.recipientUserId}`);
+        notificationsLogger.info("processing notification", {
+          type: job.data.type,
+          recipientUserId: job.data.recipientUserId,
+        });
         await processNotification(job.data);
       }
     },
   );
 
   // ── dbt Transformation ────────────────────────────────────────────────────
+  const dbtLogger = getLogger("dbt-transform");
   await boss.work<DbtTransformJobData>(
     "dbt-transform-jobs",
     { localConcurrency: 2 },
     async (jobs: Job<DbtTransformJobData>[]) => {
       for (const job of jobs) {
         const { calculationRunId, organizationId } = job.data;
-        console.log(`[dbt-transform] processing calculation ${calculationRunId}`);
+        dbtLogger.info("processing calculation", { calculationRunId, organizationId });
         await runDbtTransformation(calculationRunId, organizationId);
-        console.log(`[dbt-transform] finished calculation ${calculationRunId}`);
+        dbtLogger.info("finished calculation", { calculationRunId, organizationId });
       }
     },
   );
 
   // ── Invoice Anomaly Detection ────────────────────────────────────────────
+  const invoiceAnomalyLogger = getLogger("invoice-anomaly");
   await boss.work<InvoiceAnomalyJobData>(
     "invoice-anomaly-jobs",
     { localConcurrency: 1 },
     async (jobs: Job<InvoiceAnomalyJobData>[]) => {
       for (const job of jobs) {
         const { organizationId } = job.data;
-        console.log(`[invoice-anomaly] processing anomaly detection for org ${organizationId}`);
+        invoiceAnomalyLogger.info("processing anomaly detection", { organizationId });
         await detectInvoiceAnomalies(organizationId);
-        console.log(`[invoice-anomaly] finished anomaly detection for org ${organizationId}`);
+        invoiceAnomalyLogger.info("finished anomaly detection", { organizationId });
       }
     },
   );
 
   // ── Xero Invoice Sync ─────────────────────────────────────────────────────
+  const xeroLogger = getLogger("xero-sync");
   await boss.work<XeroSyncJobData>(
     "xero-sync",
     { localConcurrency: 2 },
     async (jobs: Job<XeroSyncJobData>[]) => {
       for (const job of jobs) {
         const { orgId, fromDate } = job.data;
-        console.log(`[xero-sync] processing sync for org ${orgId}${fromDate ? ` from ${fromDate}` : ""}`);
+        xeroLogger.info("processing sync", { orgId, fromDate });
         try {
           const result = await syncXeroInvoices(orgId, fromDate);
-          console.log(
-            `[xero-sync] finished sync for org ${orgId}: created=${result.created}, updated=${result.updated}, skipped=${result.skipped}`
-          );
+          xeroLogger.info("finished sync", {
+            orgId,
+            created: result.created,
+            updated: result.updated,
+            skipped: result.skipped,
+          });
         } catch (err) {
-          console.error(`[xero-sync] failed sync for org ${orgId}:`, err);
+          xeroLogger.error("failed sync", err, { orgId });
           throw err;
         }
       }
@@ -153,20 +169,24 @@ async function start() {
   );
 
   // ── QuickBooks Invoice Sync ───────────────────────────────────────────────
+  const quickbooksLogger = getLogger("quickbooks-sync");
   await boss.work<QuickBooksSyncJobData>(
     "quickbooks-sync",
     { localConcurrency: 2 },
     async (jobs: Job<QuickBooksSyncJobData>[]) => {
       for (const job of jobs) {
         const { orgId, fromDate } = job.data;
-        console.log(`[quickbooks-sync] processing sync for org ${orgId}${fromDate ? ` from ${fromDate}` : ""}`);
+        quickbooksLogger.info("processing sync", { orgId, fromDate });
         try {
           const result = await syncQuickBooksInvoices(orgId, fromDate);
-          console.log(
-            `[quickbooks-sync] finished sync for org ${orgId}: created=${result.created}, updated=${result.updated}, skipped=${result.skipped}`
-          );
+          quickbooksLogger.info("finished sync", {
+            orgId,
+            created: result.created,
+            updated: result.updated,
+            skipped: result.skipped,
+          });
         } catch (err) {
-          console.error(`[quickbooks-sync] failed sync for org ${orgId}:`, err);
+          quickbooksLogger.error("failed sync", err, { orgId });
           throw err;
         }
       }
@@ -174,20 +194,24 @@ async function start() {
   );
 
   // ── Sage Invoice Sync ─────────────────────────────────────────────────────
+  const sageLogger = getLogger("sage-sync");
   await boss.work<SageSyncJobData>(
     "sage-sync",
     { localConcurrency: 2 },
     async (jobs: Job<SageSyncJobData>[]) => {
       for (const job of jobs) {
         const { orgId, fromDate } = job.data;
-        console.log(`[sage-sync] processing sync for org ${orgId}${fromDate ? ` from ${fromDate}` : ""}`);
+        sageLogger.info("processing sync", { orgId, fromDate });
         try {
           const result = await syncSageInvoices(orgId, fromDate);
-          console.log(
-            `[sage-sync] finished sync for org ${orgId}: created=${result.created}, updated=${result.updated}, skipped=${result.skipped}`
-          );
+          sageLogger.info("finished sync", {
+            orgId,
+            created: result.created,
+            updated: result.updated,
+            skipped: result.skipped,
+          });
         } catch (err) {
-          console.error(`[sage-sync] failed sync for org ${orgId}:`, err);
+          sageLogger.error("failed sync", err, { orgId });
           throw err;
         }
       }
@@ -195,51 +219,60 @@ async function start() {
   );
 
   // ── Supplier Performance ──────────────────────────────────────────────────
+  const supplierPerfLogger = getLogger("supplier-performance");
   await boss.work<SupplierPerformanceJobData>(
     "supplier-performance",
     { localConcurrency: 3 },
     async (jobs: Job<SupplierPerformanceJobData>[]) => {
       for (const job of jobs) {
         const { orgId, supplierId } = job.data;
-        console.log(`[supplier-performance] updating metrics for supplier ${supplierId} in org ${orgId}`);
+        supplierPerfLogger.info("updating metrics", { orgId, supplierId });
         await processSupplierPerformanceUpdate(orgId, supplierId);
-        console.log(`[supplier-performance] finished updating supplier ${supplierId}`);
+        supplierPerfLogger.info("finished updating supplier", { orgId, supplierId });
       }
     },
   );
 
   // ── Forecasting ───────────────────────────────────────────────────────────
+  const forecastingLogger = getLogger("forecasting");
   await boss.work<ForecastingJobData>(
     "forecasting",
     { localConcurrency: 2 },
     async (jobs: Job<ForecastingJobData>[]) => {
       for (const job of jobs) {
         const { orgId, forecastType } = job.data;
-        console.log(`[forecasting] generating ${forecastType} forecast for org ${orgId}`);
+        forecastingLogger.info("generating forecast", { orgId, forecastType });
         await processForecastingJob(job.data);
-        console.log(`[forecasting] finished ${forecastType} forecast for org ${orgId}`);
+        forecastingLogger.info("finished forecast", { orgId, forecastType });
       }
     },
   );
 
   // ── Causal Analysis ───────────────────────────────────────────────────────
+  const causalLogger = getLogger("causal-analysis");
   await boss.work<CausalAnalysisJobData>(
     "causal-analysis",
     { localConcurrency: 2 },
     async (jobs: Job<CausalAnalysisJobData>[]) => {
       for (const job of jobs) {
         const { causalInferenceRunId, orgId } = job.data;
-        console.log(`[causal-analysis] processing run ${causalInferenceRunId}`);
+        causalLogger.info("processing run", { causalInferenceRunId, orgId });
         await processCausalAnalysisRun(causalInferenceRunId, orgId);
-        console.log(`[causal-analysis] finished run ${causalInferenceRunId}`);
+        causalLogger.info("finished run", { causalInferenceRunId, orgId });
       }
     },
   );
 
-  console.log("pg-boss workers started (imports, calculations, reports, notifications, dbt-transform, invoice-anomaly, xero-sync, quickbooks-sync, sage-sync, supplier-performance, forecasting, causal-analysis)");
+  workerLogger.info("pg-boss workers started", {
+    queues: [
+      "imports", "calculations", "reports", "notifications",
+      "dbt-transform", "invoice-anomaly", "xero-sync", "quickbooks-sync",
+      "sage-sync", "supplier-performance", "forecasting", "causal-analysis",
+    ],
+  });
 }
 
 start().catch((err) => {
-  console.error("Worker failed to start:", err);
+  workerLogger.error("Worker failed to start", err);
   process.exit(1);
 });

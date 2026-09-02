@@ -14,6 +14,24 @@ export default defineConfig({
       "tests/api/**",
     ],
     setupFiles: ["./vitest.setup.ts"],
+    coverage: {
+      provider: "v8",
+      thresholds: {
+        lines: 60,
+        functions: 60,
+        branches: 55,
+        statements: 60,
+      },
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.config.*",
+        "**/migrations/**",
+        "**/seed.*",
+        "workers/**",
+        "mobile/**",
+      ],
+    },
   },
   resolve: {
     alias: {
