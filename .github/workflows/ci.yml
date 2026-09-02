@@ -65,7 +65,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.24.x"
+          flutter-version: "3.x"
           channel: stable
           cache: true
 
@@ -87,7 +87,7 @@ jobs:
       # compatible with the installed Dart SDK before running build_runner.
       - name: Upgrade generators for installed Dart SDK
         working-directory: mobile
-        run: flutter pub upgrade --major-versions build_runner freezed json_serializable riverpod_generator riverpod_annotation freezed_annotation json_annotation drift drift_dev
+        run: flutter pub upgrade --major-versions build_runner freezed json_serializable riverpod_generator riverpod_annotation freezed_annotation json_annotation
 
       - name: Generate code (drift)
         working-directory: mobile
