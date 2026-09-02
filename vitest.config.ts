@@ -12,6 +12,7 @@ export default defineConfig({
       "**/node_modules/**",
       "**/dist/**",
       "tests/api/**",
+      "tests/e2e/**",
     ],
     setupFiles: ["./vitest.setup.ts"],
     coverage: {
