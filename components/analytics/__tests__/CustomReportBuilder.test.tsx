@@ -415,8 +415,10 @@ describe('CustomReportBuilder', () => {
       { wrapper: createWrapper() }
     );
 
-    const formatDropdown = await screen.findByDisplayValue('PDF Document');
-    expect(formatDropdown).toBeInTheDocument();
+    // shadcn/ui Select (Radix) renders a combobox trigger, not a native <select>
+    const formatTrigger = await screen.findByRole('combobox');
+    expect(formatTrigger).toBeInTheDocument();
+    expect(formatTrigger).toHaveTextContent('PDF Document');
   });
 
   it('should handle CSV format selection', async () => {
@@ -432,9 +434,11 @@ describe('CustomReportBuilder', () => {
       { wrapper: createWrapper() }
     );
 
-    const formatDropdown = await screen.findByDisplayValue('PDF Document') as HTMLSelectElement;
-    fireEvent.change(formatDropdown, { target: { value: 'csv' } });
-    expect(formatDropdown.value).toBe('csv');
+    const formatTrigger = await screen.findByRole('combobox');
+    fireEvent.click(formatTrigger);
+    const csvOption = await screen.findByRole('option', { name: 'CSV Spreadsheet' });
+    fireEvent.click(csvOption);
+    await waitFor(() => expect(screen.getByRole('combobox')).toHaveTextContent('CSV Spreadsheet'));
   });
 
   it('should handle JSON format selection', async () => {
@@ -450,9 +454,11 @@ describe('CustomReportBuilder', () => {
       { wrapper: createWrapper() }
     );
 
-    const formatDropdown = await screen.findByDisplayValue('PDF Document') as HTMLSelectElement;
-    fireEvent.change(formatDropdown, { target: { value: 'json' } });
-    expect(formatDropdown.value).toBe('json');
+    const formatTrigger = await screen.findByRole('combobox');
+    fireEvent.click(formatTrigger);
+    const jsonOption = await screen.findByRole('option', { name: 'JSON Data' });
+    fireEvent.click(jsonOption);
+    await waitFor(() => expect(screen.getByRole('combobox')).toHaveTextContent('JSON Data'));
   });
 
   it('should toggle content options', async () => {

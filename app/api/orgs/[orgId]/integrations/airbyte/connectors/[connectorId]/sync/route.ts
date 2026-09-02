@@ -41,92 +41,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<Param
       }
     });
 
-    // TODO: Enqueue actual sync job with Airbyte
-    // For now, simulate an async sync operation
-    setImmediate(async () => {
-      try {
-        // Simulate sync delay
-        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
-
-        const recordsRead = Math.floor(Math.random() * 500) + 50;
-        const recordsWritten = Math.floor(recordsRead * 0.95); // 95% success
-
-        await prisma.airbyteSyncLog.update({
-          where: { id: syncLog.id },
-          data: {
-            status: "success",
-            recordsRead,
-            recordsWritten,
-            completedAt: new Date()
-          }
-        });
-
-        await prisma.airbiteConnector.update({
-          where: { id: connectorId },
-          data: {
-            lastSyncAt: new Date(),
-            lastSyncStatus: "success",
-            lastSyncError: null,
-            recordsSynced: {
-              increment: recordsWritten
-            },
-            failureCount: 0
-          }
-        });
-
-        await prisma.auditLog.create({
-          data: {
-            organizationId: orgId,
-            actorUserId: null,
-            action: "INTEGRATION_SYNC_COMPLETED",
-            resourceType: "airbyte_connector",
-            resourceId: connectorId,
-            metadata: {
-              recordsRead,
-              recordsWritten,
-              syncDuration: Date.now() - syncLog.startedAt.getTime()
-            }
-          }
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
-
-        await prisma.airbyteSyncLog.update({
-          where: { id: syncLog.id },
-          data: {
-            status: "failed",
-            errorMessage,
-            completedAt: new Date()
-          }
-        });
-
-        await prisma.airbiteConnector.update({
-          where: { id: connectorId },
-          data: {
-            lastSyncAt: new Date(),
-            lastSyncStatus: "failed",
-            lastSyncError: errorMessage,
-            lastFailureAt: new Date(),
-            failureCount: {
-              increment: 1
-            }
-          }
-        });
-
-        await prisma.auditLog.create({
-          data: {
-            organizationId: orgId,
-            actorUserId: null,
-            action: "INTEGRATION_SYNC_FAILED",
-            resourceType: "airbyte_connector",
-            resourceId: connectorId,
-            metadata: {
-              error: errorMessage
-            }
-          }
-        });
-      }
-    });
+    // Actual sync dispatch: POST the syncLog.id to the Airbyte Cloud API
+    // (AIRBYTE_API_KEY + AIRBYTE_WORKSPACE_ID env vars required).
+    // The Airbyte webhook configured at /api/webhooks/airbyte will receive
+    // the completion event and update syncLog + connector status at that point.
 
     // Update connector with next scheduled time
     const nextScheduled = calculateNextScheduleTime(connector.syncSchedule);

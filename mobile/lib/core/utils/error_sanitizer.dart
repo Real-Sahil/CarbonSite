@@ -7,7 +7,7 @@ class ErrorSanitizer {
 
     // Remove URLs containing API endpoints or hostnames
     sanitized = sanitized.replaceAll(
-      RegExp(r'https?://[a-zA-Z0-9\-.]+(:[0-9]+)?(/[a-zA-Z0-9\-._~:/?#\[\]@!$&\'()*+,;=%]*)?'),
+      RegExp(r"https?://[a-zA-Z0-9\-.]+(:[0-9]+)?(/[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]*)?"),
       '[REDACTED_URL]',
     );
 

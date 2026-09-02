@@ -250,15 +250,19 @@ export function ensembleForecast(
   ];
 
   const lowerCI = Array.from({ length: periods }, (_, i) => {
-    const idx = i;
-    if (allLowerBounds[idx] !== undefined) return allLowerBounds[idx];
-    return Math.max(0, ensemble[i] * 0.8);
+    const esLower = es.lowerBound?.[i] ?? Math.max(0, ensemble[i] * 0.8);
+    const arimaLower = arima.lowerBound?.[i] ?? Math.max(0, ensemble[i] * 0.8);
+    const trendLower = Math.max(0, trendForecast[i] * 0.8);
+    // Clamp so lower bound never exceeds the ensemble forecast itself
+    return Math.min(Math.min(esLower, arimaLower, trendLower), ensemble[i]);
   });
 
   const upperCI = Array.from({ length: periods }, (_, i) => {
-    const idx = i;
-    if (allUpperBounds[idx] !== undefined) return allUpperBounds[idx];
-    return ensemble[i] * 1.2;
+    const esUpper = es.upperBound?.[i] ?? ensemble[i] * 1.2;
+    const arimaUpper = arima.upperBound?.[i] ?? ensemble[i] * 1.2;
+    const trendUpper = trendForecast[i] * 1.2;
+    // Clamp so upper bound never falls below the ensemble forecast itself
+    return Math.max(Math.max(esUpper, arimaUpper, trendUpper), ensemble[i]);
   });
 
   const overallConfidence = Math.min(

@@ -338,27 +338,34 @@ export async function detectSupplierAnomalies(
     intervals.push((submissionDates[i - 1] - submissionDates[i]) / (1000 * 60 * 60 * 24)); // Days between
   }
 
-  if (intervals.length > 2) {
+  if (intervals.length > 1) {
+    const sortedIntervals = [...intervals].sort((a, b) => a - b);
+    const medianInterval = sortedIntervals[Math.floor(sortedIntervals.length / 2)];
     const intervalMean = ss.mean(intervals);
-    const intervalStddev = ss.standardDeviation(intervals);
 
-    // Only flag frequency anomalies if there is actual variance in submission intervals
-    if (intervalStddev > 0) {
-      // Check most recent submission for frequency anomaly
-      if (submissions.length >= 2) {
-        const recentInterval = intervals[0];
-        const frequencyZScore = Math.abs((recentInterval - intervalMean) / intervalStddev);
+    // For each interval, flag as anomaly if it is more than 3x the median
+    // (ratio-based detection is robust on small datasets where a single outlier
+    // inflates the z-score denominator and masks itself)
+    for (let i = 0; i < intervals.length; i++) {
+      const interval = intervals[i];
+      const isRatioAnomaly = medianInterval > 0 && interval > medianInterval * 3;
 
-        if (frequencyZScore > stddevThreshold) {
-          anomalies.push({
-            submissionId: submissions[0].id,
-            supplierId,
-            anomalyType: 'frequency_anomaly',
-            severity: frequencyZScore > 3 ? 'high' : 'medium',
-            reason: `Submission frequency changed: ${recentInterval.toFixed(1)} days vs. typical ${intervalMean.toFixed(1)} days`,
-            detectedAt: new Date(),
-          });
-        }
+      // Also run z-score check when stddev is meaningful (more data points)
+      const intervalStddev = intervals.length > 2 ? ss.standardDeviation(intervals) : 0;
+      const zScore = intervalStddev > 0 ? Math.abs((interval - intervalMean) / intervalStddev) : 0;
+      const isZScoreAnomaly = zScore > stddevThreshold;
+
+      if (isRatioAnomaly || isZScoreAnomaly) {
+        // submissions[i] is the newer endpoint of gap i (gap i = submissionDates[i-1] - submissionDates[i])
+        // submissions[0] is newest; submissions[i] is the submission that arrived after the long gap
+        anomalies.push({
+          submissionId: submissions[i].id,
+          supplierId,
+          anomalyType: 'frequency_anomaly',
+          severity: (isRatioAnomaly && interval > medianInterval * 5) || zScore > 3 ? 'high' : 'medium',
+          reason: `Submission frequency changed: ${interval.toFixed(1)} days vs. typical ${intervalMean.toFixed(1)} days`,
+          detectedAt: new Date(),
+        });
       }
     }
   }

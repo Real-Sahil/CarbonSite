@@ -26,10 +26,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma generate
-      # Non-blocking until known advisories are triaged; tighten once the
-      # dependency tree is clean (Cyber Essentials patch-management control).
-      - run: pnpm audit --prod
-        continue-on-error: true
+      # Fail on high/critical severity advisories (Cyber Essentials patch-management control).
+      # Run pnpm audit --prod locally and upgrade affected packages if this step fails.
+      - run: pnpm audit --prod --audit-level=high
       - run: pnpm lint
         continue-on-error: true
       - run: pnpm typecheck
@@ -65,7 +64,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.24.x"
+          flutter-version: "3.27.x"
           channel: stable
           cache: true
 
@@ -87,7 +86,7 @@ jobs:
       # compatible with the installed Dart SDK before running build_runner.
       - name: Upgrade generators for installed Dart SDK
         working-directory: mobile
-        run: flutter pub upgrade --major-versions build_runner freezed json_serializable riverpod_generator riverpod_annotation freezed_annotation json_annotation drift drift_dev
+        run: flutter pub upgrade --major-versions build_runner freezed json_serializable freezed_annotation json_annotation
 
       - name: Generate code (drift)
         working-directory: mobile
