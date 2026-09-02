@@ -57,10 +57,11 @@ curl -X POST http://localhost:3000/api/auth/token \
 
 ## Organization Management
 
-### Create Organization (Admin Only)
+### Create Organization (Platform Admin Only)
 
 ```bash
-curl -X POST http://localhost:3000/api/organizations \
+# Platform admins create orgs via the platform API.
+curl -X POST http://localhost:3000/api/platform/orgs \
   -H "Content-Type: application/json" \
   -b cookies.txt \
   -d '{
@@ -81,7 +82,7 @@ curl -X POST http://localhost:3000/api/organizations \
 ### List Organizations for Current User
 
 ```bash
-curl -X GET http://localhost:3000/api/organizations \
+curl -X GET http://localhost:3000/api/orgs \
   -b cookies.txt
 
 # Response:
@@ -120,16 +121,17 @@ curl -X PUT "https://carbonsite.r2.cloudflarestorage.com/org/org-abc123/imports/
   -H "Content-Type: text/csv" \
   --data-binary @energy-data.csv
 
-# 3. Poll import status
-curl -X GET http://localhost:3000/api/orgs/org-abc123/imports/import-123/status \
+# 3. Poll import status (GET the import itself; state field reflects progress)
+curl -X GET http://localhost:3000/api/orgs/org-abc123/imports/import-123 \
   -b cookies.txt
 
 # Response (while parsing):
-# { "status": "parsing", "rowsParsed": 47, "totalRows": 125 }
+# { "id": "import-123", "state": "parsing", "rowsParsed": 47, "totalRows": 125 }
 
 # Response (after validation):
 # {
-#   "status": "needs_attention",
+#   "id": "import-123",
+#   "state": "needs_attention",
 #   "rowsParsed": 125,
 #   "validRows": 120,
 #   "errorRows": 5,

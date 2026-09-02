@@ -45,8 +45,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const cursor = url.searchParams.get("cursor") ?? undefined;
+    const take = Math.min(parseInt(url.searchParams.get("take") ?? "50", 10), 100);
+
     // Fetch all requests for this supplier across all periods
-    const requests = await prisma.supplierDataRequest.findMany({
+    const rawRequests = await prisma.supplierDataRequest.findMany({
       where: {
         supplierEmail: anyRequest.supplierEmail,
         organizationId: anyRequest.organizationId,
@@ -66,7 +69,13 @@ export async function GET(req: NextRequest) {
         organization: { select: { name: true } },
       },
       orderBy: { sentAt: "desc" },
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
+
+    const hasMore = rawRequests.length > take;
+    const requests = hasMore ? rawRequests.slice(0, take) : rawRequests;
+    const nextCursor = hasMore ? requests[requests.length - 1]?.id : null;
 
     // Log portal access
     await writeAuditLog({
@@ -86,6 +95,8 @@ export async function GET(req: NextRequest) {
         email: anyRequest.supplierEmail,
         orgName: requests[0]?.organization.name,
       },
+      nextCursor,
+      hasMore,
       requests: requests.map((r) => ({
         id: r.id,
         token: r.token,

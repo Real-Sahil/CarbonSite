@@ -1,0 +1,56 @@
+[
+  {
+    "description": "Standard waste transfer note — tonnes",
+    "text": "WASTE TRANSFER NOTE\nCarrier: Greenway Skips Ltd\nEWC Code: 17 09 04\nWeight: 2.5 tonnes\nDate: 15/06/2026\nVehicle: LX71 GHB",
+    "expected": {
+      "weight": "2.5",
+      "weightUnit": "tonnes",
+      "ewcCode": "17 09 04",
+      "date": "15/06/2026",
+      "vehicleReg": "LX71GHB",
+      "supplierName": "Greenway Skips Ltd"
+    }
+  },
+  {
+    "description": "Net weight preferred over gross",
+    "text": "Gross Weight: 12.4 tonnes\nTare: 6.2 tonnes\nNet Weight: 6.2 tonnes\nEWC: 170107\nDate: 10-03-2026",
+    "expected": {
+      "weight": "6.2",
+      "weightUnit": "tonnes",
+      "ewcCode": "17 01 07",
+      "date": "10-03-2026"
+    }
+  },
+  {
+    "description": "Weight in kg with thousands separator",
+    "text": "Net weight: 1,250 kg\nSkip exchange\nEWC 15 01 06\n22/04/2026\nReg: P456 XYZ",
+    "expected": {
+      "weight": "1250",
+      "weightUnit": "kg",
+      "ewcCode": "15 01 06",
+      "date": "22/04/2026",
+      "vehicleReg": "P456XYZ"
+    }
+  },
+  {
+    "description": "Missing optional fields — partial extraction",
+    "text": "Waste ticket\nWeight 850 kg\nDate: 01/08/2026",
+    "expected": {
+      "weight": "850",
+      "weightUnit": "kg",
+      "date": "01/08/2026"
+    },
+    "expectNull": ["ewcCode", "vehicleReg", "supplierName"]
+  },
+  {
+    "description": "EWC chapter 20 municipal waste",
+    "text": "Municipal Solid Waste\nEWC: 20 03 01\nWeight: 4.8 tonnes\nCarrier: City Waste Services Ltd\n14 Jul 2026",
+    "expected": {
+      "weight": "4.8",
+      "weightUnit": "tonnes",
+      "ewcCode": "20 03 01",
+      "date": "14 Jul 2026",
+      "supplierName": "City Waste Services Ltd"
+    }
+  }
+]

@@ -188,6 +188,22 @@ export async function requireOrgMember(orgId: string, ...allowedRoles: OrgRole[]
   if (allowedRoles.length && !allowedRoles.includes(membership.role)) {
     throw new AuthError("INSUFFICIENT_ROLE", 403);
   }
+
+  // Enforce first-login password change for invited accounts.
+  // Accounts created via invite have passwordChangedAt = null until the user
+  // sets their own password. Block access until they do (except field_worker
+  // and supplier roles, which authenticate via PIN / token flows, not passwords).
+  const skipPasswordCheck = membership.role === "field_worker" || membership.role === "supplier";
+  if (!skipPasswordCheck) {
+    const account = await prisma.account.findFirst({
+      where: { userId: session.user.id, providerId: "credential" },
+      select: { passwordChangedAt: true },
+    });
+    if (account && account.passwordChangedAt === null) {
+      throw new AuthError("MUST_CHANGE_PASSWORD", 403);
+    }
+  }
+
   return { session, membership };
 }
 

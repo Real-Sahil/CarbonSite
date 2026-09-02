@@ -1,0 +1,47 @@
+[
+  {
+    "description": "Delivery note — concrete blocks with postcode",
+    "text": "DELIVERY NOTE\nAcme Aggregates Limited\nMaterial: Concrete blocks\nQty: 1250 kg\nDelivery to: Site B33 8TH\nDate: 3rd March 2026",
+    "expected": {
+      "weight": "1250",
+      "weightUnit": "kg",
+      "materialType": "Concrete blocks",
+      "postcode": "B33 8TH",
+      "date": "3rd March 2026",
+      "supplierName": "Acme Aggregates Limited"
+    }
+  },
+  {
+    "description": "Delivery note — crushed aggregate with description label",
+    "text": "Tarmac UK Holdings Limited\nDescription: Crushed aggregate Type 1\nWeight: 20 tonnes\nSite: Leeds LS1 4AP\nDate: 12/05/2026",
+    "expected": {
+      "weight": "20",
+      "weightUnit": "tonnes",
+      "materialType": "Crushed aggregate Type 1",
+      "postcode": "LS1 4AP",
+      "date": "12/05/2026",
+      "supplierName": "Tarmac UK Holdings Limited"
+    }
+  },
+  {
+    "description": "Delivery note — sand no postcode",
+    "text": "Delivery Note\nMaterial: Sand\nSupplier: Hanson Aggregates Ltd\n850 kg\n09/01/2026",
+    "expected": {
+      "weight": "850",
+      "weightUnit": "kg",
+      "materialType": "Sand",
+      "date": "09/01/2026",
+      "supplierName": "Hanson Aggregates Ltd"
+    },
+    "expectNull": ["postcode"]
+  },
+  {
+    "description": "Postcode without internal space normalised",
+    "text": "Site address: M11AE\nConcrete delivered 100 kg",
+    "expected": {
+      "weight": "100",
+      "weightUnit": "kg",
+      "postcode": "M1 1AE"
+    }
+  }
+]
