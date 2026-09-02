@@ -1,0 +1,36 @@
+# Dart build configuration for code generation.
+# Disables the flutter_map_tile_caching builder (known to hang in CI at v9.1.x)
+# and scopes each generator to its own source files for faster, parallel builds.
+
+targets:
+  $default:
+    builders:
+      # Disable flutter_map_tile_caching's own builder — it processes
+      # the entire package tree and hangs indefinitely in CI environments
+      # without a real Flutter binding. The runtime library still works fine.
+      flutter_map_tile_caching|flutter_map_tile_caching:
+        enabled: false
+
+      # Limit drift_dev to database definition files only
+      drift_dev|drift_dev:
+        generate_for:
+          - lib/core/storage/app_database.dart
+
+      drift_dev|not_shared:
+        generate_for:
+          - lib/core/storage/app_database.dart
+
+      # Limit freezed to files that use @freezed
+      freezed|freezed:
+        generate_for:
+          - lib/**/*.dart
+
+      # Limit json_serializable to files that use @JsonSerializable
+      json_serializable|json_serializable:
+        generate_for:
+          - lib/**/*.dart
+
+      # Limit riverpod_generator to provider files
+      riverpod_generator|riverpod_generator:
+        generate_for:
+          - lib/**/*.dart
