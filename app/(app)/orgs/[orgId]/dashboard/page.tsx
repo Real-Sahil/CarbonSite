@@ -83,17 +83,20 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const { facilityId: selectedFacilityId, contractId: selectedContractId } = await searchParams;
   const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
-  const [organization, currentPeriod] = await Promise.all([
+  const [organization, recentPeriods] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
       select: { name: true, industry: true },
     }),
-    prisma.reportingPeriod.findFirst({
+    prisma.reportingPeriod.findMany({
       where: { organizationId: orgId },
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
       select: { id: true, label: true, status: true },
+      take: 2,
     }),
   ]);
+  const currentPeriod = recentPeriods[0] ?? null;
+  const priorPeriod = recentPeriods[1] ?? null;
 
   // Contract filter support
   const [activeContracts, selectedContract] = await Promise.all([
@@ -133,7 +136,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   });
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
-  const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch] = await Promise.all([
+  const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch, priorScopeAggregates] = await Promise.all([
     Promise.all([
       currentPeriod
         ? prisma.dashboardAggregate.groupBy({
@@ -416,6 +419,19 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         orderBy: { createdAt: "desc" },
       }),
     ] as const),
+    // Prior period scope-level aggregates for year-on-year comparison
+    priorPeriod
+      ? prisma.dashboardAggregate.groupBy({
+          by: ["scope"],
+          where: {
+            organizationId: orgId,
+            reportingPeriodId: priorPeriod.id,
+            snapshotId: null,
+          },
+          _sum: { totalCo2e: true, recordCount: true },
+          orderBy: { scope: "asc" },
+        })
+      : Promise.resolve([] as { scope: number; _sum: { totalCo2e: string | null; recordCount: number | null } }[]),
   ]);
 
   const [
@@ -667,6 +683,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
   const scopeRows = [1, 2, 3].map((scope) => {
     const aggregate = scopeAggregates.find((row) => row.scope === scope);
+    return {
+      scope,
+      total: aggregate?._sum.totalCo2e ?? 0,
+      records: aggregate?._sum.recordCount ?? 0,
+    };
+  });
+
+  const priorScopeRows = [1, 2, 3].map((scope) => {
+    const aggregate = priorScopeAggregates.find((row) => row.scope === scope);
     return {
       scope,
       total: aggregate?._sum.totalCo2e ?? 0,
@@ -1328,6 +1353,58 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             )}
           </CardContent>
         </Card>
+
+        {priorPeriod && priorScopeRows.some((r) => Number(r.total) > 0) && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-[#111827]" />
+                    <CardTitle className="text-base">Year-on-year comparison</CardTitle>
+                  </div>
+                  <CardDescription className="mt-1">
+                    {currentPeriod?.label} vs {priorPeriod.label} — scope-level emissions delta.
+                  </CardDescription>
+                </div>
+                <Badge variant="outline">{priorPeriod.label} to {currentPeriod?.label}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-3">
+                {[1, 2, 3].map((scope) => {
+                  const current = scopeRows.find((r) => r.scope === scope);
+                  const prior = priorScopeRows.find((r) => r.scope === scope);
+                  const currentVal = Number(current?.total ?? 0);
+                  const priorVal = Number(prior?.total ?? 0);
+                  const delta = currentVal - priorVal;
+                  const deltaPct = priorVal > 0 ? (delta / priorVal) * 100 : null;
+                  const improved = delta <= 0;
+                  return (
+                    <div key={scope} className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
+                      <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Scope {scope}</p>
+                      <div className="mt-2 flex items-end justify-between gap-2">
+                        <div>
+                          <p className="text-xl font-normal tracking-[-0.4px] text-[#111827]">{formatKgCo2e(currentVal)}</p>
+                          <p className="text-xs text-[#374151]">{currentPeriod?.label}</p>
+                        </div>
+                        {deltaPct !== null && (
+                          <div className={`flex items-center gap-1 text-sm font-medium ${improved ? "text-emerald-600" : "text-red-600"}`}>
+                            {improved ? <TrendingDown className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />}
+                            {deltaPct > 0 ? "+" : ""}{deltaPct.toFixed(1)}%
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-[#E5E7EB]">
+                        <p className="text-xs text-[#9CA3AF]">{formatKgCo2e(priorVal)} in {priorPeriod.label}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
