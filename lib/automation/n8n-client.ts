@@ -12,12 +12,12 @@ export interface WorkflowPayload {
   workflowName: string;
   orgId: string;
   timestamp: string;
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined | Record<string, unknown>;
 }
 
 export async function triggerN8nWorkflow(
   workflowName: string,
-  payload: Omit<WorkflowPayload, 'workflowName' | 'timestamp'>
+  payload: { orgId: string } & Record<string, string | number | boolean | null | undefined | Record<string, unknown>>
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   if (!process.env.N8N_WEBHOOK_URL) {
     console.warn('[n8n] N8N_WEBHOOK_URL not configured, workflow trigger skipped');
@@ -29,7 +29,6 @@ export async function triggerN8nWorkflow(
     const body: WorkflowPayload = {
       workflowName,
       timestamp: new Date().toISOString(),
-      orgId: payload.orgId,
       ...payload,
     };
 

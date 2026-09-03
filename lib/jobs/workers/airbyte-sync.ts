@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { Decimal } from '@prisma/client/runtime/library';
+import type { Prisma } from '@prisma/client';
 import type { Job } from 'pg-boss';
 import type { AirbyteSyncJobData } from '@/lib/jobs/queues';
 
@@ -138,8 +139,7 @@ export async function processAirbyteSyncCompletion(connectionId: string) {
         unit: r.normalizedUnit,
         createdByUserId: null
       }));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const recordsToCreate = mapped as any[];
+      const recordsToCreate = mapped as unknown as Prisma.ActivityRecordCreateManyInput[];
 
       await prisma.activityRecord.createMany({
         data: recordsToCreate

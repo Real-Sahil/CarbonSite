@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 const POSTCODE_PROVIDER = "postcodes.io";
 const ROUTING_PROVIDER = process.env.ROUTING_PROVIDER ?? "osrm";
@@ -182,10 +183,8 @@ async function getOrCreatePostcodeGeocode(normalizedPostcode: string) {
     data: {
       normalizedPostcode,
       displayPostcode,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      normalizedPostcodeEncrypted: (normalizedEncrypted || null) as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      displayPostcodeEncrypted: (displayEncrypted || null) as any,
+      normalizedPostcodeEncrypted: (normalizedEncrypted ?? Prisma.DbNull) as Prisma.InputJsonValue,
+      displayPostcodeEncrypted: (displayEncrypted ?? Prisma.DbNull) as Prisma.InputJsonValue,
       latitude: result.latitude,
       longitude: result.longitude,
       provider: POSTCODE_PROVIDER,

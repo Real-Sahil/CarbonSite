@@ -131,8 +131,18 @@ export async function processCausalAnalysisRun(
   }
 }
 
+interface CausalEstimate {
+  effectSize: number;
+  confidenceIntervalLower: number;
+  confidenceIntervalUpper: number;
+  pValue: number;
+  robustnessToUnmeasuredConfounding: number;
+  sampleSize: number;
+  method: string;
+}
+
 function formatSummary(
-  estimate: any,
+  estimate: CausalEstimate,
   question: string
 ): string {
   const effect = estimate.effectSize.toFixed(2);

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Decimal } from "@prisma/client/runtime/library";
+import type { Prisma } from "@prisma/client";
 
 export interface ImportRecord {
   rowNumber: number;
@@ -205,8 +206,7 @@ export async function saveQualityCheckResults(
   // Save individual check results
   await Promise.all(
     checks.map((check) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const failureSamples: any = check.failures && check.failures.length > 0 ? check.failures : undefined;
+      const failureSamples: Prisma.InputJsonValue | undefined = check.failures && check.failures.length > 0 ? check.failures as unknown as Prisma.InputJsonValue : undefined;
       return prisma.dataQualityCheck.create({
         data: {
           organizationId: orgId,

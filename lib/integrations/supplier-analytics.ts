@@ -415,7 +415,7 @@ export async function getSupplierAnalytics(
 export async function updateSupplierAnalytics(
   organizationId: string,
   supplierId: string
-): Promise<any> {
+): Promise<unknown> {
   const score = await calculateSupplierScore(organizationId, supplierId);
   const forecast = await forecastSupplierEmissions(organizationId, supplierId);
 

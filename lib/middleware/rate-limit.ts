@@ -36,7 +36,7 @@ export function withRateLimit(config: Partial<RateLimitConfig> = {}) {
     });
 
   return async (handler: Function) => {
-    return async (request: NextRequest, ...args: any[]) => {
+    return async (request: NextRequest, ...args: unknown[]) => {
       const key = keyGenerator(request);
       const now = Date.now();
 
