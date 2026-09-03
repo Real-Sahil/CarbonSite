@@ -53,7 +53,7 @@ export function FacilitiesChart({
     );
   }
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: { facilityName: string; emissions: number } }[] }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const percentage = total > 0 ? ((data.emissions / total) * 100).toFixed(1) : '0';

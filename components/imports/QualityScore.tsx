@@ -14,7 +14,7 @@ interface QualityScoreProps {
   failures?: Array<{
     rowNumber: number;
     field: string;
-    value: any;
+    value: unknown;
     expected: string;
   }>;
 }

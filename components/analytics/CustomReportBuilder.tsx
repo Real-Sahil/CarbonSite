@@ -106,10 +106,10 @@ export function CustomReportBuilder({
         return { data, filename: `${formData.title}.json` };
       }
     },
-    onSuccess: (result: any) => {
-      if (result.blob) {
+    onSuccess: (result: { blob?: Blob; filename: string; data?: unknown } | undefined) => {
+      if (result?.blob) {
         // Download file
-        const url = URL.createObjectURL(result.blob);
+        const url = URL.createObjectURL(result.blob!);
         const a = document.createElement('a');
         a.href = url;
         a.download = result.filename;
@@ -117,7 +117,7 @@ export function CustomReportBuilder({
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        onReportGenerated?.(url, formData.format);
+        if (result) onReportGenerated?.(url, formData.format);
       }
       setErrors({});
     },
@@ -188,7 +188,7 @@ export function CustomReportBuilder({
               <div className="text-sm text-gray-600">Loading periods...</div>
             ) : periods?.length ? (
               <div className="space-y-2">
-                {periods.map((period: any) => (
+                {(periods as { id: string; label: string }[]).map((period) => (
                   <div key={period.id} className="flex items-center gap-2">
                     <Checkbox
                       id={`period-${period.id}`}

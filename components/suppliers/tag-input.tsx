@@ -39,7 +39,7 @@ export function TagInput({
       const res = await fetch(`/api/orgs/${orgId}/supplier-tags`);
       if (res.ok) {
         const data = await res.json();
-        setAvailableTags(data.tags.map((t: any) => t.name));
+        setAvailableTags(data.tags.map((t: { name: string }) => t.name));
       }
     } catch (err) {
       console.error("Failed to load tags:", err);

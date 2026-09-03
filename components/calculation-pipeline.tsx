@@ -209,7 +209,7 @@ export function CalculationPipeline() {
                 ].map((item) => (
                   <button
                     key={item.scope}
-                    onClick={() => setActivePathway(activePathway === (item.scope.split(' ')[1].toLowerCase() as any) ? null : (item.scope.split(' ')[1].toLowerCase() as any))}
+                    onClick={() => { const key = item.scope.split(' ')[1].toLowerCase() as PathwayType; setActivePathway(activePathway === key ? null : key); }}
                     className={`rounded-xl p-6 text-left transition-all cursor-pointer transform hover:scale-105 ${
                       activePathway === item.scope.split(' ')[1].toLowerCase()
                         ? 'ring-2 ring-offset-2 ring-gray-400'

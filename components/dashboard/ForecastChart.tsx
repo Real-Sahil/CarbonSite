@@ -13,6 +13,13 @@ interface ForecastData {
   actual?: number;
 }
 
+interface SupplierTableRow {
+  supplierId: string;
+  overallScore: number;
+  trend: 'improving' | 'declining' | 'stable';
+  forecastedEmissions?: number;
+}
+
 interface SupplierForecast {
   supplierId: string;
   forecastedEmissions: number[];
@@ -232,7 +239,7 @@ export function VolatilityHeatmap({ orgId }: { orgId: string }) {
     return <Skeleton className="h-96 w-full" />;
   }
 
-  const suppliers = data?.data?.forecasts || [];
+  const suppliers: SupplierTableRow[] = data?.data?.forecasts || [];
 
   return (
     <div className="overflow-x-auto">
@@ -246,7 +253,7 @@ export function VolatilityHeatmap({ orgId }: { orgId: string }) {
           </tr>
         </thead>
         <tbody>
-          {suppliers.map((supplier: any) => (
+          {suppliers.map((supplier) => (
             <tr key={supplier.supplierId} className="border-b hover:bg-gray-50">
               <td className="px-4 py-2">{supplier.supplierId}</td>
               <td className="px-4 py-2">

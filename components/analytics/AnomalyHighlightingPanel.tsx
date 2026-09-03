@@ -25,7 +25,13 @@ interface AnomalyHighlightingPanelProps {
   initialPeriodId?: string;
 }
 
-const severityConfig = {
+const severityConfig: Record<string, {
+  icon: React.ElementType;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  badge: 'destructive' | 'secondary' | 'outline' | 'default';
+}> = {
   critical: {
     icon: AlertTriangle,
     color: 'text-red-600',
@@ -184,7 +190,7 @@ export function AnomalyHighlightingPanel({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <div className="font-medium text-sm">{anomaly.description}</div>
-                        <Badge variant={config.badge as any} className="text-xs">
+                        <Badge variant={config.badge} className="text-xs">
                           {anomaly.type}
                         </Badge>
                       </div>

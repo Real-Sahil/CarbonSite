@@ -75,7 +75,7 @@ export function ScopeBreakdownChart({
     );
   }
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: { name: string; value: number; percentage: number } }[] }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

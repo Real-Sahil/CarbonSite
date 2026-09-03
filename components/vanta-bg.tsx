@@ -4,18 +4,19 @@ import { useEffect, useRef } from 'react';
 // @ts-ignore
 import * as THREE from 'three';
 
-type VantaEffect = any;
+interface VantaInstance { destroy(): void }
+type VantaFactory = (config: Record<string, unknown>) => VantaInstance;
 
 export function VantaBg({ children, variant = 'dots' }: { children?: React.ReactNode; variant?: 'dots' | 'waves' | 'net' }) {
   const ref = useRef<HTMLDivElement>(null);
-  const vantaEffect = useRef<VantaEffect>(null);
+  const vantaEffect = useRef<VantaInstance | null>(null);
 
   useEffect(() => {
     if (!ref.current) return;
 
     const loadVanta = async () => {
       try {
-        let VantaModule: any;
+        let VantaModule: VantaFactory;
         if (variant === 'dots') {
           // @ts-ignore
           const vantaDots = await import('vanta/dist/vanta.dots.min');

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 interface FailureSample {
   rowNumber: number;
   field: string;
-  value: any;
+  value: unknown;
   expected: string;
 }
 
@@ -186,7 +186,7 @@ export function QualityReport({ orgId, importId, onDataReady }: QualityReportPro
                       <div className="bg-gray-50 p-2 rounded text-xs font-mono">
                         {check.failureSamples.slice(0, 3).map((sample, idx) => (
                           <div key={idx} className="text-gray-700">
-                            Row {sample.rowNumber} ({sample.field}): "{sample.value}" (expected: {sample.expected})
+                            Row {sample.rowNumber} ({sample.field}): &quot;{String(sample.value)}&quot; (expected: {sample.expected})
                           </div>
                         ))}
                         {check.failureSamples.length > 3 && (
