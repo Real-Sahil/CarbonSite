@@ -55,7 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: web
     env:
-      PLAYWRIGHT_BASE_URL: ${{ env.CARBONSITE_API_BASE_URL }}
+      # env context is unavailable in job-level env blocks; reference vars directly.
+      PLAYWRIGHT_BASE_URL: ${{ vars.CARBONSITE_API_BASE_URL || 'https://carbonsite-rosy.vercel.app' }}
       PLAYWRIGHT_BROWSERS_PATH: /opt/pw-browsers
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
     steps:
