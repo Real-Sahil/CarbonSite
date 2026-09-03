@@ -281,14 +281,20 @@ export async function compileDigestData(
     },
   });
 
-  // Get emissions summary
-  const emissions = await prisma.dashboardAggregate.aggregate({
-    where: { organizationId },
-    _sum: {
-      totalCo2e: true,
-      recordCount: true,
-    },
+  // Get emissions summary — live aggregates only (snapshotId null)
+  const scopeGroups = await prisma.dashboardAggregate.groupBy({
+    by: ["scope"],
+    where: { organizationId, snapshotId: null },
+    _sum: { totalCo2e: true },
   });
+
+  const scopeTotal = (scope: number): number =>
+    Number(scopeGroups.find((g) => g.scope === scope)?._sum.totalCo2e ?? 0);
+
+  const totalCo2e = scopeGroups.reduce(
+    (sum, g) => sum + Number(g._sum.totalCo2e ?? 0),
+    0
+  );
 
   // Get data quality score (simplified)
   const records = await prisma.activityRecord.count({
@@ -306,10 +312,10 @@ export async function compileDigestData(
 
   return {
     emissions: {
-      total: Number(emissions._sum.totalCo2e ?? 0),
-      scope1: 0, // TODO: Get scope-specific totals from DashboardAggregate grouped by scope
-      scope2: 0,
-      scope3: 0,
+      total: totalCo2e,
+      scope1: scopeTotal(1),
+      scope2: scopeTotal(2),
+      scope3: scopeTotal(3),
     },
     dataQualityScore,
     newRecords,

@@ -124,8 +124,12 @@ export async function POST(req: NextRequest, { params }: Params) {
           emissionCategoryId: true,
           facilityId: true,
           businessUnitId: true,
+          scope2Method: true,
           totalCo2e: true,
           recordCount: true,
+          intensityPerRevenueUnit: true,
+          intensityPerFte: true,
+          intensityPerM2: true,
         },
       });
       if (liveAggregates.length > 0) {
@@ -138,8 +142,12 @@ export async function POST(req: NextRequest, { params }: Params) {
             emissionCategoryId: aggregate.emissionCategoryId,
             facilityId: aggregate.facilityId,
             businessUnitId: aggregate.businessUnitId,
+            scope2Method: aggregate.scope2Method,
             totalCo2e: aggregate.totalCo2e,
             recordCount: aggregate.recordCount,
+            intensityPerRevenueUnit: aggregate.intensityPerRevenueUnit,
+            intensityPerFte: aggregate.intensityPerFte,
+            intensityPerM2: aggregate.intensityPerM2,
           })),
         });
       }
