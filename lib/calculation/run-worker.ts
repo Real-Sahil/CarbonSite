@@ -7,7 +7,7 @@ import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
 import { getBoss } from "@/lib/jobs/boss";
-import type { Scope2Method } from "@prisma/client";
+import type { ActivityRecord, Scope2Method } from "@prisma/client";
 
 export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<void> {
   try {
@@ -90,7 +90,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         // instead of failing. (A fake "no-factor" FK value here used to
         // violate the foreign key and abort the entire run.)
         const qualityScore = calculateDataQualityScore({
-          record: record as any,
+          record: record as ActivityRecord & { emissionCategory: { scope: number } },
           factorSelection: null,
           unitConverted: false,
           unitConversionComplex: false,
@@ -191,7 +191,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
             // Cannot match the factor's unit — record zero CO2e with a warning
             // so the run completes rather than aborting on one bad record.
             const qualityScore = calculateDataQualityScore({
-              record: record as any,
+              record: record as ActivityRecord & { emissionCategory: { scope: number } },
               factorSelection,
               unitConverted: true,
               unitConversionComplex: true,
@@ -280,7 +280,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       const factorValue = factor.co2e ?? factor.co2;
 
       const qualityScore = calculateDataQualityScore({
-        record: record as any,
+        record: record as ActivityRecord & { emissionCategory: { scope: number } },
         factorSelection,
         unitConverted: unitWasConverted,
         unitConversionComplex: unitConversionWasComplex,

@@ -3,6 +3,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -45,15 +46,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     const { resourceType, action, actorId, startDate, endDate, limit, offset } = query.data;
 
-    const where: any = { organizationId: orgId };
+    const createdAtFilter: Prisma.DateTimeFilter<"AuditLog"> = {};
+    if (startDate) createdAtFilter.gte = new Date(startDate);
+    if (endDate) createdAtFilter.lte = new Date(endDate);
+
+    const where: Prisma.AuditLogWhereInput = { organizationId: orgId };
     if (resourceType) where.resourceType = resourceType;
     if (action) where.action = action;
     if (actorId) where.actorUserId = actorId;
-    if (startDate) where.createdAt = { gte: new Date(startDate) };
-    if (endDate) {
-      if (!where.createdAt) where.createdAt = {};
-      where.createdAt.lte = new Date(endDate);
-    }
+    if (startDate || endDate) where.createdAt = createdAtFilter;
 
     const logs = await prisma.auditLog.findMany({
       where,

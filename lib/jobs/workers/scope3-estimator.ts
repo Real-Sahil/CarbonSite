@@ -248,10 +248,8 @@ export async function predictScope3Emission(
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const coefficients = (model.coefficients as any) as Record<string, number>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const metrics = (model.modelMetrics as any) as ModelMetrics;
+  const coefficients = (model.coefficients as unknown) as Record<string, number>;
+  const metrics = (model.modelMetrics as unknown) as ModelMetrics;
 
   let predicted = coefficients.intercept || 0;
   Object.entries(coefficients).forEach(([key, coef]) => {

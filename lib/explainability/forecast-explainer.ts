@@ -90,7 +90,7 @@ export function explainForecast(
   const featureImportance: FeatureImportance[] = [];
 
   if (Math.abs(trendContribution) > 0.01) {
-    const trendSig =
+    const trendSig: "critical" | "high" | "medium" | "low" =
       Math.abs(trendContribution) / stdDev > 2
         ? "critical"
         : Math.abs(trendContribution) / stdDev > 1
@@ -102,13 +102,13 @@ export function explainForecast(
       name: "Trend",
       contribution: trendPercent,
       direction: trendContribution > 0 ? "increase" : "decrease",
-      significance: trendSig as any,
+      significance: trendSig,
       explanation: `Historical ${trendContribution > 0 ? "upward" : "downward"} trend contributes ${Math.abs(trendContribution).toFixed(1)} ${trendContribution > 0 ? "increase" : "decrease"}`,
     });
   }
 
   if (Math.abs(seasonalComponent) > 0.01) {
-    const seasonalSig =
+    const seasonalSig: "critical" | "high" | "medium" | "low" =
       Math.abs(seasonalComponent) / stdDev > 1
         ? "high"
         : Math.abs(seasonalComponent) / stdDev > 0.5
@@ -118,13 +118,13 @@ export function explainForecast(
       name: "Seasonality",
       contribution: seasonalPercent,
       direction: seasonalComponent > 0 ? "increase" : "decrease",
-      significance: seasonalSig as any,
+      significance: seasonalSig,
       explanation: `Seasonal patterns show ${seasonalComponent > 0 ? "higher" : "lower"} emissions at this time of year (${Math.abs(seasonalComponent).toFixed(1)} tonnes)`,
     });
   }
 
   if (Math.abs(levelContribution) > 0.01) {
-    const levelSig =
+    const levelSig: "critical" | "high" | "medium" | "low" =
       Math.abs(levelContribution / baseline) > 0.2
         ? "high"
         : Math.abs(levelContribution / baseline) > 0.1
@@ -134,7 +134,7 @@ export function explainForecast(
       name: "Baseline Level",
       contribution: levelPercent,
       direction: levelContribution > baseline ? "increase" : "decrease",
-      significance: levelSig as any,
+      significance: levelSig,
       explanation: `Current operational level (baseline: ${baseline.toFixed(1)} tonnes/month)`,
     });
   }
@@ -204,12 +204,12 @@ export function explainAnomaly(
   const primaryReasons: FeatureImportance[] = [];
 
   if (Math.abs(zscore) > 0.5) {
-    const zScoreSig = Math.abs(zscore) > 3 ? "critical" : Math.abs(zscore) > 2 ? "high" : "medium";
+    const zScoreSig: "critical" | "high" | "medium" | "low" = Math.abs(zscore) > 3 ? "critical" : Math.abs(zscore) > 2 ? "high" : "medium";
     primaryReasons.push({
       name: "Statistical Deviation",
       contribution: 60,
       direction: value > baseline ? "increase" : "decrease",
-      significance: zScoreSig as any,
+      significance: zScoreSig,
       explanation: `Value is ${Math.abs(zscore).toFixed(1)} standard deviations from baseline (${value > baseline ? "above" : "below"} average)`,
     });
   }
