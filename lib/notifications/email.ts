@@ -238,3 +238,113 @@ export function supplierDataFlaggedEmail(params: {
   const html = `<p>Hi ${params.recipientName},</p><p>Your emissions data submission for <strong>${params.orgName}</strong> is currently under review by our team.</p>`;
   return { subject, html, text };
 }
+
+export function supplierPasswordExpiringEmail(params: {
+  recipientName: string;
+  orgName: string;
+  daysRemaining: number;
+  appUrl: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Action required: your CarbonSite password expires in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `Your CarbonSite password for ${params.orgName} will expire in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}.`,
+    ``,
+    `Please update your password before it expires to avoid losing access.`,
+    ``,
+    `Update your password: ${params.appUrl}`,
+  ].join("\n");
+  const html = `<p>Hi ${params.recipientName},</p><p>Your CarbonSite password for <strong>${params.orgName}</strong> will expire in <strong>${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}</strong>.</p><p>Please update your password before it expires to avoid losing access.</p><p><a href="${params.appUrl}">Update your password</a></p>`;
+  return { subject, html, text };
+}
+
+export function supplierAccountTerminatedEmail(params: {
+  recipientName: string;
+  orgName: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Your CarbonSite supplier account has been closed`;
+  const text = `Hi ${params.recipientName},\n\nYour supplier account with ${params.orgName} on CarbonSite has been closed. If you believe this is an error, please contact ${params.orgName} directly.`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your supplier account with <strong>${params.orgName}</strong> on CarbonSite has been closed.</p><p>If you believe this is an error, please contact ${params.orgName} directly.</p>`;
+  return { subject, html, text };
+}
+
+export function supplierAccountExpiringEmail(params: {
+  recipientName: string;
+  orgName: string;
+  daysRemaining: number;
+  appUrl: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Your CarbonSite supplier access expires in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `Your supplier access to ${params.orgName} on CarbonSite will expire in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}.`,
+    ``,
+    `If you need continued access, please contact ${params.orgName} to renew your account.`,
+    ``,
+    `View your account: ${params.appUrl}`,
+  ].join("\n");
+  const html = `<p>Hi ${params.recipientName},</p><p>Your supplier access to <strong>${params.orgName}</strong> on CarbonSite will expire in <strong>${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}</strong>.</p><p>If you need continued access, please contact ${params.orgName} to renew your account.</p><p><a href="${params.appUrl}">View your account</a></p>`;
+  return { subject, html, text };
+}
+
+export function dsarSlaAlertEmail(params: {
+  recipientName: string;
+  orgName: string;
+  subjectEmail: string;
+  daysRemaining: number;
+  requestId: string;
+  appUrl: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const urgency = params.daysRemaining <= 3 ? "URGENT: " : "";
+  const subject = `${urgency}DSAR deadline approaching — ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""} remaining`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `A Data Subject Access Request (DSAR) in ${params.orgName} is approaching its regulatory deadline.`,
+    ``,
+    `  Subject: ${params.subjectEmail}`,
+    `  Days remaining: ${params.daysRemaining}`,
+    `  Request ID: ${params.requestId}`,
+    ``,
+    `Please respond or escalate immediately to avoid non-compliance.`,
+    ``,
+    `Review the request: ${params.appUrl}`,
+  ].join("\n");
+  const html = `
+<p>Hi ${params.recipientName},</p>
+<p>A Data Subject Access Request (DSAR) in <strong>${params.orgName}</strong> is approaching its regulatory deadline.</p>
+<table style="border-collapse:collapse;margin:16px 0;">
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Subject</td><td style="padding:4px 0;font-weight:600;">${params.subjectEmail}</td></tr>
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Days remaining</td><td style="padding:4px 0;font-weight:600;color:${params.daysRemaining <= 3 ? "#dc2626" : "#d97706"};">${params.daysRemaining}</td></tr>
+  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Request ID</td><td style="padding:4px 0;font-family:monospace;font-size:13px;">${params.requestId}</td></tr>
+</table>
+<p>Please respond or escalate immediately to avoid non-compliance.</p>
+<p><a href="${params.appUrl}" style="display:inline-block;background:#dc2626;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:600;">Review request</a></p>`;
+  return { subject, html, text };
+}
+
+export function securityAlertEmail(params: {
+  recipientName: string;
+  orgName: string;
+  alertType: string;
+  detail: string;
+  appUrl: string;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const subject = `Security alert: ${params.alertType} — ${params.orgName}`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `A security event was detected in your CarbonSite organisation (${params.orgName}).`,
+    ``,
+    `  Type: ${params.alertType}`,
+    `  Detail: ${params.detail}`,
+    ``,
+    `If this was not you, please secure your account immediately.`,
+    ``,
+    `Review security logs: ${params.appUrl}`,
+  ].join("\n");
+  const html = `<p>Hi ${params.recipientName},</p><p>A security event was detected in your CarbonSite organisation <strong>${params.orgName}</strong>.</p><p><strong>Type:</strong> ${params.alertType}<br><strong>Detail:</strong> ${params.detail}</p><p>If this was not you, please secure your account immediately.</p><p><a href="${params.appUrl}">Review security logs</a></p>`;
+  return { subject, html, text };
+}

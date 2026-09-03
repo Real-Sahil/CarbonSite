@@ -66,8 +66,6 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
-    const totalPages = 1; // updated via doc.bufferedPageRange after rendering
-
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     function hexToRgb(hex: string): [number, number, number] {
@@ -609,9 +607,6 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     }
 
     doc.end();
-
-    // Suppress TypeScript "totalPages unused" — it's updated after end()
-    void totalPages;
   });
 }
 

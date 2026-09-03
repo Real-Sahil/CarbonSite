@@ -1,77 +1,69 @@
-// Structured logging abstraction for production use.
-// Logs flow to stdout/stderr and are captured by deployment platforms (Vercel, etc).
-// For local development, logs appear in console. For production, they're indexed by logging services.
+// Structured logging abstraction backed by pino.
+// In production, emits newline-delimited JSON to stdout for indexing by log aggregators.
+// In development (LOG_PRETTY=true or NODE_ENV=development), pino-pretty formats the output.
+// Sentry is notified for warn/error levels when SENTRY_DSN is set.
 
+import pino from "pino";
 import * as Sentry from "@sentry/nextjs";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 export type LogContext = Record<string, unknown>;
 
-class Logger {
-  private context: LogContext = {};
+const isDev =
+  process.env.NODE_ENV === "development" || process.env.LOG_PRETTY === "true";
 
-  constructor(namespace: string) {
-    this.context = { namespace };
+const pinoOpts: pino.LoggerOptions = { level: process.env.LOG_LEVEL ?? "info" };
+
+const rootPino = isDev
+  ? pino(pinoOpts, pino.transport({
+      target: "pino-pretty",
+      options: { colorize: true, translateTime: "SYS:standard", ignore: "pid,hostname" },
+    }))
+  : pino(pinoOpts);
+
+class Logger {
+  private child: pino.Logger;
+  // Keep context accessible so withContext can merge it
+  private ctx: LogContext;
+
+  constructor(namespace: string, ctx: LogContext = {}) {
+    this.ctx = { namespace, ...ctx };
+    this.child = rootPino.child(this.ctx);
   }
 
-  private formatMessage(level: LogLevel, message: string, ctx?: LogContext): void {
-    const timestamp = new Date().toISOString();
-    const combined = ctx ? { ...this.context, ...ctx } : this.context;
-
-    const formatted = `[${timestamp}] [${level.toUpperCase()}] [${combined.namespace || "app"}] ${message}`;
-
-    // Log to console based on level
-    switch (level) {
-      case "debug":
-      case "info":
-        console.log(formatted, ctx ? ctx : "");
-        break;
-      case "warn":
-        console.warn(formatted, ctx ? ctx : "");
-        break;
-      case "error":
-        console.error(formatted, ctx ? ctx : "");
-        break;
-    }
-
-    // Send to Sentry for error/warn levels in production
-    if (process.env.SENTRY_DSN && (level === "error" || level === "warn")) {
-      try {
-        if (level === "error") {
-          Sentry.captureMessage(message, "error");
-        } else {
-          Sentry.captureMessage(message, "warning");
-        }
-
-        if (Object.keys(combined).length > 0) {
-          Sentry.setContext("structured_log", combined);
-        }
-      } catch {
-        // Sentry not available, continue
+  private sentryCapture(level: "warn" | "error", message: string, ctx?: LogContext): void {
+    if (!process.env.SENTRY_DSN) return;
+    try {
+      const combined = ctx ? { ...this.ctx, ...ctx } : this.ctx;
+      if (Object.keys(combined).length > 0) {
+        Sentry.setContext("structured_log", combined);
       }
+      Sentry.captureMessage(message, level === "error" ? "error" : "warning");
+    } catch {
+      // Sentry unavailable — continue
     }
   }
 
   debug(message: string, context?: LogContext): void {
-    this.formatMessage("debug", message, context);
+    context ? this.child.debug(context, message) : this.child.debug(message);
   }
 
   info(message: string, context?: LogContext): void {
-    this.formatMessage("info", message, context);
+    context ? this.child.info(context, message) : this.child.info(message);
   }
 
   warn(message: string, context?: LogContext): void {
-    this.formatMessage("warn", message, context);
+    context ? this.child.warn(context, message) : this.child.warn(message);
+    this.sentryCapture("warn", message, context);
   }
 
   error(message: string, context?: LogContext): void {
-    this.formatMessage("error", message, context);
+    context ? this.child.error(context, message) : this.child.error(message);
+    this.sentryCapture("error", message, context);
   }
 
   withContext(ctx: LogContext): Logger {
-    const logger = new Logger(this.context.namespace as string);
-    logger.context = { ...this.context, ...ctx };
-    return logger;
+    return new Logger(this.ctx.namespace as string, { ...this.ctx, ...ctx });
   }
 }
 
