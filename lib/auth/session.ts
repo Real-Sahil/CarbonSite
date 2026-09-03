@@ -189,10 +189,6 @@ export async function requireOrgMember(orgId: string, ...allowedRoles: OrgRole[]
     throw new AuthError("INSUFFICIENT_ROLE", 403);
   }
 
-  // Enforce first-login password change for invited accounts.
-  // Accounts created via invite have passwordChangedAt = null until the user
-  // sets their own password. Block access until they do (except field_worker
-  // and supplier roles, which authenticate via PIN / token flows, not passwords).
   return { session, membership };
 }
 
