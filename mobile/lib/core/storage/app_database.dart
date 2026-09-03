@@ -18,6 +18,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 part 'app_database.g.dart';
+// drift_dev 3.x generates a second part file for the table manager API.
+part 'app_database.drift.dart';
 
 /// Lifecycle of a locally captured submission.
 /// pending -> syncing -> submitted | failed
