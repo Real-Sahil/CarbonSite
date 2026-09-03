@@ -14,7 +14,7 @@
 
 import { prisma } from "@/lib/db";
 import { securityLogger } from "@/lib/logger";
-import { writeAuditLog } from "@/lib/db/audit";
+import { writeAuditLog, type AuditAction } from "@/lib/db/audit";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { Prisma } from "@prisma/client";
 
@@ -206,7 +206,7 @@ export async function raiseAlert(alert: AuditAlert): Promise<void> {
   const alertAction = `security.alert_${alert.type}` as const;
   await writeAuditLog({
     organizationId: alert.organizationId,
-    action: alertAction as any,
+    action: alertAction as unknown as AuditAction,
     resourceType: "SecurityAlert",
     resourceId: alert.type,
     metadata: alert.metadata,

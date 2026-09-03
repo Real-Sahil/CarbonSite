@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { enqueueInvoiceAnomalyDetection } from "@/lib/jobs/queues";
+import type { Prisma } from "@prisma/client";
 
 interface XeroTokenResponse {
   access_token: string;
@@ -223,7 +224,7 @@ export async function syncXeroInvoices(
           invoiceDate: new Date(invoice.InvoiceDate),
           dueDate: invoice.DueDate ? new Date(invoice.DueDate) : null,
           totalAmount: invoice.Total,
-          lineItems: lineItems as any,
+          lineItems: lineItems as unknown as Prisma.InputJsonValue,
           paymentStatus: invoice.Status === "PAID" ? "paid" : "unpaid",
           scope3ReadyStatus: "pending",
           extractedAt: new Date(),
@@ -232,7 +233,7 @@ export async function syncXeroInvoices(
           vendorName: invoice.Contact?.Name || "Unknown Vendor",
           dueDate: invoice.DueDate ? new Date(invoice.DueDate) : null,
           totalAmount: invoice.Total,
-          lineItems: lineItems as any,
+          lineItems: lineItems as unknown as Prisma.InputJsonValue,
           paymentStatus: invoice.Status === "PAID" ? "paid" : "unpaid",
           extractedAt: new Date(),
         },

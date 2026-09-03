@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { logger } from '@/lib/logging';
 
 export interface DashboardCacheUpdate {
@@ -128,8 +129,7 @@ export class AnalyticsDashboardCacheManager {
         });
       } else {
         // Create new cache entry
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const createData: Record<string, any> = {
+        const createData: Prisma.AnalyticsDashboardCacheUncheckedCreateInput = {
           id: `cache_${update.organizationId}_${update.reportingPeriodId}_${Date.now()}`,
           organizationId: update.organizationId,
           reportingPeriodId: update.reportingPeriodId,
@@ -147,14 +147,13 @@ export class AnalyticsDashboardCacheManager {
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
         };
 
-        // Handle JSON fields - only include if defined
-        if (update.top5Features !== undefined) createData.topFiveFeatures = update.top5Features;
-        if (update.recentRootCauses !== undefined) createData.recentRootCauses = update.recentRootCauses;
-        if (update.scenarioResults !== undefined) createData.scenarioResults = update.scenarioResults;
+        // Handle JSON fields - only include if defined; null must use Prisma.DbNull for nullable Json
+        if (update.top5Features !== undefined) createData.topFiveFeatures = update.top5Features === null ? Prisma.DbNull : update.top5Features as Prisma.InputJsonValue;
+        if (update.recentRootCauses !== undefined) createData.recentRootCauses = update.recentRootCauses === null ? Prisma.DbNull : update.recentRootCauses as Prisma.InputJsonValue;
+        if (update.scenarioResults !== undefined) createData.scenarioResults = update.scenarioResults === null ? Prisma.DbNull : update.scenarioResults as Prisma.InputJsonValue;
 
         await prisma.analyticsDashboardCache.create({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: createData as any,
+          data: createData,
         });
       }
 
@@ -239,16 +238,14 @@ export class AnalyticsDashboardCacheManager {
       // Update cache for each period
       for (const period of periods) {
         const topDrivers = explanations.length > 0
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? (explanations[0].featureImportance as any[])?.slice(0, 5) || []
+          ? (explanations[0].featureImportance as unknown as Record<string, unknown>[])?.slice(0, 5) || []
           : [];
 
         const update: DashboardCacheUpdate = {
           organizationId,
           reportingPeriodId: period.id,
           forecastTotalCo2e: forecasts[0]?.forecastData
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ? (forecasts[0].forecastData as any[])[0]?.predicted_value || null
+            ? ((forecasts[0].forecastData as unknown as Record<string, unknown>[])[0]?.predicted_value as number | null) || null
             : null,
           forecastTrend: forecasts[0] ? 'stable' : null,
           forecastConfidence: forecasts[0]?.modelConfidence?.toNumber() || null,

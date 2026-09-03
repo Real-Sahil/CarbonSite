@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "./index";
 
-type AuditAction =
+export type AuditAction =
   | "auth.sign_in"
   | "auth.sign_out"
   | "auth.mfa_enabled"

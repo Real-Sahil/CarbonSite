@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import type { Prisma } from '@prisma/client';
 import * as ss from 'simple-statistics';
 import { ensembleForecast, calculateForecastAccuracy } from '@/lib/calculation/forecaster';
 import { getScope3Growth, detectFacilityAnomalies } from '@/lib/calculation/trend-analyzer';
@@ -82,8 +83,8 @@ export async function calculateSupplierScore(
     let totalFields = 6;
 
     // Extract data from JSON fields
-    const formData = sub.formData as any;
-    const ocrData = sub.ocrExtractedData as any;
+    const formData = sub.formData as Record<string, unknown>;
+    const ocrData = sub.ocrExtractedData as Record<string, unknown>;
 
     // Check required fields per submission type
     if (formData?.normalizedAmount || ocrData?.weight) filledFields++;
@@ -277,8 +278,8 @@ export async function detectSupplierAnomalies(
   // Try to extract from formData JSON or ocrExtractedData
   const emissionValueMap = new Map<number, number>(); // submissionIndex -> value
   submissions.forEach((sub, index) => {
-    const formData = sub.formData as any;
-    const ocrData = sub.ocrExtractedData as any;
+    const formData = sub.formData as Record<string, unknown>;
+    const ocrData = sub.ocrExtractedData as Record<string, unknown>;
     const value = (formData?.normalizedAmount || ocrData?.weight || 0) as number;
     if (value > 0) {
       emissionValueMap.set(index, value);
@@ -386,7 +387,7 @@ export async function getSupplierAnalytics(
     offset?: number;
   }
 ) {
-  const where: any = { organizationId };
+  const where: Prisma.SupplierAnalyticWhereInput = { organizationId };
 
   if (options?.supplierId) {
     where.supplierId = options.supplierId;

@@ -22,8 +22,8 @@ export function handleRouteError(err: unknown): NextResponse {
   }
   if (isStripeError(err)) {
     const sanitizedMessage = sanitizeStripeErrorMessage(err.message);
-    const status = (err as any).statusCode || 400;
-    const code = (err as any).code || "STRIPE_ERROR";
+    const status = err.statusCode || 400;
+    const code = err.code || "STRIPE_ERROR";
     const errorCode = `STRIPE_${code}`;
     return apiError(errorCode, sanitizedMessage, status);
   }

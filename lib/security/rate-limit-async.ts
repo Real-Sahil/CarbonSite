@@ -31,10 +31,10 @@ function getRedisClient(): Redis | null {
         retryStrategy: (times) => Math.min(times * 50, 2000),
       });
 
-      redisClient.on("error", (err) => {
+      redisClient.on("error", (err: Error & { code?: string }) => {
         securityLogger.warn("Redis error, falling back to Postgres", {
-          error: err instanceof Error ? err.message : String(err),
-          code: (err as any).code || "UNKNOWN",
+          error: err.message,
+          code: err.code || "UNKNOWN",
         });
       });
     }
