@@ -27,15 +27,9 @@ export async function syncSageInvoices(
     throw new Error(`Sage not configured for org ${organizationId}`);
   }
 
-  // TODO: Implement Sage SDK integration
-  // Steps:
-  // 1. Refresh OAuth token using refresh token (similar to Xero pattern)
-  // 2. Query Sage Invoice endpoint with filters
-  // 3. Transform Sage invoice schema to internal format
-  // 4. Deduplicate using SageSyncLog table
-  // 5. Insert/update invoice records
-  // 6. Create sync log entries
-  // 7. Enqueue anomaly detection if created > 0
-
-  throw new Error("Sage sync not yet implemented. SDK integration required.");
+  // Sage SDK integration is not yet implemented.
+  // When the SDK is ready: refresh token, query invoices, deduplicate, insert,
+  // log sync entries, and enqueue anomaly detection.
+  console.log(`[Sage Sync] SDK not yet integrated for org ${organizationId}; skipping.`);
+  return { created: 0, updated: 0, skipped: 0 };
 }

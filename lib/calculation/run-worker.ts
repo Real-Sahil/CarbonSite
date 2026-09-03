@@ -228,22 +228,54 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         }
       }
 
-      const result = computeCo2e(
-        amountForFactor,
-        factor.inputUnit,
-        {
-          co2: factor.co2 != null ? Number(factor.co2) : null,
-          ch4: factor.ch4 != null ? Number(factor.ch4) : null,
-          n2o: factor.n2o != null ? Number(factor.n2o) : null,
-          co2e: factor.co2e != null ? Number(factor.co2e) : null,
-        },
-        factor.inputUnit,
-        [
-          ...unitWarnings,
-          ...selectionWarnings,
-          ...(selectionReason ? [] : ["Factor selected without clear reason."]),
-        ],
-      );
+      let result: ReturnType<typeof computeCo2e>;
+      try {
+        result = computeCo2e(
+          amountForFactor,
+          factor.inputUnit,
+          {
+            co2: factor.co2 != null ? Number(factor.co2) : null,
+            ch4: factor.ch4 != null ? Number(factor.ch4) : null,
+            n2o: factor.n2o != null ? Number(factor.n2o) : null,
+            co2e: factor.co2e != null ? Number(factor.co2e) : null,
+          },
+          factor.inputUnit,
+          [
+            ...unitWarnings,
+            ...selectionWarnings,
+            ...(selectionReason ? [] : ["Factor selected without clear reason."]),
+          ],
+        );
+      } catch (calcErr) {
+        const errMsg = calcErr instanceof Error ? calcErr.message : "Calculation error";
+        await prisma.emissionCalculation.create({
+          data: {
+            organizationId: orgId,
+            activityRecordId: record.id,
+            calculationRunId,
+            emissionFactorId: factor.id,
+            factorLibraryId: run.factorLibraryId,
+            factorLibraryVersion,
+            methodologyVersionName,
+            originalAmount: record.amount,
+            originalUnit: record.unit,
+            normalizedAmount: normalized.amount,
+            normalizedUnit: normalized.unit,
+            co2: null,
+            ch4: null,
+            n2o: null,
+            totalCo2e: 0,
+            selectionReason,
+            factorValue: null,
+            formula: `Error: ${errMsg}`,
+            warnings: [errMsg],
+            dataQualityScore: 0,
+            confidenceIntervalLower: null,
+            confidenceIntervalUpper: null,
+          },
+        });
+        continue;
+      }
 
       const factorValue = factor.co2e ?? factor.co2;
 
@@ -377,11 +409,6 @@ async function rebuildDashboardAggregates(
   reportingPeriodId: string,
   calculationRunId: string,
 ): Promise<void> {
-  // Delete existing live aggregates for this period
-  await prisma.dashboardAggregate.deleteMany({
-    where: { organizationId: orgId, reportingPeriodId, snapshotId: null },
-  });
-
   // Load reporting period for intensity metric calculations
   const reportingPeriod = await prisma.reportingPeriod.findFirst({
     where: { id: reportingPeriodId, organizationId: orgId },
@@ -450,8 +477,6 @@ async function rebuildDashboardAggregates(
     }
   }
 
-  if (groups.size === 0) return;
-
   // Feature 5: Compute intensity metrics for multi-year trend analysis
   const computeIntensity = (totalCo2e: number) => {
     return {
@@ -467,20 +492,30 @@ async function rebuildDashboardAggregates(
     };
   };
 
-  await prisma.dashboardAggregate.createMany({
-    data: Array.from(groups.values()).map(({ key, totalCo2e, count }) => ({
-      organizationId: orgId,
-      reportingPeriodId,
-      snapshotId: null,
-      scope: key.scope,
-      scope2Method: key.scope2Method,
-      emissionCategoryId: key.emissionCategoryId,
-      facilityId: key.facilityId,
-      businessUnitId: key.businessUnitId,
-      totalCo2e,
-      recordCount: count,
-      ...computeIntensity(Number(totalCo2e)),
-    })),
+  // Atomic swap: delete stale rows and insert fresh ones in one transaction so
+  // the dashboard is never in a partially-empty state between the two writes.
+  await prisma.$transaction(async (tx) => {
+    await tx.dashboardAggregate.deleteMany({
+      where: { organizationId: orgId, reportingPeriodId, snapshotId: null },
+    });
+
+    if (groups.size === 0) return;
+
+    await tx.dashboardAggregate.createMany({
+      data: Array.from(groups.values()).map(({ key, totalCo2e, count }) => ({
+        organizationId: orgId,
+        reportingPeriodId,
+        snapshotId: null,
+        scope: key.scope,
+        scope2Method: key.scope2Method,
+        emissionCategoryId: key.emissionCategoryId,
+        facilityId: key.facilityId,
+        businessUnitId: key.businessUnitId,
+        totalCo2e,
+        recordCount: count,
+        ...computeIntensity(Number(totalCo2e)),
+      })),
+    });
   });
 }
 

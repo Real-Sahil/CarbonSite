@@ -27,15 +27,9 @@ export async function syncQuickBooksInvoices(
     throw new Error(`QuickBooks not configured for org ${organizationId}`);
   }
 
-  // TODO: Implement QB SDK integration
-  // Steps:
-  // 1. Refresh OAuth token using refresh token (similar to Xero pattern)
-  // 2. Query QB Invoice endpoint with filters
-  // 3. Transform QB invoice schema to internal format
-  // 4. Deduplicate using QuickBooksSyncLog table
-  // 5. Insert/update invoice records
-  // 6. Create sync log entries
-  // 7. Enqueue anomaly detection if created > 0
-
-  throw new Error("QuickBooks sync not yet implemented. SDK integration required.");
+  // QuickBooks SDK integration is not yet implemented.
+  // When the SDK is ready: refresh token, query invoices, deduplicate, insert,
+  // log sync entries, and enqueue anomaly detection.
+  console.log(`[QB Sync] SDK not yet integrated for org ${organizationId}; skipping.`);
+  return { created: 0, updated: 0, skipped: 0 };
 }

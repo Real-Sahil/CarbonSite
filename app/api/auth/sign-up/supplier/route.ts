@@ -21,8 +21,8 @@ const createSupplierSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const { session } = await requireOrgMember("", ...ROLE_GROUPS.admins);
     const body = createSupplierSchema.parse(await req.json());
+    const { session } = await requireOrgMember(body.orgId, ...ROLE_GROUPS.admins);
 
     // Check that the requester is admin for this org
     const requesterMembership = await prisma.organizationMembership.findUnique({
