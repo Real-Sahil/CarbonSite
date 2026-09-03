@@ -11,6 +11,7 @@ import {
   approvalBlocker,
   approveSubmissionInTx,
 } from "@/lib/field-submissions/approve";
+import { scheduleCalculationForPeriod } from "@/lib/field-submissions/trigger-calculation";
 
 const bulkReviewSchema = z.discriminatedUnion("action", [
   z.object({
@@ -160,6 +161,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           "NOTHING_APPROVED",
           "No submissions could be approved. Assign emission categories and valid amounts first.",
           422,
+        );
+      }
+
+      // Auto-trigger a calculation run for each distinct reporting period that
+      // received at least one newly approved submission.
+      const approvedPeriods = new Set(
+        submissions
+          .filter((s) => approved.includes(s.id))
+          .map((s) => s.reportingPeriodId),
+      );
+      for (const periodId of approvedPeriods) {
+        scheduleCalculationForPeriod(orgId, periodId, session.user.id).catch((err) =>
+          console.error("[field-submissions] bulk auto-calc schedule failed:", err),
         );
       }
 

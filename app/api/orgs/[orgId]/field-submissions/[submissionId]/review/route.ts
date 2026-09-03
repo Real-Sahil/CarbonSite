@@ -12,6 +12,7 @@ import {
   approvalBlocker,
   approveSubmissionInTx,
 } from "@/lib/field-submissions/approve";
+import { scheduleCalculationForPeriod } from "@/lib/field-submissions/trigger-calculation";
 
 type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 
@@ -97,6 +98,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         resourceId: activityRecordId!,
         metadata: { fromFieldSubmission: submissionId },
       });
+
+      // Auto-trigger a calculation run so the approved record is reflected
+      // on the dashboard without requiring a manual run.
+      scheduleCalculationForPeriod(
+        orgId,
+        submission.reportingPeriodId,
+        session.user.id,
+      ).catch((err) =>
+        console.error("[field-submissions] Auto-calc schedule failed:", err),
+      );
     } else {
       updated = await prisma.fieldSubmission.update({
         where: { id: submissionId },

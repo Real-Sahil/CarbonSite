@@ -131,49 +131,95 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 
       if (normalized.unit !== factor.inputUnit) {
         const converted = convertBetween(normalized.amount, normalized.unit, factor.inputUnit);
-        if (converted == null) {
-          const qualityScore = calculateDataQualityScore({
-            record: record as any,
-            factorSelection,
-            unitConverted: true,
-            unitConversionComplex: true,
-          });
-          const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+        if (converted != null) {
+          amountForFactor = converted;
+          unitWasConverted = true;
+          unitConversionWasComplex = !["kg", "tonnes", "t"].includes(normalized.unit) ||
+            !["kg", "tonnes", "t"].includes(factor.inputUnit);
+          unitWarnings.push(
+            `Converted ${normalized.amount} ${normalized.unit} to ${converted} ${factor.inputUnit} to match the factor.`,
+          );
+        } else {
+          // Primary unit conversion failed. For transport records that carry a
+          // route distance (from postcode OSRM routing), attempt to derive the
+          // factor-compatible amount from distanceAmount before giving up.
+          let distanceResolved = false;
 
-          await prisma.emissionCalculation.create({
-            data: {
-              organizationId: orgId,
-              activityRecordId: record.id,
-              calculationRunId,
-              emissionFactorId: factor.id,
-              factorLibraryId: run.factorLibraryId,
-              factorLibraryVersion,
-              methodologyVersionName,
-              originalAmount: record.amount,
-              originalUnit: record.unit,
-              normalizedAmount: normalized.amount,
-              normalizedUnit: normalized.unit,
-              totalCo2e: 0,
-              selectionReason,
-              formula: `Cannot convert ${normalized.unit} to the factor's input unit (${factor.inputUnit}) — not calculated.`,
-              warnings: [
-                ...unitWarnings,
-                `Record unit "${normalized.unit}" is incompatible with factor input unit "${factor.inputUnit}". Correct the record's unit or import a matching factor.`,
-              ],
-              dataQualityScore: qualityScore.score,
-              confidenceIntervalLower: confidenceInterval.lower,
-              confidenceIntervalUpper: confidenceInterval.upper,
-            },
-          });
-          continue;
+          if (record.distanceAmount != null && Number(record.distanceAmount) > 0) {
+            const distKm = Number(record.distanceAmount);
+            const distInputUnit = record.distanceUnit ?? "km";
+
+            // Case 1: Factor expects tonne.km → weight_tonnes × distance_km.
+            // This covers freight transport factors (HGV, van, rail, ship).
+            const tonneKmAliases = new Set(["tonne.km", "tonne-km", "tkm", "t.km"]);
+            if (tonneKmAliases.has(factor.inputUnit)) {
+              const weightTonnes = convertBetween(normalized.amount, normalized.unit, "tonnes");
+              if (weightTonnes != null) {
+                amountForFactor = weightTonnes * distKm;
+                unitWasConverted = true;
+                unitConversionWasComplex = true;
+                unitWarnings.push(
+                  `Computed ${amountForFactor.toFixed(4)} tonne.km from ${normalized.amount} ${normalized.unit} × ${distKm} km route distance.`,
+                );
+                distanceResolved = true;
+              }
+            }
+
+            // Case 2: Factor expects a pure distance unit (km, vehicle-km, pkm).
+            // This covers per-vehicle-trip and passenger-km factors.
+            if (!distanceResolved) {
+              const distConverted = convertBetween(distKm, distInputUnit, factor.inputUnit);
+              if (distConverted != null) {
+                amountForFactor = distConverted;
+                unitWasConverted = true;
+                unitConversionWasComplex = true;
+                unitWarnings.push(
+                  `Used route distance ${distKm} ${distInputUnit} (as ${factor.inputUnit}) for factor calculation.`,
+                );
+                distanceResolved = true;
+              }
+            }
+          }
+
+          if (!distanceResolved) {
+            // Cannot match the factor's unit — record zero CO2e with a warning
+            // so the run completes rather than aborting on one bad record.
+            const qualityScore = calculateDataQualityScore({
+              record: record as any,
+              factorSelection,
+              unitConverted: true,
+              unitConversionComplex: true,
+            });
+            const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+
+            await prisma.emissionCalculation.create({
+              data: {
+                organizationId: orgId,
+                activityRecordId: record.id,
+                calculationRunId,
+                emissionFactorId: factor.id,
+                factorLibraryId: run.factorLibraryId,
+                factorLibraryVersion,
+                methodologyVersionName,
+                originalAmount: record.amount,
+                originalUnit: record.unit,
+                normalizedAmount: normalized.amount,
+                normalizedUnit: normalized.unit,
+                totalCo2e: 0,
+                selectionReason,
+                formula: `Cannot convert ${normalized.unit} to the factor's input unit (${factor.inputUnit}) — not calculated.`,
+                warnings: [
+                  ...unitWarnings,
+                  `Record unit "${normalized.unit}" is incompatible with factor input unit "${factor.inputUnit}". Correct the record's unit or import a matching factor.`,
+                ],
+                dataQualityScore: qualityScore.score,
+                confidenceIntervalLower: confidenceInterval.lower,
+                confidenceIntervalUpper: confidenceInterval.upper,
+              },
+            });
+            continue;
+          }
         }
-        amountForFactor = converted;
-        unitWasConverted = true;
-        unitConversionWasComplex = !["kg", "tonnes", "t"].includes(normalized.unit) ||
-          !["kg", "tonnes", "t"].includes(factor.inputUnit);
-        unitWarnings.push(
-          `Converted ${normalized.amount} ${normalized.unit} to ${converted} ${factor.inputUnit} to match the factor.`,
-        );
       }
 
       const result = computeCo2e(
