@@ -2,7 +2,7 @@ import * as XLSX from "xlsx";
 
 export interface ExcelWorksheetConfig {
   name: string;
-  data: Array<Record<string, any>>;
+  data: Array<Record<string, unknown>>;
   autoWidth?: boolean;
   freezePane?: { row: number; col: number };
   headerStyle?: boolean;
@@ -95,9 +95,45 @@ export function generateExcelWorkbook(
 }
 
 /**
+ * Input shapes for export functions — typed to fields actually accessed.
+ */
+export interface ActivityRecordInput {
+  id: string;
+  createdAt: string | Date;
+  category?: string | { name?: string; code?: string } | null;
+  description?: string | null;
+  quantity?: number | null;
+  unit?: string | null;
+  reviewStatus?: string | null;
+  evidenceStatus?: string | null;
+  totalCo2e?: number | null;
+  facility?: { name?: string } | null;
+  businessUnit?: { name?: string } | null;
+  importBatch?: unknown;
+}
+
+export interface DashboardAggregateInput {
+  period?: { name?: string } | null;
+  scope1Total?: { toNumber(): number } | number | null;
+  scope2Total?: { toNumber(): number } | number | null;
+  scope3Total?: { toNumber(): number } | number | null;
+  totalCo2e?: { toNumber(): number } | number | null;
+  recordCount?: { toNumber(): number } | number | null;
+  dataQualityPercent?: { toNumber(): number } | number | null;
+}
+
+export interface CategoryBreakdownInput {
+  category?: { name?: string; code?: string } | null;
+  emissionCategory?: { name?: string; code?: string } | null;
+  totalCo2e?: number | null;
+  recordCount?: number | null;
+}
+
+/**
  * Generate activity records export with emissions calculations.
  */
 export interface ActivityRecordExportRow {
+  [key: string]: unknown;
   "Record ID": string;
   "Creation Date": string;
   "Category": string;
@@ -116,30 +152,40 @@ export interface ActivityRecordExportRow {
 /**
  * Format activity records for Excel export.
  */
+function resolveCategory(category: ActivityRecordInput["category"]): { name: string; code: string } {
+  if (!category) return { name: "Unknown", code: "" };
+  if (typeof category === "string") return { name: category, code: "" };
+  return { name: category.name || "Unknown", code: category.code || "" };
+}
+
 export function formatActivityRecordsForExport(
-  records: any[]
+  records: ActivityRecordInput[]
 ): ActivityRecordExportRow[] {
-  return records.map((record) => ({
+  return records.map((record) => {
+    const cat = resolveCategory(record.category);
+    return {
     "Record ID": record.id,
     "Creation Date": new Date(record.createdAt).toLocaleDateString(),
-    "Category": record.category?.name || "Unknown",
+    "Category": cat.name,
     "Description": record.description || "",
     "Quantity": record.quantity || 0,
     "Unit": record.unit || "",
     "Review Status": record.reviewStatus?.replace(/_/g, " ") || "Unknown",
     "Evidence Status": record.evidenceStatus?.replace(/_/g, " ") || "Unknown",
     "Total CO₂e (kg)": record.totalCo2e || 0,
-    "Scope": record.category?.code?.split("-")[0]?.toUpperCase() || "Unknown",
+    "Scope": cat.code.split("-")[0]?.toUpperCase() || "Unknown",
     "Facility": record.facility?.name || null,
     "Business Unit": record.businessUnit?.name || null,
     "Source": record.importBatch ? "Import" : "Manual Entry",
-  }));
+    };
+  });
 }
 
 /**
  * Dashboard aggregates export with scope and category breakdown.
  */
 export interface DashboardExportRow {
+  [key: string]: unknown;
   "Period": string;
   "Scope 1 (kg CO₂e)": number;
   "Scope 2 (kg CO₂e)": number;
@@ -152,17 +198,23 @@ export interface DashboardExportRow {
 /**
  * Format dashboard aggregates for Excel export.
  */
+function toNum(v: { toNumber(): number } | number | null | undefined): number {
+  if (v == null) return 0;
+  if (typeof v === "number") return v;
+  return v.toNumber();
+}
+
 export function formatDashboardForExport(
-  aggregates: any[]
+  aggregates: DashboardAggregateInput[]
 ): DashboardExportRow[] {
   return aggregates.map((agg) => ({
     "Period": agg.period?.name || "Unknown",
-    "Scope 1 (kg CO₂e)": agg.scope1Total || 0,
-    "Scope 2 (kg CO₂e)": agg.scope2Total || 0,
-    "Scope 3 (kg CO₂e)": agg.scope3Total || 0,
-    "Total (kg CO₂e)": agg.totalCo2e || 0,
-    "Records Count": agg.recordCount || 0,
-    "Data Quality %": agg.dataQualityPercent || 0,
+    "Scope 1 (kg CO₂e)": toNum(agg.scope1Total),
+    "Scope 2 (kg CO₂e)": toNum(agg.scope2Total),
+    "Scope 3 (kg CO₂e)": toNum(agg.scope3Total),
+    "Total (kg CO₂e)": toNum(agg.totalCo2e),
+    "Records Count": toNum(agg.recordCount),
+    "Data Quality %": toNum(agg.dataQualityPercent),
   }));
 }
 
@@ -170,6 +222,7 @@ export function formatDashboardForExport(
  * Emissions by category export.
  */
 export interface CategoryExportRow {
+  [key: string]: unknown;
   "Category": string;
   "Category Code": string;
   "Scope": string;
@@ -183,13 +236,15 @@ export interface CategoryExportRow {
  * Format emissions by category for Excel export.
  */
 export function formatCategoryBreakdownForExport(
-  categories: any[],
+  categories: CategoryBreakdownInput[],
   totalEmissions: number
 ): CategoryExportRow[] {
-  return categories.map((cat) => ({
-    "Category": cat.category?.name || "Unknown",
-    "Category Code": cat.category?.code || "",
-    "Scope": cat.category?.code?.split("-")[0]?.toUpperCase() || "Unknown",
+  return categories.map((cat) => {
+    const catData = cat.category ?? cat.emissionCategory;
+    return {
+    "Category": catData?.name || "Unknown",
+    "Category Code": catData?.code || "",
+    "Scope": catData?.code?.split("-")[0]?.toUpperCase() || "Unknown",
     "Total CO₂e (kg)": cat.totalCo2e || 0,
     "Record Count": cat.recordCount || 0,
     "Average per Record (kg)":
@@ -200,7 +255,8 @@ export function formatCategoryBreakdownForExport(
       totalEmissions > 0
         ? Math.round(((cat.totalCo2e || 0) / totalEmissions) * 100 * 100) / 100
         : 0,
-  }));
+  };
+  });
 }
 
 /**
@@ -209,9 +265,9 @@ export function formatCategoryBreakdownForExport(
 export async function generateComplianceReportWorkbook(
   orgName: string,
   periodName: string,
-  activityRecords: any[],
-  dashboardData: any[],
-  categoryData: any[],
+  activityRecords: ActivityRecordInput[],
+  dashboardData: DashboardAggregateInput[],
+  categoryData: CategoryBreakdownInput[],
   totalEmissions: number
 ): Promise<Buffer> {
   const sheets: ExcelWorksheetConfig[] = [
