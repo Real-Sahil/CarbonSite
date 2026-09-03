@@ -28,6 +28,7 @@ import {
   TrendingUp,
   Upload,
 } from "lucide-react";
+import { redirect } from "next/navigation";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -81,7 +82,13 @@ function formatPercent(complete: number, total: number): string {
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
   const { facilityId: selectedFacilityId, contractId: selectedContractId } = await searchParams;
-  const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
+  const { session, membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
+  const role = membership.role;
+
+  // Field workers and suppliers have no visibility into org emissions data — send them to their own submissions view.
+  if (role === "field_worker" || role === "supplier") {
+    redirect(`/orgs/${orgId}/submissions`);
+  }
 
   const [organization, recentPeriods] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
@@ -872,6 +879,32 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       <div className="max-w-[1200px] mx-auto px-8 py-8">
       {/* OnboardingChecklist disabled - onboardingProgress Prisma model not implemented (Phase 2 feature) */}
+
+      {/* Role-contextual quick-action banner */}
+      {role === "auditor" && (
+        <div className="mb-6 rounded-[10px] border border-[#D1FAE5] bg-[#ECFDF5] px-4 py-3 flex items-center gap-3">
+          <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0" />
+          <span className="text-sm text-emerald-800 font-medium">Auditor view</span>
+          <span className="text-sm text-emerald-700">You have read-only access to all emissions data and audit trails.</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Link href={`/orgs/${orgId}/settings/audit`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Audit log</Link>
+            <Link href={`/orgs/${orgId}/lineage`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Data lineage</Link>
+          </div>
+        </div>
+      )}
+      {role === "reviewer" && openReviewTaskCount > 0 && (
+        <div className="mb-6 rounded-[10px] border border-[#FEF9C3] bg-[#FEFCE8] px-4 py-3 flex items-center gap-3">
+          <ClipboardCheck className="h-4 w-4 text-yellow-700 shrink-0" />
+          <span className="text-sm text-yellow-800 font-medium">{openReviewTaskCount} item{openReviewTaskCount !== 1 ? "s" : ""} awaiting review</span>
+          <Link href={`/orgs/${orgId}/submissions`} className="ml-auto text-xs font-medium text-yellow-700 underline underline-offset-2 hover:text-yellow-900">Go to review queue</Link>
+        </div>
+      )}
+      {role === "viewer" && (
+        <div className="mb-6 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 flex items-center gap-3">
+          <Layers className="h-4 w-4 text-zinc-500 shrink-0" />
+          <span className="text-sm text-zinc-600">You have read-only access to this dashboard. Contact an admin to request edit permissions.</span>
+        </div>
+      )}
 
       {/* Contract filter */}
       {activeContracts.length > 0 && (
@@ -1965,7 +1998,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardContent>
       </Card>
 
-      <Card id="run-calculation" className="mt-6 scroll-mt-6">
+      {["admin", "editor", "sustainability_director", "sustainability_manager", "operations_manager"].includes(role) && <Card id="run-calculation" className="mt-6 scroll-mt-6">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -1999,7 +2032,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           />
           <CalculationRunsLive orgId={orgId} initialRuns={calculationRuns} />
         </CardContent>
-      </Card>
+      </Card>}
 
       <div className="grid gap-6 mt-6 md:grid-cols-2 xl:grid-cols-4">
         <ActionCard title="Records" description="Review committed activity data and evidence status." href={`/orgs/${orgId}/records`} />

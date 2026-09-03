@@ -11,6 +11,7 @@ const TABS = [
   { label: "Audit Log",  segment: "audit" },
   { label: "Suppliers",  segment: "suppliers" },
   { label: "API Keys",   segment: "api-keys" },
+  { label: "Webhooks",   segment: "webhooks" },
   { label: "Billing",    segment: "billing" },
 ];
 
