@@ -58,9 +58,13 @@ jobs:
     needs: web
     env:
       # env context is unavailable in job-level env blocks; reference vars directly.
+      # PLAYWRIGHT_BROWSERS_PATH/PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD are deliberately NOT
+      # set here: that fixed /opt/pw-browsers path only exists in the Claude Code
+      # sandbox's pre-installed Chromium. On GitHub-hosted runners it doesn't exist,
+      # so playwright.config.ts's executablePath override would point at a binary
+      # that was never installed. Let Playwright use its own default cache path,
+      # which the "Install Playwright browsers" step below populates.
       PLAYWRIGHT_BASE_URL: ${{ vars.CARBONSITE_API_BASE_URL || 'https://carbonsite-rosy.vercel.app' }}
-      PLAYWRIGHT_BROWSERS_PATH: /opt/pw-browsers
-      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
