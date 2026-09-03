@@ -210,7 +210,7 @@ export function validateRow(
     const num = parseFloat(rawSpend.replace(/,/g, ""));
     if (!isNaN(num) && num > 0) {
       data.spendAmount = num;
-      if (fields["spendCurrency"]) data.spendCurrency = fields["spendCurrency"];
+      data.spendCurrency = fields["spendCurrency"] ?? "GBP";
     } else {
       warnings.push({ field: "spendAmount", message: `"${rawSpend}" is not a valid spend amount; skipped.` });
     }

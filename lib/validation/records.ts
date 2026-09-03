@@ -17,7 +17,7 @@ export const createActivityRecordSchema = z.object({
   country: z.string().max(100).optional(),
   region: z.string().max(100).optional(),
   spendAmount: z.number().positive().optional(),
-  spendCurrency: z.string().max(10).optional(),
+  spendCurrency: z.string().max(10).default("GBP"),
   distanceAmount: z.number().positive().optional(),
   distanceUnit: z.string().max(20).optional(),
   transportMode: z.string().max(100).optional(),
