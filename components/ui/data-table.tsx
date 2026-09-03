@@ -3,10 +3,12 @@
 import * as React from "react";
 import {
   type ColumnDef,
+  type RowSelectionState,
   type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -41,6 +43,10 @@ export interface DataTableProps<TData, TValue> {
   showColumnVisibility?: boolean;
   sorting?: SortingState;
   onSortingChange?: (sorting: SortingState) => void;
+  // Row selection (controlled externally)
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (selection: RowSelectionState) => void;
+  getRowId?: (row: TData) => string;
 }
 
 export function DataTable<TData, TValue>({
@@ -57,25 +63,42 @@ export function DataTable<TData, TValue>({
   showColumnVisibility = false,
   sorting: externalSorting,
   onSortingChange,
+  rowSelection,
+  onRowSelectionChange,
+  getRowId,
 }: DataTableProps<TData, TValue>) {
   const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
+  const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 
   const sorting = externalSorting ?? internalSorting;
+  const selection = rowSelection ?? internalRowSelection;
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    enableRowSelection: Boolean(onRowSelectionChange),
+    onRowSelectionChange: onRowSelectionChange
+      ? (updater) => {
+          const next = typeof updater === "function" ? updater(selection) : updater;
+          onRowSelectionChange(next);
+        }
+      : (updater) => {
+          const next = typeof updater === "function" ? updater(internalRowSelection) : updater;
+          setInternalRowSelection(next);
+        },
     onSortingChange: (updater) => {
       const next = typeof updater === "function" ? updater(sorting) : updater;
       if (onSortingChange) onSortingChange(next);
       else setInternalSorting(next);
     },
     onColumnVisibilityChange: setColumnVisibility,
-    state: { sorting, columnVisibility },
+    state: { sorting, columnVisibility, rowSelection: selection },
     manualSorting: Boolean(onSortingChange),
+    ...(getRowId ? { getRowId } : {}),
   });
 
   return (

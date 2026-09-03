@@ -177,6 +177,12 @@ export const PII_REGISTRY: PiiRegistryEntry[] = [
     where: (s) => ({ userId: s.userId }),
   },
   {
+    model: "Notification",
+    label: "In-app notifications",
+    erasureStrategy: "delete",
+    where: (s) => ({ userId: s.userId }),
+  },
+  {
     model: "AuditLog",
     label: "Audit log entries you triggered",
     // Never deleted or altered — append-only and hash-chained (lib/db/audit.ts).
