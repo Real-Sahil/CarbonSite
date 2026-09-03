@@ -36,8 +36,15 @@ export function computeCo2e(
     warnings.push(`Unit mismatch: activity ${normalizedUnit} vs factor ${factorUnit}`);
   }
 
-  // If factor has gas breakdown, compute per-gas
-  if (factor.co2 != null || factor.ch4 != null || factor.n2o != null) {
+  // Use the per-gas branch when any individual gas value is present, UNLESS
+  // co2e is also populated and the gas set is incomplete. In that case, co2e
+  // is the authoritative GWP-weighted total (it already includes the
+  // contributions of gases not individually broken out), so the scalar path
+  // is more accurate. Example: co2=2.02, co2e=2.23 — the 0.21 difference is
+  // the embedded CH4+N2O GWP; entering the gas branch would discard it.
+  const hasAnyGas = factor.co2 != null || factor.ch4 != null || factor.n2o != null;
+  const hasAllGases = factor.co2 != null && factor.ch4 != null && factor.n2o != null;
+  if (hasAnyGas && (hasAllGases || factor.co2e == null)) {
     const co2 = factor.co2 != null ? normalizedAmount * Number(factor.co2) : null;
     const ch4 = factor.ch4 != null ? normalizedAmount * Number(factor.ch4) : null;
     const n2o = factor.n2o != null ? normalizedAmount * Number(factor.n2o) : null;

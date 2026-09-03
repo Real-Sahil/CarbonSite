@@ -50,7 +50,17 @@ const registry: Record<string, UnitConversion> = {
   m: { toCanonical: 0.001, canonical: "km" },
 
   // Currency (spend-based Scope 3) - canonical: GBP
+  // Non-GBP rates are approximate; use live exchange rates in production.
   gbp: { toCanonical: 1, canonical: "GBP" },
+  GBP: { toCanonical: 1, canonical: "GBP" },
+  usd: { toCanonical: 0.79, canonical: "GBP" },
+  USD: { toCanonical: 0.79, canonical: "GBP" },
+  eur: { toCanonical: 0.86, canonical: "GBP" },
+  EUR: { toCanonical: 0.86, canonical: "GBP" },
+  cad: { toCanonical: 0.58, canonical: "GBP" },
+  CAD: { toCanonical: 0.58, canonical: "GBP" },
+  aud: { toCanonical: 0.51, canonical: "GBP" },
+  AUD: { toCanonical: 0.51, canonical: "GBP" },
 
   // Freight transport - canonical: tonne.km
   "tonne.km": { toCanonical: 1, canonical: "tonne.km" },

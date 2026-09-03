@@ -63,6 +63,12 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
         }
       }
 
+      if (normalized.amount === 0) {
+        unitWarnings.push(
+          `Record amount is zero — CO2e will be zero. Verify the source data (record id: ${record.id}).`,
+        );
+      }
+
       const factorSelection = await selectFactor(
         {
           emissionCategoryId: record.emissionCategoryId,

@@ -188,5 +188,16 @@ export async function selectFactor(
 
   const best = rankCandidates(candidates, query)[0];
 
-  return { factor: best.factor, selectionReason: best.reason, warnings: [] };
+  const finalWarnings: string[] = [];
+  if (
+    !query.geographyCountry &&
+    query.emissionCategoryId.startsWith("s2-")
+  ) {
+    finalWarnings.push(
+      "No country set on record — global electricity factor used. " +
+        "Add a country to the record for location-specific accuracy.",
+    );
+  }
+
+  return { factor: best.factor, selectionReason: best.reason, warnings: finalWarnings };
 }
