@@ -16,9 +16,12 @@ targets:
         generate_for:
           - lib/core/storage/app_database.dart
 
+      # Disable the not_shared builder — drift_dev 3.x runs two builders:
+      # drift_dev (generates .g.dart) and drift_dev:not_shared (generates
+      # .drift.dart). Both emit identical class definitions, causing
+      # duplicate_definition errors. Only the .g.dart builder is needed.
       drift_dev|not_shared:
-        generate_for:
-          - lib/core/storage/app_database.dart
+        enabled: false
 
       # Limit freezed to files that use @freezed
       freezed|freezed:

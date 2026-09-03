@@ -26,7 +26,7 @@ void main() async {
   // all areas — tiles are cached on first online view and served from disk
   // on subsequent visits regardless of connectivity.
   try {
-    await FlutterMapTileCaching.initialise();
+    await FMTCObjectBoxBackend().initialise();
     await const FMTCStore('mainStore').manage.create();
   } catch (e) {
     debugPrint('[FMTC] Map tile cache initialisation skipped: $e');

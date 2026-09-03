@@ -44,6 +44,16 @@ vi.mock("@/lib/security/rate-limit", () => ({
   rateLimitRequest: mocks.rateLimitRequest,
 }));
 
+vi.mock("@/lib/auth/session", () => ({
+  ROLE_GROUPS: {
+    anyMember: ["admin", "editor", "reviewer", "viewer", "auditor", "field_worker"],
+    admin: ["admin"],
+    editors: ["admin", "editor"],
+    reviewers: ["admin", "editor", "reviewer"],
+    auditors: ["admin", "auditor"],
+  },
+}));
+
 // ── Test data ────────────────────────────────────────────────────────────────
 
 const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);

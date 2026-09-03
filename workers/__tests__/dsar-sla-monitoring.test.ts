@@ -1,5 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+
+vi.mock("@/lib/jobs/queues/index", () => ({
+  enqueueNotification: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/lib/db/audit", () => ({
+  writeAuditLog: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { prisma } from "@/lib/db";
 import { processDsarSlaMonitoring } from "../dsar-sla-monitoring";
 

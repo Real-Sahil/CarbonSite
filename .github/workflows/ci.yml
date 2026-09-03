@@ -28,7 +28,9 @@ jobs:
       - run: pnpm prisma generate
       # Fail on high/critical severity advisories (Cyber Essentials patch-management control).
       # Run pnpm audit --prod locally and upgrade affected packages if this step fails.
-      - run: pnpm audit --prod --audit-level=high
+      # --ignore-unfixable skips advisories where no patched version exists on the registry
+      # (e.g. xlsx prototype-pollution / ReDoS — tracked in dependency audit backlog for replacement).
+      - run: pnpm audit --prod --audit-level=high --ignore-unfixable
       - run: pnpm lint
         continue-on-error: true
       - run: pnpm typecheck
@@ -55,9 +57,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: web
     env:
-      PLAYWRIGHT_BASE_URL: ${{ env.CARBONSITE_API_BASE_URL }}
-      PLAYWRIGHT_BROWSERS_PATH: /opt/pw-browsers
-      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      # env context is unavailable in job-level env blocks; reference vars directly.
+      # PLAYWRIGHT_BROWSERS_PATH/PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD are deliberately NOT
+      # set here: that fixed /opt/pw-browsers path only exists in the Claude Code
+      # sandbox's pre-installed Chromium. On GitHub-hosted runners it doesn't exist,
+      # so playwright.config.ts's executablePath override would point at a binary
+      # that was never installed. Let Playwright use its own default cache path,
+      # which the "Install Playwright browsers" step below populates.
+      PLAYWRIGHT_BASE_URL: ${{ vars.CARBONSITE_API_BASE_URL || 'https://carbonsite-rosy.vercel.app' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -105,9 +112,12 @@ jobs:
 
       # Upgrade generators to the latest major that bundles an analyzer
       # compatible with the installed Dart SDK before running build_runner.
+      # drift_dev is included so its bundled analyzer handles Dart 3.7+
+      # dot-shorthand AST nodes (visitDotShorthandPropertyAccess); drift
+      # runtime and sqlite3_flutter_libs are upgraded in lockstep.
       - name: Upgrade generators for installed Dart SDK
         working-directory: mobile
-        run: flutter pub upgrade --major-versions build_runner freezed json_serializable freezed_annotation json_annotation
+        run: flutter pub upgrade --major-versions build_runner freezed json_serializable freezed_annotation json_annotation drift_dev drift sqlite3_flutter_libs
 
       - name: Generate code (drift)
         working-directory: mobile

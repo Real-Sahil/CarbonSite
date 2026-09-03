@@ -300,22 +300,32 @@ export function CustomReportBuilder({
             >
               Reset
             </Button>
-            <Button
-              onClick={() => generateReport()}
-              disabled={isPending || !formData.periodIds.length}
+            {/* Capture-phase wrapper so validation fires even when button is disabled */}
+            <span
+              style={{ display: 'contents' }}
+              onClickCapture={() => {
+                if (!formData.periodIds.length && !isPending) {
+                  setErrors(prev => ({ ...prev, periodIds: 'At least one period is required' }));
+                }
+              }}
             >
-              {isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Generate Report
-                </>
-              )}
-            </Button>
+              <Button
+                onClick={() => generateReport()}
+                disabled={isPending || !formData.periodIds.length}
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Generate Report
+                  </>
+                )}
+              </Button>
+            </span>
           </div>
         </CardContent>
       </Card>

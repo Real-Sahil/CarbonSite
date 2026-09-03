@@ -8,6 +8,11 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+// Radix UI components call scrollIntoView in effects; jsdom doesn't implement it
+if (typeof Element !== 'undefined') {
+  Element.prototype.scrollIntoView = vi.fn();
+}
+
 // Mock window.matchMedia (only in jsdom environment)
 if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'matchMedia', {

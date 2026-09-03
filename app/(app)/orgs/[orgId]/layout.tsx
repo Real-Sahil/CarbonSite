@@ -46,7 +46,13 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
       if (err.status === 401) {
         redirect("/sign-in");
       }
-      // 403 - not a member
+      // 403 - access denied (not a member, insufficient role, etc.)
+      const message =
+        err.code === "NOT_MEMBER"
+          ? "You are not a member of this organisation."
+          : err.code === "INSUFFICIENT_ROLE"
+          ? "You don't have permission to access this area."
+          : "You don't have access to this organisation.";
       return (
         <div className="min-h-[100dvh] flex items-center justify-center bg-white">
           <div className="text-center">
@@ -54,7 +60,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
               Access denied
             </h1>
             <p className="text-sm text-[#6B7280]">
-              You are not a member of this organisation.
+              {message}
             </p>
           </div>
         </div>
