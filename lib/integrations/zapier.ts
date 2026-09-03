@@ -163,7 +163,7 @@ export function validateZapierConfig(): void {
   }
 }
 
-export function extractOrgIdFromBundle(bundle: any): string {
+export function extractOrgIdFromBundle(bundle: { authData?: { orgId?: string } }): string {
   const orgId = bundle?.authData?.orgId;
   if (!orgId) {
     throw new Error('Organization ID not found in bundle');

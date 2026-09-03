@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { getSupplierAnalytics, updateSupplierAnalytics, refreshSupplierAnalytics } from "@/lib/integrations/supplier-analytics";
 import { getOrgEmissionsTrend } from "@/lib/calculation/trend-analyzer";
@@ -69,7 +70,7 @@ export async function GET(
     }
 
     // Legacy forecast endpoint
-    const whereClause: any = { organizationId: orgId };
+    const whereClause: Prisma.ForecastWhereInput = { organizationId: orgId };
     if (type) whereClause.forecastType = type;
 
     const forecasts = await prisma.forecast.findMany({
@@ -129,7 +130,7 @@ export async function POST(
         return apiError("INVALID_REQUEST", "supplierId required for single forecast", 400);
       }
 
-      let result: any;
+      let result: unknown;
 
       if (triggerType === "single" && supplierId) {
         result = await updateSupplierAnalytics(orgId, supplierId);
@@ -174,7 +175,8 @@ export async function POST(
     }
 
     // Legacy forecast endpoint - enqueue job
-    const queues = (global as any).boss;
+    type BossInstance = { send: (queue: string, data: unknown, opts?: unknown) => Promise<void> };
+    const queues = (global as typeof globalThis & { boss?: BossInstance }).boss;
     if (!queues) {
       throw new Error("Job queue not available");
     }

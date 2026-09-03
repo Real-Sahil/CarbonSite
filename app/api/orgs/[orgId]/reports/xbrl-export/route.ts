@@ -124,8 +124,12 @@ export async function GET(
  * Maps GHG Protocol scopes to XBRL GL (Global Ledger) taxonomy for CSRD/ESRS.
  */
 function generateIxbrlHtml(
-  snapshot: any,
-  aggregates: any[],
+  snapshot: {
+    publishedAt: Date | null;
+    version: number;
+    reportingPeriod: { label: string; startDate: Date | string; endDate: Date | string };
+  },
+  aggregates: { scope: number; totalCo2e: unknown; emissionCategory: { code: string; name: string } | null }[],
   scopeTotals: Record<number, number>,
   orgId: string,
 ): string {

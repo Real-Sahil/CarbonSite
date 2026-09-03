@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
+import { Scope2Method } from "@prisma/client";
 
 const bulkUpdateSchema = z.object({
   reportingPeriodId: z.string().min(1, "Reporting period ID required"),
@@ -62,7 +63,7 @@ export async function POST(
     const result = await prisma.activityRecord.updateMany({
       where: whereClause,
       data: {
-        scope2Method: body.scope2Method as any,
+        scope2Method: body.scope2Method as Scope2Method,
         updatedAt: new Date(),
       },
     });

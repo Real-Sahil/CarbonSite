@@ -1,5 +1,24 @@
 import { prisma } from '@/lib/db';
 
+export interface CustomFactorInput {
+  scope?: number;
+  emissionCategoryId?: string;
+  activityType?: string;
+  geographyCountry?: string;
+  geographyRegion?: string;
+  effectiveStartDate?: string | null;
+  effectiveEndDate?: string | null;
+  inputUnit?: string;
+  co2?: number;
+  ch4?: number;
+  n2o?: number;
+  co2e?: number;
+  uncertaintyRating?: string;
+  usageNotes?: string;
+  source?: string;
+  version?: number;
+}
+
 export interface CustomFactorMatchCriteria {
   organizationId: string;
   scope: number;
@@ -50,18 +69,18 @@ export async function getOrgCustomFactorLibrary(organizationId: string, filters?
   });
 }
 
-export async function createCustomFactor(organizationId: string, data: any, userId: string) {
+export async function createCustomFactor(organizationId: string, data: CustomFactorInput, userId: string) {
   return prisma.organizationEmissionFactor.create({
     data: {
       organizationId,
-      scope: data.scope,
+      scope: data.scope as number,
       emissionCategoryId: data.emissionCategoryId,
       activityType: data.activityType,
       geographyCountry: data.geographyCountry,
       geographyRegion: data.geographyRegion,
       effectiveStartDate: data.effectiveStartDate ? new Date(data.effectiveStartDate) : undefined,
       effectiveEndDate: data.effectiveEndDate ? new Date(data.effectiveEndDate) : undefined,
-      inputUnit: data.inputUnit,
+      inputUnit: data.inputUnit as string,
       co2: data.co2,
       ch4: data.ch4,
       n2o: data.n2o,
@@ -75,7 +94,7 @@ export async function createCustomFactor(organizationId: string, data: any, user
   });
 }
 
-export async function updateCustomFactor(organizationId: string, factorId: string, data: any) {
+export async function updateCustomFactor(organizationId: string, factorId: string, data: CustomFactorInput) {
   // Create new version instead of updating
   const existing = await prisma.organizationEmissionFactor.findUnique({
     where: { id: factorId },

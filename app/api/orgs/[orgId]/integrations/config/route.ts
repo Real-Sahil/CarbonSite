@@ -3,6 +3,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { encryptCredential, decryptCredential } from "@/lib/integrations/encryption";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 const configUpdateSchema = z.object({
   llmProvider: z.enum(["huggingface", "nvidia"]).optional(),
@@ -83,7 +84,7 @@ export async function POST(
       where: { organizationId: orgId },
     });
 
-    const updateData: any = {};
+    const updateData: Prisma.IntegrationConfigUpdateInput = {};
 
     // LLM
     if (validated.llmProvider) updateData.llmProvider = validated.llmProvider;
@@ -120,7 +121,7 @@ export async function POST(
         data: {
           organizationId: orgId,
           ...updateData,
-        },
+        } as unknown as Prisma.IntegrationConfigUncheckedCreateInput,
       });
     }
 

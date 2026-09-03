@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
+import { Scope2Method } from "@prisma/client";
 
 const updateScope2MethodSchema = z.object({
   scope2Method: z.union([z.enum(["location_based", "market_based"]), z.null()]),
@@ -51,7 +52,7 @@ export async function PATCH(
     const updated = await prisma.activityRecord.update({
       where: { id: recordId },
       data: {
-        scope2Method: body.scope2Method as any,
+        scope2Method: body.scope2Method as Scope2Method | null,
         updatedAt: new Date(),
       },
       include: { emissionCategory: true },

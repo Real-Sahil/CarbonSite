@@ -42,7 +42,7 @@ export async function GET(
       return apiError("ORG_NOT_FOUND", "Organization not found", 404);
     }
 
-    const alerts: any[] = [];
+    const alerts: Record<string, unknown>[] = [];
 
     // Get SBTi alerts
     if (query.type === "sbti" || query.type === "all") {
@@ -191,7 +191,7 @@ export async function GET(
     return NextResponse.json({
       alerts: filteredAlerts.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime()
       ),
       summary: {
         total: filteredAlerts.length,

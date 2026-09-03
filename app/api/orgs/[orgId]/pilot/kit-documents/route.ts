@@ -41,7 +41,7 @@ export async function GET(
     const metadata = typeof recentGeneration.metadata === "object" && recentGeneration.metadata !== null
       ? recentGeneration.metadata
       : {};
-    const timestamp = (metadata as any).timestamp || recentGeneration.createdAt.toISOString().split("T")[0];
+    const timestamp = (metadata as Record<string, unknown>).timestamp || recentGeneration.createdAt.toISOString().split("T")[0];
 
     // Document definitions
     const documents = [
@@ -83,7 +83,7 @@ export async function GET(
         data: {
           generatedAt: recentGeneration.createdAt.toISOString(),
           documents: documentsWithUrls,
-          context: (metadata as any).context || null,
+          context: (metadata as Record<string, unknown>).context || null,
         },
       },
       { status: 200 }

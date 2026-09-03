@@ -71,7 +71,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<Param
   }
 }
 
-function calculateNextScheduleTime(schedule: string | null): Date {
+function calculateNextScheduleTime(schedule: string | null): Date | null {
   const now = new Date();
 
   switch (schedule) {
@@ -83,6 +83,6 @@ function calculateNextScheduleTime(schedule: string | null): Date {
       return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     case "manual":
     default:
-      return null as any;
+      return null;
   }
 }

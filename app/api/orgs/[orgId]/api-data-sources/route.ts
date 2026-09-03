@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 const CreateApiDataSourceSchema = z.object({
   name: z.string().min(1).max(100),
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         basicPassword: validated.basicPassword || null,
         dataFormat: validated.dataFormat,
         syncIntervalMins: validated.syncIntervalMins,
-        mappingConfig: validated.mappingConfig as any,
+        mappingConfig: validated.mappingConfig as Prisma.InputJsonValue,
       },
     });
 

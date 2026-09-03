@@ -44,7 +44,7 @@ export async function GET(
     // Calculate overall score
     const metrics = await calculateDataQualityScore(orgId, query.periodId);
 
-    const response: any = {
+    const response: Record<string, unknown> = {
       overallScore: metrics.overallScore,
       scoreBreakdown: {
         completeness: metrics.completeness,

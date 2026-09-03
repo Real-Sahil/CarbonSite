@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { handleRouteError } from '@/lib/validation/api';
 import { z } from 'zod';
 import { securityLogger } from '@/lib/logger';
@@ -142,8 +143,7 @@ export async function POST(req: NextRequest) {
 
       await prisma.n8nWorkflow.update({
         where: { id: workflow.id },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: updateData as any,
+        data: updateData as unknown as Prisma.N8nWorkflowUpdateInput,
       });
 
       securityLogger.info('n8n execution recorded', {

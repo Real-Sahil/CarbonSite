@@ -251,14 +251,14 @@ export async function POST(
 
     if (error instanceof z.ZodError) {
       const details = error.errors.map((e) => {
-        const detail: any = {
+        const detail: Record<string, string | undefined> = {
           path: e.path.join("."),
           message: e.message,
           code: e.code,
         };
         // Add received value if available (varies by error type)
         if ("received" in e) {
-          detail.received = (e as any).received?.toString();
+          detail.received = (e as { received?: unknown }).received?.toString();
         }
         return detail;
       });
