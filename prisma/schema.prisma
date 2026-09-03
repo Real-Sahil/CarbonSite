@@ -3481,3 +3481,25 @@ model AnalyticsDashboardCache {
   @@map("analytics_dashboard_cache")
 }
 
+
+// ─── In-app notifications (notification centre) ──────────────────────────────
+// Persisted copy of every notification that also goes out via email/push, so
+// users have an in-app feed + unread badge. Scalar FK columns only (no Prisma
+// relations) — scoped in application code by (organizationId, userId), matching
+// the multi-tenant query rules.
+model Notification {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  userId         String    @map("user_id")
+  type           String    @map("type") // NotificationJobData.type value
+  title          String    @map("title")
+  body           String    @map("body")
+  link           String?   @map("link") // in-app deep link (path)
+  resourceId     String?   @map("resource_id")
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([userId, organizationId, readAt, createdAt(sort: Desc)])
+  @@index([userId, organizationId, createdAt(sort: Desc)])
+  @@map("notifications")
+}

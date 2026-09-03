@@ -16,10 +16,40 @@ import {
   securityAlertEmail,
 } from "./email";
 import { sendPushToUser } from "./fcm";
+import { notificationPresentation } from "./presentation";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite-rosy.vercel.app";
 
+// Persist an in-app copy so the notification centre always has the item, even
+// if the email/push channels below fail. Failures here are logged, never thrown,
+// so they can't block delivery of the other channels.
+async function persistInApp(data: NotificationJobData): Promise<void> {
+  try {
+    const { title, body, link } = notificationPresentation(data);
+    await prisma.notification.create({
+      data: {
+        organizationId: data.orgId,
+        userId: data.recipientUserId,
+        type: data.type,
+        title,
+        body,
+        link,
+        resourceId: data.resourceId,
+      },
+    });
+  } catch (err) {
+    notificationLogger.error("Failed to persist in-app notification", {
+      type: data.type,
+      recipientUserId: data.recipientUserId,
+      orgId: data.orgId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
 export async function processNotification(data: NotificationJobData): Promise<void> {
+  await persistInApp(data);
+
   const recipient = await prisma.user.findUnique({
     where: { id: data.recipientUserId },
     select: { name: true, email: true },

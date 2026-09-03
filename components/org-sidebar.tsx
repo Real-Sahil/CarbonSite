@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; roles?: string[]; }
@@ -143,14 +144,15 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
             <Leaf className="h-4 w-4 text-white" />
           </span>
         ) : (
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 w-full">
             <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(245,158,11,0.5)]">
               <Leaf className="h-4 w-4 text-white" />
             </span>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <span className="block text-sm font-semibold tracking-tight text-[#F8FAFC]">CarbonSite</span>
               <span className="text-[11px] text-slate-400 font-normal block truncate" title={orgName}>{orgName}</span>
             </div>
+            <NotificationBell orgId={orgId} />
           </div>
         )}
       </div>
@@ -243,6 +245,9 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           </span>
           <span className="text-sm font-semibold tracking-tight text-[#F8FAFC]">CarbonSite</span>
           <span className="text-xs text-slate-400 truncate max-w-[120px]">/ {orgName}</span>
+        </div>
+        <div className="ml-auto">
+          <NotificationBell orgId={orgId} />
         </div>
       </header>
       <div className="h-14 md:hidden shrink-0" aria-hidden="true" />
