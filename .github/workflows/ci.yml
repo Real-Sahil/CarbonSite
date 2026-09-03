@@ -105,9 +105,12 @@ jobs:
 
       # Upgrade generators to the latest major that bundles an analyzer
       # compatible with the installed Dart SDK before running build_runner.
+      # drift_dev is included so its bundled analyzer handles Dart 3.7+
+      # dot-shorthand AST nodes (visitDotShorthandPropertyAccess); drift
+      # runtime and sqlite3_flutter_libs are upgraded in lockstep.
       - name: Upgrade generators for installed Dart SDK
         working-directory: mobile
-        run: flutter pub upgrade --major-versions build_runner freezed json_serializable freezed_annotation json_annotation
+        run: flutter pub upgrade --major-versions build_runner freezed json_serializable freezed_annotation json_annotation drift_dev drift sqlite3_flutter_libs
 
       - name: Generate code (drift)
         working-directory: mobile
