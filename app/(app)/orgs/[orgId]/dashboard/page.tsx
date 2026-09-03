@@ -463,8 +463,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     dataQualityBatch;
 
   // Fetch pilot kit documents directly from database
-  let pilotKitData: any = null;
-  let pilotKitDocuments: any[] = [];
+  type PilotDoc = { name: string; audience: string; storageKey: string; downloadUrl: string | null; error?: string };
+  type PilotKitData = { code: string; data: { generatedAt: string; documents: PilotDoc[]; context: Record<string, unknown> | null } };
+  let pilotKitData: PilotKitData | null = null;
+  let pilotKitDocuments: PilotDoc[] = [];
 
   try {
     const recentGeneration = await prisma.auditLog.findFirst({
@@ -483,7 +485,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       const metadata = typeof recentGeneration.metadata === "object" && recentGeneration.metadata !== null
         ? recentGeneration.metadata
         : {};
-      const timestamp = (metadata as any).timestamp || recentGeneration.createdAt.toISOString().split("T")[0];
+      const meta = metadata as Record<string, unknown>;
+      const timestamp = (meta.timestamp as string | undefined) || recentGeneration.createdAt.toISOString().split("T")[0];
 
       // Generate presigned URLs for documents
       const { presignDownload, keys } = await import("@/lib/storage");
@@ -525,7 +528,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         data: {
           generatedAt: recentGeneration.createdAt.toISOString(),
           documents: documentsWithUrls,
-          context: (metadata as any).context || null,
+          context: (meta.context as Record<string, unknown> | undefined) ?? null,
         },
       };
       pilotKitDocuments = documentsWithUrls;
@@ -1611,7 +1614,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              {pilotKitDocuments.map((doc: any) => (
+              {pilotKitDocuments.map((doc) => (
                 <a
                   key={doc.storageKey}
                   href={doc.downloadUrl || "#"}

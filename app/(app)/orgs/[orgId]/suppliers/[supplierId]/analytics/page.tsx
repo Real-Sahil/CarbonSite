@@ -16,7 +16,7 @@ interface ApiResponse {
     dataQualityScore: number | null;
     lastDataQualityTrend: string | null;
   } | null;
-  history: Array<any>;
+  history: Array<Record<string, unknown>>;
   metrics: {
     totalSubmissions: number;
     approvedSubmissions: number;

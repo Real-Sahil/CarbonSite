@@ -13,6 +13,8 @@ import {
 import { CheckCircle2, XCircle, MessageCircle } from "lucide-react";
 import { useSafeMutation } from "@/lib/hooks/use-safe-mutation";
 
+interface StatusError extends Error { status?: number; }
+
 interface SubmissionReviewActionsProps {
   orgId: string;
   submissionId: string;
@@ -60,8 +62,7 @@ export function SubmissionReviewActions({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const err = new Error(data.message ?? "Review failed.");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any).status = res.status;
+        (err as StatusError).status = res.status;
         throw err;
       }
 

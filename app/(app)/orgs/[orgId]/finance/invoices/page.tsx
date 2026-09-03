@@ -58,8 +58,7 @@ export default function InvoicePage() {
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [cursor, setCursor] = useState<string | undefined>();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [anomaliesData, setAnomaliesData] = useState<any>(null);
+  const [anomaliesData, setAnomaliesData] = useState<{ anomalies: InvoiceAnomaly[]; pagination: PaginationMeta } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isResolving, setIsResolving] = useState(false);
@@ -140,8 +139,7 @@ export default function InvoicePage() {
     if (selectedIds.size === anomalies.length) {
       setSelectedIds(new Set());
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setSelectedIds(new Set(anomalies.map((a: any) => a.id)));
+      setSelectedIds(new Set(anomalies.map((a) => a.id)));
     }
   };
 
@@ -156,12 +154,10 @@ export default function InvoicePage() {
   };
 
   const pendingCount = anomalies.filter(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (a: any) => a.resolution === null
+    (a) => a.resolution === null
   ).length;
   const criticalCount = anomalies.filter(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (a: any) => a.severity === 'critical' && a.resolution === null
+    (a) => a.severity === 'critical' && a.resolution === null
   ).length;
 
   return (
@@ -363,8 +359,7 @@ export default function InvoicePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {anomalies.map((anomaly: any) => (
+                  {anomalies.map((anomaly) => (
                     <TableRow key={anomaly.id}>
                       <TableCell>
                         <Checkbox

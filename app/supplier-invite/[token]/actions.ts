@@ -7,7 +7,7 @@ import { sendTransactionalEmail } from "@/lib/notifications/email";
 import { CATEGORY_GUIDANCE } from "@/lib/suppliers/category-guidance";
 
 export async function acceptSupplierInvite(
-  _prevState: any,
+  _prevState: unknown,
   formData: FormData,
 ): Promise<{ success?: boolean; portalToken?: string; error?: string; details?: string }> {
   try {

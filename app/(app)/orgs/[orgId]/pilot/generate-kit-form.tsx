@@ -90,7 +90,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | { target: { name: string; value: string | boolean } }
   ) => {
-    const { name, value } = e.target as any;
+    const { name, value } = e.target as HTMLInputElement & { name: string; value: string | boolean };
     setFormData((prev) => ({
       ...prev,
       [name]: value,

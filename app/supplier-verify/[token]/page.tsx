@@ -6,12 +6,12 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Clock, Loader2, AlertTriangle, XCircle } from "lucide-react";
-import { getRequestDisplayInfo, RequestDisplayInfo } from "@/lib/suppliers/portal-helpers";
+import { getRequestDisplayInfo, RequestDisplayInfo, RequestStatus } from "@/lib/suppliers/portal-helpers";
 
 interface SupplierRequest {
   id: string;
   categoryCode: string;
-  status: string;
+  status: RequestStatus;
   expiresAt: string;
   submittedAt?: string;
   reviewedAt?: string;
@@ -58,7 +58,7 @@ export default function SupplierPortalPage() {
           getRequestDisplayInfo({
             id: req.id,
             categoryCode: req.categoryCode,
-            status: req.status as any,
+            status: req.status,
             expiresAt: new Date(req.expiresAt),
             submittedAt: req.submittedAt ? new Date(req.submittedAt) : undefined,
             reviewedAt: req.reviewedAt ? new Date(req.reviewedAt) : undefined,

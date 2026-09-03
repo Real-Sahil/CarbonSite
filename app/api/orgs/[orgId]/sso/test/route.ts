@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
+type SsoConfig = NonNullable<Awaited<ReturnType<typeof prisma.ssoConfiguration.findUnique>>>;
+
 type Params = { params: Promise<{ orgId: string }> };
 
 export async function POST(req: NextRequest, { params }: Params) {
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 }
 
-async function testProviderConnection(config: any): Promise<{ success: boolean; message: string }> {
+async function testProviderConnection(config: SsoConfig): Promise<{ success: boolean; message: string }> {
   try {
     switch (config.provider) {
       case "okta":

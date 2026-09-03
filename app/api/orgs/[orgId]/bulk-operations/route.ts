@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS, getSession } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import {
+  BulkOperation,
   createBulkReviewOperation,
   createBulkCategorizeOperation,
   getOrgOperations,
@@ -32,7 +33,7 @@ export async function GET(
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
-    const status = request.nextUrl.searchParams.get("status") as any;
+    const status = (request.nextUrl.searchParams.get("status") as BulkOperation["status"] | null) ?? undefined;
 
     const operations = getOrgOperations(orgId, { status });
     const stats = getOperationStats(orgId);

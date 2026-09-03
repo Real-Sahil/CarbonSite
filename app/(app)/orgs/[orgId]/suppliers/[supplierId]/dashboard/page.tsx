@@ -225,8 +225,8 @@ export default function SupplierDashboardPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value }: any) =>
-                    `${name}: ${value} (${Math.round((value / performance.submissionCount) * 100)}%)`
+                  label={({ name, value }: { name?: string; value?: number }) =>
+                    `${name ?? ''}: ${value ?? 0} (${Math.round(((value ?? 0) / performance.submissionCount) * 100)}%)`
                   }
                   outerRadius={80}
                   fill="#8884d8"

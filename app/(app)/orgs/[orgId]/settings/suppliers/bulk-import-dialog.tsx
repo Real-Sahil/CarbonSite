@@ -21,7 +21,7 @@ export function BulkImportDialog({ open, onOpenChange, onImportComplete }: BulkI
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{ success: number; failed: number; errors?: { rowNumber: number; data: Record<string, unknown>; errors: string[] }[]; message: string } | null>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();

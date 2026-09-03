@@ -34,8 +34,17 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
 
   const limit = 25;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let serialized: any[] = [];
+  type SerializedReport = {
+    id: string; supplierEmail: string; supplierName: string | null;
+    supplierDomain: string | null; reportingYear: number; totalAmount: string;
+    unit: string; calculationMethod: string; qualityScore: number | null;
+    qualityFlags: unknown; status: string; submittedAt: string;
+    reviewedAt: string | null; rejectionReason: string | null;
+    convertedToRecordId: string | null; notes: string | null;
+    emissionCategory: { code: string; name: string; scope: number } | null;
+    reviewedBy: { name: string | null; email: string } | null;
+  };
+  let serialized: SerializedReport[] = [];
   let nextCursor: string | null = null;
   let countMap: Record<string, number> = {};
   let total = 0;
@@ -169,8 +178,7 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
 
       <SupplierReportsClient
         orgId={orgId}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        reports={serialized as any}
+        reports={serialized}
         nextCursor={nextCursor}
         status={status}
         role={role ?? "viewer"}

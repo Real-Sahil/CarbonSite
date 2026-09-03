@@ -4,7 +4,7 @@ import { CheckCircle2, AlertCircle } from "lucide-react";
 
 interface BulkImportResultError {
   rowNumber: number;
-  data: any;
+  data: Record<string, unknown>;
   errors: string[];
 }
 
@@ -60,7 +60,7 @@ export function BulkImportPreview({ result }: BulkImportResultProps) {
                 {result.errors.map((error) => (
                   <tr key={`${error.rowNumber}`} className="border-b border-gray-200 hover:bg-gray-50">
                     <td className="px-3 py-2 text-gray-600 font-mono text-xs">{error.rowNumber}</td>
-                    <td className="px-3 py-2 text-gray-600 text-xs truncate">{error.data.email || "-"}</td>
+                    <td className="px-3 py-2 text-gray-600 text-xs truncate">{(error.data.email as string | undefined) || "-"}</td>
                     <td className="px-3 py-2">
                       <div className="space-y-1">
                         {error.errors.map((err, idx) => (

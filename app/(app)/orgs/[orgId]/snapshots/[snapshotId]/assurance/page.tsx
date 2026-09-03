@@ -36,8 +36,22 @@ export default async function SnapshotAssurancePage({ params }: Props) {
     throw err;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let snapshot: any = null;
+  type SnapshotWithAssurance = {
+    id: string;
+    version: number;
+    publishedAt: Date;
+    reportingPeriod: { label: string } | null;
+    publishedBy: { name: string | null; email: string } | null;
+    assurance: {
+      id: string;
+      status: import("@prisma/client").AssuranceStatus;
+      notes: string | null;
+      signedAt: Date | null;
+      createdAt: Date;
+      auditor: { name: string | null; email: string } | null;
+    } | null;
+  };
+  let snapshot: SnapshotWithAssurance | null = null;
   try {
     snapshot = await prisma.publishedSnapshot.findUnique({
       where: { id: snapshotId, organizationId: orgId },

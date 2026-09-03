@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Trash2 } from "lucide-react";
 import { handleSupabaseError } from "@/lib/utils/supabase-error-handler";
 
+interface StatusError extends Error { status?: number; }
+
 interface RecordActionsProps {
   orgId: string;
   recordId: string;
@@ -38,8 +40,7 @@ export function RecordActions({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const error = new Error(data.message ?? "Failed.");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (error as any).status = res.status;
+        (error as StatusError).status = res.status;
         const { action, message } = handleSupabaseError(error);
 
         if (action === "logout") {
@@ -70,8 +71,7 @@ export function RecordActions({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const error = new Error(data.message ?? "Delete failed.");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (error as any).status = res.status;
+        (error as StatusError).status = res.status;
         const { action, message } = handleSupabaseError(error);
 
         if (action === "logout") {

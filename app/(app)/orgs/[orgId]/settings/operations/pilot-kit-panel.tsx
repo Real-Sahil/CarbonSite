@@ -165,7 +165,7 @@ export function PilotKitPanel({
         });
 
         if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
+          const body = await res.json().catch(() => ({})) as Record<string, unknown>;
           const errorMsg = formatApiError(res, body);
           throw new Error(errorMsg);
         }
@@ -181,14 +181,14 @@ export function PilotKitPanel({
   }
 
   // Helper to format API error response with field details
-  function formatApiError(response: Response, body: any): string {
+  function formatApiError(response: Response, body: Record<string, unknown>): string {
     if (body?.code === 'VALIDATION_ERROR' && body?.details && Array.isArray(body.details)) {
-      const fieldErrors = body.details
-        .map((e: any) => `${e.path}: ${e.message}${e.received ? ` (received: ${e.received})` : ''}`)
+      const fieldErrors = (body.details as { path: string; message: string; received?: string }[])
+        .map((e) => `${e.path}: ${e.message}${e.received ? ` (received: ${e.received})` : ''}`)
         .join('; ');
       return `Validation error: ${fieldErrors}`;
     }
-    return body?.message || `Request failed (${response.status})`;
+    return (body?.message as string | undefined) || `Request failed (${response.status})`;
   }
 
   return (

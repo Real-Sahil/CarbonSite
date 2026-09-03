@@ -200,7 +200,7 @@ export async function POST(
               llmTokenValid: true,
               llmTokenValidatedAt: new Date(),
               testResults: {
-                ...(config.testResults as any),
+                ...(config.testResults as Record<string, unknown>),
                 llm: result,
               },
               lastTestedAt: new Date(),
@@ -229,7 +229,7 @@ export async function POST(
               xeroConnected: true,
               xeroConnectedAt: new Date(),
               testResults: {
-                ...(config.testResults as any),
+                ...(config.testResults as Record<string, unknown>),
                 xero: result,
               },
               lastTestedAt: new Date(),
@@ -255,7 +255,7 @@ export async function POST(
               oidcDiscoveryValid: true,
               oidcDiscoveryValidatedAt: new Date(),
               testResults: {
-                ...(config.testResults as any),
+                ...(config.testResults as Record<string, unknown>),
                 oidc: result,
               },
               lastTestedAt: new Date(),
@@ -287,7 +287,7 @@ export async function POST(
               data: {
                 n8nWebhookSubmissionsTested: true,
                 testResults: {
-                  ...(config.testResults as any),
+                  ...(config.testResults as Record<string, unknown>),
                   n8n_submissions: result,
                 },
                 lastTestedAt: new Date(),
@@ -299,7 +299,7 @@ export async function POST(
               data: {
                 n8nWebhookReportsTested: true,
                 testResults: {
-                  ...(config.testResults as any),
+                  ...(config.testResults as Record<string, unknown>),
                   n8n_reports: result,
                 },
                 lastTestedAt: new Date(),

@@ -220,8 +220,7 @@ export default function InvoiceReviewPage() {
         <CardContent className="grid gap-4 md:grid-cols-4">
           <div>
             <label className="text-sm font-medium">Severity</label>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <Select value={severityFilter} onValueChange={(v: any) => setSeverityFilter(v)}>
+            <Select value={severityFilter} onValueChange={(v) => setSeverityFilter(v as "info" | "warning" | "critical" | "all")}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -252,8 +251,7 @@ export default function InvoiceReviewPage() {
           </div>
           <div>
             <label className="text-sm font-medium">Status</label>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <Select value={resolutionFilter} onValueChange={(v: any) => setResolutionFilter(v)}>
+            <Select value={resolutionFilter} onValueChange={(v) => setResolutionFilter(v as "approved" | "rejected" | "pending" | "all")}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
