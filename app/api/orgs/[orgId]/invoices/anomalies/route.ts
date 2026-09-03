@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
@@ -42,7 +43,7 @@ export async function GET(
     const searchParams = Object.fromEntries(url.searchParams.entries());
     const filters = anomalyFilterSchema.parse(searchParams);
 
-    const where: any = {
+    const where: Prisma.InvoiceAnomalyWhereInput = {
       invoice: { organizationId: orgId },
     };
 

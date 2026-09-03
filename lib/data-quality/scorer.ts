@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 
 export interface DataQualityMetrics {
   overallScore: number; // 0-100
@@ -31,7 +32,7 @@ export async function calculateDataQualityScore(
   organizationId: string,
   reportingPeriodId?: string
 ): Promise<DataQualityMetrics> {
-  let whereClause: any = { organizationId };
+  let whereClause: Prisma.ActivityRecordWhereInput = { organizationId };
 
   if (reportingPeriodId) {
     whereClause.reportingPeriodId = reportingPeriodId;
