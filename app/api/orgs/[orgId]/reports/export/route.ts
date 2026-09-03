@@ -88,7 +88,7 @@ export async function GET(
     }
 
     // Fetch calculation run metadata if needed
-    let calculationRun: any = null;
+    let calculationRun: { id: string; status: string; startedAt: Date | null; finishedAt: Date | null } | null = null;
     if (includeMetadata) {
       calculationRun = await prisma.calculationRun.findUnique({
         where: { id: snapshot.calculationRunId },
@@ -131,8 +131,20 @@ export async function GET(
       },
     });
 
+    type CalculationRow = {
+      id: string;
+      activityRecordId: string;
+      totalCo2e: import("@prisma/client").Prisma.Decimal;
+      formula: string | null;
+      dataQualityScore: number | null;
+      activityRecord: {
+        amount: import("@prisma/client").Prisma.Decimal;
+        unit: string;
+        emissionCategory: { code: string; name: string } | null;
+      } | null;
+    };
     // Optionally fetch line-item calculations
-    let calculations: any[] = [];
+    let calculations: CalculationRow[] = [];
     if (includeLineItems) {
       calculations = await prisma.emissionCalculation.findMany({
         where: {
@@ -214,8 +226,19 @@ export async function GET(
  * Convert aggregates to CSV format.
  */
 function exportAsCSV(
-  data: any,
-  aggregates: any[],
+  data: Record<string, unknown>,
+  aggregates: {
+    scope: number;
+    totalCo2e: { toString(): string } | null;
+    recordCount: number;
+    intensityPerRevenueUnit: { toString(): string } | null;
+    intensityPerFte: { toString(): string } | null;
+    intensityPerM2: { toString(): string } | null;
+    emissionCategory: { code: string; name: string } | null;
+    facility: { name: string } | null;
+    businessUnit: { name: string } | null;
+    scope2Method: string | null;
+  }[],
 ): NextResponse {
   const headers = [
     "Scope",
@@ -253,7 +276,7 @@ function exportAsCSV(
   });
 }
 
-function escapeCsv(value: any): string {
+function escapeCsv(value: unknown): string {
   if (value === null || value === undefined) return "";
   const str = value.toString();
   if (str.includes(",") || str.includes('"') || str.includes("\n")) {

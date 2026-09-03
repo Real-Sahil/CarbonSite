@@ -5,6 +5,7 @@
  */
 
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { autoForecast } from "@/lib/forecasting/engine";
 import { explainForecast } from "@/lib/explainability/forecast-explainer";
 
@@ -106,12 +107,12 @@ export async function processForecastingJob(
         },
       },
       update: {
-        predictions: forecast.predictions as any,
+        predictions: forecast.predictions as unknown as Prisma.InputJsonValue,
         accuracy: forecast.accuracy,
         modelVersion: "v1.0.0",
         trainingDataPoints: forecast.trainingDataPoints,
         method: forecast.method,
-        metadata: enrichedMetadata as any,
+        metadata: enrichedMetadata as unknown as Prisma.InputJsonValue,
         generatedAt: now,
         validUntil,
         updatedAt: now,
@@ -121,12 +122,12 @@ export async function processForecastingJob(
         forecastType,
         targetPeriodStart,
         targetPeriodEnd,
-        predictions: forecast.predictions as any,
+        predictions: forecast.predictions as unknown as Prisma.InputJsonValue,
         accuracy: forecast.accuracy,
         modelVersion: "v1.0.0",
         trainingDataPoints: forecast.trainingDataPoints,
         method: forecast.method,
-        metadata: enrichedMetadata as any,
+        metadata: enrichedMetadata as unknown as Prisma.InputJsonValue,
         generatedAt: now,
         validUntil,
       },

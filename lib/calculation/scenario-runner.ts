@@ -96,7 +96,7 @@ export async function runScenario(
 
     if (!factorSelection) {
       const qualityScore = calculateDataQualityScore({
-        record: record as any,
+        record: record as ActivityRecord & { emissionCategory: { scope: number } },
         factorSelection: null,
         unitConverted: false,
         unitConversionComplex: false,
@@ -137,7 +137,7 @@ export async function runScenario(
       const converted = convertBetween(normalized.amount, normalized.unit, factor.inputUnit);
       if (converted == null) {
         const qualityScore = calculateDataQualityScore({
-          record: record as any,
+          record: record as ActivityRecord & { emissionCategory: { scope: number } },
           factorSelection,
           unitConverted: true,
           unitConversionComplex: true,
@@ -197,7 +197,7 @@ export async function runScenario(
     const factorValue = factor.co2e ?? factor.co2;
 
     const qualityScore = calculateDataQualityScore({
-      record: record as any,
+      record: record as ActivityRecord & { emissionCategory: { scope: number } },
       factorSelection,
       unitConverted: unitWasConverted,
       unitConversionComplex: unitConversionWasComplex,
