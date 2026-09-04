@@ -182,6 +182,7 @@ model Organization {
   activityRecords             ActivityRecord[]
   importBatches               ImportBatch[]
   calculationRuns             CalculationRun[]
+  uncertaintyResults          CalculationUncertaintyResult[]
   snapshots                   PublishedSnapshot[]
   aggregates                  DashboardAggregate[]
   scenarioRuns                ScenarioRun[]
@@ -1050,6 +1051,10 @@ model EmissionFactor {
   ch4                Decimal?  @db.Decimal(18, 8)
   n2o                Decimal?  @db.Decimal(18, 8)
   co2e               Decimal?  @db.Decimal(18, 8)
+  /// Biogenic CO2, kg per input unit. GHG Protocol convention: reported as a
+  /// separate memo item, never added into co2/co2e/totalCo2e. Combustion of
+  /// biomass, biofuel and biogenic waste factors populate this.
+  biogenicCo2        Decimal?  @map("biogenic_co2") @db.Decimal(18, 8)
   uncertaintyRating  String?   @map("uncertainty_rating")
   usageNotes         String?   @map("usage_notes")
 
@@ -1104,6 +1109,7 @@ model CalculationRun {
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
   dbtRuns            DbtRun[]              @relation("DbtRuns")
+  uncertaintyResult  CalculationUncertaintyResult?
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("calculation_runs")
@@ -1137,6 +1143,18 @@ model EmissionCalculation {
   dataQualityScore        Int      @default(50) @map("data_quality_score")
   confidenceIntervalLower Decimal? @map("confidence_interval_lower") @db.Decimal(18, 8)
   confidenceIntervalUpper Decimal? @map("confidence_interval_upper") @db.Decimal(18, 8)
+  /// The five ISO 14040/44 pedigree matrix indicator scores (1 best, 5
+  /// worst) this calculation's dataQualityScore and confidence interval were
+  /// derived from — { reliability, completeness, temporalCorrelation,
+  /// geographicalCorrelation, technologicalCorrelation }. See lib/calculation/pedigree.ts.
+  pedigreeScores          Json?    @map("pedigree_scores")
+  /// Geometric standard deviation of this record's lognormal uncertainty
+  /// distribution, combining the Weidema & Wesnaes (1996) basic uncertainty
+  /// factors for the five pedigree indicators above.
+  geometricStdDev         Decimal? @map("geometric_std_dev") @db.Decimal(10, 6)
+  /// Years between the emission factor's vintage and the activity date.
+  /// Null when the factor carries no effective date.
+  temporalRepresentativenessYears Decimal? @map("temporal_representativeness_years") @db.Decimal(6, 2)
   createdAt               DateTime @default(now()) @map("created_at")
 
   activityRecord     ActivityRecord     @relation(fields: [activityRecordId], references: [id])
@@ -1149,6 +1167,41 @@ model EmissionCalculation {
   @@index([calculationRunId])
   @@index([activityRecordId])
   @@map("emission_calculations")
+}
+
+// Monte Carlo uncertainty propagation for a calculation run's inventory
+// total. Built because naively summing each record's confidence-interval
+// margin overstates the combined uncertainty (it assumes every record's
+// error moves in lockstep); simulating each record from its own pedigree-
+// derived lognormal distribution and summing many draws captures the
+// diversification that happens when independent uncertainties combine.
+// See lib/calculation/monte-carlo.ts.
+model CalculationUncertaintyResult {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  calculationRunId  String   @unique @map("calculation_run_id")
+  totalCo2e         Decimal  @map("total_co2e") @db.Decimal(18, 8)
+  monteCarloMean    Decimal  @map("monte_carlo_mean") @db.Decimal(18, 8)
+  monteCarloMedian  Decimal  @map("monte_carlo_median") @db.Decimal(18, 8)
+  monteCarloP2_5    Decimal  @map("monte_carlo_p2_5") @db.Decimal(18, 8)
+  monteCarloP97_5   Decimal  @map("monte_carlo_p97_5") @db.Decimal(18, 8)
+  /// What linear summation of each record's own confidence interval would
+  /// have produced — kept alongside the Monte Carlo result so the
+  /// diversification gain is a visible, checkable number, not a claim.
+  naiveIntervalLower Decimal @map("naive_interval_lower") @db.Decimal(18, 8)
+  naiveIntervalUpper Decimal @map("naive_interval_upper") @db.Decimal(18, 8)
+  iterations        Int
+  seed              Int
+  recordCount       Int      @map("record_count")
+  /// Per-scope Monte Carlo breakdown: { "1": {mean, p2_5, p97_5}, "2": {...}, "3": {...} }
+  scopeBreakdown    Json     @map("scope_breakdown")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  calculationRun CalculationRun @relation(fields: [calculationRunId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("calculation_uncertainty_results")
 }
 
 model PublishedSnapshot {

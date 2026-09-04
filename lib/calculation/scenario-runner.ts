@@ -101,7 +101,7 @@ export async function runScenario(
         unitConverted: false,
         unitConversionComplex: false,
       });
-      const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+      const confidenceInterval = calculateConfidenceInterval(0, qualityScore.geometricStdDev);
 
       await prisma.scenarioDraft.create({
         data: {
@@ -142,7 +142,7 @@ export async function runScenario(
           unitConverted: true,
           unitConversionComplex: true,
         });
-        const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+        const confidenceInterval = calculateConfidenceInterval(0, qualityScore.geometricStdDev);
 
         await prisma.scenarioDraft.create({
           data: {
@@ -205,7 +205,7 @@ export async function runScenario(
 
     const confidenceInterval = calculateConfidenceInterval(
       result.totalCo2e,
-      qualityScore.score,
+      qualityScore.geometricStdDev,
     );
 
     await prisma.scenarioDraft.create({

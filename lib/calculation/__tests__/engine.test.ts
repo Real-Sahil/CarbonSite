@@ -53,6 +53,29 @@ describe("computeCo2e — gas-specific factor", () => {
   });
 });
 
+describe("computeCo2e — biogenic CO2", () => {
+  it("reports biogenic CO2 separately and never adds it into totalCo2e", () => {
+    const result = computeCo2e(1000, "kg", { co2e: 0.1, biogenicCo2: 0.05 }, "kg");
+    expect(result.biogenicCo2e).toBeCloseTo(1000 * 0.05);
+    expect(result.totalCo2e).toBeCloseTo(1000 * 0.1);
+  });
+
+  it("returns null biogenic CO2 when the factor has no biogenic value", () => {
+    const result = computeCo2e(100, "kWh", { co2e: 0.233 }, "kWh");
+    expect(result.biogenicCo2e).toBeNull();
+  });
+
+  it("reports biogenic CO2 on the gas-specific path too", () => {
+    const result = computeCo2e(
+      100,
+      "kg",
+      { co2: 0.002, ch4: 0, n2o: 0, biogenicCo2: 1.8 },
+      "kg",
+    );
+    expect(result.biogenicCo2e).toBeCloseTo(180);
+  });
+});
+
 describe("computeCo2e — edge cases", () => {
   it("throws when factor has no usable values", () => {
     expect(() =>

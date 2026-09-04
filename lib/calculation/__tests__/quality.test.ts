@@ -10,6 +10,8 @@ describe("calculateDataQualityScore", () => {
     evidenceStatus: "complete",
     fieldSubmissionId: null,
     importBatchId: "batch-1",
+    country: "GB",
+    activityDate: new Date("2026-06-01"),
     emissionCategory: { scope: 1 },
   } as unknown as ActivityRecord & { emissionCategory: { scope: number } };
 
@@ -96,7 +98,7 @@ describe("calculateDataQualityScore", () => {
   it("clamps score to 0-100 range", () => {
     const score = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "matched very well" },
+      factorSelection: { factor: {} as any, selectionReason: "matched matched matched" },
       unitConverted: false,
       unitConversionComplex: false,
     });
@@ -104,12 +106,25 @@ describe("calculateDataQualityScore", () => {
     expect(score.score).toBeGreaterThanOrEqual(0);
     expect(score.score).toBeLessThanOrEqual(100);
   });
+
+  it("returns pedigree scores and a geometric standard deviation >= 1", () => {
+    const result = calculateDataQualityScore({
+      record: baseRecord,
+      factorSelection: { factor: {} as any, selectionReason: "matched" },
+      unitConverted: false,
+      unitConversionComplex: false,
+    });
+
+    expect(result.pedigreeScores.reliability).toBeGreaterThanOrEqual(1);
+    expect(result.pedigreeScores.reliability).toBeLessThanOrEqual(5);
+    expect(result.geometricStdDev).toBeGreaterThanOrEqual(1);
+  });
 });
 
 describe("calculateConfidenceInterval", () => {
-  it("returns tighter intervals for higher quality scores", () => {
-    const highQuality = calculateConfidenceInterval(100, 90);
-    const lowQuality = calculateConfidenceInterval(100, 30);
+  it("returns tighter intervals for a lower geometric standard deviation", () => {
+    const highQuality = calculateConfidenceInterval(100, 1.05);
+    const lowQuality = calculateConfidenceInterval(100, 1.5);
 
     const highMargin = highQuality.upper - highQuality.lower;
     const lowMargin = lowQuality.upper - lowQuality.lower;
@@ -117,22 +132,25 @@ describe("calculateConfidenceInterval", () => {
     expect(highMargin).toBeLessThan(lowMargin);
   });
 
-  it("scores 50 (neutral baseline) gives ~27% margin", () => {
-    const ci = calculateConfidenceInterval(100, 50);
-    const margin = ci.percentMargin;
+  it("collapses to the point estimate when geometric standard deviation is 1", () => {
+    const ci = calculateConfidenceInterval(100, 1);
+    expect(ci.lower).toBeCloseTo(100);
+    expect(ci.upper).toBeCloseTo(100);
+  });
 
-    expect(margin).toBeCloseTo(27, 0);
+  it("is symmetric on a log scale (lower * upper ≈ totalCo2e²)", () => {
+    const ci = calculateConfidenceInterval(100, 1.2);
+    expect(ci.lower * ci.upper).toBeCloseTo(100 * 100, 4);
   });
 
   it("prevents negative lower bounds", () => {
-    const ci = calculateConfidenceInterval(10, 0);
-
+    const ci = calculateConfidenceInterval(10, 1.3);
     expect(ci.lower).toBeGreaterThanOrEqual(0);
   });
 
-  it("scales margin with CO2e value", () => {
-    const ci100 = calculateConfidenceInterval(100, 50);
-    const ci1000 = calculateConfidenceInterval(1000, 50);
+  it("scales margin width linearly with the CO2e value", () => {
+    const ci100 = calculateConfidenceInterval(100, 1.2);
+    const ci1000 = calculateConfidenceInterval(1000, 1.2);
 
     const margin100 = ci100.upper - ci100.lower;
     const margin1000 = ci1000.upper - ci1000.lower;

@@ -12,6 +12,8 @@ export type GasValues = {
   ch4?: number | null;
   n2o?: number | null;
   co2e?: number | null;
+  /** Biogenic CO2, kg per input unit. Never added into co2/co2e/totalCo2e. */
+  biogenicCo2?: number | null;
 };
 
 export type CalculationResult = {
@@ -19,6 +21,10 @@ export type CalculationResult = {
   ch4: number | null;
   n2o: number | null;
   totalCo2e: number;
+  /// GHG Protocol convention: biogenic CO2 (combustion of biomass, biofuel,
+  /// biogenic waste) is reported as a separate memo item and never netted
+  /// into totalCo2e or any fossil scope total.
+  biogenicCo2e: number | null;
   formula: string;
   warnings: string[];
   confidenceIntervalLower?: number;
@@ -35,6 +41,9 @@ export function computeCo2e(
   if (normalizedUnit !== factorUnit) {
     warnings.push(`Unit mismatch: activity ${normalizedUnit} vs factor ${factorUnit}`);
   }
+
+  const biogenicCo2e =
+    factor.biogenicCo2 != null ? normalizedAmount * Number(factor.biogenicCo2) : null;
 
   // Use the per-gas branch when any individual gas value is present, UNLESS
   // co2e is also populated and the gas set is incomplete. In that case, co2e
@@ -59,14 +68,14 @@ export function computeCo2e(
       .filter(Boolean)
       .join("; ");
 
-    return { co2, ch4, n2o, totalCo2e, formula, warnings };
+    return { co2, ch4, n2o, totalCo2e, biogenicCo2e, formula, warnings };
   }
 
   // Scalar CO2e factor
   if (factor.co2e != null) {
     const totalCo2e = normalizedAmount * Number(factor.co2e);
     const formula = `${normalizedAmount} ${normalizedUnit} × ${factor.co2e} kg CO2e/${factorUnit} = ${totalCo2e.toFixed(6)} kg CO2e`;
-    return { co2: null, ch4: null, n2o: null, totalCo2e, formula, warnings };
+    return { co2: null, ch4: null, n2o: null, totalCo2e, biogenicCo2e, formula, warnings };
   }
 
   throw new Error("Emission factor has no usable values (co2e, co2, ch4, n2o all null)");

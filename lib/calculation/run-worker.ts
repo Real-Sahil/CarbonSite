@@ -6,6 +6,8 @@ import { normalizeUnit, convertBetween, UnitError } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
+import { assessTemporalRepresentativeness } from "./temporal-representativeness";
+import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
 import { getBoss } from "@/lib/jobs/boss";
 import type { ActivityRecord, Scope2Method } from "@prisma/client";
 
@@ -96,7 +98,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
           unitConversionComplex: false,
         });
 
-        const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+        const confidenceInterval = calculateConfidenceInterval(0, qualityScore.geometricStdDev);
 
         await prisma.emissionCalculation.create({
           data: {
@@ -120,6 +122,8 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
             dataQualityScore: qualityScore.score,
             confidenceIntervalLower: confidenceInterval.lower,
             confidenceIntervalUpper: confidenceInterval.upper,
+            pedigreeScores: qualityScore.pedigreeScores as unknown as Record<string, number>,
+            geometricStdDev: qualityScore.geometricStdDev,
           },
         });
         continue;
@@ -196,7 +200,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
               unitConverted: true,
               unitConversionComplex: true,
             });
-            const confidenceInterval = calculateConfidenceInterval(0, qualityScore.score);
+            const confidenceInterval = calculateConfidenceInterval(0, qualityScore.geometricStdDev);
 
             await prisma.emissionCalculation.create({
               data: {
@@ -221,6 +225,8 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
                 dataQualityScore: qualityScore.score,
                 confidenceIntervalLower: confidenceInterval.lower,
                 confidenceIntervalUpper: confidenceInterval.upper,
+                pedigreeScores: qualityScore.pedigreeScores as unknown as Record<string, number>,
+                geometricStdDev: qualityScore.geometricStdDev,
               },
             });
             continue;
@@ -238,6 +244,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
             ch4: factor.ch4 != null ? Number(factor.ch4) : null,
             n2o: factor.n2o != null ? Number(factor.n2o) : null,
             co2e: factor.co2e != null ? Number(factor.co2e) : null,
+            biogenicCo2: factor.biogenicCo2 != null ? Number(factor.biogenicCo2) : null,
           },
           factor.inputUnit,
           [
@@ -288,8 +295,17 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 
       const confidenceInterval = calculateConfidenceInterval(
         result.totalCo2e,
-        qualityScore.score,
+        qualityScore.geometricStdDev,
       );
+
+      const temporalRepresentativeness = assessTemporalRepresentativeness({
+        factorEffectiveStartDate: factor.effectiveStartDate,
+        factorEffectiveEndDate: factor.effectiveEndDate,
+        activityDate,
+      });
+      if (temporalRepresentativeness.warning) {
+        result.warnings.push(temporalRepresentativeness.warning);
+      }
 
       await prisma.emissionCalculation.create({
         data: {
@@ -307,6 +323,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
           co2: toDecimal(result.co2),
           ch4: toDecimal(result.ch4),
           n2o: toDecimal(result.n2o),
+          biogenicCo2e: toDecimal(result.biogenicCo2e),
           totalCo2e: result.totalCo2e,
           selectionReason,
           factorValue: factorValue != null ? toDecimal(Number(factorValue)) : null,
@@ -315,6 +332,12 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
           dataQualityScore: qualityScore.score,
           confidenceIntervalLower: toDecimal(confidenceInterval.lower),
           confidenceIntervalUpper: toDecimal(confidenceInterval.upper),
+          pedigreeScores: qualityScore.pedigreeScores as unknown as Record<string, number>,
+          geometricStdDev: qualityScore.geometricStdDev,
+          temporalRepresentativenessYears:
+            temporalRepresentativeness.yearsGap != null
+              ? toDecimal(temporalRepresentativeness.yearsGap)
+              : null,
         },
       });
     }
@@ -347,6 +370,9 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 
     // Rebuild DashboardAggregate for this period (live, snapshotId = null)
     await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId);
+
+    // Monte Carlo uncertainty propagation for the run's inventory total
+    await computeAndPersistUncertainty(orgId, calculationRunId);
 
     // Broadcast dashboard update to connected SSE clients
     try {
@@ -516,6 +542,87 @@ async function rebuildDashboardAggregates(
         ...computeIntensity(Number(totalCo2e)),
       })),
     });
+  });
+}
+
+async function computeAndPersistUncertainty(
+  orgId: string,
+  calculationRunId: string,
+): Promise<void> {
+  const calculations = await prisma.emissionCalculation.findMany({
+    where: { calculationRunId },
+    select: {
+      totalCo2e: true,
+      geometricStdDev: true,
+      confidenceIntervalLower: true,
+      confidenceIntervalUpper: true,
+      activityRecord: { select: { emissionCategory: { select: { scope: true } } } },
+    },
+  });
+
+  if (calculations.length === 0) return;
+
+  const toMonteCarloInput = (rows: typeof calculations) =>
+    rows.map((c) => ({
+      totalCo2e: Number(c.totalCo2e),
+      // A record with no pedigree-derived GSD (e.g. a calculation error
+      // fallback) is treated as certain — it contributes its value with no
+      // simulated spread rather than being dropped from the total.
+      geometricStdDev: c.geometricStdDev != null ? Number(c.geometricStdDev) : 1,
+    }));
+
+  const toNaiveInput = (rows: typeof calculations) =>
+    rows.map((c) => ({
+      lower: c.confidenceIntervalLower != null ? Number(c.confidenceIntervalLower) : Number(c.totalCo2e),
+      upper: c.confidenceIntervalUpper != null ? Number(c.confidenceIntervalUpper) : Number(c.totalCo2e),
+    }));
+
+  const totalCo2e = calculations.reduce((sum, c) => sum + Number(c.totalCo2e), 0);
+  const overall = runMonteCarlo(toMonteCarloInput(calculations), { seed: 42 });
+  const naive = naiveLinearInterval(toNaiveInput(calculations));
+
+  const scopeBreakdown: Record<string, { mean: number; p2_5: number; p97_5: number }> = {};
+  for (const scope of [1, 2, 3]) {
+    const scopeRows = calculations.filter((c) => c.activityRecord.emissionCategory.scope === scope);
+    if (scopeRows.length === 0) continue;
+    const scopeResult = runMonteCarlo(toMonteCarloInput(scopeRows), { seed: 42 });
+    scopeBreakdown[String(scope)] = {
+      mean: scopeResult.mean,
+      p2_5: scopeResult.p2_5,
+      p97_5: scopeResult.p97_5,
+    };
+  }
+
+  await prisma.calculationUncertaintyResult.upsert({
+    where: { calculationRunId },
+    create: {
+      organizationId: orgId,
+      calculationRunId,
+      totalCo2e,
+      monteCarloMean: overall.mean,
+      monteCarloMedian: overall.median,
+      monteCarloP2_5: overall.p2_5,
+      monteCarloP97_5: overall.p97_5,
+      naiveIntervalLower: naive.lower,
+      naiveIntervalUpper: naive.upper,
+      iterations: overall.iterations,
+      seed: overall.seed,
+      recordCount: calculations.length,
+      scopeBreakdown,
+    },
+    update: {
+      totalCo2e,
+      monteCarloMean: overall.mean,
+      monteCarloMedian: overall.median,
+      monteCarloP2_5: overall.p2_5,
+      monteCarloP97_5: overall.p97_5,
+      naiveIntervalLower: naive.lower,
+      naiveIntervalUpper: naive.upper,
+      iterations: overall.iterations,
+      seed: overall.seed,
+      recordCount: calculations.length,
+      scopeBreakdown,
+    },
   });
 }
 

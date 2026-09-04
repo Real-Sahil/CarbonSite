@@ -162,7 +162,7 @@ describe("aggregateComparisons — summary metrics", () => {
   it("calculates tolerance rate", () => {
     const results = [
       {
-        currentEngine: { totalCo2e: 100, co2: null, ch4: null, n2o: null, formula: "", warnings: [] },
+        currentEngine: { totalCo2e: 100, co2: null, ch4: null, n2o: null, biogenicCo2e: null, formula: "", warnings: [] },
         ghgCalculator: { totalCo2e: 100.5, formula: "" },
         deviance: {
           absoluteDifference: 0.5,
@@ -172,7 +172,7 @@ describe("aggregateComparisons — summary metrics", () => {
         error: undefined,
       },
       {
-        currentEngine: { totalCo2e: 100, co2: null, ch4: null, n2o: null, formula: "", warnings: [] },
+        currentEngine: { totalCo2e: 100, co2: null, ch4: null, n2o: null, biogenicCo2e: null, formula: "", warnings: [] },
         ghgCalculator: { totalCo2e: 105, formula: "" },
         deviance: {
           absoluteDifference: 5,
@@ -194,7 +194,7 @@ describe("aggregateComparisons — summary metrics", () => {
   it("handles all-failing comparisons", () => {
     const results = [
       {
-        currentEngine: { totalCo2e: 100, co2: null, ch4: null, n2o: null, formula: "", warnings: [] },
+        currentEngine: { totalCo2e: 100, co2: null, ch4: null, n2o: null, biogenicCo2e: null, formula: "", warnings: [] },
         ghgCalculator: null,
         deviance: null,
         error: "API timeout",

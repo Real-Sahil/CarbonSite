@@ -107,7 +107,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
     })
     .catch(() => null);
 
-  const [groupRows, largestCalculations] = await Promise.all([
+  const [groupRows, largestCalculations, uncertainty, biogenicAgg, weakestPedigree] = await Promise.all([
     prisma.emissionCalculation.findMany({
       where: { organizationId: orgId, calculationRunId: runId },
       select: {
@@ -137,6 +137,31 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
       },
       orderBy: { totalCo2e: "desc" },
       take: 50,
+    }),
+    prisma.calculationUncertaintyResult.findUnique({ where: { calculationRunId: runId } }),
+    prisma.emissionCalculation.aggregate({
+      where: { calculationRunId: runId, biogenicCo2e: { not: null } },
+      _sum: { biogenicCo2e: true },
+      _count: { biogenicCo2e: true },
+    }),
+    prisma.emissionCalculation.findMany({
+      where: { calculationRunId: runId, geometricStdDev: { not: null } },
+      orderBy: { geometricStdDev: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        totalCo2e: true,
+        dataQualityScore: true,
+        geometricStdDev: true,
+        temporalRepresentativenessYears: true,
+        activityRecord: {
+          select: {
+            sourceDescription: true,
+            supplierName: true,
+            emissionCategory: { select: { name: true } },
+          },
+        },
+      },
     }),
   ]);
 
@@ -230,6 +255,111 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
           <MetaItem label="Total footprint" value={formatTonnes(totalKg)} />
         </CardContent>
       </Card>
+
+      {uncertainty && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-base">Uncertainty and data quality</CardTitle>
+            <CardDescription>
+              Monte Carlo propagation of each record&apos;s pedigree-derived uncertainty (ISO
+              14040/44), compared against what summing every record&apos;s own interval linearly
+              would have claimed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6 sm:grid-cols-3">
+            <div>
+              <p className="text-xs font-normal uppercase tracking-wide text-slate-500">
+                Monte Carlo 95% interval
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-900">
+                {formatTonnes(Number(uncertainty.monteCarloP2_5))} to{" "}
+                {formatTonnes(Number(uncertainty.monteCarloP97_5))}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                {uncertainty.iterations.toLocaleString("en-GB")} simulated draws, seed{" "}
+                {uncertainty.seed}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-normal uppercase tracking-wide text-slate-500">
+                Naive linear summation would claim
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-900">
+                {formatTonnes(Number(uncertainty.naiveIntervalLower))} to{" "}
+                {formatTonnes(Number(uncertainty.naiveIntervalUpper))}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                {(() => {
+                  const naiveWidth =
+                    Number(uncertainty.naiveIntervalUpper) - Number(uncertainty.naiveIntervalLower);
+                  const mcWidth =
+                    Number(uncertainty.monteCarloP97_5) - Number(uncertainty.monteCarloP2_5);
+                  const tighterBy = naiveWidth > 0 ? (1 - mcWidth / naiveWidth) * 100 : 0;
+                  return tighterBy > 0
+                    ? `Monte Carlo interval is ${tighterBy.toFixed(0)}% tighter, capturing diversification across ${uncertainty.recordCount.toLocaleString("en-GB")} independent records.`
+                    : "No diversification gain for this record set.";
+                })()}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-normal uppercase tracking-wide text-slate-500">
+                Biogenic CO2 (memo item)
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-900">
+                {formatTonnes(Number(biogenicAgg._sum.biogenicCo2e ?? 0))}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                {biogenicAgg._count.biogenicCo2e} record
+                {biogenicAgg._count.biogenicCo2e === 1 ? "" : "s"}. Reported separately, not
+                included in the total above.
+              </p>
+            </div>
+          </CardContent>
+          {weakestPedigree.length > 0 && (
+            <CardContent className="pt-0">
+              <p className="mb-2 text-xs font-normal uppercase tracking-wide text-slate-500">
+                Weakest pedigree records
+              </p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Record</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Data quality</TableHead>
+                    <TableHead className="text-right">Geometric SD</TableHead>
+                    <TableHead className="text-right">Factor vintage gap</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {weakestPedigree.map((calc) => (
+                    <TableRow key={calc.id}>
+                      <TableCell className="max-w-56 truncate font-medium text-slate-900">
+                        {calc.activityRecord.sourceDescription ??
+                          calc.activityRecord.supplierName ??
+                          "Activity record"}
+                      </TableCell>
+                      <TableCell className="text-slate-600">
+                        {calc.activityRecord.emissionCategory.name}
+                      </TableCell>
+                      <TableCell className="text-right text-slate-600">
+                        {calc.dataQualityScore}/100
+                      </TableCell>
+                      <TableCell className="text-right text-slate-600">
+                        {calc.geometricStdDev != null ? Number(calc.geometricStdDev).toFixed(3) : "-"}
+                      </TableCell>
+                      <TableCell className="text-right text-slate-600">
+                        {calc.temporalRepresentativenessYears != null
+                          ? `${Number(calc.temporalRepresentativenessYears).toFixed(1)} yrs`
+                          : "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2 mb-6">
         <Card>
