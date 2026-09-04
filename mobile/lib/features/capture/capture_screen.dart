@@ -10,6 +10,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -302,6 +303,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       savedPath = picked.path;
     }
 
+    // Let the worker trim out anything that could throw off OCR (other
+    // tickets in frame, a hand, glare on the edge) before extraction runs.
+    savedPath = await _cropPhoto(savedPath);
+
     // Compute photo hash before OCR so it's available for submit verification.
     _photoHash = await _computePhotoHash(savedPath);
 
@@ -321,6 +326,60 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       _photoPath = savedPath;
       _processingPhoto = false;
       _step = _CaptureStep.review;
+    });
+  }
+
+  /// Opens the native crop UI so the field worker can trim out anything in
+  /// the frame that could confuse OCR. Returns the original path unchanged
+  /// if the user cancels or the crop UI is unavailable.
+  Future<String> _cropPhoto(String sourcePath) async {
+    try {
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: sourcePath,
+        compressQuality: 85,
+        uiSettings: const [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop photo',
+            toolbarColor: Colors.black,
+            toolbarWidgetColor: Colors.white,
+            backgroundColor: Colors.black,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(title: 'Crop photo'),
+        ],
+      );
+      if (cropped == null) return sourcePath; // user cancelled
+
+      // image_cropper writes its output to the OS cache directory, which
+      // can be cleared before background sync uploads the photo — copy it
+      // into the same documents directory the rest of the flow uses so it
+      // survives until the draft is submitted.
+      final dir = await getApplicationDocumentsDirectory();
+      final ext =
+          p.extension(cropped.path).isEmpty ? '.jpg' : p.extension(cropped.path);
+      final persisted = p.join(dir.path, 'evidence_${_uuid.v4()}$ext');
+      await File(cropped.path).copy(persisted);
+      return persisted;
+    } catch (_) {
+      return sourcePath; // cropping unavailable — keep the uncropped photo
+    }
+  }
+
+  /// Re-crops the already-captured photo from the review screen. Unlike the
+  /// initial crop in [_takePhoto], this replaces a photo OCR has already run
+  /// against, so the hash and extracted fields must be refreshed too.
+  Future<void> _editCrop() async {
+    if (_photoPath == null) return;
+    setState(() => _processingPhoto = true);
+
+    final cropped = await _cropPhoto(_photoPath!);
+    _photoHash = await _computePhotoHash(cropped);
+    await _runOcr(cropped);
+
+    if (!mounted) return;
+    setState(() {
+      _photoPath = cropped;
+      _processingPhoto = false;
     });
   }
 
@@ -733,6 +792,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                       if (!mounted) return;
                       await _takePhoto(source: source);
                     },
+              onCrop: _submitting ? null : _editCrop,
             ),
             const SizedBox(height: 16),
             if (_autoFilled.isNotEmpty) ...[
@@ -1109,8 +1169,13 @@ class _TypeCard extends StatelessWidget {
 class _PhotoCard extends StatelessWidget {
   final String? photoPath;
   final VoidCallback? onRetake;
+  final VoidCallback? onCrop;
 
-  const _PhotoCard({required this.photoPath, required this.onRetake});
+  const _PhotoCard({
+    required this.photoPath,
+    required this.onRetake,
+    required this.onCrop,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1150,15 +1215,31 @@ class _PhotoCard extends StatelessWidget {
           Positioned(
             right: 8,
             bottom: 8,
-            child: FilledButton.tonalIcon(
-              onPressed: onRetake,
-              icon: const Icon(Icons.camera_alt_outlined, size: 16),
-              label: Text('Retake', style: textTheme.labelMedium),
-              style: FilledButton.styleFrom(
-                minimumSize: Size.zero,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed: onCrop,
+                  icon: const Icon(Icons.crop, size: 16),
+                  label: Text('Crop', style: textTheme.labelMedium),
+                  style: FilledButton.styleFrom(
+                    minimumSize: Size.zero,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.tonalIcon(
+                  onPressed: onRetake,
+                  icon: const Icon(Icons.camera_alt_outlined, size: 16),
+                  label: Text('Retake', style: textTheme.labelMedium),
+                  style: FilledButton.styleFrom(
+                    minimumSize: Size.zero,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
