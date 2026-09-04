@@ -337,7 +337,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       final cropped = await ImageCropper().cropImage(
         sourcePath: sourcePath,
         compressQuality: 85,
-        uiSettings: const [
+        uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop photo',
             toolbarColor: Colors.black,
