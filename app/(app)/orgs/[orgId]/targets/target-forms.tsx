@@ -169,6 +169,8 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
   const [ownerId, setOwnerId] = useState(members[0]?.userId ?? "");
   const [expectedImpact, setExpectedImpact] = useState("");
   const [costAmount, setCostAmount] = useState("");
+  const [opexDeltaAnnual, setOpexDeltaAnnual] = useState("");
+  const [lifetimeYears, setLifetimeYears] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -191,6 +193,8 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
           expectedImpactCo2e: expectedImpact ? parseFloat(expectedImpact) : undefined,
           costAmount: costAmount ? parseFloat(costAmount) : undefined,
           costCurrency: "GBP",
+          opexDeltaAnnual: opexDeltaAnnual ? parseFloat(opexDeltaAnnual) : undefined,
+          lifetimeYears: lifetimeYears ? parseInt(lifetimeYears, 10) : undefined,
         }),
       });
       if (!res.ok) {
@@ -250,8 +254,16 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
         <Input type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} placeholder="Optional" className="w-36" />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Cost (GBP)</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Capital cost (GBP)</label>
         <Input type="number" min="0" step="any" value={costAmount} onChange={(e) => setCostAmount(e.target.value)} placeholder="Optional" className="w-28" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Annual opex change (GBP)</label>
+        <Input type="number" step="any" value={opexDeltaAnnual} onChange={(e) => setOpexDeltaAnnual(e.target.value)} placeholder="Negative = saves money" className="w-40" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Lifetime (years)</label>
+        <Input type="number" min="1" step="1" value={lifetimeYears} onChange={(e) => setLifetimeYears(e.target.value)} placeholder="Optional" className="w-24" />
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading} size="sm">

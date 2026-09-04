@@ -46,17 +46,26 @@ async function computeOperationalEnergyKgCo2e(
   return Number(rows[0]?.total_co2e ?? 0);
 }
 
-async function loadWholeLifeMaterials(orgId: string, projectId: string): Promise<WholeLifeMaterialInput[]> {
+async function loadWholeLifeMaterials(
+  orgId: string,
+  projectId: string,
+): Promise<{ materials: WholeLifeMaterialInput[]; warnings: string[] }> {
   const records = await prisma.embodiedCarbonRecord.findMany({
     where: { organizationId: orgId, projectId },
     include: { material: true, epd: true },
   });
 
-  return records.map((record) => {
+  const warnings: string[] = [];
+  let unlinkedCount = 0;
+  let noReplacementCycleCount = 0;
+
+  const materials = records.map((record) => {
+    const label = record.epd?.productName ?? record.material?.name ?? record.description ?? "Unnamed record";
     const source = record.epd ?? record.material;
     if (!source) {
       // A custom record with neither material nor EPD has no factors to
       // recompute a stage split from — treat its whole stored total as A-stage.
+      unlinkedCount++;
       return {
         embodiedTotalKgCo2e: record.totalKgCo2e,
         endOfLifeKgCo2e: 0,
@@ -84,26 +93,48 @@ async function loadWholeLifeMaterials(orgId: string, projectId: string): Promise
     const cStages = recordStages.filter((s) => C_STAGES.includes(s));
     const dStages = recordStages.includes("D") ? (["D"] as LifecycleStage[]) : [];
 
-    const embodiedTotalKgCo2e =
-      aStages.length > 0
-        ? calculateEmbodiedCarbon({ quantity: record.quantity, unit: record.unit, factors, stages: aStages }).totalKgCo2e
-        : 0;
-    const endOfLifeKgCo2e =
-      cStages.length > 0
-        ? calculateEmbodiedCarbon({ quantity: record.quantity, unit: record.unit, factors, stages: cStages }).totalKgCo2e
-        : 0;
+    let embodiedTotalKgCo2e = 0;
+    if (aStages.length > 0) {
+      const aResult = calculateEmbodiedCarbon({ quantity: record.quantity, unit: record.unit, factors, stages: aStages });
+      embodiedTotalKgCo2e = aResult.totalKgCo2e;
+      for (const w of aResult.warnings) warnings.push(`${label}: ${w}`);
+    }
+
+    let endOfLifeKgCo2e = 0;
+    if (cStages.length > 0) {
+      const cResult = calculateEmbodiedCarbon({ quantity: record.quantity, unit: record.unit, factors, stages: cStages });
+      endOfLifeKgCo2e = cResult.totalKgCo2e;
+      for (const w of cResult.warnings) warnings.push(`${label}: ${w}`);
+    }
+
     const moduleDKgCo2e =
       dStages.length > 0
         ? calculateEmbodiedCarbon({ quantity: record.quantity, unit: record.unit, factors, stages: dStages }).totalKgCo2e
         : 0;
 
+    const replacementCycleYears = ("replacementCycleYears" in source ? source.replacementCycleYears : null) ?? null;
+    if (replacementCycleYears == null) noReplacementCycleCount++;
+
     return {
       embodiedTotalKgCo2e,
       endOfLifeKgCo2e,
       moduleDKgCo2e,
-      replacementCycleYears: ("replacementCycleYears" in source ? source.replacementCycleYears : null) ?? null,
+      replacementCycleYears,
     };
   });
+
+  if (unlinkedCount > 0) {
+    warnings.push(
+      `${unlinkedCount} embodied carbon record${unlinkedCount === 1 ? " has" : "s have"} no material or EPD linked, so end-of-life and replacement impact could not be split out for ${unlinkedCount === 1 ? "it" : "them"} — treated entirely as A-stage.`,
+    );
+  }
+  if (noReplacementCycleCount > 0) {
+    warnings.push(
+      `${noReplacementCycleCount} material${noReplacementCycleCount === 1 ? "" : "s"} on this project have no replacement cycle recorded, so module B4 (replacement) is not modelled for ${noReplacementCycleCount === 1 ? "it" : "them"} — assumed to last the whole assessment period.`,
+    );
+  }
+
+  return { materials, warnings };
 }
 
 export async function GET(_req: NextRequest, { params }: Params) {
@@ -118,7 +149,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const assessmentPeriodYears = assessment?.assessmentPeriodYears ?? 60;
     const operationalStartDate = assessment?.operationalStartDate ?? null;
 
-    const [materials, operationalEnergyKgCo2e] = await Promise.all([
+    const [{ materials, warnings: materialWarnings }, operationalEnergyKgCo2e] = await Promise.all([
       loadWholeLifeMaterials(orgId, projectId),
       computeOperationalEnergyKgCo2e(orgId, projectId, operationalStartDate),
     ]);
@@ -131,6 +162,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         ? Number(assessment.operationalWaterKgCo2eManual)
         : null,
     });
+    result.warnings.push(...materialWarnings);
 
     return NextResponse.json({ assessment, result, materialRecordCount: materials.length });
   } catch (err) {

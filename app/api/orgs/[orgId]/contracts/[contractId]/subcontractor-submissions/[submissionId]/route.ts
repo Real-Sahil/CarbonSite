@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { isValidStorageKey } from "@/lib/storage";
 import { updateSubcontractorSubmissionSchema } from "@/lib/validation/project-carbon";
 
 type Params = { params: Promise<{ orgId: string; contractId: string; submissionId: string }> };
@@ -51,6 +52,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       if (!existing) return apiError("NOT_FOUND", "Subcontractor submission not found.", 404);
       if (existing.status === "verified") {
         return apiError("ALREADY_VERIFIED", "This submission has already been verified.", 409);
+      }
+
+      if (
+        data.evidenceStorageKey !== undefined &&
+        (!isValidStorageKey(data.evidenceStorageKey) ||
+          !data.evidenceStorageKey.startsWith(`org/${orgId}/evidence/`))
+      ) {
+        return apiError("VALIDATION_ERROR", "Invalid evidence storage key.", 400);
       }
 
       const submission = await prisma.subcontractorCarbonSubmission.update({

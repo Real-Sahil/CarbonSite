@@ -13,6 +13,7 @@ interface Phase {
   budgetTco2e: string;
   actualTco2e: string;
   percentComplete: string;
+  plannedCompletionDate: string | null;
   sortOrder: number;
   notes: string | null;
 }
@@ -193,6 +194,7 @@ function PhaseRow({
   const [editing, setEditing] = useState(false);
   const [actual, setActual] = useState(phase.actualTco2e);
   const [percent, setPercent] = useState(phase.percentComplete);
+  const [plannedDate, setPlannedDate] = useState(phase.plannedCompletionDate?.slice(0, 10) ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -210,7 +212,11 @@ function PhaseRow({
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ actualTco2e: Number(actual), percentComplete: Number(percent) }),
+          body: JSON.stringify({
+            actualTco2e: Number(actual),
+            percentComplete: Number(percent),
+            plannedCompletionDate: plannedDate ? plannedDate : null,
+          }),
         },
       );
       if (!res.ok) {
@@ -241,6 +247,11 @@ function PhaseRow({
             </span>
           )}
           <span className="text-xs text-gray-400">{Number(phase.percentComplete).toFixed(0)}% complete</span>
+          {phase.plannedCompletionDate && (
+            <span className="text-xs text-gray-400">
+              Planned {new Date(phase.plannedCompletionDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500 tabular-nums">
@@ -274,6 +285,14 @@ function PhaseRow({
               type="number" min="0" max="100" step="1" value={percent}
               onChange={(e) => setPercent(e.target.value)}
               className="w-24 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Planned completion</label>
+            <input
+              type="date" value={plannedDate}
+              onChange={(e) => setPlannedDate(e.target.value)}
+              className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15"
             />
           </div>
           <button
