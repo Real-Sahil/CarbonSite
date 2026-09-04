@@ -6,7 +6,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
-import { handleRouteError } from "@/lib/validation/api";
+import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createFacilitySchema } from "@/lib/validation/org";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
@@ -60,12 +60,36 @@ export async function POST(
     if (limited) return limited;
     const body = createFacilitySchema.parse(await req.json());
 
+    if (body.legalEntityId) {
+      const entity = await prisma.legalEntity.findFirst({
+        where: { id: body.legalEntityId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!entity) {
+        return apiError("NOT_FOUND", "Legal entity not found in this organisation.", 404);
+      }
+    }
+
     const facility = await prisma.facility.create({
       data: {
         organizationId: orgId,
         name: body.name,
         country: body.country ?? null,
         region: body.region ?? null,
+        addressLine: body.addressLine ?? null,
+        postcode: body.postcode ?? null,
+        latitude: body.latitude ?? null,
+        longitude: body.longitude ?? null,
+        siteType: body.siteType ?? null,
+        floorAreaM2: body.floorAreaM2 ?? null,
+        headcount: body.headcount ?? null,
+        legalEntityId: body.legalEntityId ?? null,
+        ...(body.operationalControl !== undefined && {
+          operationalControl: body.operationalControl,
+        }),
+        operationalFrom: body.operationalFrom ?? null,
+        operationalTo: body.operationalTo ?? null,
+        externalRef: body.externalRef ?? null,
       },
     });
 

@@ -145,6 +145,8 @@ export async function POST(
         reviewStatus: body.reviewStatus,
         evidenceStatus: body.evidenceStatus,
         assumptionNotes: body.assumptionNotes,
+        dataOrigin: body.dataOrigin,
+        dataOriginNote: body.dataOriginNote ?? null,
         createdByUserId: session.user.id,
       },
     });

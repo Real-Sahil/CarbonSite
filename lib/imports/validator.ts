@@ -1,4 +1,5 @@
 import type { ParsedRow } from "./parser";
+import { parseDataOrigin, requiresJustification } from "@/lib/inventory/provenance";
 
 // ── Column → canonical field mapping ─────────────────────────────────────────
 
@@ -38,6 +39,21 @@ const FIELD_MAPPINGS: FieldMapping[] = [
     aliases: ["scope 2 method", "scope2_method", "market/location based", "electricity method"],
   },
   { canonical: "assumptionNotes", aliases: ["assumptions", "assumption notes", "assumption_notes", "comments"] },
+  {
+    canonical: "dataOrigin",
+    aliases: [
+      "data origin", "data_origin", "origin", "provenance", "data provenance",
+      "source type", "source_type", "data type", "data_type", "data tier",
+      "measurement type", "evidence type",
+    ],
+  },
+  {
+    canonical: "dataOriginNote",
+    aliases: [
+      "data origin note", "data_origin_note", "origin note", "origin_note",
+      "origin justification", "estimation basis", "proxy basis", "provenance note",
+    ],
+  },
 ];
 
 function buildAliasIndex(mappings: FieldMapping[]): Map<string, string> {
@@ -227,6 +243,36 @@ export function validateRow(
         message: `"${rawScope2}" is not valid; use "location_based" or "market_based".`,
       });
     }
+  }
+
+  // dataOrigin — how the figure was obtained. Unrecognised or absent values
+  // fall back to the weakest tier so an import never overstates its own
+  // reliability, and the row carries a warning saying so.
+  const rawOrigin = fields["dataOrigin"];
+  const parsedOrigin = parseDataOrigin(rawOrigin);
+  if (rawOrigin && !parsedOrigin) {
+    warnings.push({
+      field: "dataOrigin",
+      message: `"${rawOrigin}" is not a recognised data origin; recorded as "estimated". Use metered, invoiced, supplier_specific, calculated, estimated, proxy or extrapolated.`,
+    });
+  }
+  data.dataOrigin = parsedOrigin ?? "estimated";
+
+  const rawOriginNote = fields["dataOriginNote"];
+  if (rawOriginNote) data.dataOriginNote = rawOriginNote;
+
+  // Proxy and extrapolated figures need a written justification. This is a
+  // warning rather than an error so a bulk import is not blocked, but the row
+  // is flagged for the reviewer and will show on the provenance report.
+  if (
+    parsedOrigin &&
+    requiresJustification(parsedOrigin) &&
+    (rawOriginNote?.trim().length ?? 0) < 10
+  ) {
+    warnings.push({
+      field: "dataOriginNote",
+      message: `A "${parsedOrigin}" figure needs a justification of at least 10 characters. Assurance will query this row without one.`,
+    });
   }
 
   return { data, errors, warnings };

@@ -25,9 +25,44 @@ export const createActivityRecordSchema = z.object({
   refrigerantType: z.string().max(100).optional(),
   scope2Method: z.enum(["location_based", "market_based"]).optional(),
   assumptionNotes: z.string().max(2000).optional(),
+  // How the figure was obtained. Defaults to the weakest tier so nothing is
+  // silently presented as measured when the caller did not say.
+  dataOrigin: z
+    .enum([
+      "metered",
+      "invoiced",
+      "supplier_specific",
+      "calculated",
+      "estimated",
+      "proxy",
+      "extrapolated",
+    ])
+    .default("estimated"),
+  dataOriginNote: z.string().max(1000).optional(),
 });
 
-export const updateActivityRecordSchema = createActivityRecordSchema.partial();
+/// Proxy and extrapolated figures are the ones an assurance provider tests
+/// first, so a written justification is required at the API boundary.
+const requiresOriginNote = (v: {
+  dataOrigin?: string;
+  dataOriginNote?: string;
+}) =>
+  !v.dataOrigin ||
+  !["proxy", "extrapolated"].includes(v.dataOrigin) ||
+  (v.dataOriginNote?.trim().length ?? 0) >= 10;
+
+const originNoteIssue = {
+  message:
+    "A justification of at least 10 characters is required for proxy and extrapolated figures.",
+  path: ["dataOriginNote"],
+};
+
+export const createActivityRecordWithProvenanceSchema =
+  createActivityRecordSchema.refine(requiresOriginNote, originNoteIssue);
+
+export const updateActivityRecordSchema = createActivityRecordSchema
+  .partial()
+  .refine(requiresOriginNote, originNoteIssue);
 
 export const reviewActivityRecordSchema = z.object({
   reviewStatus: z.enum(["draft", "in_review", "approved", "rejected"]),

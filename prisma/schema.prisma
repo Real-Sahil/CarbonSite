@@ -76,6 +76,12 @@ model User {
 
   platformMembership PlatformMembership?
 
+  baseYearsCreated         BaseYear[]              @relation("BaseYearCreator")
+  structuralChangesCreated StructuralChange[]      @relation("StructuralChangeCreator")
+  recalculationsCreated    BaseYearRecalculation[] @relation("RecalcCreator")
+  recalculationsApproved   BaseYearRecalculation[] @relation("RecalcApprover")
+  restatementsCreated      Restatement[]           @relation("RestatementCreator")
+
   // Better Auth session tables
   sessions Session[]
   accounts Account[]
@@ -137,6 +143,10 @@ model Organization {
   hqCountry                    String?  @map("hq_country")
   reportingCurrency            String   @default("GBP") @map("reporting_currency")
   defaultUnits                 Json?    @map("default_units")
+  /// GHG Protocol Chapter 3 consolidation approach. Determines which legal
+  /// entities are consolidated and at what share. Changing it is a structural
+  /// change that triggers base year recalculation.
+  consolidationApproach        ConsolidationApproach @default(operational_control) @map("consolidation_approach")
   plan                         String   @default("trial") @map("plan")
   supplierPasswordRotationDays Int?     @map("supplier_password_rotation_days")
   supplierAccountExpiryDays    Int?     @map("supplier_account_expiry_days")
@@ -235,6 +245,11 @@ model Organization {
   causalAnalyses              CausalAnalysis[]             @relation("causalOrg")
   batchJobs                   BatchJob[]                   @relation("batchJobOrg")
   analyticsDashboardCaches    AnalyticsDashboardCache[]    @relation("dashboardCacheOrg")
+  legalEntities               LegalEntity[]                @relation("OrgLegalEntities")
+  baseYears                   BaseYear[]                   @relation("OrgBaseYears")
+  structuralChanges           StructuralChange[]           @relation("OrgStructuralChanges")
+  baseYearRecalculations      BaseYearRecalculation[]      @relation("OrgBaseYearRecalcs")
+  restatements                Restatement[]                @relation("OrgRestatements")
 
   @@map("organizations")
 }
@@ -401,9 +416,30 @@ model Facility {
   name           String
   country        String?
   region         String?
+  addressLine    String?  @map("address_line")
+  postcode       String?
+  latitude       Decimal? @db.Decimal(10, 7)
+  longitude      Decimal? @db.Decimal(10, 7)
+  /// Free-text classification (office, warehouse, depot, plant, retail, data_centre).
+  siteType       String?  @map("site_type")
+  /// Gross internal floor area, the denominator for per-m2 intensity metrics.
+  floorAreaM2    Decimal? @map("floor_area_m2") @db.Decimal(15, 2)
+  headcount      Int?
+  /// Which legal entity owns or operates this facility. Drives consolidation.
+  legalEntityId  String?  @map("legal_entity_id")
+  /// Whether the org has operational control. Under the operational control
+  /// consolidation approach only controlled facilities are consolidated at 100%.
+  operationalControl Boolean @default(true) @map("operational_control")
+  /// Date the facility entered the inventory boundary. Activity before this
+  /// date belongs to a prior owner and is excluded from consolidated totals.
+  operationalFrom DateTime? @map("operational_from") @db.Date
+  /// Date the facility left the boundary (divestiture, closure).
+  operationalTo   DateTime? @map("operational_to") @db.Date
+  externalRef     String?   @map("external_ref")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
+  legalEntity            LegalEntity?            @relation("LegalEntityFacilities", fields: [legalEntityId], references: [id], onDelete: SetNull)
   organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   activityRecords        ActivityRecord[]
   aggregates             DashboardAggregate[]
@@ -414,6 +450,7 @@ model Facility {
   causalAnalyses         CausalAnalysis[]       @relation("causalFacility")
 
   @@index([organizationId])
+  @@index([organizationId, legalEntityId])
   @@map("facilities")
 }
 
@@ -482,6 +519,7 @@ model ReportingPeriod {
   supplierDataRequests      SupplierDataRequest[]
   calculationSchedules      CalculationSchedule[]
   analyticsDashboardCaches  AnalyticsDashboardCache[]   @relation("dashboardCachePeriod")
+  baseYears                 BaseYear[]                  @relation("BaseYearPeriod")
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -659,6 +697,11 @@ model ActivityRecord {
   refrigerantType           String?        @map("refrigerant_type")
   scope2Method              Scope2Method?  @map("scope2_method")
   biogenicCo2e              Decimal?       @map("biogenic_co2e") @db.Decimal(18, 8)
+  /// How this figure was obtained. Assurance providers sample by tier and
+  /// ESRS E1 / CDP require disclosure of the primary vs secondary data split.
+  dataOrigin                DataOrigin     @default(estimated) @map("data_origin")
+  /// Free-text justification required when dataOrigin is proxy or extrapolated.
+  dataOriginNote            String?        @map("data_origin_note")
   reviewStatus              ReviewStatus   @default(draft) @map("review_status")
   evidenceStatus            EvidenceStatus @default(missing) @map("evidence_status")
   assumptionNotes           String?        @map("assumption_notes")
@@ -1085,6 +1128,8 @@ model PublishedSnapshot {
   aggregates      DashboardAggregate[]
   reports         Report[]
   assurance       SnapshotAssurance?
+  restatementsSuperseding Restatement[] @relation("RestatementSuperseded")
+  restatementsReplacing   Restatement[] @relation("RestatementReplacement")
 
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, verificationStatus])
@@ -3503,4 +3548,256 @@ model Notification {
   @@index([userId, organizationId, readAt, createdAt(sort: Desc)])
   @@index([userId, organizationId, createdAt(sort: Desc)])
   @@map("notifications")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inventory foundation: organisational boundary, data provenance, base year
+// and restatements. These implement GHG Protocol Corporate Standard chapters
+// 3 (organisational boundaries), 5 (base year and recalculation) and 9
+// (reporting / restatement disclosure).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// GHG Protocol Chapter 3 consolidation approaches.
+enum ConsolidationApproach {
+  /// Consolidate 100% of emissions from operations over which the company has
+  /// authority to introduce and implement operating policies.
+  operational_control
+  /// Consolidate 100% of emissions from operations it financially controls.
+  financial_control
+  /// Consolidate emissions in proportion to the company's equity share.
+  equity_share
+}
+
+/// How an activity figure was obtained, ordered from strongest to weakest.
+/// Assurance sampling and the ESRS E1 / CDP primary-vs-secondary data split
+/// both key off this.
+enum DataOrigin {
+  /// Read from a physical or smart meter.
+  metered
+  /// Taken from a supplier invoice or delivery note quantity.
+  invoiced
+  /// Supplier-specific figure from a supplier's own verified inventory or EPD.
+  supplier_specific
+  /// Derived from other measured values by a documented calculation.
+  calculated
+  /// Estimated from an average, model or engineering judgement.
+  estimated
+  /// A stand-in from a comparable site, period or activity.
+  proxy
+  /// Scaled from a partial period or partial population.
+  extrapolated
+}
+
+/// Events that oblige a base year recalculation under GHG Protocol Chapter 5.
+enum StructuralChangeType {
+  acquisition
+  divestiture
+  merger
+  outsourcing
+  insourcing
+  /// Change of calculation methodology, emission factor set or GWP set.
+  methodology_change
+  /// Change of the organisational boundary or consolidation approach.
+  boundary_change
+  /// Discovery of a material error in previously reported figures.
+  error_correction
+}
+
+enum BaseYearStatus {
+  draft
+  active
+  superseded
+}
+
+enum RecalculationStatus {
+  pending
+  /// Assessed as below the significance threshold, so no restatement is made.
+  not_significant
+  /// Above threshold and awaiting approval.
+  awaiting_approval
+  approved
+  rejected
+}
+
+/// Reason codes for restating a previously published figure.
+enum RestatementReason {
+  structural_change
+  methodology_change
+  factor_revision
+  error_correction
+  improved_data
+  boundary_change
+}
+
+/// A legal entity inside the reporting group. The consolidation approach on
+/// Organization decides how each entity's emissions roll up.
+model LegalEntity {
+  id                 String   @id @default(cuid())
+  organizationId     String   @map("organization_id")
+  name               String
+  registrationNumber String?  @map("registration_number")
+  country            String?
+  /// Self-referencing parent, so a group hierarchy of any depth can be modelled.
+  parentId           String?  @map("parent_id")
+  /// Equity share held by the parent, 0-100. Used under the equity_share approach.
+  ownershipPercent   Decimal  @default(100) @map("ownership_percent") @db.Decimal(6, 3)
+  /// Whether the group has operational control, used under operational_control.
+  operationalControl Boolean  @default(true) @map("operational_control")
+  /// Whether the group has financial control, used under financial_control.
+  financialControl   Boolean  @default(true) @map("financial_control")
+  /// Date the entity entered the group. Emissions before this are excluded.
+  acquiredOn         DateTime? @map("acquired_on") @db.Date
+  /// Date the entity left the group. Emissions after this are excluded.
+  divestedOn         DateTime? @map("divested_on") @db.Date
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  organization      Organization       @relation("OrgLegalEntities", fields: [organizationId], references: [id], onDelete: Cascade)
+  parent            LegalEntity?       @relation("LegalEntityTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children          LegalEntity[]      @relation("LegalEntityTree")
+  facilities        Facility[]         @relation("LegalEntityFacilities")
+  structuralChanges StructuralChange[] @relation("StructuralChangeEntity")
+
+  @@index([organizationId])
+  @@index([organizationId, parentId])
+  @@map("legal_entities")
+}
+
+/// The reference year every reduction target and trend line is measured
+/// against. Exactly one base year per organisation may be active at a time.
+model BaseYear {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  reportingPeriodId String   @map("reporting_period_id")
+  label             String
+  rationale         String?
+  /// Percentage change in base year total that triggers a restatement.
+  /// GHG Protocol suggests a policy threshold; 5% is the common choice.
+  significanceThresholdPercent Decimal @default(5) @map("significance_threshold_percent") @db.Decimal(6, 3)
+  status            BaseYearStatus @default(draft)
+  /// Frozen totals as originally published, in tCO2e.
+  originalScope1Co2e Decimal? @map("original_scope1_co2e") @db.Decimal(18, 6)
+  originalScope2Co2e Decimal? @map("original_scope2_co2e") @db.Decimal(18, 6)
+  originalScope3Co2e Decimal? @map("original_scope3_co2e") @db.Decimal(18, 6)
+  originalTotalCo2e  Decimal? @map("original_total_co2e") @db.Decimal(18, 6)
+  /// Current totals after all approved recalculations, in tCO2e.
+  currentScope1Co2e  Decimal? @map("current_scope1_co2e") @db.Decimal(18, 6)
+  currentScope2Co2e  Decimal? @map("current_scope2_co2e") @db.Decimal(18, 6)
+  currentScope3Co2e  Decimal? @map("current_scope3_co2e") @db.Decimal(18, 6)
+  currentTotalCo2e   Decimal? @map("current_total_co2e") @db.Decimal(18, 6)
+  lockedAt          DateTime? @map("locked_at")
+  createdByUserId   String   @map("created_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization    Organization            @relation("OrgBaseYears", fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod         @relation("BaseYearPeriod", fields: [reportingPeriodId], references: [id])
+  createdBy       User                    @relation("BaseYearCreator", fields: [createdByUserId], references: [id])
+  recalculations  BaseYearRecalculation[] @relation("BaseYearRecalcs")
+
+  @@index([organizationId, status])
+  @@map("base_years")
+}
+
+/// A change to the reporting group or methodology that may oblige a base year
+/// recalculation. Logging the change is mandatory even when the assessed
+/// impact turns out to be below the significance threshold.
+model StructuralChange {
+  id             String               @id @default(cuid())
+  organizationId String               @map("organization_id")
+  type           StructuralChangeType
+  effectiveDate  DateTime             @map("effective_date") @db.Date
+  description    String
+  /// Entity acquired, divested or otherwise affected, when applicable.
+  legalEntityId  String?              @map("legal_entity_id")
+  /// Estimated tCO2e the change adds to or removes from the base year.
+  estimatedImpactCo2e Decimal?        @map("estimated_impact_co2e") @db.Decimal(18, 6)
+  notes          String?
+  createdByUserId String              @map("created_by_user_id")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  organization   Organization            @relation("OrgStructuralChanges", fields: [organizationId], references: [id], onDelete: Cascade)
+  legalEntity    LegalEntity?            @relation("StructuralChangeEntity", fields: [legalEntityId], references: [id], onDelete: SetNull)
+  createdBy      User                    @relation("StructuralChangeCreator", fields: [createdByUserId], references: [id])
+  recalculations BaseYearRecalculation[] @relation("RecalcTrigger")
+
+  @@index([organizationId, effectiveDate])
+  @@map("structural_changes")
+}
+
+/// The assessment of one structural change against one base year: what the
+/// base year total was, what it becomes, and whether that crosses the
+/// significance threshold and therefore requires restatement.
+model BaseYearRecalculation {
+  id                 String              @id @default(cuid())
+  organizationId     String              @map("organization_id")
+  baseYearId         String              @map("base_year_id")
+  structuralChangeId String              @map("structural_change_id")
+  status             RecalculationStatus @default(pending)
+  /// Base year totals before this recalculation, in tCO2e.
+  previousScope1Co2e Decimal? @map("previous_scope1_co2e") @db.Decimal(18, 6)
+  previousScope2Co2e Decimal? @map("previous_scope2_co2e") @db.Decimal(18, 6)
+  previousScope3Co2e Decimal? @map("previous_scope3_co2e") @db.Decimal(18, 6)
+  previousTotalCo2e  Decimal? @map("previous_total_co2e") @db.Decimal(18, 6)
+  /// Base year totals after this recalculation, in tCO2e.
+  restatedScope1Co2e Decimal? @map("restated_scope1_co2e") @db.Decimal(18, 6)
+  restatedScope2Co2e Decimal? @map("restated_scope2_co2e") @db.Decimal(18, 6)
+  restatedScope3Co2e Decimal? @map("restated_scope3_co2e") @db.Decimal(18, 6)
+  restatedTotalCo2e  Decimal? @map("restated_total_co2e") @db.Decimal(18, 6)
+  /// Signed percentage change in the total, used against the threshold.
+  deltaPercent       Decimal? @map("delta_percent") @db.Decimal(10, 4)
+  /// True when abs(deltaPercent) >= the base year significance threshold.
+  isSignificant      Boolean  @default(false) @map("is_significant")
+  method             String?
+  notes              String?
+  approvedByUserId   String?  @map("approved_by_user_id")
+  approvedAt         DateTime? @map("approved_at")
+  createdByUserId    String   @map("created_by_user_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  organization     Organization     @relation("OrgBaseYearRecalcs", fields: [organizationId], references: [id], onDelete: Cascade)
+  baseYear         BaseYear         @relation("BaseYearRecalcs", fields: [baseYearId], references: [id], onDelete: Cascade)
+  structuralChange StructuralChange @relation("RecalcTrigger", fields: [structuralChangeId], references: [id], onDelete: Cascade)
+  createdBy        User             @relation("RecalcCreator", fields: [createdByUserId], references: [id])
+  approvedBy       User?            @relation("RecalcApprover", fields: [approvedByUserId], references: [id])
+
+  @@unique([baseYearId, structuralChangeId])
+  @@index([organizationId, status])
+  @@map("base_year_recalculations")
+}
+
+/// A disclosed change to a previously published figure. Frameworks require
+/// restatements to be reported with the reason and the magnitude, so this is
+/// an append-only public record rather than an edit to the original snapshot.
+model Restatement {
+  id                    String            @id @default(cuid())
+  organizationId        String            @map("organization_id")
+  /// The snapshot whose figures are being corrected.
+  supersededSnapshotId  String            @map("superseded_snapshot_id")
+  /// The snapshot that now carries the correct figures, once published.
+  replacementSnapshotId String?           @map("replacement_snapshot_id")
+  reason                RestatementReason
+  description           String
+  previousTotalCo2e     Decimal? @map("previous_total_co2e") @db.Decimal(18, 6)
+  restatedTotalCo2e     Decimal? @map("restated_total_co2e") @db.Decimal(18, 6)
+  deltaPercent          Decimal? @map("delta_percent") @db.Decimal(10, 4)
+  /// Whether the change crosses the organisation's materiality threshold and
+  /// therefore must be disclosed in the published report.
+  isMaterial            Boolean  @default(false) @map("is_material")
+  disclosedAt           DateTime? @map("disclosed_at")
+  createdByUserId       String   @map("created_by_user_id")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  organization        Organization       @relation("OrgRestatements", fields: [organizationId], references: [id], onDelete: Cascade)
+  supersededSnapshot  PublishedSnapshot  @relation("RestatementSuperseded", fields: [supersededSnapshotId], references: [id], onDelete: Cascade)
+  replacementSnapshot PublishedSnapshot? @relation("RestatementReplacement", fields: [replacementSnapshotId], references: [id], onDelete: SetNull)
+  createdBy           User               @relation("RestatementCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([supersededSnapshotId])
+  @@map("restatements")
 }

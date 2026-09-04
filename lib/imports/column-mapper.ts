@@ -31,6 +31,8 @@ export const CANONICAL_FIELDS: CanonicalField[] = [
   { canonical: "spendCurrency",       label: "Currency",            required: false, description: "Currency code (e.g. GBP, USD)" },
   { canonical: "scope2Method",        label: "Scope 2 Method",      required: false, description: "location_based or market_based" },
   { canonical: "assumptionNotes",     label: "Assumptions",         required: false, description: "Notes on assumptions or data quality" },
+  { canonical: "dataOrigin",          label: "Data Origin",         required: false, description: "How the figure was obtained: metered, invoiced, supplier_specific, calculated, estimated, proxy or extrapolated" },
+  { canonical: "dataOriginNote",      label: "Data Origin Note",    required: false, description: "Justification, required for proxy and extrapolated figures" },
 ];
 
 // Extended synonym dictionary covering real-world column name variants.
@@ -109,6 +111,14 @@ const ACTIVITY_SYNONYMS: Record<string, string[]> = {
   assumptionNotes: [
     "assumptions", "assumption_notes", "comments", "data_quality", "quality_notes",
     "caveats",
+  ],
+  dataOrigin: [
+    "data_origin", "origin", "data_source_type", "source_type", "data_type",
+    "provenance", "data_provenance", "measurement_type", "data_tier", "evidence_type",
+  ],
+  dataOriginNote: [
+    "data_origin_note", "origin_note", "origin_justification", "estimation_basis",
+    "proxy_basis", "provenance_note",
   ],
 };
 

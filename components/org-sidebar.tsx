@@ -8,7 +8,7 @@ import {
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
-  Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders,
+  Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -76,6 +76,10 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Embodied Carbon", href: `/orgs/${orgId}/embodied-carbon`, icon: Layers,     roles: CORE_ROLES },
       { label: "Reports",         href: `/orgs/${orgId}/reports`,         icon: BarChart2,  roles: CORE_ROLES },
       { label: "Scenarios",       href: `/orgs/${orgId}/scenarios`,       icon: Sliders,    roles: CORE_ROLES },
+    ]},
+    { label: "Inventory governance", items: [
+      { label: "Boundary",  href: `/orgs/${orgId}/boundary`,  icon: GitBranch, roles: EXTENDED_VIEW_ROLES },
+      { label: "Base Year", href: `/orgs/${orgId}/base-year`, icon: Anchor,    roles: EXTENDED_VIEW_ROLES },
     ]},
     { label: "Planning", items: [
       { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },

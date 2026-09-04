@@ -41,6 +41,19 @@ export const createFacilitySchema = z.object({
   name: z.string().min(1).max(100),
   country: z.string().optional(),
   region: z.string().optional(),
+  addressLine: z.string().max(300).optional(),
+  postcode: z.string().max(20).optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+  siteType: z.string().max(60).optional(),
+  // Denominators for per-m2 and per-head intensity metrics.
+  floorAreaM2: z.number().min(0).max(100_000_000).optional(),
+  headcount: z.number().int().min(0).max(1_000_000).optional(),
+  legalEntityId: z.string().min(1).nullable().optional(),
+  operationalControl: z.boolean().optional(),
+  operationalFrom: z.coerce.date().optional(),
+  operationalTo: z.coerce.date().optional(),
+  externalRef: z.string().max(100).optional(),
 });
 
 export const updateFacilitySchema = createFacilitySchema.partial();
@@ -196,6 +209,20 @@ export const createActivityRecordSchema = z.object({
     .enum(["missing", "partial", "complete"])
     .default("missing"),
   assumptionNotes: z.string().max(2000).optional(),
+  // How the figure was obtained. Defaults to the weakest tier so nothing is
+  // silently presented as measured when the caller did not say.
+  dataOrigin: z
+    .enum([
+      "metered",
+      "invoiced",
+      "supplier_specific",
+      "calculated",
+      "estimated",
+      "proxy",
+      "extrapolated",
+    ])
+    .default("estimated"),
+  dataOriginNote: z.string().max(1000).optional(),
 });
 
 export const updateActivityRecordStatusSchema = z.object({

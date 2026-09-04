@@ -137,6 +137,8 @@ export async function POST(req: NextRequest, { params }: Params) {
         refrigerantType: body.refrigerantType,
         scope2Method: body.scope2Method,
         assumptionNotes: body.assumptionNotes,
+        dataOrigin: body.dataOrigin,
+        dataOriginNote: body.dataOriginNote ?? null,
         createdByUserId: session.user.id,
       },
     });

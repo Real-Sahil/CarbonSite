@@ -40,12 +40,38 @@ export async function PATCH(
 
     const body = updateFacilitySchema.parse(await req.json());
 
+    if (body.legalEntityId) {
+      const entity = await prisma.legalEntity.findFirst({
+        where: { id: body.legalEntityId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!entity) {
+        return apiError("NOT_FOUND", "Legal entity not found in this organisation.", 404);
+      }
+    }
+
     const updated = await prisma.facility.update({
       where: { id: facilityId },
       data: {
         ...(body.name !== undefined && { name: body.name }),
         ...(body.country !== undefined && { country: body.country }),
         ...(body.region !== undefined && { region: body.region }),
+        ...(body.addressLine !== undefined && { addressLine: body.addressLine ?? null }),
+        ...(body.postcode !== undefined && { postcode: body.postcode ?? null }),
+        ...(body.latitude !== undefined && { latitude: body.latitude ?? null }),
+        ...(body.longitude !== undefined && { longitude: body.longitude ?? null }),
+        ...(body.siteType !== undefined && { siteType: body.siteType ?? null }),
+        ...(body.floorAreaM2 !== undefined && { floorAreaM2: body.floorAreaM2 ?? null }),
+        ...(body.headcount !== undefined && { headcount: body.headcount ?? null }),
+        ...(body.legalEntityId !== undefined && { legalEntityId: body.legalEntityId ?? null }),
+        ...(body.operationalControl !== undefined && {
+          operationalControl: body.operationalControl,
+        }),
+        ...(body.operationalFrom !== undefined && {
+          operationalFrom: body.operationalFrom ?? null,
+        }),
+        ...(body.operationalTo !== undefined && { operationalTo: body.operationalTo ?? null }),
+        ...(body.externalRef !== undefined && { externalRef: body.externalRef ?? null }),
       },
     });
 

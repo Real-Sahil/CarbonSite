@@ -72,6 +72,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         ...(body.supplierName !== undefined ? { supplierName: body.supplierName } : {}),
         ...(body.country !== undefined ? { country: body.country } : {}),
         ...(body.assumptionNotes !== undefined ? { assumptionNotes: body.assumptionNotes } : {}),
+        ...(body.dataOrigin !== undefined ? { dataOrigin: body.dataOrigin } : {}),
+        ...(body.dataOriginNote !== undefined ? { dataOriginNote: body.dataOriginNote ?? null } : {}),
         ...(body.scope2Method !== undefined ? { scope2Method: body.scope2Method } : {}),
         ...(body.transportMode !== undefined ? { transportMode: body.transportMode } : {}),
         ...(body.fuelType !== undefined ? { fuelType: body.fuelType } : {}),

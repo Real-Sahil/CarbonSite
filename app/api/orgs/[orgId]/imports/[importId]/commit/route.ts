@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { parseDataOrigin } from "@/lib/inventory/provenance";
 
 type Params = { params: Promise<{ orgId: string; importId: string }> };
 
@@ -69,6 +70,11 @@ export async function POST(_req: NextRequest, { params }: Params) {
               refrigerantType: (d.refrigerantType as string | undefined) ?? undefined,
               transportMode: (d.transportMode as string | undefined) ?? undefined,
               assumptionNotes: (d.assumptionNotes as string | undefined) ?? undefined,
+              // Provenance is normalised by the validator at staging time, so
+              // by here it is always a valid tier. The fallback covers rows
+              // staged before this column existed.
+              dataOrigin: parseDataOrigin(d.dataOrigin) ?? "estimated",
+              dataOriginNote: (d.dataOriginNote as string | undefined) ?? undefined,
               importBatchId: importId,
               // Staged validation + the explicit commit action ARE the review
               // gate for imports (admin/editor only, no partial commits) —
