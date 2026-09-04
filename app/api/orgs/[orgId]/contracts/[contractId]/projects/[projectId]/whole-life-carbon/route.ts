@@ -39,6 +39,7 @@ async function computeOperationalEnergyKgCo2e(
     ) ec ON TRUE
     WHERE s.project_id = ${projectId}
       AND ar.organization_id = ${orgId}
+      AND ar.review_status = 'approved'
       AND cat.scope IN (1, 2)
       AND (${operationalStartDate}::date IS NULL OR ar.activity_date >= ${operationalStartDate}::date)
   `;

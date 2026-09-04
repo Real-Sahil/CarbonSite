@@ -76,15 +76,29 @@ export function CompletenessMatrixClient({
   const [periodId, setPeriodId] = useState(reportingPeriods[0]?.id ?? "");
   const [data, setData] = useState<MatrixResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showRequirementForm, setShowRequirementForm] = useState(false);
   const [selectedCell, setSelectedCell] = useState<MatrixCell | null>(null);
 
   const load = useCallback(async () => {
     if (!periodId) { setLoading(false); return; }
     setLoading(true);
-    const res = await fetch(`/api/orgs/${orgId}/completeness/matrix?reportingPeriodId=${periodId}`);
-    if (res.ok) setData(await res.json());
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/completeness/matrix?reportingPeriodId=${periodId}`);
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setLoadError(d.message ?? "Could not load the completeness matrix.");
+        setData(null);
+        return;
+      }
+      setData(await res.json());
+    } catch {
+      setLoadError("Could not reach the server. Check your connection and try again.");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
   }, [orgId, periodId]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -135,6 +149,15 @@ export function CompletenessMatrixClient({
       <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
         {loading ? (
           <p className="text-sm text-zinc-400">Loading…</p>
+        ) : loadError ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-sm font-medium text-red-600">{loadError}</p>
+              <Button size="sm" variant="outline" className="mt-4" onClick={load}>
+                Try again
+              </Button>
+            </CardContent>
+          </Card>
         ) : !data || data.setupNeeded ? (
           <Card>
             <CardContent className="py-12 text-center">

@@ -246,16 +246,27 @@ function MaccCard({ orgId }: { orgId: string }) {
   const [totalAbatementTco2e, setTotalAbatementTco2e] = useState(0);
   const [excludedCount, setExcludedCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/orgs/${orgId}/reductions/macc`);
-    if (res.ok) {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/reductions/macc`);
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setLoadError(d.message ?? "Could not load the abatement cost curve.");
+        return;
+      }
       const d = await res.json();
       setCurve(d.curve);
       setTotalAbatementTco2e(d.totalAbatementTco2e);
       setExcludedCount(d.excludedCount);
+    } catch {
+      setLoadError("Could not reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [orgId]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -266,6 +277,19 @@ function MaccCard({ orgId }: { orgId: string }) {
       <div className="flex items-center gap-2 text-sm text-zinc-400">
         <Loader2 className="h-4 w-4 animate-spin" /> Loading…
       </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <Card>
+        <CardContent className="py-10 text-center">
+          <p className="text-sm font-medium text-red-600">{loadError}</p>
+          <Button size="sm" variant="outline" className="mt-4" onClick={load}>
+            Try again
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 

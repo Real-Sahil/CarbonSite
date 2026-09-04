@@ -128,17 +128,28 @@ export default function WholeLifeCarbonPage() {
   const [result, setResult] = useState<WholeLifeResult | null>(null);
   const [materialRecordCount, setMaterialRecordCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/whole-life-carbon`);
-    if (res.ok) {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/whole-life-carbon`);
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setLoadError(d.message ?? "Could not load whole-life carbon data.");
+        return;
+      }
       const d = await res.json();
       setAssessment(d.assessment);
       setResult(d.result);
       setMaterialRecordCount(d.materialRecordCount);
+    } catch {
+      setLoadError("Could not reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [orgId, contractId, projectId]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -168,6 +179,16 @@ export default function WholeLifeCarbonPage() {
 
       {loading ? (
         <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
+      ) : loadError ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-12 text-center">
+          <p className="text-sm font-medium text-red-600">{loadError}</p>
+          <button
+            onClick={load}
+            className="mt-4 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Try again
+          </button>
+        </div>
       ) : !result ? (
         <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#F0F9FF] flex items-center justify-center">

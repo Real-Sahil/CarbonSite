@@ -51,6 +51,48 @@ describe("parseFactorWorkbook", () => {
     ]);
   });
 
+  test("parses an optional biogenic_co2 column", () => {
+    const buffer = workbookBuffer([
+      { scope: 1, input_unit: "kg", co2e: "1.2", biogenic_co2: "0.05" },
+    ]);
+
+    const result = parseFactorWorkbook(buffer, "factors.xlsx", categories);
+
+    expect(result.errors).toEqual([]);
+    expect(result.rows[0].biogenicCo2?.toString()).toBe("0.05");
+  });
+
+  test("recognises a biogenic_co2 column synonym", () => {
+    const buffer = workbookBuffer([
+      { scope: 1, input_unit: "kg", co2e: "1.2", co2_biogenic: "0.08" },
+    ]);
+
+    const result = parseFactorWorkbook(buffer, "factors.xlsx", categories);
+
+    expect(result.errors).toEqual([]);
+    expect(result.rows[0].biogenicCo2?.toString()).toBe("0.08");
+  });
+
+  test("leaves biogenicCo2 null when the column is absent", () => {
+    const buffer = workbookBuffer([{ scope: 1, input_unit: "kg", co2e: "1.2" }]);
+
+    const result = parseFactorWorkbook(buffer, "factors.xlsx", categories);
+
+    expect(result.errors).toEqual([]);
+    expect(result.rows[0].biogenicCo2).toBeNull();
+  });
+
+  test("rejects a non-numeric biogenic_co2 value without discarding the rest of the row", () => {
+    const buffer = workbookBuffer([
+      { scope: 1, input_unit: "kg", co2e: "1.2", biogenic_co2: "not-a-number" },
+    ]);
+
+    const result = parseFactorWorkbook(buffer, "factors.xlsx", categories);
+
+    expect(result.rows).toEqual([]);
+    expect(result.errors).toEqual(["Row 2: biogenic_co2 must be a valid number."]);
+  });
+
   test("rejects duplicate external ids in the uploaded file", () => {
     const buffer = workbookBuffer([
       { scope: 1, input_unit: "litre", co2e: "1", external_id: "factor-1" },

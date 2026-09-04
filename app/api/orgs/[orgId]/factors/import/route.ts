@@ -96,6 +96,7 @@ export async function POST(
         ch4: row.ch4,
         co2: row.co2,
         co2e: row.co2e,
+        biogenicCo2: row.biogenicCo2,
         effectiveEndDate: row.effectiveEndDate,
         effectiveStartDate: row.effectiveStartDate,
         emissionCategoryId: row.emissionCategoryId,

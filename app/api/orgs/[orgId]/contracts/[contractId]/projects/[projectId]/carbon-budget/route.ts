@@ -35,6 +35,7 @@ async function computeProjectActualTco2e(orgId: string, projectId: string): Prom
       ) ec ON TRUE
       WHERE s.project_id = ${projectId}
         AND ar.organization_id = ${orgId}
+        AND ar.review_status = 'approved'
     `,
   ]);
 

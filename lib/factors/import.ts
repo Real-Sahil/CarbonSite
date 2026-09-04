@@ -13,6 +13,8 @@ export type ParsedFactorRow = {
   ch4: Decimal | null;
   co2: Decimal | null;
   co2e: Decimal | null;
+  /** GHG Protocol memo item — never counted toward "at least one factor value". */
+  biogenicCo2: Decimal | null;
   effectiveEndDate: Date | null;
   effectiveStartDate: Date | null;
   emissionCategoryId: string | null;
@@ -44,6 +46,7 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   co2: ["co2_factor", "carbon_dioxide", "carbon_dioxide_factor", "co2_kg"],
   ch4: ["methane", "ch4_factor", "methane_factor", "ch4_kg"],
   n2o: ["nitrous_oxide", "n2o_factor", "nitrous_oxide_factor", "n2o_kg"],
+  biogenic_co2: ["biogenic_co2_factor", "co2_biogenic", "co2_bio", "biomass_co2", "co2b"],
   emission_category_code: ["category", "category_code", "activity_category", "ghg_category_code", "scope_category_code", "emission_category"],
   activity_type: ["activity", "activity_name", "fuel_type", "fuel", "source_type"],
   geography_country: ["country", "country_code", "nation", "geography"],
@@ -187,6 +190,15 @@ export function parseFactorWorkbook(
       return;
     }
 
+    // Optional memo item — validated like the other factor values when
+    // present, but never counted toward "at least one factor value".
+    const biogenicCo2Raw = normalizeCell(row.biogenic_co2);
+    const biogenicCo2 = parseDecimal(row.biogenic_co2);
+    if (biogenicCo2Raw && biogenicCo2 == null) {
+      errors.push(`Row ${rowNumber}: biogenic_co2 must be a valid number.`);
+      return;
+    }
+
     const categoryCode = normalizeCell(row.emission_category_code);
     const category = categoryCode ? categoryByCode.get(categoryCode.toLowerCase()) : null;
     if (categoryCode && !category) {
@@ -224,6 +236,7 @@ export function parseFactorWorkbook(
       ch4: values.ch4,
       co2: values.co2,
       co2e: values.co2e,
+      biogenicCo2,
       effectiveEndDate,
       effectiveStartDate,
       emissionCategoryId: category?.id ?? null,
