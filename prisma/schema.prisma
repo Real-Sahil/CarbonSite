@@ -96,6 +96,12 @@ model User {
   biodiversityCreated      BiodiversityAssessment[] @relation("BiodiversityCreator")
   speciesRecordsCreated    ProtectedSpeciesRecord[] @relation("SpeciesRecordCreator")
   managementPlansCreated   HabitatManagementPlan[]  @relation("ManagementPlanCreator")
+  engagementsCreated       AssuranceEngagement[]    @relation("EngagementCreator")
+  evidenceRequestsOwned    EvidenceRequest[]        @relation("EvidenceRequestOwner")
+  samplesTested            AssuranceSample[]        @relation("SampleTester")
+  findingsRaised           AssuranceFinding[]       @relation("FindingRaiser")
+  findingsResponded        AssuranceFinding[]       @relation("FindingResponder")
+  datapointStatusesRecorded OrganizationDatapointStatus[] @relation("DatapointStatusRecorder")
 
   // Better Auth session tables
   sessions Session[]
@@ -276,6 +282,11 @@ model Organization {
   protectedSpeciesRecords     ProtectedSpeciesRecord[]     @relation("OrgSpeciesRecords")
   habitatManagementPlans      HabitatManagementPlan[]      @relation("OrgManagementPlans")
   ecologicalMonitoringEvents  EcologicalMonitoringEvent[]  @relation("OrgMonitoringEvents")
+  assuranceEngagements        AssuranceEngagement[]        @relation("OrgAssuranceEngagements")
+  evidenceRequests            EvidenceRequest[]             @relation("OrgEvidenceRequests")
+  assuranceSamples            AssuranceSample[]             @relation("OrgAssuranceSamples")
+  assuranceFindings           AssuranceFinding[]            @relation("OrgAssuranceFindings")
+  datapointStatuses           OrganizationDatapointStatus[] @relation("OrgDatapointStatuses")
 
   @@map("organizations")
 }
@@ -549,6 +560,7 @@ model ReportingPeriod {
   calculationSchedules      CalculationSchedule[]
   analyticsDashboardCaches  AnalyticsDashboardCache[]   @relation("dashboardCachePeriod")
   baseYears                 BaseYear[]                  @relation("BaseYearPeriod")
+  assuranceEngagements      AssuranceEngagement[]       @relation("EngagementPeriod")
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -756,6 +768,7 @@ model ActivityRecord {
   scenarioDrafts   ScenarioDraft[]          @relation("ScenarioDraftActivityRecord")
   meterReadings    MeterReading[]
   scope3Estimates  Scope3Estimate[]         @relation("ActivityRecordEstimate")
+  assuranceSamples AssuranceSample[]        @relation("SampleActivityRecord")
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
   @@index([organizationId, routeDistanceId])
@@ -1129,6 +1142,7 @@ model EmissionCalculation {
   activityRecord     ActivityRecord     @relation(fields: [activityRecordId], references: [id])
   calculationRun     CalculationRun     @relation(fields: [calculationRunId], references: [id])
   emissionFactor     EmissionFactor?    @relation(fields: [emissionFactorId], references: [id])
+  assuranceSamples   AssuranceSample[]  @relation("SampleCalculation")
   methodologyVersion MethodologyVersion @relation(fields: [methodologyVersionName], references: [name])
   modelExplanations  ModelExplanation[]  @relation("explanationCalc")
 
@@ -1159,6 +1173,7 @@ model PublishedSnapshot {
   assurance       SnapshotAssurance?
   restatementsSuperseding Restatement[] @relation("RestatementSuperseded")
   restatementsReplacing   Restatement[] @relation("RestatementReplacement")
+  assuranceEngagements    AssuranceEngagement[] @relation("EngagementSnapshot")
 
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, verificationStatus])
@@ -4490,4 +4505,297 @@ model EcologicalMonitoringEvent {
   @@index([organizationId, status, dueOn])
   @@index([managementPlanId, monitoringYear])
   @@map("ecological_monitoring_events")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Assurance engagements and the framework datapoint crosswalk.
+//
+// SnapshotAssurance is a single approve/reject signature. Real assurance under
+// ISAE 3000 or ISO 14064-3 is an engagement: a scope and materiality, a
+// prepared-by-client evidence request list, a sampling plan drawn from the
+// weakest data provenance tiers first, a findings log with management
+// responses, and a representation letter. This is that workspace.
+//
+// The crosswalk answers a different question: for a named disclosure
+// requirement in ESRS E1, GRI 305, CDP or SECR, can this organisation actually
+// answer it today, and from what. Each datapoint names the query that
+// resolves it, so "CSRD-ready" becomes a checkable claim rather than a slogan.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AssuranceLevel {
+  /// Negative assurance: "nothing has come to our attention". ISAE 3000.
+  limited
+  /// Positive assurance: "in our opinion, fairly stated". Higher evidence bar.
+  reasonable
+}
+
+enum AssuranceStandard {
+  isae_3000
+  iso_14064_3
+  aa1000as
+  other
+}
+
+enum EngagementStatus {
+  planning
+  fieldwork
+  review
+  /// Opinion issued and the engagement letter signed.
+  signed
+  withdrawn
+}
+
+enum EvidenceRequestStatus {
+  requested
+  provided
+  /// Client cannot produce the evidence. The finding this produces is not
+  /// optional: an unavailable PBC item becomes a scope limitation.
+  not_available
+  not_applicable
+}
+
+/// How a sample item was selected. Recorded so the sampling approach itself
+/// can be reviewed, which is what a quality reviewer checks first.
+enum SamplingMethod {
+  /// Every record above a materiality threshold.
+  full_population
+  /// Weighted toward the weakest data provenance tiers.
+  risk_based
+  random
+  /// Chosen for a specific reason: an anomaly flag, a restated figure.
+  targeted
+}
+
+enum SampleResult {
+  pending
+  pass
+  /// Discrepancy found but resolved without affecting the opinion.
+  exception_resolved
+  /// Discrepancy found and unresolved.
+  fail
+}
+
+enum FindingSeverity {
+  /// Presentation or process point, no effect on the figures.
+  observation
+  minor
+  /// Affects the figures but below materiality.
+  significant
+  /// At or above the materiality threshold, affects the opinion.
+  material_misstatement
+}
+
+enum FindingStatus {
+  open
+  /// Management has responded; the assuror is reviewing the response.
+  management_responded
+  resolved
+  /// Left open in the assuror's report as a qualification.
+  qualified
+}
+
+enum SupportedFramework {
+  esrs_e1
+  gri_305
+  cdp_climate
+  secr
+  ifrs_s2
+  ghg_protocol
+}
+
+enum DatapointStatus {
+  /// Resolver confirms the organisation's own data answers this fully.
+  satisfied
+  /// Resolver finds partial data, or a human has recorded partial evidence.
+  partial
+  /// Resolver finds nothing, and no manual evidence has been recorded.
+  gap
+  /// Requires a human judgement call the platform cannot resolve on its own.
+  not_applicable
+}
+
+/// One assurance engagement: the scope, the standard, and its lifecycle from
+/// planning to a signed opinion.
+model AssuranceEngagement {
+  id                String            @id @default(cuid())
+  organizationId    String            @map("organization_id")
+  reportingPeriodId String            @map("reporting_period_id")
+  /// Snapshot the opinion is given over. Nullable during planning, before a
+  /// snapshot has necessarily been chosen.
+  snapshotId        String?           @map("snapshot_id")
+  standard          AssuranceStandard @default(isae_3000)
+  level             AssuranceLevel    @default(limited)
+  status            EngagementStatus  @default(planning)
+  /// The assurance provider firm, not necessarily a platform user.
+  providerName      String            @map("provider_name")
+  leadAssurorName   String            @map("lead_assuror_name")
+  leadAssurorEmail  String?           @map("lead_assuror_email")
+  /// Materiality threshold in tCO2e. Findings are tested against this.
+  materialityThresholdCo2e Decimal?   @map("materiality_threshold_co2e") @db.Decimal(18, 4)
+  /// Materiality as a percentage of the total, the more common way it is set.
+  materialityThresholdPercent Decimal? @map("materiality_threshold_percent") @db.Decimal(6, 3)
+  scopeDescription  String?           @map("scope_description")
+  engagementLetterEvidenceId String?  @map("engagement_letter_evidence_id")
+  plannedStartDate  DateTime?         @map("planned_start_date") @db.Date
+  plannedEndDate    DateTime?         @map("planned_end_date") @db.Date
+  opinionIssuedAt   DateTime?         @map("opinion_issued_at")
+  opinionSummary    String?           @map("opinion_summary")
+  representationLetterEvidenceId String? @map("representation_letter_evidence_id")
+  createdByUserId   String            @map("created_by_user_id")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  organization    Organization      @relation("OrgAssuranceEngagements", fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod   @relation("EngagementPeriod", fields: [reportingPeriodId], references: [id])
+  snapshot        PublishedSnapshot? @relation("EngagementSnapshot", fields: [snapshotId], references: [id], onDelete: SetNull)
+  createdBy       User              @relation("EngagementCreator", fields: [createdByUserId], references: [id])
+  evidenceRequests EvidenceRequest[] @relation("EngagementEvidenceRequests")
+  samples         AssuranceSample[] @relation("EngagementSamples")
+  findings        AssuranceFinding[] @relation("EngagementFindings")
+
+  @@index([organizationId, status])
+  @@index([organizationId, reportingPeriodId])
+  @@map("assurance_engagements")
+}
+
+/// One item on the prepared-by-client evidence list.
+model EvidenceRequest {
+  id             String                 @id @default(cuid())
+  organizationId String                 @map("organization_id")
+  engagementId   String                 @map("engagement_id")
+  reference      String
+  description    String
+  category       String?
+  ownerUserId    String?                @map("owner_user_id")
+  status         EvidenceRequestStatus  @default(requested)
+  requestedAt    DateTime               @default(now()) @map("requested_at")
+  dueOn          DateTime?              @map("due_on") @db.Date
+  providedAt     DateTime?              @map("provided_at")
+  evidenceFileId String?                @map("evidence_file_id")
+  /// Why the item could not be provided, when status is not_available. This
+  /// is not optional in practice: it becomes the scope limitation wording.
+  unavailabilityReason String?          @map("unavailability_reason")
+  notes          String?
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  organization Organization        @relation("OrgEvidenceRequests", fields: [organizationId], references: [id], onDelete: Cascade)
+  engagement   AssuranceEngagement @relation("EngagementEvidenceRequests", fields: [engagementId], references: [id], onDelete: Cascade)
+  owner        User?               @relation("EvidenceRequestOwner", fields: [ownerUserId], references: [id])
+
+  @@unique([engagementId, reference])
+  @@index([organizationId, status])
+  @@map("evidence_requests")
+}
+
+/// One item selected for substantive testing. Links to the specific
+/// calculation being tested so the sample is traceable to source.
+model AssuranceSample {
+  id                   String          @id @default(cuid())
+  organizationId       String          @map("organization_id")
+  engagementId         String          @map("engagement_id")
+  emissionCalculationId String?        @map("emission_calculation_id")
+  activityRecordId     String?         @map("activity_record_id")
+  samplingMethod       SamplingMethod
+  /// Why this item was pulled: the stratum, the anomaly, the threshold.
+  selectionRationale   String          @map("selection_rationale")
+  testProcedure        String          @map("test_procedure")
+  result               SampleResult    @default(pending)
+  testedByUserId       String?         @map("tested_by_user_id")
+  testedAt             DateTime?       @map("tested_at")
+  testNotes            String?         @map("test_notes")
+  /// Evidence tested against: an invoice, a meter reading photo, a supplier cert.
+  supportingEvidenceId String?         @map("supporting_evidence_id")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+
+  organization       Organization         @relation("OrgAssuranceSamples", fields: [organizationId], references: [id], onDelete: Cascade)
+  engagement         AssuranceEngagement  @relation("EngagementSamples", fields: [engagementId], references: [id], onDelete: Cascade)
+  emissionCalculation EmissionCalculation? @relation("SampleCalculation", fields: [emissionCalculationId], references: [id], onDelete: SetNull)
+  activityRecord      ActivityRecord?      @relation("SampleActivityRecord", fields: [activityRecordId], references: [id], onDelete: SetNull)
+  testedBy            User?                @relation("SampleTester", fields: [testedByUserId], references: [id])
+  findings            AssuranceFinding[]   @relation("FindingSample")
+
+  @@index([organizationId, engagementId, result])
+  @@map("assurance_samples")
+}
+
+/// A finding raised during the engagement, with the management response that
+/// resolves or fails to resolve it.
+model AssuranceFinding {
+  id             String          @id @default(cuid())
+  organizationId String          @map("organization_id")
+  engagementId   String          @map("engagement_id")
+  sampleId       String?         @map("sample_id")
+  severity       FindingSeverity
+  status         FindingStatus   @default(open)
+  title          String
+  description    String
+  /// tCO2e effect on the reported total, when the finding is quantifiable.
+  quantifiedImpactCo2e Decimal?  @map("quantified_impact_co2e") @db.Decimal(18, 4)
+  managementResponse String?    @map("management_response")
+  managementRespondedAt DateTime? @map("management_responded_at")
+  managementRespondedByUserId String? @map("management_responded_by_user_id")
+  resolvedAt     DateTime?       @map("resolved_at")
+  raisedByUserId String          @map("raised_by_user_id")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  organization Organization        @relation("OrgAssuranceFindings", fields: [organizationId], references: [id], onDelete: Cascade)
+  engagement   AssuranceEngagement @relation("EngagementFindings", fields: [engagementId], references: [id], onDelete: Cascade)
+  sample       AssuranceSample?    @relation("FindingSample", fields: [sampleId], references: [id], onDelete: SetNull)
+  raisedBy     User                @relation("FindingRaiser", fields: [raisedByUserId], references: [id])
+  respondedBy  User?               @relation("FindingResponder", fields: [managementRespondedByUserId], references: [id])
+
+  @@index([organizationId, engagementId, status])
+  @@index([organizationId, severity])
+  @@map("assurance_findings")
+}
+
+/// A named disclosure requirement or indicator, one row per framework per
+/// code. Reference data, not tenant-scoped: the same ESRS E1-6 row is shared
+/// by every organisation. Resolution against an organisation's own data
+/// happens in application code via resolverKey, not stored per-org.
+model FrameworkDatapoint {
+  id           String             @id @default(cuid())
+  framework    SupportedFramework
+  code         String
+  title        String
+  description  String
+  category     String?
+  /// Key into the named resolver registry in lib/compliance/datapoint-resolvers.ts.
+  /// Null means the datapoint is narrative and can only be marked satisfied
+  /// by manual evidence.
+  resolverKey  String?            @map("resolver_key")
+  createdAt    DateTime           @default(now()) @map("created_at")
+
+  overrides OrganizationDatapointStatus[] @relation("DatapointOverrides")
+
+  @@unique([framework, code])
+  @@index([framework])
+  @@map("framework_datapoints")
+}
+
+/// Manual evidence recorded against a datapoint for an organisation, used
+/// when there is no automatic resolver or when a human wants to override
+/// what the resolver found (with the override itself visible in the audit
+/// trail, never silent).
+model OrganizationDatapointStatus {
+  id             String          @id @default(cuid())
+  organizationId String          @map("organization_id")
+  datapointId    String          @map("datapoint_id")
+  status         DatapointStatus
+  evidenceSummary String?        @map("evidence_summary")
+  evidenceFileId String?         @map("evidence_file_id")
+  recordedByUserId String        @map("recorded_by_user_id")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  organization Organization       @relation("OrgDatapointStatuses", fields: [organizationId], references: [id], onDelete: Cascade)
+  datapoint    FrameworkDatapoint @relation("DatapointOverrides", fields: [datapointId], references: [id], onDelete: Cascade)
+  recordedBy   User               @relation("DatapointStatusRecorder", fields: [recordedByUserId], references: [id])
+
+  @@unique([organizationId, datapointId])
+  @@index([organizationId])
+  @@map("organization_datapoint_statuses")
 }

@@ -898,8 +898,33 @@ async function main() {
     createdMaterials++;
   }
 
+  // Framework datapoint crosswalk — reference data shared across every
+  // organisation, resolved per-org via lib/compliance/datapoint-resolvers.ts.
+  const { FRAMEWORK_DATAPOINTS } = await import("../lib/compliance/framework-datapoints");
+  let createdDatapoints = 0;
+  for (const dp of FRAMEWORK_DATAPOINTS) {
+    await prisma.frameworkDatapoint.upsert({
+      where: { framework_code: { framework: dp.framework, code: dp.code } },
+      update: {
+        title: dp.title,
+        description: dp.description,
+        category: dp.category,
+        resolverKey: dp.resolverKey,
+      },
+      create: {
+        framework: dp.framework,
+        code: dp.code,
+        title: dp.title,
+        description: dp.description,
+        category: dp.category,
+        resolverKey: dp.resolverKey,
+      },
+    });
+    createdDatapoints++;
+  }
+
   console.log(
-    `Seed complete: methodology version, emission categories, factor libraries, ${createdFactors} new emission factors, ${themes.length} TOMS themes, ${measures.length} TOMS measures, ${createdMaterials} embodied materials.`,
+    `Seed complete: methodology version, emission categories, factor libraries, ${createdFactors} new emission factors, ${themes.length} TOMS themes, ${measures.length} TOMS measures, ${createdMaterials} embodied materials, ${createdDatapoints} framework datapoints.`,
   );
 }
 

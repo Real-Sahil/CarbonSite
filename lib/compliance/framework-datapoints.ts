@@ -1,0 +1,369 @@
+// The framework datapoint reference set: one row per disclosure requirement
+// or indicator across the five frameworks this platform maps.
+//
+// This is shared reference data, not tenant-scoped — the same GRI 305-1 row
+// applies to every organisation. Each entry names the real code from its
+// source standard. A null resolverKey means the disclosure is narrative
+// (governance, strategy, risk description) and can only be marked satisfied
+// by a human recording evidence; forcing a resolver onto a narrative
+// requirement would be exactly the kind of false "CSRD-ready" claim this
+// crosswalk exists to prevent.
+
+export interface FrameworkDatapointSeed {
+  framework: "esrs_e1" | "gri_305" | "cdp_climate" | "secr" | "ifrs_s2" | "ghg_protocol";
+  code: string;
+  title: string;
+  description: string;
+  category: string;
+  resolverKey: string | null;
+}
+
+export const FRAMEWORK_DATAPOINTS: FrameworkDatapointSeed[] = [
+  // ─── ESRS E1 — Climate Change (CSRD) ─────────────────────────────────────
+  {
+    framework: "esrs_e1",
+    code: "E1-1",
+    title: "Transition plan for climate change mitigation",
+    description: "Decarbonisation levers and key actions, with resulting emission reduction targets.",
+    category: "Strategy",
+    resolverKey: "transition_plan_disclosed",
+  },
+  {
+    framework: "esrs_e1",
+    code: "E1-4",
+    title: "Targets related to climate change mitigation and adaptation",
+    description: "GHG emission reduction targets, base year, and scope of application.",
+    category: "Targets",
+    resolverKey: "targets_disclosed",
+  },
+  {
+    framework: "esrs_e1",
+    code: "E1-5",
+    title: "Energy consumption and mix",
+    description: "Total energy consumption from fossil and renewable sources, and energy intensity.",
+    category: "Metrics",
+    resolverKey: null,
+  },
+  {
+    framework: "esrs_e1",
+    code: "E1-6",
+    title: "Gross Scopes 1, 2, 3 and Total GHG emissions",
+    description: "Gross emissions in each scope, plus the consolidated total in tCO2e.",
+    category: "Metrics",
+    resolverKey: "all_scopes_disclosed",
+  },
+  {
+    framework: "esrs_e1",
+    code: "E1-7",
+    title: "GHG removals and mitigation projects financed through carbon credits",
+    description: "Removals and carbon credits used to support net-zero or offset claims.",
+    category: "Metrics",
+    resolverKey: "offsets_disclosed",
+  },
+  {
+    framework: "esrs_e1",
+    code: "E1-8",
+    title: "Internal carbon pricing",
+    description: "Whether the undertaking applies an internal carbon price and how it is used.",
+    category: "Strategy",
+    resolverKey: null,
+  },
+  {
+    framework: "esrs_e1",
+    code: "E1-9",
+    title: "Anticipated financial effects from climate risks and opportunities",
+    description: "Potential financial effects of material physical and transition risks.",
+    category: "Financial effects",
+    resolverKey: null,
+  },
+
+  // ─── GRI 305 — Emissions ──────────────────────────────────────────────────
+  {
+    framework: "gri_305",
+    code: "305-1",
+    title: "Direct (Scope 1) GHG emissions",
+    description: "Gross direct GHG emissions in metric tonnes of CO2 equivalent.",
+    category: "Emissions",
+    resolverKey: "scope1_gross_emissions",
+  },
+  {
+    framework: "gri_305",
+    code: "305-2",
+    title: "Energy indirect (Scope 2) GHG emissions",
+    description: "Gross location-based and market-based energy indirect GHG emissions.",
+    category: "Emissions",
+    resolverKey: "scope2_dual_reporting",
+  },
+  {
+    framework: "gri_305",
+    code: "305-3",
+    title: "Other indirect (Scope 3) GHG emissions",
+    description: "Gross other indirect GHG emissions, with the categories included.",
+    category: "Emissions",
+    resolverKey: "scope3_categories_disclosed",
+  },
+  {
+    framework: "gri_305",
+    code: "305-4",
+    title: "GHG emissions intensity",
+    description: "GHG emissions intensity ratio and the organisation-specific metric chosen.",
+    category: "Emissions",
+    resolverKey: "intensity_metrics_disclosed",
+  },
+  {
+    framework: "gri_305",
+    code: "305-5",
+    title: "Reduction of GHG emissions",
+    description: "GHG emissions reduced as a direct result of reduction initiatives.",
+    category: "Emissions",
+    resolverKey: "transition_plan_disclosed",
+  },
+  {
+    framework: "gri_305",
+    code: "305-6",
+    title: "Emissions of ozone-depleting substances (ODS)",
+    description: "Production, imports and exports of ODS in metric tonnes of CFC-11 equivalent.",
+    category: "Emissions",
+    resolverKey: null,
+  },
+  {
+    framework: "gri_305",
+    code: "305-7",
+    title: "NOx, SOx, and other significant air emissions",
+    description: "Significant air emissions by type, in kilograms or multiples.",
+    category: "Emissions",
+    resolverKey: null,
+  },
+
+  // ─── CDP Climate Change Questionnaire ─────────────────────────────────────
+  {
+    framework: "cdp_climate",
+    code: "C0.3",
+    title: "Reporting boundary",
+    description: "Organisational boundary approach used to consolidate the response.",
+    category: "Introduction",
+    resolverKey: "organizational_boundary_disclosed",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C4.1",
+    title: "Emissions targets",
+    description: "Absolute or intensity emissions targets active in the reporting year.",
+    category: "Targets and performance",
+    resolverKey: "targets_disclosed",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C4.3",
+    title: "Emissions reduction initiatives",
+    description: "Initiatives active in the reporting year that reduced emissions, with estimated savings.",
+    category: "Targets and performance",
+    resolverKey: "transition_plan_disclosed",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C4.5",
+    title: "Science Based Targets initiative validation",
+    description: "Whether reported targets have been approved by the Science Based Targets initiative.",
+    category: "Targets and performance",
+    resolverKey: "sbti_target_disclosed",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C5.1",
+    title: "Base year and base year emissions",
+    description: "Base year end date and gross emissions figures for each scope in that year.",
+    category: "Emissions methodology",
+    resolverKey: "base_year_established",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C5.2",
+    title: "Base year emissions recalculation",
+    description: "Circumstances that trigger recalculation, and the significance threshold applied.",
+    category: "Emissions methodology",
+    resolverKey: "base_year_recalculation_policy",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C6.1",
+    title: "Gross global Scope 1 emissions",
+    description: "Gross global Scope 1 emissions in metric tonnes of CO2e.",
+    category: "Emissions data",
+    resolverKey: "scope1_gross_emissions",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C6.3",
+    title: "Gross global Scope 2 emissions",
+    description: "Gross global Scope 2 emissions, location-based and market-based.",
+    category: "Emissions data",
+    resolverKey: "scope2_dual_reporting",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C6.5",
+    title: "Gross global Scope 3 emissions",
+    description: "Scope 3 emissions by category, with the categories evaluated as relevant.",
+    category: "Emissions data",
+    resolverKey: "scope3_categories_disclosed",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C6.10",
+    title: "Emissions intensity figures",
+    description: "Total emissions figures normalised against a metric of business activity.",
+    category: "Emissions data",
+    resolverKey: "intensity_metrics_disclosed",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C10.1",
+    title: "Third-party verification of Scope 1 and 2",
+    description: "Whether Scope 1 and Scope 2 emissions have been verified or assured.",
+    category: "Verification",
+    resolverKey: "assurance_statement_disclosed",
+  },
+  {
+    framework: "cdp_climate",
+    code: "C10.2",
+    title: "Third-party verification of Scope 3",
+    description: "Whether Scope 3 emissions have been verified or assured.",
+    category: "Verification",
+    resolverKey: "assurance_statement_disclosed",
+  },
+
+  // ─── SECR — UK Streamlined Energy and Carbon Reporting ───────────────────
+  {
+    framework: "secr",
+    code: "SECR-1",
+    title: "UK Scope 1 emissions",
+    description: "Annual UK Scope 1 GHG emissions in tCO2e.",
+    category: "Mandatory disclosure",
+    resolverKey: "scope1_gross_emissions",
+  },
+  {
+    framework: "secr",
+    code: "SECR-2",
+    title: "UK Scope 2 emissions",
+    description: "Annual UK Scope 2 GHG emissions in tCO2e.",
+    category: "Mandatory disclosure",
+    resolverKey: "scope2_dual_reporting",
+  },
+  {
+    framework: "secr",
+    code: "SECR-3",
+    title: "UK energy use",
+    description: "Total UK energy use in kWh, including at minimum electricity, gas and transport fuel.",
+    category: "Mandatory disclosure",
+    resolverKey: null,
+  },
+  {
+    framework: "secr",
+    code: "SECR-4",
+    title: "Intensity ratio",
+    description: "At least one intensity ratio appropriate to the sector.",
+    category: "Mandatory disclosure",
+    resolverKey: "intensity_metrics_disclosed",
+  },
+  {
+    framework: "secr",
+    code: "SECR-5",
+    title: "Methodology statement",
+    description: "The methodology used to calculate the disclosures, e.g. the GHG Protocol.",
+    category: "Mandatory disclosure",
+    resolverKey: null,
+  },
+  {
+    framework: "secr",
+    code: "SECR-6",
+    title: "Energy efficiency action taken",
+    description: "Principal measures taken to increase energy efficiency in the reporting year.",
+    category: "Mandatory disclosure",
+    resolverKey: "transition_plan_disclosed",
+  },
+
+  // ─── IFRS S2 — Climate-related Disclosures ───────────────────────────────
+  {
+    framework: "ifrs_s2",
+    code: "S2-29(a)",
+    title: "Gross Scopes 1, 2 and 3 GHG emissions",
+    description: "Absolute gross emissions in metric tonnes of CO2e, measured under the GHG Protocol.",
+    category: "Metrics and targets",
+    resolverKey: "all_scopes_disclosed",
+  },
+  {
+    framework: "ifrs_s2",
+    code: "S2-29(g)",
+    title: "GHG emissions intensity",
+    description: "An intensity figure alongside the absolute gross emissions.",
+    category: "Metrics and targets",
+    resolverKey: "intensity_metrics_disclosed",
+  },
+  {
+    framework: "ifrs_s2",
+    code: "S2-33",
+    title: "Climate-related targets",
+    description: "Targets set to mitigate or adapt to climate risks, and the metrics used to monitor progress.",
+    category: "Metrics and targets",
+    resolverKey: "targets_disclosed",
+  },
+  {
+    framework: "ifrs_s2",
+    code: "S2-33(d)",
+    title: "Base year and remeasurement approach",
+    description: "The base year selected and the approach for remeasuring the base year figure.",
+    category: "Metrics and targets",
+    resolverKey: "base_year_established",
+  },
+  {
+    framework: "ifrs_s2",
+    code: "S2-14",
+    title: "Climate resilience and transition plan",
+    description: "Actions taken to respond to climate risks, including any transition plan.",
+    category: "Strategy",
+    resolverKey: "transition_plan_disclosed",
+  },
+  {
+    framework: "ifrs_s2",
+    code: "S2-6",
+    title: "Governance of climate-related risks and opportunities",
+    description: "The governance body responsible for oversight of climate-related risks and opportunities.",
+    category: "Governance",
+    resolverKey: null,
+  },
+
+  // ─── GHG Protocol Corporate Standard ──────────────────────────────────────
+  {
+    framework: "ghg_protocol",
+    code: "GHGP-3",
+    title: "Organisational boundary",
+    description: "The consolidation approach used: equity share, financial control or operational control.",
+    category: "Boundary setting",
+    resolverKey: "organizational_boundary_disclosed",
+  },
+  {
+    framework: "ghg_protocol",
+    code: "GHGP-5",
+    title: "Base year and recalculation policy",
+    description: "The base year chosen and the significance threshold that triggers recalculation.",
+    category: "Base year",
+    resolverKey: "base_year_recalculation_policy",
+  },
+  {
+    framework: "ghg_protocol",
+    code: "GHGP-9-restatement",
+    title: "Restatement of previously reported figures",
+    description: "Material restatements disclosed with the reason and the magnitude of the change.",
+    category: "Reporting",
+    resolverKey: "restatement_disclosed",
+  },
+  {
+    framework: "ghg_protocol",
+    code: "GHGP-data-quality",
+    title: "Data quality and the primary/secondary data split",
+    description: "The share of reported emissions backed by primary (measured or supplier-specific) data.",
+    category: "Reporting",
+    resolverKey: "primary_data_share_disclosed",
+  },
+];
