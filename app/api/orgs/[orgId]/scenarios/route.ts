@@ -102,6 +102,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         organizationId: orgId,
         calculationRunId: body.calculationRunId,
         createdByUserId: session.user.id,
+        label: body.label ?? null,
         expiresAt,
       },
     });
@@ -176,6 +177,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       {
         id: scenarioRun.id,
         calculationRunId: scenarioRun.calculationRunId,
+        label: scenarioRun.label,
         createdAt: scenarioRun.createdAt,
         expiresAt: scenarioRun.expiresAt,
         baselineTotal,

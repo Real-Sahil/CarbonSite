@@ -1131,6 +1131,7 @@ model ScenarioRun {
   organizationId   String   @map("organization_id")
   calculationRunId String   @map("calculation_run_id")
   createdByUserId  String   @map("created_by_user_id")
+  label            String?
   /// Expiration timestamp — scenarios older than 1 hour are auto-purged
   expiresAt        DateTime @map("expires_at")
   createdAt        DateTime @default(now()) @map("created_at")

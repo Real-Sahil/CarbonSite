@@ -72,6 +72,7 @@ interface ScenarioResult {
 interface ScenarioRunSummary {
   id: string;
   calculationRunId: string;
+  label?: string | null;
   createdAt: string;
   expiresAt: string;
   createdBy: { name: string | null; email: string } | null;
@@ -607,7 +608,10 @@ export default function ScenariosPage() {
                         onClick={expired ? undefined : () => loadScenario(run.id)}
                       >
                         <TableCell className="pl-4 font-medium text-zinc-900">
-                          {run.calculationRun?.reportingPeriod?.label ?? run.calculationRunId}
+                          <div>{run.label ?? run.calculationRun?.reportingPeriod?.label ?? "Unnamed scenario"}</div>
+                          {run.label && run.calculationRun?.reportingPeriod?.label && (
+                            <div className="text-xs text-zinc-400">{run.calculationRun.reportingPeriod.label}</div>
+                          )}
                         </TableCell>
                         <TableCell className="text-sm text-zinc-500">
                           {fmtDate(run.createdAt)}

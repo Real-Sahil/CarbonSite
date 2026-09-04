@@ -8,7 +8,7 @@ import {
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
-  Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug,
+  Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -75,6 +75,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Calculations",    href: `/orgs/${orgId}/calculations`,    icon: Calculator, roles: CORE_ROLES },
       { label: "Embodied Carbon", href: `/orgs/${orgId}/embodied-carbon`, icon: Layers,     roles: CORE_ROLES },
       { label: "Reports",         href: `/orgs/${orgId}/reports`,         icon: BarChart2,  roles: CORE_ROLES },
+      { label: "Scenarios",       href: `/orgs/${orgId}/scenarios`,       icon: Sliders,    roles: CORE_ROLES },
     ]},
     { label: "Planning", items: [
       { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
