@@ -9,6 +9,74 @@ import type { Prisma } from "@prisma/client";
 import { autoForecast } from "@/lib/forecasting/engine";
 import { explainForecast } from "@/lib/explainability/forecast-explainer";
 
+interface ForecastPrediction {
+  date: string;
+  forecast: number;
+  lowerBound: number;
+  upperBound: number;
+  confidence: number;
+}
+
+interface ForecastResult {
+  predictions: ForecastPrediction[];
+  accuracy: number;
+  method: string;
+  metadata: Record<string, unknown>;
+  trainingDataPoints: number;
+}
+
+function appOrigin(): string | null {
+  const configured = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL;
+  if (configured) return configured.replace(/\/$/, "");
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return null;
+}
+
+/**
+ * Calls the Prophet forecasting function (api/forecast.py, deployed as a
+ * Vercel Python Function in this same project) for a genuinely battle-tested
+ * seasonal model with real out-of-sample accuracy. Returns null on any
+ * failure — missing origin, network error, timeout, insufficient data — so
+ * the caller can fall back to the pure-TypeScript engine rather than fail
+ * the whole forecast.
+ */
+async function tryProphetForecast(
+  historicalData: Array<{ date: string; value: number }>,
+  forecastMonths: number
+): Promise<ForecastResult | null> {
+  const origin = appOrigin();
+  if (!origin) return null;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45_000);
+    const res = await fetch(`${origin}/api/forecast`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(process.env.FORECAST_SERVICE_SECRET
+          ? { "X-Forecast-Secret": process.env.FORECAST_SERVICE_SECRET }
+          : {}),
+      },
+      body: JSON.stringify({
+        points: historicalData.map((d) => ({ date: d.date, value: d.value })),
+        periods: forecastMonths,
+      }),
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeout));
+
+    if (!res.ok) {
+      console.warn(`[forecasting] Prophet service returned ${res.status}, falling back to TS engine`);
+      return null;
+    }
+
+    return (await res.json()) as ForecastResult;
+  } catch (error) {
+    console.warn("[forecasting] Prophet service unreachable, falling back to TS engine:", error);
+    return null;
+  }
+}
+
 export interface ForecastingJobData {
   orgId: string;
   forecastType: "emissions" | "supplier_quality" | "anomaly_rate";
@@ -53,8 +121,12 @@ export async function processForecastingJob(
       return;
     }
 
-    // Generate forecast
-    const forecast = autoForecast(historicalData, forecastMonths);
+    // Prefer Prophet (real seasonal decomposition, cross-validated accuracy)
+    // and fall back to the pure-TS engine if the Python service is
+    // unreachable or the data is unsuitable for it.
+    const forecast =
+      (await tryProphetForecast(historicalData, forecastMonths)) ??
+      autoForecast(historicalData, forecastMonths);
 
     // Generate explainability for first prediction (most relevant)
     const historicalValues = historicalData.map((d) => d.value);
@@ -62,12 +134,17 @@ export async function processForecastingJob(
     const trendSlope = forecast.metadata.trendSlope as number | undefined;
     const seasonalComponent = forecast.metadata.seasonalComponent as number | undefined;
 
+    const explanationMethod =
+      forecast.method === "prophet" || forecast.method === "seasonal_decomposition"
+        ? forecast.method
+        : "exponential_smoothing";
+
     const explanation = explainForecast(
       historicalValues,
       firstPrediction.forecast,
       trendSlope ? trendSlope * 12 : 0,
       seasonalComponent || 0,
-      forecast.method as "exponential_smoothing" | "seasonal_decomposition"
+      explanationMethod
     );
 
     // Calculate validity period (forecasts valid for 30 days)

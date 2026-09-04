@@ -68,7 +68,7 @@ export function explainForecast(
   forecastValue: number,
   trendComponent: number,
   seasonalComponent: number,
-  method: "exponential_smoothing" | "seasonal_decomposition"
+  method: "exponential_smoothing" | "seasonal_decomposition" | "prophet"
 ): ForecastExplanation {
   const baseline = historicalValues.reduce((a, b) => a + b, 0) / historicalValues.length;
   const forecastDeviation = forecastValue - baseline;
@@ -143,8 +143,8 @@ export function explainForecast(
   const dataQuality = Math.min(1, historicalValues.length / 24); // More data = better quality
   const volatility = Math.max(0, 1 - stdDev / baseline); // Stable = higher confidence
   const seasonalityStrength =
-    method === "seasonal_decomposition"
-      ? 0.8 // Seasonal method detected patterns
+    method === "seasonal_decomposition" || method === "prophet"
+      ? 0.8 // Model fits an explicit seasonal component
       : Math.min(1, Math.abs(seasonalComponent) / (stdDev + 0.01)); // Implicit seasonality
 
   // Generate summary

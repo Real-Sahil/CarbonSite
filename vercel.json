@@ -1,5 +1,10 @@
 {
   "framework": "nextjs",
   "buildCommand": "pnpm vercel-build",
-  "devCommand": "pnpm dev"
+  "devCommand": "pnpm dev",
+  "functions": {
+    "api/forecast.py": {
+      "maxDuration": 60
+    }
+  }
 }

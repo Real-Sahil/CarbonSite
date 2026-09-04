@@ -25,7 +25,7 @@ CarbonSite is a multi-tenant GHG emissions tracking platform for small-to-mid-ma
 - **UI:** shadcn/ui + Tailwind CSS 4 + `motion` (animations)
 - **Flutter state:** Riverpod; routing: go_router; HTTP: Dio; offline: drift/SQLite; OCR: google_mlkit_text_recognition (on-device, free, offline)
 
-**No Docker. No Python services. No paid subscriptions.**
+**No Docker. No paid subscriptions.** One deliberate exception: `api/forecast.py`, a stateless Prophet forecasting function deployed as a Vercel Python Function in this same project (no separate host, no Docker) — see "Forecasting" under Background Jobs below. Everything else is Node/TypeScript.
 External accounts required: Supabase (Postgres) + Cloudflare (R2) + Resend (email) + Google (FCM).
 Optional: Redis for production rate limiting (recommended but automatic Postgres fallback provided).
 
@@ -154,9 +154,11 @@ Enforce server-side on every org-scoped request via `requireOrgMember(orgId, ...
 ### Background Jobs (pg-boss)
 Uses `pg-boss` — a PostgreSQL-backed job queue. No Redis, no Docker, no extra infrastructure. The same Postgres instance used for app data handles the job queue via `SELECT FOR UPDATE SKIP LOCKED`.
 
-Four queues: `imports`, `calculations`, `reports`, `notifications`.
+**Deployment reality: this project runs on Vercel only, with no separate host running `workers/index.ts` continuously.** Vercel serverless functions cannot run a persistent pg-boss consumer, so a queue with no other consumer is a queue nothing ever drains. `lib/jobs/dispatch.ts` is the load-bearing piece that makes this work anyway: `dispatchImport()`, `dispatchCalculation()`, `dispatchReport()`, `dispatchNotification()`, `dispatchDsarExport()`, `dispatchDsarErasure()`, and `dispatchForecast()` each check `JOB_PROCESSING_MODE` (env var, defaults to `"inline"`) — in `inline` mode (the only mode that actually works on Vercel-only) the job runs synchronously inside the API route's request/response cycle instead of being enqueued; in `worker` mode it enqueues to pg-boss as normal, for a deployment that *does* run a separate worker process. **Always call a route through its `dispatchX()` function, never `enqueueX()`/`boss.send()` directly** — a route that enqueues without going through `dispatch.ts` will silently never run on this deployment. Several older queues (`invoice-anomaly`, `xero-sync`, `quickbooks-sync`, `supplier-performance`, `dbt-transform`, `causal-analysis`) predate this pattern and do **not** have an inline fallback — treat anything that only calls `enqueueX()` as dead code on the current deployment until it's added to `dispatch.ts` the same way.
 
-All jobs must be idempotent and retryable (3 attempts, exponential backoff). Store job status in DB (`ImportBatch.state`, `CalculationRun.status`, `Report.status`). Web process only enqueues — never performs long-running work inline.
+Core queues: `imports`, `calculations`, `reports`, `notifications`, `forecasting`.
+
+All jobs must be idempotent and retryable (3 attempts, exponential backoff). Store job status in DB (`ImportBatch.state`, `CalculationRun.status`, `Report.status`).
 
 Import state machine:
 ```
@@ -169,6 +171,8 @@ uploaded → parsing → validating → needs_attention | ready_to_commit → co
 - `mammoth` — DOCX documents to plain text
 
 Called from the `imports` worker, not a separate service.
+
+**Forecasting (`lib/jobs/workers/forecasting.ts`):** tries Prophet first via `api/forecast.py` (a stateless Vercel Python Function — takes a `{date, value}` series in, returns predictions plus a genuine holdout-backtested accuracy, no DB access of its own) and falls back to the pure-TypeScript engine (`lib/forecasting/engine.ts`, exponential smoothing / seasonal decomposition) on any failure — network error, timeout, service unavailable. Never fails the whole forecast because Python is unreachable. `FORECAST_SERVICE_SECRET` (optional) gates the Python endpoint so only this app's own worker code can call it.
 
 ### Calculation Engine (`lib/calculation/`)
 Pipeline for each `CalculationRun`:

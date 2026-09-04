@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { getSupplierAnalytics, updateSupplierAnalytics, refreshSupplierAnalytics } from "@/lib/integrations/supplier-analytics";
 import { getOrgEmissionsTrend } from "@/lib/calculation/trend-analyzer";
+import { dispatchForecast } from "@/lib/jobs/dispatch";
 import * as ss from 'simple-statistics';
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -174,21 +175,26 @@ export async function POST(
       }
     }
 
-    // Legacy forecast endpoint - enqueue job
-    type BossInstance = { send: (queue: string, data: unknown, opts?: unknown) => Promise<void> };
-    const queues = (global as typeof globalThis & { boss?: BossInstance }).boss;
-    if (!queues) {
-      throw new Error("Job queue not available");
+    if (!forecastType) {
+      return apiError("INVALID_REQUEST", "forecastType is required", 400);
     }
 
-    await queues.send(
-      "forecasting",
-      { orgId, forecastType, lookbackMonths, forecastMonths },
-      { startAfter: 0 }
-    );
+    // dispatchForecast() runs the job inline when JOB_PROCESSING_MODE is unset
+    // or "inline" (the only mode that works on a Vercel-only deployment, since
+    // nothing there runs workers/index.ts continuously to drain a queue) and
+    // enqueues to pg-boss only when explicitly running a separate worker.
+    const result = await dispatchForecast({
+      orgId,
+      forecastType,
+      lookbackMonths,
+      forecastMonths,
+    });
 
     return NextResponse.json(
-      { message: "Forecast generation queued" },
+      {
+        message: result === "processed" ? "Forecast generated" : "Forecast generation queued",
+        status: result,
+      },
       { status: 202 }
     );
   } catch (error) {
