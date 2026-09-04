@@ -52,6 +52,6 @@ END $$;
 
 DO $$ BEGIN
   ALTER TABLE "supplier_reports" ADD CONSTRAINT "supplier_reports_reviewed_by_user_id_fkey"
-    FOREIGN KEY ("reviewed_by_user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+    FOREIGN KEY ("reviewed_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN null;
 END $$;

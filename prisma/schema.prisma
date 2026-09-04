@@ -2912,9 +2912,9 @@ model ZapierIntegration {
 // ─── Phase 1B: Data Quality Checks ────────────────────────────────────────────
 
 model DataQualityCheck {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String   @map("organization_id") @db.Uuid
-  importBatchId  String?  @map("import_batch_id") @db.Uuid
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  importBatchId  String?  @map("import_batch_id")
   checkType      String   @map("check_type")
   checkName      String   @map("check_name")
   passed         Boolean
@@ -2934,9 +2934,9 @@ model DataQualityCheck {
 }
 
 model ImportBatchQualityScore {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String   @map("organization_id") @db.Uuid
-  importBatchId  String   @unique @map("import_batch_id") @db.Uuid
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  importBatchId  String   @unique @map("import_batch_id")
   overallScore   Decimal  @map("overall_score") @db.Decimal(5, 2)
   checksPassed   Int      @map("checks_passed")
   checksTotal    Int      @map("checks_total")
@@ -2954,8 +2954,8 @@ model ImportBatchQualityScore {
 // ─── Phase 1A: pgAudit Database-Level Audit Trail ────────────────────────────
 
 model AuditEvent {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String   @map("organization_id") @db.Uuid
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
   actorId        String?  @map("actor_id")
   action         String
   tableName      String   @map("table_name")
@@ -2979,8 +2979,8 @@ model AuditEvent {
 // ─── Phase 2A: Airbyte Data Integration ──────────────────────────────────────
 
 model StagedExternalData {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String    @map("organization_id") @db.Uuid
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
   sourceSystem   String    @map("source_system") // 'salesforce', 'sap', 'aws_iot', etc.
   sourceRecordId String    @map("source_record_id")
   dataType       String    @map("data_type") // 'facility_spend', 'material_cost', 'energy_consumption'
@@ -3000,8 +3000,8 @@ model StagedExternalData {
 }
 
 model AirbyteSyncConnection {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId      String    @map("organization_id") @db.Uuid
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
   sourceSystem        String    @map("source_system") // 'salesforce', 'sap', 'aws_iot'
   airbytConnectionId  String?   @map("airbyte_connection_id")
   airbytSourceId      String?   @map("airbyte_source_id")

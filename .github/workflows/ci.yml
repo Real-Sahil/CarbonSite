@@ -6,6 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 # CARBONSITE_API_BASE_URL must be set as a GitHub repository variable
 # (Settings → Variables) pointing at the production web app, e.g.:
 #   https://carbonsite-rosy.vercel.app
@@ -17,6 +21,40 @@ jobs:
   web:
     name: Web — lint / typecheck / test / build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Real Postgres so migrations, the migrate-diff drift gate, and tests run
+    # against an actual schema instead of never touching a database at all.
+    # This is what would have caught the forecasts/causal_inference_runs/
+    # airbite_connectors gaps in CI instead of in production.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: carbonsite
+          POSTGRES_PASSWORD: carbonsite
+          POSTGRES_DB: carbonsite_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://carbonsite:carbonsite@localhost:5432/carbonsite_test
+      DIRECT_URL: postgresql://carbonsite:carbonsite@localhost:5432/carbonsite_test
+      STORAGE_DRIVER: local
+      STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
+      STORAGE_ACCESS_KEY_ID: placeholder
+      STORAGE_SECRET_ACCESS_KEY: placeholder
+      STORAGE_BUCKET: carbonsite
+      BETTER_AUTH_SECRET: placeholder-secret-32-chars-minimum!!
+      BETTER_AUTH_URL: http://localhost:3000
+      EMAIL_DRIVER: console
+      TRUSTED_ORIGINS: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      JOB_PROCESSING_MODE: inline
+      ROUTING_PROVIDER: none
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -34,28 +72,32 @@ jobs:
       - run: pnpm lint
         continue-on-error: true
       - run: pnpm typecheck
+      - name: Apply all migrations to a fresh database
+        # This is the gate that actually matters: it proves every migration file
+        # applies cleanly, in order, to a database that's never seen any of them —
+        # exactly what a fresh Vercel deploy, a new dev clone, or disaster recovery
+        # does. Getting this step to pass required fixing ~15 pre-existing broken
+        # migrations (UUID/TEXT type mismatches, PascalCase table names that don't
+        # match @@map values, wrong migration ordering, duplicate/superseded
+        # attempts) that had been silently marked "applied" in production despite
+        # never having actually created their tables.
+        run: pnpm prisma migrate deploy
+      - name: Report schema.prisma drift from applied migrations (informational)
+        # Deliberately non-blocking for now: reconciling schema.prisma against the
+        # full applied-migration history surfaced ~40 pre-existing column/type/enum
+        # differences unrelated to the migrate-deploy fix above — a genuinely large
+        # separate cleanup, not something to gate every PR on until it's done.
+        # This step keeps the diff visible in CI logs so that backlog doesn't grow
+        # silently; tighten this to `--exit-code` (hard fail) once it's cleared.
+        run: pnpm prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script || true
       - run: pnpm test
       - run: pnpm build
-        env:
-          DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
-          DIRECT_DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
-          STORAGE_DRIVER: local
-          STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
-          STORAGE_ACCESS_KEY_ID: placeholder
-          STORAGE_SECRET_ACCESS_KEY: placeholder
-          STORAGE_BUCKET: carbonsite
-          BETTER_AUTH_SECRET: placeholder-secret-32-chars-minimum!!
-          BETTER_AUTH_URL: http://localhost:3000
-          EMAIL_DRIVER: console
-          TRUSTED_ORIGINS: http://localhost:3000
-          NEXT_PUBLIC_APP_URL: http://localhost:3000
-          JOB_PROCESSING_MODE: inline
-          ROUTING_PROVIDER: none
 
   smoke:
     name: Smoke — Playwright e2e
     runs-on: ubuntu-latest
     needs: web
+    timeout-minutes: 15
     env:
       # env context is unavailable in job-level env blocks; reference vars directly.
       # PLAYWRIGHT_BROWSERS_PATH/PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD are deliberately NOT
@@ -81,6 +123,7 @@ jobs:
   android:
     name: Android — release APK
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 

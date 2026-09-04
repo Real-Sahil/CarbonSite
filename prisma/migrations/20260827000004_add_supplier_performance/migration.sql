@@ -1,8 +1,15 @@
 -- Add supplier performance tracking table
+--
+-- Rewritten: the original version used UUID ids/organization_id/supplier_id
+-- (copy-pasted from an illustrative planning doc) referencing
+-- organizations(id), which is TEXT (Prisma cuid()) like every other table in
+-- this schema — a UUID foreign key can never reference a TEXT primary key,
+-- so CREATE TABLE always failed here. updated_at/created_at are also
+-- corrected to NOT NULL to match the SupplierPerformance Prisma model.
 CREATE TABLE IF NOT EXISTS "supplier_performance" (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id UUID NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
-  supplier_id UUID NOT NULL,
+  id TEXT PRIMARY KEY,
+  organization_id TEXT NOT NULL REFERENCES "organizations"(id) ON DELETE CASCADE,
+  supplier_id TEXT NOT NULL,
   submission_count INT NOT NULL DEFAULT 0,
   approved_count INT NOT NULL DEFAULT 0,
   rejected_count INT NOT NULL DEFAULT 0,
@@ -10,8 +17,8 @@ CREATE TABLE IF NOT EXISTS "supplier_performance" (
   completeness_score DECIMAL(5, 2),
   data_quality_score DECIMAL(5, 2),
   last_data_quality_trend VARCHAR(50),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   UNIQUE(organization_id, supplier_id),
   FOREIGN KEY (supplier_id) REFERENCES "organizations"(id) ON DELETE CASCADE
