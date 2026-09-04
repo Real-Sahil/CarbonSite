@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { MotionProvider } from "@/components/motion-provider";
 import { ScrollProvider } from "@/components/scroll-provider";
 import { Providers } from "@/components/providers";
@@ -26,6 +27,7 @@ export default function RootLayout({
             <MotionProvider>{children}</MotionProvider>
           </ScrollProvider>
         </Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
