@@ -4,13 +4,15 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Target, Plus, AlertTriangle, CheckCircle, TrendingUp, X, Pencil } from "lucide-react";
+import { Target, Plus, AlertTriangle, CheckCircle, TrendingUp, X, Pencil, Gauge } from "lucide-react";
+import { computeCarbonEvm } from "@/lib/project-carbon/evm";
 
 interface Phase {
   id: string;
   name: string;
   budgetTco2e: string;
   actualTco2e: string;
+  percentComplete: string;
   sortOrder: number;
   notes: string | null;
 }
@@ -182,6 +184,172 @@ function SetBudgetModal({
   );
 }
 
+function PhaseRow({
+  orgId, contractId, projectId, phase, onUpdated,
+}: {
+  orgId: string; contractId: string; projectId: string;
+  phase: Phase; onUpdated: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [actual, setActual] = useState(phase.actualTco2e);
+  const [percent, setPercent] = useState(phase.percentComplete);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const phaseBudget = Number(phase.budgetTco2e);
+  const phaseActual = Number(phase.actualTco2e);
+  const phasePct = phaseBudget > 0 ? Math.round((phaseActual / phaseBudget) * 100) : 0;
+  const phaseAlert = alertLevel(phaseActual, phaseBudget);
+
+  async function handleSave() {
+    setError("");
+    setSaving(true);
+    try {
+      const res = await fetch(
+        `/api/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/carbon-budget/phases/${phase.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ actualTco2e: Number(actual), percentComplete: Number(percent) }),
+        },
+      );
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.message ?? "Could not update phase progress.");
+        return;
+      }
+      setEditing(false);
+      onUpdated();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="px-6 py-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-900">{phase.name}</span>
+          {phaseAlert && (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-medium border ${phaseAlert.cls}`}>
+              {phaseAlert.label}
+            </span>
+          )}
+          {!phaseAlert && phaseActual === 0 && (
+            <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
+              Not started
+            </span>
+          )}
+          <span className="text-xs text-gray-400">{Number(phase.percentComplete).toFixed(0)}% complete</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500 tabular-nums">
+            {phaseActual.toFixed(1)} / {phaseBudget.toFixed(1)} tCO2e ({phasePct}%)
+          </span>
+          {!editing && (
+            <button
+              onClick={() => setEditing(true)}
+              className="text-xs font-medium text-[#f97316] hover:text-[#ea580c]"
+            >
+              Update
+            </button>
+          )}
+        </div>
+      </div>
+      <ProgressBar actual={phaseActual} budget={phaseBudget} />
+
+      {editing && (
+        <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Actual (tCO2e)</label>
+            <input
+              type="number" min="0" step="0.01" value={actual}
+              onChange={(e) => setActual(e.target.value)}
+              className="w-28 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Percent complete</label>
+            <input
+              type="number" min="0" max="100" step="1" value={percent}
+              onChange={(e) => setPercent(e.target.value)}
+              className="w-24 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15"
+            />
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="rounded-md bg-[#f97316] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#ea580c] disabled:opacity-60"
+          >
+            {saving ? "Saving..." : "Save"}
+          </button>
+          <button
+            onClick={() => setEditing(false)}
+            className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          {error && <p className="w-full text-xs text-red-600">{error}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CarbonEvmCard({ phases }: { phases: Phase[] }) {
+  const evm = computeCarbonEvm(
+    phases.map((p) => ({
+      budgetTco2e: Number(p.budgetTco2e),
+      actualTco2e: Number(p.actualTco2e),
+      percentComplete: Number(p.percentComplete),
+    })),
+  );
+
+  const cpiLabel = evm.cpi == null ? "Not yet available" : evm.cpi.toFixed(2);
+  const cpiTone = evm.cpi == null ? "text-gray-400" : evm.cpi >= 1 ? "text-green-700" : "text-red-600";
+  const varianceTone = evm.varianceAtCompletionTco2e >= 0 ? "text-green-700" : "text-red-600";
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+        <Gauge className="h-4 w-4 text-[#f97316]" />
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900">Carbon earned value</h3>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {evm.method === "cpi_trend"
+              ? "Forecast follows the current carbon performance trend."
+              : "Forecast assumes remaining work goes exactly to budget (not enough progress yet for a performance trend)."}
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-50">
+        <div className="p-5">
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Earned value</div>
+          <div className="text-xl font-semibold text-gray-900 tabular-nums">{evm.earnedValueTco2e.toFixed(1)}</div>
+          <div className="text-xs text-gray-400 mt-0.5">tCO2e of budgeted work done</div>
+        </div>
+        <div className="p-5">
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Carbon performance index</div>
+          <div className={`text-xl font-semibold tabular-nums ${cpiTone}`}>{cpiLabel}</div>
+          <div className="text-xs text-gray-400 mt-0.5">Above 1.00 is ahead of budget</div>
+        </div>
+        <div className="p-5">
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Forecast at completion</div>
+          <div className="text-xl font-semibold text-gray-900 tabular-nums">{evm.forecastAtCompletionTco2e.toFixed(1)}</div>
+          <div className="text-xs text-gray-400 mt-0.5">tCO2e, vs {evm.budgetAtCompletionTco2e.toFixed(1)} budgeted</div>
+        </div>
+        <div className="p-5">
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Variance at completion</div>
+          <div className={`text-xl font-semibold tabular-nums ${varianceTone}`}>
+            {evm.varianceAtCompletionTco2e >= 0 ? "+" : ""}{evm.varianceAtCompletionTco2e.toFixed(1)}
+          </div>
+          <div className="text-xs text-gray-400 mt-0.5">tCO2e {evm.varianceAtCompletionTco2e >= 0 ? "under" : "over"} budget</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CarbonBudgetPage() {
   const params = useParams<{ orgId: string; contractId: string; projectId: string }>();
   const { orgId, contractId, projectId } = params;
@@ -313,40 +481,27 @@ export default function CarbonBudgetPage() {
             <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
                 <h3 className="text-sm font-semibold text-gray-900">Budget by phase</h3>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Actual tCO2e and percent complete are reconciled manually per phase.
+                </p>
               </div>
               <div className="divide-y divide-gray-50">
-                {budget.phases.map((phase) => {
-                  const phaseBudget = Number(phase.budgetTco2e);
-                  const phaseActual = Number(phase.actualTco2e);
-                  const phasePct = phaseBudget > 0 ? Math.round((phaseActual / phaseBudget) * 100) : 0;
-                  const phaseAlert = alertLevel(phaseActual, phaseBudget);
-                  return (
-                    <div key={phase.id} className="px-6 py-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900">{phase.name}</span>
-                          {phaseAlert && (
-                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium border ${phaseAlert.cls}`}>
-                              {phaseAlert.label}
-                            </span>
-                          )}
-                          {!phaseAlert && phaseActual === 0 && (
-                            <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
-                              Not started
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-sm text-gray-500 tabular-nums">
-                          {phaseActual.toFixed(1)} / {phaseBudget.toFixed(1)} tCO2e ({phasePct}%)
-                        </span>
-                      </div>
-                      <ProgressBar actual={phaseActual} budget={phaseBudget} />
-                    </div>
-                  );
-                })}
+                {budget.phases.map((phase) => (
+                  <PhaseRow
+                    key={phase.id}
+                    orgId={orgId}
+                    contractId={contractId}
+                    projectId={projectId}
+                    phase={phase}
+                    onUpdated={() => { setLoading(true); load(); }}
+                  />
+                ))}
               </div>
             </div>
           )}
+
+          {/* Carbon EVM */}
+          {budget.phases.length > 0 && <CarbonEvmCard phases={budget.phases} />}
 
           {/* Notes */}
           {budget.notes && (

@@ -16,7 +16,7 @@ const CreateSchema = z.object({
   description: z.string().max(500).optional(),
   quantity: z.number().positive(),
   unit: z.enum(["kg", "tonne", "m3", "m2"]),
-  stages: z.array(z.enum(["A1-A3", "A4", "A5", "C1-C4", "D"])).optional(),
+  stages: z.array(z.enum(["A1-A3", "A4", "A5", "C1-C4", "C1", "C2", "C3", "C4", "D"])).optional(),
   notes: z.string().max(1000).optional(),
 });
 
@@ -82,6 +82,10 @@ export async function POST(
         gwpA4: epd.gwpA4,
         gwpA5: epd.gwpA5,
         gwpC1C4: epd.gwpC1C4,
+        gwpC1: epd.gwpC1,
+        gwpC2: epd.gwpC2,
+        gwpC3: epd.gwpC3,
+        gwpC4: epd.gwpC4,
         gwpD: epd.gwpD,
         declaredUnit: epd.declaredUnit,
       };
@@ -93,6 +97,10 @@ export async function POST(
         gwpA4: mat.gwpA4,
         gwpA5: mat.gwpA5,
         gwpC1C4: mat.gwpC1C4,
+        gwpC1: mat.gwpC1,
+        gwpC2: mat.gwpC2,
+        gwpC3: mat.gwpC3,
+        gwpC4: mat.gwpC4,
         gwpD: mat.gwpD,
         declaredUnit: mat.declaredUnit,
         density: mat.density,

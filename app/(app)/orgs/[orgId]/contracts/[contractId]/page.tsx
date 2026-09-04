@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CreateProjectForm, DeleteProjectButton } from "./project-actions";
+import { RequestSubmissionForm, SubmissionRow } from "./subcontractor-actions";
 
 interface Props {
   params: Promise<{ orgId: string; contractId: string }>;
@@ -124,7 +125,13 @@ export default async function ContractDetailPage({ params }: Props) {
 
   const canEdit = EDIT_ROLES.includes(role);
 
-  const [contract, projects, co2eResult] = await Promise.all([
+  // Derive "overdue" purely from the clock — no background job needed.
+  await prisma.subcontractorCarbonSubmission.updateMany({
+    where: { contractId, organizationId: orgId, status: "requested", dueDate: { lt: new Date() } },
+    data: { status: "overdue" },
+  });
+
+  const [contract, projects, submissions, co2eResult] = await Promise.all([
     prisma.contract.findUniqueOrThrow({
       where: { id: contractId, organizationId: orgId },
       include: { _count: { select: { projects: true } } },
@@ -133,6 +140,10 @@ export default async function ContractDetailPage({ params }: Props) {
       where: { contractId, organizationId: orgId },
       include: { _count: { select: { sites: true } } },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.subcontractorCarbonSubmission.findMany({
+      where: { contractId, organizationId: orgId },
+      orderBy: { dueDate: "asc" },
     }),
     prisma.$queryRaw<Array<{ total_co2e: number }>>`
       SELECT COALESCE(SUM(ec.total_co2e), 0)::float AS total_co2e
@@ -317,6 +328,61 @@ export default async function ContractDetailPage({ params }: Props) {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Subcontractor carbon flowdown card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Subcontractor carbon flowdown</CardTitle>
+          <CardDescription>
+            {submissions.length} request{submissions.length !== 1 ? "s" : ""} sent to subcontractors named on this contract.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          {canEdit && <RequestSubmissionForm orgId={orgId} contractId={contractId} />}
+
+          {submissions.length === 0 ? (
+            <EmptyState message="No subcontractor carbon data requested yet." />
+          ) : (
+            <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-[#f9fafb]">
+                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3 pl-6">Subcontractor</th>
+                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Period</th>
+                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Due</th>
+                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Status</th>
+                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Emissions</th>
+                    <th className="w-[160px] pr-6" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {submissions.map((s) => (
+                    <SubmissionRow
+                      key={s.id}
+                      orgId={orgId}
+                      contractId={contractId}
+                      canManage={canEdit}
+                      submission={{
+                        id: s.id,
+                        subcontractorName: s.subcontractorName,
+                        contactEmail: s.contactEmail,
+                        reportingPeriodLabel: s.reportingPeriodLabel,
+                        dueDate: s.dueDate.toISOString(),
+                        status: s.status,
+                        scope1Tco2e: s.scope1Tco2e?.toString() ?? null,
+                        scope2Tco2e: s.scope2Tco2e?.toString() ?? null,
+                        scope3Tco2e: s.scope3Tco2e?.toString() ?? null,
+                        notes: s.notes,
+                        rejectionReason: s.rejectionReason,
+                      }}
+                    />
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>

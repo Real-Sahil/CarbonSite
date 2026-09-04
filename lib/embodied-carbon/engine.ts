@@ -2,13 +2,19 @@
 // References: ICE Database v3.0, BS EN 15978:2011 lifecycle stages.
 // GWP values in kgCO2e per declared unit (default: per kg).
 
-export type LifecycleStage = "A1-A3" | "A4" | "A5" | "C1-C4" | "D";
+export type LifecycleStage = "A1-A3" | "A4" | "A5" | "C1-C4" | "C1" | "C2" | "C3" | "C4" | "D";
 
 export interface MaterialGwpFactors {
   gwpA1A3: number;
   gwpA4?: number | null;
   gwpA5?: number | null;
+  /** Lumped end-of-life factor — legacy/fallback when granular C1-C4 aren't set. */
   gwpC1C4?: number | null;
+  /** Granular end-of-life stages (EN 15978): deconstruction, waste transport, waste processing, disposal. */
+  gwpC1?: number | null;
+  gwpC2?: number | null;
+  gwpC3?: number | null;
+  gwpC4?: number | null;
   gwpD?: number | null;
   declaredUnit: string; // "kg" | "m3" | "m2"
   density?: number | null; // kg/m3 — required when declaredUnit="m3"
@@ -110,6 +116,15 @@ export function calculateEmbodiedCarbon(input: EmbodiedCarbonInput): EmbodiedCar
       breakdown["C1-C4"] = normalisedQty * factors.gwpC1C4;
     } else {
       warnings.push("C1-C4 end-of-life factor not available; excluded from total");
+    }
+  }
+  for (const stage of ["C1", "C2", "C3", "C4"] as const) {
+    if (!stages.includes(stage)) continue;
+    const factorValue = factors[`gwp${stage}` as "gwpC1" | "gwpC2" | "gwpC3" | "gwpC4"];
+    if (factorValue != null) {
+      breakdown[stage] = normalisedQty * factorValue;
+    } else {
+      warnings.push(`${stage} end-of-life factor not available; excluded from total`);
     }
   }
   if (stages.includes("D")) {

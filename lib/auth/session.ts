@@ -213,6 +213,9 @@ export const ROLE_GROUPS = {
   contractManagers: [
     "admin", "sustainability_director", "contract_manager",
   ] as import("@prisma/client").OrgRole[],
+  projectManagers: [
+    "admin", "sustainability_director", "contract_manager", "project_manager", "site_manager",
+  ] as import("@prisma/client").OrgRole[],
   reviewers: [
     "admin", "sustainability_director", "sustainability_manager", "reviewer",
   ] as import("@prisma/client").OrgRole[],

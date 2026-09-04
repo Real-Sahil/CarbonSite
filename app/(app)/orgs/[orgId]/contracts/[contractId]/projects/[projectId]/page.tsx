@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2 } from "lucide-react";
+import { Building2, Target, Layers } from "lucide-react";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import type { OrgRole } from "@prisma/client";
@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -135,6 +136,20 @@ export default async function ProjectDetailPage({ params }: Props) {
         <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
           Project details and associated sites.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/carbon-budget`}>
+              <Target className="mr-1.5 h-3.5 w-3.5" />
+              Carbon budget
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/whole-life-carbon`}>
+              <Layers className="mr-1.5 h-3.5 w-3.5" />
+              Whole-life carbon
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Project detail card */}

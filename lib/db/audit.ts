@@ -196,7 +196,25 @@ export type AuditAction =
   | "causal_analysis.run_triggered"
   | "supplier_report.accepted"
   | "supplier_report.rejected"
-  | "pilot.kit_generated";
+  | "pilot.kit_generated"
+  | "contract.created"
+  | "contract.updated"
+  | "contract.deleted"
+  | "project.created"
+  | "project.updated"
+  | "project.deleted"
+  | "site.created"
+  | "site.updated"
+  | "site.deleted"
+  | "carbon_budget.set"
+  | "carbon_budget.updated"
+  | "carbon_budget.phase_updated"
+  | "carbon_budget.phase_deleted"
+  | "subcontractor_submission.requested"
+  | "subcontractor_submission.submitted"
+  | "subcontractor_submission.verified"
+  | "subcontractor_submission.rejected"
+  | "whole_life_carbon.assessment_set";
 
 export async function writeAuditLog(params: {
   organizationId: string;

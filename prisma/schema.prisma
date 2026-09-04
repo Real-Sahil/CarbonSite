@@ -58,6 +58,9 @@ model User {
   webhooks                          Webhook[]                    @relation("WebhookCreator")
   snapshotVerifications             PublishedSnapshot[]          @relation("SnapshotVerifiedBy")
   embodiedCarbonRecords             EmbodiedCarbonRecord[]
+  wholeLifeCarbonAssessmentsCreated WholeLifeCarbonAssessment[]
+  subcontractorSubmissionsRequested SubcontractorCarbonSubmission[] @relation("SubcontractorSubmissionRequestedBy")
+  subcontractorSubmissionsVerified  SubcontractorCarbonSubmission[] @relation("SubcontractorSubmissionVerifiedBy")
   supplierInvitesCreated            SupplierInvite[]             @relation("SupplierInviteCreatedBy")
   supplierDataRequestsCreated       SupplierDataRequest[]        @relation("SupplierDataRequestCreatedBy")
   supplierDataRequestsApproved      SupplierDataRequest[]        @relation("SupplierDataRequestApprovedBy")
@@ -218,6 +221,8 @@ model Organization {
   carbonOffsets               CarbonOffset[]
   complianceRecords           ComplianceRecord[]
   carbonBudgets               CarbonBudget[]
+  wholeLifeCarbonAssessments  WholeLifeCarbonAssessment[]
+  subcontractorCarbonSubmissions SubcontractorCarbonSubmission[]
   wasteRecords                WasteRecord[]
   sbtiTarget                  SbtiTarget?
   bulkOperations              BulkOperation[]
@@ -1681,6 +1686,7 @@ model Contract {
   socialValueTargets SocialValueTarget[]
   reports            Report[]            @relation("ContractReports")
   fieldSubmissions   FieldSubmission[]   @relation("FieldSubmissionContracts")
+  subcontractorSubmissions SubcontractorCarbonSubmission[]
 
   @@index([organizationId, status])
   @@index([organizationId, businessUnitId])
@@ -1714,6 +1720,7 @@ model Project {
   sites                 Site[]
   embodiedCarbonRecords EmbodiedCarbonRecord[]
   carbonBudget          CarbonBudget?
+  wholeLifeCarbonAssessment WholeLifeCarbonAssessment?
   wasteRecords          WasteRecord[]
   roleAssignments       ProjectRoleAssignment[]
   incidents             EnvironmentalIncident[] @relation("ProjectIncidents")
@@ -1979,8 +1986,19 @@ model EmbodiedMaterial {
   gwpA1A3      Float    @map("gwp_a1_a3") // cradle to gate (required)
   gwpA4        Float?   @map("gwp_a4") // transport to site
   gwpA5        Float?   @map("gwp_a5") // installation
-  gwpC1C4      Float?   @map("gwp_c1_c4") // end of life
+  gwpC1C4      Float?   @map("gwp_c1_c4") // end of life, lumped (legacy/fallback)
+  /// Granular end-of-life stages (EN 15978): deconstruction, waste transport,
+  /// waste processing, disposal. Used in preference to gwpC1C4 when set.
+  gwpC1        Float?   @map("gwp_c1") // deconstruction/demolition
+  gwpC2        Float?   @map("gwp_c2") // transport of waste
+  gwpC3        Float?   @map("gwp_c3") // waste processing
+  gwpC4        Float?   @map("gwp_c4") // disposal
   gwpD         Float?   @map("gwp_d") // beyond system boundary (reuse/recycling)
+  /// Years between replacements of this material over a building's study
+  /// period — drives the module B4 (replacement) whole-life calculation in
+  /// lib/embodied-carbon/whole-life.ts. Null = not modelled for B4 (e.g.
+  /// structural elements assumed to last the whole study period).
+  replacementCycleYears Int? @map("replacement_cycle_years")
   declaredUnit String   @default("kg") @map("declared_unit") // kg | m3 | m2
   density      Float? // kg/m3 — used to convert volume → mass
   source       String   @default("ICE v3.0") // data source
@@ -2008,7 +2026,12 @@ model EpdRecord {
   gwpA4             Float?    @map("gwp_a4")
   gwpA5             Float?    @map("gwp_a5")
   gwpC1C4           Float?    @map("gwp_c1_c4")
+  gwpC1             Float?    @map("gwp_c1")
+  gwpC2             Float?    @map("gwp_c2")
+  gwpC3             Float?    @map("gwp_c3")
+  gwpC4             Float?    @map("gwp_c4")
   gwpD              Float?    @map("gwp_d")
+  replacementCycleYears Int?  @map("replacement_cycle_years")
   declaredUnit      String    @default("kg") @map("declared_unit")
   storageKey        String?   @map("storage_key") // PDF stored in R2/db
   submittedByUserId String?   @map("submitted_by_user_id")
@@ -2218,6 +2241,13 @@ model CarbonBudgetPhase {
   sortOrder   Int      @default(0) @map("sort_order")
   budgetTco2e Decimal  @map("budget_tco2e") @db.Decimal(18, 4)
   actualTco2e Decimal  @default(0) @map("actual_tco2e") @db.Decimal(18, 4)
+  /// Manually reconciled progress, 0-100. Drives the "earned value" side of
+  /// the carbon EVM calculation (lib/project-carbon/evm.ts) — there is no
+  /// automatic data link from a phase to specific activity records, so this
+  /// is recorded by the project/site team the same way physical percent
+  /// complete is on a cost-based earned value system.
+  percentComplete       Decimal   @default(0) @map("percent_complete") @db.Decimal(5, 2)
+  plannedCompletionDate DateTime? @map("planned_completion_date") @db.Date
   notes       String?
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -2226,6 +2256,91 @@ model CarbonBudgetPhase {
 
   @@index([budgetId, sortOrder])
   @@map("carbon_budget_phases")
+}
+
+// Whole-life carbon assessment (RICS Professional Statement "Whole life
+// carbon assessment for the built environment", 2nd ed. 2023; EN 15978:2011
+// modules A-D). One per project. A-stages come from EmbodiedCarbonRecord
+// (already computed and stored per material). B4 (replacement) is derived
+// here from each record's material replacement cycle. B6 (operational
+// energy) is computed live from the project's own measured Scope 1+2
+// emissions on its sites over the study period — not a modelled estimate.
+// B1/B2/B3/B5 have no reliable automatic data source (they require
+// facilities-management maintenance/repair records this platform does not
+// yet capture) and are reported as zero with an explicit warning rather
+// than a fabricated figure. B7 (operational water) has no automated source
+// either and is entered manually since water-related carbon isn't yet a
+// tracked emission category.
+model WholeLifeCarbonAssessment {
+  id                            String    @id @default(cuid())
+  organizationId                String    @map("organization_id")
+  projectId                     String    @unique @map("project_id")
+  /// RICS default building study period is 60 years; adjust per project type.
+  assessmentPeriodYears         Int       @default(60) @map("assessment_period_years")
+  operationalStartDate          DateTime? @map("operational_start_date") @db.Date
+  /// Manually entered — no automated water consumption tracking yet.
+  operationalWaterKgCo2eManual  Decimal?  @map("operational_water_kg_co2e_manual") @db.Decimal(18, 4)
+  notes                         String?
+  createdByUserId               String    @map("created_by_user_id")
+  createdAt                     DateTime  @default(now()) @map("created_at")
+  updatedAt                     DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation(fields: [createdByUserId], references: [id])
+
+  @@index([organizationId])
+  @@map("whole_life_carbon_assessments")
+}
+
+// ─── Subcontractor carbon flowdown ────────────────────────────────────────────
+// Carbon data requested from and submitted by subcontractors/suppliers named
+// on a contract, with evidence and a verification workflow — distinct from
+// the org's own FieldSubmission/ActivityRecord pipeline because subcontractor
+// data belongs to another legal entity and must be tracked as a compliance
+// obligation (requested → submitted → verified) rather than committed
+// straight into the org's own inventory.
+
+enum SubcontractorSubmissionStatus {
+  requested
+  submitted
+  verified
+  rejected
+  overdue
+
+  @@map("subcontractor_submission_status")
+}
+
+model SubcontractorCarbonSubmission {
+  id                    String                         @id @default(cuid())
+  organizationId        String                         @map("organization_id")
+  contractId            String                         @map("contract_id")
+  subcontractorName     String                         @map("subcontractor_name")
+  contactEmail          String?                        @map("contact_email")
+  reportingPeriodLabel  String                         @map("reporting_period_label")
+  dueDate               DateTime                       @db.Date @map("due_date")
+  status                SubcontractorSubmissionStatus  @default(requested)
+  scope1Tco2e           Decimal?                       @map("scope1_tco2e") @db.Decimal(18, 4)
+  scope2Tco2e           Decimal?                       @map("scope2_tco2e") @db.Decimal(18, 4)
+  scope3Tco2e           Decimal?                       @map("scope3_tco2e") @db.Decimal(18, 4)
+  evidenceStorageKey    String?                        @map("evidence_storage_key")
+  notes                 String?
+  requestedByUserId     String                         @map("requested_by_user_id")
+  submittedAt           DateTime?                      @map("submitted_at")
+  verifiedByUserId       String?                       @map("verified_by_user_id")
+  verifiedAt             DateTime?                     @map("verified_at")
+  rejectionReason         String?                      @map("rejection_reason")
+  createdAt              DateTime                      @default(now()) @map("created_at")
+  updatedAt              DateTime                      @updatedAt @map("updated_at")
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contract      Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  requestedBy   User         @relation("SubcontractorSubmissionRequestedBy", fields: [requestedByUserId], references: [id])
+  verifiedBy    User?        @relation("SubcontractorSubmissionVerifiedBy", fields: [verifiedByUserId], references: [id])
+
+  @@index([organizationId, contractId, status])
+  @@index([organizationId, dueDate])
+  @@map("subcontractor_carbon_submissions")
 }
 
 // ─── Phase 6: Waste Emissions Module ─────────────────────────────────────────
