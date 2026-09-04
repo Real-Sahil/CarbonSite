@@ -93,6 +93,9 @@ model User {
   actionsCreated           CorrectiveAction[]       @relation("ActionCreator")
   aspectsOwned             EnvironmentalAspect[]    @relation("AspectOwner")
   aspectsCreated           EnvironmentalAspect[]    @relation("AspectCreator")
+  biodiversityCreated      BiodiversityAssessment[] @relation("BiodiversityCreator")
+  speciesRecordsCreated    ProtectedSpeciesRecord[] @relation("SpeciesRecordCreator")
+  managementPlansCreated   HabitatManagementPlan[]  @relation("ManagementPlanCreator")
 
   // Better Auth session tables
   sessions Session[]
@@ -268,6 +271,11 @@ model Organization {
   environmentalIncidents      EnvironmentalIncident[]      @relation("OrgIncidents")
   correctiveActions           CorrectiveAction[]           @relation("OrgCorrectiveActions")
   environmentalAspects        EnvironmentalAspect[]        @relation("OrgAspects")
+  biodiversityAssessments     BiodiversityAssessment[]     @relation("OrgBiodiversity")
+  habitatParcels              HabitatParcel[]              @relation("OrgHabitatParcels")
+  protectedSpeciesRecords     ProtectedSpeciesRecord[]     @relation("OrgSpeciesRecords")
+  habitatManagementPlans      HabitatManagementPlan[]      @relation("OrgManagementPlans")
+  ecologicalMonitoringEvents  EcologicalMonitoringEvent[]  @relation("OrgMonitoringEvents")
 
   @@map("organizations")
 }
@@ -1641,6 +1649,8 @@ model Project {
   wasteRecords          WasteRecord[]
   roleAssignments       ProjectRoleAssignment[]
   incidents             EnvironmentalIncident[] @relation("ProjectIncidents")
+  biodiversityAssessments BiodiversityAssessment[] @relation("ProjectBiodiversity")
+  speciesRecords        ProtectedSpeciesRecord[]  @relation("ProjectSpeciesRecords")
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -1667,6 +1677,8 @@ model Site {
   workerAssignments FieldWorkerSiteAssignment[]
   permits           EnvironmentalPermit[]       @relation("SitePermits")
   incidents         EnvironmentalIncident[]     @relation("SiteIncidents")
+  biodiversityAssessments BiodiversityAssessment[] @relation("SiteBiodiversity")
+  speciesRecords    ProtectedSpeciesRecord[]    @relation("SiteSpeciesRecords")
 
   @@index([organizationId, projectId])
   @@map("sites")
@@ -4166,4 +4178,316 @@ model EnvironmentalAspect {
   @@index([organizationId, significance])
   @@index([organizationId, facilityId])
   @@map("environmental_aspects")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Ecology: Biodiversity Net Gain, protected species, and the 30 year
+// management and monitoring obligation that follows a BNG consent.
+//
+// BNG has been mandatory for development in England since February 2024. A
+// scheme must deliver at least a 10% uplift in biodiversity units, measured
+// with the statutory metric, in each of three modules independently, and
+// secure it for 30 years through a planning obligation or a conservation
+// covenant.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum BiodiversityModule {
+  /// Area habitats, measured in hectares.
+  area
+  /// Hedgerows and lines of trees, measured in kilometres.
+  hedgerow
+  /// Rivers and streams, measured in kilometres.
+  watercourse
+}
+
+enum HabitatDistinctiveness {
+  very_low
+  low
+  medium
+  high
+  very_high
+}
+
+enum HabitatCondition {
+  not_assessed
+  poor
+  fairly_poor
+  moderate
+  fairly_good
+  good
+}
+
+enum StrategicSignificance {
+  low
+  medium
+  high
+}
+
+enum CreationDifficulty {
+  low
+  medium
+  high
+  very_high
+}
+
+enum SpatialRisk {
+  on_site
+  outside_neighbouring
+  outside_distant
+}
+
+/// Whether a parcel describes the site before development or after.
+enum ParcelStage {
+  baseline
+  /// Habitat retained unchanged through the development.
+  retained
+  /// Existing habitat improved to a better condition.
+  enhanced
+  /// New habitat created where there was none of that type.
+  created
+}
+
+enum AssessmentStatus {
+  draft
+  /// Submitted with a planning application.
+  submitted
+  approved
+  /// Superseded by a later revision of the assessment.
+  superseded
+}
+
+/// How the net gain is legally secured for 30 years.
+enum SecuringMechanism {
+  /// Planning obligation under s106 of the Town and Country Planning Act 1990.
+  section_106
+  /// Conservation covenant under the Environment Act 2021.
+  conservation_covenant
+  /// Planning condition, available only for on-site gains.
+  planning_condition
+  /// Statutory biodiversity credits bought from the government.
+  statutory_credits
+  not_yet_secured
+}
+
+enum SpeciesLicenceStatus {
+  not_required
+  required
+  applied
+  granted
+  refused
+  expired
+}
+
+enum MonitoringEventStatus {
+  scheduled
+  due
+  completed
+  overdue
+  /// Monitoring found the habitat failing against its target condition.
+  remediation_required
+  waived
+}
+
+/// A Biodiversity Net Gain assessment for a project or site, holding the
+/// balance across all three metric modules.
+model BiodiversityAssessment {
+  id             String           @id @default(cuid())
+  organizationId String           @map("organization_id")
+  projectId      String?          @map("project_id")
+  siteId         String?          @map("site_id")
+  name           String
+  reference      String?
+  status         AssessmentStatus @default(draft)
+  /// Version of the statutory metric the assessment was produced with.
+  metricVersion  String           @default("statutory-biodiversity-metric") @map("metric_version")
+  /// Local planning authority the application sits with.
+  planningAuthority String?       @map("planning_authority")
+  planningReference String?       @map("planning_reference")
+  assessmentDate DateTime?        @map("assessment_date") @db.Date
+  /// Ecologist responsible for the survey and the metric calculation.
+  ecologistName  String?          @map("ecologist_name")
+  ecologistOrganisation String?   @map("ecologist_organisation")
+
+  /// Rolled-up unit totals, recomputed whenever a parcel changes. Stored so
+  /// the register can be listed and filtered without recalculating every
+  /// parcel on every request.
+  baselineAreaUnits         Decimal @default(0) @map("baseline_area_units") @db.Decimal(18, 6)
+  baselineHedgerowUnits     Decimal @default(0) @map("baseline_hedgerow_units") @db.Decimal(18, 6)
+  baselineWatercourseUnits  Decimal @default(0) @map("baseline_watercourse_units") @db.Decimal(18, 6)
+  postAreaUnits             Decimal @default(0) @map("post_area_units") @db.Decimal(18, 6)
+  postHedgerowUnits         Decimal @default(0) @map("post_hedgerow_units") @db.Decimal(18, 6)
+  postWatercourseUnits      Decimal @default(0) @map("post_watercourse_units") @db.Decimal(18, 6)
+  /// Whether every engaged module independently meets the statutory 10%.
+  meetsRequirement          Boolean @default(false) @map("meets_requirement")
+
+  securingMechanism SecuringMechanism @default(not_yet_secured) @map("securing_mechanism")
+  /// Start of the 30 year maintenance and monitoring obligation.
+  securedFrom       DateTime?         @map("secured_from") @db.Date
+  notes             String?
+  createdByUserId   String            @map("created_by_user_id")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  organization    Organization              @relation("OrgBiodiversity", fields: [organizationId], references: [id], onDelete: Cascade)
+  project         Project?                  @relation("ProjectBiodiversity", fields: [projectId], references: [id], onDelete: SetNull)
+  site            Site?                     @relation("SiteBiodiversity", fields: [siteId], references: [id], onDelete: SetNull)
+  createdBy       User                      @relation("BiodiversityCreator", fields: [createdByUserId], references: [id])
+  parcels         HabitatParcel[]           @relation("AssessmentParcels")
+  speciesRecords  ProtectedSpeciesRecord[]  @relation("AssessmentSpecies")
+  managementPlan  HabitatManagementPlan?    @relation("AssessmentPlan")
+
+  @@index([organizationId, status])
+  @@index([organizationId, projectId])
+  @@map("biodiversity_assessments")
+}
+
+/// One habitat parcel in an assessment, either as surveyed or as proposed.
+/// Units are computed server side from the metric inputs and stored, so a
+/// parcel can never hold a unit figure that disagrees with its own inputs.
+model HabitatParcel {
+  id             String                 @id @default(cuid())
+  organizationId String                 @map("organization_id")
+  assessmentId   String                 @map("assessment_id")
+  stage          ParcelStage
+  module         BiodiversityModule
+  /// UK Habitat Classification broad habitat, used by the trading rules.
+  broadHabitat   String                 @map("broad_habitat")
+  /// The specific habitat type within that broad habitat.
+  habitatType    String                 @map("habitat_type")
+  /// Hectares for area habitats, kilometres for hedgerows and watercourses.
+  size           Decimal                @db.Decimal(14, 4)
+  distinctiveness HabitatDistinctiveness
+  condition      HabitatCondition       @default(not_assessed)
+  strategicSignificance StrategicSignificance @default(low) @map("strategic_significance")
+
+  /// The three risk multipliers, which apply only to created and enhanced
+  /// parcels. Retained and baseline parcels leave them at their neutral values.
+  difficulty     CreationDifficulty     @default(low)
+  yearsToTargetCondition Int            @default(0) @map("years_to_target_condition")
+  spatialRisk    SpatialRisk            @default(on_site) @map("spatial_risk")
+
+  /// Computed biodiversity units for this parcel.
+  units          Decimal                @default(0) @db.Decimal(18, 6)
+  /// The arithmetic that produced the units, kept for the audit trail so an
+  /// ecologist or a planning officer can check the figure without rerunning it.
+  calculation    String?
+  parcelReference String?               @map("parcel_reference")
+  notes          String?
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  organization Organization           @relation("OrgHabitatParcels", fields: [organizationId], references: [id], onDelete: Cascade)
+  assessment   BiodiversityAssessment @relation("AssessmentParcels", fields: [assessmentId], references: [id], onDelete: Cascade)
+  monitoringEvents EcologicalMonitoringEvent[] @relation("ParcelMonitoring")
+
+  @@index([organizationId, assessmentId])
+  @@index([assessmentId, stage, module])
+  @@map("habitat_parcels")
+}
+
+/// A protected species record: what was found, what licence it needs, and
+/// whether that licence is in place. Working without one where it is required
+/// is a criminal offence, so licence status is tracked separately from survey.
+model ProtectedSpeciesRecord {
+  id             String               @id @default(cuid())
+  organizationId String               @map("organization_id")
+  assessmentId   String?              @map("assessment_id")
+  siteId         String?              @map("site_id")
+  projectId      String?              @map("project_id")
+  species        String
+  /// Legal protection relied on, e.g. "Schedule 5 WCA 1981", "Habitats Regs Annex IV".
+  legalProtection String?             @map("legal_protection")
+  surveyDate     DateTime?            @map("survey_date") @db.Date
+  surveyorName   String?              @map("survey_name")
+  /// What was recorded: presence, absence, evidence of use, a roost, a sett.
+  findings       String
+  /// Whether the works can proceed without a licence.
+  licenceStatus  SpeciesLicenceStatus @default(not_required) @map("licence_status")
+  licenceReference String?            @map("licence_reference")
+  licenceExpiresOn DateTime?          @map("licence_expires_on") @db.Date
+  /// Mitigation or method statement the licence depends on.
+  mitigation     String?
+  /// Seasonal constraint on when works may take place.
+  seasonalConstraint String?          @map("seasonal_constraint")
+  notes          String?
+  createdByUserId String              @map("created_by_user_id")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  organization Organization            @relation("OrgSpeciesRecords", fields: [organizationId], references: [id], onDelete: Cascade)
+  assessment   BiodiversityAssessment? @relation("AssessmentSpecies", fields: [assessmentId], references: [id], onDelete: SetNull)
+  site         Site?                   @relation("SiteSpeciesRecords", fields: [siteId], references: [id], onDelete: SetNull)
+  project      Project?                @relation("ProjectSpeciesRecords", fields: [projectId], references: [id], onDelete: SetNull)
+  createdBy    User                    @relation("SpeciesRecordCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, licenceStatus])
+  @@index([organizationId, assessmentId])
+  @@map("protected_species_records")
+}
+
+/// The landscape and ecological management plan securing a net gain for its
+/// 30 year obligation period.
+model HabitatManagementPlan {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  assessmentId   String   @unique @map("assessment_id")
+  title          String
+  /// Who is responsible for delivering the management over 30 years.
+  responsibleParty String? @map("responsible_party")
+  /// Start of the obligation. The monitoring schedule is generated from this.
+  commencesOn    DateTime @map("commences_on") @db.Date
+  /// Normally 30 years from commencement.
+  endsOn         DateTime @map("ends_on") @db.Date
+  managementObjectives String? @map("management_objectives")
+  /// Recurring management operations, e.g. cutting regime, grazing.
+  prescriptions  String?
+  /// What happens if monitoring finds the habitat failing.
+  remediationStrategy String? @map("remediation_strategy")
+  /// Money set aside to fund the 30 years of management.
+  fundingSecured Decimal? @map("funding_secured") @db.Decimal(18, 2)
+  fundingCurrency String? @map("funding_currency")
+  notes          String?
+  createdByUserId String  @map("created_by_user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization                @relation("OrgManagementPlans", fields: [organizationId], references: [id], onDelete: Cascade)
+  assessment   BiodiversityAssessment      @relation("AssessmentPlan", fields: [assessmentId], references: [id], onDelete: Cascade)
+  createdBy    User                        @relation("ManagementPlanCreator", fields: [createdByUserId], references: [id])
+  events       EcologicalMonitoringEvent[] @relation("PlanMonitoring")
+
+  @@index([organizationId])
+  @@map("habitat_management_plans")
+}
+
+/// One scheduled monitoring visit in the 30 year obligation. Monitoring is
+/// front-loaded because created habitat fails early if it is going to fail.
+model EcologicalMonitoringEvent {
+  id             String                @id @default(cuid())
+  organizationId String                @map("organization_id")
+  managementPlanId String              @map("management_plan_id")
+  parcelId       String?               @map("parcel_id")
+  /// Years since the obligation commenced.
+  monitoringYear Int                   @map("monitoring_year")
+  dueOn          DateTime              @map("due_on") @db.Date
+  status         MonitoringEventStatus @default(scheduled)
+  completedOn    DateTime?             @map("completed_on") @db.Date
+  surveyorName   String?               @map("surveyor_name")
+  /// Condition found on the visit, compared against the target condition.
+  conditionFound HabitatCondition?     @map("condition_found")
+  /// Whether the parcel is on track for its target condition.
+  onTrack        Boolean?              @map("on_track")
+  findings       String?
+  remedialAction String?               @map("remedial_action")
+  reportEvidenceId String?             @map("report_evidence_id")
+  createdAt      DateTime              @default(now()) @map("created_at")
+  updatedAt      DateTime              @updatedAt @map("updated_at")
+
+  organization   Organization          @relation("OrgMonitoringEvents", fields: [organizationId], references: [id], onDelete: Cascade)
+  managementPlan HabitatManagementPlan @relation("PlanMonitoring", fields: [managementPlanId], references: [id], onDelete: Cascade)
+  parcel         HabitatParcel?        @relation("ParcelMonitoring", fields: [parcelId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status, dueOn])
+  @@index([managementPlanId, monitoringYear])
+  @@map("ecological_monitoring_events")
 }

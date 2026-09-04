@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
-  ShieldAlert, Siren, Scale,
+  ShieldAlert, Siren, Scale, Sprout,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -88,6 +88,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Incidents",      href: `/orgs/${orgId}/environment/incidents`,      icon: Siren,       roles: EXTENDED_VIEW_ROLES },
       { label: "Legal Register", href: `/orgs/${orgId}/environment/legal-register`, icon: Scale,       roles: EXTENDED_VIEW_ROLES },
       { label: "Aspects",        href: `/orgs/${orgId}/environment/aspects`,        icon: ListChecks,  roles: EXTENDED_VIEW_ROLES },
+      { label: "Biodiversity",   href: `/orgs/${orgId}/biodiversity`,               icon: Sprout,      roles: EXTENDED_VIEW_ROLES },
     ]},
     { label: "Planning", items: [
       { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
