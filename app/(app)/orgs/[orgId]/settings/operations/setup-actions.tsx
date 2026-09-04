@@ -100,6 +100,7 @@ export function OperationsSetup({
   facilities,
   businessUnits,
   factorLibraries,
+  materialLibrary,
   apiDataSources,
 }: {
   orgId: string;
@@ -108,6 +109,7 @@ export function OperationsSetup({
   facilities: Facility[];
   businessUnits: BusinessUnit[];
   factorLibraries: FactorLibrary[];
+  materialLibrary: { total: number; missingEndOfLife: number; missingReplacementCycle: number };
   apiDataSources: ApiDataSourceRow[];
 }) {
   return (
@@ -122,6 +124,9 @@ export function OperationsSetup({
       <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
       <section className="xl:col-span-2">
         <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} />
+      </section>
+      <section className="xl:col-span-2">
+        <MaterialImportPanel orgId={orgId} materialLibrary={materialLibrary} />
       </section>
       <section className="xl:col-span-2">
         <ApiDataSourcesPanel orgId={orgId} sources={apiDataSources} />
@@ -317,6 +322,94 @@ function FactorImportPanel({
         </p>
         {success && <p className="text-sm text-green-700 lg:col-span-3">{success}</p>}
         {error && <p className="whitespace-pre-line text-sm text-red-600 lg:col-span-3">{error}</p>}
+      </form>
+    </div>
+  );
+}
+
+function MaterialImportPanel({
+  orgId,
+  materialLibrary,
+}: {
+  orgId: string;
+  materialLibrary: { total: number; missingEndOfLife: number; missingReplacementCycle: number };
+}) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function importMaterials(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
+
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/orgs/${orgId}/materials/import`, {
+          method: "POST",
+          body: form,
+        });
+        const body = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(body?.message ?? "Material import failed");
+        }
+        formEl.reset();
+        setSuccess(`${body.createdCount} material${body.createdCount === 1 ? "" : "s"} added, ${body.updatedCount} updated.`);
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Material import failed");
+      }
+    });
+  }
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white">
+      <PanelHeader
+        title="Embodied carbon material library"
+        description="Add or correct materials in the shared library used for whole-life carbon assessments. Re-importing an existing material name updates it in place, rather than creating a duplicate."
+      />
+      <div className="border-t border-slate-100 p-4 text-sm text-slate-600">
+        {materialLibrary.total} material{materialLibrary.total === 1 ? "" : "s"} in the library.{" "}
+        {materialLibrary.missingEndOfLife > 0 && (
+          <>
+            {materialLibrary.missingEndOfLife} {materialLibrary.missingEndOfLife === 1 ? "has" : "have"} no
+            end-of-life (C1-C4) data.{" "}
+          </>
+        )}
+        {materialLibrary.missingReplacementCycle > 0 && (
+          <>
+            {materialLibrary.missingReplacementCycle}{" "}
+            {materialLibrary.missingReplacementCycle === 1 ? "has" : "have"} no replacement cycle recorded.
+          </>
+        )}
+      </div>
+      <form onSubmit={importMaterials} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
+        <Field label="Material file">
+          <input
+            name="file"
+            type="file"
+            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            required
+            disabled={isPending}
+            className="h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </Field>
+        <div className="flex items-end">
+          <Button type="submit" disabled={isPending}>
+            <Upload className="h-4 w-4" />
+            Import materials
+          </Button>
+        </div>
+        <p className="text-xs leading-5 text-slate-500 md:col-span-2">
+          Required columns: name, category, gwp_a1_a3. Optional columns: description, gwp_a4, gwp_a5, gwp_c1_c4
+          (lumped end-of-life), or the granular gwp_c1/gwp_c2/gwp_c3/gwp_c4, gwp_d, replacement_cycle_years,
+          declared_unit (kg, m3 or m2), density, source, source_url.
+        </p>
+        {success && <p className="text-sm text-green-700 md:col-span-2">{success}</p>}
+        {error && <p className="whitespace-pre-line text-sm text-red-600 md:col-span-2">{error}</p>}
       </form>
     </div>
   );

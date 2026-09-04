@@ -34,6 +34,7 @@ export type AuditAction =
   | "record.deleted"
   | "record.reviewed"
   | "factor.library_imported"
+  | "material_library.imported"
   | "calculation.run_triggered"
   | "calculation.triggered"
   | "calculation.run_completed"

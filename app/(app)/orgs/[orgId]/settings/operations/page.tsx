@@ -68,6 +68,9 @@ export default async function OperationsSettingsPage({
       include: { _count: { select: { factors: true } } },
       orderBy: [{ name: "asc" }, { version: "desc" }],
     }),
+    prisma.embodiedMaterial.findMany({
+      select: { gwpC1C4: true, gwpC1: true, gwpC2: true, gwpC3: true, gwpC4: true, replacementCycleYears: true },
+    }),
   ]).catch(() => null);
 
   if (!data) {
@@ -80,7 +83,15 @@ export default async function OperationsSettingsPage({
     );
   }
 
-  const [org, periods, facilities, businessUnits, factorLibraries] = data;
+  const [org, periods, facilities, businessUnits, factorLibraries, materials] = data;
+
+  const materialLibrary = {
+    total: materials.length,
+    missingEndOfLife: materials.filter(
+      (m) => m.gwpC1C4 == null && m.gwpC1 == null && m.gwpC2 == null && m.gwpC3 == null && m.gwpC4 == null,
+    ).length,
+    missingReplacementCycle: materials.filter((m) => m.replacementCycleYears == null).length,
+  };
 
   return (
     <div className="flex flex-col gap-[28px]">
@@ -116,6 +127,7 @@ export default async function OperationsSettingsPage({
           version: library.version,
           factorCount: library._count.factors,
         }))}
+        materialLibrary={materialLibrary}
         apiDataSources={[]}
       />
     </div>
