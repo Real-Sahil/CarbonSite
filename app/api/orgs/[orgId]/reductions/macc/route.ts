@@ -38,7 +38,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
         capexAmount: i.capexAmount != null ? Number(i.capexAmount) : i.costAmount != null ? Number(i.costAmount) : null,
         opexDeltaAnnual: i.opexDeltaAnnual != null ? Number(i.opexDeltaAnnual) : null,
         lifetimeYears: i.lifetimeYears,
-        expectedImpactCo2e: i.expectedImpactCo2e != null ? Number(i.expectedImpactCo2e) : null,
+        // ReductionInitiative.expectedImpactCo2e is stored in kgCO2e (see
+        // the "Expected impact (kgCO2e)" field on the creation form) —
+        // computeMacc expects tCO2e, so it must be converted here.
+        expectedImpactCo2e: i.expectedImpactCo2e != null ? Number(i.expectedImpactCo2e) / 1000 : null,
       })),
     );
 

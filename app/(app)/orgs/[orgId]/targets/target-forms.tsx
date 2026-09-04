@@ -19,6 +19,10 @@ const TARGET_TYPES = [
   { value: "intensity", label: "Intensity reduction (per unit of output)" },
 ];
 
+// Radix Select rejects an empty-string item value, so an explicit "no
+// selection" option needs its own sentinel translated back to "" on change.
+const NONE = "__none__";
+
 interface CreateTargetFormProps {
   orgId: string;
   periods: { id: string; label: string }[];
@@ -160,9 +164,12 @@ const INITIATIVE_STATUSES = [
 interface CreateInitiativeFormProps {
   orgId: string;
   members: { userId: string; label: string }[];
+  facilities: { id: string; name: string }[];
+  categories: { id: string; code: string; name: string }[];
+  targets: { id: string; label: string }[];
 }
 
-export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormProps) {
+export function CreateInitiativeForm({ orgId, members, facilities, categories, targets }: CreateInitiativeFormProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [status, setStatus] = useState(INITIATIVE_STATUSES[0].value);
@@ -171,6 +178,9 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
   const [costAmount, setCostAmount] = useState("");
   const [opexDeltaAnnual, setOpexDeltaAnnual] = useState("");
   const [lifetimeYears, setLifetimeYears] = useState("");
+  const [facilityId, setFacilityId] = useState("");
+  const [emissionCategoryId, setEmissionCategoryId] = useState("");
+  const [reductionTargetId, setReductionTargetId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -195,6 +205,9 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
           costCurrency: "GBP",
           opexDeltaAnnual: opexDeltaAnnual ? parseFloat(opexDeltaAnnual) : undefined,
           lifetimeYears: lifetimeYears ? parseInt(lifetimeYears, 10) : undefined,
+          facilityId: facilityId || undefined,
+          emissionCategoryId: emissionCategoryId || undefined,
+          reductionTargetId: reductionTargetId || undefined,
         }),
       });
       if (!res.ok) {
@@ -265,6 +278,48 @@ export function CreateInitiativeForm({ orgId, members }: CreateInitiativeFormPro
         <label className="text-xs text-[#374151] tracking-[-0.36px]">Lifetime (years)</label>
         <Input type="number" min="1" step="1" value={lifetimeYears} onChange={(e) => setLifetimeYears(e.target.value)} placeholder="Optional" className="w-24" />
       </div>
+      {facilities.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Facility</label>
+          <Select value={facilityId || NONE} onValueChange={(v) => setFacilityId(v === NONE ? "" : v)}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Org-wide" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE}>Org-wide</SelectItem>
+              {facilities.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      {categories.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Category</label>
+          <Select value={emissionCategoryId || NONE} onValueChange={(v) => setEmissionCategoryId(v === NONE ? "" : v)}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Not specified" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE}>Not specified</SelectItem>
+              {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      {targets.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Counts toward</label>
+          <Select value={reductionTargetId || NONE} onValueChange={(v) => setReductionTargetId(v === NONE ? "" : v)}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="No target" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE}>No target</SelectItem>
+              {targets.map((t) => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div className="flex gap-2">
         <Button type="submit" disabled={loading} size="sm">
           {loading ? "Saving…" : "Save"}

@@ -19,6 +19,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
       include: {
         owner: { select: { name: true, email: true } },
         createdBy: { select: { name: true, email: true } },
+        facility: { select: { id: true, name: true } },
+        emissionCategory: { select: { id: true, code: true, name: true } },
+        reductionTarget: { select: { id: true, targetType: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -48,6 +51,30 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
+    if (body.facilityId) {
+      const facility = await prisma.facility.findFirst({
+        where: { id: body.facilityId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!facility) return apiError("NOT_FOUND", "Facility not found in this organisation.", 404);
+    }
+
+    if (body.emissionCategoryId) {
+      const category = await prisma.emissionCategory.findUnique({
+        where: { id: body.emissionCategoryId },
+        select: { id: true },
+      });
+      if (!category) return apiError("NOT_FOUND", "Emission category not found.", 404);
+    }
+
+    if (body.reductionTargetId) {
+      const target = await prisma.reductionTarget.findFirst({
+        where: { id: body.reductionTargetId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!target) return apiError("NOT_FOUND", "Reduction target not found in this organisation.", 404);
+    }
+
     const initiative = await prisma.reductionInitiative.create({
       data: {
         organizationId: orgId,
@@ -61,11 +88,17 @@ export async function POST(req: NextRequest, { params }: Params) {
         lifetimeYears: body.lifetimeYears,
         expectedImpactCo2e: body.expectedImpactCo2e,
         expectedStartDate: body.expectedStartDate ? new Date(body.expectedStartDate) : undefined,
+        facilityId: body.facilityId,
+        emissionCategoryId: body.emissionCategoryId,
+        reductionTargetId: body.reductionTargetId,
         notes: body.notes,
         createdByUserId: session.user.id,
       },
       include: {
         owner: { select: { name: true, email: true } },
+        facility: { select: { id: true, name: true } },
+        emissionCategory: { select: { id: true, code: true, name: true } },
+        reductionTarget: { select: { id: true, targetType: true } },
       },
     });
 

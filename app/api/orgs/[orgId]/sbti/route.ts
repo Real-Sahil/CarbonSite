@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
+import { loadSbtiPathway } from "@/lib/calculation/sbti-actuals";
 
 const SbtiSchema = z.object({
   pathway: z.enum(["1.5C", "WB2C"]).default("1.5C"),
@@ -29,37 +30,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
     await requireOrgMember(orgId, "admin", "sustainability_director", "sustainability_manager", "editor", "viewer", "auditor");
 
     const target = await prisma.sbtiTarget.findUnique({ where: { organizationId: orgId } });
-
-    // Build trajectory data: from baseYear to netZeroYear
-    // Linear reduction from base to near-term, then to net-zero
-    const trajectory: Array<{ year: number; targetTco2e: number; pathway: string }> = [];
-    if (target) {
-      const baseTotal =
-        Number(target.baselineScope1Tco2e) +
-        Number(target.baselineScope2Tco2e) +
-        Number(target.baselineScope3Tco2e ?? 0);
-      const nearTermTarget = baseTotal * (1 - Number(target.nearTermReductionPct) / 100);
-      const netZeroTarget = baseTotal * (1 - Number(target.netZeroReductionPct) / 100);
-
-      const currentYear = new Date().getFullYear();
-      for (let year = target.baseYear; year <= target.netZeroYear; year++) {
-        let targetTco2e: number;
-        if (year <= target.baseYear) {
-          targetTco2e = baseTotal;
-        } else if (year <= target.nearTermYear) {
-          const progress = (year - target.baseYear) / (target.nearTermYear - target.baseYear);
-          targetTco2e = baseTotal - progress * (baseTotal - nearTermTarget);
-        } else {
-          const progress = (year - target.nearTermYear) / (target.netZeroYear - target.nearTermYear);
-          targetTco2e = nearTermTarget - progress * (nearTermTarget - netZeroTarget);
-        }
-        if (year <= currentYear + 1) {
-          trajectory.push({ year, targetTco2e: Math.max(0, targetTco2e), pathway: target.pathway });
-        }
-      }
+    if (!target) {
+      return NextResponse.json({ target: null, trajectory: [], alerts: [] });
     }
 
-    return NextResponse.json({ target, trajectory });
+    const pathway = await loadSbtiPathway(orgId);
+
+    return NextResponse.json({ target, trajectory: pathway?.trajectory ?? [], alerts: pathway?.alerts ?? [] });
   } catch (err) {
     return handleRouteError(err);
   }

@@ -497,6 +497,7 @@ model Facility {
   incidents              EnvironmentalIncident[] @relation("FacilityIncidents")
   aspects                EnvironmentalAspect[]   @relation("FacilityAspects")
   completenessRequirements DataCompletenessRequirement[]
+  reductionInitiatives    ReductionInitiative[]
 
   @@index([organizationId])
   @@index([organizationId, legalEntityId])
@@ -595,6 +596,7 @@ model EmissionCategory {
   supplierReports             SupplierReport[]
   emissionsForecasts          EmissionsForecast[]          @relation("forecastCategory")
   completenessRequirements    DataCompletenessRequirement[]
+  reductionInitiatives        ReductionInitiative[]
 
   @@map("emission_categories")
 }
@@ -1386,6 +1388,7 @@ model ReductionTarget {
   baselinePeriod ReportingPeriod @relation("BaselinePeriod", fields: [baselinePeriodId], references: [id])
   targetPeriod   ReportingPeriod @relation("TargetPeriod", fields: [targetPeriodId], references: [id])
   createdBy      User            @relation(fields: [createdByUserId], references: [id])
+  initiatives    ReductionInitiative[]
 
   @@index([organizationId])
   @@map("reduction_targets")
@@ -1424,15 +1427,29 @@ model ReductionInitiative {
   expectedStartDate  DateTime?        @map("expected_start_date") @db.Date
   notes              String?
   methodology        String?          @map("methodology")
+  /// Which facility this initiative reduces emissions at. Null = org-wide
+  /// (e.g. a supplier-engagement or policy initiative with no single site).
+  facilityId         String?          @map("facility_id")
+  /// Which emission category this initiative targets — lets the completeness
+  /// matrix and the pathway view show what a measure is actually addressing.
+  emissionCategoryId String?          @map("emission_category_id")
+  /// Which reduction target this initiative counts toward, if any.
+  reductionTargetId  String?          @map("reduction_target_id")
   createdByUserId    String           @map("created_by_user_id")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  owner        User?        @relation("InitiativeOwner", fields: [ownerUserId], references: [id])
-  createdBy    User         @relation("InitiativeCreator", fields: [createdByUserId], references: [id])
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  owner            User?             @relation("InitiativeOwner", fields: [ownerUserId], references: [id])
+  createdBy        User              @relation("InitiativeCreator", fields: [createdByUserId], references: [id])
+  facility         Facility?         @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  emissionCategory EmissionCategory? @relation(fields: [emissionCategoryId], references: [id], onDelete: SetNull)
+  reductionTarget  ReductionTarget?  @relation(fields: [reductionTargetId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, status])
+  @@index([organizationId, facilityId])
+  @@index([organizationId, emissionCategoryId])
+  @@index([organizationId, reductionTargetId])
   @@map("reduction_initiatives")
 }
 

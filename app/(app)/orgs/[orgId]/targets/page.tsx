@@ -67,6 +67,9 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       include: {
         owner: { select: { name: true, email: true } },
         createdBy: { select: { name: true, email: true } },
+        facility: { select: { id: true, name: true } },
+        emissionCategory: { select: { id: true, code: true, name: true } },
+        reductionTarget: { select: { id: true, targetType: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -81,6 +84,15 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       include: { user: { select: { id: true, name: true, email: true } } },
       orderBy: { createdAt: "asc" },
     }),
+    prisma.facility.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.emissionCategory.findMany({
+      select: { id: true, code: true, name: true },
+      orderBy: { name: "asc" },
+    }),
   ]).catch(() => null);
 
   if (!dbResult) {
@@ -88,7 +100,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       <div className="p-8"><p className="text-red-600 text-sm">Failed to load targets. The database may be updating — try refreshing in a moment.</p></div>
     );
   }
-  const [targets, initiatives, periods, memberships] = dbResult;
+  const [targets, initiatives, periods, memberships, facilities, categories] = dbResult;
 
   // Fetch aggregate totals for all periods referenced by targets
   const periodIds = [
@@ -129,6 +141,11 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
   const memberOptions = memberships.map((membership) => ({
     userId: membership.user.id,
     label: membership.user.name ?? membership.user.email,
+  }));
+
+  const targetOptions = targets.map((t) => ({
+    id: t.id,
+    label: `${t.targetType === "intensity" ? "Intensity" : "Absolute"} · ${t.baselinePeriod.label} → ${t.targetPeriod.label}`,
   }));
 
   return (
@@ -236,7 +253,13 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
           <CardContent className={initiatives.length === 0 ? "pb-8" : "p-0 pb-2"}>
             {canEdit && (
               <div className="px-6 py-5 border-b border-[#E5E7EB]">
-                <CreateInitiativeForm orgId={orgId} members={memberOptions} />
+                <CreateInitiativeForm
+                  orgId={orgId}
+                  members={memberOptions}
+                  facilities={facilities}
+                  categories={categories}
+                  targets={targetOptions}
+                />
               </div>
             )}
             {initiatives.length === 0 ? (
@@ -251,6 +274,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Name</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Linked to</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Owner</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Expected impact</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Cost</TableHead>
@@ -265,6 +289,20 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                           <Badge variant={initiative.status === "complete" ? "default" : "outline"}>
                             {initiative.status.replaceAll("_", " ")}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="py-3.5">
+                          {initiative.facility || initiative.emissionCategory ? (
+                            <div className="flex flex-wrap gap-1">
+                              {initiative.facility && (
+                                <Badge variant="outline" className="text-xs font-normal">{initiative.facility.name}</Badge>
+                              )}
+                              {initiative.emissionCategory && (
+                                <Badge variant="outline" className="text-xs font-normal">{initiative.emissionCategory.name}</Badge>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-[#9CA3AF]">Org-wide</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">
                           {initiative.owner?.name ?? initiative.owner?.email ?? "Unassigned"}

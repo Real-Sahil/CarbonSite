@@ -22,6 +22,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
 
     const body = updateInitiativeSchema.parse(await req.json());
 
+    if (body.facilityId) {
+      const facility = await prisma.facility.findFirst({
+        where: { id: body.facilityId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!facility) return apiError("NOT_FOUND", "Facility not found in this organisation.", 404);
+    }
+
+    if (body.emissionCategoryId) {
+      const category = await prisma.emissionCategory.findUnique({
+        where: { id: body.emissionCategoryId },
+        select: { id: true },
+      });
+      if (!category) return apiError("NOT_FOUND", "Emission category not found.", 404);
+    }
+
+    if (body.reductionTargetId) {
+      const target = await prisma.reductionTarget.findFirst({
+        where: { id: body.reductionTargetId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!target) return apiError("NOT_FOUND", "Reduction target not found in this organisation.", 404);
+    }
+
     const updated = await prisma.reductionInitiative.update({
       where: { id: initiativeId },
       data: {
@@ -34,6 +58,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
         ...(body.opexDeltaAnnual !== undefined ? { opexDeltaAnnual: body.opexDeltaAnnual } : {}),
         ...(body.lifetimeYears !== undefined ? { lifetimeYears: body.lifetimeYears } : {}),
         ...(body.expectedImpactCo2e !== undefined ? { expectedImpactCo2e: body.expectedImpactCo2e } : {}),
+        ...(body.facilityId !== undefined ? { facilityId: body.facilityId } : {}),
+        ...(body.emissionCategoryId !== undefined ? { emissionCategoryId: body.emissionCategoryId } : {}),
+        ...(body.reductionTargetId !== undefined ? { reductionTargetId: body.reductionTargetId } : {}),
         ...(body.notes !== undefined ? { notes: body.notes } : {}),
       },
     });

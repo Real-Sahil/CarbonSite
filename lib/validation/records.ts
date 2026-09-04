@@ -96,6 +96,12 @@ export const createInitiativeSchema = z.object({
   lifetimeYears: z.number().int().positive().optional(),
   expectedImpactCo2e: z.number().positive().optional(),
   expectedStartDate: z.string().regex(isoDate).optional(),
+  /** Facility this initiative reduces emissions at. Null/absent = org-wide. */
+  facilityId: z.string().optional(),
+  /** Emission category this initiative targets. */
+  emissionCategoryId: z.string().optional(),
+  /** Reduction target this initiative counts toward, if any. */
+  reductionTargetId: z.string().optional(),
   notes: z.string().max(2000).optional(),
 });
 

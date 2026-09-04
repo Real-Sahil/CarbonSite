@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireOrgMember } from "@/lib/auth/session";
-import { calculateSBTiPathway, assessYearlyProgress } from "@/lib/calculation/sbti-calculator";
+import { calculateSBTiPathway } from "@/lib/calculation/sbti-calculator";
 import { handleRouteError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
@@ -79,30 +79,3 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 }
 
-export async function GET(req: NextRequest, { params }: Params) {
-  try {
-    const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "auditor");
-
-    // Retrieve latest published snapshot to get current emissions
-    const latestSnapshot = await prisma.publishedSnapshot.findFirst({
-      where: { organizationId: orgId },
-      orderBy: { publishedAt: "desc" },
-    });
-
-    if (!latestSnapshot) {
-      return NextResponse.json(
-        { code: "NO_DATA", message: "No published snapshots found" },
-        { status: 400 },
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      currentEmissions: 0,
-      snapshotDate: latestSnapshot.publishedAt,
-    });
-  } catch (err) {
-    return handleRouteError(err);
-  }
-}
