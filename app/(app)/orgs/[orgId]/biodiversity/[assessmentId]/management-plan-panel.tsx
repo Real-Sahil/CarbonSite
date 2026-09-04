@@ -40,7 +40,7 @@ export function ManagementPlanPanel({
   plan: Plan | null;
 }) {
   if (plan) {
-    return <ExistingPlan plan={plan} />;
+    return <ExistingPlan orgId={orgId} canManage={canManage} plan={plan} />;
   }
 
   return (
@@ -70,7 +70,15 @@ export function ManagementPlanPanel({
   );
 }
 
-function ExistingPlan({ plan }: { plan: Plan }) {
+function ExistingPlan({
+  orgId,
+  canManage,
+  plan,
+}: {
+  orgId: string;
+  canManage: boolean;
+  plan: Plan;
+}) {
   const now = Date.now();
   const events = plan.events.map((e) => ({
     ...e,
@@ -115,26 +123,10 @@ function ExistingPlan({ plan }: { plan: Plan }) {
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-2">
         <div className="flex flex-wrap gap-2">
           {events.map((e) => (
-            <div
-              key={e.id}
-              className={
-                e.derived === "overdue"
-                  ? "rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5"
-                  : e.status === "remediation_required"
-                    ? "rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5"
-                    : e.status === "completed"
-                      ? "rounded-md border border-green-200 bg-green-50 px-2.5 py-1.5"
-                      : "rounded-md border border-zinc-200 px-2.5 py-1.5"
-              }
-            >
-              <div className="text-xs font-medium text-zinc-700">Year {e.monitoringYear}</div>
-              <div className="font-mono text-xs tabular-nums text-zinc-500">
-                {fmtDate(e.dueOn)}
-              </div>
-            </div>
+            <MonitoringEventChip key={e.id} orgId={orgId} canManage={canManage} event={e} />
           ))}
         </div>
         <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-zinc-500">
@@ -144,6 +136,191 @@ function ExistingPlan({ plan }: { plan: Plan }) {
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+const CONDITION_OPTIONS = [
+  { value: "not_assessed", label: "Not assessed" },
+  { value: "poor", label: "Poor" },
+  { value: "fairly_poor", label: "Fairly poor" },
+  { value: "moderate", label: "Moderate" },
+  { value: "fairly_good", label: "Fairly good" },
+  { value: "good", label: "Good" },
+] as const;
+
+function MonitoringEventChip({
+  orgId,
+  canManage,
+  event,
+}: {
+  orgId: string;
+  canManage: boolean;
+  event: MonitoringEvent & { derived: string };
+}) {
+  const router = useRouter();
+  const [recording, setRecording] = useState(false);
+  const [completedOn, setCompletedOn] = useState(new Date().toISOString().slice(0, 10));
+  const [surveyorName, setSurveyorName] = useState("");
+  const [conditionFound, setConditionFound] = useState("");
+  const [onTrack, setOnTrack] = useState(true);
+  const [findings, setFindings] = useState("");
+  const [remedialAction, setRemedialAction] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isSettled = event.status === "completed" || event.status === "waived";
+  const canRecord = canManage && !isSettled;
+
+  async function submit() {
+    if (!onTrack && !remedialAction.trim()) {
+      setError("Habitat off track needs a remedial action.");
+      return;
+    }
+    setError(null);
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/monitoring-events/${event.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          completedOn,
+          onTrack,
+          ...(surveyorName.trim() && { surveyorName: surveyorName.trim() }),
+          ...(conditionFound && { conditionFound }),
+          ...(findings.trim() && { findings: findings.trim() }),
+          ...(remedialAction.trim() && { remedialAction: remedialAction.trim() }),
+        }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        setError(body.message ?? "Could not record the monitoring visit.");
+        return;
+      }
+      setRecording(false);
+      router.refresh();
+    } catch {
+      setError("Network error. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const chipClass =
+    event.derived === "overdue"
+      ? "rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5"
+      : event.status === "remediation_required"
+        ? "rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5"
+        : event.status === "completed"
+          ? "rounded-md border border-green-200 bg-green-50 px-2.5 py-1.5"
+          : "rounded-md border border-zinc-200 px-2.5 py-1.5";
+
+  if (!recording) {
+    return (
+      <button
+        type="button"
+        disabled={!canRecord}
+        onClick={() => canRecord && setRecording(true)}
+        className={`${chipClass} text-left ${canRecord ? "cursor-pointer hover:border-zinc-400" : "cursor-default"}`}
+      >
+        <div className="text-xs font-medium text-zinc-700">Year {event.monitoringYear}</div>
+        <div className="font-mono text-xs tabular-nums text-zinc-500">{fmtDate(event.dueOn)}</div>
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-full space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 sm:max-w-md">
+      <p className="text-sm font-medium text-zinc-900">Record visit, year {event.monitoringYear}</p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="space-y-1">
+          <label htmlFor={`me-date-${event.id}`} className="block text-xs font-medium text-zinc-700">
+            Visit date
+          </label>
+          <Input
+            id={`me-date-${event.id}`}
+            type="date"
+            value={completedOn}
+            onChange={(e) => setCompletedOn(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1">
+          <label htmlFor={`me-surveyor-${event.id}`} className="block text-xs font-medium text-zinc-700">
+            Surveyor
+          </label>
+          <Input
+            id={`me-surveyor-${event.id}`}
+            value={surveyorName}
+            onChange={(e) => setSurveyorName(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1">
+          <label htmlFor={`me-condition-${event.id}`} className="block text-xs font-medium text-zinc-700">
+            Condition found
+          </label>
+          <select
+            id={`me-condition-${event.id}`}
+            value={conditionFound}
+            onChange={(e) => setConditionFound(e.target.value)}
+            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+          >
+            <option value="">Not recorded</option>
+            {CONDITION_OPTIONS.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <span className="block text-xs font-medium text-zinc-700">Habitat on track</span>
+          <div className="flex h-9 items-center gap-4 text-sm">
+            <label className="flex items-center gap-1.5">
+              <input type="radio" checked={onTrack} onChange={() => setOnTrack(true)} />
+              Yes
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" checked={!onTrack} onChange={() => setOnTrack(false)} />
+              No
+            </label>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-1">
+        <label htmlFor={`me-findings-${event.id}`} className="block text-xs font-medium text-zinc-700">
+          Findings
+        </label>
+        <Textarea
+          id={`me-findings-${event.id}`}
+          value={findings}
+          onChange={(e) => setFindings(e.target.value)}
+          rows={2}
+        />
+      </div>
+      {!onTrack && (
+        <div className="space-y-1">
+          <label htmlFor={`me-remedial-${event.id}`} className="block text-xs font-medium text-zinc-700">
+            Remedial action
+          </label>
+          <Textarea
+            id={`me-remedial-${event.id}`}
+            value={remedialAction}
+            onChange={(e) => setRemedialAction(e.target.value)}
+            rows={2}
+            placeholder="What will be done to bring the habitat back on track."
+          />
+        </div>
+      )}
+      {error && <p className="text-xs text-red-600">{error}</p>}
+      <div className="flex gap-2">
+        <Button size="sm" onClick={submit} disabled={saving}>
+          {saving && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+          Save visit
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setRecording(false)} disabled={saving}>
+          Cancel
+        </Button>
+      </div>
+    </div>
   );
 }
 

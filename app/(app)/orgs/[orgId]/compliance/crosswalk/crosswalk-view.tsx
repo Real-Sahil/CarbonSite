@@ -119,17 +119,26 @@ function DatapointRow({
   const [status, setStatus] = useState(datapoint.status);
   const [evidenceSummary, setEvidenceSummary] = useState(datapoint.manualEvidenceSummary ?? "");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function save() {
     setSaving(true);
+    setError(null);
     try {
-      await fetch(`/api/orgs/${orgId}/compliance/crosswalk/${datapoint.id}`, {
+      const res = await fetch(`/api/orgs/${orgId}/compliance/crosswalk/${datapoint.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, evidenceSummary: evidenceSummary || undefined }),
       });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.message ?? "Could not save this override.");
+        return;
+      }
       setEditing(false);
       router.refresh();
+    } catch {
+      setError("Could not reach the server. Check your connection and try again.");
     } finally {
       setSaving(false);
     }
@@ -188,6 +197,7 @@ function DatapointRow({
                     Cancel
                   </Button>
                 </div>
+                {error && <p className="text-xs text-red-600">{error}</p>}
               </div>
             ) : (
               <Button size="sm" variant="ghost" onClick={() => setEditing(true)} className="h-7 px-2 text-xs">

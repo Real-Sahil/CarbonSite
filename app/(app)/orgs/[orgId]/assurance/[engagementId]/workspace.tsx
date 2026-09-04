@@ -254,6 +254,7 @@ function EvidenceTab({
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   async function add() {
     if (!reference.trim() || !description.trim()) {
@@ -288,12 +289,25 @@ function EvidenceTab({
   }
 
   async function updateStatus(id: string, status: string) {
-    await fetch(`/api/orgs/${orgId}/assurance/engagements/${engagementId}/evidence-requests/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    router.refresh();
+    setStatusError(null);
+    try {
+      const res = await fetch(
+        `/api/orgs/${orgId}/assurance/engagements/${engagementId}/evidence-requests/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        },
+      );
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        setStatusError(body.message ?? "Could not update the evidence request status.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setStatusError("Network error. Try again.");
+    }
   }
 
   return (
@@ -325,6 +339,8 @@ function EvidenceTab({
           )}
         </div>
       )}
+
+      {statusError && <p className="text-sm text-red-600">{statusError}</p>}
 
       {items.length === 0 ? (
         <Card>
@@ -417,12 +433,22 @@ function SamplesTab({
   }
 
   async function recordResult(id: string, result: string) {
-    await fetch(`/api/orgs/${orgId}/assurance/samples/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ result }),
-    });
-    router.refresh();
+    setError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/assurance/samples/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ result }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        setError(body.message ?? "Could not record the sample result.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setError("Network error. Try again.");
+    }
   }
 
   return (
@@ -531,6 +557,7 @@ function FindingsTab({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [raiseError, setRaiseError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   async function raiseFinding() {
     if (!title.trim() || !description.trim()) {
@@ -564,24 +591,45 @@ function FindingsTab({
   async function respond(id: string) {
     if (!responseText.trim()) return;
     setBusy(true);
-    await fetch(`/api/orgs/${orgId}/assurance/findings/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ managementResponse: responseText.trim() }),
-    });
-    setBusy(false);
-    setRespondingTo(null);
-    setResponseText("");
-    router.refresh();
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/assurance/findings/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ managementResponse: responseText.trim() }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        setActionError(body.message ?? "Could not submit the response.");
+        return;
+      }
+      setRespondingTo(null);
+      setResponseText("");
+      router.refresh();
+    } catch {
+      setActionError("Network error. Try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function resolve(id: string, status: "resolved" | "qualified") {
-    await fetch(`/api/orgs/${orgId}/assurance/findings/${id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    router.refresh();
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/assurance/findings/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        setActionError(body.message ?? "Could not update the finding.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setActionError("Network error. Try again.");
+    }
   }
 
   return (
@@ -623,6 +671,8 @@ function FindingsTab({
           )}
         </div>
       )}
+
+      {actionError && <p className="text-sm text-red-600">{actionError}</p>}
 
       {items.length === 0 && (
         <Card>
