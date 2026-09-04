@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
-  ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network,
+  ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -79,8 +79,9 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Scenarios",       href: `/orgs/${orgId}/scenarios`,       icon: Sliders,    roles: CORE_ROLES },
     ]},
     { label: "Inventory governance", items: [
-      { label: "Boundary",  href: `/orgs/${orgId}/boundary`,  icon: GitBranch, roles: EXTENDED_VIEW_ROLES },
-      { label: "Base Year", href: `/orgs/${orgId}/base-year`, icon: Anchor,    roles: EXTENDED_VIEW_ROLES },
+      { label: "Boundary",     href: `/orgs/${orgId}/boundary`,     icon: GitBranch, roles: EXTENDED_VIEW_ROLES },
+      { label: "Base Year",    href: `/orgs/${orgId}/base-year`,    icon: Anchor,    roles: EXTENDED_VIEW_ROLES },
+      { label: "Completeness", href: `/orgs/${orgId}/completeness`, icon: Grid3x3,   roles: EXTENDED_VIEW_ROLES },
     ]},
     { label: "Environment", items: [
       { label: "Overview",       href: `/orgs/${orgId}/environment`,                icon: ShieldAlert, roles: EXTENDED_VIEW_ROLES },

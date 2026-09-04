@@ -88,6 +88,12 @@ export const createInitiativeSchema = z.object({
   ownerUserId: z.string().optional(),
   costAmount: z.number().positive().optional(),
   costCurrency: z.string().max(10).optional(),
+  /** One-off capital cost, for the marginal abatement cost curve. */
+  capexAmount: z.number().nonnegative().optional(),
+  /** Ongoing annual cost impact — negative means the measure saves money to run. */
+  opexDeltaAnnual: z.number().optional(),
+  /** Useful life in years, used to annualise capexAmount for the MACC. */
+  lifetimeYears: z.number().int().positive().optional(),
   expectedImpactCo2e: z.number().positive().optional(),
   expectedStartDate: z.string().regex(isoDate).optional(),
   notes: z.string().max(2000).optional(),

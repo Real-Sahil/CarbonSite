@@ -214,7 +214,9 @@ export type AuditAction =
   | "subcontractor_submission.submitted"
   | "subcontractor_submission.verified"
   | "subcontractor_submission.rejected"
-  | "whole_life_carbon.assessment_set";
+  | "whole_life_carbon.assessment_set"
+  | "completeness.requirement_set"
+  | "completeness.requirement_deleted";
 
 export async function writeAuditLog(params: {
   organizationId: string;

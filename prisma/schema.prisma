@@ -61,6 +61,7 @@ model User {
   wholeLifeCarbonAssessmentsCreated WholeLifeCarbonAssessment[]
   subcontractorSubmissionsRequested SubcontractorCarbonSubmission[] @relation("SubcontractorSubmissionRequestedBy")
   subcontractorSubmissionsVerified  SubcontractorCarbonSubmission[] @relation("SubcontractorSubmissionVerifiedBy")
+  completenessRequirementsOwned     DataCompletenessRequirement[]   @relation("CompletenessRequirementOwner")
   supplierInvitesCreated            SupplierInvite[]             @relation("SupplierInviteCreatedBy")
   supplierDataRequestsCreated       SupplierDataRequest[]        @relation("SupplierDataRequestCreatedBy")
   supplierDataRequestsApproved      SupplierDataRequest[]        @relation("SupplierDataRequestApprovedBy")
@@ -223,6 +224,7 @@ model Organization {
   carbonBudgets               CarbonBudget[]
   wholeLifeCarbonAssessments  WholeLifeCarbonAssessment[]
   subcontractorCarbonSubmissions SubcontractorCarbonSubmission[]
+  dataCompletenessRequirements DataCompletenessRequirement[]
   wasteRecords                WasteRecord[]
   sbtiTarget                  SbtiTarget?
   bulkOperations              BulkOperation[]
@@ -494,6 +496,7 @@ model Facility {
   permits                EnvironmentalPermit[]   @relation("FacilityPermits")
   incidents              EnvironmentalIncident[] @relation("FacilityIncidents")
   aspects                EnvironmentalAspect[]   @relation("FacilityAspects")
+  completenessRequirements DataCompletenessRequirement[]
 
   @@index([organizationId])
   @@index([organizationId, legalEntityId])
@@ -591,6 +594,7 @@ model EmissionCategory {
   scope3Estimates             Scope3Estimate[]             @relation("Scope3Estimates")
   supplierReports             SupplierReport[]
   emissionsForecasts          EmissionsForecast[]          @relation("forecastCategory")
+  completenessRequirements    DataCompletenessRequirement[]
 
   @@map("emission_categories")
 }
@@ -1402,8 +1406,20 @@ model ReductionInitiative {
   name               String
   ownerUserId        String?          @map("owner_user_id")
   status             InitiativeStatus @default(planned)
+  /// Legacy single-figure total cost — kept for existing records. New
+  /// entries should use capexAmount/opexDeltaAnnual for a real MACC.
   costAmount         Decimal?         @map("cost_amount") @db.Decimal(18, 2)
   costCurrency       String?          @map("cost_currency")
+  /// One-off capital investment. Falls back to costAmount when unset, so
+  /// existing initiatives created before the MACC fields still price.
+  capexAmount        Decimal?         @map("capex_amount") @db.Decimal(18, 2)
+  /// Ongoing annual operating cost impact. Positive = costs more to run;
+  /// negative = saves money (e.g. lower energy bills) — negative values are
+  /// what make a measure pay for itself.
+  opexDeltaAnnual    Decimal?         @map("opex_delta_annual") @db.Decimal(18, 2)
+  /// Useful life used to annualise capexAmount for the marginal abatement
+  /// cost curve (straight-line, not NPV-discounted — see lib/reductions/macc.ts).
+  lifetimeYears      Int?             @map("lifetime_years")
   expectedImpactCo2e Decimal?         @map("expected_impact_co2e") @db.Decimal(18, 4)
   expectedStartDate  DateTime?        @map("expected_start_date") @db.Date
   notes              String?
@@ -1418,6 +1434,32 @@ model ReductionInitiative {
 
   @@index([organizationId, status])
   @@map("reduction_initiatives")
+}
+
+// ─── Data Completeness Matrix ──────────────────────────────────────────────
+// Which facility x emission category combinations the org expects data for,
+// each with a responsible owner. RAG status per reporting period is computed
+// live from ActivityRecord coverage (see lib/inventory/completeness.ts) —
+// this table only stores the expectation and ownership, never the status.
+model DataCompletenessRequirement {
+  id                 String   @id @default(cuid())
+  organizationId     String   @map("organization_id")
+  facilityId         String   @map("facility_id")
+  emissionCategoryId String   @map("emission_category_id")
+  ownerUserId        String?  @map("owner_user_id")
+  required           Boolean  @default(true)
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility         Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  emissionCategory EmissionCategory @relation(fields: [emissionCategoryId], references: [id], onDelete: Cascade)
+  owner            User?            @relation("CompletenessRequirementOwner", fields: [ownerUserId], references: [id])
+
+  @@unique([organizationId, facilityId, emissionCategoryId])
+  @@index([organizationId])
+  @@map("data_completeness_requirements")
 }
 
 // ─── Reports ──────────────────────────────────────────────────────────────────

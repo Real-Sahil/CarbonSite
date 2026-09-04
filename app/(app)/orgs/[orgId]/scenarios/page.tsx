@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FlaskConical, Plus, Trash2, Loader2, TrendingDown, AlertCircle } from "lucide-react";
+import { FlaskConical, Plus, Trash2, Loader2, TrendingDown, AlertCircle, PoundSterling } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -217,6 +217,136 @@ function AdjustmentRow({
         <Trash2 className="h-4 w-4" />
       </Button>
     </div>
+  );
+}
+
+// ─── Marginal abatement cost curve ─────────────────────────────────────────────
+
+interface MaccCurvePoint {
+  id: string;
+  name: string;
+  abatementTco2e: number;
+  marginalCostPerTco2e: number;
+  paybackYears: number | null;
+  cumulativeAbatementStartTco2e: number;
+  cumulativeAbatementEndTco2e: number;
+}
+
+function fmtCost(value: number): string {
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    maximumFractionDigits: 0,
+    signDisplay: "exceptZero",
+  }).format(value);
+}
+
+function MaccCard({ orgId }: { orgId: string }) {
+  const [curve, setCurve] = useState<MaccCurvePoint[]>([]);
+  const [totalAbatementTco2e, setTotalAbatementTco2e] = useState(0);
+  const [excludedCount, setExcludedCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const res = await fetch(`/api/orgs/${orgId}/reductions/macc`);
+    if (res.ok) {
+      const d = await res.json();
+      setCurve(d.curve);
+      setTotalAbatementTco2e(d.totalAbatementTco2e);
+      setExcludedCount(d.excludedCount);
+    }
+    setLoading(false);
+  }, [orgId]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-zinc-400">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+      </div>
+    );
+  }
+
+  if (curve.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-10 text-center">
+          <PoundSterling className="mx-auto h-6 w-6 text-zinc-300 mb-2" />
+          <p className="text-sm text-zinc-500">
+            No reduction initiatives have a cost and expected CO2e impact recorded yet.
+          </p>
+          <p className="text-xs text-zinc-400 mt-1">Add cost, annual savings and impact to initiatives in Targets.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const maxAbsCost = Math.max(...curve.map((p) => Math.abs(p.marginalCostPerTco2e)), 1);
+  const winWinCount = curve.filter((p) => p.marginalCostPerTco2e < 0).length;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <PoundSterling className="h-4 w-4 text-zinc-400" />
+          Marginal abatement cost curve
+        </CardTitle>
+        <CardDescription>
+          Reduction initiatives ranked by £ per tCO2e, cheapest first. Bar width is the tonnes each measure abates.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-4 mb-5 text-sm">
+          <span className="text-zinc-600">
+            <span className="font-semibold text-zinc-900">{totalAbatementTco2e.toFixed(1)}</span> tCO2e total abatement potential
+          </span>
+          {winWinCount > 0 && (
+            <span className="text-green-700">
+              <span className="font-semibold">{winWinCount}</span> win-win measure{winWinCount !== 1 ? "s" : ""} (save money and carbon)
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          {curve.map((point) => {
+            const isNegative = point.marginalCostPerTco2e < 0;
+            const barWidthPct = (Math.abs(point.marginalCostPerTco2e) / maxAbsCost) * 100;
+            return (
+              <div key={point.id} className="flex items-center gap-3">
+                <div className="w-40 shrink-0 truncate text-sm text-zinc-700" title={point.name}>
+                  {point.name}
+                </div>
+                <div className="flex-1 flex items-center h-6 relative">
+                  <div className="absolute left-1/2 top-0 bottom-0 w-px bg-zinc-200" />
+                  <div
+                    className={`h-5 rounded-sm ${isNegative ? "bg-green-500" : "bg-amber-500"}`}
+                    style={{
+                      width: `${Math.max(barWidthPct / 2, 2)}%`,
+                      marginLeft: isNegative ? `${50 - Math.max(barWidthPct / 2, 2)}%` : "50%",
+                    }}
+                    title={`${point.abatementTco2e.toFixed(1)} tCO2e/yr`}
+                  />
+                </div>
+                <div className={`w-24 shrink-0 text-right text-sm tabular-nums font-medium ${isNegative ? "text-green-700" : "text-amber-700"}`}>
+                  {fmtCost(point.marginalCostPerTco2e)}/t
+                </div>
+                <div className="w-20 shrink-0 text-right text-xs text-zinc-400 tabular-nums">
+                  {point.paybackYears != null ? `${point.paybackYears.toFixed(1)}y payback` : "-"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {excludedCount > 0 && (
+          <p className="mt-4 text-xs text-zinc-400">
+            {excludedCount} initiative{excludedCount !== 1 ? "s" : ""} excluded — no expected CO2e impact recorded.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -647,6 +777,12 @@ export default function ScenariosPage() {
             </CardContent>
           </Card>
         )}
+      </div>
+
+      {/* Marginal abatement cost curve */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-900">Marginal Abatement Cost Curve</h2>
+        <MaccCard orgId={orgId} />
       </div>
     </div>
   );

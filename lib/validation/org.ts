@@ -144,6 +144,14 @@ const optionalMoneySchema = z.preprocess(
   z.coerce.number().nonnegative().optional(),
 );
 
+// Unlike optionalMoneySchema, this allows negative values — an annual opex
+// delta is negative when a measure saves money to run (e.g. lower energy
+// bills), which is what makes a marginal abatement cost negative.
+const optionalSignedMoneySchema = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.coerce.number().optional(),
+);
+
 export const createReductionTargetSchema = z
   .object({
     baselinePeriodId: z.string().min(1),
@@ -167,10 +175,18 @@ export const createReductionInitiativeSchema = z.object({
     .default("planned"),
   costAmount: optionalMoneySchema,
   costCurrency: z.string().min(3).max(3).default("GBP"),
+  capexAmount: optionalMoneySchema,
+  opexDeltaAnnual: optionalSignedMoneySchema,
+  lifetimeYears: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.coerce.number().int().positive().optional(),
+  ),
   expectedImpactCo2e: optionalMoneySchema,
   expectedStartDate: optionalIsoDateSchema,
   notes: z.string().max(2000).optional(),
 });
+
+export const updateReductionInitiativeSchema = createReductionInitiativeSchema.partial();
 
 export const createActivityRecordSchema = z.object({
   reportingPeriodId: z.string().min(1),
