@@ -1,6 +1,6 @@
 -- Create AssuranceStatus enum
 DO $$ BEGIN
-  CREATE TYPE "AssuranceStatus" AS ENUM ('pending', 'approved', 'rejected');
+  CREATE TYPE "assurance_status" AS ENUM ('pending', 'approved', 'rejected');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS "snapshot_assurances" (
   "organization_id" TEXT NOT NULL,
   "snapshot_id" TEXT NOT NULL,
   "auditor_user_id" TEXT NOT NULL,
-  "status" "AssuranceStatus" NOT NULL DEFAULT 'pending',
+  "status" "assurance_status" NOT NULL DEFAULT 'pending',
   "notes" TEXT,
   "signature_base64" TEXT,
   "signed_at" TIMESTAMP(3),

@@ -62,7 +62,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- ─── Subcontractor carbon flowdown ─────────────────────────────────────────────
 
 DO $$ BEGIN
-  CREATE TYPE "SubcontractorSubmissionStatus" AS ENUM ('requested', 'submitted', 'verified', 'rejected', 'overdue');
+  CREATE TYPE "subcontractor_submission_status" AS ENUM ('requested', 'submitted', 'verified', 'rejected', 'overdue');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 CREATE TABLE IF NOT EXISTS "subcontractor_carbon_submissions" (
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS "subcontractor_carbon_submissions" (
   "contact_email"          TEXT,
   "reporting_period_label" TEXT NOT NULL,
   "due_date"               DATE NOT NULL,
-  "status"                 "SubcontractorSubmissionStatus" NOT NULL DEFAULT 'requested',
+  "status"                 "subcontractor_submission_status" NOT NULL DEFAULT 'requested',
   "scope1_tco2e"           DECIMAL(18,4),
   "scope2_tco2e"           DECIMAL(18,4),
   "scope3_tco2e"           DECIMAL(18,4),

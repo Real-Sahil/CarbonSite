@@ -2530,7 +2530,7 @@ model SupplierCategoryAssignment {
   organization       Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user               User              @relation("SupplierCategoryAssignments", fields: [supplierId], references: [id], onDelete: Cascade)
   emissionCategory   EmissionCategory? @relation(fields: [emissionCategoryId], references: [id])
-  emissionCategoryId String?
+  emissionCategoryId String?  @map("emission_category_id")
 
   @@unique([supplierId, categoryCode])
   @@index([organizationId, supplierId])
@@ -3031,9 +3031,9 @@ model Scope3EstimationModel {
   modelType             String    @default("linear-regression") @map("model_type") // "linear-regression", "random-forest"
   trainingRecordCount   Int       @map("training_record_count")
   coefficients          Json // Model parameters: { intercept, features: {featureName: coefficient} }
-  modelMetrics          Json // R², RMSE, MAE, etc.
-  featureImportance     Json // Feature importance scores
-  trainingDataDateRange Json // { from: Date, to: Date }
+  modelMetrics          Json      @map("model_metrics") // R², RMSE, MAE, etc.
+  featureImportance     Json      @map("feature_importance") // Feature importance scores
+  trainingDataDateRange Json      @map("training_data_date_range") // { from: Date, to: Date }
   confidenceThreshold   Decimal   @default("0.7") @map("confidence_threshold") @db.Decimal(3, 2)
   lastTrainedAt         DateTime  @map("last_trained_at")
   nextTrainAt           DateTime? @map("next_train_at")
@@ -3058,8 +3058,8 @@ model Scope3Estimate {
   estimatedValue        Decimal   @map("estimated_value") @db.Decimal(18, 6)
   estimatedUnit         String    @map("estimated_unit") // e.g., "tonnes", "kwh"
   confidenceScore       Decimal   @map("confidence_score") @db.Decimal(3, 2) // 0-1
-  confidenceInterval    Json // { lower: number, upper: number, percentile: 95 }
-  modelInputs           Json // Features used for prediction
+  confidenceInterval    Json      @map("confidence_interval") // { lower: number, upper: number, percentile: 95 }
+  modelInputs           Json      @map("model_inputs") // Features used for prediction
   predictionExplanation String?   @map("prediction_explanation") // Why this estimate?
   basedOnRecordCount    Int       @default(0) @map("based_on_record_count")
   status                String    @default("pending") @map("status") // "pending", "accepted", "rejected", "used"
@@ -3482,14 +3482,14 @@ model CausalInferenceRun {
   question                      String    // Natural language question (e.g., "What impact did our facility upgrade have?")
   treatment                     String    // Treatment variable (e.g., "upgraded_facility")
   outcome                       String    // Outcome variable (e.g., "emissions_reduction_pct")
-  treatmentEffect               Decimal?  @db.Decimal(10, 4) // ATE — Average Treatment Effect
-  confidenceIntervalLower       Decimal?  @db.Decimal(10, 4)
-  confidenceIntervalUpper       Decimal?  @db.Decimal(10, 4)
-  pValue                        Decimal?  @db.Decimal(5, 4) // Statistical significance
-  robustnessToUnmeasuredConf    Decimal?  @db.Decimal(3, 2) // 0-1 scale; robustness to hidden confounders
-  sampleSize                    Int? // N of matched pairs used in estimation
+  treatmentEffect               Decimal?  @map("treatment_effect") @db.Decimal(10, 4) // ATE — Average Treatment Effect
+  confidenceIntervalLower       Decimal?  @map("confidence_interval_lower") @db.Decimal(10, 4)
+  confidenceIntervalUpper       Decimal?  @map("confidence_interval_upper") @db.Decimal(10, 4)
+  pValue                        Decimal?  @map("p_value") @db.Decimal(5, 4) // Statistical significance
+  robustnessToUnmeasuredConf    Decimal?  @map("robustness_to_unmeasured_confounding") @db.Decimal(3, 2) // 0-1 scale; robustness to hidden confounders
+  sampleSize                    Int?      @map("sample_size") // N of matched pairs used in estimation
   method                        String? // "backdoor", "propensity_score", "iv", "sensitivity"
-  causalGraph                   Json? // Graph structure and confounders
+  causalGraph                   Json?     @map("causal_graph") // Graph structure and confounders
   modelId                       String? @map("model_id") // Reference to predefined model (facility_upgrade, etc)
   confounders                   Json? // Array of confounder variable names
   resultSummary                 String? @map("result_summary") // Plain-language interpretation
@@ -4923,7 +4923,7 @@ model AssuranceSample {
   engagementId         String          @map("engagement_id")
   emissionCalculationId String?        @map("emission_calculation_id")
   activityRecordId     String?         @map("activity_record_id")
-  samplingMethod       SamplingMethod
+  samplingMethod       SamplingMethod  @map("sampling_method")
   /// Why this item was pulled: the stratum, the anomaly, the threshold.
   selectionRationale   String          @map("selection_rationale")
   testProcedure        String          @map("test_procedure")
