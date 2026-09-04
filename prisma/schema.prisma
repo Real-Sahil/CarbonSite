@@ -81,6 +81,18 @@ model User {
   recalculationsCreated    BaseYearRecalculation[] @relation("RecalcCreator")
   recalculationsApproved   BaseYearRecalculation[] @relation("RecalcApprover")
   restatementsCreated      Restatement[]           @relation("RestatementCreator")
+  permitsOwned             EnvironmentalPermit[]    @relation("PermitOwner")
+  permitsCreated           EnvironmentalPermit[]    @relation("PermitCreator")
+  legalRegisterOwned       LegalRegisterEntry[]     @relation("LegalRegisterOwner")
+  legalRegisterCreated     LegalRegisterEntry[]     @relation("LegalRegisterCreator")
+  incidentsReported        EnvironmentalIncident[]  @relation("IncidentReporter")
+  incidentsOwned           EnvironmentalIncident[]  @relation("IncidentOwner")
+  incidentsCreated         EnvironmentalIncident[]  @relation("IncidentCreator")
+  actionsAssigned          CorrectiveAction[]       @relation("ActionAssignee")
+  actionsVerified          CorrectiveAction[]       @relation("ActionVerifier")
+  actionsCreated           CorrectiveAction[]       @relation("ActionCreator")
+  aspectsOwned             EnvironmentalAspect[]    @relation("AspectOwner")
+  aspectsCreated           EnvironmentalAspect[]    @relation("AspectCreator")
 
   // Better Auth session tables
   sessions Session[]
@@ -250,6 +262,12 @@ model Organization {
   structuralChanges           StructuralChange[]           @relation("OrgStructuralChanges")
   baseYearRecalculations      BaseYearRecalculation[]      @relation("OrgBaseYearRecalcs")
   restatements                Restatement[]                @relation("OrgRestatements")
+  environmentalPermits        EnvironmentalPermit[]        @relation("OrgPermits")
+  permitConditions            PermitCondition[]            @relation("OrgPermitConditions")
+  legalRegisterEntries        LegalRegisterEntry[]         @relation("OrgLegalRegister")
+  environmentalIncidents      EnvironmentalIncident[]      @relation("OrgIncidents")
+  correctiveActions           CorrectiveAction[]           @relation("OrgCorrectiveActions")
+  environmentalAspects        EnvironmentalAspect[]        @relation("OrgAspects")
 
   @@map("organizations")
 }
@@ -448,6 +466,9 @@ model Facility {
   iotDevices             IoTDevice[]
   emissionsForecasts     EmissionsForecast[]    @relation("forecastFacility")
   causalAnalyses         CausalAnalysis[]       @relation("causalFacility")
+  permits                EnvironmentalPermit[]   @relation("FacilityPermits")
+  incidents              EnvironmentalIncident[] @relation("FacilityIncidents")
+  aspects                EnvironmentalAspect[]   @relation("FacilityAspects")
 
   @@index([organizationId])
   @@index([organizationId, legalEntityId])
@@ -1619,6 +1640,7 @@ model Project {
   carbonBudget          CarbonBudget?
   wasteRecords          WasteRecord[]
   roleAssignments       ProjectRoleAssignment[]
+  incidents             EnvironmentalIncident[] @relation("ProjectIncidents")
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -1643,6 +1665,8 @@ model Site {
   fieldSubmissions  FieldSubmission[]           @relation("FieldSubmissionSite")
   inviteLinks       InviteLink[]
   workerAssignments FieldWorkerSiteAssignment[]
+  permits           EnvironmentalPermit[]       @relation("SitePermits")
+  incidents         EnvironmentalIncident[]     @relation("SiteIncidents")
 
   @@index([organizationId, projectId])
   @@map("sites")
@@ -3800,4 +3824,346 @@ model Restatement {
   @@index([organizationId, createdAt])
   @@index([supersededSnapshotId])
   @@map("restatements")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Environmental management: permits and consents, the legal register, the
+// incident and non-conformance register with corrective actions, and the
+// ISO 14001 aspects and impacts register.
+//
+// This is the non-carbon half of an environmental function. A carbon
+// inventory alone does not discharge an operator's statutory duties.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PermitType {
+  /// Environmental permit under the Environmental Permitting Regulations.
+  environmental_permit
+  /// Consent to discharge trade effluent to sewer or controlled waters.
+  discharge_consent
+  /// Licence to abstract water.
+  abstraction_licence
+  /// Waste carrier, broker or dealer registration.
+  waste_carrier_licence
+  /// Permit or exemption for a waste management operation.
+  waste_management_licence
+  /// Emissions to air permit for a regulated process.
+  air_emissions_permit
+  /// Licence to hold or use radioactive substances.
+  radioactive_substances
+  /// Licence covering protected species or habitats.
+  species_licence
+  /// Planning consent condition with an environmental obligation.
+  planning_condition
+  other
+}
+
+enum PermitStatus {
+  draft
+  applied
+  active
+  /// Expired without renewal. Operating on an expired permit is an offence.
+  expired
+  suspended
+  revoked
+  surrendered
+}
+
+enum ComplianceStatus {
+  compliant
+  /// Compliant now but drifting, or an early-warning trigger has fired.
+  at_risk
+  breach
+  not_assessed
+}
+
+enum IncidentType {
+  spill
+  /// Discharge or emission above a permitted limit.
+  exceedance
+  /// Release to air, water or land outside permitted conditions.
+  unauthorised_release
+  complaint
+  /// Something that could have caused harm but did not.
+  near_miss
+  waste_misrouting
+  /// Failure of abatement, containment or monitoring equipment.
+  equipment_failure
+  /// Ecological or protected species harm.
+  ecological_damage
+  other
+}
+
+enum IncidentSeverity {
+  /// No environmental harm, no reporting duty.
+  negligible
+  minor
+  moderate
+  major
+  /// Significant harm or a mandatory notification to the regulator.
+  severe
+}
+
+enum IncidentStatus {
+  reported
+  investigating
+  /// Immediate containment done, root cause work continuing.
+  contained
+  awaiting_action
+  closed
+}
+
+enum CorrectiveActionStatus {
+  open
+  in_progress
+  /// Action done, waiting on someone to confirm it worked.
+  awaiting_verification
+  verified
+  overdue
+  cancelled
+}
+
+enum ActionType {
+  /// Stops the immediate harm.
+  containment
+  /// Fixes this occurrence.
+  corrective
+  /// Stops it happening again.
+  preventive
+}
+
+/// ISO 14001 significance rating for an environmental aspect.
+enum AspectSignificance {
+  low
+  medium
+  high
+  /// Significant aspect requiring an objective, target or operational control.
+  significant
+}
+
+/// A permit, consent, licence or registration the organisation holds.
+model EnvironmentalPermit {
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
+  facilityId     String?      @map("facility_id")
+  siteId         String?      @map("site_id")
+  type           PermitType
+  reference      String
+  issuingAuthority String     @map("issuing_authority")
+  title          String
+  description    String?
+  status         PermitStatus @default(active)
+  issuedOn       DateTime?    @map("issued_on") @db.Date
+  effectiveFrom  DateTime?    @map("effective_from") @db.Date
+  /// Null means the permit does not expire. A date in the past with status
+  /// active is a compliance breach the dashboard surfaces.
+  expiresOn      DateTime?    @map("expires_on") @db.Date
+  /// Lead time in days for starting the renewal application.
+  renewalNoticeDays Int       @default(90) @map("renewal_notice_days")
+  ownerUserId    String?      @map("owner_user_id")
+  documentEvidenceId String?  @map("document_evidence_id")
+  notes          String?
+  createdByUserId String      @map("created_by_user_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization Organization      @relation("OrgPermits", fields: [organizationId], references: [id], onDelete: Cascade)
+  facility     Facility?         @relation("FacilityPermits", fields: [facilityId], references: [id], onDelete: SetNull)
+  site         Site?             @relation("SitePermits", fields: [siteId], references: [id], onDelete: SetNull)
+  owner        User?             @relation("PermitOwner", fields: [ownerUserId], references: [id])
+  createdBy    User              @relation("PermitCreator", fields: [createdByUserId], references: [id])
+  conditions   PermitCondition[] @relation("PermitConditions")
+  incidents    EnvironmentalIncident[] @relation("IncidentPermit")
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status, expiresOn])
+  @@index([organizationId, facilityId])
+  @@map("environmental_permits")
+}
+
+/// One numbered condition attached to a permit. Compliance is tracked per
+/// condition, not per permit, because that is how a regulator inspects.
+model PermitCondition {
+  id            String           @id @default(cuid())
+  organizationId String          @map("organization_id")
+  permitId      String           @map("permit_id")
+  reference     String
+  description   String
+  /// Numeric limit the condition imposes, where it has one.
+  limitValue    Decimal?         @map("limit_value") @db.Decimal(18, 6)
+  limitUnit     String?          @map("limit_unit")
+  /// How often compliance must be demonstrated, e.g. monthly, quarterly.
+  monitoringFrequency String?    @map("monitoring_frequency")
+  complianceStatus ComplianceStatus @default(not_assessed) @map("compliance_status")
+  lastAssessedOn DateTime?       @map("last_assessed_on") @db.Date
+  nextDueOn     DateTime?        @map("next_due_on") @db.Date
+  notes         String?
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  organization Organization        @relation("OrgPermitConditions", fields: [organizationId], references: [id], onDelete: Cascade)
+  permit       EnvironmentalPermit @relation("PermitConditions", fields: [permitId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, permitId])
+  @@index([organizationId, complianceStatus, nextDueOn])
+  @@map("permit_conditions")
+}
+
+/// The register of environmental legislation applicable to the organisation,
+/// with the compliance position against each entry. ISO 14001 clause 6.1.3
+/// requires this to exist and be kept current.
+model LegalRegisterEntry {
+  id             String           @id @default(cuid())
+  organizationId String           @map("organization_id")
+  /// Short name, e.g. "Environmental Permitting (England and Wales) Regulations 2016".
+  title          String
+  citation       String?
+  /// Jurisdiction the instrument applies in, e.g. "England and Wales".
+  jurisdiction   String?
+  /// Which part of the business it bites on.
+  applicability  String
+  /// What the organisation must actually do to comply.
+  obligation     String
+  complianceStatus ComplianceStatus @default(not_assessed) @map("compliance_status")
+  /// Evidence demonstrating compliance, described in words.
+  evidenceSummary String?         @map("evidence_summary")
+  ownerUserId    String?          @map("owner_user_id")
+  lastReviewedOn DateTime?        @map("last_reviewed_on") @db.Date
+  /// ISO 14001 expects periodic re-evaluation of compliance obligations.
+  nextReviewOn   DateTime?        @map("next_review_on") @db.Date
+  referenceUrl   String?          @map("reference_url")
+  notes          String?
+  createdByUserId String          @map("created_by_user_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation("OrgLegalRegister", fields: [organizationId], references: [id], onDelete: Cascade)
+  owner        User?        @relation("LegalRegisterOwner", fields: [ownerUserId], references: [id])
+  createdBy    User         @relation("LegalRegisterCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, complianceStatus])
+  @@index([organizationId, nextReviewOn])
+  @@map("legal_register_entries")
+}
+
+/// An environmental incident, near miss, complaint or non-conformance.
+/// Keeping this register is a statutory expectation for most permitted
+/// operators and a certification requirement under ISO 14001.
+model EnvironmentalIncident {
+  id             String           @id @default(cuid())
+  organizationId String           @map("organization_id")
+  reference      String
+  type           IncidentType
+  severity       IncidentSeverity
+  status         IncidentStatus   @default(reported)
+  occurredAt     DateTime         @map("occurred_at")
+  discoveredAt   DateTime?        @map("discovered_at")
+  facilityId     String?          @map("facility_id")
+  siteId         String?          @map("site_id")
+  projectId      String?          @map("project_id")
+  permitId       String?          @map("permit_id")
+  description    String
+  immediateAction String?         @map("immediate_action")
+  rootCause      String?          @map("root_cause")
+  /// Environmental medium affected: air, water, land, or a combination.
+  affectedMedium String?          @map("affected_medium")
+  estimatedQuantity Decimal?      @map("estimated_quantity") @db.Decimal(18, 6)
+  quantityUnit   String?          @map("quantity_unit")
+  /// Whether the regulator has to be told. Severe incidents almost always are.
+  regulatorNotifiable Boolean     @default(false) @map("regulator_notifiable")
+  regulatorNotifiedAt DateTime?   @map("regulator_notified_at")
+  regulatorReference String?      @map("regulator_reference")
+  reportedByUserId String?        @map("reported_by_user_id")
+  ownerUserId    String?          @map("owner_user_id")
+  closedAt       DateTime?        @map("closed_at")
+  createdByUserId String          @map("created_by_user_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  organization Organization         @relation("OrgIncidents", fields: [organizationId], references: [id], onDelete: Cascade)
+  facility     Facility?            @relation("FacilityIncidents", fields: [facilityId], references: [id], onDelete: SetNull)
+  site         Site?                @relation("SiteIncidents", fields: [siteId], references: [id], onDelete: SetNull)
+  project      Project?             @relation("ProjectIncidents", fields: [projectId], references: [id], onDelete: SetNull)
+  permit       EnvironmentalPermit? @relation("IncidentPermit", fields: [permitId], references: [id], onDelete: SetNull)
+  reportedBy   User?                @relation("IncidentReporter", fields: [reportedByUserId], references: [id])
+  owner        User?                @relation("IncidentOwner", fields: [ownerUserId], references: [id])
+  createdBy    User                 @relation("IncidentCreator", fields: [createdByUserId], references: [id])
+  actions      CorrectiveAction[]   @relation("IncidentActions")
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status, occurredAt])
+  @@index([organizationId, severity, occurredAt])
+  @@index([organizationId, facilityId])
+  @@map("environmental_incidents")
+}
+
+/// A containment, corrective or preventive action arising from an incident.
+/// An incident cannot be closed while it has open actions.
+model CorrectiveAction {
+  id             String                 @id @default(cuid())
+  organizationId String                 @map("organization_id")
+  incidentId     String                 @map("incident_id")
+  type           ActionType
+  description    String
+  status         CorrectiveActionStatus @default(open)
+  assignedToUserId String?              @map("assigned_to_user_id")
+  dueOn          DateTime?              @map("due_on") @db.Date
+  completedAt    DateTime?              @map("completed_at")
+  /// Someone other than the doer confirms the action actually worked.
+  verifiedByUserId String?              @map("verified_by_user_id")
+  verifiedAt     DateTime?              @map("verified_at")
+  verificationNote String?              @map("verification_note")
+  createdByUserId String                @map("created_by_user_id")
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  organization Organization          @relation("OrgCorrectiveActions", fields: [organizationId], references: [id], onDelete: Cascade)
+  incident     EnvironmentalIncident @relation("IncidentActions", fields: [incidentId], references: [id], onDelete: Cascade)
+  assignedTo   User?                 @relation("ActionAssignee", fields: [assignedToUserId], references: [id])
+  verifiedBy   User?                 @relation("ActionVerifier", fields: [verifiedByUserId], references: [id])
+  createdBy    User                  @relation("ActionCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, status, dueOn])
+  @@index([organizationId, incidentId])
+  @@map("corrective_actions")
+}
+
+/// ISO 14001 clause 6.1.2 aspects and impacts register. An activity has an
+/// environmental aspect, which causes an impact, rated for significance under
+/// normal, abnormal and emergency conditions.
+model EnvironmentalAspect {
+  id             String             @id @default(cuid())
+  organizationId String             @map("organization_id")
+  facilityId     String?            @map("facility_id")
+  activity       String
+  aspect         String
+  impact         String
+  /// normal, abnormal or emergency operating condition.
+  operatingCondition String         @default("normal") @map("operating_condition")
+  /// Scoring inputs, each 1-5, multiplied into the significance score.
+  severityScore    Int              @default(1) @map("severity_score")
+  likelihoodScore  Int              @default(1) @map("likelihood_score")
+  /// Legal or regulatory exposure the aspect carries.
+  legalScore       Int              @default(1) @map("legal_score")
+  /// severity x likelihood x legal, stored so the register can be sorted and
+  /// filtered without recomputing across the whole table.
+  significanceScore Int             @default(1) @map("significance_score")
+  significance     AspectSignificance @default(low)
+  existingControls String?          @map("existing_controls")
+  /// Further action needed where the aspect is significant.
+  furtherAction    String?          @map("further_action")
+  ownerUserId      String?          @map("owner_user_id")
+  lastReviewedOn   DateTime?        @map("last_reviewed_on") @db.Date
+  nextReviewOn     DateTime?        @map("next_review_on") @db.Date
+  createdByUserId  String           @map("created_by_user_id")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation("OrgAspects", fields: [organizationId], references: [id], onDelete: Cascade)
+  facility     Facility?    @relation("FacilityAspects", fields: [facilityId], references: [id], onDelete: SetNull)
+  owner        User?        @relation("AspectOwner", fields: [ownerUserId], references: [id])
+  createdBy    User         @relation("AspectCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, significance])
+  @@index([organizationId, facilityId])
+  @@map("environmental_aspects")
 }
