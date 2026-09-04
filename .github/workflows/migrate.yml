@@ -1,8 +1,13 @@
 name: Apply DB migrations
 
+# Manual-trigger only. Vercel's own vercel-build script already runs
+# `prisma migrate deploy` on every production deployment (see package.json) —
+# this workflow used to also auto-run on every push to main, meaning two
+# independent processes applied migrations against the same database on
+# every push. That's redundant at best and a race condition at worst.
+# Keep this as a manual break-glass tool (e.g. to apply migrations ahead of
+# a deploy, or re-run one that failed) rather than a second automatic path.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
