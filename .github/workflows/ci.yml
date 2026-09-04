@@ -92,7 +92,10 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.27.x"
+          # Matches mobile-build.yml. image_cropper_platform_interface calls
+          # Color.toARGB32(), added to dart:ui in Flutter 3.29 — 3.27.x fails
+          # to compile it during `flutter test`.
+          flutter-version: "3.44.0"
           channel: stable
           cache: true
 
