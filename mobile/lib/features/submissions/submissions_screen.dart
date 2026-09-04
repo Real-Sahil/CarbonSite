@@ -12,6 +12,10 @@ import '../../core/widgets/offline_banner.dart';
 import '../../core/widgets/status_chip.dart';
 import '../sync/sync_service.dart';
 
+/// Warning (not error) tint — used for "submitted, but no evidence attached"
+/// states, which are not failures but do need the field worker's attention.
+const _warningColor = Color(0xFFB45309); // amber-700
+
 /// The field worker's own submissions:
 ///
 /// - "On this device" — local drafts still pending / syncing / failed,
@@ -212,6 +216,11 @@ class _DraftTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final failed = draft.status == DraftStatus.failed.dbValue;
+    // Submitted successfully, but the photo was permanently rejected by the
+    // server and dropped rather than blocking the record forever — the
+    // worker still needs to know their evidence didn't make it.
+    final submittedWithoutPhoto = draft.status == DraftStatus.submitted.dbValue &&
+        (draft.syncError?.isNotEmpty ?? false);
     final summary = _summarize(draft);
 
     return Padding(
@@ -221,7 +230,11 @@ class _DraftTile extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: failed ? colorScheme.error : colorScheme.outlineVariant,
+            color: failed
+                ? colorScheme.error
+                : submittedWithoutPhoto
+                    ? _warningColor
+                    : colorScheme.outlineVariant,
           ),
         ),
         child: Column(
@@ -302,6 +315,24 @@ class _DraftTile extends StatelessWidget {
                 ],
               ),
             ],
+            if (submittedWithoutPhoto) ...[
+              const SizedBox(height: 10),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.warning_amber_rounded, size: 16, color: _warningColor),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      draft.syncError!,
+                      style: textTheme.bodySmall?.copyWith(color: _warningColor),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -336,6 +367,10 @@ class _RemoteTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final dt = DateTime.tryParse(submission.createdAt);
+    // No evidence file made it to the server for this submission — most
+    // commonly a photo that was permanently rejected during sync and
+    // dropped rather than blocking the record forever (see SyncService).
+    final missingEvidence = submission.evidenceCount == 0;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -346,39 +381,59 @@ class _RemoteTile extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colorScheme.outlineVariant),
+            border: Border.all(
+              color: missingEvidence ? _warningColor : colorScheme.outlineVariant,
+            ),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                _docIcon(submission.documentType),
-                size: 22,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _docLabel(submission.documentType),
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+              Row(
+                children: [
+                  Icon(
+                    _docIcon(submission.documentType),
+                    size: 22,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _docLabel(submission.documentType),
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          dt == null
+                              ? submission.createdAt
+                              : DateFormat('d MMM yyyy, HH:mm').format(dt.toLocal()),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  SubmissionStatusChip(status: submission.status, compact: true),
+                ],
+              ),
+              if (missingEvidence) ...[
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, size: 16, color: _warningColor),
+                    const SizedBox(width: 6),
                     Text(
-                      dt == null
-                          ? submission.createdAt
-                          : DateFormat('d MMM yyyy, HH:mm').format(dt.toLocal()),
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                      'No evidence attached',
+                      style: textTheme.bodySmall?.copyWith(color: _warningColor),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              SubmissionStatusChip(status: submission.status, compact: true),
+              ],
             ],
           ),
         ),

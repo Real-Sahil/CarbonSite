@@ -112,6 +112,10 @@ class SyncService {
       // the whole draft later; only unrecoverable file rejections (bad type /
       // too large) fall through to a photo-less submission.
       final evidenceIds = <String>[];
+      // Set only when the photo is permanently dropped (see below) — recorded
+      // on the draft so the field worker sees it, instead of the submission
+      // silently landing with no evidence and no explanation.
+      String? photoDropReason;
       final photoPath = draft.photoLocalPath;
       if (photoPath != null && photoPath.isNotEmpty) {
         final file = File(photoPath);
@@ -138,7 +142,11 @@ class SyncService {
             // the photo.
             if (!unrecoverableFile) rethrow;
             // The server permanently rejects this file — submit the record
-            // without it rather than blocking the data forever.
+            // without it rather than blocking the data forever, but record
+            // why so the field worker isn't left thinking the photo made it.
+            photoDropReason =
+                'Photo could not be attached (${_describeDioError(e)}) — '
+                'submitted without evidence.';
           }
         }
       }
@@ -170,7 +178,11 @@ class SyncService {
         );
       }
 
-      await _db.updateDraftStatus(draft.id, DraftStatus.submitted);
+      await _db.updateDraftStatus(
+        draft.id,
+        DraftStatus.submitted,
+        syncError: photoDropReason,
+      );
       // Keep the local photo after sync — provides fallback if presigned URL fails.
       // Device storage is typically not space-constrained; instant offline access
       // is more valuable than saving a few MB.

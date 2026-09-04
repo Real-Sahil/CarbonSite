@@ -95,6 +95,12 @@ class FieldSubmission {
   /// GHG Protocol scope (1, 2 or 3) assigned during review, if known.
   final int? scope;
 
+  /// Number of evidence files (photos) attached server-side. Zero means the
+  /// field worker's photo never made it — most commonly because it was
+  /// permanently rejected during sync (see SyncService._syncDraft) and the
+  /// record was submitted without it rather than blocked indefinitely.
+  final int evidenceCount;
+
   const FieldSubmission({
     required this.id,
     required this.documentType,
@@ -103,6 +109,7 @@ class FieldSubmission {
     this.clientKey,
     this.co2eKg,
     this.scope,
+    this.evidenceCount = 0,
   });
 
   factory FieldSubmission.fromJson(Map<String, dynamic> json) {
@@ -118,6 +125,9 @@ class FieldSubmission {
       return null;
     }
 
+    final rawEvidence =
+        (json['evidenceFiles'] ?? json['evidence_files']) as List<dynamic>?;
+
     return FieldSubmission(
       id: json['id'] as String? ?? '',
       documentType: json['documentType'] as String? ??
@@ -130,6 +140,7 @@ class FieldSubmission {
           json['idempotencyKey'] as String?,
       co2eKg: toDouble(json['co2eKg'] ?? json['co2e_kg']),
       scope: toInt(json['scope']),
+      evidenceCount: rawEvidence?.length ?? 0,
     );
   }
 }
