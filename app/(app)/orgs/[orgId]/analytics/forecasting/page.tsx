@@ -18,9 +18,11 @@ export default function ForecastingPage() {
   const [selectedForecast, setSelectedForecast] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [generatingType, setGeneratingType] = useState<string | null>(null);
+  const [generateError, setGenerateError] = useState<string | null>(null);
 
   const handleGenerateForecast = async (type: "emissions" | "supplier_quality" | "anomaly_rate") => {
     setGeneratingType(type);
+    setGenerateError(null);
     try {
       const response = await fetch(`/api/orgs/${orgId}/forecasts`, {
         method: "POST",
@@ -33,13 +35,14 @@ export default function ForecastingPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to queue forecast");
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.message || "Failed to queue forecast");
       }
 
       setRefreshTrigger((t) => t + 1);
       setTimeout(() => setGeneratingType(null), 2000);
     } catch (error) {
-      console.error("Forecast generation error:", error);
+      setGenerateError(error instanceof Error ? error.message : "Failed to queue forecast");
       setGeneratingType(null);
     }
   };
@@ -90,6 +93,13 @@ export default function ForecastingPage() {
         </TabsContent>
 
         <TabsContent value="generate" className="space-y-4">
+          {generateError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{generateError}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Emissions Forecast */}
             <Card className="flex flex-col">

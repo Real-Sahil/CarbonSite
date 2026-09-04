@@ -125,7 +125,7 @@ export async function POST(
       .parse(body);
 
     // Handle supplier analytics refresh
-    if (forecastType === "supplier_quality" || triggerType) {
+    if (forecastType === "supplier_quality") {
       if (triggerType === "single" && !supplierId) {
         return apiError("INVALID_REQUEST", "supplierId required for single forecast", 400);
       }
