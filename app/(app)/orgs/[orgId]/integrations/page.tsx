@@ -65,82 +65,29 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
               <p className="text-slate-400">Connect your accounting platform to automatically sync invoices and calculate Scope 3 emissions from supplier spend.</p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              {/* Xero Card */}
-              <Link href={`/orgs/${orgId}/integrations/accounting/xero`}>
-                <Card className="border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 transition-all cursor-pointer h-full">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-white">Xero</CardTitle>
-                        <CardDescription>Cloud accounting platform</CardDescription>
-                      </div>
-                      <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
-                        Popular
-                      </Badge>
+            <Link href={`/orgs/${orgId}/integrations/accounting`}>
+              <Card className="border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 transition-all cursor-pointer">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-white">Xero, QuickBooks &amp; Sage</CardTitle>
+                      <CardDescription>Connect an accounting platform</CardDescription>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-slate-300">
-                      Automatically sync invoices and bill details to calculate spend-based Scope 3 emissions from your suppliers.
-                    </p>
-                    <div className="flex items-center text-amber-400 text-sm font-medium">
-                      Connect Xero <ArrowRight className="h-4 w-4 ml-2" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-
-              {/* QuickBooks Card */}
-              <Link href={`/orgs/${orgId}/integrations/accounting/quickbooks`}>
-                <Card className="border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 transition-all cursor-pointer h-full">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-white">QuickBooks</CardTitle>
-                        <CardDescription>Accounting software</CardDescription>
-                      </div>
-                      <Badge variant="outline" className="border-blue-500/50 text-blue-400 bg-blue-500/10">
-                        Coming Soon
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-slate-300">
-                      Sync invoice data from QuickBooks Online to track supplier spending and calculate emissions from business travel and purchased goods.
-                    </p>
-                    <div className="flex items-center text-slate-500 text-sm font-medium cursor-not-allowed">
-                      Coming Soon
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-
-              {/* Sage Card */}
-              <Link href={`/orgs/${orgId}/integrations/accounting/sage`}>
-                <Card className="border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 transition-all cursor-pointer h-full">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-white">Sage</CardTitle>
-                        <CardDescription>ERP and accounting</CardDescription>
-                      </div>
-                      <Badge variant="outline" className="border-purple-500/50 text-purple-400 bg-purple-500/10">
-                        Coming Soon
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-slate-300">
-                      Integrate with Sage ERP to collect comprehensive spend data and map to emissions categories automatically.
-                    </p>
-                    <div className="flex items-center text-slate-500 text-sm font-medium cursor-not-allowed">
-                      Coming Soon
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
+                    <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+                      Active
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-slate-300">
+                    Automatically sync invoices and bill details to calculate spend-based Scope 3 emissions from your suppliers.
+                  </p>
+                  <div className="flex items-center text-amber-400 text-sm font-medium">
+                    Manage Accounting Connections <ArrowRight className="h-4 w-4 ml-2" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* Supplier Section */}
