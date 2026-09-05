@@ -51,7 +51,7 @@ export function XeroConnectButton({ orgId }: XeroConnectButtonProps) {
         )}
       </Button>
       {error && (
-        <p className="text-xs text-red-400 mt-2">{error}</p>
+        <p className="text-xs text-red-600 mt-2">{error}</p>
       )}
     </>
   );

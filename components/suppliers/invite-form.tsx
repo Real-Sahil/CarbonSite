@@ -95,10 +95,10 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
   };
 
   return (
-    <Card className="border-slate-700 bg-slate-800/50">
+    <Card className="border-[#E5E7EB] bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <Mail className="h-5 w-5 text-amber-400" />
+        <CardTitle className="text-slate-900 flex items-center gap-2">
+          <Mail className="h-5 w-5 text-[#f97316]" />
           Send Supplier Invitation
         </CardTitle>
         <CardDescription>
@@ -108,23 +108,23 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
       <CardContent className="space-y-6">
         {/* Success Message */}
         {successMessage && (
-          <div className="flex gap-3 p-4 bg-emerald-500/20 border border-emerald-500/50 rounded-lg">
-            <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-emerald-100">{successMessage}</p>
+          <div className="flex gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+            <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-emerald-800">{successMessage}</p>
           </div>
         )}
 
         {/* Error Message */}
         {errorMessage && (
-          <div className="flex gap-3 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
-            <p className="text-sm text-red-100">{errorMessage}</p>
+          <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700">{errorMessage}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Invite Method Selection */}
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-white">
+            <label className="block text-sm font-medium text-slate-900">
               Invitation Method
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -133,12 +133,12 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
                 onClick={() => setInviteMethod("magic-link")}
                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                   inviteMethod === "magic-link"
-                    ? "border-amber-500 bg-amber-500/10"
-                    : "border-slate-700 bg-slate-900/50 hover:border-slate-600"
+                    ? "border-[#f97316] bg-[#fff7ed]"
+                    : "border-[#E5E7EB] bg-white hover:border-slate-300"
                 }`}
               >
-                <div className="font-medium text-white">Magic Link</div>
-                <div className="text-xs text-slate-400 mt-1">
+                <div className="font-medium text-slate-900">Magic Link</div>
+                <div className="text-xs text-slate-500 mt-1">
                   No account needed, one-time use
                 </div>
               </button>
@@ -147,12 +147,12 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
                 onClick={() => setInviteMethod("credentials")}
                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                   inviteMethod === "credentials"
-                    ? "border-amber-500 bg-amber-500/10"
-                    : "border-slate-700 bg-slate-900/50 hover:border-slate-600"
+                    ? "border-[#f97316] bg-[#fff7ed]"
+                    : "border-[#E5E7EB] bg-white hover:border-slate-300"
                 }`}
               >
-                <div className="font-medium text-white">Create Account</div>
-                <div className="text-xs text-slate-400 mt-1">
+                <div className="font-medium text-slate-900">Create Account</div>
+                <div className="text-xs text-slate-500 mt-1">
                   Persistent login credentials
                 </div>
               </button>
@@ -161,7 +161,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
 
           {/* Email Input */}
           <div>
-            <label htmlFor="supplier-email" className="block text-sm font-medium text-white mb-2">
+            <label htmlFor="supplier-email" className="block text-sm font-medium text-slate-900 mb-2">
               Supplier Email Address
             </label>
             <input
@@ -171,13 +171,13 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               value={formData.email}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f97316]"
             />
           </div>
 
           {/* Company Name Input */}
           <div>
-            <label htmlFor="supplier-companyName" className="block text-sm font-medium text-white mb-2">
+            <label htmlFor="supplier-companyName" className="block text-sm font-medium text-slate-900 mb-2">
               Supplier Company Name
             </label>
             <input
@@ -186,20 +186,20 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               placeholder="e.g., Acme Supply Co."
               value={formData.companyName}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f97316]"
             />
           </div>
 
           {/* Category Select */}
           <div>
-            <label htmlFor="supplier-category" className="block text-sm font-medium text-white mb-2">
+            <label htmlFor="supplier-category" className="block text-sm font-medium text-slate-900 mb-2">
               Category (Optional)
             </label>
             <select
               id="supplier-category"
               value={formData.category}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500"
+              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 focus:outline-none focus:border-[#f97316]"
             >
               <option value="">Select category</option>
               <option value="logistics">Logistics & Transport</option>
@@ -214,8 +214,8 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
 
           {/* Credentials Method Password Info */}
           {inviteMethod === "credentials" && (
-            <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <div className="text-sm text-blue-100">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="text-sm text-blue-800">
                 <p className="font-medium mb-2">Password will be auto-generated and sent via email</p>
                 <p className="text-xs">The supplier will be prompted to change their password on first login.</p>
               </div>
@@ -224,8 +224,8 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
 
           {/* Magic Link Method Info */}
           {inviteMethod === "magic-link" && (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-              <div className="text-sm text-emerald-100">
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <div className="text-sm text-emerald-800">
                 <p className="font-medium mb-2">Magic link expires in 7 days</p>
                 <p className="text-xs">No account needed. Supplier opens link to submit data directly.</p>
               </div>
@@ -236,7 +236,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold disabled:opacity-50"
+            className="w-full bg-[#f97316] hover:bg-orange-600 text-white font-semibold disabled:opacity-50"
           >
             {isLoading ? (
               <>
@@ -253,12 +253,12 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
         </form>
 
         {/* Info Section */}
-        <div className="border-t border-slate-700 pt-6">
-          <h4 className="font-semibold text-white mb-3">Comparison:</h4>
+        <div className="border-t border-[#E5E7EB] pt-6">
+          <h4 className="font-semibold text-slate-900 mb-3">Comparison:</h4>
           <div className="grid gap-4 text-sm">
             <div>
-              <div className="font-medium text-amber-400 mb-1">Magic Link</div>
-              <ul className="space-y-1 text-slate-300 text-xs">
+              <div className="font-medium text-[#f97316] mb-1">Magic Link</div>
+              <ul className="space-y-1 text-slate-600 text-xs">
                 <li>✓ No account creation required</li>
                 <li>✓ Faster onboarding</li>
                 <li>✓ Expires after 7 days</li>
@@ -266,8 +266,8 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               </ul>
             </div>
             <div>
-              <div className="font-medium text-amber-400 mb-1">Create Account</div>
-              <ul className="space-y-1 text-slate-300 text-xs">
+              <div className="font-medium text-[#f97316] mb-1">Create Account</div>
+              <ul className="space-y-1 text-slate-600 text-xs">
                 <li>✓ Persistent login access</li>
                 <li>✓ Can return to view submissions</li>
                 <li>✓ Better for ongoing relationships</li>

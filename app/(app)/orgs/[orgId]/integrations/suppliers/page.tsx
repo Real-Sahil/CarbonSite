@@ -6,20 +6,13 @@ import { prisma } from "@/lib/db";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
-  Mail,
-  Users,
-  FileText,
-  CheckCircle,
   Truck,
-  Send,
+  CheckCircle,
 } from "lucide-react";
 import { SupplierInviteForm } from "@/components/suppliers/invite-form";
 import { SupplierInvitesList } from "@/components/suppliers/invites-list";
@@ -62,19 +55,19 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900">
-      <div className="border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm">
+    <div className="min-h-screen bg-[#F8F9FA]">
+      <div className="border-b border-[#E5E7EB] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8">
-          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-4">
+          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-[#f97316] hover:text-orange-600 mb-4">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Back to Integrations</span>
           </Link>
           <div className="mb-2 flex items-center gap-2">
-            <Truck className="h-5 w-5 text-amber-400" />
-            <span className="text-sm font-semibold text-amber-400 uppercase tracking-widest">Supplier Management</span>
+            <Truck className="h-5 w-5 text-[#f97316]" />
+            <span className="text-sm font-semibold text-[#f97316] uppercase tracking-widest">Supplier Management</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Invite Suppliers to Collaborate</h1>
-          <p className="text-slate-400">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Invite Suppliers to Collaborate</h1>
+          <p className="text-slate-500">
             Send secure invitations to suppliers to submit emissions data, facility information, and supporting documentation.
           </p>
         </div>
@@ -89,41 +82,41 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
           <SupplierInvitesList orgId={orgId} invites={invites} />
 
           {/* How It Works */}
-          <Card className="border-slate-700 bg-slate-800/50">
+          <Card className="border-[#E5E7EB] bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">How Supplier Collaboration Works</CardTitle>
+              <CardTitle className="text-slate-900">How Supplier Collaboration Works</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">1</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">1</div>
                   <div>
-                    <h4 className="font-semibold text-white mb-1">You Send Invitation</h4>
-                    <p className="text-sm text-slate-300">Create an invitation with the supplier&apos;s email and send them a secure link.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">You Send Invitation</h4>
+                    <p className="text-sm text-slate-600">Create an invitation with the supplier&apos;s email and send them a secure link.</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">2</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">2</div>
                   <div>
-                    <h4 className="font-semibold text-white mb-1">Supplier Submits Data</h4>
-                    <p className="text-sm text-slate-300">They fill out a simple form with facility info, emissions data, and can upload supporting documents. No account needed.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Supplier Submits Data</h4>
+                    <p className="text-sm text-slate-600">They fill out a simple form with facility info, emissions data, and can upload supporting documents. No account needed.</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">3</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">3</div>
                   <div>
-                    <h4 className="font-semibold text-white mb-1">Your Team Reviews</h4>
-                    <p className="text-sm text-slate-300">Submissions appear in your review queue. You can approve, request clarifications, or reject with feedback.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Your Team Reviews</h4>
+                    <p className="text-sm text-slate-600">Submissions appear in your review queue. You can approve, request clarifications, or reject with feedback.</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">4</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">4</div>
                   <div>
-                    <h4 className="font-semibold text-white mb-1">Data Powers Your Reports</h4>
-                    <p className="text-sm text-slate-300">Approved supplier data is included in your Scope 3 calculations and audit-ready reports.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Data Powers Your Reports</h4>
+                    <p className="text-sm text-slate-600">Approved supplier data is included in your Scope 3 calculations and audit-ready reports.</p>
                   </div>
                 </div>
               </div>
@@ -131,31 +124,31 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
           </Card>
 
           {/* Best Practices */}
-          <Card className="border-slate-700 bg-slate-800/50">
+          <Card className="border-[#E5E7EB] bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">Best Practices for Supplier Engagement</CardTitle>
+              <CardTitle className="text-slate-900">Best Practices for Supplier Engagement</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-3 text-sm text-slate-300">
+              <ul className="space-y-3 text-sm text-slate-600">
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Start early:</strong> Begin supplier outreach before your reporting deadline</span>
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong className="text-slate-900">Start early:</strong> Begin supplier outreach before your reporting deadline</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Prioritize Tier 1:</strong> Focus first on direct suppliers with largest spend</span>
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong className="text-slate-900">Prioritize Tier 1:</strong> Focus first on direct suppliers with largest spend</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Follow up:</strong> Send reminders after 1 week and 2 weeks if no response</span>
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong className="text-slate-900">Follow up:</strong> Send reminders after 1 week and 2 weeks if no response</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Provide context:</strong> Explain why emissions data matters to your business</span>
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong className="text-slate-900">Provide context:</strong> Explain why emissions data matters to your business</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Use estimates:</strong> CarbonSite estimates Scope 3 if suppliers don&apos;t respond</span>
+                  <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <span><strong className="text-slate-900">Use estimates:</strong> CarbonSite estimates Scope 3 if suppliers don&apos;t respond</span>
                 </li>
               </ul>
             </CardContent>

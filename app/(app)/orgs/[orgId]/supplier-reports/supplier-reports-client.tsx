@@ -55,10 +55,10 @@ interface Props {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; class: string }> = {
-  submitted:    { label: "Pending",    icon: Clock,         class: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  under_review: { label: "In review",  icon: Clock,         class: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  accepted:     { label: "Accepted",   icon: CheckCircle2,  class: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  rejected:     { label: "Rejected",   icon: XCircle,       class: "bg-red-500/10 text-red-400 border-red-500/20" },
+  submitted:    { label: "Pending",    icon: Clock,         class: "bg-amber-50 text-amber-700 border-amber-200" },
+  under_review: { label: "In review",  icon: Clock,         class: "bg-blue-50 text-blue-700 border-blue-200" },
+  accepted:     { label: "Accepted",   icon: CheckCircle2,  class: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  rejected:     { label: "Rejected",   icon: XCircle,       class: "bg-red-50 text-red-700 border-red-200" },
 };
 
 const METHOD_LABELS: Record<string, string> = {
@@ -69,9 +69,9 @@ const METHOD_LABELS: Record<string, string> = {
 
 function qualityColor(score: number | null) {
   if (score === null) return "text-slate-500";
-  if (score >= 80) return "text-emerald-400";
-  if (score >= 60) return "text-amber-400";
-  return "text-red-400";
+  if (score >= 80) return "text-emerald-600";
+  if (score >= 60) return "text-amber-600";
+  return "text-red-600";
 }
 
 function formatAmount(amount: string, unit: string) {
@@ -136,10 +136,10 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
   if (reports.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-20 text-center px-4">
-        <div className="rounded-full bg-slate-800/60 p-4 mb-4">
+        <div className="rounded-full bg-slate-100 p-4 mb-4">
           <Package className="h-8 w-8 text-slate-500" />
         </div>
-        <p className="text-sm font-medium text-slate-300">No supplier reports</p>
+        <p className="text-sm font-medium text-slate-700">No supplier reports</p>
         <p className="mt-1 text-xs text-slate-500 max-w-xs">
           {status === "submitted"
             ? "No supplier reports are awaiting review. Reports appear here when suppliers submit data via their invite link."
@@ -162,27 +162,27 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
             return (
               <div
                 key={report.id}
-                className="rounded-xl border border-slate-700/50 bg-slate-800/40 overflow-hidden"
+                className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden"
               >
                 {/* Row header */}
                 <button
                   type="button"
                   onClick={() => setExpandedId(isExpanded ? null : report.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-700/20 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors"
                 >
                   <div className="shrink-0">
                     {isExpanded
-                      ? <ChevronDown className="h-4 w-4 text-slate-500" />
-                      : <ChevronRight className="h-4 w-4 text-slate-500" />}
+                      ? <ChevronDown className="h-4 w-4 text-slate-400" />
+                      : <ChevronRight className="h-4 w-4 text-slate-400" />}
                   </div>
 
                   {/* Supplier */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
-                      <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                    <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                      <Building2 className="h-3.5 w-3.5 text-slate-500" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-200 truncate">
+                      <p className="text-sm font-medium text-slate-900 truncate">
                         {report.supplierName ?? report.supplierEmail}
                       </p>
                       {report.supplierName && (
@@ -192,12 +192,12 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                   </div>
 
                   {/* Category */}
-                  <div className="hidden sm:block shrink-0 text-xs text-slate-300 w-36 truncate">
+                  <div className="hidden sm:block shrink-0 text-xs text-slate-600 w-36 truncate">
                     {report.emissionCategory?.name ?? "—"}
                   </div>
 
                   {/* Amount */}
-                  <div className="hidden md:block shrink-0 text-sm font-mono text-slate-300 w-32 text-right">
+                  <div className="hidden md:block shrink-0 text-sm font-mono text-slate-600 w-32 text-right">
                     {formatAmount(report.totalAmount, report.unit)}
                   </div>
 
@@ -207,7 +207,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                   </div>
 
                   {/* Year */}
-                  <div className="hidden sm:flex shrink-0 items-center gap-1 text-xs text-slate-300 w-12">
+                  <div className="hidden sm:flex shrink-0 items-center gap-1 text-xs text-slate-600 w-12">
                     <Calendar className="h-3 w-3" />
                     {report.reportingYear}
                   </div>
@@ -226,7 +226,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-7 px-2 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                        className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                         onClick={() => handleMarkUnderReview(report)}
                         disabled={isActing}
                       >
@@ -234,7 +234,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                       </Button>
                       <Button
                         size="sm"
-                        className="h-7 px-2 text-xs bg-emerald-600/80 hover:bg-emerald-600 text-white"
+                        className="h-7 px-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
                         onClick={() => { setAcceptDialog(report); setSelectedPeriodId(reportingPeriods[0]?.id ?? ""); }}
                         disabled={isActing}
                       >
@@ -243,7 +243,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => setRejectDialog(report)}
                         disabled={isActing}
                       >
@@ -255,7 +255,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                     <div className="shrink-0 flex items-center gap-1.5 ml-1" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="sm"
-                        className="h-7 px-2 text-xs bg-emerald-600/80 hover:bg-emerald-600 text-white"
+                        className="h-7 px-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
                         onClick={() => { setAcceptDialog(report); setSelectedPeriodId(reportingPeriods[0]?.id ?? ""); }}
                         disabled={isActing}
                       >
@@ -264,7 +264,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => setRejectDialog(report)}
                         disabled={isActing}
                       >
@@ -276,24 +276,24 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="border-t border-slate-700/50 px-4 py-4 bg-slate-900/30">
+                  <div className="border-t border-[#E5E7EB] px-4 py-4 bg-slate-50">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                       <div>
                         <p className="text-slate-500 mb-0.5">Method</p>
-                        <p className="text-slate-300">{METHOD_LABELS[report.calculationMethod] ?? report.calculationMethod}</p>
+                        <p className="text-slate-700">{METHOD_LABELS[report.calculationMethod] ?? report.calculationMethod}</p>
                       </div>
                       <div>
                         <p className="text-slate-500 mb-0.5">Scope</p>
-                        <p className="text-slate-300">Scope {report.emissionCategory?.scope ?? "—"} — {report.emissionCategory?.code ?? "—"}</p>
+                        <p className="text-slate-700">Scope {report.emissionCategory?.scope ?? "—"} — {report.emissionCategory?.code ?? "—"}</p>
                       </div>
                       <div>
                         <p className="text-slate-500 mb-0.5">Submitted</p>
-                        <p className="text-slate-300">{new Date(report.submittedAt).toLocaleDateString()}</p>
+                        <p className="text-slate-700">{new Date(report.submittedAt).toLocaleDateString()}</p>
                       </div>
                       {report.reviewedAt && (
                         <div>
                           <p className="text-slate-500 mb-0.5">Reviewed</p>
-                          <p className="text-slate-300">
+                          <p className="text-slate-700">
                             {new Date(report.reviewedAt).toLocaleDateString()}
                             {report.reviewedBy && (
                               <span className="text-slate-500"> by {report.reviewedBy.name ?? report.reviewedBy.email}</span>
@@ -306,21 +306,21 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                     {report.notes && (
                       <div className="mt-3">
                         <p className="text-[11px] text-slate-500 mb-1">Supplier notes</p>
-                        <p className="text-xs text-slate-300 bg-slate-800/60 rounded-lg px-3 py-2">{report.notes}</p>
+                        <p className="text-xs text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-2">{report.notes}</p>
                       </div>
                     )}
 
                     {report.rejectionReason && (
                       <div className="mt-3">
                         <p className="text-[11px] text-slate-500 mb-1">Rejection reason</p>
-                        <p className="text-xs text-red-400 bg-red-500/5 rounded-lg px-3 py-2">{report.rejectionReason}</p>
+                        <p className="text-xs text-red-700 bg-red-50 rounded-lg px-3 py-2">{report.rejectionReason}</p>
                       </div>
                     )}
 
                     {report.convertedToRecordId && (
                       <div className="mt-3">
                         <p className="text-[11px] text-slate-500 mb-1">Converted to activity record</p>
-                        <p className="text-xs text-emerald-400 font-mono">{report.convertedToRecordId}</p>
+                        <p className="text-xs text-emerald-600 font-mono">{report.convertedToRecordId}</p>
                       </div>
                     )}
 
@@ -330,9 +330,9 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                         {flags.map((flag, i) => (
                           <div key={i} className={[
                             "flex items-start gap-2 text-xs rounded-lg px-3 py-2",
-                            flag.severity === "error" ? "bg-red-500/10 text-red-400" :
-                            flag.severity === "warning" ? "bg-amber-500/10 text-amber-400" :
-                            "bg-blue-500/10 text-blue-400",
+                            flag.severity === "error" ? "bg-red-50 text-red-700" :
+                            flag.severity === "warning" ? "bg-amber-50 text-amber-700" :
+                            "bg-blue-50 text-blue-700",
                           ].join(" ")}>
                             <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                             <span>{flag.message}</span>
@@ -351,7 +351,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
           <div className="mt-4 flex justify-center">
             <a
               href={`?status=${status}&cursor=${nextCursor}`}
-              className="text-xs text-slate-300 hover:text-slate-100 px-4 py-2 rounded-lg border border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+              className="text-xs text-slate-600 hover:text-slate-900 px-4 py-2 rounded-lg border border-[#E5E7EB] hover:bg-slate-50 transition-colors"
             >
               Load more
             </a>
@@ -359,36 +359,36 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
         )}
 
         {actionError && (
-          <div className="mt-3 text-xs text-red-400 text-center">{actionError}</div>
+          <div className="mt-3 text-xs text-red-600 text-center">{actionError}</div>
         )}
       </div>
 
       {/* Accept dialog */}
       <Dialog open={!!acceptDialog} onOpenChange={(open) => { if (!open) { setAcceptDialog(null); setSelectedPeriodId(""); } }}>
-        <DialogContent className="bg-[#1E293B] border-slate-700/60 max-w-md">
+        <DialogContent className="bg-white border-slate-200 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-slate-100">Accept supplier report</DialogTitle>
-            <DialogDescription className="text-slate-400 text-sm">
+            <DialogTitle className="text-slate-900">Accept supplier report</DialogTitle>
+            <DialogDescription className="text-slate-500 text-sm">
               This will convert the report into an activity record. Select a reporting period to assign it to.
             </DialogDescription>
           </DialogHeader>
 
           {acceptDialog && (
             <div className="space-y-4 py-2">
-              <div className="rounded-lg bg-slate-800/60 px-3 py-2.5 text-xs space-y-1">
-                <p className="text-slate-300 font-medium">{acceptDialog.supplierName ?? acceptDialog.supplierEmail}</p>
+              <div className="rounded-lg bg-slate-50 px-3 py-2.5 text-xs space-y-1">
+                <p className="text-slate-900 font-medium">{acceptDialog.supplierName ?? acceptDialog.supplierEmail}</p>
                 <p className="text-slate-500">{formatAmount(acceptDialog.totalAmount, acceptDialog.unit)} via {METHOD_LABELS[acceptDialog.calculationMethod] ?? acceptDialog.calculationMethod}</p>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-400">Reporting period</Label>
+                <Label className="text-xs text-slate-600">Reporting period</Label>
                 <Select value={selectedPeriodId} onValueChange={setSelectedPeriodId}>
-                  <SelectTrigger className="bg-slate-800/60 border-slate-700/50 text-slate-200 text-sm">
+                  <SelectTrigger className="bg-white border-[#E5E7EB] text-slate-900 text-sm">
                     <SelectValue placeholder="Select a reporting period" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1A2942] border-slate-700/50">
+                  <SelectContent className="bg-white border-slate-200">
                     {reportingPeriods.map((p) => (
-                      <SelectItem key={p.id} value={p.id} className="text-slate-200 focus:bg-slate-700/50 focus:text-slate-100">
+                      <SelectItem key={p.id} value={p.id} className="text-slate-900 focus:bg-slate-100 focus:text-slate-900">
                         {p.label}
                       </SelectItem>
                     ))}
@@ -398,10 +398,10 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
             </div>
           )}
 
-          {actionError && <p className="text-xs text-red-400">{actionError}</p>}
+          {actionError && <p className="text-xs text-red-600">{actionError}</p>}
 
           <DialogFooter className="gap-2">
-            <Button variant="ghost" size="sm" className="text-slate-400" onClick={() => setAcceptDialog(null)}>
+            <Button variant="ghost" size="sm" className="text-slate-600" onClick={() => setAcceptDialog(null)}>
               Cancel
             </Button>
             <Button
@@ -418,33 +418,33 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
 
       {/* Reject dialog */}
       <Dialog open={!!rejectDialog} onOpenChange={(open) => { if (!open) { setRejectDialog(null); setRejectionReason(""); } }}>
-        <DialogContent className="bg-[#1E293B] border-slate-700/60 max-w-md">
+        <DialogContent className="bg-white border-slate-200 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-slate-100">Reject supplier report</DialogTitle>
-            <DialogDescription className="text-slate-400 text-sm">
+            <DialogTitle className="text-slate-900">Reject supplier report</DialogTitle>
+            <DialogDescription className="text-slate-500 text-sm">
               Provide a reason so the supplier knows what needs to be corrected.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-400">Reason for rejection</Label>
+              <Label className="text-xs text-slate-600">Reason for rejection</Label>
               <Textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 maxLength={500}
                 rows={4}
                 placeholder="e.g. The reported amount appears to be in kg rather than tonnes. Please resubmit with the correct unit."
-                className="bg-slate-800/60 border-slate-700/50 text-slate-200 text-sm resize-none placeholder:text-slate-600"
+                className="bg-white border-[#E5E7EB] text-slate-900 text-sm resize-none placeholder:text-slate-400"
               />
-              <p className="text-[11px] text-slate-600 text-right">{rejectionReason.length}/500</p>
+              <p className="text-[11px] text-slate-400 text-right">{rejectionReason.length}/500</p>
             </div>
           </div>
 
-          {actionError && <p className="text-xs text-red-400">{actionError}</p>}
+          {actionError && <p className="text-xs text-red-600">{actionError}</p>}
 
           <DialogFooter className="gap-2">
-            <Button variant="ghost" size="sm" className="text-slate-400" onClick={() => setRejectDialog(null)}>
+            <Button variant="ghost" size="sm" className="text-slate-600" onClick={() => setRejectDialog(null)}>
               Cancel
             </Button>
             <Button

@@ -41,19 +41,19 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
   await requireOrgMember(orgId, "admin", "editor");
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900">
-      <div className="border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm">
+    <div className="min-h-screen bg-[#F8F9FA]">
+      <div className="border-b border-[#E5E7EB] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8">
-          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-amber-400 hover:text-amber-300 mb-4">
+          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-[#f97316] hover:text-orange-600 mb-4">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Back to Integrations</span>
           </Link>
           <div className="mb-2 flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-amber-400" />
-            <span className="text-sm font-semibold text-amber-400 uppercase tracking-widest">Accounting Software</span>
+            <BarChart3 className="h-5 w-5 text-[#f97316]" />
+            <span className="text-sm font-semibold text-[#f97316] uppercase tracking-widest">Accounting Software</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Connect Your Accounting Platform</h1>
-          <p className="text-slate-400">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Connect Your Accounting Platform</h1>
+          <p className="text-slate-500">
             Sync invoices and expenses to automatically calculate Scope 3 emissions from supplier spend.
           </p>
         </div>
@@ -64,76 +64,76 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
           {/* Xero Section */}
           <div>
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-2">
-                <CheckCircle className="h-5 w-5 text-emerald-400" />
+              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2 mb-2">
+                <CheckCircle className="h-5 w-5 text-emerald-600" />
                 Xero
               </h2>
-              <p className="text-slate-400">Cloud accounting platform — fully integrated for invoice sync and Scope 3 calculation</p>
+              <p className="text-slate-500">Cloud accounting platform, fully integrated for invoice sync and Scope 3 calculation</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
               {/* Xero Status Card */}
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-white">Xero</CardTitle>
+                      <CardTitle className="text-slate-900">Xero</CardTitle>
                       <CardDescription>Cloud accounting for small businesses</CardDescription>
                     </div>
-                    <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+                    <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">
                       Active
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
                   <XeroConnectButton orgId={orgId} />
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your Xero password.
                   </p>
                 </CardContent>
               </Card>
 
               {/* Feature Cards */}
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-amber-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-[#f97316]" />
                     Automatic Sync
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Invoices sync automatically twice daily. No manual data entry needed.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-amber-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-[#f97316]" />
                     Enterprise Security
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     OAuth 2.0 authentication. Encrypted data at rest and in transit.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <RotateCw className="h-5 w-5 text-amber-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <RotateCw className="h-5 w-5 text-[#f97316]" />
                     Recalculate Anytime
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Re-run calculations with updated invoices or factors anytime.
                   </p>
                 </CardContent>
@@ -141,35 +141,35 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
             </div>
 
             {/* Xero Workflow */}
-            <div className="mt-8 p-6 border border-slate-700 rounded-lg bg-slate-800/30">
-              <h3 className="text-lg font-semibold text-white mb-6">How Xero Integration Works</h3>
+            <div className="mt-8 p-6 border border-[#E5E7EB] rounded-lg bg-white shadow-sm">
+              <h3 className="text-lg font-semibold text-slate-900 mb-6">How Xero Integration Works</h3>
               <div className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">1</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">1</div>
                   <div>
-                    <h4 className="font-semibold text-white mb-1">Invoice Sync</h4>
-                    <p className="text-sm text-slate-300">We pull vendor invoices, bills, and expenses from your Xero account. Data syncs automatically twice daily.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Invoice Sync</h4>
+                    <p className="text-sm text-slate-600">We pull vendor invoices, bills, and expenses from your Xero account. Data syncs automatically twice daily.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">2</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">2</div>
                   <div>
-                    <h4 className="font-semibold text-white mb-1">Anomaly Detection</h4>
-                    <p className="text-sm text-slate-300">Duplicate invoices, price spikes, and missing receipts are flagged for review before they enter your calculations.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Anomaly Detection</h4>
+                    <p className="text-sm text-slate-600">Duplicate invoices, price spikes, and missing receipts are flagged for review before they enter your calculations.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">3</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">3</div>
                   <div>
-                    <h4 className="font-semibold text-white mb-1">Scope 3 Calculation</h4>
-                    <p className="text-sm text-slate-300">Spend amounts are automatically mapped to emission categories and converted to tonnes CO₂e.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Scope 3 Calculation</h4>
+                    <p className="text-sm text-slate-600">Spend amounts are automatically mapped to emission categories and converted to tonnes CO₂e.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 font-semibold text-sm flex-shrink-0">4</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">4</div>
                   <div>
-                    <h4 className="font-semibold text-white mb-1">Immutable Audit Trail</h4>
-                    <p className="text-sm text-slate-300">Every invoice and sync event is logged. Show auditors which invoices contributed to your emissions total.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Immutable Audit Trail</h4>
+                    <p className="text-sm text-slate-600">Every invoice and sync event is logged. Show auditors which invoices contributed to your emissions total.</p>
                   </div>
                 </div>
               </div>
@@ -177,78 +177,78 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
           </div>
 
           {/* QuickBooks Section */}
-          <div className="border-t border-slate-800 pt-12">
+          <div className="border-t border-[#E5E7EB] pt-12">
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-2">
-                <CheckCircle className="h-5 w-5 text-emerald-400" />
+              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2 mb-2">
+                <CheckCircle className="h-5 w-5 text-emerald-600" />
                 QuickBooks
               </h2>
-              <p className="text-slate-400">Cloud accounting software — fully integrated for invoice sync and Scope 3 calculation</p>
+              <p className="text-slate-500">Cloud accounting software, fully integrated for invoice sync and Scope 3 calculation</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
               {/* QuickBooks Status Card */}
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-white">QuickBooks</CardTitle>
+                      <CardTitle className="text-slate-900">QuickBooks</CardTitle>
                       <CardDescription>Online accounting software</CardDescription>
                     </div>
-                    <Badge variant="outline" className="border-blue-500/50 text-blue-400 bg-blue-500/10">
+                    <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
                       Active
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
                   <QuickBooksConnectButton orgId={orgId} />
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your QuickBooks password.
                   </p>
                 </CardContent>
               </Card>
 
               {/* Feature Cards */}
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-blue-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-blue-600" />
                     Automatic Sync
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Invoices sync automatically twice daily. No manual data entry needed.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-blue-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-blue-600" />
                     Enterprise Security
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     OAuth 2.0 authentication. Encrypted data at rest and in transit.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <RotateCw className="h-5 w-5 text-blue-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <RotateCw className="h-5 w-5 text-blue-600" />
                     Recalculate Anytime
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Re-run calculations with updated invoices or factors anytime.
                   </p>
                 </CardContent>
@@ -257,78 +257,78 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
           </div>
 
           {/* Sage Section */}
-          <div className="border-t border-slate-800 pt-12">
+          <div className="border-t border-[#E5E7EB] pt-12">
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-2">
-                <CheckCircle className="h-5 w-5 text-emerald-400" />
+              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2 mb-2">
+                <CheckCircle className="h-5 w-5 text-emerald-600" />
                 Sage
               </h2>
-              <p className="text-slate-400">ERP and accounting software — fully integrated for invoice sync and Scope 3 calculation</p>
+              <p className="text-slate-500">ERP and accounting software, fully integrated for invoice sync and Scope 3 calculation</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
               {/* Sage Status Card */}
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-white">Sage</CardTitle>
+                      <CardTitle className="text-slate-900">Sage</CardTitle>
                       <CardDescription>ERP and accounting software</CardDescription>
                     </div>
-                    <Badge variant="outline" className="border-purple-500/50 text-purple-400 bg-purple-500/10">
+                    <Badge variant="outline" className="border-purple-200 text-purple-700 bg-purple-50">
                       Active
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
                   <SageConnectButton orgId={orgId} />
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your Sage password.
                   </p>
                 </CardContent>
               </Card>
 
               {/* Feature Cards */}
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-purple-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-purple-600" />
                     Automatic Sync
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Invoices sync automatically twice daily. No manual data entry needed.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-purple-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-purple-600" />
                     Enterprise Security
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     OAuth 2.0 authentication. Encrypted data at rest and in transit.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-slate-700 bg-slate-800/50">
+              <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <RotateCw className="h-5 w-5 text-purple-400" />
+                  <CardTitle className="text-slate-900 flex items-center gap-2">
+                    <RotateCw className="h-5 w-5 text-purple-600" />
                     Recalculate Anytime
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-600">
                     Re-run calculations with updated invoices or factors anytime.
                   </p>
                 </CardContent>
