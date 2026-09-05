@@ -172,19 +172,19 @@ export default async function MembersPage({ params }: MembersPageProps) {
   const assignments = assignmentState.assignments;
 
   const PLAN_CLASSES: Record<string, string> = {
-    trial: "bg-amber-500/15 text-amber-300 border border-amber-500/20",
-    starter: "bg-blue-500/15 text-blue-300 border border-blue-500/20",
-    professional: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20",
-    enterprise: "bg-purple-500/15 text-purple-300 border border-purple-500/20",
+    trial: "bg-amber-50 text-amber-700 border border-amber-200",
+    starter: "bg-blue-50 text-blue-700 border border-blue-200",
+    professional: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    enterprise: "bg-purple-50 text-purple-700 border border-purple-200",
   };
   const planClass =
-    PLAN_CLASSES[org.plan] ?? "bg-white/10 text-white/60 border border-white/15";
+    PLAN_CLASSES[org.plan] ?? "bg-slate-100 text-slate-600 border border-slate-200";
 
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
       {/* Plan badge */}
       <div className="flex items-center gap-3">
-        <p className="text-sm font-normal text-white/60 tracking-[-0.42px]">
+        <p className="text-sm font-normal text-slate-500 tracking-[-0.42px]">
           {org.name}
         </p>
         <span
@@ -260,26 +260,26 @@ export default async function MembersPage({ params }: MembersPageProps) {
         <CardContent>
           <InviteMemberForm orgId={orgId} />
           {pendingTeamInvites.length > 0 && (
-            <div className="mt-5 rounded-[14px] border border-white/10">
+            <div className="mt-5 rounded-[14px] border border-[#E5E7EB]">
               <div className="border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
-                <p className="text-sm font-normal text-white tracking-[-0.42px]">
+                <p className="text-sm font-normal text-slate-900 tracking-[-0.42px]">
                   Pending email invites
                 </p>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-slate-500">
                   {pendingTeamInvites.length} pending
                 </p>
               </div>
-              <div className="divide-y divide-white/10">
+              <div className="divide-y divide-[#E5E7EB]">
                 {pendingTeamInvites.map((invite) => (
                   <div
                     key={invite.id}
                     className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="text-sm font-normal text-white tracking-[-0.42px]">
+                      <p className="text-sm font-normal text-slate-900 tracking-[-0.42px]">
                         {invite.email}
                       </p>
-                      <p className="text-xs text-white/40 tracking-[-0.36px]">
+                      <p className="text-xs text-slate-500 tracking-[-0.36px]">
                         {ROLE_LABELS[invite.role] ?? invite.role}
                         {" · "}Expires{" "}
                         {invite.expiresAt.toLocaleDateString("en-GB", {

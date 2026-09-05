@@ -73,9 +73,9 @@ export function SupplierInvitesList({
       <CardContent>
         {invites.length === 0 ? (
           <div className="text-center py-8">
-            <Truck className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+            <Truck className="h-12 w-12 text-slate-400 mx-auto mb-3" />
             <p className="text-slate-500">No suppliers invited yet</p>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-slate-500 mt-1">
               Send your first invitation above to get started
             </p>
           </div>

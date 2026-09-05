@@ -119,11 +119,11 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
   if (dbError) {
     return (
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="border-b border-slate-700/60 px-6 py-4">
-          <h1 className="text-lg font-semibold text-slate-100">Supplier Reports</h1>
+        <div className="border-b border-[#E5E7EB] px-6 py-4">
+          <h1 className="text-lg font-semibold text-slate-900">Supplier Reports</h1>
         </div>
         <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center px-8">
-          <p className="text-sm text-slate-400">{dbError}</p>
+          <p className="text-sm text-slate-500">{dbError}</p>
         </div>
       </div>
     );
@@ -131,17 +131,17 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="border-b border-slate-700/60 px-6 py-4">
+      <div className="border-b border-[#E5E7EB] px-6 py-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-lg font-semibold text-slate-100">Supplier Reports</h1>
-            <p className="mt-0.5 text-sm text-slate-400">
+            <h1 className="text-lg font-semibold text-slate-900">Supplier Reports</h1>
+            <p className="mt-0.5 text-sm text-slate-500">
               Review Scope 3 data submitted by your suppliers. Accept to convert into an activity record.
             </p>
           </div>
           <div className="text-right shrink-0">
-            <span className="text-2xl font-bold text-slate-100">{total}</span>
-            <span className="ml-1.5 text-sm text-slate-400">total reports</span>
+            <span className="text-2xl font-bold text-slate-900">{total}</span>
+            <span className="ml-1.5 text-sm text-slate-500">total reports</span>
           </div>
         </div>
 
@@ -157,15 +157,15 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
                 className={[
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                   isActive
-                    ? "bg-amber-500/15 text-amber-300 border border-amber-500/20"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 border border-transparent",
+                    ? "bg-[#fff7ed] text-[#f97316] border border-[#fed7aa]"
+                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent",
                 ].join(" ")}
               >
                 {tab.label}
                 {count > 0 && (
                   <span className={[
                     "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                    isActive ? "bg-amber-500/20 text-amber-300" : "bg-slate-700 text-slate-400",
+                    isActive ? "bg-[#fed7aa] text-[#f97316]" : "bg-slate-100 text-slate-500",
                   ].join(" ")}>
                     {count}
                   </span>

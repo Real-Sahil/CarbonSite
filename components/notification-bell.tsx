@@ -134,7 +134,7 @@ export function NotificationBell({ orgId }: { orgId: string }) {
         <button
           type="button"
           aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
-          className="relative grid h-8 w-8 place-items-center rounded-lg text-slate-300 hover:bg-slate-700/50 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 transition-colors"
+          className="relative grid h-8 w-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 transition-colors"
         >
           <Bell className="h-4 w-4" />
           {unread > 0 && (
@@ -165,12 +165,12 @@ export function NotificationBell({ orgId }: { orgId: string }) {
 
         <div className="max-h-96 overflow-y-auto">
           {loading && items.length === 0 ? (
-            <div className="flex items-center justify-center py-10 text-slate-400">
+            <div className="flex items-center justify-center py-10 text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin" />
             </div>
           ) : items.length === 0 ? (
             <div className="px-4 py-10 text-center">
-              <Bell className="mx-auto h-6 w-6 text-slate-300" />
+              <Bell className="mx-auto h-6 w-6 text-slate-400" />
               <p className="mt-2 text-xs text-slate-500">You&apos;re all caught up.</p>
             </div>
           ) : (
@@ -192,7 +192,7 @@ export function NotificationBell({ orgId }: { orgId: string }) {
                       <div className={cn("min-w-0 flex-1", n.read && "pl-3.5")}>
                         <p className="text-xs font-medium text-slate-800 truncate">{n.title}</p>
                         <p className="text-[11px] text-slate-500 line-clamp-2">{n.body}</p>
-                        <p className="mt-0.5 text-[10px] text-slate-400">{relativeTime(n.createdAt)}</p>
+                        <p className="mt-0.5 text-[10px] text-slate-500">{relativeTime(n.createdAt)}</p>
                       </div>
                     </div>
                   </button>
