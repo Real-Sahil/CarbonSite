@@ -28,7 +28,7 @@ export default function DataLineagePage() {
       description: "Activity records imported from CSV files or field worker submissions",
       icon: "📥",
       details: [
-        "Source: CSV uploads, field submissions, Airbyte integrations",
+        "Source: CSV uploads, field submissions, accounting software sync",
         "Format: Standardized to canonical units (kg, kWh, m³)",
         "Validation: Schema validation, business rule checks",
       ],
