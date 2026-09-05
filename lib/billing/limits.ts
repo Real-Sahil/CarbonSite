@@ -81,7 +81,7 @@ export type PlanFeature =
 const PLAN_FEATURES: Record<Plan, Record<PlanFeature, boolean>> = {
   trial:      { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false },
   starter:    { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false },
-  growth:     { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false },
+  growth:     { accountingIntegrations: true,  invoiceAnomalyDetection: false, liveDashboard: false, sso: false },
   enterprise: { accountingIntegrations: true,  invoiceAnomalyDetection: true,  liveDashboard: true,  sso: true  },
 };
 
@@ -99,15 +99,22 @@ export function hasFeature(plan: string, feature: PlanFeature): boolean {
  * (rather than throwing) keeps this usable from routes that don't funnel
  * errors through handleRouteError().
  */
+const PLAN_ORDER: Plan[] = ["trial", "starter", "growth", "enterprise"];
+
+function minimumPlanFor(feature: PlanFeature): Plan {
+  return PLAN_ORDER.find((p) => PLAN_FEATURES[p][feature]) ?? "enterprise";
+}
+
 export async function requireFeature(orgId: string, feature: PlanFeature): Promise<NextResponse | null> {
   const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true } });
   const plan = (org?.plan ?? "trial") as Plan;
   if (hasFeature(plan, feature)) return null;
+  const requiredPlan = minimumPlanFor(feature);
   return NextResponse.json(
     {
       code: "PLAN_UPGRADE_REQUIRED",
-      message: `This feature requires the Enterprise plan. This organisation is on ${PLAN_LABELS[plan]}.`,
-      details: { feature, plan },
+      message: `This feature requires the ${PLAN_LABELS[requiredPlan]} plan. This organisation is on ${PLAN_LABELS[plan]}.`,
+      details: { feature, plan, requiredPlan },
     },
     { status: 402 },
   );

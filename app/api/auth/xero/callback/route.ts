@@ -127,11 +127,25 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Mark xeroConnected in IntegrationConfig
+    // Also populate IntegrationConfig's token fields — this is what
+    // lib/integrations/xero.ts (the actual invoice sync engine) reads from.
     await prisma.integrationConfig.upsert({
       where: { organizationId: orgId },
-      create: { organizationId: orgId, xeroConnected: true },
-      update: { xeroConnected: true },
+      create: {
+        organizationId: orgId,
+        xeroConnected: true,
+        xeroConnectedAt: new Date(),
+        xeroRefreshToken: tokens.refresh_token ?? null,
+        xeroTenantId: tenantId,
+        xeroTokenExpiresAt: expiresAt,
+      },
+      update: {
+        xeroConnected: true,
+        xeroConnectedAt: new Date(),
+        xeroRefreshToken: tokens.refresh_token ?? null,
+        xeroTenantId: tenantId,
+        xeroTokenExpiresAt: expiresAt,
+      },
     });
 
     await writeAuditLog({

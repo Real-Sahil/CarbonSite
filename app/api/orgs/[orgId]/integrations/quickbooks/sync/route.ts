@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { enqueueQuickBooksSync } from "@/lib/jobs/queues";
+import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
 import { requireFeature } from "@/lib/billing/limits";
 
 interface SyncParams {
@@ -34,26 +34,23 @@ export async function POST(
       );
     }
 
-    // Enqueue sync job
-    await enqueueQuickBooksSync({ orgId, fromDate });
+    // QuickBooks invoice fetching isn't built yet (no SDK integration) — call
+    // the stub directly and report that honestly instead of queuing a job
+    // that would silently vanish on this Vercel-only deployment.
+    const result = await syncQuickBooksInvoices(orgId, fromDate);
 
-    return NextResponse.json(
-      {
-        status: "queued",
-        message: "QuickBooks invoice sync job queued successfully",
-        details: {
-          orgId,
-          fromDate: fromDate || null,
-          timestamp: new Date().toISOString(),
-        },
-      },
-      { status: 202 }
-    );
+    return NextResponse.json({
+      status: "not_implemented",
+      created: result.created,
+      updated: result.updated,
+      skipped: result.skipped,
+      message: "QuickBooks invoice sync isn't implemented yet. Your connection is saved, but no invoices were pulled.",
+    });
   } catch (error) {
     console.error("[quickbooks-sync-api] error:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Sync initiation failed",
+        error: error instanceof Error ? error.message : "Sync failed",
       },
       { status: 500 }
     );

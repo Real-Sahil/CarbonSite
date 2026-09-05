@@ -131,6 +131,27 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Also populate IntegrationConfig's token fields — this is what
+    // lib/integrations/quickbooks.ts (the invoice sync engine) reads from.
+    await prisma.integrationConfig.upsert({
+      where: { organizationId: orgId },
+      create: {
+        organizationId: orgId,
+        quickbooksConnected: true,
+        quickbooksConnectedAt: new Date(),
+        quickbooksRefreshToken: tokens.refresh_token ?? null,
+        quickbooksRealmId: realmId,
+        quickbooksTokenExpiresAt: expiresAt,
+      },
+      update: {
+        quickbooksConnected: true,
+        quickbooksConnectedAt: new Date(),
+        quickbooksRefreshToken: tokens.refresh_token ?? null,
+        quickbooksRealmId: realmId,
+        quickbooksTokenExpiresAt: expiresAt,
+      },
+    });
+
     await writeAuditLog({
       organizationId: orgId,
       action: "integration.connected",

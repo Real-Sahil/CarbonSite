@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { enqueueXeroSync } from "@/lib/jobs/queues";
+import { dispatchXeroSync } from "@/lib/jobs/dispatch";
 import { requireFeature } from "@/lib/billing/limits";
 
 interface SyncParams {
@@ -36,26 +36,29 @@ export async function POST(
     const url = new URL(req.url);
     const fromDate = url.searchParams.get("fromDate") || undefined;
 
-    // Enqueue sync job
-    await enqueueXeroSync({
-      orgId,
-      fromDate,
-    });
+    const result = await dispatchXeroSync({ orgId, fromDate });
+
+    if (result.status === "queued") {
+      return NextResponse.json({
+        status: "queued",
+        message: "Xero invoice sync queued for the worker process",
+        details: { orgId, fromDate: fromDate || null, timestamp: new Date().toISOString() },
+      });
+    }
 
     return NextResponse.json({
-      status: "queued",
-      message: "Xero invoice sync initiated",
-      details: {
-        orgId,
-        fromDate: fromDate || null,
-        timestamp: new Date().toISOString(),
-      },
+      status: "processed",
+      synced: result.created + result.updated,
+      created: result.created,
+      updated: result.updated,
+      skipped: result.skipped,
+      message: `Xero sync complete: ${result.created} new, ${result.updated} updated, ${result.skipped} skipped.`,
     });
   } catch (error) {
     console.error("[xero-sync-api] error:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Sync initiation failed",
+        error: error instanceof Error ? error.message : "Sync failed",
       },
       { status: 500 }
     );

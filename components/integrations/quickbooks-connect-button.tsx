@@ -17,15 +17,16 @@ export function QuickBooksConnectButton({ orgId }: QuickBooksConnectButtonProps)
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/orgs/${orgId}/integrations/quickbooks/authorize`);
+      const response = await fetch(`/api/orgs/${orgId}/integrations/quickbooks`, { method: "POST" });
+      const json = await response.json();
 
       if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error || "Failed to authorize QuickBooks");
+        setError(json.message || "Failed to authorize QuickBooks");
+        setIsLoading(false);
         return;
       }
 
-      window.location.href = response.url;
+      window.location.href = json.authUrl;
     } catch (err) {
       console.error("QuickBooks connection error:", err);
       setError(err instanceof Error ? err.message : "Connection failed");

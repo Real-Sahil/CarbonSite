@@ -223,8 +223,8 @@ export default function IntegrationsPage() {
     try {
       const res = await fetch(`/api/orgs/${orgId}/integrations/xero/sync`, { method: "POST" });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.message || "Sync failed");
-      setSuccess(`Xero sync complete: ${json.synced} invoices imported.`);
+      if (!res.ok) throw new Error(json.message || json.error || "Sync failed");
+      setSuccess(json.message || "Xero sync complete.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Xero sync failed");
     } finally {

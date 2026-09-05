@@ -17,6 +17,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
+import { requireFeature } from "@/lib/billing/limits";
 
 // GET /api/orgs/[orgId]/integrations/xero — return connection status
 export async function GET(
@@ -63,6 +64,9 @@ export async function POST(
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
+
+    const gate = await requireFeature(orgId, "accountingIntegrations");
+    if (gate) return gate;
 
     // Read credentials from IntegrationConfig (admin-entered via settings page)
     const config = await prisma.integrationConfig.findUnique({
@@ -130,6 +134,11 @@ export async function DELETE(
 
     await prisma.integrationConnection.delete({
       where: { organizationId_provider: { organizationId: orgId, provider: "xero" } },
+    });
+
+    await prisma.integrationConfig.updateMany({
+      where: { organizationId: orgId },
+      data: { xeroConnected: false, xeroRefreshToken: null, xeroTenantId: null, xeroTokenExpiresAt: null },
     });
 
     await writeAuditLog({

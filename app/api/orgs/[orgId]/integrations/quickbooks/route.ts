@@ -17,6 +17,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
+import { requireFeature } from "@/lib/billing/limits";
 
 // GET /api/orgs/[orgId]/integrations/quickbooks — return connection status
 export async function GET(
@@ -63,6 +64,9 @@ export async function POST(
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
+
+    const gate = await requireFeature(orgId, "accountingIntegrations");
+    if (gate) return gate;
 
     const clientId = process.env.QUICKBOOKS_CLIENT_ID;
 
@@ -116,6 +120,11 @@ export async function DELETE(
 
     await prisma.integrationConnection.delete({
       where: { organizationId_provider: { organizationId: orgId, provider: "quickbooks" } },
+    });
+
+    await prisma.integrationConfig.updateMany({
+      where: { organizationId: orgId },
+      data: { quickbooksConnected: false, quickbooksRefreshToken: null, quickbooksRealmId: null, quickbooksTokenExpiresAt: null },
     });
 
     await writeAuditLog({

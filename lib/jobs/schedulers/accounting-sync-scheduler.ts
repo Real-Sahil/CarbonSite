@@ -7,11 +7,9 @@
  */
 
 import { prisma } from "@/lib/db";
-import {
-  enqueueXeroSync,
-  enqueueQuickBooksSync,
-  enqueueSageSync,
-} from "@/lib/jobs/queues";
+import { dispatchXeroSync } from "@/lib/jobs/dispatch";
+import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
+import { syncSageInvoices } from "@/lib/integrations/sage";
 
 export interface AccountingSyncScheduleResult {
   timestamp: string;
@@ -61,10 +59,10 @@ export async function scheduleAccountingSyncForAllOrgs(): Promise<AccountingSync
   for (const config of configs) {
     try {
       if (config.xeroConnected) {
-        await enqueueXeroSync({ orgId: config.organizationId });
+        await dispatchXeroSync({ orgId: config.organizationId });
         result.xeroOrgs++;
         result.jobsQueued++;
-        console.log(`[scheduler] Queued Xero sync for org ${config.organizationId}`);
+        console.log(`[scheduler] Ran Xero sync for org ${config.organizationId}`);
       }
     } catch (err) {
       result.errors.push({
@@ -72,39 +70,28 @@ export async function scheduleAccountingSyncForAllOrgs(): Promise<AccountingSync
         provider: "xero",
         error: err instanceof Error ? err.message : String(err),
       });
-      console.error(`[scheduler] Failed to queue Xero sync for org ${config.organizationId}:`, err);
+      console.error(`[scheduler] Failed to run Xero sync for org ${config.organizationId}:`, err);
     }
 
-    try {
-      if (config.quickbooksConnected) {
-        await enqueueQuickBooksSync({ orgId: config.organizationId });
-        result.quickbooksOrgs++;
-        result.jobsQueued++;
-        console.log(`[scheduler] Queued QuickBooks sync for org ${config.organizationId}`);
-      }
-    } catch (err) {
-      result.errors.push({
-        orgId: config.organizationId,
-        provider: "quickbooks",
-        error: err instanceof Error ? err.message : String(err),
+    // QuickBooks and Sage invoice sync aren't implemented yet (no SDK
+    // integration) — skip them rather than pretending a job was queued.
+    if (config.quickbooksConnected) {
+      await syncQuickBooksInvoices(config.organizationId).catch((err) => {
+        result.errors.push({
+          orgId: config.organizationId,
+          provider: "quickbooks",
+          error: err instanceof Error ? err.message : String(err),
+        });
       });
-      console.error(`[scheduler] Failed to queue QuickBooks sync for org ${config.organizationId}:`, err);
     }
-
-    try {
-      if (config.sageConnected) {
-        await enqueueSageSync({ orgId: config.organizationId });
-        result.sageOrgs++;
-        result.jobsQueued++;
-        console.log(`[scheduler] Queued Sage sync for org ${config.organizationId}`);
-      }
-    } catch (err) {
-      result.errors.push({
-        orgId: config.organizationId,
-        provider: "sage",
-        error: err instanceof Error ? err.message : String(err),
+    if (config.sageConnected) {
+      await syncSageInvoices(config.organizationId).catch((err) => {
+        result.errors.push({
+          orgId: config.organizationId,
+          provider: "sage",
+          error: err instanceof Error ? err.message : String(err),
+        });
       });
-      console.error(`[scheduler] Failed to queue Sage sync for org ${config.organizationId}:`, err);
     }
   }
 

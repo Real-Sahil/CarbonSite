@@ -60,7 +60,7 @@ const tiers: PricingTier[] = [
       { name: 'CSV/Excel import, audit-ready reports', included: true },
       { name: 'Supplier portal', included: true },
       { name: 'Email support', included: true },
-      { name: 'Accounting software sync', included: false },
+      { name: 'Accounting software sync (Xero, QuickBooks, Sage)', included: true },
       { name: 'Invoice anomaly detection', included: false },
       { name: 'Live real-time dashboard', included: false },
       { name: 'SSO / SAML', included: false },
@@ -210,7 +210,7 @@ export default function PricingPage() {
             },
             {
               q: 'What’s the difference between Growth and Enterprise?',
-              a: 'Growth covers core Scope 1, 2 and 3 calculation, mobile field capture, and the supplier portal. Enterprise adds accounting software sync (Xero, QuickBooks, Sage), invoice anomaly detection, the live real-time dashboard, and SSO/SAML — the back-office and IT-procurement features larger teams need.',
+              a: 'Growth covers core Scope 1, 2 and 3 calculation, mobile field capture, the supplier portal, and accounting software sync (Xero, QuickBooks, Sage). Enterprise adds invoice anomaly detection, the live real-time dashboard, and SSO/SAML, the back-office and IT-procurement features larger teams need.',
             },
             {
               q: 'What happens after the free trial ends?',

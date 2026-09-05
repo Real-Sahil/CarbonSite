@@ -17,16 +17,16 @@ export function XeroConnectButton({ orgId }: XeroConnectButtonProps) {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/orgs/${orgId}/integrations/xero/authorize`);
+      const response = await fetch(`/api/orgs/${orgId}/integrations/xero`, { method: "POST" });
+      const json = await response.json();
 
       if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error || "Failed to authorize Xero");
+        setError(json.message || "Failed to authorize Xero");
+        setIsLoading(false);
         return;
       }
 
-      // Authorization endpoint redirects, so we follow the redirect
-      window.location.href = response.url;
+      window.location.href = json.authUrl;
     } catch (err) {
       console.error("Xero connection error:", err);
       setError(err instanceof Error ? err.message : "Connection failed");

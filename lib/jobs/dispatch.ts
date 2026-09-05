@@ -6,12 +6,14 @@ import {
   enqueueImport,
   enqueueNotification,
   enqueueReport,
+  enqueueXeroSync,
   type CalculationJobData,
   type DsarJobData,
   type ForecastingJobData,
   type ImportJobData,
   type NotificationJobData,
   type ReportJobData,
+  type XeroSyncJobData,
 } from "./queues";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -20,6 +22,7 @@ import { processReport } from "@/lib/reports/worker";
 import { processDsarExport } from "@/workers/dsar-export";
 import { processDsarErasure } from "@/workers/dsar-erasure";
 import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
+import { syncXeroInvoices } from "@/lib/integrations/xero";
 
 const mode = process.env.JOB_PROCESSING_MODE ?? "inline";
 
@@ -91,4 +94,16 @@ export async function dispatchForecast(data: ForecastingJobData) {
 
   await processForecastingJob(data);
   return "processed" as const;
+}
+
+export async function dispatchXeroSync(
+  data: XeroSyncJobData,
+): Promise<{ status: "queued" } | { status: "processed"; created: number; updated: number; skipped: number }> {
+  if (mode === "worker") {
+    await enqueueXeroSync(data);
+    return { status: "queued" };
+  }
+
+  const result = await syncXeroInvoices(data.orgId, data.fromDate);
+  return { status: "processed", ...result };
 }

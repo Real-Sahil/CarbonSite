@@ -129,6 +129,27 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Also populate IntegrationConfig's token fields — this is what
+    // lib/integrations/sage.ts (the invoice sync engine) reads from.
+    await prisma.integrationConfig.upsert({
+      where: { organizationId: orgId },
+      create: {
+        organizationId: orgId,
+        sageConnected: true,
+        sageConnectedAt: new Date(),
+        sageRefreshToken: tokens.refresh_token ?? null,
+        sageTenantId: businessId,
+        sageTokenExpiresAt: expiresAt,
+      },
+      update: {
+        sageConnected: true,
+        sageConnectedAt: new Date(),
+        sageRefreshToken: tokens.refresh_token ?? null,
+        sageTenantId: businessId,
+        sageTokenExpiresAt: expiresAt,
+      },
+    });
+
     await writeAuditLog({
       organizationId: orgId,
       action: "integration.connected",
