@@ -33,7 +33,14 @@ export async function POST(_req: Request, { params }: Params) {
     await prisma.report.deleteMany({ where: { organizationId: orgId } });
     await prisma.publishedSnapshot.deleteMany({ where: { organizationId: orgId } });
 
-    // 3. CalculationRun (EmissionCalculations already gone)
+    // 2b. ScenarioRun references CalculationRun and must go before it.
+    // ScenarioDraft cascades on ScenarioRun delete, so this alone clears both.
+    // (Explicit rather than relying on the FK's ON DELETE behavior, which is
+    // being tightened from CASCADE to RESTRICT precisely so a reset can't
+    // silently take scenario history down as an undocumented side effect.)
+    await prisma.scenarioRun.deleteMany({ where: { organizationId: orgId } });
+
+    // 3. CalculationRun (EmissionCalculations and ScenarioRuns already gone)
     await prisma.calculationRun.deleteMany({ where: { organizationId: orgId } });
 
     // 4. Null out FieldSubmission.activityRecordId before deleting ActivityRecords
