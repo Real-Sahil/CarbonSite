@@ -6,9 +6,10 @@ import { Loader2 } from "lucide-react";
 
 interface SageConnectButtonProps {
   orgId: string;
+  connected?: boolean;
 }
 
-export function SageConnectButton({ orgId }: SageConnectButtonProps) {
+export function SageConnectButton({ orgId, connected = false }: SageConnectButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +48,7 @@ export function SageConnectButton({ orgId }: SageConnectButtonProps) {
             Connecting...
           </>
         ) : (
-          "Connect Sage"
+          connected ? "Reconnect Sage" : "Connect Sage"
         )}
       </Button>
       {error && (

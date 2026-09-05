@@ -4,6 +4,7 @@ import {
   enqueueDsarExport,
   enqueueForecasting,
   enqueueImport,
+  enqueueInvoiceAnomalyDetection,
   enqueueNotification,
   enqueueReport,
   enqueueXeroSync,
@@ -11,6 +12,7 @@ import {
   type DsarJobData,
   type ForecastingJobData,
   type ImportJobData,
+  type InvoiceAnomalyJobData,
   type NotificationJobData,
   type ReportJobData,
   type XeroSyncJobData,
@@ -22,7 +24,10 @@ import { processReport } from "@/lib/reports/worker";
 import { processDsarExport } from "@/workers/dsar-export";
 import { processDsarErasure } from "@/workers/dsar-erasure";
 import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
+import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
+import { hasFeature, type Plan } from "@/lib/billing/limits";
+import { prisma } from "@/lib/db";
 
 const mode = process.env.JOB_PROCESSING_MODE ?? "inline";
 
@@ -96,6 +101,16 @@ export async function dispatchForecast(data: ForecastingJobData) {
   return "processed" as const;
 }
 
+export async function dispatchInvoiceAnomalyDetection(data: InvoiceAnomalyJobData) {
+  if (mode === "worker") {
+    await enqueueInvoiceAnomalyDetection(data);
+    return "queued" as const;
+  }
+
+  const result = await detectInvoiceAnomalies(data.orgId);
+  return { status: "processed" as const, ...result };
+}
+
 export async function dispatchXeroSync(
   data: XeroSyncJobData,
 ): Promise<{ status: "queued" } | { status: "processed"; created: number; updated: number; skipped: number }> {
@@ -105,5 +120,20 @@ export async function dispatchXeroSync(
   }
 
   const result = await syncXeroInvoices(data.orgId, data.fromDate);
+
+  if (result.created > 0) {
+    try {
+      const org = await prisma.organization.findUnique({ where: { id: data.orgId }, select: { plan: true } });
+      const plan = (org?.plan ?? "trial") as Plan;
+      if (hasFeature(plan, "invoiceAnomalyDetection")) {
+        await dispatchInvoiceAnomalyDetection({ orgId: data.orgId });
+      }
+    } catch (err) {
+      // The sync itself already succeeded and its rows are committed — don't
+      // fail the whole sync over a problem in the follow-up enrichment step.
+      console.error(`[dispatchXeroSync] anomaly detection failed for org ${data.orgId}:`, err);
+    }
+  }
+
   return { status: "processed", ...result };
 }

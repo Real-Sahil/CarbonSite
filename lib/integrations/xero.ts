@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { enqueueInvoiceAnomalyDetection } from "@/lib/jobs/queues";
+import { decryptCredential } from "@/lib/integrations/encryption";
 import type { Prisma } from "@prisma/client";
 
 interface XeroTokenResponse {
@@ -26,6 +26,8 @@ export async function getValidXeroToken(organizationId: string): Promise<{
       xeroRefreshToken: true,
       xeroTenantId: true,
       xeroTokenExpiresAt: true,
+      xeroClientId: true,
+      xeroClientSecret: true,
     },
   });
 
@@ -44,9 +46,13 @@ export async function getValidXeroToken(organizationId: string): Promise<{
     };
   }
 
-  // Refresh the token
-  const clientId = process.env.XERO_CLIENT_ID;
-  const clientSecret = process.env.XERO_CLIENT_SECRET;
+  // Refresh the token — prefer the org's own admin-entered app credentials
+  // (set via the integrations settings page), falling back to the
+  // platform-wide env vars, matching how the OAuth callback resolves them.
+  const clientId = config.xeroClientId || process.env.XERO_CLIENT_ID;
+  const clientSecret = config.xeroClientSecret
+    ? decryptCredential(config.xeroClientSecret)
+    : process.env.XERO_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
     console.error("[Xero] XERO_CLIENT_ID or XERO_CLIENT_SECRET not configured");
@@ -266,10 +272,9 @@ export async function syncXeroInvoices(
     }
   }
 
-  // Enqueue anomaly detection for newly synced invoices
-  if (created > 0) {
-    await enqueueInvoiceAnomalyDetection({ orgId: organizationId });
-  }
+  // Anomaly detection for newly synced invoices is triggered by the caller
+  // (see dispatchXeroSync in lib/jobs/dispatch.ts) so it can run inline or
+  // via the queue depending on JOB_PROCESSING_MODE.
 
   console.log(
     `[Xero Sync] Complete: created=${created}, updated=${updated}, skipped=${skipped}`

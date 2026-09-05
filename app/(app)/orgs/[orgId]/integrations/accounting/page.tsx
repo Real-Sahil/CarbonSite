@@ -40,6 +40,15 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
 
   await requireOrgMember(orgId, "admin", "editor");
 
+  const connections = await prisma.integrationConnection.findMany({
+    where: { organizationId: orgId, provider: { in: ["xero", "quickbooks", "sage"] } },
+    select: { provider: true },
+  });
+  const connectedProviders = new Set(connections.map((c) => c.provider));
+  const xeroConnected = connectedProviders.has("xero");
+  const quickbooksConnected = connectedProviders.has("quickbooks");
+  const sageConnected = connectedProviders.has("sage");
+
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
       <div className="border-b border-[#E5E7EB] bg-white">
@@ -80,16 +89,22 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                       <CardTitle className="text-slate-900">Xero</CardTitle>
                       <CardDescription>Cloud accounting for small businesses</CardDescription>
                     </div>
-                    <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">
-                      Active
-                    </Badge>
+                    {xeroConnected ? (
+                      <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">
+                        Connected
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-slate-200 text-slate-500 bg-slate-50">
+                        Not connected
+                      </Badge>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-slate-600">
                     Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
-                  <XeroConnectButton orgId={orgId} />
+                  <XeroConnectButton orgId={orgId} connected={xeroConnected} />
                   <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your Xero password.
                   </p>
@@ -195,16 +210,22 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                       <CardTitle className="text-slate-900">QuickBooks</CardTitle>
                       <CardDescription>Online accounting software</CardDescription>
                     </div>
-                    <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
-                      Active
-                    </Badge>
+                    {quickbooksConnected ? (
+                      <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
+                        Connected
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-slate-200 text-slate-500 bg-slate-50">
+                        Not connected
+                      </Badge>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-slate-600">
                     Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
-                  <QuickBooksConnectButton orgId={orgId} />
+                  <QuickBooksConnectButton orgId={orgId} connected={quickbooksConnected} />
                   <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your QuickBooks password.
                   </p>
@@ -275,16 +296,22 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                       <CardTitle className="text-slate-900">Sage</CardTitle>
                       <CardDescription>ERP and accounting software</CardDescription>
                     </div>
-                    <Badge variant="outline" className="border-purple-200 text-purple-700 bg-purple-50">
-                      Active
-                    </Badge>
+                    {sageConnected ? (
+                      <Badge variant="outline" className="border-purple-200 text-purple-700 bg-purple-50">
+                        Connected
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-slate-200 text-slate-500 bg-slate-50">
+                        Not connected
+                      </Badge>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-slate-600">
                     Automatically sync vendor invoices and bills to calculate Scope 3 emissions from supplier spend.
                   </p>
-                  <SageConnectButton orgId={orgId} />
+                  <SageConnectButton orgId={orgId} connected={sageConnected} />
                   <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your Sage password.
                   </p>

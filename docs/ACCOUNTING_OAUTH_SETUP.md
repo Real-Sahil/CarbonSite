@@ -48,7 +48,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 1. Start the dev server: `pnpm dev`
 2. Login to your CarbonSite org as an admin
-3. Navigate to **Settings → Integrations → Accounting**
+3. Navigate to **Integrations → Accounting Software**
 4. Click **"Connect Xero"** button
 5. You'll be redirected to Xero login
 6. Authorize the app (grant permissions to read invoices and company info)
@@ -56,17 +56,20 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### Step 4: Verify Connection
 
-```bash
-# Check Xero health endpoint
-curl http://localhost:3000/api/admin/health/integrations?provider=xero
+While signed in as an org admin, call the status endpoint (session cookie required, so use the browser or an authenticated request, not a bare curl):
 
-# Expected response:
-# {
-#   "provider": "xero",
-#   "configured": true,
-#   "connected": true,
-#   "lastSync": "2026-08-31T14:30:00Z"
-# }
+```
+GET /api/orgs/{orgId}/integrations/xero
+```
+
+```json
+{
+  "connected": true,
+  "connectedAt": "2026-08-31T14:30:00Z",
+  "accountName": "Your Xero Organisation",
+  "scopes": ["openid", "profile", "email", "accounting.transactions.read", "accounting.contacts.read"],
+  "tokenExpired": false
+}
 ```
 
 ---
@@ -115,7 +118,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 1. Make sure dev server is running: `pnpm dev`
 2. Login to your CarbonSite org as an admin
-3. Navigate to **Settings → Integrations → Accounting**
+3. Navigate to **Integrations → Accounting Software**
 4. Click **"Connect QuickBooks"** button
 5. You'll be redirected to QuickBooks login
 6. Sign in with your QuickBooks account
@@ -124,17 +127,18 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### Step 5: Verify Connection
 
-```bash
-curl http://localhost:3000/api/admin/health/integrations?provider=quickbooks
+While signed in as an org admin:
 
-# Expected response:
-# {
-#   "provider": "quickbooks",
-#   "configured": true,
-#   "connected": true,
-#   "lastSync": "2026-08-31T14:30:00Z"
-# }
 ```
+GET /api/orgs/{orgId}/integrations/quickbooks
+```
+
+```json
+{ "connected": true, "connectedAt": "2026-08-31T14:30:00Z", "accountName": "Your Company", "tokenExpired": false }
+```
+
+Note: connecting QuickBooks stores the OAuth token, but invoice syncing itself
+isn't implemented yet (no QuickBooks SDK integration) — see docs/ACCOUNTING_SYNC_SETUP.md.
 
 ---
 
@@ -175,7 +179,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 1. Start the dev server: `pnpm dev`
 2. Login to your CarbonSite org as an admin
-3. Navigate to **Settings → Integrations → Accounting**
+3. Navigate to **Integrations → Accounting Software**
 4. Click **"Connect Sage"** button
 5. You'll be redirected to Sage login
 6. Sign in with your Sage credentials
@@ -184,17 +188,18 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### Step 4: Verify Connection
 
-```bash
-curl http://localhost:3000/api/admin/health/integrations?provider=sage
+While signed in as an org admin:
 
-# Expected response:
-# {
-#   "provider": "sage",
-#   "configured": true,
-#   "connected": true,
-#   "lastSync": "2026-08-31T14:30:00Z"
-# }
 ```
+GET /api/orgs/{orgId}/integrations/sage
+```
+
+```json
+{ "connected": true, "connectedAt": "2026-08-31T14:30:00Z", "accountName": "Your Business", "tokenExpired": false }
+```
+
+Note: connecting Sage stores the OAuth token, but invoice syncing itself
+isn't implemented yet (no Sage SDK integration) — see docs/ACCOUNTING_SYNC_SETUP.md.
 
 ---
 
@@ -230,7 +235,7 @@ curl http://localhost:3000/api/admin/health/integrations?provider=sage
    - **Xero:** Settings → Connected apps → find "CarbonSite" → disconnect
    - **QuickBooks:** Account Settings → Security → Connected apps → revoke
    - **Sage:** Account Settings → Apps & integrations → revoke "CarbonSite"
-2. Re-authenticate: Go back to Settings → Integrations → Accounting → click "Connect [Provider]" again
+2. Re-authenticate: Go back to Integrations → Accounting Software → click "Connect [Provider]" again
 
 ### Issue: No invoices syncing
 
@@ -241,7 +246,7 @@ curl http://localhost:3000/api/admin/health/integrations?provider=sage
 
 **Solution:**
 1. Ensure invoices in your accounting system are in "Authorised" or "Open" status
-2. Manually trigger sync: Settings → Integrations → Accounting → click "Sync Now"
+2. Manually trigger sync: Integrations → Accounting Software → click "Sync Now"
 3. Check logs for errors: `tail -f .logs/worker.log` (if using worker mode)
 4. Verify sync job is queued: Check Activity Log for sync events
 
@@ -287,23 +292,19 @@ curl http://localhost:3000/api/admin/health/integrations?provider=sage
   - [ ] Click "Sync Now" — check Activity Log for sync events
   - [ ] Verify invoice appears in Activity Records with source "sage"
 
-### Health Checks
+### Connection Status
 
-After setup, verify all three are working:
+While signed in as an org admin, each provider has its own status endpoint:
 
-```bash
-# Xero health
-curl http://localhost:3000/api/admin/health/integrations?provider=xero
-
-# QuickBooks health
-curl http://localhost:3000/api/admin/health/integrations?provider=quickbooks
-
-# Sage health
-curl http://localhost:3000/api/admin/health/integrations?provider=sage
-
-# All should return:
-# { "provider": "...", "configured": true, "connected": true, "lastSync": "..." }
 ```
+GET /api/orgs/{orgId}/integrations/xero
+GET /api/orgs/{orgId}/integrations/quickbooks
+GET /api/orgs/{orgId}/integrations/sage
+```
+
+Each returns `{ connected, connectedAt, accountName, scopes, tokenExpired }`.
+Only Xero actually syncs invoices today — see docs/ACCOUNTING_SYNC_SETUP.md
+for what "connected" does and doesn't get you per provider.
 
 ### Monitoring
 

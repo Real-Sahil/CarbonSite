@@ -6,9 +6,10 @@ import { Loader2 } from "lucide-react";
 
 interface XeroConnectButtonProps {
   orgId: string;
+  connected?: boolean;
 }
 
-export function XeroConnectButton({ orgId }: XeroConnectButtonProps) {
+export function XeroConnectButton({ orgId, connected = false }: XeroConnectButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +48,7 @@ export function XeroConnectButton({ orgId }: XeroConnectButtonProps) {
             Connecting...
           </>
         ) : (
-          "Connect Xero"
+          connected ? "Reconnect Xero" : "Connect Xero"
         )}
       </Button>
       {error && (

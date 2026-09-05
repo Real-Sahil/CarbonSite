@@ -13,7 +13,9 @@ import type {
   XeroSyncJobData,
   QuickBooksSyncJobData,
   SageSyncJobData,
+  InvoiceAnomalyJobData,
 } from "@/lib/jobs/queues/index";
+import { enqueueInvoiceAnomalyDetection } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
 import { processNotification } from "@/lib/notifications/worker";
@@ -29,11 +31,6 @@ import { syncXeroInvoices } from "@/lib/integrations/xero";
 import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
 import { syncSageInvoices } from "@/lib/integrations/sage";
 import { getLogger } from "@/lib/observability";
-
-interface InvoiceAnomalyJobData {
-  organizationId: string;
-  sourceSystem?: string;
-}
 
 interface SupplierPerformanceJobData {
   orgId: string;
@@ -135,10 +132,10 @@ async function start() {
     { localConcurrency: 1 },
     async (jobs: Job<InvoiceAnomalyJobData>[]) => {
       for (const job of jobs) {
-        const { organizationId } = job.data;
-        invoiceAnomalyLogger.info("processing anomaly detection", { organizationId });
-        await detectInvoiceAnomalies(organizationId);
-        invoiceAnomalyLogger.info("finished anomaly detection", { organizationId });
+        const { orgId } = job.data;
+        invoiceAnomalyLogger.info("processing anomaly detection", { orgId });
+        await detectInvoiceAnomalies(orgId);
+        invoiceAnomalyLogger.info("finished anomaly detection", { orgId });
       }
     },
   );
@@ -160,6 +157,9 @@ async function start() {
             updated: result.updated,
             skipped: result.skipped,
           });
+          if (result.created > 0) {
+            await enqueueInvoiceAnomalyDetection({ orgId });
+          }
         } catch (err) {
           xeroLogger.error("failed sync", err, { orgId });
           throw err;

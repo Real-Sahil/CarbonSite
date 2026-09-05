@@ -6,9 +6,10 @@ import { Loader2 } from "lucide-react";
 
 interface QuickBooksConnectButtonProps {
   orgId: string;
+  connected?: boolean;
 }
 
-export function QuickBooksConnectButton({ orgId }: QuickBooksConnectButtonProps) {
+export function QuickBooksConnectButton({ orgId, connected = false }: QuickBooksConnectButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +48,7 @@ export function QuickBooksConnectButton({ orgId }: QuickBooksConnectButtonProps)
             Connecting...
           </>
         ) : (
-          "Connect QuickBooks"
+          connected ? "Reconnect QuickBooks" : "Connect QuickBooks"
         )}
       </Button>
       {error && (

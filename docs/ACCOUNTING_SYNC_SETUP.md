@@ -2,31 +2,45 @@
 
 CarbonSite supports automated 2x daily invoice syncing from accounting platforms:
 - **Xero** — Fully implemented, production-ready
-- **QuickBooks** — Placeholder ready for SDK integration
-- **Sage** — Placeholder ready for SDK integration
+- **QuickBooks** — OAuth connect works; invoice fetching is not implemented (no SDK integration)
+- **Sage** — OAuth connect works; invoice fetching is not implemented (no SDK integration)
 
 ## Architecture
 
-The sync pipeline:
+This deployment is Vercel-only (see CLAUDE.md — "Background Jobs"): there is
+no separate process running `workers/index.ts` continuously, so sync does
+**not** depend on a pg-boss worker being up. All sync-triggering paths go
+through `lib/jobs/dispatch.ts`, which defaults to `JOB_PROCESSING_MODE=inline`:
+
 1. Web process or external cron calls `/api/admin/schedule/accounting-sync`
-2. Scheduler queries all orgs with accounting integrations enabled
-3. For each org + provider combo, enqueues a sync job to pg-boss
-4. Worker process (`pnpm worker`) picks up jobs and calls the sync function
-5. Sync fetches invoices from accounting API, deduplicates, and inserts
-6. Automatically enqueues anomaly detection for newly created invoices
+2. `scheduleAccountingSyncForAllOrgs()` queries all orgs with accounting integrations enabled
+3. For each connected org, calls `dispatchXeroSync()` — in the default inline
+   mode this runs `syncXeroInvoices()` synchronously in the same request,
+   not via a queue
+4. Sync fetches invoices from the Xero API, deduplicates against `XeroSyncLog`,
+   and inserts `InvoiceRecord` rows
+5. If any new invoices were created, and the org's plan includes
+   `invoiceAnomalyDetection` (Enterprise), `dispatchInvoiceAnomalyDetection()`
+   runs `detectInvoiceAnomalies()` inline too
+
+Setting `JOB_PROCESSING_MODE=worker` switches every step above to enqueue to
+pg-boss instead, for a deployment that *does* run `pnpm worker` continuously
+— `workers/index.ts` still has consumers for `xero-sync`, `quickbooks-sync`,
+`sage-sync`, and `invoice-anomaly-jobs` for that case.
 
 ## Manual Sync Trigger
 
-To manually sync invoices for a specific org:
+To manually sync invoices for a specific org (requires an authenticated
+admin/editor session — these aren't public endpoints):
 
 ```bash
-# Xero
+# Xero — actually fetches and stores invoices
 curl -X POST http://localhost:3000/api/orgs/org123/integrations/xero/sync
 
-# QuickBooks (queues job, but will fail until QB SDK implemented)
+# QuickBooks — connects fine, but returns status: "not_implemented" (no SDK yet)
 curl -X POST http://localhost:3000/api/orgs/org123/integrations/quickbooks/sync
 
-# Sage (queues job, but will fail until Sage SDK implemented)
+# Sage — same: status: "not_implemented"
 curl -X POST http://localhost:3000/api/orgs/org123/integrations/sage/sync
 
 # With optional fromDate filter (Xero only, currently)
@@ -102,59 +116,87 @@ The endpoint validates `CRON_SECRET` from either:
 
 **Job Type:** `XeroSyncJobData { orgId: string; fromDate?: string }`
 
-**Queue Name:** `xero-sync`
+**Dispatch:** `dispatchXeroSync()` in `lib/jobs/dispatch.ts` — runs `syncXeroInvoices()`
+inline by default (`JOB_PROCESSING_MODE=inline`), or enqueues to the `xero-sync`
+pg-boss queue in worker mode
 
-**Worker:** `workers/index.ts` (lines 130-149)
+**Worker (worker mode only):** `workers/index.ts`'s `xero-sync` consumer
 
-**Sync Logic:** `lib/integrations/xero.ts`
+**Sync Logic:** `lib/integrations/xero.ts` — token refresh prefers the org's
+own admin-entered Xero app credentials (`IntegrationConfig.xeroClientId/xeroClientSecret`,
+set via the integrations settings page), falling back to the platform-wide
+`XERO_CLIENT_ID`/`XERO_CLIENT_SECRET` env vars
 
 **Deduplication:** Uses `XeroSyncLog` table with unique constraint on `(organizationId, invoiceId, lineItemIndex)`
 
-**Anomaly Detection:** Automatically enqueues `InvoiceAnomalyDetection` job for newly created invoices
+**Anomaly Detection:** After a sync creates new invoices, `dispatchXeroSync()`
+checks whether the org's plan includes `invoiceAnomalyDetection` (Enterprise
+only) and if so calls `dispatchInvoiceAnomalyDetection()`, which runs
+`detectInvoiceAnomalies()` inline the same way
 
-### QuickBooks & Sage (Placeholder)
+### QuickBooks & Sage (OAuth connect only — sync not implemented)
 
 **Job Types:** `QuickBooksSyncJobData`, `SageSyncJobData` (same shape as Xero)
 
-**Queue Names:** `quickbooks-sync`, `sage-sync`
-
-**Workers:** `workers/index.ts` (lines 150-194)
+**Sync routes:** `/api/orgs/[orgId]/integrations/{quickbooks,sage}/sync` call
+`syncQuickBooksInvoices()` / `syncSageInvoices()` directly and return
+`{ status: "not_implemented", created: 0, updated: 0, skipped: 0 }` — they do
+**not** enqueue a job, since there's nothing on the other end to process it
 
 **Sync Logic:** Stub functions in `lib/integrations/quickbooks.ts` and `lib/integrations/sage.ts`
+that verify the connection exists and then no-op
 
-**TODO:** Implement actual OAuth token refresh + API calls for QB/Sage SDKs
+**TODO:** Implement actual OAuth token refresh + API calls for QB/Sage SDKs.
+Once real fetch logic exists, wire it through `dispatch.ts` the same way Xero is.
 
 ## Testing
 
 ### Test Manually (Local Development)
 
-1. Start worker: `pnpm worker`
-2. Verify Xero is connected for an org
-3. Call scheduler: `curl -X POST http://localhost:3000/api/admin/schedule/accounting-sync -H "x-cron-secret: test-secret"`
-4. Monitor worker logs: `[scheduler] Queued Xero sync for org ...`
+With the default `JOB_PROCESSING_MODE=inline`, no separate worker process is
+needed — `pnpm dev` alone is enough:
+
+1. Verify Xero is connected for an org (`GET /api/orgs/{orgId}/integrations/xero`)
+2. Set `CRON_SECRET` in `.env.local`
+3. Call scheduler: `curl -X POST http://localhost:3000/api/admin/schedule/accounting-sync -H "x-cron-secret: <your CRON_SECRET>"`
+4. Watch the dev server console for `[scheduler] Ran Xero sync for org ...`
 5. Check database: `SELECT * FROM xero_sync_logs ORDER BY created_at DESC LIMIT 10`
+
+Only set `JOB_PROCESSING_MODE=worker` and run `pnpm worker` separately if
+you're testing the worker-based path for a deployment that runs one.
 
 ### Verify Scheduler (In Production)
 
 1. Set `CRON_SECRET` in Vercel environment
 2. Test endpoint: `curl -X POST https://your-app.vercel.app/api/admin/schedule/accounting-sync -H "x-cron-secret: $CRON_SECRET"`
-3. Check logs (Vercel → Functions tab)
-4. Verify jobs enqueued: `SELECT COUNT(*) FROM job WHERE name LIKE 'xero-sync' AND state != 'completed'`
+3. Check logs (Vercel → Functions tab) for `[scheduler] Ran Xero sync for org ...`
+4. Verify new rows landed: `SELECT COUNT(*) FROM xero_sync_logs WHERE created_at > now() - interval '1 hour'`
 
 ## Troubleshooting
 
-**Jobs queued but not processing:**
+**Sync runs but nothing new lands:**
+- In the default inline mode there's no queue to check — sync runs
+  synchronously inside the scheduler/sync-route request, so an error there
+  shows up directly in the response or server logs
+- Confirm invoices in Xero are actually in "Authorised" or "Paid" status —
+  draft invoices are excluded by `fetchXeroInvoices()`'s where-clause
+
+**Running in worker mode (`JOB_PROCESSING_MODE=worker`) and jobs aren't processing:**
 - Verify worker is running: `ps aux | grep 'pnpm worker'`
 - Check `pg-boss` table: `SELECT * FROM pgboss.job LIMIT 10`
 - Review worker logs for errors
 
-**Anomaly detection not running:**
-- Verify job was queued: `SELECT * FROM pgboss.job WHERE name = 'invoice-anomaly-jobs'`
-- Check for errors in `processInvoiceAnomalies()` function
+**Anomaly detection not running after a Xero sync:**
+- It only runs when the org's plan includes `invoiceAnomalyDetection`
+  (Enterprise) — check `PLAN_FEATURES` in `lib/billing/limits.ts`
+- In inline mode, check for errors from `detectInvoiceAnomalies()` in the
+  same request/server log as the sync itself
+- In worker mode, verify a job was queued: `SELECT * FROM pgboss.job WHERE name = 'invoice-anomaly-jobs'`
 
 **Xero OAuth token expired:**
-- Verify `xeroTokenExpiresAt` in `integration_configs` table
-- Sync will refresh token automatically (5-minute threshold)
+- Verify `xero_token_expires_at` in the `integration_configs` table
+- Sync will refresh token automatically (5-minute threshold), using the
+  org's own Xero app credentials if configured, otherwise the platform env vars
 - If refresh fails, user must re-authorize in UI
 
 ## Next Steps
