@@ -154,7 +154,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">{existing ? "Edit" : "Set"} SBTi net-zero target</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
@@ -269,7 +269,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
             <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               className={`${inputCls} resize-none`} placeholder="SBTi submission date, validation notes..." />
           </div>
@@ -350,7 +350,7 @@ export default function SbtiPage() {
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
+        <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center">
           <p className="text-sm text-red-700">{loadError}</p>
@@ -365,7 +365,7 @@ export default function SbtiPage() {
             <TrendingDown className="h-5 w-5 text-[#f97316]" />
           </div>
           <p className="text-sm font-medium text-gray-700">No SBTi target set</p>
-          <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+          <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
             Set a Science-Based Target to align your organisation with the 1.5°C Paris Agreement pathway.
           </p>
         </div>
@@ -393,9 +393,9 @@ export default function SbtiPage() {
               { label: "Annual reduction needed", value: ((baseTotal - nearTermTarget) / Math.max(target.nearTermYear - target.baseYear, 1)).toFixed(1), unit: "tCO2e/year" },
             ].map(({ label, value, unit }) => (
               <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1 leading-tight">{label}</div>
+                <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1 leading-tight">{label}</div>
                 <div className="text-2xl font-semibold text-gray-900 tabular-nums">{value}</div>
-                <div className="text-xs text-gray-400 mt-0.5">{unit}</div>
+                <div className="text-xs text-gray-500 mt-0.5">{unit}</div>
               </div>
             ))}
           </div>
@@ -417,7 +417,7 @@ export default function SbtiPage() {
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-sm text-gray-700">{label}</span>
                       <span className="text-sm font-medium tabular-nums text-gray-900">
-                        {value.toFixed(1)} tCO2e <span className="text-gray-400 font-normal">({pct.toFixed(0)}%)</span>
+                        {value.toFixed(1)} tCO2e <span className="text-gray-500 font-normal">({pct.toFixed(0)}%)</span>
                       </span>
                     </div>
                     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -454,7 +454,7 @@ export default function SbtiPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-900">Reduction pathway: expected vs. actual</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-400">
+                <div className="flex items-center gap-3 text-xs text-gray-500">
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#f97316]" />Expected</span>
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" />On track</span>
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-400" />Behind</span>

@@ -160,7 +160,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
                 className="max-h-14 max-w-[120px] object-contain"
               />
             ) : (
-              <span className="text-xs text-slate-400">No logo</span>
+              <span className="text-xs text-slate-500">No logo</span>
             )}
           </div>
           <div className="flex flex-col gap-2">

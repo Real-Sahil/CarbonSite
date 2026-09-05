@@ -94,7 +94,7 @@ function AddRecordModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">Add waste record</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
@@ -134,20 +134,20 @@ function AddRecordModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
           )}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">EWC code <span className="text-gray-400">(optional)</span></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">EWC code <span className="text-gray-500">(optional)</span></label>
               <input type="text" value={form.ewcCode} maxLength={10}
                 onChange={(e) => setForm((f) => ({ ...f, ewcCode: e.target.value }))}
                 className={inputCls} placeholder="17 09 04" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Carrier name <span className="text-gray-400">(optional)</span></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Carrier name <span className="text-gray-500">(optional)</span></label>
               <input type="text" value={form.carrierName}
                 onChange={(e) => setForm((f) => ({ ...f, carrierName: e.target.value }))}
                 className={inputCls} placeholder="Biffa, Veolia..." />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
             <textarea rows={2} value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               className={`${inputCls} resize-none`} />
@@ -229,9 +229,9 @@ export default function WastePage() {
           { label: "Records", value: records.length.toString(), unit: "waste records" },
         ].map(({ label, value, unit }) => (
           <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">{label}</div>
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">{label}</div>
             <div className="text-2xl font-semibold text-gray-900 tabular-nums">{value}</div>
-            <div className="text-xs text-gray-400 mt-0.5">{unit}</div>
+            <div className="text-xs text-gray-500 mt-0.5">{unit}</div>
           </div>
         ))}
       </div>
@@ -240,7 +240,7 @@ export default function WastePage() {
       {records.length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-white p-5 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="h-4 w-4 text-gray-400" />
+            <BarChart3 className="h-4 w-4 text-gray-500" />
             <h3 className="text-sm font-semibold text-gray-900">Waste hierarchy</h3>
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -267,14 +267,14 @@ export default function WastePage() {
       {/* Records table */}
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
+          <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center">
-              <Trash2 className="h-5 w-5 text-gray-400" />
+              <Trash2 className="h-5 w-5 text-gray-500" />
             </div>
             <p className="text-sm font-medium text-gray-700">No waste records</p>
-            <p className="text-xs text-gray-400 mt-1">Add your first waste disposal record to start tracking emissions.</p>
+            <p className="text-xs text-gray-500 mt-1">Add your first waste disposal record to start tracking emissions.</p>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -304,7 +304,7 @@ export default function WastePage() {
                     <td className="py-3 px-4 text-gray-500 tabular-nums">
                       {new Date(r.recordedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
-                    <td className="py-3 px-4 text-gray-400 font-mono text-xs">{r.ewcCode ?? "-"}</td>
+                    <td className="py-3 px-4 text-gray-500 font-mono text-xs">{r.ewcCode ?? "-"}</td>
                     <td className="py-3 pl-4 pr-6">
                       <button onClick={() => handleDelete(r.id)}
                         className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center group">

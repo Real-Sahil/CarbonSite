@@ -125,7 +125,7 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+          <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
         </div>
       ) : paymentMethods.length === 0 ? (
         <div className="text-center py-8 text-slate-600">
@@ -142,7 +142,7 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
               className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50"
             >
               <div className="flex items-center gap-4">
-                <CreditCard className="h-5 w-5 text-slate-400" />
+                <CreditCard className="h-5 w-5 text-slate-500" />
                 <div>
                   <p className="font-medium text-slate-900">
                     {method.brand.charAt(0).toUpperCase() + method.brand.slice(1)} ending in {method.last4}

@@ -153,7 +153,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
               .join(" · ") || "No project or planning reference recorded"}
           </p>
           {assessment.ecologistName && (
-            <p className="mt-0.5 text-xs text-zinc-400">
+            <p className="mt-0.5 text-xs text-zinc-500">
               Surveyed by {assessment.ecologistName}
               {assessment.ecologistOrganisation ? `, ${assessment.ecologistOrganisation}` : ""}
             </p>
@@ -193,7 +193,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                 >
                   <p className="text-xs font-medium text-zinc-500">{MODULE_LABEL[m.module]}</p>
                   {notEngaged ? (
-                    <p className="mt-1 text-sm text-zinc-400">Not engaged by this scheme</p>
+                    <p className="mt-1 text-sm text-zinc-500">Not engaged by this scheme</p>
                   ) : (
                     <>
                       <p
@@ -209,7 +209,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                       <p className="text-xs tabular-nums text-zinc-500">
                         {m.baselineUnits.toFixed(3)} to {m.postInterventionUnits.toFixed(3)} units
                       </p>
-                      <p className="mt-1 text-xs text-zinc-400">
+                      <p className="mt-1 text-xs text-zinc-500">
                         Requires {(m.baselineUnits * 1.1).toFixed(3)} units for{" "}
                         {REQUIRED_NET_GAIN_PERCENT}%
                       </p>
@@ -247,7 +247,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                 )}
                 <div>
                   <span className="font-medium text-zinc-900">{c.habitatType}</span>
-                  <span className="text-zinc-400">
+                  <span className="text-zinc-500">
                     {" "}
                     ({DISTINCTIVENESS_LABEL[c.distinctiveness]} distinctiveness)
                   </span>
@@ -299,7 +299,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                     <TableRow key={p.id}>
                       <TableCell className="pl-4">
                         <div className="font-medium text-zinc-900">{p.habitatType}</div>
-                        <div className="text-xs text-zinc-400">{p.broadHabitat}</div>
+                        <div className="text-xs text-zinc-500">{p.broadHabitat}</div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">
@@ -323,7 +323,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                           {Number(p.units).toFixed(3)}
                         </div>
                         {p.calculation && (
-                          <div className="max-w-[34ch] text-xs leading-snug text-zinc-400">
+                          <div className="max-w-[34ch] text-xs leading-snug text-zinc-500">
                             {p.calculation}
                           </div>
                         )}
@@ -381,7 +381,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                     <TableRow key={r.id}>
                       <TableCell className="pl-4">
                         <div className="font-medium text-zinc-900">{r.species}</div>
-                        <div className="text-xs text-zinc-400">{r.legalProtection}</div>
+                        <div className="text-xs text-zinc-500">{r.legalProtection}</div>
                       </TableCell>
                       <TableCell className="max-w-[36ch] text-xs leading-relaxed text-zinc-600">
                         {r.findings}

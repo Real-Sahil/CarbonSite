@@ -77,7 +77,7 @@ function getTrendIcon(trend: string | null) {
     case 'declining':
       return <TrendingDown className="h-4 w-4 text-red-600" />;
     default:
-      return <Minus className="h-4 w-4 text-gray-400" />;
+      return <Minus className="h-4 w-4 text-gray-500" />;
   }
 }
 
@@ -159,7 +159,7 @@ export default function SupplierPerformancePage() {
 
   const selector = (
     <div className="flex items-center gap-3">
-      <Building2 className="h-5 w-5 text-gray-400" />
+      <Building2 className="h-5 w-5 text-gray-500" />
       <Select value={selected} onValueChange={handleSelect} disabled={suppliersLoading}>
         <SelectTrigger className="w-72">
           <SelectValue placeholder="Select entity" />

@@ -29,7 +29,7 @@ export function DeleteImportButton({ orgId, importId }: DeleteImportButtonProps)
     <Button
       variant="ghost"
       size="sm"
-      className="h-7 px-2 text-xs text-zinc-400 hover:text-red-600 hover:bg-red-50"
+      className="h-7 px-2 text-xs text-zinc-500 hover:text-red-600 hover:bg-red-50"
       onClick={handleDelete}
       disabled={loading}
     >

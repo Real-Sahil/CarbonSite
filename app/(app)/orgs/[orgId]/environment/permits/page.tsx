@@ -136,7 +136,7 @@ export default async function PermitsPage({ params }: PageProps) {
                     <TableRow key={p.id}>
                       <TableCell className="pl-4">
                         <div className="font-medium text-zinc-900">{p.title}</div>
-                        <div className="text-xs text-zinc-400">
+                        <div className="text-xs text-zinc-500">
                           {PERMIT_TYPE_LABEL[p.type] ?? p.type} · {p.reference}
                         </div>
                       </TableCell>
@@ -146,7 +146,7 @@ export default async function PermitsPage({ params }: PageProps) {
                       </TableCell>
                       <TableCell className="text-sm">
                         {p.conditions.length === 0 ? (
-                          <span className="text-zinc-400">None recorded</span>
+                          <span className="text-zinc-500">None recorded</span>
                         ) : breaches > 0 ? (
                           <span className="font-medium text-red-700">
                             {breaches} of {p.conditions.length} in breach

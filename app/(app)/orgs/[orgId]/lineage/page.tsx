@@ -247,7 +247,7 @@ function AggregateModal({
           <h2 className="text-xl font-bold text-gray-900">Calculations</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-500 hover:text-gray-600"
           >
             ✕
           </button>
@@ -295,7 +295,7 @@ function AggregateModal({
                   <div className="text-xs font-medium text-gray-600">
                     Quality: {calc.dataQualityScore}%
                   </div>
-                  <ChevronRight className="mt-1 h-4 w-4 text-gray-400" />
+                  <ChevronRight className="mt-1 h-4 w-4 text-gray-500" />
                 </div>
               </div>
             </button>
@@ -326,7 +326,7 @@ function CalculationModal({ calculation, onClose }: CalculationModalProps) {
           <h2 className="text-xl font-bold text-gray-900">Calculation Details</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-500 hover:text-gray-600"
           >
             ✕
           </button>
@@ -407,7 +407,7 @@ function CalculationModal({ calculation, onClose }: CalculationModalProps) {
             {rec.importBatch ? (
               <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-start gap-3">
-                  <FileText className="mt-1 h-4 w-4 text-gray-400" />
+                  <FileText className="mt-1 h-4 w-4 text-gray-500" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">
                       {rec.importBatch.sourceFilename}
@@ -426,7 +426,7 @@ function CalculationModal({ calculation, onClose }: CalculationModalProps) {
             ) : rec.fieldSubmissionId ? (
               <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-start gap-3">
-                  <FileText className="mt-1 h-4 w-4 text-gray-400" />
+                  <FileText className="mt-1 h-4 w-4 text-gray-500" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">
                       {rec.fieldSubmissionDocumentType || "Field Submission"}
@@ -462,7 +462,7 @@ function CalculationModal({ calculation, onClose }: CalculationModalProps) {
                     className="flex items-center justify-between rounded border border-gray-200 p-3"
                   >
                     <div className="flex items-center gap-2">
-                      <Download className="h-4 w-4 text-gray-400" />
+                      <Download className="h-4 w-4 text-gray-500" />
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           {file.filename}

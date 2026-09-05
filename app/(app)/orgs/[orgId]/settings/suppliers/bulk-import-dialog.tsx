@@ -155,7 +155,7 @@ export function BulkImportDialog({ open, onOpenChange, onImportComplete }: BulkI
                 : "border-gray-300 hover:border-gray-400"
             }`}
           >
-            <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+            <Upload className="w-8 h-8 mx-auto mb-2 text-gray-500" />
             <p className="text-sm font-medium text-gray-700 mb-1">
               Drag and drop your CSV file here
             </p>

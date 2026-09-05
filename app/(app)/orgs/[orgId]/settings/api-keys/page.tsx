@@ -26,7 +26,7 @@ function CopyButton({ value }: { value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="p-1 rounded text-zinc-400 hover:text-zinc-700 transition-colors"
+      className="p-1 rounded text-zinc-500 hover:text-zinc-700 transition-colors"
       aria-label="Copy key"
     >
       {copied ? (
@@ -163,14 +163,14 @@ export default function ApiKeysPage() {
           <tbody className="divide-y divide-[#e5e7eb]">
             {loading && keys.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-sm text-zinc-400">
+                <td colSpan={6} className="px-4 py-6 text-center text-sm text-zinc-500">
                   Loading...
                 </td>
               </tr>
             )}
             {!loading && keys.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm text-zinc-400">
+                <td colSpan={6} className="px-4 py-8 text-center text-sm text-zinc-500">
                   No API keys yet. Create one above.
                 </td>
               </tr>
@@ -196,7 +196,7 @@ export default function ApiKeysPage() {
                   <button
                     onClick={() => handleDelete(k.id)}
                     disabled={deletingId === k.id}
-                    className="p-1.5 rounded text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                    className="p-1.5 rounded text-zinc-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
                     aria-label={`Delete ${k.name}`}
                   >
                     <Trash2 className="h-3.5 w-3.5" />

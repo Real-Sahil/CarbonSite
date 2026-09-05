@@ -201,7 +201,7 @@ export function SupplierAccountsTable({ orgId, accounts, policies, onRefresh }: 
                               );
                             }
 
-                            return badges.length > 0 ? badges : <span className="text-xs text-zinc-400">None</span>;
+                            return badges.length > 0 ? badges : <span className="text-xs text-zinc-500">None</span>;
                           })()}
                         </div>
                       </td>

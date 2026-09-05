@@ -208,7 +208,7 @@ export default async function BoundaryPage({ params }: PageProps) {
                         <TableCell className="pl-4">
                           <div className="font-medium text-zinc-900">{e.name}</div>
                           {e.registrationNumber && (
-                            <div className="text-xs text-zinc-400">{e.registrationNumber}</div>
+                            <div className="text-xs text-zinc-500">{e.registrationNumber}</div>
                           )}
                         </TableCell>
                         <TableCell className="text-sm text-zinc-500">
@@ -279,7 +279,7 @@ export default async function BoundaryPage({ params }: PageProps) {
                     <TableRow key={f.id} className={f.factorPercent === 0 ? "opacity-60" : undefined}>
                       <TableCell className="pl-4">
                         <div className="font-medium text-zinc-900">{f.name}</div>
-                        <div className="text-xs text-zinc-400">
+                        <div className="text-xs text-zinc-500">
                           {[f.siteType, f.country].filter(Boolean).join(" · ") || "No profile set"}
                         </div>
                       </TableCell>
@@ -295,7 +295,7 @@ export default async function BoundaryPage({ params }: PageProps) {
                         <span
                           className={
                             f.factorPercent === 0
-                              ? "font-mono text-sm font-semibold tabular-nums text-zinc-400"
+                              ? "font-mono text-sm font-semibold tabular-nums text-zinc-500"
                               : "font-mono text-sm font-semibold tabular-nums text-zinc-900"
                           }
                         >

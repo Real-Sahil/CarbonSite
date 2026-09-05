@@ -88,26 +88,26 @@ function SettingsModal({
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">Assessment settings</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Study period (years)</label>
             <input type="number" required min="1" max="120" value={years} onChange={(e) => setYears(e.target.value)} className={inputCls} />
-            <p className="text-xs text-gray-400 mt-1">RICS default for buildings is 60 years.</p>
+            <p className="text-xs text-gray-500 mt-1">RICS default for buildings is 60 years.</p>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Operational start date <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Operational start date <span className="text-gray-500">(optional)</span></label>
             <input type="date" value={operationalStartDate} onChange={(e) => setOperationalStartDate(e.target.value)} className={inputCls} />
-            <p className="text-xs text-gray-400 mt-1">Only activity on or after this date counts toward B6.</p>
+            <p className="text-xs text-gray-500 mt-1">Only activity on or after this date counts toward B6.</p>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">B7 operational water (kgCO2e) <span className="text-gray-400">(optional, manual)</span></label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">B7 operational water (kgCO2e) <span className="text-gray-500">(optional, manual)</span></label>
             <input type="number" min="0" step="0.01" value={water} onChange={(e) => setWater(e.target.value)} className={inputCls} placeholder="No automated water tracking yet" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
             <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputCls} resize-none`} />
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
@@ -178,7 +178,7 @@ export default function WholeLifeCarbonPage() {
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
+        <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-12 text-center">
           <p className="text-sm font-medium text-red-600">{loadError}</p>
@@ -195,7 +195,7 @@ export default function WholeLifeCarbonPage() {
             <Layers className="h-5 w-5 text-[#f97316]" />
           </div>
           <p className="text-sm font-medium text-gray-700">No whole-life carbon data yet</p>
-          <p className="text-xs text-gray-400 mt-1">Add embodied carbon records for this project to see a breakdown.</p>
+          <p className="text-xs text-gray-500 mt-1">Add embodied carbon records for this project to see a breakdown.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -204,7 +204,7 @@ export default function WholeLifeCarbonPage() {
               <span className="text-sm font-semibold text-gray-900">Whole-life total</span>
               <span className="text-2xl font-semibold text-gray-900 tabular-nums">{fmt(result.wholeLifeTotalKgCo2e)}</span>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               A + B4 + B6 + B7 + C, over a {assessment?.assessmentPeriodYears ?? 60}-year study period.
               Module D is reported separately below, not included in this total.
             </p>
@@ -223,7 +223,7 @@ export default function WholeLifeCarbonPage() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-baseline gap-2">
                         <span className="text-sm font-semibold text-gray-900">{m.label}</span>
-                        <span className="text-xs text-gray-400">{m.sub}</span>
+                        <span className="text-xs text-gray-500">{m.sub}</span>
                       </div>
                       <span className="text-sm text-gray-600 tabular-nums">{fmt(value)}</span>
                     </div>
@@ -239,7 +239,7 @@ export default function WholeLifeCarbonPage() {
           <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Module D (memo)</p>
-              <p className="text-xs text-gray-400">Benefits and loads beyond the system boundary. Reported separately per EN 15978, never netted into the total.</p>
+              <p className="text-xs text-gray-500">Benefits and loads beyond the system boundary. Reported separately per EN 15978, never netted into the total.</p>
             </div>
             <span className="text-lg font-semibold text-gray-900 tabular-nums">{fmt(result.moduleDMemoKgCo2e)}</span>
           </div>
@@ -258,7 +258,7 @@ export default function WholeLifeCarbonPage() {
             </div>
           )}
 
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-gray-500 text-center">
             Based on {materialRecordCount} embodied carbon record{materialRecordCount === 1 ? "" : "s"} for this project.
           </p>
         </div>

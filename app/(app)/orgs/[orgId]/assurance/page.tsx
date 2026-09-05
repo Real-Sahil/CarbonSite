@@ -125,7 +125,7 @@ function StatusBadge({ status }: { status: string }) {
   }
   if (status === "withdrawn") {
     return (
-      <Badge variant="outline" className="text-xs text-zinc-400">
+      <Badge variant="outline" className="text-xs text-zinc-500">
         Withdrawn
       </Badge>
     );

@@ -95,7 +95,7 @@ export default async function LegalRegisterPage({ params }: PageProps) {
                         <div className="max-w-[36ch] font-medium leading-snug text-zinc-900">
                           {e.title}
                         </div>
-                        <div className="text-xs text-zinc-400">
+                        <div className="text-xs text-zinc-500">
                           {[e.citation, e.jurisdiction].filter(Boolean).join(" · ")}
                         </div>
                       </TableCell>
@@ -110,7 +110,7 @@ export default async function LegalRegisterPage({ params }: PageProps) {
                       </TableCell>
                       <TableCell className="pr-4">
                         {e.nextReviewOn === null ? (
-                          <span className="text-xs text-zinc-400">Not scheduled</span>
+                          <span className="text-xs text-zinc-500">Not scheduled</span>
                         ) : overdue ? (
                           <Badge className="bg-amber-100 text-xs text-amber-900 hover:bg-amber-100">
                             Overdue

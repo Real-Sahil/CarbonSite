@@ -154,11 +154,11 @@ export default function CompliancePage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Due date <span className="text-gray-400">(optional)</span></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Due date <span className="text-gray-500">(optional)</span></label>
               <input type="date" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))} className={inputCls} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Owner <span className="text-gray-400">(optional)</span></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Owner <span className="text-gray-500">(optional)</span></label>
               <input
                 type="text"
                 placeholder="e.g. Jane Smith / Finance team"
@@ -168,7 +168,7 @@ export default function CompliancePage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Guidance link <span className="text-gray-400">(optional)</span></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Guidance link <span className="text-gray-500">(optional)</span></label>
               <input
                 type="url"
                 placeholder="https://..."
@@ -178,12 +178,12 @@ export default function CompliancePage() {
               />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-400">(optional)</span></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
               <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                 className={`${inputCls} resize-none`} />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Action steps <span className="text-gray-400">(optional - what needs to happen next)</span></label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Action steps <span className="text-gray-500">(optional - what needs to happen next)</span></label>
               <textarea
                 rows={3}
                 placeholder="e.g. 1. Gather scope 1 data&#10;2. Request scope 2 invoices&#10;3. Submit to HMRC portal by deadline"
@@ -210,14 +210,14 @@ export default function CompliancePage() {
       {/* Records table */}
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
+          <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#fff7ed] flex items-center justify-center">
               <ShieldCheck className="h-5 w-5 text-[#f97316]" />
             </div>
             <p className="text-sm font-medium text-gray-700">No compliance records</p>
-            <p className="text-xs text-gray-400 mt-1">Add your first regulatory framework to start tracking obligations.</p>
+            <p className="text-xs text-gray-500 mt-1">Add your first regulatory framework to start tracking obligations.</p>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -263,7 +263,7 @@ export default function CompliancePage() {
                         {showExpander && (
                           <button
                             onClick={() => setExpandedId(isExpanded ? null : r.id)}
-                            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                            className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-600 transition-colors"
                             aria-label={isExpanded ? "Collapse guidance" : "Show guidance"}
                           >
                             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -281,7 +281,7 @@ export default function CompliancePage() {
                             {r.notes && (
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1.5">
-                                  <FileText className="h-3.5 w-3.5 text-gray-400" />
+                                  <FileText className="h-3.5 w-3.5 text-gray-500" />
                                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notes</span>
                                 </div>
                                 <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{r.notes}</p>
@@ -290,7 +290,7 @@ export default function CompliancePage() {
                             {r.actionSteps && (
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1.5">
-                                  <ListChecks className="h-3.5 w-3.5 text-gray-400" />
+                                  <ListChecks className="h-3.5 w-3.5 text-gray-500" />
                                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Action steps</span>
                                 </div>
                                 <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{r.actionSteps}</p>
@@ -299,7 +299,7 @@ export default function CompliancePage() {
                             {r.externalLink && (
                               <div className="md:col-span-2">
                                 <div className="flex items-center gap-1.5 mb-1.5">
-                                  <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                                  <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
                                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Guidance link</span>
                                 </div>
                                 <a
@@ -332,7 +332,7 @@ export default function CompliancePage() {
           onClick={(e) => (e.currentTarget.nextElementSibling as HTMLElement).classList.toggle("hidden")}
         >
           Regulatory framework reference (UK)
-          <ChevronDown className="h-4 w-4 text-gray-400" />
+          <ChevronDown className="h-4 w-4 text-gray-500" />
         </button>
         <div className="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           {[

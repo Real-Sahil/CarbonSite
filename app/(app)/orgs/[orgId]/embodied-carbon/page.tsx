@@ -138,7 +138,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
           <Card className="border-[#E5E7EB] shadow-none">
             <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
               <CardTitle className="text-sm font-semibold text-zinc-900">Breakdown by material category</CardTitle>
-              <CardDescription className="text-xs text-zinc-400 mt-0.5">kgCO2e A1-A3 cradle-to-gate</CardDescription>
+              <CardDescription className="text-xs text-zinc-500 mt-0.5">kgCO2e A1-A3 cradle-to-gate</CardDescription>
             </CardHeader>
             <CardContent className="px-6 py-5">
               <div className="space-y-3">
@@ -154,7 +154,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
                         />
                       </div>
                       <div className="w-28 shrink-0 text-right text-xs tabular-nums text-zinc-600">{fmtKgCo2e(kgCo2e)}</div>
-                      <div className="w-10 shrink-0 text-right text-xs tabular-nums text-zinc-400">{pct.toFixed(0)}%</div>
+                      <div className="w-10 shrink-0 text-right text-xs tabular-nums text-zinc-500">{pct.toFixed(0)}%</div>
                     </div>
                   );
                 })}
@@ -167,10 +167,10 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
-              <Plus className="h-4 w-4 text-zinc-400" />
+              <Plus className="h-4 w-4 text-zinc-500" />
               <CardTitle className="text-sm font-semibold text-zinc-900">Add material record</CardTitle>
             </div>
-            <CardDescription className="text-xs text-zinc-400 mt-0.5">
+            <CardDescription className="text-xs text-zinc-500 mt-0.5">
               Select a material from the ICE library or upload a project-specific EPD.
             </CardDescription>
           </CardHeader>
@@ -194,10 +194,10 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-zinc-400" />
+              <Package className="h-4 w-4 text-zinc-500" />
               <CardTitle className="text-sm font-semibold text-zinc-900">
                 Records
-                <span className="ml-2 text-xs font-normal text-zinc-400">({records.length})</span>
+                <span className="ml-2 text-xs font-normal text-zinc-500">({records.length})</span>
               </CardTitle>
             </div>
           </CardHeader>
@@ -234,7 +234,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
                             {record.material?.name ?? record.epd?.productName ?? record.description ?? "Custom"}
                           </span>
                           {record.epd && (
-                            <span className="ml-2 text-xs text-zinc-400">EPD</span>
+                            <span className="ml-2 text-xs text-zinc-500">EPD</span>
                           )}
                         </TableCell>
                         <TableCell className="py-3.5">

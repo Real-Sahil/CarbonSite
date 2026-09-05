@@ -258,7 +258,7 @@ export default async function BiodiversityPage({ params }: PageProps) {
                         {MODULE_LABEL[m.module]}
                       </p>
                       {m.baselineIsZero && m.postInterventionUnits === 0 ? (
-                        <p className="mt-1 text-sm text-zinc-400">Not engaged</p>
+                        <p className="mt-1 text-sm text-zinc-500">Not engaged</p>
                       ) : (
                         <>
                           <p

@@ -147,7 +147,7 @@ export default function AuditLogsPage() {
         <CardContent>
           {logs.length === 0 ? (
             <div className="text-center py-8">
-              <AlertCircle className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+              <AlertCircle className="mx-auto h-8 w-8 text-gray-500 mb-2" />
               <p className="text-gray-600">No audit logs found</p>
             </div>
           ) : (
@@ -202,7 +202,7 @@ export default function AuditLogsPage() {
                     </p>
                   </div>
 
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
+                  <ChevronRight className="h-5 w-5 text-gray-500" />
                 </div>
               ))}
             </div>

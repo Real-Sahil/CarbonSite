@@ -95,7 +95,7 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">Add carbon offset</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
@@ -129,7 +129,7 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
               <input type="number" required min="0.0001" step="0.0001" value={form.quantityTonnes} onChange={(e) => set("quantityTonnes", e.target.value)} className={inputCls} placeholder="100.0000" />
             </div>
             <div>
-              <label className={labelCls}>Price / tonne <span className="text-gray-400">(optional)</span></label>
+              <label className={labelCls}>Price / tonne <span className="text-gray-500">(optional)</span></label>
               <input type="number" min="0" step="0.01" value={form.pricePerTonne} onChange={(e) => set("pricePerTonne", e.target.value)} className={inputCls} placeholder="15.00" />
             </div>
             <div>
@@ -141,11 +141,11 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
               <input type="date" required value={form.purchasedAt} onChange={(e) => set("purchasedAt", e.target.value)} className={inputCls} />
             </div>
             <div className="col-span-2">
-              <label className={labelCls}>Retirement ref <span className="text-gray-400">(optional)</span></label>
+              <label className={labelCls}>Retirement ref <span className="text-gray-500">(optional)</span></label>
               <input type="text" value={form.retirementRef} onChange={(e) => set("retirementRef", e.target.value)} className={inputCls} placeholder="Gold Standard retirement certificate #..." />
             </div>
             <div className="col-span-2">
-              <label className={labelCls}>Notes <span className="text-gray-400">(optional)</span></label>
+              <label className={labelCls}>Notes <span className="text-gray-500">(optional)</span></label>
               <textarea rows={2} value={form.notes} onChange={(e) => set("notes", e.target.value)} className={`${inputCls} resize-none`} />
             </div>
           </div>
@@ -206,28 +206,28 @@ export default function OffsetsPage() {
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Total purchased</div>
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Total purchased</div>
           <div className="text-2xl font-semibold text-gray-900 tabular-nums">{totalTonnes.toFixed(1)}</div>
-          <div className="text-xs text-gray-400 mt-0.5">tCO2e</div>
+          <div className="text-xs text-gray-500 mt-0.5">tCO2e</div>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Projects tracked</div>
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Projects tracked</div>
           <div className="text-2xl font-semibold text-gray-900 tabular-nums">{offsets.length}</div>
-          <div className="text-xs text-gray-400 mt-0.5">offset records</div>
+          <div className="text-xs text-gray-500 mt-0.5">offset records</div>
         </div>
       </div>
 
       {/* Table */}
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-sm text-gray-400">Loading...</div>
+          <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
         ) : offsets.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-green-50 flex items-center justify-center">
               <Leaf className="h-5 w-5 text-green-500" />
             </div>
             <p className="text-sm font-medium text-gray-700">No offsets yet</p>
-            <p className="text-xs text-gray-400 mt-1">Add your first carbon credit purchase to track net position.</p>
+            <p className="text-xs text-gray-500 mt-1">Add your first carbon credit purchase to track net position.</p>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -243,7 +243,7 @@ export default function OffsetsPage() {
                 <tr key={o.id} className="hover:bg-gray-50 transition-colors">
                   <td className="py-3 pl-6 pr-4">
                     <p className="font-medium text-gray-900 truncate max-w-[200px]">{o.projectName}</p>
-                    <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px]">{o.provider}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[200px]">{o.provider}</p>
                   </td>
                   <td className="py-3 px-4">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[o.projectType] ?? "bg-gray-100 text-gray-600"}`}>
@@ -258,7 +258,7 @@ export default function OffsetsPage() {
                     <div className="flex items-center gap-2 justify-end">
                       {o.retirementRef && (
                         <span title={o.retirementRef}>
-                          <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                          <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
                         </span>
                       )}
                       <button onClick={() => handleDelete(o.id)} className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center group">

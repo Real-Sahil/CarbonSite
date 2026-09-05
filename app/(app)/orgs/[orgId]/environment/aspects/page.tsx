@@ -120,13 +120,13 @@ export default async function AspectsPage({ params }: PageProps) {
                         <div className="max-w-[26ch] font-medium leading-snug text-zinc-900">
                           {a.activity}
                         </div>
-                        <div className="text-xs text-zinc-400">
+                        <div className="text-xs text-zinc-500">
                           {a.facility?.name ?? "Organisation wide"}
                         </div>
                       </TableCell>
                       <TableCell className="max-w-[34ch] text-xs leading-relaxed text-zinc-600">
                         <span className="text-zinc-900">{a.aspect}</span>
-                        <span className="text-zinc-400"> causing </span>
+                        <span className="text-zinc-500"> causing </span>
                         {a.impact}
                       </TableCell>
                       <TableCell className="text-sm capitalize text-zinc-500">
@@ -136,7 +136,7 @@ export default async function AspectsPage({ params }: PageProps) {
                         <span className="font-mono text-sm tabular-nums text-zinc-900">
                           {a.significanceScore}
                         </span>
-                        <div className="text-xs text-zinc-400">
+                        <div className="text-xs text-zinc-500">
                           {a.severityScore}×{a.likelihoodScore}×{a.legalScore}
                         </div>
                       </TableCell>
@@ -145,7 +145,7 @@ export default async function AspectsPage({ params }: PageProps) {
                       </TableCell>
                       <TableCell className="pr-4">
                         {!needsControl ? (
-                          <span className="text-xs text-zinc-400">Not required</span>
+                          <span className="text-xs text-zinc-500">Not required</span>
                         ) : hasControl ? (
                           <Badge variant="outline" className="text-xs">
                             Recorded

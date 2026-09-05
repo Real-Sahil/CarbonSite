@@ -53,7 +53,7 @@ function MeterBar({ used, limit, label, icon: Icon }: { used: number; limit: num
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-sm text-gray-700">
-          <Icon className="h-4 w-4 text-gray-400 shrink-0" />
+          <Icon className="h-4 w-4 text-gray-500 shrink-0" />
           {label}
         </div>
         <span className="text-xs text-gray-500 tabular-nums shrink-0">
@@ -140,7 +140,7 @@ export default function BillingPage() {
         </div>
 
         {data?.subscription && (
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-gray-500">
             Billing period:{" "}
             {new Date(data.subscription.currentPeriodStart).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             {" - "}
@@ -227,7 +227,7 @@ export default function BillingPage() {
         </div>
       </div>
 
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-gray-500">
         To upgrade, downgrade, or cancel, contact{" "}
         <a href="mailto:hello@carbonsite.io" className="text-[#f97316] hover:underline">
           hello@carbonsite.io

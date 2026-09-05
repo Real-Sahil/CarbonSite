@@ -45,7 +45,7 @@ function CopyButton({ value }: { value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="p-1 rounded text-zinc-400 hover:text-zinc-700 transition-colors"
+      className="p-1 rounded text-zinc-500 hover:text-zinc-700 transition-colors"
       aria-label="Copy secret"
     >
       {copied ? (
@@ -261,14 +261,14 @@ export default function WebhooksPage() {
           <tbody className="divide-y divide-[#e5e7eb]">
             {loading && webhooks.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-sm text-zinc-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-sm text-zinc-500">
                   Loading...
                 </td>
               </tr>
             )}
             {!loading && webhooks.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm text-zinc-400">
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-zinc-500">
                   No webhooks yet. Add an endpoint above.
                 </td>
               </tr>
@@ -307,7 +307,7 @@ export default function WebhooksPage() {
                       </>
                     ) : (
                       <>
-                        <ToggleLeft className="h-4 w-4 text-zinc-400" />
+                        <ToggleLeft className="h-4 w-4 text-zinc-500" />
                         <span className="text-zinc-500">Disabled</span>
                       </>
                     )}
@@ -317,7 +317,7 @@ export default function WebhooksPage() {
                   <button
                     onClick={() => handleDelete(wh.id)}
                     disabled={deletingId === wh.id}
-                    className="p-1.5 rounded text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                    className="p-1.5 rounded text-zinc-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
                     aria-label="Delete webhook"
                   >
                     <Trash2 className="h-3.5 w-3.5" />

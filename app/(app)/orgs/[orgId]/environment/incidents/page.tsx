@@ -146,7 +146,7 @@ export default async function IncidentsPage({ params }: PageProps) {
                     <TableRow key={i.id} className={i.status === "closed" ? "opacity-60" : undefined}>
                       <TableCell className="pl-4">
                         <div className="font-medium text-zinc-900">{i.reference}</div>
-                        <div className="max-w-[32ch] truncate text-xs text-zinc-400">
+                        <div className="max-w-[32ch] truncate text-xs text-zinc-500">
                           {i.facility?.name ?? "Organisation wide"}
                         </div>
                       </TableCell>
@@ -165,7 +165,7 @@ export default async function IncidentsPage({ params }: PageProps) {
                       </TableCell>
                       <TableCell className="text-sm">
                         {actions.length === 0 ? (
-                          <span className="text-zinc-400">None</span>
+                          <span className="text-zinc-500">None</span>
                         ) : overdueActions > 0 ? (
                           <span className="font-medium text-red-700">
                             {overdueActions} overdue
@@ -178,7 +178,7 @@ export default async function IncidentsPage({ params }: PageProps) {
                       </TableCell>
                       <TableCell>
                         {!i.regulatorNotifiable ? (
-                          <span className="text-xs text-zinc-400">Not notifiable</span>
+                          <span className="text-xs text-zinc-500">Not notifiable</span>
                         ) : i.regulatorNotifiedAt ? (
                           <Badge variant="outline" className="text-xs">
                             Notified
@@ -199,7 +199,7 @@ export default async function IncidentsPage({ params }: PageProps) {
                             {i.status.replace(/_/g, " ")}
                           </Badge>
                           {i.status !== "closed" && !closure.canClose && (
-                            <p className="max-w-[28ch] text-xs leading-snug text-zinc-400">
+                            <p className="max-w-[28ch] text-xs leading-snug text-zinc-500">
                               {closure.reasons[0]}
                             </p>
                           )}

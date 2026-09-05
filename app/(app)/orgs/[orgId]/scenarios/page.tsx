@@ -211,7 +211,7 @@ function AdjustmentRow({
         variant="ghost"
         size="icon"
         onClick={() => onRemove(index)}
-        className="text-zinc-400 hover:text-red-500 mt-4"
+        className="text-zinc-500 hover:text-red-500 mt-4"
         aria-label="Remove adjustment"
       >
         <Trash2 className="h-4 w-4" />
@@ -274,7 +274,7 @@ function MaccCard({ orgId }: { orgId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-zinc-400">
+      <div className="flex items-center gap-2 text-sm text-zinc-500">
         <Loader2 className="h-4 w-4 animate-spin" /> Loading…
       </div>
     );
@@ -301,7 +301,7 @@ function MaccCard({ orgId }: { orgId: string }) {
           <p className="text-sm text-zinc-500">
             No reduction initiatives have a cost and expected CO2e impact recorded yet.
           </p>
-          <p className="text-xs text-zinc-400 mt-1">Add cost, annual savings and impact to initiatives in Targets.</p>
+          <p className="text-xs text-zinc-500 mt-1">Add cost, annual savings and impact to initiatives in Targets.</p>
         </CardContent>
       </Card>
     );
@@ -314,7 +314,7 @@ function MaccCard({ orgId }: { orgId: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <PoundSterling className="h-4 w-4 text-zinc-400" />
+          <PoundSterling className="h-4 w-4 text-zinc-500" />
           Marginal abatement cost curve
         </CardTitle>
         <CardDescription>
@@ -356,7 +356,7 @@ function MaccCard({ orgId }: { orgId: string }) {
                 <div className={`w-24 shrink-0 text-right text-sm tabular-nums font-medium ${isNegative ? "text-green-700" : "text-amber-700"}`}>
                   {fmtCost(point.marginalCostPerTco2e)}/t
                 </div>
-                <div className="w-20 shrink-0 text-right text-xs text-zinc-400 tabular-nums">
+                <div className="w-20 shrink-0 text-right text-xs text-zinc-500 tabular-nums">
                   {point.paybackYears != null ? `${point.paybackYears.toFixed(1)}y payback` : "-"}
                 </div>
               </div>
@@ -365,7 +365,7 @@ function MaccCard({ orgId }: { orgId: string }) {
         </div>
 
         {excludedCount > 0 && (
-          <p className="mt-4 text-xs text-zinc-400">
+          <p className="mt-4 text-xs text-zinc-500">
             {excludedCount} initiative{excludedCount !== 1 ? "s" : ""} excluded — no expected CO2e impact recorded.
           </p>
         )}
@@ -552,11 +552,11 @@ export default function ScenariosPage() {
               Baseline calculation run
             </label>
             {loadingRuns ? (
-              <div className="flex items-center gap-2 text-sm text-zinc-400">
+              <div className="flex items-center gap-2 text-sm text-zinc-500">
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading runs…
               </div>
             ) : calcRuns.length === 0 ? (
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-zinc-500">
                 No succeeded calculation runs found. Complete a calculation first.
               </p>
             ) : (
@@ -577,7 +577,7 @@ export default function ScenariosPage() {
           {/* Label */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-zinc-700">
-              Label <span className="font-normal text-zinc-400">(optional)</span>
+              Label <span className="font-normal text-zinc-500">(optional)</span>
             </label>
             <Input
               placeholder="e.g. 20% Scope 3 reduction"
@@ -595,7 +595,7 @@ export default function ScenariosPage() {
               </Button>
             </div>
             {adjustments.length === 0 && (
-              <p className="text-sm text-zinc-400">No adjustments added yet.</p>
+              <p className="text-sm text-zinc-500">No adjustments added yet.</p>
             )}
             <div className="space-y-2">
               {adjustments.map((adj, i) => (
@@ -634,7 +634,7 @@ export default function ScenariosPage() {
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-zinc-900">Scenario Results</h2>
-            <div className="flex items-center gap-2 text-xs text-zinc-400">
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
               <span>Expires {fmtDate(result.expiresAt)}</span>
               <Badge variant="outline" className="text-xs">
                 {result.draftsCount} records
@@ -701,7 +701,7 @@ export default function ScenariosPage() {
                       <TableRow key={row.id}>
                         <TableCell className="pl-4">
                           <div className="font-medium text-zinc-900">{row.categoryName}</div>
-                          <div className="text-xs text-zinc-400">{row.categoryCode}</div>
+                          <div className="text-xs text-zinc-500">{row.categoryCode}</div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">
@@ -734,11 +734,11 @@ export default function ScenariosPage() {
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-zinc-900">Recent Scenarios</h2>
         {loadingPastRuns ? (
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
+          <div className="flex items-center gap-2 text-sm text-zinc-500">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading…
           </div>
         ) : pastRuns.length === 0 ? (
-          <p className="text-sm text-zinc-400">No scenarios created yet.</p>
+          <p className="text-sm text-zinc-500">No scenarios created yet.</p>
         ) : (
           <Card>
             <CardContent className="overflow-x-auto p-0">
@@ -764,7 +764,7 @@ export default function ScenariosPage() {
                         <TableCell className="pl-4 font-medium text-zinc-900">
                           <div>{run.label ?? run.calculationRun?.reportingPeriod?.label ?? "Unnamed scenario"}</div>
                           {run.label && run.calculationRun?.reportingPeriod?.label && (
-                            <div className="text-xs text-zinc-400">{run.calculationRun.reportingPeriod.label}</div>
+                            <div className="text-xs text-zinc-500">{run.calculationRun.reportingPeriod.label}</div>
                           )}
                         </TableCell>
                         <TableCell className="text-sm text-zinc-500">
@@ -780,7 +780,7 @@ export default function ScenariosPage() {
                           {expired ? (
                             <Badge
                               variant="outline"
-                              className="text-xs text-zinc-400 border-zinc-200"
+                              className="text-xs text-zinc-500 border-zinc-200"
                             >
                               Expired
                             </Badge>

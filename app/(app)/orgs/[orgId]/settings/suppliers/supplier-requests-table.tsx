@@ -82,7 +82,7 @@ const STATUS_FILTERS = [
 
 function statusBadge(row: RequestRow) {
   if (row.expired) {
-    return <Badge variant="outline" className="text-slate-400">Expired</Badge>;
+    return <Badge variant="outline" className="text-slate-500">Expired</Badge>;
   }
   if (row.status === "submitted") {
     return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Submitted</Badge>;
@@ -236,7 +236,7 @@ export function SupplierRequestsTable({
               {f.label}
               {counts[f.value] > 0 && (
                 <span className={`ml-1.5 text-xs ${
-                  currentStatus === f.value ? "text-slate-300" : "text-slate-400"
+                  currentStatus === f.value ? "text-slate-300" : "text-slate-500"
                 }`}>
                   {counts[f.value]}
                 </span>
@@ -269,7 +269,7 @@ export function SupplierRequestsTable({
           <CardContent className="py-12 text-center">
             <Send className="mx-auto mb-3 h-8 w-8 text-slate-300" />
             <p className="text-sm font-medium text-slate-600">No requests found</p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500">
               {currentStatus !== "all"
                 ? "Try changing the filter above."
                 : "Send a supplier data campaign from the Supplier Data Requests API."}
@@ -303,12 +303,12 @@ export function SupplierRequestsTable({
                         {row.supplierName ?? row.supplierEmail}
                       </p>
                       {row.supplierName && (
-                        <p className="text-xs text-slate-400">{row.supplierEmail}</p>
+                        <p className="text-xs text-slate-500">{row.supplierEmail}</p>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <span className="capitalize text-slate-700">{row.categoryName}</span>
-                      <p className="text-xs text-slate-400">{row.categoryCode}</p>
+                      <p className="text-xs text-slate-500">{row.categoryCode}</p>
                     </td>
                     <td className="px-4 py-3 text-slate-600">{row.periodLabel}</td>
                     <td className="px-4 py-3">{statusBadge(row)}</td>
@@ -377,19 +377,19 @@ export function SupplierRequestsTable({
               <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                   <div>
-                    <dt className="text-slate-400 text-xs">Supplier</dt>
+                    <dt className="text-slate-500 text-xs">Supplier</dt>
                     <dd className="font-medium">{reviewRow.supplierName ?? reviewRow.supplierEmail}</dd>
                   </div>
                   <div>
-                    <dt className="text-slate-400 text-xs">Category</dt>
+                    <dt className="text-slate-500 text-xs">Category</dt>
                     <dd className="capitalize">{reviewRow.categoryName}</dd>
                   </div>
                   <div>
-                    <dt className="text-slate-400 text-xs">Period</dt>
+                    <dt className="text-slate-500 text-xs">Period</dt>
                     <dd>{reviewRow.periodLabel}</dd>
                   </div>
                   <div>
-                    <dt className="text-slate-400 text-xs">Submitted</dt>
+                    <dt className="text-slate-500 text-xs">Submitted</dt>
                     <dd>{fmtDate(reviewRow.submittedAt)}</dd>
                   </div>
                 </dl>
@@ -427,7 +427,7 @@ export function SupplierRequestsTable({
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="convert-notes">
                   Notes{" "}
-                  <span className="font-normal text-slate-400">(optional)</span>
+                  <span className="font-normal text-slate-500">(optional)</span>
                 </Label>
                 <Textarea
                   id="convert-notes"

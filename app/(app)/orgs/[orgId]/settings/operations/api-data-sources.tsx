@@ -293,7 +293,7 @@ function ApiDataSourceRow({ orgId, source }: { orgId: string; source: ApiDataSou
           <button
             onClick={removeSource}
             disabled={deleting}
-            className="p-1.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+            className="p-1.5 rounded text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
             aria-label={`Delete ${source.name}`}
           >
             <Trash2 className="h-4 w-4" />

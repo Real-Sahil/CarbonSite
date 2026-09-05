@@ -148,7 +148,7 @@ export function CompletenessMatrixClient({
 
       <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
         {loading ? (
-          <p className="text-sm text-zinc-400">Loading…</p>
+          <p className="text-sm text-zinc-500">Loading…</p>
         ) : loadError ? (
           <Card>
             <CardContent className="py-12 text-center">
@@ -163,7 +163,7 @@ export function CompletenessMatrixClient({
             <CardContent className="py-12 text-center">
               <ClipboardList className="mx-auto h-8 w-8 text-zinc-300 mb-3" />
               <p className="text-sm font-medium text-zinc-700">No completeness requirements configured yet</p>
-              <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
+              <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
                 Add a requirement for each facility x emission category combination you expect data for, with an owner
                 responsible for chasing it up.
               </p>
@@ -187,7 +187,7 @@ export function CompletenessMatrixClient({
             <Card className="border-[#E5E7EB] shadow-none">
               <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
                 <CardTitle className="text-sm font-semibold text-zinc-900">{data.reportingPeriod.label}</CardTitle>
-                <CardDescription className="text-xs text-zinc-400">
+                <CardDescription className="text-xs text-zinc-500">
                   Rows are facilities, columns are emission categories. Grey cells aren&apos;t required for that facility.
                 </CardDescription>
               </CardHeader>
@@ -260,7 +260,7 @@ export function CompletenessMatrixClient({
 function SummaryStat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
     <div className="rounded-xl border border-[#E5E7EB] bg-white p-5">
-      <div className="text-xs font-medium text-zinc-400 uppercase tracking-widest mb-1">{label}</div>
+      <div className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-1">{label}</div>
       <div className={cn("text-2xl font-semibold tabular-nums text-zinc-900", tone)}>{value}</div>
     </div>
   );
@@ -278,7 +278,7 @@ function CellDetailModal({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-gray-900">{facilityName}</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
         <div className="space-y-3 text-sm">
@@ -357,7 +357,7 @@ function RequirementFormModal({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-gray-900">Add completeness requirement</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -380,7 +380,7 @@ function RequirementFormModal({
             </Select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Owner <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Owner <span className="text-gray-500">(optional)</span></label>
             <Select value={ownerUserId} onValueChange={setOwnerUserId}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Unassigned" /></SelectTrigger>
               <SelectContent>
@@ -389,7 +389,7 @@ function RequirementFormModal({
             </Select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-400">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
             <textarea
               rows={2}
               value={notes}

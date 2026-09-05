@@ -244,7 +244,7 @@ export default async function BaseYearPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell className="pr-4">
                           {!recalc ? (
-                            <span className="text-xs text-zinc-400">No active base year</span>
+                            <span className="text-xs text-zinc-500">No active base year</span>
                           ) : recalc.status === "not_significant" ? (
                             <Badge variant="outline" className="text-xs">
                               Below threshold
@@ -295,7 +295,7 @@ export default async function BaseYearPage({ params }: PageProps) {
                             <div className="font-medium text-zinc-900">
                               {CHANGE_TYPE_LABEL[r.structuralChange.type] ?? r.structuralChange.type}
                             </div>
-                            <div className="text-xs text-zinc-400">{by.label}</div>
+                            <div className="text-xs text-zinc-500">{by.label}</div>
                           </TableCell>
                           <TableCell className="text-right font-mono text-sm tabular-nums">
                             {Number(r.previousTotalCo2e ?? 0).toFixed(2)}
@@ -322,7 +322,7 @@ export default async function BaseYearPage({ params }: PageProps) {
                               {r.status === "awaiting_approval" ? (
                                 <ResolveRecalculationButtons orgId={orgId} recalculationId={r.id} />
                               ) : (
-                                <span className="text-xs text-zinc-400">
+                                <span className="text-xs text-zinc-500">
                                   {r.approvedBy
                                     ? (r.approvedBy.name ?? r.approvedBy.email)
                                     : "No action needed"}
@@ -373,7 +373,7 @@ export default async function BaseYearPage({ params }: PageProps) {
                           <div className="font-medium text-zinc-900">
                             {r.supersededSnapshot.reportingPeriod.label}
                           </div>
-                          <div className="text-xs text-zinc-400">
+                          <div className="text-xs text-zinc-500">
                             Snapshot v{r.supersededSnapshot.version}
                           </div>
                         </TableCell>
@@ -445,7 +445,7 @@ function StatusBadge({ status }: { status: string }) {
   }
   if (status === "superseded") {
     return (
-      <Badge variant="outline" className="text-xs text-zinc-400">
+      <Badge variant="outline" className="text-xs text-zinc-500">
         Superseded
       </Badge>
     );

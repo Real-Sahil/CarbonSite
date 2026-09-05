@@ -55,7 +55,7 @@ function getAnomalyIcon(anomalyType: string) {
     case 'unusual_pattern':
       return <TrendingDown className="h-4 w-4 text-blue-600" />;
     default:
-      return <Minus className="h-4 w-4 text-gray-400" />;
+      return <Minus className="h-4 w-4 text-gray-500" />;
   }
 }
 

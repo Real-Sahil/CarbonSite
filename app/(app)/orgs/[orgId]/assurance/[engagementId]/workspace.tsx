@@ -209,7 +209,7 @@ export function EngagementWorkspace({
             )}
           >
             {t}{" "}
-            <span className="text-zinc-400">
+            <span className="text-zinc-500">
               ({t === "Evidence" ? evidenceRequests.length : t === "Samples" ? samples.length : findings.length})
             </span>
           </button>
@@ -491,7 +491,7 @@ function SamplesTab({
                         {s.sourceDescription ?? "Activity record"}
                       </div>
                       {s.totalCo2e !== null && (
-                        <div className="text-xs text-zinc-400">
+                        <div className="text-xs text-zinc-500">
                           {s.totalCo2e.toFixed(2)} tCO2e{s.dataOrigin ? ` · ${s.dataOrigin}` : ""}
                         </div>
                       )}

@@ -293,7 +293,7 @@ export default async function EnvironmentPage({ params }: PageProps) {
                       <TableRow key={p.id}>
                         <TableCell className="pl-4">
                           <div className="font-medium text-zinc-900">{p.title}</div>
-                          <div className="text-xs text-zinc-400">
+                          <div className="text-xs text-zinc-500">
                             {PERMIT_TYPE_LABEL[p.type] ?? p.type} · {p.reference}
                           </div>
                         </TableCell>
@@ -350,7 +350,7 @@ export default async function EnvironmentPage({ params }: PageProps) {
                       <TableRow key={i.id}>
                         <TableCell className="pl-4">
                           <div className="font-medium text-zinc-900">{i.reference}</div>
-                          <div className="text-xs text-zinc-400">
+                          <div className="text-xs text-zinc-500">
                             {i.facility?.name ?? "Organisation wide"}
                           </div>
                         </TableCell>
@@ -369,7 +369,7 @@ export default async function EnvironmentPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell className="pr-4">
                           {!i.regulatorNotifiable ? (
-                            <span className="text-xs text-zinc-400">Not notifiable</span>
+                            <span className="text-xs text-zinc-500">Not notifiable</span>
                           ) : i.regulatorNotifiedAt ? (
                             <Badge variant="outline" className="text-xs">
                               Notified

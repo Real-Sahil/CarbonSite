@@ -241,7 +241,7 @@ export default function RegulatoryCalendarPage() {
                     <p className="mt-1 text-xs text-gray-500">
                       {new Date(deadline.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
-                    <p className="text-xs text-gray-400">FY{deadline.reportingYear}</p>
+                    <p className="text-xs text-gray-500">FY{deadline.reportingYear}</p>
                   </div>
                 </div>
               </CardContent>
@@ -274,10 +274,10 @@ export default function RegulatoryCalendarPage() {
                       <p className="text-sm text-gray-500">{deadline.description}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-500">
                         {new Date(deadline.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
-                      <p className="text-xs text-gray-400">FY{deadline.reportingYear}</p>
+                      <p className="text-xs text-gray-500">FY{deadline.reportingYear}</p>
                     </div>
                   </div>
                 </CardContent>

@@ -152,7 +152,7 @@ function DatapointRow({
             <StatusIcon status={datapoint.status} />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-zinc-400">{datapoint.code}</span>
+                <span className="font-mono text-xs text-zinc-500">{datapoint.code}</span>
                 <span className="font-medium text-zinc-900">{datapoint.title}</span>
                 {datapoint.source === "automatic" && (
                   <span className="flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">

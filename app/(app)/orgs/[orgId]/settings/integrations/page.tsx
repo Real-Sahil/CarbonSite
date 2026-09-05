@@ -337,7 +337,7 @@ export default function IntegrationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
       </div>
     );
   }
@@ -526,7 +526,7 @@ export default function IntegrationsPage() {
               )}
 
               {isXeroConnected && xeroConn?.connectedAt && (
-                <span className="text-xs text-zinc-400">
+                <span className="text-xs text-zinc-500">
                   Connected {new Date(xeroConn.connectedAt).toLocaleDateString()}
                 </span>
               )}
@@ -592,7 +592,7 @@ export default function IntegrationsPage() {
                     Disconnect
                   </Button>
                   {quickbooksConn?.connectedAt && (
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-xs text-zinc-500">
                       Connected {new Date(quickbooksConn.connectedAt).toLocaleDateString()}
                     </span>
                   )}
@@ -660,7 +660,7 @@ export default function IntegrationsPage() {
                     Disconnect
                   </Button>
                   {sageConn?.connectedAt && (
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-xs text-zinc-500">
                       Connected {new Date(sageConn.connectedAt).toLocaleDateString()}
                     </span>
                   )}

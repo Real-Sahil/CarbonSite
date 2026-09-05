@@ -172,8 +172,8 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                 >
                   <div className="shrink-0">
                     {isExpanded
-                      ? <ChevronDown className="h-4 w-4 text-slate-400" />
-                      : <ChevronRight className="h-4 w-4 text-slate-400" />}
+                      ? <ChevronDown className="h-4 w-4 text-slate-500" />
+                      : <ChevronRight className="h-4 w-4 text-slate-500" />}
                   </div>
 
                   {/* Supplier */}
@@ -437,7 +437,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                 placeholder="e.g. The reported amount appears to be in kg rather than tonnes. Please resubmit with the correct unit."
                 className="bg-white border-[#E5E7EB] text-slate-900 text-sm resize-none placeholder:text-slate-400"
               />
-              <p className="text-[11px] text-slate-400 text-right">{rejectionReason.length}/500</p>
+              <p className="text-[11px] text-slate-500 text-right">{rejectionReason.length}/500</p>
             </div>
           </div>
 
