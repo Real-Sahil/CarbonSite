@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,6 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export type ThemeWithMeasures = {
   code: string;
@@ -337,6 +345,350 @@ export function DeleteSocialValueRecordButton({
         <Trash2 className="h-4 w-4" />
       </Button>
       {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+// ─── Targets ────────────────────────────────────────────────────────────────
+
+export type TargetWithActual = {
+  id: string;
+  contractId: string;
+  contractName: string;
+  reportingPeriodId: string;
+  periodLabel: string;
+  targetPounds: number;
+  baselinePounds: number | null;
+  notes: string | null;
+  actualPounds: number;
+};
+
+interface SocialValueTargetsSectionProps {
+  orgId: string;
+  contracts: ContractOption[];
+  periods: PeriodOption[];
+  targets: TargetWithActual[];
+  canEdit: boolean;
+}
+
+const emptyTargetForm = {
+  contractId: "",
+  reportingPeriodId: "",
+  targetPounds: "",
+  baselinePounds: "",
+  notes: "",
+};
+
+export function SocialValueTargetsSection({
+  orgId,
+  contracts,
+  periods,
+  targets,
+  canEdit,
+}: SocialValueTargetsSectionProps) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyTargetForm);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  function openAddForm() {
+    setEditingId(null);
+    setForm({
+      contractId: contracts[0]?.id ?? "",
+      reportingPeriodId: periods[0]?.id ?? "",
+      targetPounds: "",
+      baselinePounds: "",
+      notes: "",
+    });
+    setError(null);
+    setOpen(true);
+  }
+
+  function openEditForm(target: TargetWithActual) {
+    setEditingId(target.id);
+    setForm({
+      contractId: target.contractId,
+      reportingPeriodId: target.reportingPeriodId,
+      targetPounds: String(target.targetPounds),
+      baselinePounds: target.baselinePounds !== null ? String(target.baselinePounds) : "",
+      notes: target.notes ?? "",
+    });
+    setError(null);
+    setOpen(true);
+  }
+
+  function closeForm() {
+    setOpen(false);
+    setEditingId(null);
+    setForm(emptyTargetForm);
+    setError(null);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.contractId || !form.reportingPeriodId || !form.targetPounds) {
+      setError("Contract, period, and target amount are required.");
+      return;
+    }
+    if (Number(form.targetPounds) <= 0) {
+      setError("Target amount must be a positive number.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/social-value/targets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contractId: form.contractId,
+          reportingPeriodId: form.reportingPeriodId,
+          targetPounds: Number(form.targetPounds),
+          baselinePounds: form.baselinePounds ? Number(form.baselinePounds) : undefined,
+          notes: form.notes.trim() || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? "Failed to save target.");
+      } else {
+        closeForm();
+        router.refresh();
+      }
+    } catch {
+      setError("Network error — try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleDelete(target: TargetWithActual) {
+    if (
+      !window.confirm(
+        `Delete the target for "${target.contractName}" (${target.periodLabel})? This cannot be undone.`,
+      )
+    )
+      return;
+    setDeleteError(null);
+    setDeletingId(target.id);
+    startTransition(async () => {
+      const res = await fetch(`/api/orgs/${orgId}/social-value/targets/${target.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setDeleteError(body?.message ?? "Could not delete target");
+        setDeletingId(null);
+        return;
+      }
+      router.refresh();
+    });
+  }
+
+  const missingPrereqs = contracts.length === 0 || periods.length === 0;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {canEdit && (
+        <div className="px-6 pt-5">
+          {missingPrereqs ? (
+            <div className="flex items-start gap-2 rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3">
+              <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" aria-hidden="true" />
+              <p className="text-sm text-amber-800 tracking-[-0.42px]">
+                You need a contract and a reporting period before setting a target.
+              </p>
+            </div>
+          ) : !open ? (
+            <Button size="sm" variant="outline" onClick={openAddForm} className="gap-1.5">
+              <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+              Set target
+            </Button>
+          ) : (
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] p-4"
+            >
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-[#374151] tracking-[-0.36px]">Contract</label>
+                  <Select
+                    value={form.contractId}
+                    onValueChange={(v) => setForm((f) => ({ ...f, contractId: v }))}
+                    disabled={editingId !== null}
+                  >
+                    <SelectTrigger className="w-52">
+                      <SelectValue placeholder="Select contract" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contracts.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-[#374151] tracking-[-0.36px]">Period</label>
+                  <Select
+                    value={form.reportingPeriodId}
+                    onValueChange={(v) => setForm((f) => ({ ...f, reportingPeriodId: v }))}
+                    disabled={editingId !== null}
+                  >
+                    <SelectTrigger className="w-44">
+                      <SelectValue placeholder="Select period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {periods.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-[#374151] tracking-[-0.36px]">Target (£)</label>
+                  <Input
+                    type="number"
+                    min="0.01"
+                    step="any"
+                    value={form.targetPounds}
+                    onChange={(e) => setForm((f) => ({ ...f, targetPounds: e.target.value }))}
+                    placeholder="e.g. 50000"
+                    className="w-32"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-[#374151] tracking-[-0.36px]">Baseline (£, optional)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={form.baselinePounds}
+                    onChange={(e) => setForm((f) => ({ ...f, baselinePounds: e.target.value }))}
+                    placeholder="e.g. 30000"
+                    className="w-32"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-[#374151] tracking-[-0.36px]">Notes (optional)</label>
+                <Textarea
+                  value={form.notes}
+                  onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                  placeholder="Basis for this target, e.g. contract commitment reference"
+                  className="h-20 resize-none"
+                />
+              </div>
+
+              <div className="flex gap-2 items-center">
+                <Button type="submit" disabled={loading} size="sm">
+                  {loading ? "Saving…" : editingId ? "Update target" : "Save target"}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={closeForm}>
+                  Cancel
+                </Button>
+                {error && <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+
+      {targets.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+          <p className="font-normal text-[#111827] tracking-[-0.42px]">No targets set yet</p>
+          <p className="text-sm text-[#374151] tracking-[-0.42px] max-w-sm">
+            Set a social value target per contract and reporting period to track progress against commitments.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Contract</TableHead>
+                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
+                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Baseline</TableHead>
+                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Target</TableHead>
+                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Actual</TableHead>
+                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Progress</TableHead>
+                {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {targets.map((target) => {
+                const pct = target.targetPounds > 0
+                  ? Math.min(100, Math.round((target.actualPounds / target.targetPounds) * 100))
+                  : 0;
+                const onTrack = target.actualPounds >= target.targetPounds;
+                return (
+                  <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                    <TableCell className="text-sm text-[#374151] py-3.5 pl-6">{target.contractName}</TableCell>
+                    <TableCell className="text-sm text-[#374151] py-3.5">{target.periodLabel}</TableCell>
+                    <TableCell className="text-right text-sm text-[#9CA3AF] tabular-nums py-3.5">
+                      {target.baselinePounds !== null ? formatGbp(target.baselinePounds) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right text-sm font-medium text-[#111827] tabular-nums py-3.5">
+                      {formatGbp(target.targetPounds)}
+                    </TableCell>
+                    <TableCell className="text-right text-sm font-semibold text-[#111827] tabular-nums py-3.5">
+                      {formatGbp(target.actualPounds)}
+                    </TableCell>
+                    <TableCell className="py-3.5">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-24 rounded-full bg-[#F3F4F6] overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${onTrack ? "bg-emerald-500" : "bg-[#f97316]"}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-[#9CA3AF] tabular-nums">{pct}%</span>
+                      </div>
+                    </TableCell>
+                    {canEdit && (
+                      <TableCell className="py-3.5 pr-6">
+                        <div className="flex items-center gap-1.5">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            title="Edit target"
+                            onClick={() => openEditForm(target)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            disabled={deletingId === target.id}
+                            title="Delete target"
+                            onClick={() => handleDelete(target)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+          {deleteError && <p className="text-xs text-red-600 px-6 py-2">{deleteError}</p>}
+        </div>
+      )}
     </div>
   );
 }

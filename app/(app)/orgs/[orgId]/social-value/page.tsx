@@ -23,6 +23,8 @@ import { Heart } from "lucide-react";
 import {
   CreateSocialValueRecordForm,
   DeleteSocialValueRecordButton,
+  SocialValueTargetsSection,
+  type TargetWithActual,
   type ThemeWithMeasures,
 } from "./social-value-actions";
 
@@ -39,6 +41,15 @@ const EDIT_ROLES: OrgRole[] = [
   "sustainability_director",
   "contract_manager",
   "editor",
+];
+
+// Must match the roles required by the targets API routes
+// (app/api/orgs/[orgId]/social-value/targets/**).
+const TARGET_EDIT_ROLES: OrgRole[] = [
+  "admin",
+  "sustainability_director",
+  "sustainability_manager",
+  "contract_manager",
 ];
 
 const VIEW_ROLES: OrgRole[] = [
@@ -74,6 +85,7 @@ export default async function SocialValuePage({ params }: Props) {
   }
 
   const canEdit = EDIT_ROLES.includes(role);
+  const canEditTargets = TARGET_EDIT_ROLES.includes(role);
 
   const queryResult = await Promise.all([
     prisma.socialValueTheme.findMany({
@@ -104,6 +116,21 @@ export default async function SocialValuePage({ params }: Props) {
       select: { id: true, label: true },
       orderBy: [{ startDate: "desc" }],
     }),
+    prisma.socialValueTarget.findMany({
+      where: { organizationId: orgId },
+      include: {
+        contract: { select: { id: true, name: true } },
+        reportingPeriod: { select: { id: true, label: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    // Aggregated per contract+period, not limited to the 200-row display
+    // cap above — targets need the true total to compute progress.
+    prisma.socialValueRecord.groupBy({
+      by: ["contractId", "reportingPeriodId"],
+      where: { organizationId: orgId },
+      _sum: { valuePounds: true },
+    }),
   ]).catch((dbErr: unknown) => {
     console.error("[SocialValuePage] DB error:", dbErr);
     return null;
@@ -113,7 +140,24 @@ export default async function SocialValuePage({ params }: Props) {
     return <DbErrorState />;
   }
 
-  const [themes, records, contracts, periods] = queryResult;
+  const [themes, records, contracts, periods, targets, actualsByKey] = queryResult;
+
+  const actualsMap = new Map<string, number>();
+  for (const row of actualsByKey) {
+    actualsMap.set(`${row.contractId}::${row.reportingPeriodId}`, Number(row._sum.valuePounds ?? 0));
+  }
+
+  const targetsForClient: TargetWithActual[] = targets.map((t) => ({
+    id: t.id,
+    contractId: t.contractId,
+    contractName: t.contract.name,
+    reportingPeriodId: t.reportingPeriodId,
+    periodLabel: t.reportingPeriod.label,
+    targetPounds: Number(t.targetPounds),
+    baselinePounds: t.baselinePounds !== null ? Number(t.baselinePounds) : null,
+    notes: t.notes,
+    actualPounds: actualsMap.get(`${t.contractId}::${t.reportingPeriodId}`) ?? 0,
+  }));
 
   // Compute totals
   const totalPounds = records.reduce((sum, r) => sum + Number(r.valuePounds), 0);
@@ -212,6 +256,28 @@ export default async function SocialValuePage({ params }: Props) {
             </CardContent>
           </Card>
         )}
+
+        {/* Targets card */}
+        <Card className="border-[#E5E7EB] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <CardTitle className="text-sm font-semibold text-[#111827]">
+              Targets
+              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({targetsForClient.length})</span>
+            </CardTitle>
+            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              Social value targets per contract and reporting period, tracked against value delivered.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={targetsForClient.length === 0 && !canEditTargets ? "p-0 pb-2" : "p-0 pb-4"}>
+            <SocialValueTargetsSection
+              orgId={orgId}
+              contracts={contracts}
+              periods={periods}
+              targets={targetsForClient}
+              canEdit={canEditTargets}
+            />
+          </CardContent>
+        </Card>
 
         {/* Records table card */}
         <Card className="border-[#E5E7EB] shadow-none">

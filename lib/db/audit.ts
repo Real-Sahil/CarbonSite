@@ -138,6 +138,7 @@ export type AuditAction =
   | "social_value_record.created"
   | "social_value_record.deleted"
   | "social_value_target.upserted"
+  | "social_value_target.deleted"
   | "audit.export_downloaded"
   | "audit.data_export_requested"
   | "webhook.created"
