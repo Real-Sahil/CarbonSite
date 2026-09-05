@@ -6,6 +6,7 @@ import type { Prisma } from "@prisma/client";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { requireFeature } from "@/lib/billing/limits";
 import { z } from "zod";
 
 const anomalyFilterSchema = z.object({
@@ -38,6 +39,9 @@ export async function GET(
     }
 
     await requireOrgMember(orgId, "admin", "editor", "reviewer");
+
+    const gate = await requireFeature(orgId, "invoiceAnomalyDetection");
+    if (gate) return gate;
 
     const url = new URL(req.url);
     const searchParams = Object.fromEntries(url.searchParams.entries());
@@ -113,6 +117,9 @@ export async function PATCH(
     }
 
     const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+
+    const gate = await requireFeature(orgId, "invoiceAnomalyDetection");
+    if (gate) return gate;
 
     const rawBody = await req.json().catch(() => null);
     if (!rawBody) return apiError("INVALID_BODY", "Request body must be valid JSON.", 400);

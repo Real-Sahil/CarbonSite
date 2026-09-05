@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
+import { requireFeature } from "@/lib/billing/limits";
 
 const SAGE_CLIENT_ID = process.env.SAGE_CLIENT_ID || "";
 const SAGE_CLIENT_SECRET = process.env.SAGE_CLIENT_SECRET || "";
@@ -17,6 +18,9 @@ export async function GET(
   try {
     const { orgId } = await params;
     const user = await requireOrgMember(orgId, "admin", "editor");
+
+    const gate = await requireFeature(orgId, "accountingIntegrations");
+    if (gate) return gate;
 
     if (!SAGE_CLIENT_ID || !SAGE_CLIENT_SECRET) {
       return NextResponse.json(

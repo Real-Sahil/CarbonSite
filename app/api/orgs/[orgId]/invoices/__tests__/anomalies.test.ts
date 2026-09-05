@@ -2,8 +2,13 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { GET, PATCH } from "../anomalies/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/auth/session";
+import * as billing from "@/lib/billing/limits";
 
 vi.mock("@/lib/auth/session");
+vi.mock("@/lib/billing/limits", async (importOriginal) => ({
+  ...(await importOriginal<typeof billing>()),
+  requireFeature: vi.fn(),
+}));
 
 describe("GET /api/orgs/[orgId]/invoices/anomalies", () => {
   let testOrgId: string;
@@ -17,6 +22,8 @@ describe("GET /api/orgs/[orgId]/invoices/anomalies", () => {
       user: { id: "user-123", email: "test@example.com" },
       session: { id: "session-123" },
     } as any);
+
+    vi.mocked(billing.requireFeature).mockResolvedValue(null);
 
     mockRequest = new NextRequest("http://localhost:3000/api/orgs/test-org-123/invoices/anomalies", {
       method: "GET",
@@ -82,6 +89,8 @@ describe("PATCH /api/orgs/[orgId]/invoices/anomalies", () => {
       user: { id: "user-123", email: "test@example.com" },
       session: { id: "session-123" },
     } as any);
+
+    vi.mocked(billing.requireFeature).mockResolvedValue(null);
   });
 
   it.skip("resolves selected anomalies", async () => {

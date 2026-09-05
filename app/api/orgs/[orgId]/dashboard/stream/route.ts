@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { subscribeToDashboardUpdates } from "@/lib/realtime/subscription-manager";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { requireFeature } from "@/lib/billing/limits";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -29,6 +30,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     // Verify org membership and role (viewers can see live dashboard)
     await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
+
+    const gate = await requireFeature(orgId, "liveDashboard");
+    if (gate) return gate;
 
     // Set up SSE headers (versioning applied here for streaming response)
     const headers = new Headers({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { enqueueXeroSync } from "@/lib/jobs/queues";
+import { requireFeature } from "@/lib/billing/limits";
 
 interface SyncParams {
   orgId: string;
@@ -14,6 +15,9 @@ export async function POST(
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor");
+
+    const gate = await requireFeature(orgId, "accountingIntegrations");
+    if (gate) return gate;
 
     // Check if Xero is connected
     const config = await prisma.integrationConfig.findUnique({

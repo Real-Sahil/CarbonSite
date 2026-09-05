@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { requireFeature } from "@/lib/billing/limits";
 import { z } from "zod";
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -58,6 +59,9 @@ export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin");
+
+    const gate = await requireFeature(orgId, "sso");
+    if (gate) return gate;
 
     const body = await req.json();
     const validated = ssoConfigSchema.parse(body);

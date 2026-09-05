@@ -3,10 +3,15 @@ import { GET } from "../stream/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/auth/session";
 import * as subscription from "@/lib/realtime/subscription-manager";
+import * as billing from "@/lib/billing/limits";
 
 // Mock dependencies
 vi.mock("@/lib/auth/session");
 vi.mock("@/lib/realtime/subscription-manager");
+vi.mock("@/lib/billing/limits", async (importOriginal) => ({
+  ...(await importOriginal<typeof billing>()),
+  requireFeature: vi.fn(),
+}));
 
 describe("GET /api/orgs/[orgId]/dashboard/stream", () => {
   let mockRequest: NextRequest;
@@ -22,6 +27,9 @@ describe("GET /api/orgs/[orgId]/dashboard/stream", () => {
 
     // Mock subscription
     vi.mocked(subscription.subscribeToDashboardUpdates).mockReturnValue(() => {});
+
+    // Mock plan feature gate as available by default
+    vi.mocked(billing.requireFeature).mockResolvedValue(null);
 
     mockRequest = new NextRequest("http://localhost:3000/api/orgs/org-123/dashboard/stream");
   });

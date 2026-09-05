@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
+import { requireFeature } from "@/lib/billing/limits";
 
 const QUICKBOOKS_CLIENT_ID = process.env.QUICKBOOKS_CLIENT_ID || "";
 const QUICKBOOKS_CLIENT_SECRET = process.env.QUICKBOOKS_CLIENT_SECRET || "";
@@ -17,6 +18,9 @@ export async function GET(
   try {
     const { orgId } = await params;
     const user = await requireOrgMember(orgId, "admin", "editor");
+
+    const gate = await requireFeature(orgId, "accountingIntegrations");
+    if (gate) return gate;
 
     if (!QUICKBOOKS_CLIENT_ID || !QUICKBOOKS_CLIENT_SECRET) {
       return NextResponse.json(

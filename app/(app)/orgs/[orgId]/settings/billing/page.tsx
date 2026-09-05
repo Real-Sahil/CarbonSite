@@ -4,8 +4,8 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2 } from "lucide-react";
-import { getLimits, PLAN_LABELS, PLAN_PRICES, usagePercent } from "@/lib/billing/limits";
+import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2, Check, X as XIcon } from "lucide-react";
+import { getLimits, hasFeature, PLAN_LABELS, PLAN_PRICES, usagePercent, type PlanFeature } from "@/lib/billing/limits";
 import { PaymentMethodsSection } from "./payment-methods-section";
 
 // Captured once at module load — pure constant, safe for React Compiler.
@@ -36,6 +36,13 @@ const METER_CONFIG = [
 ];
 
 const PLANS: Plan[] = ["trial", "starter", "growth", "enterprise"];
+
+const FEATURE_CONFIG: { key: PlanFeature; label: string }[] = [
+  { key: "accountingIntegrations", label: "Accounting software sync" },
+  { key: "invoiceAnomalyDetection", label: "Invoice anomaly detection" },
+  { key: "liveDashboard",          label: "Live real-time dashboard" },
+  { key: "sso",                    label: "SSO / SAML" },
+];
 
 function formatLimit(n: number): string {
   if (!isFinite(n)) return "Unlimited";
@@ -220,6 +227,20 @@ export default function BillingPage() {
                       </td>
                     );
                   })}
+                </tr>
+              ))}
+              {FEATURE_CONFIG.map((f) => (
+                <tr key={f.key}>
+                  <td className="py-3 px-6 text-gray-500">{f.label}</td>
+                  {PLANS.map((p) => (
+                    <td key={p} className="py-3 px-4 text-center">
+                      {hasFeature(p, f.key) ? (
+                        <Check className="h-4 w-4 mx-auto text-emerald-600" />
+                      ) : (
+                        <XIcon className="h-4 w-4 mx-auto text-gray-400" />
+                      )}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

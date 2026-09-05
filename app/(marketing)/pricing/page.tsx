@@ -26,25 +26,44 @@ interface PricingTier {
 
 const tiers: PricingTier[] = [
   {
+    name: 'Starter',
+    price: '30 days free',
+    period: ', then £49/month',
+    description: 'For small teams getting started',
+    cta: 'Start Free Trial',
+    ctaUrl: '/sign-up',
+    features: [
+      { name: 'Up to 10 team members, 10 facilities', included: true },
+      { name: 'Core Scope 1, 2 and 3 calculation', included: true },
+      { name: 'Mobile app + on-device OCR field capture', included: true },
+      { name: 'CSV/Excel import, audit-ready reports', included: true },
+      { name: 'Email support', included: true },
+      { name: 'Supplier portal', included: false },
+      { name: 'Accounting software sync', included: false },
+      { name: 'Invoice anomaly detection', included: false },
+      { name: 'Live real-time dashboard', included: false },
+      { name: 'SSO / SAML', included: false },
+    ],
+  },
+  {
     name: 'Growth',
     price: '30 days free',
-    period: ', then £50/month',
+    period: ', then £149/month',
     description: 'For mid-market organizations',
     cta: 'Start Free Trial',
-    ctaUrl: '/auth/signup',
+    ctaUrl: '/sign-up',
     highlight: true,
     features: [
-      { name: 'Up to 10,000 emissions records', included: true },
-      { name: 'Unlimited facilities', included: true },
-      { name: 'Unlimited reporting periods', included: true },
-      { name: 'Core + Scope 3 calculation', included: true },
-      { name: 'Email support', included: true },
-      { name: 'Mobile app for field teams', included: true },
+      { name: 'Up to 50 team members, 50 facilities', included: true },
+      { name: 'Core Scope 1, 2 and 3 calculation', included: true },
+      { name: 'Mobile app + on-device OCR field capture', included: true },
+      { name: 'CSV/Excel import, audit-ready reports', included: true },
       { name: 'Supplier portal', included: true },
-      { name: 'Accounting software integration', included: true },
-      { name: 'Live dashboard', included: true },
-      { name: 'Anomaly detection', included: true },
-      { name: 'Uptime guarantee', included: false },
+      { name: 'Email support', included: true },
+      { name: 'Accounting software sync', included: false },
+      { name: 'Invoice anomaly detection', included: false },
+      { name: 'Live real-time dashboard', included: false },
+      { name: 'SSO / SAML', included: false },
     ],
   },
   {
@@ -52,18 +71,17 @@ const tiers: PricingTier[] = [
     price: 'Custom',
     description: 'For large organizations with advanced needs',
     cta: 'Contact Sales',
-    ctaUrl: '/contact-sales',
+    ctaUrl: '/contact',
     features: [
-      { name: 'Unlimited records & facilities', included: true },
-      { name: 'Unlimited users', included: true },
-      { name: 'Unlimited reporting periods', included: true },
-      { name: 'Full calculation engine', included: true },
-      { name: 'Priority + phone support', included: true },
-      { name: 'Mobile app for field teams', included: true },
+      { name: 'Unlimited members, facilities and records', included: true },
+      { name: 'Core Scope 1, 2 and 3 calculation', included: true },
+      { name: 'Mobile app + on-device OCR field capture', included: true },
       { name: 'Supplier portal', included: true },
-      { name: 'Accounting software integration', included: true },
-      { name: 'Live dashboard', included: true },
-      { name: 'Enterprise security features', included: true },
+      { name: 'Accounting software sync (Xero, QuickBooks, Sage)', included: true },
+      { name: 'Invoice anomaly detection', included: true },
+      { name: 'Live real-time dashboard', included: true },
+      { name: 'SSO / SAML', included: true },
+      { name: 'Priority + phone support', included: true },
       { name: 'Uptime guarantee', included: true },
     ],
   },
@@ -86,7 +104,7 @@ export default function PricingPage() {
 
       {/* Pricing Cards */}
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-2 lg:max-w-3xl lg:mx-auto">
+        <div className="grid gap-8 md:grid-cols-3 lg:max-w-5xl lg:mx-auto">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -176,27 +194,27 @@ export default function PricingPage() {
           {[
             {
               q: 'Can I change plans anytime?',
-              a: 'Yes. After your free trial ends, you can upgrade to Growth, downgrade, or cancel anytime. No long-term contracts required.',
+              a: 'Yes. After your free trial ends, you can move between Starter and Growth, or cancel anytime. No long-term contracts required.',
             },
             {
               q: 'Do you offer annual discounts?',
-              a: 'Yes. Growth tier is 20% off when paid annually. Contact sales for Enterprise discounts.',
+              a: 'Yes. Starter and Growth are 20% off when paid annually. Contact sales for Enterprise discounts.',
             },
             {
               q: 'Is there a free trial?',
-              a: 'Yes. 30-day free trial with all Growth features. No credit card required to start.',
+              a: 'Yes. 30-day free trial with full Growth features, including the supplier portal. No credit card required to start.',
             },
             {
               q: 'Who owns my data?',
               a: 'You do. We never sell or share data. Full export available anytime.',
             },
             {
-              q: 'What calculation engines are included?',
-              a: 'Growth tier includes Scope 1, 2, and ML-based Scope 3 estimation. Enterprise tier includes all advanced features plus custom calculations.',
+              q: 'What’s the difference between Growth and Enterprise?',
+              a: 'Growth covers core Scope 1, 2 and 3 calculation, mobile field capture, and the supplier portal. Enterprise adds accounting software sync (Xero, QuickBooks, Sage), invoice anomaly detection, the live real-time dashboard, and SSO/SAML — the back-office and IT-procurement features larger teams need.',
             },
             {
               q: 'What happens after the free trial ends?',
-              a: 'Your trial expires after 30 days. You can start a paid Growth subscription to continue, or export your data and cancel.',
+              a: 'Your trial expires after 30 days. You can start a paid Starter or Growth subscription to continue, or export your data and cancel.',
             },
           ].map((faq, i) => (
             <div key={i} className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
@@ -221,13 +239,13 @@ export default function PricingPage() {
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Link
-                href="/auth/signup"
+                href="/sign-up"
                 className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
               >
                 Start 30-Day Trial
               </Link>
               <Link
-                href="/contact-sales"
+                href="/contact"
                 className="rounded-lg border border-zinc-300 px-6 py-3 font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-50 dark:hover:bg-zinc-800"
               >
                 Talk to Sales

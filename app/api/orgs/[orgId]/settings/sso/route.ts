@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireOrgMember } from '@/lib/auth/session';
 import { apiError, handleRouteError } from '@/lib/validation/api';
+import { requireFeature } from '@/lib/billing/limits';
 import { z } from 'zod';
 
 const SsoConfigurationSchema = z.object({
@@ -58,6 +59,9 @@ export async function POST(
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, 'admin');
+
+    const gate = await requireFeature(orgId, "sso");
+    if (gate) return gate;
 
     const body = await req.json();
     const validatedData = SsoConfigurationSchema.parse(body);
@@ -127,6 +131,9 @@ export async function PATCH(
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, 'admin');
+
+    const gate = await requireFeature(orgId, "sso");
+    if (gate) return gate;
 
     const body = await req.json();
     const validatedData = SsoConfigurationSchema.partial().parse(body);
