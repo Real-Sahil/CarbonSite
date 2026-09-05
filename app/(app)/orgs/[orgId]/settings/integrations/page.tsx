@@ -13,6 +13,10 @@ interface IntegrationConfig {
   llmTokenValid: boolean;
   xeroConnected: boolean;
   xeroClientId: string | null;
+  quickbooksConnected: boolean;
+  quickbooksClientId: string | null;
+  sageConnected: boolean;
+  sageClientId: string | null;
   oidcProvider: string | null;
   oidcClientId: string | null;
   oidcIssuerUrl: string | null;
@@ -46,6 +50,10 @@ export default function IntegrationsPage() {
   const [llmToken, setLlmToken] = useState("");
   const [xeroClientId, setXeroClientId] = useState("");
   const [xeroClientSecret, setXeroClientSecret] = useState("");
+  const [quickbooksClientId, setQuickbooksClientId] = useState("");
+  const [quickbooksClientSecret, setQuickbooksClientSecret] = useState("");
+  const [sageClientId, setSageClientId] = useState("");
+  const [sageClientSecret, setSageClientSecret] = useState("");
   const [oidcProvider, setOidcProvider] = useState<"google" | "okta" | "azure" | "generic">("generic");
   const [oidcClientId, setOidcClientId] = useState("");
   const [oidcClientSecret, setOidcClientSecret] = useState("");
@@ -79,6 +87,8 @@ export default function IntegrationsPage() {
       setConfig(data);
       if (data.llmProvider) setLlmProvider(data.llmProvider);
       if (data.xeroClientId) setXeroClientId(data.xeroClientId);
+      if (data.quickbooksClientId) setQuickbooksClientId(data.quickbooksClientId);
+      if (data.sageClientId) setSageClientId(data.sageClientId);
       if (data.oidcProvider) setOidcProvider(data.oidcProvider);
       if (data.oidcClientId) setOidcClientId(data.oidcClientId);
       if (data.oidcIssuerUrl) setOidcIssuerUrl(data.oidcIssuerUrl);
@@ -148,6 +158,10 @@ export default function IntegrationsPage() {
       if (llmToken) payload.llmToken = llmToken;
       if (xeroClientId) payload.xeroClientId = xeroClientId;
       if (xeroClientSecret) payload.xeroClientSecret = xeroClientSecret;
+      if (quickbooksClientId) payload.quickbooksClientId = quickbooksClientId;
+      if (quickbooksClientSecret) payload.quickbooksClientSecret = quickbooksClientSecret;
+      if (sageClientId) payload.sageClientId = sageClientId;
+      if (sageClientSecret) payload.sageClientSecret = sageClientSecret;
       if (oidcProvider) payload.oidcProvider = oidcProvider;
       if (oidcClientId) payload.oidcClientId = oidcClientId;
       if (oidcClientSecret) payload.oidcClientSecret = oidcClientSecret;
@@ -168,6 +182,8 @@ export default function IntegrationsPage() {
 
       setLlmToken("");
       setXeroClientSecret("");
+      setQuickbooksClientSecret("");
+      setSageClientSecret("");
       setOidcClientSecret("");
       setN8nWebhookReports("");
       setN8nWebhookSubmissions("");
@@ -448,7 +464,9 @@ export default function IntegrationsPage() {
           <div className="space-y-4">
             <p className="text-xs text-zinc-500">
               Enter your Xero OAuth 2.0 app credentials, save them, then click Connect to authorise
-              invoice access. Invoices are used for Scope 3 spend-based anomaly detection.
+              invoice access. Invoices are used for Scope 3 spend-based anomaly detection. Leave both
+              fields blank to fall back to the server&apos;s <code>XERO_CLIENT_ID</code> /{" "}
+              <code>XERO_CLIENT_SECRET</code> environment variables.
             </p>
 
             <div className="grid grid-cols-2 gap-4">
@@ -479,9 +497,8 @@ export default function IntegrationsPage() {
                   type="button"
                   size="sm"
                   onClick={handleConnectXero}
-                  disabled={connectingXero || !config?.xeroClientId}
+                  disabled={connectingXero}
                   className="gap-1.5"
-                  title={!config?.xeroClientId ? "Save your Client ID first" : undefined}
                 >
                   {connectingXero ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -548,15 +565,43 @@ export default function IntegrationsPage() {
                 <CheckCircle className="h-4 w-4" />
                 {quickbooksConn?.accountName ? `Connected: ${quickbooksConn.accountName}` : "Connected"}
               </div>
+            ) : config?.quickbooksClientId ? (
+              <div className="flex items-center gap-1.5 text-amber-700 text-sm">
+                <AlertCircle className="h-4 w-4" />
+                Credentials saved, not connected
+              </div>
             ) : null}
           </div>
 
           <div className="space-y-4">
             <p className="text-xs text-zinc-500">
-              Connect QuickBooks Online to automatically pull invoice data for Scope 3 spend-based
-              anomaly detection. Requires <code>QUICKBOOKS_CLIENT_ID</code> and{" "}
-              <code>QUICKBOOKS_CLIENT_SECRET</code> environment variables on the server.
+              Enter your QuickBooks OAuth 2.0 app credentials, save them, then click Connect to
+              authorise invoice access. Invoices are used for Scope 3 spend-based anomaly detection.
+              Leave both fields blank to fall back to the server&apos;s <code>QUICKBOOKS_CLIENT_ID</code>{" "}
+              / <code>QUICKBOOKS_CLIENT_SECRET</code> environment variables.
             </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">Client ID</label>
+                <Input
+                  value={quickbooksClientId}
+                  onChange={(e) => setQuickbooksClientId(e.target.value)}
+                  placeholder="QuickBooks OAuth Client ID"
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">Client Secret</label>
+                <Input
+                  type="password"
+                  value={quickbooksClientSecret}
+                  onChange={(e) => setQuickbooksClientSecret(e.target.value)}
+                  placeholder="Leave blank to keep existing"
+                  className="h-8 text-sm"
+                />
+              </div>
+            </div>
 
             <div className="flex items-center gap-2 flex-wrap">
               {!isQuickbooksConnected ? (
@@ -616,15 +661,43 @@ export default function IntegrationsPage() {
                 <CheckCircle className="h-4 w-4" />
                 {sageConn?.accountName ? `Connected: ${sageConn.accountName}` : "Connected"}
               </div>
+            ) : config?.sageClientId ? (
+              <div className="flex items-center gap-1.5 text-amber-700 text-sm">
+                <AlertCircle className="h-4 w-4" />
+                Credentials saved, not connected
+              </div>
             ) : null}
           </div>
 
           <div className="space-y-4">
             <p className="text-xs text-zinc-500">
-              Connect Sage to automatically pull invoice data for Scope 3 spend-based anomaly
-              detection. Requires <code>SAGE_CLIENT_ID</code> and{" "}
-              <code>SAGE_CLIENT_SECRET</code> environment variables on the server.
+              Enter your Sage OAuth 2.0 app credentials, save them, then click Connect to authorise
+              invoice access. Invoices are used for Scope 3 spend-based anomaly detection. Leave both
+              fields blank to fall back to the server&apos;s <code>SAGE_CLIENT_ID</code> /{" "}
+              <code>SAGE_CLIENT_SECRET</code> environment variables.
             </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">Client ID</label>
+                <Input
+                  value={sageClientId}
+                  onChange={(e) => setSageClientId(e.target.value)}
+                  placeholder="Sage OAuth Client ID"
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-500">Client Secret</label>
+                <Input
+                  type="password"
+                  value={sageClientSecret}
+                  onChange={(e) => setSageClientSecret(e.target.value)}
+                  placeholder="Leave blank to keep existing"
+                  className="h-8 text-sm"
+                />
+              </div>
+            </div>
 
             <div className="flex items-center gap-2 flex-wrap">
               {!isSageConnected ? (

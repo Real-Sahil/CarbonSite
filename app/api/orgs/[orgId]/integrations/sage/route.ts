@@ -1,12 +1,15 @@
 export const dynamic = "force-dynamic";
 
 /**
- * Sage OAuth integration scaffold.
+ * Sage OAuth connect/status/disconnect.
  *
- * Full implementation requires a Sage developer app (client_id + client_secret).
+ * Requires a Sage developer app (client_id + client_secret) — either the
+ * org's own, entered via the integrations settings page and stored
+ * (encrypted) in IntegrationConfig.sageClientId/sageClientSecret, or the
+ * platform-wide fallback below.
  * See: https://developer.sage.com/
  *
- * Environment variables needed:
+ * Environment variables (platform-wide fallback):
  *   SAGE_CLIENT_ID
  *   SAGE_CLIENT_SECRET
  *   SAGE_REDIRECT_URI  (e.g. ${NEXT_PUBLIC_APP_URL}/api/auth/sage/callback)
@@ -68,7 +71,12 @@ export async function POST(
     const gate = await requireFeature(orgId, "accountingIntegrations");
     if (gate) return gate;
 
-    const clientId = process.env.SAGE_CLIENT_ID;
+    const config = await prisma.integrationConfig.findUnique({
+      where: { organizationId: orgId },
+      select: { sageClientId: true },
+    });
+
+    const clientId = config?.sageClientId || process.env.SAGE_CLIENT_ID;
 
     const appUrl =
       process.env.NEXT_PUBLIC_APP_URL ||

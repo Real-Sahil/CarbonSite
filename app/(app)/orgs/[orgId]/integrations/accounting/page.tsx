@@ -106,7 +106,10 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   </p>
                   <XeroConnectButton orgId={orgId} connected={xeroConnected} />
                   <p className="text-xs text-slate-500">
-                    Secure OAuth login. We never store your Xero password.
+                    Secure OAuth login. We never store your Xero password.{" "}
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#f97316] hover:underline">
+                      Use your own Xero app
+                    </Link>
                   </p>
                 </CardContent>
               </Card>
@@ -227,7 +230,10 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   </p>
                   <QuickBooksConnectButton orgId={orgId} connected={quickbooksConnected} />
                   <p className="text-xs text-slate-500">
-                    Secure OAuth login. We never store your QuickBooks password.
+                    Secure OAuth login. We never store your QuickBooks password.{" "}
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#f97316] hover:underline">
+                      Use your own QuickBooks app
+                    </Link>
                   </p>
                 </CardContent>
               </Card>
@@ -313,7 +319,10 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   </p>
                   <SageConnectButton orgId={orgId} connected={sageConnected} />
                   <p className="text-xs text-slate-500">
-                    Secure OAuth login. We never store your Sage password.
+                    Secure OAuth login. We never store your Sage password.{" "}
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#f97316] hover:underline">
+                      Use your own Sage app
+                    </Link>
                   </p>
                 </CardContent>
               </Card>

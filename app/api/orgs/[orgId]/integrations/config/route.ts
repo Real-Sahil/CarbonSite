@@ -10,6 +10,10 @@ const configUpdateSchema = z.object({
   llmToken: z.string().min(1).optional(),
   xeroClientId: z.string().optional(),
   xeroClientSecret: z.string().optional(),
+  quickbooksClientId: z.string().optional(),
+  quickbooksClientSecret: z.string().optional(),
+  sageClientId: z.string().optional(),
+  sageClientSecret: z.string().optional(),
   oidcProvider: z.enum(["google", "okta", "azure", "generic"]).optional(),
   oidcClientId: z.string().optional(),
   oidcClientSecret: z.string().optional(),
@@ -35,6 +39,8 @@ export async function GET(
         {
           llmProvider: null,
           xeroConnected: false,
+          quickbooksConnected: false,
+          sageConnected: false,
           oidcProvider: null,
           testResults: null,
         },
@@ -49,6 +55,10 @@ export async function GET(
         llmTokenValid: config.llmTokenValid,
         xeroConnected: config.xeroConnected,
         xeroClientId: config.xeroClientId,
+        quickbooksConnected: config.quickbooksConnected,
+        quickbooksClientId: config.quickbooksClientId,
+        sageConnected: config.sageConnected,
+        sageClientId: config.sageClientId,
         oidcProvider: config.oidcProvider,
         oidcClientId: config.oidcClientId,
         oidcIssuerUrl: config.oidcIssuerUrl,
@@ -95,6 +105,16 @@ export async function POST(
     if (validated.xeroClientId) updateData.xeroClientId = validated.xeroClientId;
     if (validated.xeroClientSecret)
       updateData.xeroClientSecret = encryptCredential(validated.xeroClientSecret);
+
+    // QuickBooks
+    if (validated.quickbooksClientId) updateData.quickbooksClientId = validated.quickbooksClientId;
+    if (validated.quickbooksClientSecret)
+      updateData.quickbooksClientSecret = encryptCredential(validated.quickbooksClientSecret);
+
+    // Sage
+    if (validated.sageClientId) updateData.sageClientId = validated.sageClientId;
+    if (validated.sageClientSecret)
+      updateData.sageClientSecret = encryptCredential(validated.sageClientSecret);
 
     // OIDC
     if (validated.oidcProvider) updateData.oidcProvider = validated.oidcProvider;

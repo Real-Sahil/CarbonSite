@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
+import { decryptCredential } from "@/lib/integrations/encryption";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -39,8 +40,17 @@ export async function GET(req: NextRequest) {
   const settingsUrl = `${appUrl}/orgs/${orgId}/settings/integrations`;
 
   try {
-    const clientId = process.env.QUICKBOOKS_CLIENT_ID;
-    const clientSecret = process.env.QUICKBOOKS_CLIENT_SECRET;
+    // Load credentials from IntegrationConfig (admin-entered values)
+    const config = await prisma.integrationConfig.findUnique({
+      where: { organizationId: orgId },
+      select: { quickbooksClientId: true, quickbooksClientSecret: true },
+    });
+
+    const clientId = config?.quickbooksClientId || process.env.QUICKBOOKS_CLIENT_ID;
+    const encryptedSecret = config?.quickbooksClientSecret;
+    const clientSecret = encryptedSecret
+      ? decryptCredential(encryptedSecret)
+      : process.env.QUICKBOOKS_CLIENT_SECRET;
     const redirectUri =
       process.env.QUICKBOOKS_REDIRECT_URI || `${appUrl}/api/auth/quickbooks/callback`;
 

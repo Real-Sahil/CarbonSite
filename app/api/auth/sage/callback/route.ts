@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
+import { decryptCredential } from "@/lib/integrations/encryption";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -38,8 +39,17 @@ export async function GET(req: NextRequest) {
   const settingsUrl = `${appUrl}/orgs/${orgId}/settings/integrations`;
 
   try {
-    const clientId = process.env.SAGE_CLIENT_ID;
-    const clientSecret = process.env.SAGE_CLIENT_SECRET;
+    // Load credentials from IntegrationConfig (admin-entered values)
+    const config = await prisma.integrationConfig.findUnique({
+      where: { organizationId: orgId },
+      select: { sageClientId: true, sageClientSecret: true },
+    });
+
+    const clientId = config?.sageClientId || process.env.SAGE_CLIENT_ID;
+    const encryptedSecret = config?.sageClientSecret;
+    const clientSecret = encryptedSecret
+      ? decryptCredential(encryptedSecret)
+      : process.env.SAGE_CLIENT_SECRET;
     const redirectUri =
       process.env.SAGE_REDIRECT_URI || `${appUrl}/api/auth/sage/callback`;
 

@@ -1,12 +1,15 @@
 export const dynamic = "force-dynamic";
 
 /**
- * QuickBooks OAuth integration scaffold.
+ * QuickBooks OAuth connect/status/disconnect.
  *
- * Full implementation requires a QuickBooks developer app (client_id + client_secret).
+ * Requires a QuickBooks developer app (client_id + client_secret) — either
+ * the org's own, entered via the integrations settings page and stored
+ * (encrypted) in IntegrationConfig.quickbooksClientId/quickbooksClientSecret,
+ * or the platform-wide fallback below.
  * See: https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization
  *
- * Environment variables needed:
+ * Environment variables (platform-wide fallback):
  *   QUICKBOOKS_CLIENT_ID
  *   QUICKBOOKS_CLIENT_SECRET
  *   QUICKBOOKS_REDIRECT_URI  (e.g. ${NEXT_PUBLIC_APP_URL}/api/auth/quickbooks/callback)
@@ -68,7 +71,12 @@ export async function POST(
     const gate = await requireFeature(orgId, "accountingIntegrations");
     if (gate) return gate;
 
-    const clientId = process.env.QUICKBOOKS_CLIENT_ID;
+    const config = await prisma.integrationConfig.findUnique({
+      where: { organizationId: orgId },
+      select: { quickbooksClientId: true },
+    });
+
+    const clientId = config?.quickbooksClientId || process.env.QUICKBOOKS_CLIENT_ID;
 
     const appUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
