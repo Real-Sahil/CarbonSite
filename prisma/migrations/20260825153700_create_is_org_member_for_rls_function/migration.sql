@@ -27,7 +27,17 @@
 -- organization member. Deny-all here is correct, not a placeholder. The
 -- app's own Prisma connection uses the postgres role and bypasses RLS
 -- entirely, so this has no effect on the app or workers.
-CREATE OR REPLACE FUNCTION is_org_member_for_rls(organization_id text)
+-- Parameter must be named org_id, not organization_id: production already
+-- had a function under this name (pasted directly into the Supabase SQL
+-- editor before this migration existed, from a legacy `organization_membership`
+-- singular table that predates this schema's real `organization_memberships`
+-- model) with that parameter name, and Postgres's CREATE OR REPLACE cannot
+-- rename a function's parameters -- it errors with "cannot change name of
+-- input parameter" (42P13) and requires DROP FUNCTION first. Matching the
+-- existing name here lets this migration's CREATE OR REPLACE actually
+-- succeed and replace the legacy body with the deny-all stub below, which
+-- is what this migration always intended to do.
+CREATE OR REPLACE FUNCTION is_org_member_for_rls(org_id text)
 RETURNS boolean
 LANGUAGE sql
 STABLE
