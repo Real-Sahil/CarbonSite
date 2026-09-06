@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { requireOrgMember, ROLE_GROUPS } from '@/lib/auth/session';
 import { handleRouteError } from '@/lib/validation/api';
 import { createOrGetStripeCustomer, createSetupIntent } from '@/lib/billing/stripe';
+import { TRIAL_LENGTH_DAYS } from '@/lib/billing/limits';
 
 export async function POST(
   req: NextRequest,
@@ -19,11 +20,15 @@ export async function POST(
     });
 
     if (!billing) {
-      // Create billing subscription if it doesn't exist
+      // Normally created at org-creation time (app/api/orgs/route.ts) —
+      // this only runs for an org that predates that, so it doesn't lose
+      // billing/trial state.
+      const trialEndsAt = new Date(Date.now() + TRIAL_LENGTH_DAYS * 24 * 60 * 60 * 1000);
       billing = await prisma.billingSubscription.create({
         data: {
           organizationId: orgId,
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          trialEndsAt,
+          currentPeriodEnd: trialEndsAt,
         },
       });
     }

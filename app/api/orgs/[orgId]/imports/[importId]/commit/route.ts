@@ -6,6 +6,8 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { parseDataOrigin } from "@/lib/inventory/provenance";
+import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
+import { recordUsage } from "@/lib/billing/usage";
 
 type Params = { params: Promise<{ orgId: string; importId: string }> };
 
@@ -44,6 +46,11 @@ export async function POST(_req: NextRequest, { params }: Params) {
     if (stagedRecords.length === 0) {
       return apiError("CONFLICT", "No ready staged records to commit.", 409);
     }
+
+    const billingBlock = await requireActiveBilling(orgId);
+    if (billingBlock) return billingBlock;
+    const usageBlock = await requireWithinUsageLimit(orgId, "import.committed");
+    if (usageBlock) return usageBlock;
 
     // Commit in a transaction — create ActivityRecords then mark batch committed
     const committed = await prisma.$transaction(async (tx) => {
@@ -106,6 +113,8 @@ export async function POST(_req: NextRequest, { params }: Params) {
       resourceId: importId,
       metadata: { committedCount: committed.length },
     });
+
+    await recordUsage({ organizationId: orgId, eventType: "import.committed" });
 
     return NextResponse.json({ committedCount: committed.length });
   } catch (err) {

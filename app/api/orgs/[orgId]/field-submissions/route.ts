@@ -13,6 +13,8 @@ import { calculateGpsDistanceKm } from "@/lib/geo/gps-distance";
 import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
 import { identifyDeliveryPostcode, validatePostcode } from "@/lib/geo/postcode-validator";
 import { presignDownload } from "@/lib/storage";
+import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
+import { recordUsage } from "@/lib/billing/usage";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -364,6 +366,14 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
+    // Gated after the idempotency check above, not before it: a retried
+    // submission with the same key isn't new usage and must return its
+    // existing record even if the org has since hit its quota.
+    const billingBlock = await requireActiveBilling(orgId);
+    if (billingBlock) return billingBlock;
+    const usageBlock = await requireWithinUsageLimit(orgId, "field_submission.submitted");
+    if (usageBlock) return usageBlock;
+
     // --- Postcode pipeline: validate, OCR-correct, identify delivery/pickup ---
     // Extract raw OCR text if the mobile client sent it, then run the
     // label-aware delivery postcode identifier. Falls back to fields the
@@ -538,6 +548,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       resourceId: submission.id,
       metadata: { documentType: submission.documentType },
     });
+
+    await recordUsage({ organizationId: orgId, eventType: "field_submission.submitted" });
 
     // Tell reviewers new field evidence has arrived — otherwise the review
     // queue is poll-only. Notify admins and reviewers, not the submitter.

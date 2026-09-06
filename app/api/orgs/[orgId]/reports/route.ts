@@ -9,6 +9,8 @@ import { dispatchReport } from "@/lib/jobs/dispatch";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { createHash } from "crypto";
 import { z } from "zod";
+import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
+import { recordUsage } from "@/lib/billing/usage";
 
 // Inline job mode renders the PDF (Puppeteer) inside this request.
 export const maxDuration = 60;
@@ -116,6 +118,13 @@ export async function POST(req: NextRequest, { params }: Params) {
       await prisma.report.delete({ where: { id: existing.id } });
     }
 
+    // Gated after the idempotency check above: retrying/regenerating an
+    // already-requested report isn't new usage.
+    const billingBlock = await requireActiveBilling(orgId);
+    if (billingBlock) return billingBlock;
+    const usageBlock = await requireWithinUsageLimit(orgId, "report.generated");
+    if (usageBlock) return usageBlock;
+
     let report: Awaited<ReturnType<typeof prisma.report.create>>;
     try {
       const reportOptions = {
@@ -182,6 +191,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       resourceId: report.id,
       metadata: { type: body.type, snapshotId: body.snapshotId },
     });
+
+    await recordUsage({ organizationId: orgId, eventType: "report.generated" });
 
     return json(report, { status: 202, version });
   } catch (err) {

@@ -9,6 +9,8 @@ import { createCalculationRunSchema } from "@/lib/validation/records";
 import { dispatchCalculation } from "@/lib/jobs/dispatch";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { createHash } from "crypto";
+import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
+import { recordUsage } from "@/lib/billing/usage";
 
 // Allow up to 60s for Pro plans; Hobby plan caps at 10s regardless.
 // In inline mode the entire calculation runs inside this request.
@@ -104,6 +106,11 @@ export async function POST(req: NextRequest, { params }: Params) {
       return json(inFlight, { status: 200, version });
     }
 
+    const billingBlock = await requireActiveBilling(orgId);
+    if (billingBlock) return billingBlock;
+    const usageBlock = await requireWithinUsageLimit(orgId, "calculation.run");
+    if (usageBlock) return usageBlock;
+
     let run;
     try {
       run = await prisma.calculationRun.create({
@@ -153,6 +160,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       resourceId: run.id,
       metadata: { reportingPeriodId: body.reportingPeriodId },
     });
+
+    await recordUsage({ organizationId: orgId, eventType: "calculation.run" });
 
     // Re-fetch the run so the response reflects the final status.
     // In inline mode the calculation is already done by this point;
