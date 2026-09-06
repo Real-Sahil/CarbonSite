@@ -2539,9 +2539,9 @@ model WaterRecord {
 model WasteRecord {
   id                String                  @id @default(cuid())
   organizationId    String                  @map("organization_id")
-  facilityId        String?                 @map("facility_id")
+  facilityId        String                  @map("facility_id")
   projectId         String?                 @map("project_id")
-  reportingPeriodId String?                 @map("reporting_period_id")
+  reportingPeriodId String                  @map("reporting_period_id")
   wasteType         String                  @map("waste_type")
   disposalRoute     String                  @map("disposal_route")
   /// ESRS E5 hazardous/non-hazardous split.
@@ -2565,9 +2565,9 @@ model WasteRecord {
   updatedAt         DateTime                @updatedAt @map("updated_at")
 
   organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  facility        Facility?         @relation(fields: [facilityId], references: [id])
+  facility        Facility          @relation(fields: [facilityId], references: [id])
   project         Project?          @relation(fields: [projectId], references: [id])
-  reportingPeriod ReportingPeriod?  @relation(fields: [reportingPeriodId], references: [id])
+  reportingPeriod ReportingPeriod   @relation(fields: [reportingPeriodId], references: [id])
   activityRecord  ActivityRecord?   @relation("WasteRecordActivityRecord", fields: [activityRecordId], references: [id], onDelete: SetNull)
   fieldSubmission FieldSubmission?  @relation("WasteRecordSubmission", fields: [fieldSubmissionId], references: [id], onDelete: SetNull)
   createdBy       User?             @relation("WasteRecordCreator", fields: [createdByUserId], references: [id])
