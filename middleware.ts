@@ -32,6 +32,9 @@ export function middleware(req: NextRequest) {
   // No path rewrite — the URL structure stays identical on subdomain hosts.
   const subdomain = extractSubdomain(host);
   const requestHeaders = new Headers(req.headers);
+  // Forward pathname so server components can detect the current route
+  // (needed by OrgLayout to avoid redirecting back to /onboarding when already there).
+  requestHeaders.set("x-pathname", pathname);
   if (subdomain) {
     requestHeaders.set("x-subdomain", subdomain);
   }
