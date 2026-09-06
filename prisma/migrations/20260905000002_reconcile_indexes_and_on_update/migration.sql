@@ -11,18 +11,34 @@
 -- definition: zero had any ON DELETE difference, confirmed via
 -- prisma migrate diff on a freshly migrated database before writing this).
 --
--- FAILED IN PRODUCTION (2026-09-05): this whole file runs as one
--- transaction, and the 75 index renames below had no exception handling
--- at all -- unlike the 42 FK statements above, which were already wrapped
--- in DO $$ ... EXCEPTION WHEN duplicate_object THEN NULL $$. Empirically
+-- FAILED IN PRODUCTION (2026-09-05, confirmed from _prisma_migrations.logs):
+-- Database error 42P01 (undefined_table) -- "relation xero_sync_logs does
+-- not exist" -- on the ALTER TABLE "xero_sync_logs" statement below.
+-- xero_sync_logs was created by 20260828_add_xero_sync_and_supplier_tags
+-- (confirmed applied: that migration's _prisma_migrations row shows
+-- finished_at set, not rolled back) but was, by whatever means, missing
+-- from the live database when this migration ran -- every other table
+-- from that same era (supplier_tags, supplier_tag_assignments,
+-- supplier_category_assignments, airbite_connectors, and 8 others
+-- checked) still exists, so this looks like an isolated drop of just this
+-- one table rather than a broader restore/reset. lib/integrations/xero.ts
+-- reads and writes prisma.xeroSyncLog directly, so this wasn't just a
+-- migration blocker -- Xero invoice sync has been failing at runtime in
+-- production too, for however long the table has been missing. Recreated
+-- defensively (IF NOT EXISTS) below, matching the original migration's
+-- DDL and the current XeroSyncLog model exactly, before this file's FK
+-- statement touches it.
+--
+-- Separately (found while investigating, not the actual production
+-- failure): this whole file runs as one transaction, and the 75 index
+-- renames below had no exception handling at all -- unlike the 42 FK
+-- statements above, which were already wrapped in
+-- DO $$ ... EXCEPTION WHEN duplicate_object THEN NULL $$. Empirically
 -- confirmed locally: `ALTER INDEX old RENAME TO existing_name` raises
 -- SQLSTATE 42P07 (duplicate_table), NOT 42710 (duplicate_object) -- so
--- even the FK block's own pattern would not have caught this. If any
--- target name already existed for any reason, the whole transaction
--- aborted and rolled back everything in this file, leaving
--- _prisma_migrations with a started-but-never-finished row and blocking
--- all future `migrate deploy` runs (P3009) until resolved. Every rename
--- below is now wrapped the same way, with the correct exception label.
+-- even the FK block's own pattern would not have caught a rename target
+-- collision, had one occurred. Fixed the same way regardless, since it's
+-- a real latent bug even though it wasn't this failure's cause.
 
 -- Foreign keys: ON UPDATE NO ACTION -> CASCADE (42)
 
@@ -230,6 +246,28 @@ ALTER TABLE "waste_records" DROP CONSTRAINT IF EXISTS "waste_records_project_id_
 DO $$ BEGIN
   ALTER TABLE "waste_records" ADD CONSTRAINT "waste_records_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- Defensively recreated: see header comment. Matches
+-- 20260828_add_xero_sync_and_supplier_tags's original DDL and the
+-- current XeroSyncLog model exactly.
+CREATE TABLE IF NOT EXISTS "xero_sync_logs" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "organization_id" TEXT NOT NULL,
+    "invoice_id" TEXT NOT NULL,
+    "invoice_number" TEXT NOT NULL,
+    "line_item_index" INTEGER NOT NULL,
+    "supplier_name" TEXT NOT NULL,
+    "line_description" TEXT NOT NULL,
+    "amount" NUMERIC(18,6) NOT NULL,
+    "category" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'processed',
+    "error_message" TEXT,
+    "processed_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "xero_sync_logs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations" ("id") ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "xero_sync_logs_organization_id_invoice_id_line_item_index_key" ON "xero_sync_logs"("organization_id", "invoice_id", "line_item_index");
+CREATE INDEX IF NOT EXISTS "xero_sync_logs_organization_id_processed_at_idx" ON "xero_sync_logs"("organization_id", "processed_at");
 
 ALTER TABLE "xero_sync_logs" DROP CONSTRAINT IF EXISTS "xero_sync_logs_organization_id_fkey";
 DO $$ BEGIN
