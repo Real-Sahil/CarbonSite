@@ -15,9 +15,10 @@ export const ONBOARDING_STEPS = [
 
 export type OnboardingStepId = (typeof ONBOARDING_STEPS)[number];
 
-const completeStepSchema = z.object({
-  step: z.enum(ONBOARDING_STEPS),
-});
+const completeStepSchema = z.union([
+  z.object({ step: z.enum(ONBOARDING_STEPS) }),
+  z.object({ skipAll: z.literal(true) }),
+]);
 
 // GET /api/orgs/:orgId/onboarding — fetch step completion state
 export async function GET(
@@ -92,16 +93,20 @@ export async function POST(
       return apiError("INVALID_INPUT", "Invalid step", 400, parsed.error.flatten());
     }
 
-    const { step } = parsed.data;
+    // skipAll marks the whole wizard as complete so the dashboard redirect doesn't fire.
+    const isSkipAll = "skipAll" in parsed.data && parsed.data.skipAll === true;
 
-    // Upsert the row and push the step into the array (idempotent).
     const existing = await prisma.onboardingProgress.findUnique({
       where: { organizationId: orgId },
       select: { completedSteps: true },
     });
 
     const current = new Set(existing?.completedSteps ?? []);
-    current.add(step);
+    if (isSkipAll) {
+      ONBOARDING_STEPS.forEach((s) => current.add(s));
+    } else {
+      current.add((parsed.data as { step: string }).step);
+    }
     const completedSteps = [...current];
     const isComplete = ONBOARDING_STEPS.every((s) => current.has(s));
 
@@ -126,7 +131,7 @@ export async function POST(
       action: "onboarding.step_completed",
       resourceType: "onboarding_progress",
       resourceId: progress.id,
-      metadata: { step, isComplete },
+      metadata: { step: isSkipAll ? "skip_all" : (parsed.data as { step: string }).step, isComplete },
     });
 
     void membership;

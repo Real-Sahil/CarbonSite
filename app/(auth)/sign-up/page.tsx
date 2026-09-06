@@ -61,8 +61,10 @@ export default function SignUpPage() {
       if (result.error) { setStep("account"); setError(mapSignUpError(result.error)); return; }
       if (result.data?.token === null) { setError("Check your email to verify your account, then sign in."); return; }
 
-      // Small delay to ensure session is established from Better Auth
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Brief pause to let Better Auth finalise the session cookie before
+      // the org-creation request. 500ms is conservative but avoids flaky 401s
+      // on slower serverless cold starts.
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const orgRes = await fetch("/api/orgs", {
         method: "POST",

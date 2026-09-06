@@ -93,13 +93,19 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     redirect(`/orgs/${orgId}/submissions`);
   }
 
-  // Fetch onboarding progress for admin role (cheap single-row lookup)
+  // Redirect new admins to the onboarding wizard on their first dashboard visit.
+  // The wizard itself and all sub-pages (settings, imports, etc.) are reachable
+  // without being trapped here — only the dashboard triggers the redirect.
   const onboardingProgress = role === "admin"
     ? await prisma.onboardingProgress.findUnique({
         where: { organizationId: orgId },
         select: { isComplete: true, completedSteps: true },
       }).catch(() => null)
     : null;
+
+  if (role === "admin" && (!onboardingProgress || !onboardingProgress.isComplete)) {
+    redirect(`/orgs/${orgId}/onboarding`);
+  }
 
   const [organization, recentPeriods] = await Promise.all([
     prisma.organization.findUniqueOrThrow({

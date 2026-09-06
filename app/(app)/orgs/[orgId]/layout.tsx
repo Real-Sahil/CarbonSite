@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { OrgSidebar } from "@/components/org-sidebar";
@@ -142,27 +141,6 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
 
   if (!org) {
     redirect("/");
-  }
-
-  // Redirect new admins to the setup wizard until onboarding is complete.
-  // Only applies to admin role; skip the redirect if already on the onboarding page.
-  if (membership.role === "admin") {
-    const reqHeaders = await headers();
-    const pathname = reqHeaders.get("x-pathname") ?? reqHeaders.get("x-invoke-path") ?? "";
-    const onboardingPath = `/orgs/${orgId}/onboarding`;
-    const isOnboardingPage = pathname.endsWith(onboardingPath) || pathname === onboardingPath;
-
-    if (!isOnboardingPage) {
-      const progress = await prisma.onboardingProgress.findUnique({
-        where: { organizationId: orgId },
-        select: { isComplete: true },
-      }).catch(() => null);
-
-      // No progress row means first login — redirect to wizard.
-      if (!progress || !progress.isComplete) {
-        redirect(onboardingPath);
-      }
-    }
   }
 
   const user = {

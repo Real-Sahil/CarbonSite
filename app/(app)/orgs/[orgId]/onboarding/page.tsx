@@ -119,6 +119,21 @@ export default function OnboardingPage() {
     void fetchProgress();
   }, [fetchProgress]);
 
+  const [skipping, setSkipping] = useState(false);
+
+  const skipAll = async () => {
+    setSkipping(true);
+    try {
+      await fetch(`/api/orgs/${orgId}/onboarding`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skipAll: true }),
+      });
+    } finally {
+      router.push(`/orgs/${orgId}/dashboard`);
+    }
+  };
+
   const markStepDone = async (stepId: StepId) => {
     setMarkingStep(stepId);
     try {
@@ -292,13 +307,15 @@ export default function OnboardingPage() {
 
         {/* Skip link */}
         <div className="mt-8 text-center">
-          <Link
-            href={`/orgs/${orgId}/dashboard`}
-            className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors inline-flex items-center gap-1"
+          <button
+            onClick={skipAll}
+            disabled={skipping}
+            className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors inline-flex items-center gap-1 disabled:opacity-40"
           >
+            {skipping ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
             Skip setup and go to dashboard
             <ChevronRight className="h-3 w-3" />
-          </Link>
+          </button>
         </div>
       </div>
     </div>
