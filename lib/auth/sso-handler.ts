@@ -233,7 +233,7 @@ export function validateSsoState(stateFromCookie: string, stateFromUrl: string):
   return crypto.timingSafeEqual(Buffer.from(stateFromCookie), Buffer.from(stateFromUrl));
 }
 
-export function buildSamlAuthenticationRequest(config: SamlConfig): string {
+export function buildSamlAuthenticationRequest(config: SamlConfig): { id: string; encodedRequest: string } {
   const id = `_${crypto.randomBytes(16).toString("hex")}`;
   const issueInstant = new Date().toISOString();
 
@@ -254,7 +254,7 @@ export function buildSamlAuthenticationRequest(config: SamlConfig): string {
   </samlp:RequestedAuthnContext>
 </samlp:AuthnRequest>`;
 
-  return Buffer.from(xml).toString("base64");
+  return { id, encodedRequest: Buffer.from(xml).toString("base64") };
 }
 
 // SAML certificates are commonly stored as bare base64 (no PEM wrapper);
@@ -427,10 +427,45 @@ function extractClaimsFromAssertion(assertionEl: Element): { sub?: string; email
   return { sub: nameId || email, email: email || nameId, name };
 }
 
+function checkInResponseTo(doc: Document, expectedRequestId: string | null | undefined): void {
+  if (!expectedRequestId) return; // IdP-initiated (or SP-initiated tracking unavailable) — nothing to check.
+
+  const responseEl = selectElements("/samlp:Response", doc)[0];
+  const inResponseTo = responseEl?.getAttribute("InResponseTo");
+
+  if (inResponseTo && inResponseTo !== expectedRequestId) {
+    throw new Error(
+      "SAML response InResponseTo does not match the request this browser session sent — possible replay of a different login attempt.",
+    );
+  }
+}
+
+// Unverified peek at the response's Issuer, used only to route an
+// IdP-initiated login (no prior request from us, so no org-identifying
+// cookie exists yet) to the right organization's SsoConfiguration before
+// full verification runs. Never used for any trust decision itself — the
+// resolved org's own stored certificate is what extractSamlUserInfo()
+// actually verifies the signature against afterward.
+export function peekSamlIssuer(samlResponse: string): string | null {
+  try {
+    const xml = Buffer.from(samlResponse, "base64").toString("utf8");
+    const doc = new DOMParser().parseFromString(xml, "text/xml") as unknown as Document;
+    if (!doc?.documentElement) return null;
+    return (
+      textOf(selectElements("/samlp:Response/saml:Issuer", doc)[0]) ??
+      textOf(selectElements("//saml:Assertion/saml:Issuer", doc)[0]) ??
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
 export async function extractSamlUserInfo(
   samlResponse: string,
   certificate: string,
   expectedIdpEntityId?: string | null,
+  expectedRequestId?: string | null,
 ): Promise<{
   sub: string;
   email: string;
@@ -449,6 +484,7 @@ export async function extractSamlUserInfo(
   const assertionEl = verifySignedAssertion(doc, xml, certificate);
   checkAssertionConditions(assertionEl);
   checkAssertionIssuer(assertionEl, doc, expectedIdpEntityId);
+  checkInResponseTo(doc, expectedRequestId);
 
   const claims = extractClaimsFromAssertion(assertionEl);
   if (!claims.sub && !claims.email) {

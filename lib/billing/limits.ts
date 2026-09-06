@@ -99,7 +99,7 @@ export function hasFeature(plan: string, feature: PlanFeature): boolean {
  * (rather than throwing) keeps this usable from routes that don't funnel
  * errors through handleRouteError().
  */
-const PLAN_ORDER: Plan[] = ["trial", "starter", "growth", "enterprise"];
+export const PLAN_ORDER = ["trial", "starter", "growth", "enterprise"] as const satisfies readonly Plan[];
 
 function minimumPlanFor(feature: PlanFeature): Plan {
   return PLAN_ORDER.find((p) => PLAN_FEATURES[p][feature]) ?? "enterprise";

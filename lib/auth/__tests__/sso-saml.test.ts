@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { SignedXml } from "xml-crypto";
-import { extractSamlUserInfo } from "../sso-handler";
+import { extractSamlUserInfo, peekSamlIssuer } from "../sso-handler";
 
 // Throwaway test-only keypair/self-signed cert (openssl req -x509 -newkey
 // rsa:2048 -nodes -days 3650 -subj "/CN=test-idp.example.com"). Never used
@@ -100,8 +100,9 @@ function signAssertion(assertionXml: string, assertionId: string): string {
   return sig.getSignedXml();
 }
 
-function wrapInResponse(assertionXml: string): string {
-  return `<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="_response1" Version="2.0" IssueInstant="${new Date().toISOString()}">
+function wrapInResponse(assertionXml: string, inResponseTo?: string): string {
+  const inResponseToAttr = inResponseTo ? ` InResponseTo="${inResponseTo}"` : "";
+  return `<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="_response1" Version="2.0" IssueInstant="${new Date().toISOString()}"${inResponseToAttr}>
   <saml:Issuer>https://idp.example.com</saml:Issuer>
   ${assertionXml}
 </samlp:Response>`;
@@ -212,5 +213,52 @@ S/PjS9EPBw9KLxx7iEPZ7lYmk6qbUUxrOKX2jpBmEy5RCA==
 
   it("rejects when no certificate is configured", async () => {
     await expect(extractSamlUserInfo("irrelevant", "")).rejects.toThrow(/certificate/i);
+  });
+
+  it("enforces InResponseTo when the caller tracked a request ID (SP-initiated)", async () => {
+    const assertionId = "_assertion1";
+    const signed = signAssertion(
+      buildAssertionXml({ assertionId, issuer: "https://idp.example.com", email: "alice@example.com" }),
+      assertionId,
+    );
+    const samlResponse = toSamlResponseParam(wrapInResponse(signed, "_our_original_request"));
+
+    await expect(
+      extractSamlUserInfo(samlResponse, TEST_CERTIFICATE, undefined, "_a_different_request"),
+    ).rejects.toThrow(/InResponseTo/);
+
+    // The matching request ID is accepted.
+    const result = await extractSamlUserInfo(samlResponse, TEST_CERTIFICATE, undefined, "_our_original_request");
+    expect(result.email).toBe("alice@example.com");
+  });
+
+  it("does not require InResponseTo when the caller has no tracked request (IdP-initiated)", async () => {
+    const assertionId = "_assertion1";
+    const signed = signAssertion(
+      buildAssertionXml({ assertionId, issuer: "https://idp.example.com", email: "alice@example.com" }),
+      assertionId,
+    );
+    // No InResponseTo on the response at all — a real IdP-initiated login.
+    const samlResponse = toSamlResponseParam(wrapInResponse(signed));
+
+    const result = await extractSamlUserInfo(samlResponse, TEST_CERTIFICATE, undefined, undefined);
+    expect(result.email).toBe("alice@example.com");
+  });
+});
+
+describe("peekSamlIssuer", () => {
+  it("reads the Issuer without verifying anything, for IdP-initiated org routing", () => {
+    const assertionId = "_assertion1";
+    const signed = signAssertion(
+      buildAssertionXml({ assertionId, issuer: "https://idp.example.com", email: "alice@example.com" }),
+      assertionId,
+    );
+    const samlResponse = toSamlResponseParam(wrapInResponse(signed));
+
+    expect(peekSamlIssuer(samlResponse)).toBe("https://idp.example.com");
+  });
+
+  it("returns null for garbage input rather than throwing", () => {
+    expect(peekSamlIssuer(Buffer.from("not xml at all").toString("base64"))).toBeNull();
   });
 });

@@ -13,6 +13,7 @@ import {
   recordSsoSession,
   inferOidcEndpoint,
   extractSamlUserInfo,
+  peekSamlIssuer,
 } from "@/lib/auth/sso-handler";
 
 interface UserInfo {
@@ -106,9 +107,15 @@ async function handleOidcCallback(
 
 async function handleSamlCallback(
   samlResponse: string,
-  ssoConfig: SsoConfiguration
+  ssoConfig: SsoConfiguration,
+  expectedRequestId: string | null | undefined,
 ): Promise<UserInfo> {
-  const userInfo = await extractSamlUserInfo(samlResponse, ssoConfig.certificateX509 || "", ssoConfig.idpEntityId);
+  const userInfo = await extractSamlUserInfo(
+    samlResponse,
+    ssoConfig.certificateX509 || "",
+    ssoConfig.idpEntityId,
+    expectedRequestId,
+  );
 
   const providerUserId = userInfo.sub;
   const email = userInfo.email;
@@ -232,6 +239,7 @@ async function createOrUpdateUserAndSession(
   response.cookies.delete("sso_org_id");
   response.cookies.delete("sso_provider");
   response.cookies.delete("sso_code_verifier");
+  response.cookies.delete("sso_saml_request_id");
 
   return response;
 }
@@ -316,27 +324,49 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Extract org ID and provider from cookies
-    const orgIdFromCookie = req.cookies.get("sso_org_id")?.value;
-    const providerFromCookie = req.cookies.get("sso_provider")?.value;
+    // SP-initiated: we sent the AuthnRequest ourselves, so these cookies
+    // were set by /api/auth/sso/authorize moments ago. IdP-initiated (the
+    // user started at their IdP's own portal, not ours) has no such
+    // cookies — there was no prior request from this browser to set them
+    // on. In that case, resolve the org from the response's own Issuer
+    // against the matching SsoConfiguration instead.
+    let orgIdFromCookie = req.cookies.get("sso_org_id")?.value;
+    let providerFromCookie = req.cookies.get("sso_provider")?.value;
+    const requestIdFromCookie = req.cookies.get("sso_saml_request_id")?.value;
 
-    if (!orgIdFromCookie || !providerFromCookie) {
-      return apiError(
-        "MISSING_STATE",
-        "SSO session state not found. Please restart the SSO flow.",
-        400
-      );
+    let ssoConfig: SsoConfiguration | null = null;
+
+    if (orgIdFromCookie && providerFromCookie) {
+      ssoConfig = await getSsoConfiguration(orgIdFromCookie);
+    } else {
+      const issuer = peekSamlIssuer(samlResponse);
+      if (!issuer) {
+        return apiError(
+          "MISSING_STATE",
+          "SSO session state not found and no Issuer could be read from the response. Please restart the SSO flow.",
+          400
+        );
+      }
+      ssoConfig = await prisma.ssoConfiguration.findFirst({
+        where: { provider: "saml", idpEntityId: issuer, enabled: true },
+      });
+      if (!ssoConfig) {
+        return apiError(
+          "SSO_NOT_ENABLED",
+          "No organization has SAML configured for this Identity Provider.",
+          403
+        );
+      }
+      orgIdFromCookie = ssoConfig.organizationId;
+      providerFromCookie = "saml";
     }
-
-    // Fetch SSO configuration
-    const ssoConfig = await getSsoConfiguration(orgIdFromCookie);
 
     if (!ssoConfig || !ssoConfig.enabled) {
       return apiError("SSO_NOT_ENABLED", "SSO is not enabled for this organization", 403);
     }
 
     // Handle SAML callback
-    const userInfo = await handleSamlCallback(samlResponse, ssoConfig);
+    const userInfo = await handleSamlCallback(samlResponse, ssoConfig, requestIdFromCookie);
 
     return createOrUpdateUserAndSession(
       req,

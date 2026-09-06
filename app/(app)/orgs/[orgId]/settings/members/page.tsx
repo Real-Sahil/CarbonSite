@@ -174,7 +174,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
   const PLAN_CLASSES: Record<string, string> = {
     trial: "bg-amber-50 text-amber-700 border border-amber-200",
     starter: "bg-blue-50 text-blue-700 border border-blue-200",
-    professional: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    growth: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     enterprise: "bg-purple-50 text-purple-700 border border-purple-200",
   };
   const planClass =

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requirePlatformMember } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
+import { PLAN_ORDER } from "@/lib/billing/limits";
 
 export async function GET(
   _req: NextRequest,
@@ -42,10 +43,8 @@ export async function GET(
   }
 }
 
-const VALID_PLANS = ["trial", "starter", "professional", "enterprise"] as const;
-
 const PatchOrgSchema = z.object({
-  plan: z.enum(VALID_PLANS),
+  plan: z.enum(PLAN_ORDER),
 });
 
 export async function PATCH(

@@ -1,8 +1,76 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
+
+// A per-org SSO deep link (shared by an admin, e.g.
+// https://app.carbonsite.com/sign-in?orgId=X&ssoProvider=saml) is how an
+// employee reaches SSO sign-in — there's no email-domain-based org
+// discovery here, so the button below only appears when both params are
+// present and valid.
+function SsoSignInButton() {
+  const searchParams = useSearchParams();
+  const orgId = searchParams.get("orgId");
+  const provider = searchParams.get("ssoProvider");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!orgId || !provider) return null;
+
+  async function handleClick() {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/auth/sso/authorize?orgId=${encodeURIComponent(orgId!)}&provider=${encodeURIComponent(provider!)}`);
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body?.message ?? "Could not start SSO sign-in.");
+        setLoading(false);
+        return;
+      }
+      if (body.redirectMethod === "POST") {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = body.url;
+        for (const [name, value] of Object.entries(body.formFields ?? {})) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = name;
+          input.value = String(value);
+          form.appendChild(input);
+        }
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        window.location.href = body.url;
+      }
+    } catch {
+      setError("Network error. Could not start SSO sign-in.");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mb-5 flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={loading}
+        className="w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      >
+        {loading ? "Redirecting…" : "Continue with single sign-on"}
+      </button>
+      {error && <p className="text-xs text-red-300">{error}</p>}
+      <div className="flex items-center gap-3 text-xs text-white/25">
+        <div className="h-px flex-1 bg-white/10" />
+        <span>or</span>
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
+    </div>
+  );
+}
 
 function mapSignInError(err: { code?: string; message?: string } | null | undefined): string {
   if (!err) return "Sign in failed. Please try again.";
@@ -60,6 +128,10 @@ export default function SignInPage() {
         <h1 className="text-xl font-semibold tracking-tight text-white">Welcome back</h1>
         <p className="text-sm text-white/40 mt-1">Sign in to your CarbonSite account.</p>
       </div>
+
+      <Suspense fallback={null}>
+        <SsoSignInButton />
+      </Suspense>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
         <div className="flex flex-col gap-1.5">

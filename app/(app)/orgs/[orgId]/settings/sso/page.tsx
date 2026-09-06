@@ -180,6 +180,7 @@ export default function SsoSettingsPage() {
   };
 
   const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/sso/callback`;
+  const signInUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/sign-in?orgId=${orgId}&ssoProvider=${formData.provider}`;
 
   if (loading) {
     return (
@@ -390,6 +391,20 @@ export default function SsoSettingsPage() {
               </div>
               <p className="mt-2 text-sm text-gray-600">
                 Configure this as the Redirect URI in your identity provider. Must be HTTPS in production.
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="signInUrl" className="font-medium">
+                Sign-in link
+              </Label>
+              <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <code className="text-sm font-mono text-gray-900 break-all">{signInUrl}</code>
+              </div>
+              <p className="mt-2 text-sm text-gray-600">
+                Share this link with your team, or set it as the app tile URL in your
+                identity provider for IdP-initiated sign-in. There is no email-domain-based
+                organization lookup yet, so this link is how members reach SSO sign-in.
               </p>
             </div>
 

@@ -1,19 +1,17 @@
 "use client";
 
 import { useState, useTransition } from "react";
-
-const VALID_PLANS = ["trial", "starter", "professional", "enterprise"] as const;
-type Plan = (typeof VALID_PLANS)[number];
+import { PLAN_ORDER, type Plan } from "@/lib/billing/limits";
 
 const PLAN_CLASSES: Record<Plan, string> = {
   trial: "bg-amber-100 text-amber-800 border border-amber-300",
   starter: "bg-blue-100 text-blue-800 border border-blue-300",
-  professional: "bg-emerald-100 text-emerald-800 border border-emerald-300",
+  growth: "bg-emerald-100 text-emerald-800 border border-emerald-300",
   enterprise: "bg-purple-100 text-purple-800 border border-purple-300",
 };
 
 function isPlan(value: string): value is Plan {
-  return (VALID_PLANS as readonly string[]).includes(value);
+  return (PLAN_ORDER as readonly string[]).includes(value);
 }
 
 export function PlanSelector({
@@ -73,7 +71,7 @@ export function PlanSelector({
           disabled={isPending}
           className="rounded-[7px] border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#111827] tracking-[-0.42px] focus:outline-none focus:ring-2 focus:ring-[#f97316] disabled:opacity-50"
         >
-          {VALID_PLANS.map((p) => (
+          {PLAN_ORDER.map((p) => (
             <option key={p} value={p} className="capitalize">
               {p.charAt(0).toUpperCase() + p.slice(1)}
             </option>
