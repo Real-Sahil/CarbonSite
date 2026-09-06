@@ -25,6 +25,7 @@ import { Calculator, Play, AlertTriangle, CheckCircle2, Clock, Loader2 } from "l
 import { StatusPoller } from "@/components/ui/status-poller";
 import { RetryCalculationButton } from "./retry-button";
 import { CancelRunButton } from "./cancel-run-button";
+import { CalculationRunContinuation } from "./calculation-run-continuation";
 
 interface CalculationsPageProps {
   params: Promise<{ orgId: string }>;
@@ -128,6 +129,12 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
   }
 
   const hasInFlight = runs.some((r) => r.status === "queued" || r.status === "running");
+  // A run large enough to need multiple chunks (lib/calculation/run-worker.ts)
+  // doesn't advance between requests on its own — needs its continue
+  // endpoint called again while it's still short of totalRecordCount.
+  const runsNeedingContinuation = runs
+    .filter((r) => r.status === "running" && (r.totalRecordCount == null || r.processedRecordCount < r.totalRecordCount))
+    .map((r) => r.id);
   const stats = {
     total: runs.length,
     succeeded: runs.filter((r) => r.status === "succeeded").length,
@@ -138,6 +145,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
   return (
     <div className="min-h-[100dvh] bg-[#f9fafb]">
       <StatusPoller active={hasInFlight} intervalMs={4000} />
+      <CalculationRunContinuation orgId={orgId} runIds={runsNeedingContinuation} />
 
       {/* Page header */}
       <div className="bg-white border-b border-[#E5E7EB]">
@@ -278,7 +286,9 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                             }
                           </TableCell>
                           <TableCell className="text-sm text-[#9CA3AF] py-3.5 text-right tabular-nums">
-                            {run._count.calculations.toLocaleString("en-GB")}
+                            {run.status === "running" && run.totalRecordCount != null
+                              ? `${run.processedRecordCount.toLocaleString("en-GB")} / ${run.totalRecordCount.toLocaleString("en-GB")}`
+                              : run._count.calculations.toLocaleString("en-GB")}
                           </TableCell>
                           <TableCell className="py-3.5 pr-6">
                             {run.status === "succeeded" && (

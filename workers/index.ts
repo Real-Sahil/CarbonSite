@@ -18,6 +18,7 @@ import type {
 import { enqueueInvoiceAnomalyDetection } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
+import { prisma } from "@/lib/db";
 import { processNotification } from "@/lib/notifications/worker";
 import { processReport } from "@/lib/reports/worker";
 import { runDbtTransformation } from "@/lib/jobs/workers/dbt-transform";
@@ -73,7 +74,26 @@ async function start() {
       for (const job of jobs) {
         const { calculationRunId, orgId } = job.data;
         calculationsLogger.info("processing run", { calculationRunId, orgId });
-        await processCalculationRun(calculationRunId, orgId);
+        // processCalculationRun() processes one bounded chunk per call (so a
+        // single invocation can never run long enough to hit a serverless
+        // timeout — see lib/calculation/run-worker.ts). A persistent worker
+        // has no such timeout, so keep calling it until the run reaches a
+        // terminal status instead of leaving it after just one chunk.
+        // A call returns {done:false} either because more chunks remain
+        // (this loop keeps going) or because it couldn't claim the run at
+        // all (already terminal, or another invocation currently holds it —
+        // check status directly to tell those apart, with a short backoff
+        // before retrying a busy claim, so this never spins hot forever).
+        for (;;) {
+          const result = await processCalculationRun(calculationRunId, orgId);
+          if (result.done) break;
+          const current = await prisma.calculationRun.findUnique({
+            where: { id: calculationRunId },
+            select: { status: true },
+          });
+          if (!current || current.status === "succeeded" || current.status === "failed") break;
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
         calculationsLogger.info("finished run", { calculationRunId, orgId });
       }
     },

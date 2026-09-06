@@ -11,44 +11,176 @@ import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
 import { getBoss } from "@/lib/jobs/boss";
 import type { ActivityRecord, Scope2Method } from "@prisma/client";
 
-export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<void> {
+// A single HTTP request (in JOB_PROCESSING_MODE=inline, the only mode that
+// works on a Vercel-only deployment — see CLAUDE.md) cannot safely run the
+// whole calculation in one uninterruptible pass: at Tier-1-scale record
+// counts this measurably exceeds a serverless function's execution timeout,
+// and a killed function leaves the run stuck at "running" forever with a
+// partial, non-obvious set of immutable EmissionCalculation rows already
+// written. Instead, processing is split into bounded chunks:
+//
+// - CHUNK_TIME_BUDGET_MS caps how long a single chunk (one page-load-and-
+//   process pass) runs before yielding, so progress is always persisted
+//   at a fine grain.
+// - REQUEST_TIME_BUDGET_MS caps how long processCalculationRun() keeps
+//   chunking within one invocation before returning early — well inside
+//   the route's `maxDuration = 60`. A run that doesn't finish within that
+//   budget stays "running" with processedRecordCount/lastProgressAt
+//   recorded, safe to resume from another invocation (the client's
+//   continue-poll, or the stalled-run sweep) rather than silently hung.
+// - LOCK_STALE_MS bounds how long a processing claim is honored after its
+//   last heartbeat, so a chunk-holder that crashed or was hard-killed
+//   mid-chunk doesn't leave the run permanently unclaimable.
+// - BATCH_LOAD_SIZE bounds how many not-yet-processed records are loaded
+//   into memory per DB round trip within a chunk.
+const CHUNK_TIME_BUDGET_MS = 8_000;
+const REQUEST_TIME_BUDGET_MS = 45_000;
+const LOCK_STALE_MS = 90_000;
+const BATCH_LOAD_SIZE = 500;
+
+type ChunkResult = { done: boolean };
+
+// Atomically claims the right to process the next chunk of this run.
+// Fails (returns false) when the run is already terminal (succeeded/failed/
+// cancelled), or another invocation holds a still-fresh claim — the two
+// cases where this invocation must not touch the run's records.
+async function claimRun(calculationRunId: string): Promise<boolean> {
+  const staleBefore = new Date(Date.now() - LOCK_STALE_MS);
+  const result = await prisma.calculationRun.updateMany({
+    where: {
+      id: calculationRunId,
+      status: { in: ["queued", "running"] },
+      OR: [{ processingLockedAt: null }, { processingLockedAt: { lt: staleBefore } }],
+    },
+    data: { processingLockedAt: new Date() },
+  });
+  return result.count === 1;
+}
+
+// Entry point used by dispatch.ts (inline mode) and by the explicit
+// continue endpoint / stalled-run sweep for a run that didn't finish
+// within its first invocation. Re-entrant and idempotent: calling it again
+// for an already-finished run, or one currently claimed elsewhere, is a
+// safe no-op.
+export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<ChunkResult> {
+  if (!(await claimRun(calculationRunId))) {
+    return { done: false };
+  }
+
   try {
+    const overallDeadline = Date.now() + REQUEST_TIME_BUDGET_MS;
+    for (;;) {
+      const result = await processOneChunk(calculationRunId, orgId);
+      if (result.done) return { done: true };
+      if (Date.now() >= overallDeadline) {
+        // More work remains but this invocation is out of budget. Refresh
+        // the heartbeat so the claim doesn't look instantly stale, then
+        // return normally (not an error) — safe to resume later.
+        await prisma.calculationRun.update({
+          where: { id: calculationRunId },
+          data: { processingLockedAt: new Date(), lastProgressAt: new Date() },
+        });
+        return { done: false };
+      }
+    }
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    const errorStack = err instanceof Error ? err.stack : "";
+    calculationLogger.error("Calculation run failed", {
+      calculationRunId,
+      orgId,
+      error: errorMsg,
+      stack: errorStack,
+    });
+    const reason = errorMsg.slice(0, 500);
     await prisma.calculationRun.update({
       where: { id: calculationRunId },
-      data: { status: "running", startedAt: new Date() },
+      data: { status: "failed", finishedAt: new Date(), errorMessage: reason },
     });
-    const run = await prisma.calculationRun.findUniqueOrThrow({
-      where: { id: calculationRunId },
-      include: {
-        factorLibrary: { select: { version: true, name: true } },
-        methodologyVersion: { select: { name: true } },
-      },
-    });
+    throw err;
+  }
+}
 
-    if (run.organizationId !== orgId) {
-      throw new Error("Org mismatch on calculation run.");
+// Processes one bounded chunk: initializes the run on its first chunk,
+// loads and processes a page of not-yet-processed approved records (a
+// record already has an EmissionCalculation row for this run — from an
+// earlier chunk — is never reprocessed), persists progress, and runs the
+// once-only finalization steps when nothing remains.
+async function processOneChunk(calculationRunId: string, orgId: string): Promise<ChunkResult> {
+  const run = await prisma.calculationRun.findUniqueOrThrow({
+    where: { id: calculationRunId },
+    include: {
+      factorLibrary: { select: { version: true, name: true } },
+      methodologyVersion: { select: { name: true } },
+    },
+  });
+
+  if (run.organizationId !== orgId) {
+    throw new Error("Org mismatch on calculation run.");
+  }
+
+  const activityRecordWhere = {
+    organizationId: orgId,
+    reportingPeriodId: run.reportingPeriodId,
+    reviewStatus: "approved" as const,
+  };
+
+  if (run.totalRecordCount == null) {
+    // First chunk: transition to running and size the run.
+    const totalRecordCount = await prisma.activityRecord.count({ where: activityRecordWhere });
+
+    if (totalRecordCount === 0) {
+      // A run over zero approved records would wipe the live dashboard
+      // aggregates and silently show zeros — fail loudly instead.
+      const periodsWithRecords = await prisma.activityRecord.findMany({
+        where: { organizationId: orgId, reviewStatus: "approved" },
+        select: { reportingPeriod: { select: { label: true } } },
+        distinct: ["reportingPeriodId"],
+        take: 5,
+      });
+      const hint =
+        periodsWithRecords.length > 0
+          ? ` Approved records exist in: ${periodsWithRecords.map((r) => r.reportingPeriod.label).join(", ")}.`
+          : " No approved records exist in any period — approve records or commit an import first.";
+      await prisma.calculationRun.update({
+        where: { id: calculationRunId },
+        data: {
+          status: "failed",
+          finishedAt: new Date(),
+          errorMessage:
+            "No approved activity records found for this reporting period." + hint,
+        },
+      });
+      return { done: true };
     }
 
-    // Load all approved records for this period
+    await prisma.calculationRun.update({
+      where: { id: calculationRunId },
+      data: { status: "running", startedAt: new Date(), totalRecordCount },
+    });
+  }
+
+  const factorLibraryVersion = `${run.factorLibrary.name} ${run.factorLibrary.version}`;
+  const methodologyVersionName = run.methodologyVersion.name;
+
+  // Pre-load all emission factors for this library into memory.
+  // This converts ~100k per-record DB queries into a single bulk fetch.
+  const factorCache = await buildFactorCache(run.factorLibraryId);
+
+  const chunkDeadline = Date.now() + CHUNK_TIME_BUDGET_MS;
+
+  for (;;) {
     const records = await prisma.activityRecord.findMany({
-      where: {
-        organizationId: orgId,
-        reportingPeriodId: run.reportingPeriodId,
-        reviewStatus: "approved",
-      },
+      where: { ...activityRecordWhere, calculations: { none: { calculationRunId } } },
       include: {
         emissionCategory: { select: { id: true, code: true, activityType: true, scope: true } },
       },
+      orderBy: { id: "asc" },
+      take: BATCH_LOAD_SIZE,
     });
 
-    const factorLibraryVersion = `${run.factorLibrary.name} ${run.factorLibrary.version}`;
-    const methodologyVersionName = run.methodologyVersion.name;
+    if (records.length === 0) break;
 
-    // Pre-load all emission factors for this library into memory.
-    // This converts ~100k per-record DB queries into a single bulk fetch.
-    const factorCache = await buildFactorCache(run.factorLibraryId);
-
-    // Process each record
     for (const record of records) {
       const activityDate = record.activityDate ?? record.startDate ?? new Date();
 
@@ -342,92 +474,73 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       });
     }
 
-    // A run over zero approved records would wipe the live dashboard
-    // aggregates and silently show zeros — fail loudly instead.
-    if (records.length === 0) {
-      // Surface which periods DO have approved records so the user can pick the right one.
-      const periodsWithRecords = await prisma.activityRecord.findMany({
-        where: { organizationId: orgId, reviewStatus: "approved" },
-        select: { reportingPeriod: { select: { label: true } } },
-        distinct: ["reportingPeriodId"],
-        take: 5,
-      });
-      const hint =
-        periodsWithRecords.length > 0
-          ? ` Approved records exist in: ${periodsWithRecords.map((r) => r.reportingPeriod.label).join(", ")}.`
-          : " No approved records exist in any period — approve records or commit an import first.";
-      await prisma.calculationRun.update({
-        where: { id: calculationRunId },
-        data: {
-          status: "failed",
-          finishedAt: new Date(),
-          errorMessage:
-            "No approved activity records found for this reporting period." + hint,
-        },
-      });
-      return;
-    }
-
-    // Rebuild DashboardAggregate for this period (live, snapshotId = null)
-    await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId);
-
-    // Monte Carlo uncertainty propagation for the run's inventory total
-    await computeAndPersistUncertainty(orgId, calculationRunId);
-
-    // Broadcast dashboard update to connected SSE clients
-    try {
-      await broadcastDashboardUpdate(orgId, calculationRunId, run.reportingPeriodId);
-    } catch (err) {
-      calculationLogger.warn("Failed to broadcast dashboard update", {
-        calculationRunId,
-        orgId,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-
-    // Feature 4: Auto-create supplier data requests for high-uncertainty Scope 3 records
-    await autoCreateSupplierDataRequests(
-      orgId,
-      run.reportingPeriodId,
-      calculationRunId,
-      run.triggeredByUserId,
-    );
-
     await prisma.calculationRun.update({
       where: { id: calculationRunId },
-      data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
+      data: {
+        processedRecordCount: { increment: records.length },
+        lastProgressAt: new Date(),
+        processingLockedAt: new Date(),
+      },
     });
 
-    // Enqueue dbt transformation for immutable fact table building
-    const boss = await getBoss();
-    await boss
-      .send(
-        "dbt-transform-jobs",
-        { calculationRunId, organizationId: orgId },
-        { retryLimit: 2, retryDelay: 30 },
-      )
-      .catch((err: Error) => calculationLogger.warn("Failed to enqueue dbt transformation", { err }));
-
-    // Trigger n8n workflow for facility risk flagging
-    await triggerFacilityRiskFlag(orgId, calculationRunId).catch((err) =>
-      console.error(`[calculations] Failed to trigger n8n facility risk workflow:`, err)
-    );
-  } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err);
-    const errorStack = err instanceof Error ? err.stack : "";
-    calculationLogger.error("Calculation run failed", {
-      calculationRunId,
-      orgId,
-      error: errorMsg,
-      stack: errorStack,
-    });
-    const reason = errorMsg.slice(0, 500);
-    await prisma.calculationRun.update({
-      where: { id: calculationRunId },
-      data: { status: "failed", finishedAt: new Date(), errorMessage: reason },
-    });
-    throw err;
+    if (Date.now() >= chunkDeadline) {
+      // Chunk budget spent but a full page was still available — more
+      // records remain. Yield; the caller decides whether to keep looping
+      // (still within its own overall budget) or return for now.
+      return { done: false };
+    }
   }
+
+  // The page loop above only exits here (never via the early return) once
+  // a page comes back empty — every approved record now has a calculation
+  // for this run. Safe to run the once-only finalization steps.
+
+  // Rebuild DashboardAggregate for this period (live, snapshotId = null)
+  await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId);
+
+  // Monte Carlo uncertainty propagation for the run's inventory total
+  await computeAndPersistUncertainty(orgId, calculationRunId);
+
+  // Broadcast dashboard update to connected SSE clients
+  try {
+    await broadcastDashboardUpdate(orgId, calculationRunId, run.reportingPeriodId);
+  } catch (err) {
+    calculationLogger.warn("Failed to broadcast dashboard update", {
+      calculationRunId,
+      orgId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+
+  // Feature 4: Auto-create supplier data requests for high-uncertainty Scope 3 records
+  await autoCreateSupplierDataRequests(
+    orgId,
+    run.reportingPeriodId,
+    calculationRunId,
+    run.triggeredByUserId,
+  );
+
+  await prisma.calculationRun.update({
+    where: { id: calculationRunId },
+    data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
+  });
+
+  // Enqueue dbt transformation for immutable fact table building
+  const boss = await getBoss();
+  await boss
+    .send(
+      "dbt-transform-jobs",
+      { calculationRunId, organizationId: orgId },
+      { retryLimit: 2, retryDelay: 30 },
+    )
+    .catch((err: Error) => calculationLogger.warn("Failed to enqueue dbt transformation", { err }));
+
+  // Trigger n8n workflow for facility risk flagging
+  await triggerFacilityRiskFlag(orgId, calculationRunId).catch((err) =>
+    console.error(`[calculations] Failed to trigger n8n facility risk workflow:`, err)
+  );
+
+  return { done: true };
 }
 
 async function rebuildDashboardAggregates(

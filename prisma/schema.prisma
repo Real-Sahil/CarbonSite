@@ -1129,6 +1129,26 @@ model CalculationRun {
   finishedAt           DateTime?            @map("finished_at")
   /// Human-readable failure reason — surfaced on the calculations pages.
   errorMessage         String?              @map("error_message")
+  /// Total approved activity records selected for this run, computed once
+  /// on the first chunk. Null until then. Compared against
+  /// processedRecordCount to know whether more chunks remain.
+  totalRecordCount     Int?                 @map("total_record_count")
+  /// Records that already have an EmissionCalculation row for this run.
+  /// A run this large is processed across multiple bounded chunks (each
+  /// capped to a wall-clock budget so a single HTTP request can never run
+  /// long enough to hit a serverless function's execution timeout) rather
+  /// than one uninterruptible pass — see lib/calculation/run-worker.ts.
+  processedRecordCount Int                  @default(0) @map("processed_record_count")
+  /// Heartbeat updated at the end of every chunk. Used to tell an actively
+  /// progressing run apart from one whose last chunk-holder crashed or was
+  /// killed mid-chunk (stale beyond LOCK_STALE_MS), so another invocation
+  /// can safely reclaim and resume it instead of it staying stuck forever.
+  lastProgressAt       DateTime?            @map("last_progress_at")
+  /// Set by whichever invocation currently holds this run's processing
+  /// claim; cleared implicitly once stale. Prevents two concurrent
+  /// invocations (e.g. a client poll and the stalled-run sweep both firing
+  /// at once) from loading and double-processing the same chunk of records.
+  processingLockedAt   DateTime?            @map("processing_locked_at")
   createdAt            DateTime             @default(now()) @map("created_at")
 
   organization       Organization          @relation(fields: [organizationId], references: [id])
@@ -1195,6 +1215,10 @@ model EmissionCalculation {
   methodologyVersion MethodologyVersion @relation(fields: [methodologyVersionName], references: [name])
   modelExplanations  ModelExplanation[]  @relation("explanationCalc")
 
+  // Guarantees a resumed/re-entered chunk can never double-write a
+  // calculation for a record it (or a concurrent chunk) already processed
+  // in this run, and backs the "not yet processed" anti-join efficiently.
+  @@unique([calculationRunId, activityRecordId])
   @@index([calculationRunId])
   @@index([activityRecordId])
   @@map("emission_calculations")
