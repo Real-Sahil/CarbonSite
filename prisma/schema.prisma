@@ -299,8 +299,23 @@ model Organization {
   assuranceFindings           AssuranceFinding[]            @relation("OrgAssuranceFindings")
   datapointStatuses           OrganizationDatapointStatus[] @relation("OrgDatapointStatuses")
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
+  onboardingProgress            OnboardingProgress?
 
   @@map("organizations")
+}
+
+model OnboardingProgress {
+  id              String    @id @default(cuid())
+  organizationId  String    @unique @map("organization_id")
+  completedSteps  String[]  @map("completed_steps")
+  isComplete      Boolean   @default(false) @map("is_complete")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("onboarding_progress")
 }
 
 enum OrgRole {

@@ -52,6 +52,7 @@ import { BklitTrendArea, type TrendLineDatum } from "@/components/charts/bklit-t
 import { BklitDataGauge } from "@/components/charts/bklit-data-gauge";
 import { CalculationRunsLive } from "./calculation-runs-live";
 import { LiveDashboard } from "@/components/dashboard/LiveDashboard";
+import { OnboardingChecklist } from "./onboarding-checklist";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -92,10 +93,18 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     redirect(`/orgs/${orgId}/submissions`);
   }
 
+  // Fetch onboarding progress for admin role (cheap single-row lookup)
+  const onboardingProgress = role === "admin"
+    ? await prisma.onboardingProgress.findUnique({
+        where: { organizationId: orgId },
+        select: { isComplete: true, completedSteps: true },
+      }).catch(() => null)
+    : null;
+
   const [organization, recentPeriods] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
-      select: { name: true, industry: true },
+      select: { name: true, industry: true, hqCountry: true },
     }),
     prisma.reportingPeriod.findMany({
       where: { organizationId: orgId },
@@ -898,7 +907,43 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       </div>
 
       <div className="max-w-[1200px] mx-auto px-8 py-8">
-      {/* OnboardingChecklist disabled - onboardingProgress Prisma model not implemented (Phase 2 feature) */}
+      {/* Onboarding checklist — shown to admins until all setup steps are complete */}
+      {role === "admin" && onboardingProgress && !onboardingProgress.isComplete && (() => {
+        const completedSteps = new Set(onboardingProgress.completedSteps);
+        const checklistSteps = [
+          {
+            label: "Organisation profile",
+            description: "Set your industry and country",
+            href: `/orgs/${orgId}/settings`,
+            done: completedSteps.has("org_profile") || !!(organization.industry && organization.hqCountry),
+          },
+          {
+            label: "Invite your team",
+            description: "Add at least one other member",
+            href: `/orgs/${orgId}/settings/members`,
+            done: completedSteps.has("first_team_member"),
+          },
+          {
+            label: "Create a reporting period",
+            description: "Define your first reporting window",
+            href: `/orgs/${orgId}/settings/periods`,
+            done: completedSteps.has("reporting_period") || reportingPeriods.length > 0,
+          },
+          {
+            label: "Import activity data",
+            description: "Upload a CSV or enter records manually",
+            href: `/orgs/${orgId}/imports`,
+            done: completedSteps.has("first_import") || recordCount > 0,
+          },
+          {
+            label: "Run your first calculation",
+            description: "Calculate CO2e for your records",
+            href: `/orgs/${orgId}/calculations`,
+            done: completedSteps.has("first_calculation") || calculationRuns.length > 0,
+          },
+        ];
+        return <OnboardingChecklist orgId={orgId} steps={checklistSteps} />;
+      })()}
 
       {/* Role-contextual quick-action banner */}
       {role === "auditor" && (
