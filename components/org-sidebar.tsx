@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Upload, FileText, BarChart2, Calculator,
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks,
-  Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
+  Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
   TrendingUp, Droplets,
@@ -21,6 +21,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/ui/logo";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; roles?: string[]; }
 /** A micro-group of items within a product's accordion panel, e.g. "Calculations" inside "MetricOra". */
@@ -68,7 +69,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
   const dashboardItem: NavItem = { label: "Dashboard", href: `/orgs/${orgId}/dashboard`, icon: LayoutDashboard };
 
   const allGroups: NavGroup[] = [
-    { label: "MetricOra", icon: Leaf, sections: [
+    { label: "MetricOra", icon: Layers, sections: [
       { label: "Data", items: [
         { label: "Imports",          href: `/orgs/${orgId}/imports`,           icon: Upload,        roles: CORE_ROLES },
         { label: "Records",          href: `/orgs/${orgId}/records`,           icon: FileText,      roles: CORE_ROLES },
@@ -126,7 +127,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Pathway",      href: `/orgs/${orgId}/pathway`,      icon: Compass,      roles: CORE_ROLES },
         { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
         { label: "SBTi Roadmap", href: `/orgs/${orgId}/sbti`,         icon: TrendingDown, roles: CORE_ROLES },
-        { label: "Offsets",      href: `/orgs/${orgId}/offsets`,      icon: Leaf,         roles: CORE_ROLES },
+        { label: "Offsets",      href: `/orgs/${orgId}/offsets`,      icon: Sprout,       roles: CORE_ROLES },
       ]},
     ]},
     { label: "Admin", icon: Settings, sections: [
@@ -261,14 +262,12 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       {/* Logo */}
       <div className={cn("flex items-center border-b border-slate-200 overflow-hidden", collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-4 pt-5 pb-4")}>
         {collapsed ? (
-          <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center" title={orgName}>
-            <Leaf className="h-4 w-4 text-white" />
+          <span title={orgName}>
+            <LogoMark size={28} />
           </span>
         ) : (
           <div className="flex items-center gap-2.5 min-w-0 w-full">
-            <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0">
-              <Leaf className="h-4 w-4 text-white" />
-            </span>
+            <LogoMark size={28} className="shrink-0" />
             <div className="min-w-0 flex-1">
               <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
               <span className="text-[11px] text-slate-500 font-normal block truncate" title={orgName}>{orgName}</span>
@@ -341,9 +340,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           <Menu className="h-5 w-5 text-slate-500" aria-hidden="true" />
         </button>
         <div className="ml-3 flex items-center gap-2 min-w-0">
-          <span className="h-6 w-6 rounded-md bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0">
-            <Leaf className="h-3.5 w-3.5 text-white" />
-          </span>
+          <LogoMark size={24} className="shrink-0" />
           <span className="text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
           <span className="text-xs text-slate-500 truncate max-w-[120px]">/ {orgName}</span>
         </div>
@@ -360,9 +357,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           <div className="absolute left-0 top-0 bottom-0 w-72 bg-white/97 backdrop-blur-2xl border-r border-slate-200 flex flex-col">
             <div className="relative flex items-center justify-between px-4 pt-5 pb-4 border-b border-slate-200">
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0">
-                  <Leaf className="h-4 w-4 text-white" />
-                </span>
+                <LogoMark size={28} className="shrink-0" />
                 <div className="min-w-0">
                   <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
                   <span className="text-xs text-slate-500 block truncate">{orgName}</span>
