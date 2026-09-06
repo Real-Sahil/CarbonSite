@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion, AnimatePresence } from "motion/react";
-import { Menu, X, Leaf } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { LogoMark } from "@/components/ui/logo";
 
 const NAV_LINKS = [
   { href: "/product", label: "Product" },
@@ -56,9 +57,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
               scrolled || isDark ? "text-[#F8FAFC]" : "text-[#0F172A]"
             }`}
           >
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-amber-400">
-              <Leaf className="h-3 w-3 text-white" />
-            </span>
+            <LogoMark size={22} />
             MetricOra
           </Link>
 

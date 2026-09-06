@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 56" role="img" aria-label="MetricOra — Measure what matters.">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <!-- Icon mark -->
+  <rect width="56" height="56" rx="12" fill="url(#bg)"/>
+  <path d="M11.5 44.5 L20 14 L28 30 L36 14 L44.5 44.5"
+    stroke="white" stroke-width="5" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Wordmark (white for dark backgrounds) -->
+  <text x="70" y="33" font-family="'Geist', -apple-system, 'Helvetica Neue', Arial, sans-serif"
+    font-size="22" font-weight="700" letter-spacing="-0.5" fill="#F8FAFC">MetricOra</text>
+</svg>
