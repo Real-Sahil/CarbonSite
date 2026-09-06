@@ -181,7 +181,7 @@ export default function OnboardingPage() {
             Setup
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mb-2">
-            Get CarbonSite ready
+            Get MetricOra ready
           </h1>
           <p className="text-sm text-[#6B7280] leading-relaxed">
             Complete these steps to start tracking emissions for your organisation. You can come

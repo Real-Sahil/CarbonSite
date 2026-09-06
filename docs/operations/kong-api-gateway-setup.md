@@ -1,14 +1,14 @@
 # Kong API Gateway Setup Guide
 
-Kong is an open-source API Gateway that provides centralized API management, authentication, rate limiting, and request logging for CarbonSite's production deployment.
+Kong is an open-source API Gateway that provides centralized API management, authentication, rate limiting, and request logging for MetricOra's production deployment.
 
 ## Overview
 
-Kong sits as a reverse proxy in front of the CarbonSite Next.js API, handling:
+Kong sits as a reverse proxy in front of the MetricOra Next.js API, handling:
 - **Rate limiting**: 1000 requests/min per organization API key
 - **Authentication**: API key validation (ACL plugin)
 - **Request/Response logging**: Full audit trail for compliance
-- **Service routing**: Load balancing across multiple CarbonSite instances
+- **Service routing**: Load balancing across multiple MetricOra instances
 - **Plugin ecosystem**: CORS, OAuth2, JWT, request/response transformation
 
 ## Architecture
@@ -22,7 +22,7 @@ Clients (Web, Mobile, Partners)
     ├─ Request Logging
     └─ Response Transformation
          ↓
-CarbonSite Backend (Next.js API, Port 3000)
+MetricOra Backend (Next.js API, Port 3000)
          ↓
 PostgreSQL + R2 Storage
 ```
@@ -117,7 +117,7 @@ volumes:
 KONG_DB_PASSWORD=changeme-in-production
 KONG_ADMIN_URL=http://localhost:8001
 KONG_PROXY_URL=http://localhost:8000
-CARBONSITE_BACKEND=http://host.docker.internal:3000  # Docker desktop
+METRICORA_BACKEND=http://host.docker.internal:3000  # Docker desktop
 # Or for Linux: http://172.17.0.1:3000
 ```
 
@@ -139,11 +139,11 @@ curl -i http://localhost:8001/
 ### 1. Create Service (Upstream Backend)
 
 ```bash
-# Add CarbonSite as a service in Kong
+# Add MetricOra as a service in Kong
 curl -i -X POST http://localhost:8001/services/ \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "carbonsite-api",
+    "name": "metricora-api",
     "url": "http://host.docker.internal:3000",
     "connect_timeout": 60000,
     "write_timeout": 60000,
@@ -155,7 +155,7 @@ curl -i -X POST http://localhost:8001/services/ \
 
 ```bash
 # Add route to the service
-curl -i -X POST http://localhost:8001/services/carbonsite-api/routes \
+curl -i -X POST http://localhost:8001/services/metricora-api/routes \
   -H "Content-Type: application/json" \
   -d '{
     "paths": ["/api", "/auth"],
@@ -170,7 +170,7 @@ curl -i -X POST http://localhost:8001/services/carbonsite-api/routes \
 
 ```bash
 # Enable rate limiting on the service
-curl -i -X POST http://localhost:8001/services/carbonsite-api/plugins \
+curl -i -X POST http://localhost:8001/services/metricora-api/plugins \
   -H "Content-Type: application/json" \
   -d '{
     "name": "rate-limiting",
@@ -199,7 +199,7 @@ curl -i -X POST http://localhost:8001/consumers \
 curl -i -X POST http://localhost:8001/consumers/org-acme-corp/acl \
   -H "Content-Type: application/json" \
   -d '{
-    "group": "carbonsite-api"
+    "group": "metricora-api"
   }'
 
 # Verify the consumer and ACL were created
@@ -210,12 +210,12 @@ curl -s http://localhost:8001/consumers/org-acme-corp/acl | jq .
 
 ```bash
 # Enable ACL plugin on the service
-curl -i -X POST http://localhost:8001/services/carbonsite-api/plugins \
+curl -i -X POST http://localhost:8001/services/metricora-api/plugins \
   -H "Content-Type: application/json" \
   -d '{
     "name": "acl",
     "config": {
-      "allow": ["carbonsite-api"],
+      "allow": ["metricora-api"],
       "deny": null,
       "hide_groups_header": false
     }
@@ -226,7 +226,7 @@ curl -i -X POST http://localhost:8001/services/carbonsite-api/plugins \
 
 ```bash
 # Enable request logging for audit trail
-curl -i -X POST http://localhost:8001/services/carbonsite-api/plugins \
+curl -i -X POST http://localhost:8001/services/metricora-api/plugins \
   -H "Content-Type: application/json" \
   -d '{
     "name": "request-transformer",
@@ -263,7 +263,7 @@ curl -i -X POST http://localhost:8001/consumers/test-api-key/key-auth \
 # Add to ACL group
 curl -i -X POST http://localhost:8001/consumers/test-api-key/acl \
   -H "Content-Type: application/json" \
-  -d '{"group": "carbonsite-api"}'
+  -d '{"group": "metricora-api"}'
 ```
 
 ### 3. Test With API Key (Should Succeed)
@@ -271,7 +271,7 @@ curl -i -X POST http://localhost:8001/consumers/test-api-key/acl \
 ```bash
 curl -v http://localhost:8000/api/orgs/org123/dashboard \
   -H "apikey: test-key-12345"
-# Expected: 200 OK (proxied to CarbonSite)
+# Expected: 200 OK (proxied to MetricOra)
 ```
 
 ### 4. Test Rate Limiting
@@ -343,7 +343,7 @@ helm install kong kong/kong -f kubernetes/kong-values.yaml
 
 ```bash
 # .env.production
-KONG_PROXY_URL=https://api.carbonsite.io  # Public endpoint
+KONG_PROXY_URL=https://api.metricora.io  # Public endpoint
 KONG_DATABASE=postgres
 KONG_PG_HOST=postgres.internal
 KONG_PG_PORT=5432
@@ -377,7 +377,7 @@ docker-compose logs kong | grep "admin_api"
 
 ```bash
 # Enable Prometheus plugin for metrics
-curl -i -X POST http://localhost:8001/services/carbonsite-api/plugins \
+curl -i -X POST http://localhost:8001/services/metricora-api/plugins \
   -H "Content-Type: application/json" \
   -d '{
     "name": "prometheus",
@@ -409,21 +409,21 @@ docker-compose -f docker-compose.kong.yml up -d
 ### Service Returns 503
 
 ```bash
-# Check if CarbonSite backend is running
+# Check if MetricOra backend is running
 curl http://localhost:3000/api/health
 
 # Verify service configuration in Kong
-curl http://localhost:8001/services/carbonsite-api
+curl http://localhost:8001/services/metricora-api
 
 # Check route configuration
-curl http://localhost:8001/services/carbonsite-api/routes
+curl http://localhost:8001/services/metricora-api/routes
 ```
 
 ### Rate Limiting Not Working
 
 ```bash
 # Verify rate limiting plugin is enabled
-curl http://localhost:8001/services/carbonsite-api/plugins
+curl http://localhost:8001/services/metricora-api/plugins
 
 # Check if consumer has correct ACL group
 curl http://localhost:8001/consumers/org-acme-corp/acl

@@ -228,7 +228,7 @@ export function CarbonReductionTracker() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="text-lg font-bold text-[#0F172A] mb-2">Ready to set your net-zero goals?</h3>
-            <p className="text-[#64748B]">CarbonSite helps you track every tonne and celebrate every reduction.</p>
+            <p className="text-[#64748B]">MetricOra helps you track every tonne and celebrate every reduction.</p>
           </div>
           <button className="px-8 py-3 rounded-full font-semibold transition-all transform hover:scale-105 active:scale-95 bg-gradient-to-r from-[#ffdc6e] to-[#ff0027] text-white whitespace-nowrap">
             Start Tracking Now

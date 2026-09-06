@@ -1,4 +1,4 @@
-# CarbonSite
+# MetricOra
 
 A multi-tenant GHG emissions tracking platform for small-to-mid-market companies. Field workers photograph waste tickets and delivery notes; sustainability managers import data, run calculations, and publish reports—all with immutable audit trails.
 
@@ -180,7 +180,7 @@ sqlite3 .env            # View env vars
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/carbonsite
+DATABASE_URL=postgresql://user:password@localhost:5432/metricora
 
 # Authentication
 BETTER_AUTH_SECRET=<random-32-char-string>
@@ -188,12 +188,12 @@ BETTER_AUTH_TRUST_HOST=true
 
 # Email (Resend)
 RESEND_API_KEY=re_<your-key>
-EMAIL_FROM=noreply@carbonsite.com
+EMAIL_FROM=noreply@metricora.co.uk
 
 # Storage (Cloudflare R2)
 R2_ACCESS_KEY_ID=<access-key>
 R2_SECRET_ACCESS_KEY=<secret>
-R2_BUCKET=carbonsite
+R2_BUCKET=metricora
 R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
 
 # Push Notifications (Firebase)
@@ -310,7 +310,7 @@ Copyright 2025. See LICENSE file.
 ## Support
 
 - **Questions?** Check the [documentation](docs/)
-- **Found a bug?** [Open an issue](https://github.com/Real-Sahil/CarbonSite/issues)
+- **Found a bug?** [Open an issue](https://github.com/Real-Sahil/MetricOra/issues)
 - **Want to contribute?** See [CONTRIBUTING.md](.github/CONTRIBUTING.md)
 
 ---

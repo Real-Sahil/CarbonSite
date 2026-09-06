@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Report Verification — CarbonSite',
+  title: 'Report Verification — MetricOra',
   description: 'Verify the integrity and authenticity of your GHG emissions report using QR code validation.',
   robots: 'noindex, nofollow',
 };

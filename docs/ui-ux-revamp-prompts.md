@@ -1,10 +1,10 @@
-# CarbonSite UI/UX Revamp Prompts
+# MetricOra UI/UX Revamp Prompts
 
-Source scan: MotionSites sections page, which presents a premium library of AI design prompts, hero sections, animated backgrounds, gradients, and templates. The prompts below adapt the relevant patterns to CarbonSite without copying their private section copy or implementation.
+Source scan: MotionSites sections page, which presents a premium library of AI design prompts, hero sections, animated backgrounds, gradients, and templates. The prompts below adapt the relevant patterns to MetricOra without copying their private section copy or implementation.
 
 ## Design Direction
 
-Build CarbonSite as serious construction-climate operations software: modern, precise, evidence-led, and movement-rich without looking like a generic AI SaaS template. Use real product surfaces as the hero asset: dashboard analytics, mobile evidence capture, route distance, review queue, audit trail, and report packs.
+Build MetricOra as serious construction-climate operations software: modern, precise, evidence-led, and movement-rich without looking like a generic AI SaaS template. Use real product surfaces as the hero asset: dashboard analytics, mobile evidence capture, route distance, review queue, audit trail, and report packs.
 
 Avoid a one-note green palette. Keep the brand green as a functional signal, but pair it with off-white, slate, steel, amber warnings, blue route/evidence accents, and restrained dark panels.
 

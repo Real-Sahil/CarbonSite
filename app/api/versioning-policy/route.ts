@@ -1,7 +1,7 @@
 /**
  * GET /api/versioning-policy
  *
- * Public endpoint documenting CarbonSite API versioning policy.
+ * Public endpoint documenting MetricOra API versioning policy.
  * No authentication required.
  */
 

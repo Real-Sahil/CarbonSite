@@ -6,8 +6,8 @@ import { AnimateIn } from "@/components/marketing/animate-in";
 import { Key, Lock, Zap, BookOpen, ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Developer - CarbonSite",
-  description: "REST API documentation for integrating CarbonSite into your workflows.",
+  title: "Developer - MetricOra",
+  description: "REST API documentation for integrating MetricOra into your workflows.",
 };
 
 const ENDPOINTS = [
@@ -83,7 +83,7 @@ export default function DeveloperPage() {
             <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">REST API v1</span>
           </div>
           <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-4 max-w-[24ch]">
-            Integrate CarbonSite into your workflows.
+            Integrate MetricOra into your workflows.
           </h1>
           <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch]">
             Build carbon accounting data into your ERP, dashboards, and workflows. All endpoints return JSON and require a bearer token.
@@ -118,13 +118,13 @@ export default function DeveloperPage() {
         <AnimateIn>
           <div className="rounded-lg border border-gray-200 bg-[#111110] p-6 mb-12">
             <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-3">Base URL</p>
-            <p className="font-mono text-base text-[#0891B2]">https://app.carbonsite.io</p>
+            <p className="font-mono text-base text-[#0891B2]">https://app.metricora.io</p>
           </div>
 
           {/* Example request */}
           <div className="rounded-lg border border-gray-200 bg-[#111110] p-6 mb-16 overflow-x-auto">
             <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-4">Example request</p>
-            <pre className="font-mono text-xs text-[#64748B] whitespace-pre">{`curl -X GET "https://app.carbonsite.io/api/orgs/{orgId}/activity-records" \\
+            <pre className="font-mono text-xs text-[#64748B] whitespace-pre">{`curl -X GET "https://app.metricora.io/api/orgs/{orgId}/activity-records" \\
   -H "Authorization: Bearer csk_your_api_key_here" \\
   -H "Content-Type: application/json"`}</pre>
           </div>
@@ -193,7 +193,7 @@ export default function DeveloperPage() {
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
-              Ready to build with CarbonSite?
+              Ready to build with MetricOra?
             </h2>
             <Link
               href="/sign-up"

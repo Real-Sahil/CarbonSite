@@ -1,4 +1,4 @@
-# CarbonSite Integrations Setup Guide
+# MetricOra Integrations Setup Guide
 
 This guide covers setting up third-party integrations without Docker, self-hosting, or paid infrastructure. All integrations use cloud SaaS platforms and serverless functions.
 
@@ -75,14 +75,14 @@ Auto-sync invoices from Xero to calculate Scope 3 supplier spend emissions.
 
 ### Prerequisites
 - Xero account (free tier available: https://www.xero.com/signup)
-- CarbonSite organization with admin role
+- MetricOra organization with admin role
 
 ### Setup Steps
 
 1. **Register Developer App on Xero**
    - Go to https://developer.xero.com/app/manage
    - Click "Create an app"
-   - Name: "CarbonSite"
+   - Name: "MetricOra"
    - Company name: Your organization
    - App type: "Web app"
    - Fill in redirect URL (see Step 2)
@@ -149,7 +149,7 @@ Enable single sign-on (SSO) for enterprise users. Supports Okta, Azure AD, Googl
 ### Prerequisites
 - OIDC-compatible identity provider (Okta, Azure AD, Google, etc.)
 - Admin access to your identity provider
-- CarbonSite org with admin role
+- MetricOra org with admin role
 
 ### Generic OIDC Setup (Google, Okta, Azure AD)
 
@@ -207,12 +207,12 @@ Enable single sign-on (SSO) for enterprise users. Supports Okta, Azure AD, Googl
 If you want to auto-assign roles based on identity provider groups:
 
 1. **Configure Groups in Identity Provider**
-   - Create groups: `carbonsite-admin`, `carbonsite-editor`, `carbonsite-viewer`
+   - Create groups: `metricora-admin`, `metricora-editor`, `metricora-viewer`
    - Assign users to groups
 
 2. **Set Role Mapping** (in Vercel environment):
    ```
-   OIDC_ROLE_MAPPING={"carbonsite-admin":"admin","carbonsite-editor":"editor","carbonsite-viewer":"viewer"}
+   OIDC_ROLE_MAPPING={"metricora-admin":"admin","metricora-editor":"editor","metricora-viewer":"viewer"}
    ```
 
 ### Troubleshooting
@@ -243,9 +243,9 @@ Automate business processes using n8n Cloud (no self-hosting required). Examples
    - In n8n: Create new workflow
    - Add node: Webhook (trigger)
    - Set HTTP method: POST
-   - Copy webhook URL (e.g., `https://n8n.io/webhook/carbonsite-reports`)
+   - Copy webhook URL (e.g., `https://n8n.io/webhook/metricora-reports`)
 
-3. **Configure CarbonSite to Send Webhooks**
+3. **Configure MetricOra to Send Webhooks**
    - Login as org admin
    - Settings → Automations → Add Webhook
    - Paste n8n webhook URL
@@ -255,7 +255,7 @@ Automate business processes using n8n Cloud (no self-hosting required). Examples
 4. **Build n8n Workflow**
    - Example: Report ready notification
      ```
-     Webhook (CarbonSite sends report_ready event)
+     Webhook (MetricOra sends report_ready event)
        ↓
      Function (extract report ID, org name)
        ↓
@@ -263,7 +263,7 @@ Automate business processes using n8n Cloud (no self-hosting required). Examples
      ```
 
 5. **Test Webhook**
-   - In CarbonSite: Create and complete a report
+   - In MetricOra: Create and complete a report
    - Check n8n execution history (should show incoming webhook)
    - Verify Slack message (or other action) was triggered
 
@@ -279,7 +279,7 @@ Event: report_ready
 **Workflow 2: Submission Reminder**
 ```
 Trigger: Daily at 9 AM (n8n schedule)
-→ Query CarbonSite API: GET /api/orgs/{orgId}/field-submissions?status=pending
+→ Query MetricOra API: GET /api/orgs/{orgId}/field-submissions?status=pending
 → If count > 0: Send email to assigned reviewers
 ```
 
@@ -343,9 +343,9 @@ OIDC_SCOPE=openid email profile
 OIDC_ROLE_MAPPING={"admin-group":"admin","editor-group":"editor"}
 
 # ─── Webhooks ──────────────────────────────────────────────────────────────
-# n8n Cloud webhook URLs for CarbonSite to call
-N8N_WEBHOOK_REPORTS=https://n8n.io/webhook/carbonsite-reports
-N8N_WEBHOOK_SUBMISSIONS=https://n8n.io/webhook/carbonsite-submissions
+# n8n Cloud webhook URLs for MetricOra to call
+N8N_WEBHOOK_REPORTS=https://n8n.io/webhook/metricora-reports
+N8N_WEBHOOK_SUBMISSIONS=https://n8n.io/webhook/metricora-submissions
 
 # ─── Optional: Redis for Production Rate Limiting ──────────────────────────
 # If not set, rate limiting falls back to PostgreSQL (slower but works)

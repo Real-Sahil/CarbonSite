@@ -1,5 +1,5 @@
 /**
- * Structured logging utility for CarbonSite
+ * Structured logging utility for MetricOra
  */
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';

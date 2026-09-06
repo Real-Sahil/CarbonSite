@@ -19,7 +19,7 @@ export interface EmissionMetric {
 
 /**
  * Generate XBRL GL (instance) XML document for ESRS/CSRD compliance
- * Maps CarbonSite emission calculations to XBRL GL taxonomy concepts
+ * Maps MetricOra emission calculations to XBRL GL taxonomy concepts
  */
 export function generateESRSXBRL(
   context: XBRLContext,
@@ -115,7 +115,7 @@ function buildFactXML(
 }
 
 /**
- * Helper: Map CarbonSite emission category to ESRS concept code
+ * Helper: Map MetricOra emission category to ESRS concept code
  */
 export function mapCategoryToESRSConcept(
   categoryCode: string

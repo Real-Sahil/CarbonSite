@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Cookie Policy | CarbonSite",
-  description: "Information about how CarbonSite uses cookies.",
+  title: "Cookie Policy | MetricOra",
+  description: "Information about how MetricOra uses cookies.",
 };
 
 export default function CookiesPage() {
@@ -18,12 +18,12 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900">1. Overview</h2>
             <p>
-              CarbonSite uses cookies and similar technologies to provide, secure,
+              MetricOra uses cookies and similar technologies to provide, secure,
               and improve our platform. This policy explains what cookies we use,
               why we use them, and your options.
             </p>
             <p className="mt-4 bg-blue-50 p-4 rounded border-l-4 border-blue-600">
-              <strong>Key Point (PECR):</strong> CarbonSite does not use
+              <strong>Key Point (PECR):</strong> MetricOra does not use
               non-essential tracking or marketing cookies. The cookies below are
               strictly necessary for authentication and service delivery. No
               consent is required under PECR for these essential cookies.
@@ -90,7 +90,7 @@ export default function CookiesPage() {
               3. Non-Essential Cookies
             </h2>
             <p>
-              CarbonSite does <strong>not</strong> currently use:
+              MetricOra does <strong>not</strong> currently use:
             </p>
             <ul className="list-inside list-disc space-y-2">
               <li>Analytics cookies (Google Analytics, Mixpanel, etc.)</li>
@@ -157,7 +157,7 @@ export default function CookiesPage() {
               5.2 Do Not Track (DNT)
             </h3>
             <p>
-              CarbonSite respects the "Do Not Track" header. Since we do not
+              MetricOra respects the "Do Not Track" header. Since we do not
               perform tracking, DNT settings do not affect our operations.
             </p>
           </section>
@@ -167,7 +167,7 @@ export default function CookiesPage() {
               6. Third-Party Services
             </h2>
             <p>
-              Some CarbonSite features integrate with third-party services that
+              Some MetricOra features integrate with third-party services that
               may set their own cookies:
             </p>
             <table className="w-full border-collapse border border-gray-300 mt-4">
@@ -241,10 +241,10 @@ export default function CookiesPage() {
             <p>
               Questions about cookies? Email{" "}
               <a
-                href="mailto:privacy@carbonsite.io"
+                href="mailto:privacy@metricora.io"
                 className="font-semibold text-blue-600 hover:text-blue-700"
               >
-                privacy@carbonsite.io
+                privacy@metricora.io
               </a>
             </p>
           </section>

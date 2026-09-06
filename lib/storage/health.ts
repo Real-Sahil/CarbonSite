@@ -35,7 +35,7 @@ export async function checkStorageHealth(): Promise<{
         },
       });
       await s3.send(
-        new HeadBucketCommand({ Bucket: process.env.STORAGE_BUCKET ?? "carbonsite" }),
+        new HeadBucketCommand({ Bucket: process.env.STORAGE_BUCKET ?? "metricora" }),
       );
       return { ok: true, driver };
     }

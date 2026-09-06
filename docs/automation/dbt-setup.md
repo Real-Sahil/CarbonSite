@@ -1,6 +1,6 @@
 # dbt SQL Transformation Setup Guide
 
-dbt (data build tool) orchestrates SQL transformations in CarbonSite. All emissions calculations flow through dbt models to maintain lineage, enable testing, and support incremental rebuilds.
+dbt (data build tool) orchestrates SQL transformations in MetricOra. All emissions calculations flow through dbt models to maintain lineage, enable testing, and support incremental rebuilds.
 
 ## Quick Start
 
@@ -15,7 +15,7 @@ pip install dbt-postgres
 Create `dbt/profiles.yml`:
 
 ```yaml
-carbonsite:
+metricora:
   outputs:
     dev:
       type: postgres
@@ -23,7 +23,7 @@ carbonsite:
       user: postgres
       password: postgres
       port: 5432
-      dbname: carbonsite
+      dbname: metricora
       schema: public
       threads: 4
       keepalives_idle: 0
@@ -33,7 +33,7 @@ carbonsite:
       user: neon_user
       password: "{{ env_var('DATABASE_PASSWORD') }}"
       port: 5432
-      dbname: carbonsite
+      dbname: metricora
       schema: public
       threads: 8
       keepalives_idle: 0
@@ -123,7 +123,7 @@ dbt/
 
 **Materialization:** Incremental tables (rebuild only changed data)
 
-## Integration with CarbonSite
+## Integration with MetricOra
 
 ### Running dbt from Node.js Worker
 
@@ -291,7 +291,7 @@ dbt run --debug --select fct_emissions
 ### Model Not Found
 
 ```
- Runtime Error in model stg_activity_records: "carbonsite"."public"."activity_records" does not exist
+ Runtime Error in model stg_activity_records: "metricora"."public"."activity_records" does not exist
 ```
 
 **Solution:** Verify source table exists:
@@ -346,4 +346,4 @@ EXPLAIN ANALYZE SELECT * FROM activity_records WHERE facility_id = '...';
 - [dbt Documentation](https://docs.getdbt.com/)
 - [dbt Best Practices](https://docs.getdbt.com/guides/best-practices)
 - [dbt Incremental Models](https://docs.getdbt.com/docs/build/incremental-models)
-- [CarbonSite Calculation Engine](../calculation/engine.md)
+- [MetricOra Calculation Engine](../calculation/engine.md)

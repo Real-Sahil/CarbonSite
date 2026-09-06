@@ -197,7 +197,7 @@ export function renderContractCarbonHtml(d: ContractCarbonData): string {
     <tr><td>Emission factor library</td><td>${esc(d.factorLibrary)}</td></tr>
     <tr><td>Immutable snapshot</td><td>v${d.snapshotVersion} — locked, auditable</td></tr>
     <tr><td>Traceability</td><td>Each record stores original unit, normalised unit, factor version, formula, and selection reason</td></tr>
-    <tr><td>Third-party verification</td><td>Data available on request via the CarbonSite platform</td></tr>
+    <tr><td>Third-party verification</td><td>Data available on request via the MetricOra platform</td></tr>
   </table>
 </section>
 

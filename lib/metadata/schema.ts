@@ -8,20 +8,20 @@ export function buildOrganizationSchema(): JsonLdSchema {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'CarbonSite',
-    url: 'https://carbonsite.ai',
-    logo: 'https://carbonsite.ai/logo.png',
+    name: 'MetricOra',
+    url: 'https://metricora.ai',
+    logo: 'https://metricora.ai/logo.png',
     description: 'Carbon accounting platform for small-to-mid-market companies',
     sameAs: [
-      'https://twitter.com/carbonsiteapp',
-      'https://linkedin.com/company/carbonsite',
-      'https://github.com/carbonsite/carbonsite',
+      'https://twitter.com/metricoraapp',
+      'https://linkedin.com/company/metricora',
+      'https://github.com/metricora/metricora',
     ],
     contact: {
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
-      email: 'support@carbonsite.ai',
-      url: 'https://carbonsite.ai/support',
+      email: 'support@metricora.ai',
+      url: 'https://metricora.ai/support',
     },
   };
 }
@@ -47,7 +47,7 @@ export function buildArticleSchema(article: {
       '@type': 'Person',
       name: article.author,
     },
-    url: `https://carbonsite.ai/blog/${article.slug}`,
+    url: `https://metricora.ai/blog/${article.slug}`,
   };
 }
 
@@ -74,7 +74,7 @@ export function buildBreadcrumbSchema(items: Array<{ name: string; url: string }
       '@type': 'ListItem',
       position: idx + 1,
       name: item.name,
-      item: `https://carbonsite.ai${item.url}`,
+      item: `https://metricora.ai${item.url}`,
     })),
   };
 }

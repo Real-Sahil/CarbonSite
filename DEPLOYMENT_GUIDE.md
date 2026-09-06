@@ -1,4 +1,4 @@
-# CarbonSite Deployment Guide
+# MetricOra Deployment Guide
 
 ## Current Status (2026-08-29) — UPDATED
 
@@ -39,7 +39,7 @@ Ensure your PostgreSQL instance is running and accessible:
 
 ```bash
 # Verify connection (local development)
-psql postgresql://postgres:postgres@localhost:5432/carbonsite -c "SELECT version();"
+psql postgresql://postgres:postgres@localhost:5432/metricora -c "SELECT version();"
 
 # For production (Neon, Supabase, etc.), update .env with your DATABASE_URL
 export DATABASE_URL="postgresql://user:password@host:port/database"
@@ -118,14 +118,14 @@ ALTER TYPE "ReviewStatus" ADD VALUE 'pending_info' AFTER 'in_review';
 
 ### Production Database (Neon)
 ```env
-DATABASE_URL="postgresql://user:password@neon.tech/carbonsite"
-DIRECT_URL="postgresql://user:password@neon.tech/carbonsite"
+DATABASE_URL="postgresql://user:password@neon.tech/metricora"
+DIRECT_URL="postgresql://user:password@neon.tech/metricora"
 ```
 
 ### Local Development (PostgreSQL)
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/carbonsite"
-DIRECT_URL="postgresql://postgres:postgres@localhost:5432/carbonsite"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/metricora"
+DIRECT_URL="postgresql://postgres:postgres@localhost:5432/metricora"
 ```
 
 ### Optional: Redis for Rate Limiting

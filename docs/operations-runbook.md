@@ -1,6 +1,6 @@
-# CarbonSite Operations Runbook
+# MetricOra Operations Runbook
 
-This runbook is for operators of the production CarbonSite deployment. It covers incident response, failed jobs, backup and restore, rollback, and post-release checks.
+This runbook is for operators of the production MetricOra deployment. It covers incident response, failed jobs, backup and restore, rollback, and post-release checks.
 
 ## 1. Incident Triage
 

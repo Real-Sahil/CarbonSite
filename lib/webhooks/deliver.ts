@@ -52,8 +52,8 @@ export async function deliverWebhook(
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-CarbonSite-Signature": sig,
-            "X-CarbonSite-Event": event,
+            "X-MetricOra-Signature": sig,
+            "X-MetricOra-Event": event,
           },
           body,
           signal: AbortSignal.timeout(10_000),

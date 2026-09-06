@@ -3,7 +3,7 @@
 import { notificationLogger } from "@/lib/logger";
 
 const DRIVER = process.env.EMAIL_DRIVER ?? (process.env.RESEND_API_KEY ? "resend" : "console");
-const FROM = process.env.EMAIL_FROM ?? "CarbonSite <noreply@carbonsite.app>";
+const FROM = process.env.EMAIL_FROM ?? "MetricOra <noreply@metricora.co.uk>";
 
 export type TransactionalEmailPayload = {
   to: string;
@@ -92,8 +92,8 @@ export function taskAssignedEmail(params: {
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Action required: ${params.taskType} review task assigned`;
-  const text = `Hi ${params.recipientName},\n\nA review task has been assigned to you in ${params.orgName}.\n\nTask: ${params.targetLabel}\n\nOpen in CarbonSite: ${params.appUrl}\n\nThe CarbonSite team`;
-  const html = `<p>Hi ${params.recipientName},</p><p>A review task has been assigned to you in <strong>${params.orgName}</strong>.</p><p><strong>Task:</strong> ${params.targetLabel}</p><p><a href="${params.appUrl}">Open in CarbonSite</a></p>`;
+  const text = `Hi ${params.recipientName},\n\nA review task has been assigned to you in ${params.orgName}.\n\nTask: ${params.targetLabel}\n\nOpen in MetricOra: ${params.appUrl}\n\nThe MetricOra team`;
+  const html = `<p>Hi ${params.recipientName},</p><p>A review task has been assigned to you in <strong>${params.orgName}</strong>.</p><p><strong>Task:</strong> ${params.targetLabel}</p><p><a href="${params.appUrl}">Open in MetricOra</a></p>`;
   return { subject, html, text };
 }
 
@@ -107,8 +107,8 @@ export function submissionReceivedEmail(params: {
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const siteSuffix = params.siteLabel ? ` at ${params.siteLabel}` : "";
   const subject = `New field submission awaiting review — ${params.orgName}`;
-  const text = `Hi ${params.recipientName},\n\n${params.submitterLabel} submitted a ${params.documentLabel}${siteSuffix} for review in ${params.orgName}.\n\nReview it in CarbonSite: ${params.appUrl}`;
-  const html = `<p>Hi ${params.recipientName},</p><p><strong>${params.submitterLabel}</strong> submitted a ${params.documentLabel}${siteSuffix} for review in <strong>${params.orgName}</strong>.</p><p><a href="${params.appUrl}">Review it in CarbonSite</a></p>`;
+  const text = `Hi ${params.recipientName},\n\n${params.submitterLabel} submitted a ${params.documentLabel}${siteSuffix} for review in ${params.orgName}.\n\nReview it in MetricOra: ${params.appUrl}`;
+  const html = `<p>Hi ${params.recipientName},</p><p><strong>${params.submitterLabel}</strong> submitted a ${params.documentLabel}${siteSuffix} for review in <strong>${params.orgName}</strong>.</p><p><a href="${params.appUrl}">Review it in MetricOra</a></p>`;
   return { subject, html, text };
 }
 
@@ -120,8 +120,8 @@ export function importFailedEmail(params: {
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Import needs attention: ${params.filename}`;
-  const text = `Hi ${params.recipientName},\n\nYour import "${params.filename}" in ${params.orgName} has ${params.errorCount} validation error(s) that need attention.\n\nOpen in CarbonSite: ${params.appUrl}`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your import <strong>${params.filename}</strong> in <strong>${params.orgName}</strong> has <strong>${params.errorCount}</strong> validation error(s) that need attention.</p><p><a href="${params.appUrl}">Review errors in CarbonSite</a></p>`;
+  const text = `Hi ${params.recipientName},\n\nYour import "${params.filename}" in ${params.orgName} has ${params.errorCount} validation error(s) that need attention.\n\nOpen in MetricOra: ${params.appUrl}`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your import <strong>${params.filename}</strong> in <strong>${params.orgName}</strong> has <strong>${params.errorCount}</strong> validation error(s) that need attention.</p><p><a href="${params.appUrl}">Review errors in MetricOra</a></p>`;
   return { subject, html, text };
 }
 
@@ -132,8 +132,8 @@ export function reportReadyEmail(params: {
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Report ready: ${params.reportLabel}`;
-  const text = `Hi ${params.recipientName},\n\nYour report "${params.reportLabel}" in ${params.orgName} is ready to download.\n\nOpen in CarbonSite: ${params.appUrl}`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your report <strong>${params.reportLabel}</strong> in <strong>${params.orgName}</strong> is ready to download.</p><p><a href="${params.appUrl}">Download in CarbonSite</a></p>`;
+  const text = `Hi ${params.recipientName},\n\nYour report "${params.reportLabel}" in ${params.orgName} is ready to download.\n\nOpen in MetricOra: ${params.appUrl}`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your report <strong>${params.reportLabel}</strong> in <strong>${params.orgName}</strong> is ready to download.</p><p><a href="${params.appUrl}">Download in MetricOra</a></p>`;
   return { subject, html, text };
 }
 
@@ -148,8 +148,8 @@ export function submissionReviewedEmail(params: {
   const subject = `Your submission was ${statusLabel}`;
   const noteHtml = params.reviewNote ? `<p><strong>Reviewer note:</strong> ${params.reviewNote}</p>` : "";
   const noteText = params.reviewNote ? `\n\nReviewer note: ${params.reviewNote}` : "";
-  const text = `Hi ${params.recipientName},\n\nYour submission in ${params.orgName} was ${statusLabel}.${noteText}\n\nOpen in CarbonSite: ${params.appUrl}`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your submission in <strong>${params.orgName}</strong> was <strong>${statusLabel}</strong>.</p>${noteHtml}<p><a href="${params.appUrl}">View in CarbonSite</a></p>`;
+  const text = `Hi ${params.recipientName},\n\nYour submission in ${params.orgName} was ${statusLabel}.${noteText}\n\nOpen in MetricOra: ${params.appUrl}`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your submission in <strong>${params.orgName}</strong> was <strong>${statusLabel}</strong>.</p>${noteHtml}<p><a href="${params.appUrl}">View in MetricOra</a></p>`;
   return { subject, html, text };
 }
 
@@ -183,7 +183,7 @@ export function supplierDataRequestEmail(params: {
     `If you have questions, reply to this email.`,
     ``,
     `Thank you,`,
-    `The CarbonSite team on behalf of ${params.orgName}`,
+    `The MetricOra team on behalf of ${params.orgName}`,
   ].join("\n");
 
   const html = `
@@ -245,17 +245,17 @@ export function supplierPasswordExpiringEmail(params: {
   daysRemaining: number;
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
-  const subject = `Action required: your CarbonSite password expires in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
+  const subject = `Action required: your MetricOra password expires in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
   const text = [
     `Hi ${params.recipientName},`,
     ``,
-    `Your CarbonSite password for ${params.orgName} will expire in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}.`,
+    `Your MetricOra password for ${params.orgName} will expire in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}.`,
     ``,
     `Please update your password before it expires to avoid losing access.`,
     ``,
     `Update your password: ${params.appUrl}`,
   ].join("\n");
-  const html = `<p>Hi ${params.recipientName},</p><p>Your CarbonSite password for <strong>${params.orgName}</strong> will expire in <strong>${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}</strong>.</p><p>Please update your password before it expires to avoid losing access.</p><p><a href="${params.appUrl}">Update your password</a></p>`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your MetricOra password for <strong>${params.orgName}</strong> will expire in <strong>${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}</strong>.</p><p>Please update your password before it expires to avoid losing access.</p><p><a href="${params.appUrl}">Update your password</a></p>`;
   return { subject, html, text };
 }
 
@@ -263,9 +263,9 @@ export function supplierAccountTerminatedEmail(params: {
   recipientName: string;
   orgName: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
-  const subject = `Your CarbonSite supplier account has been closed`;
-  const text = `Hi ${params.recipientName},\n\nYour supplier account with ${params.orgName} on CarbonSite has been closed. If you believe this is an error, please contact ${params.orgName} directly.`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your supplier account with <strong>${params.orgName}</strong> on CarbonSite has been closed.</p><p>If you believe this is an error, please contact ${params.orgName} directly.</p>`;
+  const subject = `Your MetricOra supplier account has been closed`;
+  const text = `Hi ${params.recipientName},\n\nYour supplier account with ${params.orgName} on MetricOra has been closed. If you believe this is an error, please contact ${params.orgName} directly.`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your supplier account with <strong>${params.orgName}</strong> on MetricOra has been closed.</p><p>If you believe this is an error, please contact ${params.orgName} directly.</p>`;
   return { subject, html, text };
 }
 
@@ -275,17 +275,17 @@ export function supplierAccountExpiringEmail(params: {
   daysRemaining: number;
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
-  const subject = `Your CarbonSite supplier access expires in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
+  const subject = `Your MetricOra supplier access expires in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
   const text = [
     `Hi ${params.recipientName},`,
     ``,
-    `Your supplier access to ${params.orgName} on CarbonSite will expire in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}.`,
+    `Your supplier access to ${params.orgName} on MetricOra will expire in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}.`,
     ``,
     `If you need continued access, please contact ${params.orgName} to renew your account.`,
     ``,
     `View your account: ${params.appUrl}`,
   ].join("\n");
-  const html = `<p>Hi ${params.recipientName},</p><p>Your supplier access to <strong>${params.orgName}</strong> on CarbonSite will expire in <strong>${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}</strong>.</p><p>If you need continued access, please contact ${params.orgName} to renew your account.</p><p><a href="${params.appUrl}">View your account</a></p>`;
+  const html = `<p>Hi ${params.recipientName},</p><p>Your supplier access to <strong>${params.orgName}</strong> on MetricOra will expire in <strong>${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}</strong>.</p><p>If you need continued access, please contact ${params.orgName} to renew your account.</p><p><a href="${params.appUrl}">View your account</a></p>`;
   return { subject, html, text };
 }
 
@@ -336,7 +336,7 @@ export function securityAlertEmail(params: {
   const text = [
     `Hi ${params.recipientName},`,
     ``,
-    `A security event was detected in your CarbonSite organisation (${params.orgName}).`,
+    `A security event was detected in your MetricOra organisation (${params.orgName}).`,
     ``,
     `  Type: ${params.alertType}`,
     `  Detail: ${params.detail}`,
@@ -345,6 +345,6 @@ export function securityAlertEmail(params: {
     ``,
     `Review security logs: ${params.appUrl}`,
   ].join("\n");
-  const html = `<p>Hi ${params.recipientName},</p><p>A security event was detected in your CarbonSite organisation <strong>${params.orgName}</strong>.</p><p><strong>Type:</strong> ${params.alertType}<br><strong>Detail:</strong> ${params.detail}</p><p>If this was not you, please secure your account immediately.</p><p><a href="${params.appUrl}">Review security logs</a></p>`;
+  const html = `<p>Hi ${params.recipientName},</p><p>A security event was detected in your MetricOra organisation <strong>${params.orgName}</strong>.</p><p><strong>Type:</strong> ${params.alertType}<br><strong>Detail:</strong> ${params.detail}</p><p>If this was not you, please secure your account immediately.</p><p><a href="${params.appUrl}">Review security logs</a></p>`;
   return { subject, html, text };
 }

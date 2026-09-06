@@ -9,8 +9,8 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Calculation Engine - CarbonSite",
-  description: "See how CarbonSite calculates emissions from activity records to audit-ready results. GHG Protocol methodology with DEFRA, EPA, and SustainMetrics factors.",
+  title: "Calculation Engine - MetricOra",
+  description: "See how MetricOra calculates emissions from activity records to audit-ready results. GHG Protocol methodology with DEFRA, EPA, and SustainMetrics factors.",
 };
 
 export default function CalculationPage() {

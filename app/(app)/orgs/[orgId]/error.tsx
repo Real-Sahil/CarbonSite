@@ -12,7 +12,7 @@ export default function OrgError({
   const [resetCount, setResetCount] = useState(0);
 
   useEffect(() => {
-    console.error("[CarbonSite] Org page error:", {
+    console.error("[MetricOra] Org page error:", {
       message: error.message,
       digest: error.digest,
       stack: error.stack,

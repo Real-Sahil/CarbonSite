@@ -1,4 +1,4 @@
-carbonsite:
+metricora:
   outputs:
     dev:
       type: postgres
@@ -6,7 +6,7 @@ carbonsite:
       port: "{{ env_var('DB_PORT', '5432') | int }}"
       user: "{{ env_var('DB_USER', 'postgres') }}"
       password: "{{ env_var('DB_PASSWORD', '') }}"
-      dbname: "{{ env_var('DB_NAME', 'carbonsite') }}"
+      dbname: "{{ env_var('DB_NAME', 'metricora') }}"
       schema: public
       threads: 4
       keepalives_idle: 0
@@ -16,7 +16,7 @@ carbonsite:
       port: "{{ env_var('DB_PORT', '5432') | int }}"
       user: "{{ env_var('DB_USER', 'postgres') }}"
       password: "{{ env_var('DB_PASSWORD', '') }}"
-      dbname: "{{ env_var('DB_NAME', 'carbonsite') }}"
+      dbname: "{{ env_var('DB_NAME', 'metricora') }}"
       schema: public
       threads: 8
       keepalives_idle: 0

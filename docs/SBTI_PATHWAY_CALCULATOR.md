@@ -42,7 +42,7 @@ Core functions for pathway calculation and recommendations:
 
 **POST** — Calculate pathways
 ```bash
-curl -X POST https://carbonsite.app/api/orgs/org_123/targets/sbti-pathway \
+curl -X POST https://metricora.co.uk/api/orgs/org_123/targets/sbti-pathway \
   -H "Authorization: Bearer token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -93,7 +93,7 @@ curl -X POST https://carbonsite.app/api/orgs/org_123/targets/sbti-pathway \
 
 **GET** — Retrieve current emissions
 ```bash
-curl https://carbonsite.app/api/orgs/org_123/targets/sbti-pathway \
+curl https://metricora.co.uk/api/orgs/org_123/targets/sbti-pathway \
   -H "Authorization: Bearer token"
 ```
 

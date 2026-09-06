@@ -1,6 +1,6 @@
 # Sub-Processor & Data Processing Agreement Inventory
 
-**Organization:** CarbonSite  
+**Organization:** MetricOra  
 **Last Updated:** August 2026  
 **Purpose:** GDPR Art. 28 compliance; transparency on third-party data processors
 
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-CarbonSite uses seven primary sub-processors to deliver the platform. All maintain Data Processing Agreements (DPAs) or Standard Contractual Clauses (SCCs) as required by UK GDPR. This document lists each processor, confirms DPA status, and identifies any data residency constraints.
+MetricOra uses seven primary sub-processors to deliver the platform. All maintain Data Processing Agreements (DPAs) or Standard Contractual Clauses (SCCs) as required by UK GDPR. This document lists each processor, confirms DPA status, and identifies any data residency constraints.
 
 ---
 
@@ -229,9 +229,9 @@ When adding or removing a sub-processor:
 
 ## 9. Contact & Escalation
 
-- **DPA Questions:** privacy@carbonsite.io
-- **Sub-Processor Issues:** Escalate via support@carbonsite.io → legal team
-- **ICO Inquiry:** compliance@carbonsite.io (redirect to DPO/legal)
+- **DPA Questions:** privacy@metricora.io
+- **Sub-Processor Issues:** Escalate via support@metricora.io → legal team
+- **ICO Inquiry:** compliance@metricora.io (redirect to DPO/legal)
 - **Audit Access:** Legal team coordinates SOC 2 / audit responses
 
 ---

@@ -1,6 +1,6 @@
 // ghg-calculator HTTP client wrapper
 // Communicates with ghg-calculator FastMCP service for calculation & factor lookup
-// Fallback: if unavailable, uses current CarbonSite engine
+// Fallback: if unavailable, uses current MetricOra engine
 
 export type GhgCalculatorConfig = {
   apiUrl: string;

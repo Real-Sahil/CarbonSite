@@ -32,7 +32,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   secret:
     process.env.BETTER_AUTH_SECRET ||
-    (isNextBuild ? "carbonsite-build-time-secret-not-used-at-runtime" : undefined),
+    (isNextBuild ? "metricora-build-time-secret-not-used-at-runtime" : undefined),
   baseURL:
     process.env.BETTER_AUTH_URL ||
     (isNextBuild ? "http://localhost:3000" : undefined),
@@ -46,11 +46,11 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendTransactionalEmail({
         to: user.email,
-        subject: "Reset your CarbonSite password",
+        subject: "Reset your MetricOra password",
         text: [
           `Hello ${user.name || "there"},`,
           "",
-          "Someone requested a password reset for your CarbonSite account.",
+          "Someone requested a password reset for your MetricOra account.",
           "Click the link below to choose a new password (expires in 1 hour):",
           "",
           url,
@@ -67,11 +67,11 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       await sendTransactionalEmail({
         to: user.email,
-        subject: "Verify your CarbonSite email",
+        subject: "Verify your MetricOra email",
         text: [
           `Hello ${user.name || "there"},`,
           "",
-          "Confirm this email address to finish securing your CarbonSite account:",
+          "Confirm this email address to finish securing your MetricOra account:",
           url,
           "",
           "If you did not request this, you can ignore this email.",

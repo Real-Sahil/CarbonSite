@@ -19,7 +19,7 @@ This guide walks through setting up OAuth 2.0 authentication for Xero, QuickBook
 1. Go to https://developer.xero.com/app/manage
 2. Click **"Create an app"**
 3. Fill in the form:
-   - **App name:** "CarbonSite"
+   - **App name:** "MetricOra"
    - **Company name:** Your organization name
    - **App type:** "Web app"
    - **Redirect URLs:** 
@@ -42,12 +42,12 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 2. Add three variables:
    - `XERO_CLIENT_ID` = your client ID
    - `XERO_CLIENT_SECRET` = your client secret
-   - `NEXT_PUBLIC_APP_URL` = your production domain (e.g., `https://carbonsite.example.com`)
+   - `NEXT_PUBLIC_APP_URL` = your production domain (e.g., `https://metricora.example.com`)
 
 ### Step 3: Connect Xero in the App
 
 1. Start the dev server: `pnpm dev`
-2. Login to your CarbonSite org as an admin
+2. Login to your MetricOra org as an admin
 3. Navigate to **Integrations → Accounting Software**
 4. Click **"Connect Xero"** button
 5. You'll be redirected to Xero login
@@ -81,7 +81,7 @@ GET /api/orgs/{orgId}/integrations/xero
 1. Go to https://developer.intuit.com/app/developer/myapps
 2. Click **"Create an app"**
 3. Fill in the form:
-   - **App name:** "CarbonSite"
+   - **App name:** "MetricOra"
    - **App type:** "Business"
    - **Use case:** "Read accounting data"
 4. You'll be taken to your app dashboard
@@ -117,7 +117,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ### Step 4: Connect QuickBooks in the App
 
 1. Make sure dev server is running: `pnpm dev`
-2. Login to your CarbonSite org as an admin
+2. Login to your MetricOra org as an admin
 3. Navigate to **Integrations → Accounting Software**
 4. Click **"Connect QuickBooks"** button
 5. You'll be redirected to QuickBooks login
@@ -150,7 +150,7 @@ isn't implemented yet (no QuickBooks SDK integration) — see docs/ACCOUNTING_SY
 2. Click **"Register"** or login to your Sage account
 3. Click **"Create an app"** or **"New application"**
 4. Fill in the form:
-   - **Application name:** "CarbonSite"
+   - **Application name:** "MetricOra"
    - **Application type:** "Web application"
    - **Description:** "Automated invoice and emissions tracking"
 5. Under **Redirect URIs**, add:
@@ -178,7 +178,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ### Step 3: Connect Sage in the App
 
 1. Start the dev server: `pnpm dev`
-2. Login to your CarbonSite org as an admin
+2. Login to your MetricOra org as an admin
 3. Navigate to **Integrations → Accounting Software**
 4. Click **"Connect Sage"** button
 5. You'll be redirected to Sage login
@@ -217,7 +217,7 @@ isn't implemented yet (no Sage SDK integration) — see docs/ACCOUNTING_SYNC_SET
 
 ### Issue: "Invalid redirect_uri" (OAuth provider error)
 
-**Cause:** The redirect URI registered with the OAuth provider doesn't match what CarbonSite is sending.
+**Cause:** The redirect URI registered with the OAuth provider doesn't match what MetricOra is sending.
 
 **Solution:**
 1. Verify the redirect URI in your OAuth app settings matches exactly:
@@ -231,10 +231,10 @@ isn't implemented yet (no Sage SDK integration) — see docs/ACCOUNTING_SYNC_SET
 **Cause:** OAuth token has expired and can't be refreshed, or refresh token was revoked.
 
 **Solution:**
-1. In your accounting platform (Xero/QB/Sage), revoke the CarbonSite app's access:
-   - **Xero:** Settings → Connected apps → find "CarbonSite" → disconnect
+1. In your accounting platform (Xero/QB/Sage), revoke the MetricOra app's access:
+   - **Xero:** Settings → Connected apps → find "MetricOra" → disconnect
    - **QuickBooks:** Account Settings → Security → Connected apps → revoke
-   - **Sage:** Account Settings → Apps & integrations → revoke "CarbonSite"
+   - **Sage:** Account Settings → Apps & integrations → revoke "MetricOra"
 2. Re-authenticate: Go back to Integrations → Accounting Software → click "Connect [Provider]" again
 
 ### Issue: No invoices syncing
@@ -319,7 +319,7 @@ for what "connected" does and doesn't get you per provider.
 1. ✅ Register OAuth apps on Xero, QuickBooks, and/or Sage developer portals
 2. ✅ Set `CLIENT_ID` and `CLIENT_SECRET` in `.env.local` and Vercel
 3. ✅ Make sure `NEXT_PUBLIC_APP_URL` is set correctly
-4. ✅ Connect accounting platform in CarbonSite UI
+4. ✅ Connect accounting platform in MetricOra UI
 5. ✅ Test invoice syncing by creating test invoices and clicking "Sync Now"
 6. ✅ Monitor Activity Log for sync events and errors
 7. ✅ Set up automated 2x daily sync (see docs/ACCOUNTING_SYNC_SETUP.md)

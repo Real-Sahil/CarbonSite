@@ -236,7 +236,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
           <label className="text-xs text-[#374151] tracking-[-0.36px]">CSV / XLSX file</label>
           <a
             href={`/api/orgs/${orgId}/imports/template`}
-            download="carbonsite-import-template.xlsx"
+            download="metricora-import-template.xlsx"
             className="flex items-center gap-1 text-xs text-[#f97316] hover:text-[#ea580c] transition-colors"
             tabIndex={busy ? -1 : 0}
           >

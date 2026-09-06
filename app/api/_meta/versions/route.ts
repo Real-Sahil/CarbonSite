@@ -38,9 +38,9 @@ export async function GET() {
     current: "1.0",
     latest: "2.0",
     info: {
-      documentation: "https://docs.carbonsite.app/api",
-      status: "https://status.carbonsite.app",
-      support: "support@carbonsite.app",
+      documentation: "https://docs.metricora.co.uk/api",
+      status: "https://status.metricora.co.uk",
+      support: "support@metricora.co.uk",
     },
   });
 }

@@ -13,7 +13,7 @@ Surface assumptions and confusion — never hide them.
 - State what success looks like before writing the first line
 - If the context is ambiguous (e.g. "fix the bug"), diagnose first, then act
 
-**Applies to CarbonSite:** Before implementing a calculation, state the formula interpretation. Before touching auth middleware, confirm the role boundary.
+**Applies to MetricOra:** Before implementing a calculation, state the formula interpretation. Before touching auth middleware, confirm the role boundary.
 
 ## 2. Simplicity First
 
@@ -24,7 +24,7 @@ Minimum code that solves the problem. Nothing speculative.
 - No "future-proofing" unless explicitly asked
 - Three similar lines are better than a clever abstraction that adds cognitive load
 
-**Applies to CarbonSite:** The calculation engine must be readable by an auditor, not a software engineer. If simplicity and cleverness conflict, simplicity wins.
+**Applies to MetricOra:** The calculation engine must be readable by an auditor, not a software engineer. If simplicity and cleverness conflict, simplicity wins.
 
 ## 3. Surgical Changes
 
@@ -35,7 +35,7 @@ Touch only what you must. Clean up only your own mess.
 - Do not refactor surrounding areas when fixing a bug
 - Do not rename variables that are outside the scope of the task
 
-**Applies to CarbonSite:** A fix to `factor-selector.ts` does not justify cleaning up `units.ts`. Scope is king.
+**Applies to MetricOra:** A fix to `factor-selector.ts` does not justify cleaning up `units.ts`. Scope is king.
 
 ## 4. Goal-Driven Execution
 
@@ -46,4 +46,4 @@ Define verifiable success criteria before starting. Loop until verified.
 - After implementing, verify against the original criteria — not just "it compiles"
 - If verification reveals a gap, fix and re-verify rather than declaring partial success
 
-**Applies to CarbonSite:** A calculation change is not done until: unit test passes with the correct CO2e value AND the published snapshot immutability invariant is confirmed unbroken.
+**Applies to MetricOra:** A calculation change is not done until: unit test passes with the correct CO2e value AND the published snapshot immutability invariant is confirmed unbroken.

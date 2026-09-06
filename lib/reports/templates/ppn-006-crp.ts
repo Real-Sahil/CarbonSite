@@ -368,7 +368,7 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
   <div class="footer">
     ${esc(data.orgName)} — Carbon Reduction Plan — ${esc(data.periodLabel)} —
     Generated ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} —
-    Prepared using CarbonSite (GHG Protocol v2026-01, GWP AR6)
+    Prepared using MetricOra (GHG Protocol v2026-01, GWP AR6)
   </div>
 
 </div>

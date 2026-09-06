@@ -82,7 +82,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="carbonsite-export-${orgId}.json"`,
+        "Content-Disposition": `attachment; filename="metricora-export-${orgId}.json"`,
       },
     });
   } catch (err) {

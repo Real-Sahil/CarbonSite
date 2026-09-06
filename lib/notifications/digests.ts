@@ -165,8 +165,8 @@ function generateDigestHTML(template: DigestTemplate): string {
         </div>
 
         <div class="footer">
-          <p>This is an automated digest from CarbonSite. Manage your preferences in account settings.</p>
-          <p>&copy; 2026 CarbonSite. All rights reserved.</p>
+          <p>This is an automated digest from MetricOra. Manage your preferences in account settings.</p>
+          <p>&copy; 2026 MetricOra. All rights reserved.</p>
         </div>
       </div>
     </body>

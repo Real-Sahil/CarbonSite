@@ -7,7 +7,7 @@ import { VideoBackground } from "@/components/ui/video-background";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Resources - CarbonSite",
+  title: "Resources - MetricOra",
   description: "Pilot planning, evidence standards, emission factor guidance, methodology notes, and GHG reporting references.",
 };
 
@@ -64,11 +64,11 @@ const GUIDES = [
     items: [
       {
         title: "GHG Protocol Corporate Standard",
-        text: "The calculation methodology used by CarbonSite is ghg-protocol-v2026-01. Scope 1 includes direct emissions from owned or controlled sources. Scope 2 covers purchased electricity using location-based or market-based methods. Scope 3 covers 15 categories in the standard.",
+        text: "The calculation methodology used by MetricOra is ghg-protocol-v2026-01. Scope 1 includes direct emissions from owned or controlled sources. Scope 2 covers purchased electricity using location-based or market-based methods. Scope 3 covers 15 categories in the standard.",
       },
       {
         title: "SECR reporting requirements",
-        text: "Streamlined Energy and Carbon Reporting applies to UK-quoted companies, large LLPs, and large unquoted companies. Minimum disclosure: energy and carbon figures, intensity ratio, methodology summary. CarbonSite audit packages include the required methodology statement.",
+        text: "Streamlined Energy and Carbon Reporting applies to UK-quoted companies, large LLPs, and large unquoted companies. Minimum disclosure: energy and carbon figures, intensity ratio, methodology summary. MetricOra audit packages include the required methodology statement.",
       },
       {
         title: "Factor library versioning policy",

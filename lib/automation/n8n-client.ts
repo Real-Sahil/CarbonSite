@@ -6,7 +6,7 @@
  * 3. Report ready notifications
  */
 
-const N8N_BASE_URL = process.env.N8N_WEBHOOK_URL || 'https://n8n.carbonsite.app/webhook';
+const N8N_BASE_URL = process.env.N8N_WEBHOOK_URL || 'https://n8n.metricora.co.uk/webhook';
 
 export interface WorkflowPayload {
   workflowName: string;

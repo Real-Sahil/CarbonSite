@@ -42,7 +42,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.5)]">
               <Leaf className="h-3.5 w-3.5 text-white" />
             </span>
-            <span className="text-white font-semibold text-[15px] tracking-tight">CarbonSite</span>
+            <span className="text-white font-semibold text-[15px] tracking-tight">MetricOra</span>
           </Link>
 
           {/* Main copy */}
@@ -104,7 +104,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
             <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.45)]">
               <Leaf className="h-4 w-4 text-white" />
             </span>
-            <span className="text-white font-semibold text-lg tracking-tight">CarbonSite</span>
+            <span className="text-white font-semibold text-lg tracking-tight">MetricOra</span>
           </Link>
           <p className="text-xs text-white/35 mt-2">GHG Emissions Tracking</p>
         </div>

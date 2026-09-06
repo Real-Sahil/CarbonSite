@@ -1,6 +1,6 @@
 # Security
 
-This document tracks security-relevant architectural decisions for CarbonSite. It is a living reference, not a finished policy — expanded incident-response, breach-notification, and DSAR-handling sections land here as that work progresses.
+This document tracks security-relevant architectural decisions for MetricOra. It is a living reference, not a finished policy — expanded incident-response, breach-notification, and DSAR-handling sections land here as that work progresses.
 
 ## Authorization model
 
@@ -34,4 +34,4 @@ That said, RLS still matters as a second, independent surface: this project's Po
 
 ## Open items
 
-See the CarbonSite UK regulatory/security compliance plan (Track A) for the full roadmap: DSAR export/erasure, MFA, account lockout, CSP nonce migration, field-level encryption for GPS/postcode data, monitoring/alerting, and the documentation/DPA workstream this file will absorb over time.
+See the MetricOra UK regulatory/security compliance plan (Track A) for the full roadmap: DSAR export/erasure, MFA, account lockout, CSP nonce migration, field-level encryption for GPS/postcode data, monitoring/alerting, and the documentation/DPA workstream this file will absorb over time.

@@ -3,15 +3,15 @@ import { verifyEnvironmentConfiguration } from "../verify";
 
 const baseEnv = {
   BETTER_AUTH_SECRET: "secret",
-  BETTER_AUTH_URL: "https://app.carbonsite.example",
-  DATABASE_URL: "postgresql://user:pass@localhost:5432/carbonsite",
+  BETTER_AUTH_URL: "https://app.metricora.example",
+  DATABASE_URL: "postgresql://user:pass@localhost:5432/metricora",
   EMAIL_DRIVER: "console",
   JOB_PROCESSING_MODE: "inline",
-  NEXT_PUBLIC_APP_URL: "https://app.carbonsite.example",
+  NEXT_PUBLIC_APP_URL: "https://app.metricora.example",
   POSTCODES_BASE_URL: "https://api.postcodes.io",
   OSRM_BASE_URL: "https://router.project-osrm.org",
   STORAGE_DRIVER: "local",
-  TRUSTED_ORIGINS: "https://app.carbonsite.example",
+  TRUSTED_ORIGINS: "https://app.metricora.example",
 };
 
 describe("verifyEnvironmentConfiguration", () => {
@@ -84,18 +84,18 @@ describe("verifyEnvironmentConfiguration", () => {
     const result = verifyEnvironmentConfiguration({
       ...baseEnv,
       BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef",
-      BETTER_AUTH_URL: "http://app.carbonsite.example",
+      BETTER_AUTH_URL: "http://app.metricora.example",
       EMAIL_DRIVER: "resend",
-      EMAIL_FROM: "noreply@carbonsite.example",
-      NEXT_PUBLIC_APP_URL: "http://app.carbonsite.example",
+      EMAIL_FROM: "noreply@metricora.example",
+      NEXT_PUBLIC_APP_URL: "http://app.metricora.example",
       NODE_ENV: "production",
       RESEND_API_KEY: "re_123",
       STORAGE_ACCESS_KEY_ID: "access",
-      STORAGE_BUCKET: "carbonsite",
+      STORAGE_BUCKET: "metricora",
       STORAGE_DRIVER: "r2",
       STORAGE_ENDPOINT: "https://example.r2.cloudflarestorage.com",
       STORAGE_SECRET_ACCESS_KEY: "secret",
-      TRUSTED_ORIGINS: "https://app.carbonsite.example,http://preview.carbonsite.example",
+      TRUSTED_ORIGINS: "https://app.metricora.example,http://preview.metricora.example",
     });
 
     expect(result.ok).toBe(false);

@@ -100,7 +100,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       status: 200,
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": 'attachment; filename="carbonsite-import-template.xlsx"',
+        "Content-Disposition": 'attachment; filename="metricora-import-template.xlsx"',
         "Content-Length": buffer.length.toString(),
       },
     });

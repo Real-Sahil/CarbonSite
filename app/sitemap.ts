@@ -28,7 +28,7 @@ const STATIC_PAGES = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://carbonsite.ai';
+  const baseUrl = 'https://metricora.ai';
 
   // Static pages
   const staticEntries = STATIC_PAGES.map(page => ({

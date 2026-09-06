@@ -18,7 +18,7 @@ import {
 import { sendPushToUser } from "./fcm";
 import { notificationPresentation } from "./presentation";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite-rosy.vercel.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://metricora-rosy.vercel.app";
 
 // Persist an in-app copy so the notification centre always has the item, even
 // if the email/push channels below fail. Failures here are logged, never thrown,
@@ -213,7 +213,7 @@ export async function processNotification(data: NotificationJobData): Promise<vo
         sendEmail({ to: recipient.email, ...template }),
         sendPushToUser(d.recipientUserId, {
           title: "Password expiring soon",
-          body: `Your CarbonSite password expires in ${daysRemaining} day${daysRemaining !== 1 ? "s" : ""}. Update it now.`,
+          body: `Your MetricOra password expires in ${daysRemaining} day${daysRemaining !== 1 ? "s" : ""}. Update it now.`,
           data: { type: "supplier_password_expiring", orgId: d.orgId },
         }),
       ]);

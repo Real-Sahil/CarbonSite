@@ -161,8 +161,8 @@ export default function WebhooksPage() {
           Outbound Webhooks
         </h2>
         <p className="text-sm text-zinc-500 mt-0.5">
-          CarbonSite will POST a signed JSON payload to your endpoint when selected events occur.
-          Verify deliveries using the <code className="text-xs bg-zinc-100 px-1 py-0.5 rounded">X-CarbonSite-Signature</code> header (HMAC-SHA256).
+          MetricOra will POST a signed JSON payload to your endpoint when selected events occur.
+          Verify deliveries using the <code className="text-xs bg-zinc-100 px-1 py-0.5 rounded">X-MetricOra-Signature</code> header (HMAC-SHA256).
         </p>
       </div>
 
@@ -199,7 +199,7 @@ export default function WebhooksPage() {
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://your-server.example.com/webhooks/carbonsite"
+            placeholder="https://your-server.example.com/webhooks/metricora"
             className="h-8 text-sm font-mono"
             type="url"
           />
@@ -332,7 +332,7 @@ export default function WebhooksPage() {
       <div className="rounded-[10px] border border-[#E5E7EB] bg-[#f9fafb] p-4 text-sm text-zinc-600">
         <p className="font-medium text-zinc-800 mb-2">Verifying deliveries</p>
         <p className="text-xs text-zinc-500 mb-2">
-          Each request includes a <code className="bg-zinc-100 px-1 rounded">X-CarbonSite-Signature</code> header.
+          Each request includes a <code className="bg-zinc-100 px-1 rounded">X-MetricOra-Signature</code> header.
           Verify with HMAC-SHA256:
         </p>
         <pre className="bg-zinc-900 text-zinc-100 rounded px-3 py-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap">
@@ -340,7 +340,7 @@ export default function WebhooksPage() {
   .createHmac("sha256", webhookSecret)
   .update(rawBody)
   .digest("hex");
-if (sig !== req.headers["x-carbonsite-signature"]) {
+if (sig !== req.headers["x-metricora-signature"]) {
   return res.status(401).end();
 }`}
         </pre>

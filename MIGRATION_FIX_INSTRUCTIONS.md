@@ -11,7 +11,7 @@ The `scripts/reset-migrations.ts` script marked this migration as applied withou
 ### Option 1: Automatic via Prisma (Recommended if you can run CLI in production environment)
 ```bash
 # Set DATABASE_URL to production database URL
-export DATABASE_URL="postgresql://user:password@host:port/carbonsite"
+export DATABASE_URL="postgresql://user:password@host:port/metricora"
 
 # Mark the migration as resolved
 pnpm prisma migrate resolve --applied 20260831000020_catchup_supplier_reports

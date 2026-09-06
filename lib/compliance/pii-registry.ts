@@ -18,7 +18,7 @@
 // stays intact for the organisation's own compliance/audit obligations.
 //
 // Only tables holding PII that ISN'T just a User FK — free-text content,
-// or a contact address for someone who may not even be a CarbonSite user
+// or a contact address for someone who may not even be a MetricOra user
 // (a supplier contact) — need their own "redact" logic.
 
 import type { Prisma } from "@prisma/client";

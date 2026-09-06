@@ -15,4 +15,4 @@ Disallow: /admin/
 Crawl-delay: 0
 
 # Sitemap
-Sitemap: https://carbonsite.ai/sitemap.xml
+Sitemap: https://metricora.ai/sitemap.xml

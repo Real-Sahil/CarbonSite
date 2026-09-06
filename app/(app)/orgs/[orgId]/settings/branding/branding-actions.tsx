@@ -139,7 +139,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
   }
 
   const subdomainPreview = subdomain
-    ? `https://${subdomain}.carbonsite.app`
+    ? `https://${subdomain}.metricora.co.uk`
     : null;
 
   return (
@@ -360,7 +360,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
               className="max-w-sm"
             />
             <p className="text-xs text-slate-500 tracking-[-0.36px]">
-              Point your DNS CNAME to <code className="font-mono bg-slate-100 px-1 rounded text-slate-700">cname.carbonsite.app</code>, then enter your domain here.
+              Point your DNS CNAME to <code className="font-mono bg-slate-100 px-1 rounded text-slate-700">cname.metricora.co.uk</code>, then enter your domain here.
             </p>
           </div>
         )}

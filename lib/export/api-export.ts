@@ -59,14 +59,14 @@ export interface ActivityRecordExport {
 export function dashboardToJSONLD(dashboard: DashboardSnapshot): Record<string, unknown> {
   return {
     "@context": {
-      "@vocab": "https://carbonsite.io/schema/emissions#",
+      "@vocab": "https://metricora.io/schema/emissions#",
       qudt: "http://qudt.org/schema/qudt/",
       skos: "http://www.w3.org/2004/02/skos/core#",
     },
     "@type": "EmissionInventory",
-    "@id": `urn:carbonsite:snapshot:${dashboard.reportingPeriodId}`,
+    "@id": `urn:metricora:snapshot:${dashboard.reportingPeriodId}`,
     organization: {
-      "@id": `urn:carbonsite:org:${dashboard.organizationId}`,
+      "@id": `urn:metricora:org:${dashboard.organizationId}`,
     },
     reportingPeriod: dashboard.reportingPeriodId,
     publishedAt: dashboard.publishedAt.toISOString(),

@@ -1,8 +1,8 @@
-# CarbonSite Production Roadmap
+# MetricOra Production Roadmap
 
 ## Summary
 
-CarbonSite is a multi-tenant GHG emissions platform for small-to-mid-market organisations, with construction and field-capture workflows as the first vertical wedge. The production architecture is Next.js on Vercel, Better Auth, Postgres via Prisma, Cloudflare R2-compatible object storage, inline job processing with optional pg-boss workers, and a Flutter mobile app for field submissions.
+MetricOra is a multi-tenant GHG emissions platform for small-to-mid-market organisations, with construction and field-capture workflows as the first vertical wedge. The production architecture is Next.js on Vercel, Better Auth, Postgres via Prisma, Cloudflare R2-compatible object storage, inline job processing with optional pg-boss workers, and a Flutter mobile app for field submissions.
 
 The production bar is simple: no static business data, no fake metrics, no placeholder workflows, and no UI that looks generated. Every visible operational state must come from authenticated sessions, organisation-scoped database records, storage objects, job state, calculation runs, published snapshots, reports, or audit logs.
 

@@ -1,6 +1,6 @@
 # Zapier Integration Setup Guide
 
-This document explains how to register the CarbonSite app with Zapier Platform and configure it for use.
+This document explains how to register the MetricOra app with Zapier Platform and configure it for use.
 
 ## Overview
 
@@ -15,11 +15,11 @@ The Zapier integration enables users to:
 1. Go to [https://platform.zapier.com/apps](https://platform.zapier.com/apps)
 2. Click "Create New App" or "My Apps"
 3. Fill in:
-   - **App Name:** CarbonSite
+   - **App Name:** MetricOra
    - **App Description:** Emissions tracking platform for multi-tenant organizations
    - **Category:** Business Intelligence & Analytics
-   - **Homepage URL:** https://carbonsite.app
-   - **Support Email:** support@carbonsite.app
+   - **Homepage URL:** https://metricora.co.uk
+   - **Support Email:** support@metricora.co.uk
 
 4. Click "Create"
 
@@ -31,12 +31,12 @@ The Zapier integration enables users to:
 
    | Field | Value |
    |-------|-------|
-   | **Authorization URL** | `https://your-carbonsite-domain.com/api/zapier/oauth/authorize` |
-   | **Access Token URL** | `https://your-carbonsite-domain.com/api/zapier/oauth/token` |
-   | **Refresh URL** | `https://your-carbonsite-domain.com/api/zapier/oauth/refresh` |
+   | **Authorization URL** | `https://your-metricora-domain.com/api/zapier/oauth/authorize` |
+   | **Access Token URL** | `https://your-metricora-domain.com/api/zapier/oauth/token` |
+   | **Refresh URL** | `https://your-metricora-domain.com/api/zapier/oauth/refresh` |
    | **Scopes** | `read:organization write:records read:facilities` |
 
-4. Set **Unique Redirect URI:** `https://zapier.com/oauth/callback/carbonsite`
+4. Set **Unique Redirect URI:** `https://zapier.com/oauth/callback/metricora`
 
 5. Copy your Zapier credentials:
    - **Client ID** → `ZAPIER_CLIENT_ID`
@@ -53,7 +53,7 @@ Go to "Triggers" in your Zapier app and create:
 3. **Noun:** Activity Record
 4. **Description:** Triggers when a new emissions record is created
 5. **Key:** activity_record.created
-6. **Webhook URL:** `https://your-carbonsite-domain.com/api/zapier/webhooks`
+6. **Webhook URL:** `https://your-metricora-domain.com/api/zapier/webhooks`
 7. **Output Fields:** 
    - quantity (number)
    - unit (text)
@@ -81,8 +81,8 @@ Go to "Actions" and create:
 1. Click "Add Action"
 2. **Name:** `activity_record.create`
 3. **Noun:** Activity Record
-4. **Description:** Create a new activity record in CarbonSite
-5. **URL:** `https://your-carbonsite-domain.com/api/zapier/actions/activity-record-create`
+4. **Description:** Create a new activity record in MetricOra
+5. **URL:** `https://your-metricora-domain.com/api/zapier/actions/activity-record-create`
 6. **Method:** POST
 7. **Auth:** OAuth 2.0
 8. **Input Fields:**
@@ -101,7 +101,7 @@ Go to "Actions" and create:
 2. **Name:** `supplier.create`
 3. **Noun:** Supplier
 4. **Description:** Create a new supplier account
-5. **URL:** `https://your-carbonsite-domain.com/api/zapier/actions/supplier-create`
+5. **URL:** `https://your-metricora-domain.com/api/zapier/actions/supplier-create`
 6. **Method:** POST
 7. **Input Fields:**
    - `email` (email, required)
@@ -119,7 +119,7 @@ Resources allow dynamic dropdowns (e.g., facility lists change per org).
 
 - **Name:** Categories
 - **Key:** categories
-- **List URL:** `https://your-carbonsite-domain.com/api/zapier/resources?type=categories&orgId={{authData.organizationId}}`
+- **List URL:** `https://your-metricora-domain.com/api/zapier/resources?type=categories&orgId={{authData.organizationId}}`
 - **ID Field:** id
 - **Label Field:** name
 
@@ -127,7 +127,7 @@ Resources allow dynamic dropdowns (e.g., facility lists change per org).
 
 - **Name:** Facilities
 - **Key:** facilities
-- **List URL:** `https://your-carbonsite-domain.com/api/zapier/resources?type=facilities&orgId={{authData.organizationId}}`
+- **List URL:** `https://your-metricora-domain.com/api/zapier/resources?type=facilities&orgId={{authData.organizationId}}`
 - **ID Field:** id
 - **Label Field:** name
 
@@ -135,7 +135,7 @@ Resources allow dynamic dropdowns (e.g., facility lists change per org).
 
 - **Name:** Units
 - **Key:** units
-- **List URL:** `https://your-carbonsite-domain.com/api/zapier/resources?type=units`
+- **List URL:** `https://your-metricora-domain.com/api/zapier/resources?type=units`
 - **ID Field:** id
 - **Label Field:** name
 
@@ -156,15 +156,15 @@ ZAPIER_WEBHOOK_SECRET=your_webhook_secret_for_signature_verification
 
 1. In Zapier Platform, go to "Test & Publish"
 2. Click "Test Trigger" on activity_record.created
-3. Authorize with your CarbonSite organization
-4. Create a sample activity record in CarbonSite
+3. Authorize with your MetricOra organization
+4. Create a sample activity record in MetricOra
 5. Verify the trigger fires
 
 To test actions:
 1. Click "Test Action" on activity_record.create
 2. Enter sample values (quantity, unit, category, etc.)
 3. Click "Create Test Record"
-4. Verify the record appears in CarbonSite
+4. Verify the record appears in MetricOra
 
 ## Step 8: Publish to Zapier App Marketplace
 
@@ -177,37 +177,37 @@ Once testing passes:
 
 ## Example Zapier Workflows
 
-### Workflow 1: Slack → CarbonSite
+### Workflow 1: Slack → MetricOra
 
 1. Trigger: "New Slack message with file attachment"
 2. Action: "Create Activity Record" (extract quantity from message)
 3. Benefit: Facilities team uploads emission data directly from Slack
 
-### Workflow 2: QuickBooks → CarbonSite (Scope 3)
+### Workflow 2: QuickBooks → MetricOra (Scope 3)
 
 1. Trigger: "New QuickBooks purchase"
 2. Filter: Category contains "Freight" or "Supplies"
 3. Action: "Create Activity Record" (map amount to Scope 3 estimated emissions)
 4. Benefit: Auto-import supplier spend data
 
-### Workflow 3: Gmail → CarbonSite (Utility Bills)
+### Workflow 3: Gmail → MetricOra (Utility Bills)
 
 1. Trigger: "New email with attachment matching 'invoice'"
 2. Action: "Create Activity Record" (OCR extracts kWh, attach to Facilities)
 3. Benefit: Paperless utility bill ingestion
 
-### Workflow 4: Salesforce → CarbonSite (Supplier Onboarding)
+### Workflow 4: Salesforce → MetricOra (Supplier Onboarding)
 
 1. Trigger: "New Salesforce contact created"
 2. Filter: Account type = "Supplier"
-3. Action: "Create Supplier" (name, email → CarbonSite)
+3. Action: "Create Supplier" (name, email → MetricOra)
 4. Benefit: Supplier accounts auto-created from CRM
 
 ## Monitoring & Debugging
 
 Check Zapier App logs at:
 - **Zapier Platform Dashboard** → "Logs" tab
-- **CarbonSite API** → Check `/api/zapier/*` endpoints in server logs
+- **MetricOra API** → Check `/api/zapier/*` endpoints in server logs
 - **Webhook Deliveries** → Verify signatures in `lib/integrations/zapier.ts`
 
 Common issues:
@@ -265,5 +265,5 @@ curl "https://your-domain.com/api/zapier/resources?type=categories&orgId=org_123
 
 For issues or questions:
 - Check logs in Zapier Platform dashboard
-- Review CarbonSite server logs for API errors
-- Contact: dev@carbonsite.app
+- Review MetricOra server logs for API errors
+- Contact: dev@metricora.co.uk

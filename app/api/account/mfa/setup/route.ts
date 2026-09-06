@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
 
     // Generate a new secret
     const secret = speakeasy.generateSecret({
-      name: `CarbonSite (${user.email})`,
-      issuer: "CarbonSite",
+      name: `MetricOra (${user.email})`,
+      issuer: "MetricOra",
       length: 32,
     });
 

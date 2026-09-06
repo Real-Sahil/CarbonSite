@@ -97,7 +97,7 @@ class FcmHandler {
   }
 
   static void _handleForeground(RemoteMessage message) {
-    final title = message.notification?.title ?? 'CarbonSite';
+    final title = message.notification?.title ?? 'MetricOra';
     final body = message.notification?.body ?? '';
     debugPrint('[FCM] Foreground: $title — $body');
     // The foreground notification is handled by the in-app SnackBar banner

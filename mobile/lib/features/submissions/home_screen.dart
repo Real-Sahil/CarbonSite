@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign out of CarbonSite?'),
+        title: const Text('Sign out of MetricOra?'),
         content: const Text(
           'You will need a new invite link from your administrator to sign '
           'back in. Unsynced drafts stay on this device.',
@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'CarbonSite',
+              'MetricOra',
               style: textTheme.titleLarge?.copyWith(
                 color: colorScheme.primary,
                 fontWeight: FontWeight.w700,

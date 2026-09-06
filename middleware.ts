@@ -6,7 +6,7 @@ import { resolveClientIp } from "@/lib/security/client-ip";
 // Returns null for localhost, IP addresses, and the root domain.
 function extractSubdomain(host: string | null): string | null {
   if (!host) return null;
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "carbonsite.app";
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "metricora.co.uk";
   const withoutPort = host.split(":")[0];
 
   // localhost or IP — no subdomain routing

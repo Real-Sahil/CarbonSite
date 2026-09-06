@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:carbonsite_mobile/features/capture/ocr_extractor.dart';
+import 'package:metricora_mobile/features/capture/ocr_extractor.dart';
 
 void main() {
   group('OcrExtractor — waste ticket', () {

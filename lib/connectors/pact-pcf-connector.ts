@@ -134,7 +134,7 @@ export class PACTPCFConnector implements IConnector {
   }
 }
 
-// Helper: Export CarbonSite activity record to PACT format for supplier portal
+// Helper: Export MetricOra activity record to PACT format for supplier portal
 export function exportToPACT(record: {
   externalRecordId: string;
   emissionCategoryCode: string;

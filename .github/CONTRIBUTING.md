@@ -1,6 +1,6 @@
-# Contributing to CarbonSite
+# Contributing to MetricOra
 
-Thank you for contributing to CarbonSite! This guide explains our development process, code review standards, and best practices.
+Thank you for contributing to MetricOra! This guide explains our development process, code review standards, and best practices.
 
 ## Before You Start
 
@@ -14,8 +14,8 @@ Read the project documentation:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Real-Sahil/CarbonSite
-cd CarbonSite
+git clone https://github.com/Real-Sahil/MetricOra
+cd MetricOra
 
 # 2. Install dependencies
 pnpm install
@@ -397,4 +397,4 @@ git push origin main
 
 ---
 
-**Thank you for contributing to CarbonSite!** Your work helps make carbon accounting accessible to small and mid-market companies.
+**Thank you for contributing to MetricOra!** Your work helps make carbon accounting accessible to small and mid-market companies.

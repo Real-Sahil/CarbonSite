@@ -1,6 +1,6 @@
 # Record of Processing Activities (Art. 30 GDPR)
 
-**Organization:** CarbonSite  
+**Organization:** MetricOra  
 **Last Updated:** August 2026  
 **Prepared For:** Data Protection Officer / Regulatory Compliance Review
 
@@ -8,9 +8,9 @@
 
 ## 1. Controller Information
 
-- **Legal Entity:** CarbonSite Ltd.
+- **Legal Entity:** MetricOra Ltd.
 - **Registered Address:** [To be filled by legal/compliance team]
-- **Contact:** privacy@carbonsite.io
+- **Contact:** privacy@metricora.io
 - **Data Protection Officer:** [To be filled if appointed]
 
 ---
@@ -147,7 +147,7 @@
 | **Purposes** | Collect upstream/downstream Scope 3 emissions, build supplier emission factors |
 | **Recipients** | Supplier portal users (email link), organization managers; external: Resend (email delivery) |
 | **Retention** | Supplier invites: 30 days from creation (or until used). Submitted data: 7 years (per activity record retention) |
-| **Data Subject Rights** | Suppliers can request their data be deleted (email to privacy@carbonsite.io) |
+| **Data Subject Rights** | Suppliers can request their data be deleted (email to privacy@metricora.io) |
 | **Security Measures** | Invite tokens (unique, single-use), presigned upload URLs, TLS, audit trail of submissions |
 | **Cross-Border Transfers** | Supplier can be anywhere globally; data retained in UK/EEA unless supplier is outside EEA (then SCCs). |
 
@@ -239,10 +239,10 @@
 
 ## 7. DPA & Data Protection Officer
 
-- **Data Controller:** CarbonSite Ltd. (org level)
+- **Data Controller:** MetricOra Ltd. (org level)
 - **Data Processor:** [Sub-processors listed above]
 - **DPO:** [Appoint or clarify if role delegated to legal team]
-- **Contact:** privacy@carbonsite.io
+- **Contact:** privacy@metricora.io
 - **Escalation (Regulator):** UK Information Commissioner's Office (ICO), ico.org.uk
 
 ---

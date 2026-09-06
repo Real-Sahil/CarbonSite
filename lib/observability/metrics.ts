@@ -1,5 +1,5 @@
 /**
- * Metrics collection for CarbonSite
+ * Metrics collection for MetricOra
  * Emits metrics as JSON logs for ingestion by Grafana Loki and Prometheus.
  * Metrics are tagged with labels for easy filtering and aggregation.
  */
@@ -138,7 +138,7 @@ export function getMetricsText(): string {
       .map(([k, v]) => `${k}="${v}"`)
       .join(",");
 
-    const metricName = `carbonsite_${metric.name}`;
+    const metricName = `metricora_${metric.name}`;
     const line = `${metricName}{${labels}} ${metric.value}`;
     lines.push(line);
   }

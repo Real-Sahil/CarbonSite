@@ -33,7 +33,7 @@ function generateManifest() {
         title: data.title || slug,
         description: data.description || "",
         date: data.date || new Date().toISOString(),
-        author: data.author || "CarbonSite",
+        author: data.author || "MetricOra",
         readingTime: data.readingTime || "5 min read",
         keywords: data.keywords || [],
       });

@@ -30,7 +30,7 @@ describe("XBRL Export", () => {
     expect(xbrl).toContain("2026-12-31");
   });
 
-  it("should map CarbonSite categories to ESRS concepts", () => {
+  it("should map MetricOra categories to ESRS concepts", () => {
     const testCases = [
       { input: "s1-stationary", expectedScope: "1" },
       { input: "s1-mobile", expectedScope: "1" },

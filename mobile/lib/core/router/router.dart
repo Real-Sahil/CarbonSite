@@ -82,7 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final token = state.pathParameters['token'] ?? '';
 
-          // Option A: Custom scheme carbonsite://app/invite/{token}?server=https://...
+          // Option A: Custom scheme metricora://app/invite/{token}?server=https://...
           // The ?server= param carries the web app's origin so we know where to call.
           final serverParam = state.uri.queryParameters['server'];
           if (serverParam != null &&

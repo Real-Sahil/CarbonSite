@@ -1,6 +1,6 @@
 # Observability & Monitoring
 
-CarbonSite uses OpenTelemetry and Grafana Cloud for distributed tracing, metrics, and logging.
+MetricOra uses OpenTelemetry and Grafana Cloud for distributed tracing, metrics, and logging.
 
 ## Environment Configuration
 

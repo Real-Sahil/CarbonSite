@@ -1,6 +1,6 @@
 # Data Subject Access Request (DSAR) Manual Process
 
-**Organization:** CarbonSite  
+**Organization:** MetricOra  
 **Last Updated:** August 2026  
 **Scope:** How to handle GDPR Article 15 (Access), Article 16 (Rectification), and Article 17 (Erasure) requests
 
@@ -8,7 +8,7 @@
 
 ## Overview
 
-Data Subject Access Requests (DSARs) are legally mandated under UK GDPR and DPA 2018. CarbonSite must respond within **30 calendar days** of receipt (extendable to 60–90 days for complex/manifestly unfounded requests).
+Data Subject Access Requests (DSARs) are legally mandated under UK GDPR and DPA 2018. MetricOra must respond within **30 calendar days** of receipt (extendable to 60–90 days for complex/manifestly unfounded requests).
 
 This document covers:
 1. How to identify and log a DSAR
@@ -23,7 +23,7 @@ This document covers:
 ### 1.1 Channels
 
 DSARs can arrive via:
-- Email to **privacy@carbonsite.io** (monitored by compliance team)
+- Email to **privacy@metricora.io** (monitored by compliance team)
 - In-app DSAR endpoint `/api/account/dsar` (authenticated user self-service)
 - Postal mail to [registered address]
 - Phone call (rare; ask requester to send written confirmation via email)
@@ -76,7 +76,7 @@ Response:
   "requestId": "dsar_req_xxx",
   "status": "queued",
   "estimatedCompletionTime": "5 minutes",
-  "presignedUrl": "https://r2.carbonsite.io/dsar/dsar_req_xxx.zip?signature=...",
+  "presignedUrl": "https://r2.metricora.io/dsar/dsar_req_xxx.zip?signature=...",
   "expiresAt": "2026-08-25T15:00:00Z"  // 15 min
 }
 ```
@@ -140,10 +140,10 @@ for security. If you need additional time, please reply to this email.
 - Right to Portability (Art. 20): Data is provided in CSV format for re-use
 - Right to Object (Art. 21): Opt-out of processing where lawful
 
-For questions, contact privacy@carbonsite.io.
+For questions, contact privacy@metricora.io.
 
 Best regards,
-CarbonSite Compliance Team
+MetricOra Compliance Team
 ```
 
 ### 2.4 SLA & Follow-Up
@@ -198,7 +198,7 @@ Previous reports generated before this correction remain unchanged (historical r
 If you need additional corrections, please reply to this email.
 
 Best regards,
-CarbonSite Compliance Team
+MetricOra Compliance Team
 ```
 
 ### 3.3 SLA
@@ -212,7 +212,7 @@ CarbonSite Compliance Team
 
 ### 4.1 Lawful Grounds for Refusal
 
-Art. 17 is not unconditional. CarbonSite may refuse if:
+Art. 17 is not unconditional. MetricOra may refuse if:
 
 | Ground | Examples | Action |
 |--|--|--|
@@ -230,7 +230,7 @@ If erasure is **lawful** (no legal hold, no retention obligation):
    - Or: "All your activity records and field submissions (this will remove your emissions data from the platform)?"
 
 2. **Trigger Erasure Job**
-   - Email to privacy@carbonsite.io: "Approve DSAR-2026-XXX for erasure: [scope]"
+   - Email to privacy@metricora.io: "Approve DSAR-2026-XXX for erasure: [scope]"
    - Compliance lead confirms request is legitimate (not frivolous)
    - Backend team queues `/workers/dsar-erasure` job
 
@@ -259,10 +259,10 @@ Please note:
   (snapshot immutability).
 - Your future data will not be collected unless you re-register.
 
-If you have questions, contact privacy@carbonsite.io.
+If you have questions, contact privacy@metricora.io.
 
 Best regards,
-CarbonSite Compliance Team
+MetricOra Compliance Team
 ```
 
 ### 4.3 Refusal Letter (If Applicable)
@@ -276,7 +276,7 @@ We are unable to fully comply with your request for the following reason(s):
 
 1. [Legal Obligation / Public Task / Legitimate Interest]
    
-   [Explanation of why deletion would violate law or CarbonSite's obligations]
+   [Explanation of why deletion would violate law or MetricOra's obligations]
 
 **Alternative Right:**
 - Right to Object (Art. 21): You can object to further processing based on 
@@ -287,7 +287,7 @@ If you believe our refusal is unjustified, you have the right to lodge a
 complaint with the Information Commissioner's Office (ICO): https://ico.org.uk
 
 Best regards,
-CarbonSite Compliance Team
+MetricOra Compliance Team
 ```
 
 ---
@@ -314,11 +314,11 @@ If request is from a legal representative (not the data subject):
 
 ### 5.3 Third-Party Data (Your Company Data About My Employee)
 
-If a data subject requests data about them held by a CarbonSite customer organization:
+If a data subject requests data about them held by a MetricOra customer organization:
 
-- **Clarify:** Are you requesting data held by [Organization Name] via CarbonSite?
+- **Clarify:** Are you requesting data held by [Organization Name] via MetricOra?
 - **Redirect:** "Please send your DSAR to [Organization Name] directly; they are the controller of that data."
-- **Exception:** If data subject is CarbonSite employee, follow normal process
+- **Exception:** If data subject is MetricOra employee, follow normal process
 
 ### 5.4 Request During Legal Proceedings
 
@@ -400,8 +400,8 @@ Every DSAR triggers an audit log entry:
 
 ### 8.2 Contacts
 
-- **Compliance Lead:** compliance@carbonsite.io
-- **Legal Team:** legal@carbonsite.io
+- **Compliance Lead:** compliance@metricora.io
+- **Legal Team:** legal@metricora.io
 - **Privacy Officer (if appointed):** [DPO email]
 - **ICO (for guidance):** canask@ico.org.uk
 
@@ -436,7 +436,7 @@ Your reference: **[TICKET-ID]**
 In the meantime, if you have questions, please reply to this email.
 
 Best regards,
-CarbonSite Privacy Team
+MetricOra Privacy Team
 
 ---
 
@@ -451,15 +451,15 @@ Your erasure request of [date] has been processed. The following data has been d
 Please allow 24 hours for deletion to complete across all systems.
 
 Best regards,
-CarbonSite Privacy Team
+MetricOra Privacy Team
 
 ---
 
 ## 11. Contacts & Escalation
 
-- **Questions:** privacy@carbonsite.io
-- **Urgent (Breach):** compliance@carbonsite.io
-- **Legal Hold / Litigation:** legal@carbonsite.io
+- **Questions:** privacy@metricora.io
+- **Urgent (Breach):** compliance@metricora.io
+- **Legal Hold / Litigation:** legal@metricora.io
 - **Regulator Response:** [DPO if appointed, else legal lead]
 
 ---

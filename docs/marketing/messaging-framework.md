@@ -1,4 +1,4 @@
-# CarbonSite Messaging Framework
+# MetricOra Messaging Framework
 
 ## Hero Message (Primary)
 **"Carbon data that holds up under audit"**
@@ -69,7 +69,7 @@ Emphasizes immutability, trust, compliance. Resonates with CFOs, compliance offi
 ### Segment 1: Mid-market Manufacturing & Logistics
 **Profile:** 200–1000 employees, 5–20 facilities, high Scope 1 & 2, growing Scope 3 focus
 
-**Why CarbonSite:** Field workers can photograph receipts → system extracts data. Supplier portal automates Scope 3. Audit trail ready for external review.
+**Why MetricOra:** Field workers can photograph receipts → system extracts data. Supplier portal automates Scope 3. Audit trail ready for external review.
 
 **Competitive advantage:** Field-first OCR + offline-first mobile app. Competitors require manual data entry or expensive integrations.
 
@@ -78,7 +78,7 @@ Emphasizes immutability, trust, compliance. Resonates with CFOs, compliance offi
 ### Segment 2: Enterprise Retailers & CPG (Supplier Networks)
 **Profile:** 500+ employees, 100+ suppliers, critical Scope 3 dependency
 
-**Why CarbonSite:** Supplier portal invites automated. Performance analytics show who's responsive. Invoice sync detects fraud/duplicates.
+**Why MetricOra:** Supplier portal invites automated. Performance analytics show who's responsive. Invoice sync detects fraud/duplicates.
 
 **Competitive advantage:** Scope 3 automation + supplier visibility. Competitors require supplier education programs or manual follow-ups.
 
@@ -87,7 +87,7 @@ Emphasizes immutability, trust, compliance. Resonates with CFOs, compliance offi
 ### Segment 3: Professional Services & Consulting (CSRD Readiness)
 **Profile:** 100–500 employees, dual Scope 1/2 + business travel Scope 3
 
-**Why CarbonSite:** Rapid deployment (no integration required). Audit trail + immutable logs built-in. CSRD mapping + evidence export ready.
+**Why MetricOra:** Rapid deployment (no integration required). Audit trail + immutable logs built-in. CSRD mapping + evidence export ready.
 
 **Competitive advantage:** Open-source transparency + compliance framework built-in. Competitors charge extra for compliance modules.
 
@@ -116,7 +116,7 @@ Emphasizes immutability, trust, compliance. Resonates with CFOs, compliance offi
 ## Elevator Pitches (by Persona)
 
 ### For Sustainability Manager
-"CarbonSite combines field worker mobile capture with automated supplier data collection. Your team focuses on reduction strategies, not data entry. Built for audit from day one."
+"MetricOra combines field worker mobile capture with automated supplier data collection. Your team focuses on reduction strategies, not data entry. Built for audit from day one."
 
 ### For CFO
 "Audit-ready emissions accounting with immutable trails. Supplier portal automates Scope 3 collection. CSRD-compliant evidence export. Your auditors spend 30 minutes, not 3 weeks, validating data."

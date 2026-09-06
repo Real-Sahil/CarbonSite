@@ -2,7 +2,7 @@
 
 Source: https://github.com/Leonxlnx/taste-skill
 
-This skill governs all UI work in CarbonSite. Before writing any frontend code, declare a one-line **Design Read** inferring page type, audience, and aesthetic direction — never default to AI visual clichés.
+This skill governs all UI work in MetricOra. Before writing any frontend code, declare a one-line **Design Read** inferring page type, audience, and aesthetic direction — never default to AI visual clichés.
 
 ## Three Dials (declare before each task)
 
@@ -10,7 +10,7 @@ This skill governs all UI work in CarbonSite. Before writing any frontend code, 
 - `MOTION_INTENSITY` (1–10): 1 = static, 10 = cinematic
 - `VISUAL_DENSITY` (1–10): 1 = airy gallery, 10 = dense dashboard
 
-CarbonSite default: DESIGN_VARIANCE=3, MOTION_INTENSITY=4, VISUAL_DENSITY=6 (data-dense SaaS product)
+MetricOra default: DESIGN_VARIANCE=3, MOTION_INTENSITY=4, VISUAL_DENSITY=6 (data-dense SaaS product)
 
 ## Hard Bans — Never Do These
 
@@ -45,9 +45,9 @@ CarbonSite default: DESIGN_VARIANCE=3, MOTION_INTENSITY=4, VISUAL_DENSITY=6 (dat
 - Avoid Inter as default — use Geist, Outfit, Cabinet Grotesk, or Satoshi
 - One sans-serif family per project
 
-## Design System (CarbonSite)
+## Design System (MetricOra)
 
-CarbonSite uses: **shadcn/ui + Tailwind v4 + motion/react**
+MetricOra uses: **shadcn/ui + Tailwind v4 + motion/react**
 
 Never mix systems. Never import Fluent UI, Material Web, or Polaris alongside shadcn.
 

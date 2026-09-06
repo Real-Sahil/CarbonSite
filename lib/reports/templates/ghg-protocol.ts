@@ -318,7 +318,7 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
 
 <div class="footer">
   <span>${esc(data.orgName)} — GHG Protocol Inventory — ${esc(data.periodLabel)}</span>
-  <span>v${data.snapshotVersion} · ${fmt(data.publishedAt)} · ${esc(data.publishedBy)} · CarbonSite</span>
+  <span>v${data.snapshotVersion} · ${fmt(data.publishedAt)} · ${esc(data.publishedBy)} · MetricOra</span>
 </div>
 
 </body>

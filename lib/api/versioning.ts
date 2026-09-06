@@ -154,7 +154,7 @@ export function sunsetVersion(version: ApiVersion): void {
  * Public versioning policy documentation
  */
 export const VERSIONING_POLICY = {
-  title: "CarbonSite API Versioning Policy",
+  title: "MetricOra API Versioning Policy",
   minDeprecationWindow: "6 months",
   supportedVersions: Object.keys(API_VERSIONS),
   guidelines: [
@@ -164,5 +164,5 @@ export const VERSIONING_POLICY = {
     "Accept-Version header for version negotiation",
     "Default to latest stable version if not specified",
   ],
-  contact: "api-support@carbonsite.io",
+  contact: "api-support@metricora.io",
 };

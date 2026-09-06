@@ -41,7 +41,7 @@ export default async function PilotPage({ params }: PilotPageProps) {
               Pilot Program Documentation
             </h1>
             <p className="text-xl text-slate-600 max-w-2xl">
-              Generate a comprehensive documentation kit for your organization's 90-day pilot program with CarbonSite.
+              Generate a comprehensive documentation kit for your organization's 90-day pilot program with MetricOra.
             </p>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-500">

@@ -6,7 +6,7 @@
 
 ## Context
 
-CarbonSite captures location data for emissions quantification:
+MetricOra captures location data for emissions quantification:
 - **PostcodeGeocode:** UK postal codes → geocoded GPS + region/easting/northing
 - **ActivityRecord:** May include GPS coordinates for field work verification
 - **FieldSubmission:** Field workers photograph documents; GPS auto-tagged on camera

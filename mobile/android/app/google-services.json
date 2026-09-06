@@ -1,15 +1,15 @@
 {
   "project_info": {
     "project_number": "000000000000",
-    "project_id": "carbonsite-mobile-dev",
-    "storage_bucket": "carbonsite-mobile-dev.appspot.com"
+    "project_id": "metricora-mobile-dev",
+    "storage_bucket": "metricora-mobile-dev.appspot.com"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
         "android_client_info": {
-          "package_name": "app.carbonsite.carbonsite_mobile"
+          "package_name": "app.metricora.metricora_mobile"
         }
       },
       "oauth_client": [],

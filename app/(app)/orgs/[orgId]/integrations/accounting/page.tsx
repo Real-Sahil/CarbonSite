@@ -30,7 +30,7 @@ interface AccountingPageProps {
 export async function generateMetadata({ params }: AccountingPageProps) {
   const { orgId } = await params;
   return {
-    title: "Accounting Integrations | CarbonSite",
+    title: "Accounting Integrations | MetricOra",
     description: "Connect Xero, QuickBooks, or Sage to automatically sync invoices and calculate Scope 3 emissions",
   };
 }

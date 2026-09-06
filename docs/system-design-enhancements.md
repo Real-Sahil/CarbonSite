@@ -1,8 +1,8 @@
-# CarbonSite System Design Enhancements
+# MetricOra System Design Enhancements
 
 ## Overview
 
-This document summarizes the enterprise-grade system design enhancements implemented in Phases 2A-2D. These enhancements position CarbonSite as an industry-grade alternative to premium carbon accounting platforms.
+This document summarizes the enterprise-grade system design enhancements implemented in Phases 2A-2D. These enhancements position MetricOra as an industry-grade alternative to premium carbon accounting platforms.
 
 ## Phase 2A: Rate Limiter Scalability (COMPLETED ✅)
 

@@ -248,7 +248,7 @@ describe.skipIf(!GHG_API_URL)(
         const result = await compareCalculations(
           1000, // kWh
           "kWh",
-          { co2e: 0.233 }, // CarbonSite current factor
+          { co2e: 0.233 }, // MetricOra current factor
           client,
         );
 

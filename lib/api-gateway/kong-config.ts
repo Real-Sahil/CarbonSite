@@ -36,23 +36,23 @@ export interface KongConsumer {
 
 export const KONG_SERVICES: KongService[] = [
   {
-    name: 'carbonsite-api',
+    name: 'metricora-api',
     url: 'http://localhost:3000',
-    description: 'CarbonSite main API',
+    description: 'MetricOra main API',
   },
 ];
 
 export const KONG_ROUTES: KongRoute[] = [
   {
     name: 'orgs-api',
-    service: 'carbonsite-api',
+    service: 'metricora-api',
     paths: ['/api/orgs'],
     methods: ['GET', 'POST'],
     stripPath: false,
   },
   {
     name: 'reports-api',
-    service: 'carbonsite-api',
+    service: 'metricora-api',
     paths: ['/api/orgs/*/reports'],
     methods: ['GET', 'POST'],
     stripPath: false,
@@ -62,19 +62,19 @@ export const KONG_ROUTES: KongRoute[] = [
 export const KONG_PLUGINS: KongPlugin[] = [
   {
     name: 'key-auth',
-    service: 'carbonsite-api',
+    service: 'metricora-api',
     config: { key_names: ['apikey'], hide_credentials: true },
   },
   {
     name: 'rate-limiting',
-    service: 'carbonsite-api',
+    service: 'metricora-api',
     config: { minute: 1000, policy: 'local' },
   },
   {
     name: 'cors',
-    service: 'carbonsite-api',
+    service: 'metricora-api',
     config: {
-      origins: ['http://localhost:3000', 'https://carbonsite.app'],
+      origins: ['http://localhost:3000', 'https://metricora.co.uk'],
       credentials: true,
     },
   },

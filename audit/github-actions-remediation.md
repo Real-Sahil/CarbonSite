@@ -158,7 +158,7 @@ jobs:
         env:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
-          POSTGRES_DB: carbonsite_test
+          POSTGRES_DB: metricora_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -174,13 +174,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma migrate deploy
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/carbonsite_test
+          DATABASE_URL: postgresql://test:test@localhost:5432/metricora_test
       - run: pnpm prisma db seed
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/carbonsite_test
+          DATABASE_URL: postgresql://test:test@localhost:5432/metricora_test
       - run: pnpm test:integration
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/carbonsite_test
+          DATABASE_URL: postgresql://test:test@localhost:5432/metricora_test
           JOB_PROCESSING_MODE: inline
           STORAGE_DRIVER: local
           BETTER_AUTH_SECRET: test-secret-32-chars-minimum-padding
@@ -260,7 +260,7 @@ This is already in place — just needs the integration test to set `JOB_PROCESS
       - name: Install provisioning profile
         uses: apple-actions/download-provisioning-profiles@v1
         with:
-          bundle-id: app.carbonsite.carbonsite_mobile
+          bundle-id: app.metricora.metricora_mobile
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
@@ -269,7 +269,7 @@ This is already in place — just needs the integration test to set `JOB_PROCESS
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
-          app-path: mobile/build/ios/ipa/carbonsite_mobile.ipa
+          app-path: mobile/build/ios/ipa/metricora_mobile.ipa
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
@@ -349,12 +349,12 @@ jobs:
       - run: pnpm test
       - run: pnpm build
         env:
-          DATABASE_URL: postgresql://user:password@localhost:5432/carbonsite
+          DATABASE_URL: postgresql://user:password@localhost:5432/metricora
           STORAGE_DRIVER: local
           STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
           STORAGE_ACCESS_KEY_ID: placeholder
           STORAGE_SECRET_ACCESS_KEY: placeholder
-          STORAGE_BUCKET: carbonsite
+          STORAGE_BUCKET: metricora
           BETTER_AUTH_SECRET: placeholder-secret-32-chars-minimum!!
           BETTER_AUTH_URL: http://localhost:3000
           EMAIL_DRIVER: console

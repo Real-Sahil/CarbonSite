@@ -5,7 +5,7 @@ import { ArrowUpRight, ShieldCheck } from "lucide-react";
 import { SecurityHeroBg, SecurityCtaBg } from "@/components/marketing/section-backgrounds";
 
 export const metadata: Metadata = {
-  title: "Security - CarbonSite",
+  title: "Security - MetricOra",
   description: "Multi-tenant data isolation, role-based access control, append-only audit logs, time-limited presigned URLs, and immutable calculation snapshots.",
 };
 

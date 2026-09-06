@@ -281,7 +281,7 @@ jobs:
           1. Set missing repository variables in Settings → Secrets and variables → Variables
           2. Run workflow with desired integrations: `workflow_dispatch`
           3. Verify Vercel environment variables are synced
-          4. Test integrations from CarbonSite admin panel
+          4. Test integrations from MetricOra admin panel
 
           ## Documentation References
 
@@ -318,8 +318,8 @@ jobs:
 
           ## Quick Links
 
-          - 🔐 [GitHub Secrets Settings](https://github.com/Real-Sahil/CarbonSite/settings/secrets/actions)
-          - 📋 [GitHub Variables Settings](https://github.com/Real-Sahil/CarbonSite/settings/variables/actions)
+          - 🔐 [GitHub Secrets Settings](https://github.com/Real-Sahil/MetricOra/settings/secrets/actions)
+          - 📋 [GitHub Variables Settings](https://github.com/Real-Sahil/MetricOra/settings/variables/actions)
           - 🔧 [Integration Checklist](./docs/INTEGRATION_CHECKLIST.md)
           - 📖 [Full Integration Guide](./docs/INTEGRATIONS_SETUP.md)
 

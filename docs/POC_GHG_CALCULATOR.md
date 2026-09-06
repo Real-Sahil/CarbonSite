@@ -2,10 +2,10 @@
 
 ## Overview
 
-This document describes how to test the integration of [ghg-calculator](https://github.com/carbonpathio/ghg-calculator) (967 embedded DEFRA + EPA factors) as a replacement for CarbonSite's current calculation engine.
+This document describes how to test the integration of [ghg-calculator](https://github.com/carbonpathio/ghg-calculator) (967 embedded DEFRA + EPA factors) as a replacement for MetricOra's current calculation engine.
 
 **Status:** Phase 1 PoC (Weeks 1-2)
-**Goal:** Validate <1% calculation deviation on CarbonSite test data
+**Goal:** Validate <1% calculation deviation on MetricOra test data
 **Success Criteria:** Factor coverage documented, latency <200ms/record, deviation <1%
 
 ---
@@ -191,7 +191,7 @@ pnpm test lib/calculation/__tests__/ghg-calculator.test.ts
 
 Tests against live ghg-calculator API:
 - Fetch real factors (DEFRA + EPA coverage)
-- Compare calculations on CarbonSite test data
+- Compare calculations on MetricOra test data
 - Measure latency (target: <200ms p95)
 - Generate deviance report
 
@@ -238,7 +238,7 @@ Factor Coverage
 Tests market-based vs. location-based Scope 2 factors:
 - Verify market-based factor selection when requested
 - Fallback to location-based if market factors unavailable
-- Compare against CarbonSite's current dual-reporting logic
+- Compare against MetricOra's current dual-reporting logic
 - Validate UK grid + supplier-specific contracts
 
 **Example:**
@@ -266,7 +266,7 @@ expect(result.factorId).toContain("market");
 - Real calculation engine (`compute_co2e()` function)
   - Gas-specific factors (CO2, CH4, N2O with AR6 GWP)
   - Scalar CO2e factors
-  - Matches CarbonSite's current engine logic exactly
+  - Matches MetricOra's current engine logic exactly
 - Factor selection (`select_factor()` function)
   - Deterministic matching: exact > fallback > any scope/category
 - Working endpoints:
@@ -390,5 +390,5 @@ docker-compose -f docker-compose.poc.yml logs -f ghg-calculator
 ## References
 
 - [ghg-calculator GitHub](https://github.com/carbonpathio/ghg-calculator)
-- [CarbonSite Calculation Engine](../lib/calculation/)
+- [MetricOra Calculation Engine](../lib/calculation/)
 - [GHG Protocol Methodology](https://ghgprotocol.org)

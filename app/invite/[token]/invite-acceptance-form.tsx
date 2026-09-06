@@ -129,7 +129,7 @@ export function InviteAcceptanceForm({
           </div>
           <CardDescription>
             Field worker invites create a mobile profile, device PIN, and assigned
-            project access. Use this token in the CarbonSite mobile app.
+            project access. Use this token in the MetricOra mobile app.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -158,7 +158,7 @@ export function InviteAcceptanceForm({
           </p>
           <p className="flex items-start gap-2 text-xs text-slate-500">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-700" />
-            Open CarbonSite mobile, paste the invite link or token, enter the
+            Open MetricOra mobile, paste the invite link or token, enter the
             worker name, then set the device PIN.
           </p>
         </CardContent>
@@ -239,7 +239,7 @@ export function InviteAcceptanceForm({
           </Button>
           <p className="flex items-start gap-2 text-xs text-slate-500">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-700" />
-            Team invites use your CarbonSite account before joining the organisation.
+            Team invites use your MetricOra account before joining the organisation.
           </p>
         </form>
       </CardContent>
@@ -265,6 +265,6 @@ async function ensureSignedIn({
   throw new Error(
     signInResult.error.message ??
       signUpResult.error.message ??
-      "Could not create or sign in to your CarbonSite account.",
+      "Could not create or sign in to your MetricOra account.",
   );
 }

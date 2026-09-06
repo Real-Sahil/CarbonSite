@@ -9,7 +9,7 @@ import { handleRouteError } from "@/lib/validation/api";
 import { sendEmail, supplierDataRequestEmail } from "@/lib/notifications/email";
 import { parseBulkSupplierCSV } from "@/lib/suppliers/bulk-parser";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite-rosy.vercel.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://metricora-rosy.vercel.app";
 const EXPIRES_DAYS = 30;
 
 const bulkUploadSchema = z.object({

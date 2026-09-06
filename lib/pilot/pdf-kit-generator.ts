@@ -76,7 +76,7 @@ function addFooter(doc: jsPDF, orgName: string) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(156, 163, 175);
-  doc.text(`${orgName} • CarbonSite Pilot Program`, 15, pageHeight - 8);
+  doc.text(`${orgName} • MetricOra Pilot Program`, 15, pageHeight - 8);
   doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - 50, pageHeight - 8);
 }
 
@@ -87,7 +87,7 @@ export async function generateExecutiveSummary(context: PilotClientContext): Pro
   const doc = new jsPDF();
 
   // Page 1
-  addHeader(doc, "CarbonSite", "Executive Summary");
+  addHeader(doc, "MetricOra", "Executive Summary");
 
   let yPos = 50;
   const lineHeight = 5;
@@ -95,7 +95,7 @@ export async function generateExecutiveSummary(context: PilotClientContext): Pro
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
-  doc.text("Welcome to CarbonSite", 15, yPos);
+  doc.text("Welcome to MetricOra", 15, yPos);
   yPos += 10;
 
   doc.setFont("helvetica", "normal");
@@ -280,7 +280,7 @@ export async function generateFinanceLeadGuide(context: PilotClientContext): Pro
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  const financeText = `CarbonSite integrates with ${context.accountingSystem || "your accounting system"} to automatically extract spend data for Scope 3 emissions calculations. This eliminates manual data entry and ensures accuracy.`;
+  const financeText = `MetricOra integrates with ${context.accountingSystem || "your accounting system"} to automatically extract spend data for Scope 3 emissions calculations. This eliminates manual data entry and ensures accuracy.`;
   doc.text(financeText, 15, yPos, { maxWidth: 180 });
   yPos += 20;
 
@@ -344,7 +344,7 @@ export async function generateFieldWorkerGuide(context: PilotClientContext): Pro
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.text("Use the CarbonSite mobile app to capture emissions data from the field.", 15, yPos);
+  doc.text("Use the MetricOra mobile app to capture emissions data from the field.", 15, yPos);
   yPos += 15;
 
   doc.setFont("helvetica", "bold");
@@ -354,7 +354,7 @@ export async function generateFieldWorkerGuide(context: PilotClientContext): Pro
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text("1. Download CarbonSite app from App Store or Google Play", 20, yPos);
+  doc.text("1. Download MetricOra app from App Store or Google Play", 20, yPos);
   yPos += 6;
   doc.text("2. Tap the deep link sent via email (or enter invite code)", 20, yPos);
   yPos += 6;
@@ -391,7 +391,7 @@ export async function generateFieldWorkerGuide(context: PilotClientContext): Pro
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.text(
-    "CarbonSite works completely offline. Submissions are saved locally and synced automatically when you reconnect to the internet.",
+    "MetricOra works completely offline. Submissions are saved locally and synced automatically when you reconnect to the internet.",
     15,
     yPos,
     { maxWidth: 180 }
@@ -436,8 +436,8 @@ export async function generateTechnicalIntegrationGuide(
   doc.setFontSize(10);
   const ssoSteps = [
     "Supported providers: Okta, Azure AD, Google Workspace",
-    "Contact CarbonSite to receive SAML metadata template",
-    "Configure your IdP to trust CarbonSite's SSO endpoint",
+    "Contact MetricOra to receive SAML metadata template",
+    "Configure your IdP to trust MetricOra's SSO endpoint",
     "Test SSO login flow before rolling out to team",
   ];
   ssoSteps.forEach((step) => {
@@ -455,7 +455,7 @@ export async function generateTechnicalIntegrationGuide(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   const provSteps = [
-    "Admin creates users via CarbonSite dashboard or API",
+    "Admin creates users via MetricOra dashboard or API",
     "Assign roles: admin, editor, reviewer, viewer, auditor, field_worker",
     "Field workers receive deep link invitation for mobile onboarding",
   ];
@@ -475,7 +475,7 @@ export async function generateTechnicalIntegrationGuide(
   doc.setFontSize(10);
   doc.text("Organization API Key: [Available in Settings → API Keys]", 20, yPos);
   yPos += 7;
-  doc.text("Base URL: https://api.carbonsite.io/orgs/{orgId}", 20, yPos);
+  doc.text("Base URL: https://api.metricora.io/orgs/{orgId}", 20, yPos);
   yPos += 7;
   doc.text("Authentication: Bearer token in Authorization header", 20, yPos);
 
@@ -501,7 +501,7 @@ export async function generateComplianceGuide(context: PilotClientContext): Prom
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.text(
-    "CarbonSite provides immutable audit trails and evidence packages for compliance verification.",
+    "MetricOra provides immutable audit trails and evidence packages for compliance verification.",
     15,
     yPos
   );

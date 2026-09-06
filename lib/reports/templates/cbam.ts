@@ -210,7 +210,7 @@ th:not(:first-child) { text-align: right; }
 <!-- Footer -->
 <div class="footer">
   <span>${esc(data.orgName)} — CBAM Report — ${esc(data.periodLabel)}</span>
-  <span>Generated ${fmt(data.publishedAt)} by ${esc(data.publishedBy)} · CarbonSite · ${esc(data.factorLibrary)}</span>
+  <span>Generated ${fmt(data.publishedAt)} by ${esc(data.publishedBy)} · MetricOra · ${esc(data.factorLibrary)}</span>
 </div>
 
 </body>

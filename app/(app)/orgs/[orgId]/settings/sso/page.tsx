@@ -480,7 +480,7 @@ export default function SsoSettingsPage() {
 
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm text-amber-900">
-              For additional help or SAML setup, contact support at support@carbonsite.com
+              For additional help or SAML setup, contact support at support@metricora.co.uk
             </p>
           </div>
         </CardContent>

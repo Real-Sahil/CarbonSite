@@ -28,7 +28,7 @@ export function initializeSentry() {
       return event;
     },
     // Attach request context (IP, user agent) from middleware headers
-    serverName: process.env.VERCEL_URL || "carbonsite",
+    serverName: process.env.VERCEL_URL || "metricora",
     denyUrls: [
       // Ignore errors from browser extensions
       /extensions\//i,

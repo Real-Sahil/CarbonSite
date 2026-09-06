@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Privacy Policy | CarbonSite",
-  description: "How CarbonSite collects, uses, and protects your data.",
+  title: "Privacy Policy | MetricOra",
+  description: "How MetricOra collects, uses, and protects your data.",
 };
 
 export default function PrivacyPage() {
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900">1. Overview</h2>
             <p>
-              CarbonSite ("we," "us," "our," or "Company") respects your privacy
+              MetricOra ("we," "us," "our," or "Company") respects your privacy
               and is committed to protecting your personal data. This Privacy
               Policy explains how we collect, use, disclose, and safeguard your
               data in compliance with the UK Data Protection Act 2018 (DPA 2018),
@@ -243,10 +243,10 @@ export default function PrivacyPage() {
             <p className="mt-4">
               To exercise these rights, email{" "}
               <a
-                href="mailto:privacy@carbonsite.io"
+                href="mailto:privacy@metricora.io"
                 className="font-semibold text-blue-600 hover:text-blue-700"
               >
-                privacy@carbonsite.io
+                privacy@metricora.io
               </a>
               . We respond within 30 days (may extend to 60–90 days for complex
               requests per Art. 12). No fee is charged unless your request is
@@ -286,10 +286,10 @@ export default function PrivacyPage() {
               <li>
                 <strong>Data Protection Officer / Privacy Queries:</strong>{" "}
                 <a
-                  href="mailto:privacy@carbonsite.io"
+                  href="mailto:privacy@metricora.io"
                   className="font-semibold text-blue-600 hover:text-blue-700"
                 >
-                  privacy@carbonsite.io
+                  privacy@metricora.io
                 </a>
               </li>
               <li>
