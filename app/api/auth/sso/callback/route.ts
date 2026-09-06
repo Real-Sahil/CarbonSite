@@ -108,7 +108,7 @@ async function handleSamlCallback(
   samlResponse: string,
   ssoConfig: SsoConfiguration
 ): Promise<UserInfo> {
-  const userInfo = await extractSamlUserInfo(samlResponse, ssoConfig.certificateX509 || "");
+  const userInfo = await extractSamlUserInfo(samlResponse, ssoConfig.certificateX509 || "", ssoConfig.idpEntityId);
 
   const providerUserId = userInfo.sub;
   const email = userInfo.email;

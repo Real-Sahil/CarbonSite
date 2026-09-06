@@ -1,6 +1,26 @@
 import { prisma } from "@/lib/db";
 import crypto from "crypto";
 import { base64url } from "rfc4648";
+import { SignedXml } from "xml-crypto";
+import { DOMParser } from "@xmldom/xmldom";
+import * as xpath from "xpath";
+
+const SAML_NAMESPACES = {
+  samlp: "urn:oasis:names:tc:SAML:2.0:protocol",
+  saml: "urn:oasis:names:tc:SAML:2.0:assertion",
+  ds: "http://www.w3.org/2000/09/xmldsig#",
+};
+const selectSaml = xpath.useNamespaces(SAML_NAMESPACES);
+
+function selectElements(expr: string, node: Node): Element[] {
+  return (selectSaml(expr, node) as unknown[]).filter(
+    (n): n is Element => typeof n === "object" && n !== null && "getAttribute" in n,
+  );
+}
+
+function textOf(node: Element | undefined): string | undefined {
+  return node?.textContent?.trim() || undefined;
+}
 
 export interface OidcConfig {
   clientId: string;
@@ -237,63 +257,207 @@ export function buildSamlAuthenticationRequest(config: SamlConfig): string {
   return Buffer.from(xml).toString("base64");
 }
 
-export async function parseSamlResponse(samlResponse: string): Promise<Record<string, unknown>> {
-  const xml = Buffer.from(samlResponse, "base64").toString("utf8");
-
-  // Parse basic XML to extract NameID and attributes
-  // For production, use a proper XML/SAML library (e.g., passport-saml)
-  const nameIdMatch = xml.match(/<saml:NameID[^>]*>([^<]*)<\/saml:NameID>/);
-  const nameId = nameIdMatch ? nameIdMatch[1] : undefined;
-
-  const emailMatch = xml.match(/<saml:AttributeValue>([^<]*@[^<]*)<\/saml:AttributeValue>/);
-  const email = emailMatch ? emailMatch[1] : undefined;
-
-  const nameMatch = xml.match(/<saml:AttributeValue[^>]*>([^<]*)<\/saml:AttributeValue>/);
-  const name = nameMatch ? nameMatch[1] : undefined;
-
-  if (!nameId && !email) {
-    throw new Error("Could not extract user information from SAML response");
-  }
-
-  return {
-    sub: nameId || email,
-    email: email || nameId,
-    name: name,
-  };
+// SAML certificates are commonly stored as bare base64 (no PEM wrapper);
+// idempotent either way.
+function toPemCertificate(raw: string): string {
+  const body = raw
+    .replace(/-----BEGIN CERTIFICATE-----/g, "")
+    .replace(/-----END CERTIFICATE-----/g, "")
+    .replace(/[\r\n\s]+/g, "");
+  const lines = body.match(/.{1,64}/g) ?? [];
+  return `-----BEGIN CERTIFICATE-----\n${lines.join("\n")}\n-----END CERTIFICATE-----\n`;
 }
 
-export function verifySamlSignature(samlResponse: string, certificate: string): boolean {
-  const xml = Buffer.from(samlResponse, "base64").toString("utf8");
-
-  // Extract Signature element
-  const signatureMatch = xml.match(/<ds:Signature[^>]*>[\s\S]*?<\/ds:Signature>/);
-  if (!signatureMatch) {
-    throw new Error("No signature found in SAML response");
+// Verifies the SAML response's signature and returns the specific Assertion
+// element it was checked against — never "a valid signature exists
+// somewhere in this document", which is the XML Signature Wrapping (XSW)
+// hole a regex-based check like the old one leaves wide open: an attacker
+// can attach a genuinely-signed assertion (replayed from a real login) next
+// to a forged, unsigned one, and a check that only asks "does *a* signature
+// verify" will pass without ever confirming *which* assertion it covers.
+//
+// The document must contain exactly one Assertion (more than one is itself
+// a wrapping-attack shape, so it's rejected rather than guessed at), and
+// the accepted signature's own Reference must resolve — by that Assertion's
+// own ID attribute, not by node identity across separately-parsed DOMs — to
+// that exact element.
+function verifySignedAssertion(doc: Document, xml: string, certificate: string): Element {
+  const assertions = selectElements("//saml:Assertion", doc);
+  if (assertions.length === 0) {
+    throw new Error("SAML response contains no Assertion element.");
+  }
+  if (assertions.length > 1) {
+    throw new Error(
+      "SAML response contains multiple Assertion elements — rejecting as a possible signature-wrapping attempt.",
+    );
+  }
+  const assertionEl = assertions[0];
+  const assertionId = assertionEl.getAttribute("ID");
+  if (!assertionId) {
+    throw new Error("SAML Assertion has no ID attribute to bind its signature to.");
   }
 
-  // For MVP, accept any signed response (do not verify signature)
-  // In production, use xmlsec1 or similar to verify signature against certificate
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("SAML signature verification not yet implemented for production");
+  // The signature may be on the Assertion itself, or on the enclosing
+  // Response (which, canonicalized over the whole document, covers the
+  // Assertion too) — either is an acceptable place to find it.
+  const signatureNodes = [
+    ...selectElements("./ds:Signature", assertionEl),
+    ...selectElements("/samlp:Response/ds:Signature", doc),
+  ];
+  if (signatureNodes.length === 0) {
+    throw new Error("No signature found on the SAML Assertion or Response.");
   }
 
-  return true;
+  const pemCert = toPemCertificate(certificate);
+
+  for (const signatureNode of signatureNodes) {
+    // "ID" is already one of xml-crypto's own default idAttributes
+    // (["Id", "ID", "id"]) — passing it again here would prepend a
+    // duplicate entry, making its own duplicate-ID safety check see every
+    // real ID twice and refuse to validate anything.
+    const sig = new SignedXml({ publicCert: pemCert });
+    try {
+      sig.loadSignature(signatureNode);
+      if (!sig.checkSignature(xml)) continue;
+    } catch {
+      continue;
+    }
+
+    // `ref.signedReference` (set only once that reference's own digest has
+    // been validated as part of the checkSignature() call above) is the
+    // non-deprecated way to confirm THIS specific reference — by its own
+    // Assertion ID, not merely "some signature in the document checked out"
+    // — actually passed. (The alternative, ref.getValidatedNode(), re-
+    // resolves the reference against a fresh parse and is flagged
+    // deprecated-and-insecure by xml-crypto itself for exactly the
+    // wrapping-attack reasons this whole function exists to close.)
+    const coversAssertion = sig.getReferences().some(
+      (ref) => ref.uri.replace(/^#/, "") === assertionId && ref.signedReference != null,
+    );
+    if (coversAssertion) return assertionEl;
+  }
+
+  throw new Error("SAML signature verification failed: no valid signature covers this Assertion.");
 }
 
-export async function extractSamlUserInfo(samlResponse: string, certificate: string): Promise<{
+function checkAssertionConditions(assertionEl: Element): void {
+  const conditions = selectElements("./saml:Conditions", assertionEl)[0];
+  if (!conditions) return;
+
+  const notBefore = conditions.getAttribute("NotBefore");
+  const notOnOrAfter = conditions.getAttribute("NotOnOrAfter");
+  const now = Date.now();
+  const CLOCK_SKEW_MS = 60_000;
+
+  if (notBefore && new Date(notBefore).getTime() - CLOCK_SKEW_MS > now) {
+    throw new Error("SAML assertion is not yet valid (Conditions NotBefore is in the future).");
+  }
+  if (notOnOrAfter && new Date(notOnOrAfter).getTime() + CLOCK_SKEW_MS < now) {
+    throw new Error("SAML assertion has expired (Conditions NotOnOrAfter has passed).");
+  }
+}
+
+function checkAssertionIssuer(
+  assertionEl: Element,
+  doc: Document,
+  expectedIdpEntityId: string | null | undefined,
+): void {
+  if (!expectedIdpEntityId) return; // Not configured for this org — nothing to enforce.
+
+  const issuer =
+    textOf(selectElements("./saml:Issuer", assertionEl)[0]) ??
+    textOf(selectElements("/samlp:Response/saml:Issuer", doc)[0]);
+
+  if (issuer !== expectedIdpEntityId) {
+    throw new Error(
+      `SAML assertion Issuer ("${issuer ?? "none"}") does not match the configured Identity Provider ("${expectedIdpEntityId}").`,
+    );
+  }
+}
+
+const EMAIL_ATTRIBUTE_NAMES = new Set([
+  "email",
+  "mail",
+  "emailaddress",
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+  "urn:oid:0.9.2342.19200300.100.1.3", // LDAP mail attribute OID
+]);
+const NAME_ATTRIBUTE_NAMES = new Set([
+  "name",
+  "displayname",
+  "cn",
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+]);
+
+// Extracts NameID/email/name from the specific Assertion element that
+// verifySignedAssertion() proved was the one actually signed — never from
+// an independent re-query of the document, which is what would let a
+// signature-wrapping attack smuggle a different (forged) assertion's data
+// past a check that validated the wrong node.
+function extractClaimsFromAssertion(assertionEl: Element): { sub?: string; email?: string; name?: string } {
+  const nameId = textOf(selectElements("./saml:Subject/saml:NameID", assertionEl)[0]);
+
+  const attributes: Record<string, string[]> = {};
+  for (const attrNode of selectElements(".//saml:AttributeStatement/saml:Attribute", assertionEl)) {
+    const attrName = attrNode.getAttribute("Name") || attrNode.getAttribute("FriendlyName");
+    if (!attrName) continue;
+    const values = selectElements("./saml:AttributeValue", attrNode)
+      .map((v) => textOf(v))
+      .filter((v): v is string => !!v);
+    if (values.length > 0) attributes[attrName.toLowerCase()] = values;
+  }
+
+  let email: string | undefined;
+  for (const [attrName, values] of Object.entries(attributes)) {
+    if (EMAIL_ATTRIBUTE_NAMES.has(attrName)) {
+      email = values[0];
+      break;
+    }
+  }
+  if (!email && nameId?.includes("@")) email = nameId;
+
+  let name: string | undefined;
+  for (const [attrName, values] of Object.entries(attributes)) {
+    if (NAME_ATTRIBUTE_NAMES.has(attrName)) {
+      name = values[0];
+      break;
+    }
+  }
+
+  return { sub: nameId || email, email: email || nameId, name };
+}
+
+export async function extractSamlUserInfo(
+  samlResponse: string,
+  certificate: string,
+  expectedIdpEntityId?: string | null,
+): Promise<{
   sub: string;
   email: string;
   name?: string;
 }> {
-  // Verify signature
-  verifySamlSignature(samlResponse, certificate);
+  if (!certificate) {
+    throw new Error("No SAML signing certificate configured for this organization.");
+  }
 
-  // Parse response
-  const claims = await parseSamlResponse(samlResponse);
+  const xml = Buffer.from(samlResponse, "base64").toString("utf8");
+  const doc = new DOMParser().parseFromString(xml, "text/xml") as unknown as Document;
+  if (!doc?.documentElement) {
+    throw new Error("SAML response is not valid XML.");
+  }
+
+  const assertionEl = verifySignedAssertion(doc, xml, certificate);
+  checkAssertionConditions(assertionEl);
+  checkAssertionIssuer(assertionEl, doc, expectedIdpEntityId);
+
+  const claims = extractClaimsFromAssertion(assertionEl);
+  if (!claims.sub && !claims.email) {
+    throw new Error("Could not extract user information (NameID/email) from the verified SAML Assertion.");
+  }
 
   return {
-    sub: (claims.sub as string) || "",
-    email: (claims.email as string) || "",
-    name: claims.name as string | undefined,
+    sub: claims.sub || "",
+    email: claims.email || "",
+    name: claims.name,
   };
 }
