@@ -475,7 +475,7 @@ export async function generateTechnicalIntegrationGuide(
   doc.setFontSize(10);
   doc.text("Organization API Key: [Available in Settings → API Keys]", 20, yPos);
   yPos += 7;
-  doc.text("Base URL: https://api.metricora.io/orgs/{orgId}", 20, yPos);
+  doc.text("Base URL: https://api.metricora.co.uk/orgs/{orgId}", 20, yPos);
   yPos += 7;
   doc.text("Authentication: Bearer token in Authorization header", 20, yPos);
 

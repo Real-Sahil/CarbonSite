@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: 'Blog | MetricOra',
     description: 'Thoughts on carbon accounting and sustainability.',
     type: 'website',
-    url: 'https://metricora.ai/blog',
+    url: 'https://metricora.co.uk/blog',
   },
 };
 

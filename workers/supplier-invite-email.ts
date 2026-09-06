@@ -63,14 +63,14 @@ export async function sendSupplierCredentialsEmail(params: {
       <p style="font-size: 12px; color: #999;">
         MetricOra helps organizations track, report, and reduce their carbon emissions.
         <br/>
-        <a href="https://metricora.ai" style="color: #3b82f6; text-decoration: none;">Learn more</a>
+        <a href="https://metricora.co.uk" style="color: #3b82f6; text-decoration: none;">Learn more</a>
       </p>
     </div>
   `;
 
   try {
     const response = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "noreply@metricora.ai",
+      from: process.env.EMAIL_FROM || "noreply@metricora.co.uk",
       to: supplierEmail,
       subject: `Your MetricOra account from ${organizationName}`,
       html: htmlContent,
@@ -156,14 +156,14 @@ export async function sendSupplierInviteEmail(params: {
       <p style="font-size: 12px; color: #999;">
         MetricOra helps organizations track, report, and reduce their carbon emissions.
         <br/>
-        <a href="https://metricora.ai" style="color: #3b82f6; text-decoration: none;">Learn more</a>
+        <a href="https://metricora.co.uk" style="color: #3b82f6; text-decoration: none;">Learn more</a>
       </p>
     </div>
   `;
 
   try {
     const response = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "noreply@metricora.ai",
+      from: process.env.EMAIL_FROM || "noreply@metricora.co.uk",
       to: supplierEmail,
       subject: `${organizationName} invites you to MetricOra`,
       html: htmlContent,
@@ -242,7 +242,7 @@ export async function sendSupplierDataRequestEmail(params: {
 
   try {
     const response = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "noreply@metricora.ai",
+      from: process.env.EMAIL_FROM || "noreply@metricora.co.uk",
       to: supplierEmail,
       subject: `Data Request: ${emissionCategory} (${reportingYear})`,
       html: htmlContent,

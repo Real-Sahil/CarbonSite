@@ -229,9 +229,9 @@ When adding or removing a sub-processor:
 
 ## 9. Contact & Escalation
 
-- **DPA Questions:** privacy@metricora.io
-- **Sub-Processor Issues:** Escalate via support@metricora.io → legal team
-- **ICO Inquiry:** compliance@metricora.io (redirect to DPO/legal)
+- **DPA Questions:** privacy@metricora.co.uk
+- **Sub-Processor Issues:** Escalate via support@metricora.co.uk → legal team
+- **ICO Inquiry:** compliance@metricora.co.uk (redirect to DPO/legal)
 - **Audit Access:** Legal team coordinates SOC 2 / audit responses
 
 ---

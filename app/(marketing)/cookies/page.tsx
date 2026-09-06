@@ -241,10 +241,10 @@ export default function CookiesPage() {
             <p>
               Questions about cookies? Email{" "}
               <a
-                href="mailto:privacy@metricora.io"
+                href="mailto:privacy@metricora.co.uk"
                 className="font-semibold text-blue-600 hover:text-blue-700"
               >
-                privacy@metricora.io
+                privacy@metricora.co.uk
               </a>
             </p>
           </section>

@@ -10,7 +10,7 @@
 
 - **Legal Entity:** MetricOra Ltd.
 - **Registered Address:** [To be filled by legal/compliance team]
-- **Contact:** privacy@metricora.io
+- **Contact:** privacy@metricora.co.uk
 - **Data Protection Officer:** [To be filled if appointed]
 
 ---
@@ -147,7 +147,7 @@
 | **Purposes** | Collect upstream/downstream Scope 3 emissions, build supplier emission factors |
 | **Recipients** | Supplier portal users (email link), organization managers; external: Resend (email delivery) |
 | **Retention** | Supplier invites: 30 days from creation (or until used). Submitted data: 7 years (per activity record retention) |
-| **Data Subject Rights** | Suppliers can request their data be deleted (email to privacy@metricora.io) |
+| **Data Subject Rights** | Suppliers can request their data be deleted (email to privacy@metricora.co.uk) |
 | **Security Measures** | Invite tokens (unique, single-use), presigned upload URLs, TLS, audit trail of submissions |
 | **Cross-Border Transfers** | Supplier can be anywhere globally; data retained in UK/EEA unless supplier is outside EEA (then SCCs). |
 
@@ -242,7 +242,7 @@
 - **Data Controller:** MetricOra Ltd. (org level)
 - **Data Processor:** [Sub-processors listed above]
 - **DPO:** [Appoint or clarify if role delegated to legal team]
-- **Contact:** privacy@metricora.io
+- **Contact:** privacy@metricora.co.uk
 - **Escalation (Regulator):** UK Information Commissioner's Office (ICO), ico.org.uk
 
 ---

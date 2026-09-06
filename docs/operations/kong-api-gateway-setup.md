@@ -343,7 +343,7 @@ helm install kong kong/kong -f kubernetes/kong-values.yaml
 
 ```bash
 # .env.production
-KONG_PROXY_URL=https://api.metricora.io  # Public endpoint
+KONG_PROXY_URL=https://api.metricora.co.uk  # Public endpoint
 KONG_DATABASE=postgres
 KONG_PG_HOST=postgres.internal
 KONG_PG_PORT=5432

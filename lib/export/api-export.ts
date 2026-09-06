@@ -59,7 +59,7 @@ export interface ActivityRecordExport {
 export function dashboardToJSONLD(dashboard: DashboardSnapshot): Record<string, unknown> {
   return {
     "@context": {
-      "@vocab": "https://metricora.io/schema/emissions#",
+      "@vocab": "https://metricora.co.uk/schema/emissions#",
       qudt: "http://qudt.org/schema/qudt/",
       skos: "http://www.w3.org/2004/02/skos/core#",
     },

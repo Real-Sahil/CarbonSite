@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: 'Pricing | MetricOra',
     description: 'Simple, transparent pricing. 30-day free trial. No hidden fees.',
     type: 'website',
-    url: 'https://metricora.ai/pricing',
+    url: 'https://metricora.co.uk/pricing',
   },
 };
 

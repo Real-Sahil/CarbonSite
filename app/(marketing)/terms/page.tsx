@@ -301,10 +301,10 @@ export default function TermsPage() {
             <p>
               Questions about these terms? Email{" "}
               <a
-                href="mailto:legal@metricora.io"
+                href="mailto:legal@metricora.co.uk"
                 className="font-semibold text-blue-600 hover:text-blue-700"
               >
-                legal@metricora.io
+                legal@metricora.co.uk
               </a>
             </p>
           </section>

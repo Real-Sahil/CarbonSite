@@ -118,13 +118,13 @@ export default function DeveloperPage() {
         <AnimateIn>
           <div className="rounded-lg border border-gray-200 bg-[#111110] p-6 mb-12">
             <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-3">Base URL</p>
-            <p className="font-mono text-base text-[#0891B2]">https://app.metricora.io</p>
+            <p className="font-mono text-base text-[#0891B2]">https://app.metricora.co.uk</p>
           </div>
 
           {/* Example request */}
           <div className="rounded-lg border border-gray-200 bg-[#111110] p-6 mb-16 overflow-x-auto">
             <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-4">Example request</p>
-            <pre className="font-mono text-xs text-[#64748B] whitespace-pre">{`curl -X GET "https://app.metricora.io/api/orgs/{orgId}/activity-records" \\
+            <pre className="font-mono text-xs text-[#64748B] whitespace-pre">{`curl -X GET "https://app.metricora.co.uk/api/orgs/{orgId}/activity-records" \\
   -H "Authorization: Bearer csk_your_api_key_here" \\
   -H "Content-Type: application/json"`}</pre>
           </div>

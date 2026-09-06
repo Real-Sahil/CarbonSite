@@ -15,7 +15,7 @@
 An admin can create an API key for programmatic access via the dashboard (UI pending). For now, use `POST /api/orgs/{orgId}/api-keys`:
 
 ```bash
-curl -X POST https://metricora.io/api/orgs/{orgId}/api-keys \
+curl -X POST https://metricora.co.uk/api/orgs/{orgId}/api-keys \
   -H "Authorization: Bearer {user_session_token}" \
   -H "Content-Type: application/json" \
   -d '{"name":"Xero Integration"}'
@@ -36,7 +36,7 @@ Response:
 ### 2. Send Data to the Webhook
 
 ```bash
-curl -X POST https://metricora.io/api/orgs/{orgId}/integrations/webhooks/ingest \
+curl -X POST https://metricora.co.uk/api/orgs/{orgId}/integrations/webhooks/ingest \
   -H "Authorization: Bearer {api_key}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -299,7 +299,7 @@ Connect Xero to MetricOra via Zapier's Webhook action:
 
 1. Create Zapier trigger: "New Xero Invoice"
 2. Add action: "Webhooks by Zapier → POST"
-3. Set URL: `https://metricora.io/api/orgs/{orgId}/integrations/webhooks/ingest`
+3. Set URL: `https://metricora.co.uk/api/orgs/{orgId}/integrations/webhooks/ingest`
 4. Headers: `Authorization: Bearer {api_key}`
 5. Payload:
    ```json
@@ -326,4 +326,4 @@ Connect Xero to MetricOra via Zapier's Webhook action:
 
 - **Beta status** — API subject to change
 - **Coming next:** QuickBooks, utilities, fleet, corporate cards adapters
-- **Contact:** [support@metricora.io](mailto:support@metricora.io)
+- **Contact:** [support@metricora.co.uk](mailto:support@metricora.co.uk)

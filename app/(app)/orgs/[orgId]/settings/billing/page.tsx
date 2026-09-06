@@ -142,7 +142,7 @@ export default function BillingPage() {
           </div>
           {plan === "enterprise" && (
             <a
-              href="mailto:hello@metricora.io?subject=Enterprise%20enquiry"
+              href="mailto:hello@metricora.co.uk?subject=Enterprise%20enquiry"
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#f97316] px-4 py-2 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors shrink-0"
             >
               Contact sales
@@ -267,8 +267,8 @@ export default function BillingPage() {
       <p className="text-xs text-gray-500">
         Switch between Starter and Growth any time above. For Enterprise —
         custom contracts, SSO, and dedicated support — contact{" "}
-        <a href="mailto:hello@metricora.io" className="text-[#f97316] hover:underline">
-          hello@metricora.io
+        <a href="mailto:hello@metricora.co.uk" className="text-[#f97316] hover:underline">
+          hello@metricora.co.uk
         </a>
         .
       </p>

@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: post.title,
       description: post.excerpt,
       type: 'article',
-      url: `https://metricora.ai/blog/${post.slug}`,
+      url: `https://metricora.co.uk/blog/${post.slug}`,
       images: post.image ? [{ url: post.image }] : [],
       publishedTime: post.date,
       authors: [post.author],

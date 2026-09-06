@@ -23,7 +23,7 @@ This document covers:
 ### 1.1 Channels
 
 DSARs can arrive via:
-- Email to **privacy@metricora.io** (monitored by compliance team)
+- Email to **privacy@metricora.co.uk** (monitored by compliance team)
 - In-app DSAR endpoint `/api/account/dsar` (authenticated user self-service)
 - Postal mail to [registered address]
 - Phone call (rare; ask requester to send written confirmation via email)
@@ -76,7 +76,7 @@ Response:
   "requestId": "dsar_req_xxx",
   "status": "queued",
   "estimatedCompletionTime": "5 minutes",
-  "presignedUrl": "https://r2.metricora.io/dsar/dsar_req_xxx.zip?signature=...",
+  "presignedUrl": "https://r2.metricora.co.uk/dsar/dsar_req_xxx.zip?signature=...",
   "expiresAt": "2026-08-25T15:00:00Z"  // 15 min
 }
 ```
@@ -140,7 +140,7 @@ for security. If you need additional time, please reply to this email.
 - Right to Portability (Art. 20): Data is provided in CSV format for re-use
 - Right to Object (Art. 21): Opt-out of processing where lawful
 
-For questions, contact privacy@metricora.io.
+For questions, contact privacy@metricora.co.uk.
 
 Best regards,
 MetricOra Compliance Team
@@ -230,7 +230,7 @@ If erasure is **lawful** (no legal hold, no retention obligation):
    - Or: "All your activity records and field submissions (this will remove your emissions data from the platform)?"
 
 2. **Trigger Erasure Job**
-   - Email to privacy@metricora.io: "Approve DSAR-2026-XXX for erasure: [scope]"
+   - Email to privacy@metricora.co.uk: "Approve DSAR-2026-XXX for erasure: [scope]"
    - Compliance lead confirms request is legitimate (not frivolous)
    - Backend team queues `/workers/dsar-erasure` job
 
@@ -259,7 +259,7 @@ Please note:
   (snapshot immutability).
 - Your future data will not be collected unless you re-register.
 
-If you have questions, contact privacy@metricora.io.
+If you have questions, contact privacy@metricora.co.uk.
 
 Best regards,
 MetricOra Compliance Team
@@ -400,8 +400,8 @@ Every DSAR triggers an audit log entry:
 
 ### 8.2 Contacts
 
-- **Compliance Lead:** compliance@metricora.io
-- **Legal Team:** legal@metricora.io
+- **Compliance Lead:** compliance@metricora.co.uk
+- **Legal Team:** legal@metricora.co.uk
 - **Privacy Officer (if appointed):** [DPO email]
 - **ICO (for guidance):** canask@ico.org.uk
 
@@ -457,9 +457,9 @@ MetricOra Privacy Team
 
 ## 11. Contacts & Escalation
 
-- **Questions:** privacy@metricora.io
-- **Urgent (Breach):** compliance@metricora.io
-- **Legal Hold / Litigation:** legal@metricora.io
+- **Questions:** privacy@metricora.co.uk
+- **Urgent (Breach):** compliance@metricora.co.uk
+- **Legal Hold / Litigation:** legal@metricora.co.uk
 - **Regulator Response:** [DPO if appointed, else legal lead]
 
 ---

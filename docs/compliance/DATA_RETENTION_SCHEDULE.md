@@ -203,10 +203,10 @@ MetricOra retains personal data only for as long as necessary to provide the ser
 
 ## 17. Contact & Escalation
 
-- **Retention Questions:** compliance@metricora.io
-- **Legal Hold / Exception:** legal@metricora.io
-- **Deletion Failure / Incident:** privacy@metricora.io (escalate within 24 hours)
-- **Regulatory Inquiry (ICO):** compliance@metricora.io (forward to legal team)
+- **Retention Questions:** compliance@metricora.co.uk
+- **Legal Hold / Exception:** legal@metricora.co.uk
+- **Deletion Failure / Incident:** privacy@metricora.co.uk (escalate within 24 hours)
+- **Regulatory Inquiry (ICO):** compliance@metricora.co.uk (forward to legal team)
 
 ---
 

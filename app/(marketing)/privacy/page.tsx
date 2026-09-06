@@ -243,10 +243,10 @@ export default function PrivacyPage() {
             <p className="mt-4">
               To exercise these rights, email{" "}
               <a
-                href="mailto:privacy@metricora.io"
+                href="mailto:privacy@metricora.co.uk"
                 className="font-semibold text-blue-600 hover:text-blue-700"
               >
-                privacy@metricora.io
+                privacy@metricora.co.uk
               </a>
               . We respond within 30 days (may extend to 60–90 days for complex
               requests per Art. 12). No fee is charged unless your request is
@@ -286,10 +286,10 @@ export default function PrivacyPage() {
               <li>
                 <strong>Data Protection Officer / Privacy Queries:</strong>{" "}
                 <a
-                  href="mailto:privacy@metricora.io"
+                  href="mailto:privacy@metricora.co.uk"
                   className="font-semibold text-blue-600 hover:text-blue-700"
                 >
-                  privacy@metricora.io
+                  privacy@metricora.co.uk
                 </a>
               </li>
               <li>

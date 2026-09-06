@@ -9,8 +9,8 @@ export function buildOrganizationSchema(): JsonLdSchema {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'MetricOra',
-    url: 'https://metricora.ai',
-    logo: 'https://metricora.ai/logo.png',
+    url: 'https://metricora.co.uk',
+    logo: 'https://metricora.co.uk/logo.png',
     description: 'Carbon accounting platform for small-to-mid-market companies',
     sameAs: [
       'https://twitter.com/metricoraapp',
@@ -20,8 +20,8 @@ export function buildOrganizationSchema(): JsonLdSchema {
     contact: {
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
-      email: 'support@metricora.ai',
-      url: 'https://metricora.ai/support',
+      email: 'hello@metricora.co.uk',
+      url: 'https://metricora.co.uk/support',
     },
   };
 }
@@ -47,7 +47,7 @@ export function buildArticleSchema(article: {
       '@type': 'Person',
       name: article.author,
     },
-    url: `https://metricora.ai/blog/${article.slug}`,
+    url: `https://metricora.co.uk/blog/${article.slug}`,
   };
 }
 
@@ -74,7 +74,7 @@ export function buildBreadcrumbSchema(items: Array<{ name: string; url: string }
       '@type': 'ListItem',
       position: idx + 1,
       name: item.name,
-      item: `https://metricora.ai${item.url}`,
+      item: `https://metricora.co.uk${item.url}`,
     })),
   };
 }

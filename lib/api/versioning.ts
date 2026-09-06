@@ -164,5 +164,5 @@ export const VERSIONING_POLICY = {
     "Accept-Version header for version negotiation",
     "Default to latest stable version if not specified",
   ],
-  contact: "api-support@metricora.io",
+  contact: "api-support@metricora.co.uk",
 };

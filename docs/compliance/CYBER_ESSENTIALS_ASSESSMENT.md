@@ -156,7 +156,7 @@ The assessment is based on current codebase state as of August 2026. Some contro
 |--|--|--|
 | **Alerting Rules** | ⚠️ Not Implemented | **Gap:** No automated alerting on security events (repeated failed logins, role changes, mass exports, data deletion). Plan: `lib/security/alerting.ts` in A4 to flag high-risk audit actions and notify admins via FCM/Resend. |
 | **Incident Response Plan** | ✅ Documented | `SECURITY.md` defines breach detection sources (Sentry errors, customer reports, security scans), triage steps, 72-hour ICO decision tree. Incident runbook in progress (A4). |
-| **Breach Notification** | ✅ Implemented | 72-hour ICO notification process documented. Contact: compliance@metricora.io. Determination: DSAR fulfillment possible? → yes = likely high risk → notify. Notification template in `SECURITY.md`. |
+| **Breach Notification** | ✅ Implemented | 72-hour ICO notification process documented. Contact: compliance@metricora.co.uk. Determination: DSAR fulfillment possible? → yes = likely high risk → notify. Notification template in `SECURITY.md`. |
 | **Security Testing** | ⚠️ Partial | Manual security review of auth/RBAC/multi-tenancy code paths. Automated tests: cross-tenant access rejection, CSRF validation, rate limiting. **Gap:** No penetration testing, no automated OWASP scanning, no red-team exercises. Recommendation: engage external security firm for pre-production audit. |
 
 ### 5.3 Vulnerability Management

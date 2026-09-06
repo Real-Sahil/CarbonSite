@@ -16,7 +16,7 @@ MetricOra uses semantic versioning for API endpoints to ensure backward compatib
 If no `Accept-Version` header is provided, requests default to the current stable version (1.0).
 
 ```bash
-curl https://api.metricora.io/api/orgs/org-123/activity-records
+curl https://api.metricora.co.uk/api/orgs/org-123/activity-records
 # Uses version 1.0 by default
 ```
 
@@ -25,7 +25,7 @@ curl https://api.metricora.io/api/orgs/org-123/activity-records
 Use the `Accept-Version` header to request a specific API version:
 
 ```bash
-curl -H "Accept-Version: 1.0" https://api.metricora.io/api/orgs/org-123/activity-records
+curl -H "Accept-Version: 1.0" https://api.metricora.co.uk/api/orgs/org-123/activity-records
 ```
 
 ## Deprecation Policy
