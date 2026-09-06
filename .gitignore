@@ -6,6 +6,12 @@ node_modules/
 # Python
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# Real per-org data pulled by scripts/backtest-forecast-real-data.ts for
+# local-only re-validation against production data — never commit real
+# customer emissions figures.
+scripts/real_series.json
 
 # Next.js
 .next/

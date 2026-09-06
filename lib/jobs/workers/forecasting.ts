@@ -223,9 +223,12 @@ export async function processForecastingJob(
 }
 
 /**
- * Extract historical emissions data for forecasting
+ * Extract historical emissions data for forecasting.
+ *
+ * Exported so scripts/backtest-forecast-real-data.ts can reuse the exact
+ * same query production forecasting uses, rather than duplicating it.
  */
-async function getEmissionsHistory(
+export async function getEmissionsHistory(
   orgId: string,
   months: number
 ): Promise<Array<{ date: string; value: number }>> {

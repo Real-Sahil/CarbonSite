@@ -120,6 +120,19 @@ jobs:
       - name: Run smoke tests
         run: pnpm playwright test
 
+  forecast:
+    name: Forecast — Python unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: pytest api/ -v
+
   android:
     name: Android — release APK
     runs-on: ubuntu-latest
