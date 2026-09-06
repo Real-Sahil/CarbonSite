@@ -52,13 +52,19 @@ NEXT_PUBLIC_APP_URL   (Same as BETTER_AUTH_URL)
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_51234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmn"
 STRIPE_SECRET_KEY="sk_test_4eC39HqLyjWDarhtT7sF6Z8j2xyS6ZZH8byE9kJWh9mEPt3p8V8u"
 STRIPE_WEBHOOK_SECRET="whsec_test_1234567890abcdefghijklmnopqrstuvwxyz"
+STRIPE_PRICE_STARTER_MONTHLY="price_..."
+STRIPE_PRICE_STARTER_ANNUAL="price_..."
+STRIPE_PRICE_GROWTH_MONTHLY="price_..."
+STRIPE_PRICE_GROWTH_ANNUAL="price_..."
 ```
 
 **Note:** These are dummy test keys. When you have a Stripe account:
 1. Go to https://dashboard.stripe.com/apikeys
 2. Copy your test publishable key (pk_test_...) and secret key (sk_test_...)
-3. Update the Vercel environment variables with your actual keys
-4. For production, use the live keys (pk_live_... and sk_live_)
+3. Create a Product with 4 Prices (Starter/Growth × monthly/annual) and copy each Price ID into the `STRIPE_PRICE_*` vars above
+4. Add a webhook endpoint at `https://your-domain.com/api/webhooks/stripe` subscribed to `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed` — copy its signing secret into `STRIPE_WEBHOOK_SECRET`
+5. Update the Vercel environment variables with your actual keys
+6. For production, use the live keys (pk_live_... and sk_live_)
 
 #### Optional for Enhanced Features
 ```

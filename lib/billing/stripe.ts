@@ -102,3 +102,82 @@ export function extractPaymentMethodData(paymentMethod: Stripe.PaymentMethod): P
     expiryYear: card.exp_year || 0,
   };
 }
+
+// Self-serve subscription plans and their billing intervals. Enterprise has
+// no self-serve price (PLAN_PRICES.enterprise is 0/0, "contact sales") and
+// trial has nothing to subscribe to, so only these two are ever passed here.
+export type SubscribablePlan = 'starter' | 'growth';
+export type BillingInterval = 'monthly' | 'annual';
+
+// Stripe Price IDs are created in the Stripe Dashboard, not something this
+// codebase can generate — one env var per (plan, interval) combination.
+const PRICE_ENV_VARS: Record<SubscribablePlan, Record<BillingInterval, string>> = {
+  starter: { monthly: 'STRIPE_PRICE_STARTER_MONTHLY', annual: 'STRIPE_PRICE_STARTER_ANNUAL' },
+  growth: { monthly: 'STRIPE_PRICE_GROWTH_MONTHLY', annual: 'STRIPE_PRICE_GROWTH_ANNUAL' },
+};
+
+export function getPriceId(plan: SubscribablePlan, interval: BillingInterval): string {
+  const envVar = PRICE_ENV_VARS[plan][interval];
+  const priceId = process.env[envVar];
+  if (!priceId) {
+    throw new Error(`${envVar} is not set — cannot subscribe an organization to ${plan}/${interval} without it.`);
+  }
+  return priceId;
+}
+
+export async function createSubscription(params: {
+  customerId: string;
+  priceId: string;
+  paymentMethodId: string;
+}): Promise<Stripe.Subscription> {
+  return getStripe().subscriptions.create({
+    customer: params.customerId,
+    items: [{ price: params.priceId }],
+    default_payment_method: params.paymentMethodId,
+    payment_behavior: 'error_if_incomplete',
+    expand: ['latest_invoice.payment_intent'],
+  });
+}
+
+export async function updateSubscriptionPrice(
+  subscriptionId: string,
+  priceId: string,
+): Promise<Stripe.Subscription> {
+  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
+  const currentItem = subscription.items.data[0];
+  return getStripe().subscriptions.update(subscriptionId, {
+    items: [{ id: currentItem.id, price: priceId }],
+    proration_behavior: 'create_prorations',
+  });
+}
+
+// Cancels at the end of the current billing period rather than
+// immediately, so an org that's already paid for the period keeps access
+// through it — matches the pricing page's own "cancel anytime" language.
+export async function cancelSubscriptionAtPeriodEnd(subscriptionId: string): Promise<Stripe.Subscription> {
+  return getStripe().subscriptions.update(subscriptionId, { cancel_at_period_end: true });
+}
+
+export function constructWebhookEvent(rawBody: string, signature: string, webhookSecret: string): Stripe.Event {
+  return getStripe().webhooks.constructEvent(rawBody, signature, webhookSecret);
+}
+
+// A Stripe subscription price can be on either the subscription item or
+// (for older API shapes) elsewhere; this always reads it off the first
+// item, which is how createSubscription()/updateSubscriptionPrice() above
+// always shape a subscription (exactly one price per org).
+export function getSubscriptionPriceId(subscription: Stripe.Subscription): string | null {
+  return subscription.items.data[0]?.price.id ?? null;
+}
+
+// Reverse lookup from a Stripe price ID back to our plan name, for syncing
+// webhook events (which carry Stripe's price ID, not our plan string) back
+// onto Organization.plan/BillingSubscription.plan.
+export function planForPriceId(priceId: string): SubscribablePlan | null {
+  for (const plan of Object.keys(PRICE_ENV_VARS) as SubscribablePlan[]) {
+    for (const interval of Object.keys(PRICE_ENV_VARS[plan]) as BillingInterval[]) {
+      if (process.env[PRICE_ENV_VARS[plan][interval]] === priceId) return plan;
+    }
+  }
+  return null;
+}

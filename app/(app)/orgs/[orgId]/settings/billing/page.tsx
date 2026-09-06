@@ -2,11 +2,12 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2, Check, X as XIcon } from "lucide-react";
 import { getLimits, hasFeature, PLAN_LABELS, PLAN_PRICES, usagePercent, type PlanFeature } from "@/lib/billing/limits";
 import { PaymentMethodsSection } from "./payment-methods-section";
+import { SubscriptionActions } from "./subscription-actions";
 
 // Captured once at module load — pure constant, safe for React Compiler.
 const PAGE_LOAD_TIME = Date.now();
@@ -88,12 +89,16 @@ export default function BillingPage() {
   const [data, setData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const refetchUsage = useCallback(() => {
     fetch(`/api/orgs/${orgId}/billing/usage`)
       .then((r) => r.json())
       .then((d) => setData(d))
       .finally(() => setLoading(false));
   }, [orgId]);
+
+  useEffect(() => {
+    refetchUsage();
+  }, [refetchUsage]);
 
   const plan = (data?.plan ?? "trial") as Plan;
   const trialDaysLeft = data?.subscription?.trialEndsAt
@@ -135,12 +140,12 @@ export default function BillingPage() {
               <p className="text-sm text-gray-500 mt-0.5">Free during trial</p>
             )}
           </div>
-          {plan !== "enterprise" && (
+          {plan === "enterprise" && (
             <a
-              href="mailto:hello@carbonsite.io?subject=Upgrade%20enquiry"
+              href="mailto:hello@carbonsite.io?subject=Enterprise%20enquiry"
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#f97316] px-4 py-2 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors shrink-0"
             >
-              Upgrade
+              Contact sales
               <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           )}
@@ -153,6 +158,17 @@ export default function BillingPage() {
             {" - "}
             {new Date(data.subscription.currentPeriodEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </p>
+        )}
+
+        {plan !== "enterprise" && (
+          <div className="mt-4 border-t border-gray-100 pt-4">
+            <SubscriptionActions
+              orgId={orgId}
+              currentPlan={plan}
+              hasActiveSubscription={data?.subscription?.status === "active"}
+              onChanged={refetchUsage}
+            />
+          </div>
         )}
       </div>
 
@@ -249,11 +265,12 @@ export default function BillingPage() {
       </div>
 
       <p className="text-xs text-gray-500">
-        To upgrade, downgrade, or cancel, contact{" "}
+        Switch between Starter and Growth any time above. For Enterprise —
+        custom contracts, SSO, and dedicated support — contact{" "}
         <a href="mailto:hello@carbonsite.io" className="text-[#f97316] hover:underline">
           hello@carbonsite.io
         </a>
-        . Enterprise plans include custom contracts, SSO, and dedicated support.
+        .
       </p>
     </div>
   );
