@@ -235,8 +235,45 @@ model Organization {
   causalAnalyses              CausalAnalysis[]             @relation("causalOrg")
   batchJobs                   BatchJob[]                   @relation("batchJobOrg")
   analyticsDashboardCaches    AnalyticsDashboardCache[]    @relation("dashboardCacheOrg")
+  legalEntities               LegalEntity[]                @relation("OrgLegalEntities")
+  baseYears                   BaseYear[]                   @relation("OrgBaseYears")
+  structuralChanges           StructuralChange[]           @relation("OrgStructuralChanges")
+  baseYearRecalculations      BaseYearRecalculation[]      @relation("OrgBaseYearRecalcs")
+  restatements                Restatement[]                @relation("OrgRestatements")
+  environmentalPermits        EnvironmentalPermit[]        @relation("OrgPermits")
+  permitConditions            PermitCondition[]            @relation("OrgPermitConditions")
+  legalRegisterEntries        LegalRegisterEntry[]         @relation("OrgLegalRegister")
+  environmentalIncidents      EnvironmentalIncident[]      @relation("OrgIncidents")
+  correctiveActions           CorrectiveAction[]           @relation("OrgCorrectiveActions")
+  environmentalAspects        EnvironmentalAspect[]        @relation("OrgAspects")
+  biodiversityAssessments     BiodiversityAssessment[]     @relation("OrgBiodiversity")
+  habitatParcels              HabitatParcel[]              @relation("OrgHabitatParcels")
+  protectedSpeciesRecords     ProtectedSpeciesRecord[]     @relation("OrgSpeciesRecords")
+  habitatManagementPlans      HabitatManagementPlan[]      @relation("OrgManagementPlans")
+  ecologicalMonitoringEvents  EcologicalMonitoringEvent[]  @relation("OrgMonitoringEvents")
+  assuranceEngagements        AssuranceEngagement[]        @relation("OrgAssuranceEngagements")
+  evidenceRequests            EvidenceRequest[]             @relation("OrgEvidenceRequests")
+  assuranceSamples            AssuranceSample[]             @relation("OrgAssuranceSamples")
+  assuranceFindings           AssuranceFinding[]            @relation("OrgAssuranceFindings")
+  datapointStatuses           OrganizationDatapointStatus[] @relation("OrgDatapointStatuses")
+  environmentalMetricAggregates EnvironmentalMetricAggregate[]
+  onboardingProgress            OnboardingProgress?
 
   @@map("organizations")
+}
+
+model OnboardingProgress {
+  id              String    @id @default(cuid())
+  organizationId  String    @unique @map("organization_id")
+  completedSteps  String[]  @map("completed_steps")
+  isComplete      Boolean   @default(false) @map("is_complete")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("onboarding_progress")
 }
 
 enum OrgRole {

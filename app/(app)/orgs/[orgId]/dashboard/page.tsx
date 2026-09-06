@@ -28,6 +28,7 @@ import {
   TrendingUp,
   Upload,
 } from "lucide-react";
+import { redirect } from "next/navigation";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -49,6 +50,7 @@ import { BklitTrendArea, type TrendLineDatum } from "@/components/charts/bklit-t
 import { BklitDataGauge } from "@/components/charts/bklit-data-gauge";
 import { CalculationRunsLive } from "./calculation-runs-live";
 import { LiveDashboard } from "@/components/dashboard/LiveDashboard";
+import { OnboardingChecklist } from "./onboarding-checklist";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -81,19 +83,36 @@ function formatPercent(complete: number, total: number): string {
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
   const { facilityId: selectedFacilityId, contractId: selectedContractId } = await searchParams;
-  const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
+  const { session, membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
+  const role = membership.role;
 
-  const [organization, currentPeriod] = await Promise.all([
+  // Field workers and suppliers have no visibility into org emissions data — send them to their own submissions view.
+  if (role === "field_worker" || role === "supplier") {
+    redirect(`/orgs/${orgId}/submissions`);
+  }
+
+  // Fetch onboarding progress for admin role (cheap single-row lookup)
+  const onboardingProgress = role === "admin"
+    ? await prisma.onboardingProgress.findUnique({
+        where: { organizationId: orgId },
+        select: { isComplete: true, completedSteps: true },
+      }).catch(() => null)
+    : null;
+
+  const [organization, recentPeriods] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
-      select: { name: true, industry: true },
+      select: { name: true, industry: true, hqCountry: true },
     }),
-    prisma.reportingPeriod.findFirst({
+    prisma.reportingPeriod.findMany({
       where: { organizationId: orgId },
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
       select: { id: true, label: true, status: true },
+      take: 2,
     }),
   ]);
+  const currentPeriod = recentPeriods[0] ?? null;
+  const priorPeriod = recentPeriods[1] ?? null;
 
   // Contract filter support
   const [activeContracts, selectedContract] = await Promise.all([
@@ -843,7 +862,43 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       </div>
 
       <div className="max-w-[1200px] mx-auto px-8 py-8">
-      {/* OnboardingChecklist disabled - onboardingProgress Prisma model not implemented (Phase 2 feature) */}
+      {/* Onboarding checklist — shown to admins until all setup steps are complete */}
+      {role === "admin" && onboardingProgress && !onboardingProgress.isComplete && (() => {
+        const completedSteps = new Set(onboardingProgress.completedSteps);
+        const checklistSteps = [
+          {
+            label: "Organisation profile",
+            description: "Set your industry and country",
+            href: `/orgs/${orgId}/settings`,
+            done: completedSteps.has("org_profile") || !!(organization.industry && organization.hqCountry),
+          },
+          {
+            label: "Invite your team",
+            description: "Add at least one other member",
+            href: `/orgs/${orgId}/settings/members`,
+            done: completedSteps.has("first_team_member"),
+          },
+          {
+            label: "Create a reporting period",
+            description: "Define your first reporting window",
+            href: `/orgs/${orgId}/settings/periods`,
+            done: completedSteps.has("reporting_period") || reportingPeriods.length > 0,
+          },
+          {
+            label: "Import activity data",
+            description: "Upload a CSV or enter records manually",
+            href: `/orgs/${orgId}/imports`,
+            done: completedSteps.has("first_import") || recordCount > 0,
+          },
+          {
+            label: "Run your first calculation",
+            description: "Calculate CO2e for your records",
+            href: `/orgs/${orgId}/calculations`,
+            done: completedSteps.has("first_calculation") || calculationRuns.length > 0,
+          },
+        ];
+        return <OnboardingChecklist orgId={orgId} steps={checklistSteps} />;
+      })()}
 
       {/* Contract filter */}
       {activeContracts.length > 0 && (
