@@ -1,6 +1,6 @@
 # Cyber Essentials Self-Assessment
 
-**Organization:** CarbonSite  
+**Organization:** MetricOra  
 **Last Updated:** August 2026  
 **Framework:** Cyber Essentials (5 Core Controls)  
 **Assessment Type:** Self-Assessment (internal review, not third-party audited)
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-This document assesses CarbonSite's compliance against the UK NCSC Cyber Essentials framework's five core controls. **Status: 4/5 controls implemented; 1/5 control in progress (MFA).**
+This document assesses MetricOra's compliance against the UK NCSC Cyber Essentials framework's five core controls. **Status: 4/5 controls implemented; 1/5 control in progress (MFA).**
 
 The assessment is based on current codebase state as of August 2026. Some controls are partially implemented or have known gaps documented below.
 
@@ -38,7 +38,7 @@ The assessment is based on current codebase state as of August 2026. Some contro
 | **Database Encryption in Transit** | ✅ Implemented | All Postgres connections use TLS 1.3+. Connection string requires SSL mode. |
 | **Row-Level Security (RLS)** | ⚠️ Not Live | RLS policies written in `prisma/migrations/rls_policies.sql` but decommissioned as a live control. Enforcement via application-layer `requireOrgMember()` in `lib/auth/session.ts` instead. See section 2.1 for RBAC details. |
 | **Prepared Statements** | ✅ Implemented | All database queries via Prisma ORM (automatic parameterization, no string concatenation). |
-| **Principle of Least Privilege** | ✅ Implemented | Postgres role (`carbonsite_user`) has minimal permissions: SELECT, INSERT, UPDATE on app tables only. No superuser access from application. Neon-managed. |
+| **Principle of Least Privilege** | ✅ Implemented | Postgres role (`metricora_user`) has minimal permissions: SELECT, INSERT, UPDATE on app tables only. No superuser access from application. Neon-managed. |
 
 ### 1.3 Application Dependencies
 
@@ -156,7 +156,7 @@ The assessment is based on current codebase state as of August 2026. Some contro
 |--|--|--|
 | **Alerting Rules** | ⚠️ Not Implemented | **Gap:** No automated alerting on security events (repeated failed logins, role changes, mass exports, data deletion). Plan: `lib/security/alerting.ts` in A4 to flag high-risk audit actions and notify admins via FCM/Resend. |
 | **Incident Response Plan** | ✅ Documented | `SECURITY.md` defines breach detection sources (Sentry errors, customer reports, security scans), triage steps, 72-hour ICO decision tree. Incident runbook in progress (A4). |
-| **Breach Notification** | ✅ Implemented | 72-hour ICO notification process documented. Contact: compliance@carbonsite.io. Determination: DSAR fulfillment possible? → yes = likely high risk → notify. Notification template in `SECURITY.md`. |
+| **Breach Notification** | ✅ Implemented | 72-hour ICO notification process documented. Contact: compliance@metricora.co.uk. Determination: DSAR fulfillment possible? → yes = likely high risk → notify. Notification template in `SECURITY.md`. |
 | **Security Testing** | ⚠️ Partial | Manual security review of auth/RBAC/multi-tenancy code paths. Automated tests: cross-tenant access rejection, CSRF validation, rate limiting. **Gap:** No penetration testing, no automated OWASP scanning, no red-team exercises. Recommendation: engage external security firm for pre-production audit. |
 
 ### 5.3 Vulnerability Management
@@ -210,7 +210,7 @@ The assessment is based on current codebase state as of August 2026. Some contro
 
 ## Compliance Statement
 
-CarbonSite's current implementation satisfies **4 of 5 Cyber Essentials core controls** at a substantive level:
+MetricOra's current implementation satisfies **4 of 5 Cyber Essentials core controls** at a substantive level:
 - ✅ **Control 1 (Secure Configuration):** 85% — gaps are CSP nonce migration and dependency audit CI integration (minor).
 - ✅ **Control 2 (Access Control):** 90% — gap is MFA (planned A3).
 - ✅ **Control 3 (Malware Protection):** 90% — gap is active antivirus scanning (low priority, compensated by sandboxing).

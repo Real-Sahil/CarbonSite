@@ -69,7 +69,7 @@ export default function RootPage() {
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             <AnimateIn>
-              <p className="text-[10px] text-amber-600 font-mono uppercase tracking-[0.14em] mb-5">Why CarbonSite</p>
+              <p className="text-[10px] text-amber-600 font-mono uppercase tracking-[0.14em] mb-5">Why MetricOra</p>
               <h2 className="text-[clamp(2rem,4.5vw,3.2rem)] font-semibold tracking-[-0.04em] leading-[1.1] text-[#111827]">
                 Carbon data that holds up{" "}
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-500">
@@ -85,7 +85,7 @@ export default function RootPage() {
                   no record of why.
                 </p>
                 <p className="text-base text-[#6B7280] leading-relaxed">
-                  CarbonSite replaces that with a proper accounting system — field evidence,
+                  MetricOra replaces that with a proper accounting system — field evidence,
                   structured review, deterministic calculation, and immutable publication.
                   Every figure is traceable to a source document and a named emission factor.
                 </p>

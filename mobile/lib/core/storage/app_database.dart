@@ -185,7 +185,7 @@ class AppDatabase extends _$AppDatabase {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dir = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dir.path, 'carbonsite.sqlite'));
+    final file = File(p.join(dir.path, 'metricora.sqlite'));
     return NativeDatabase.createInBackground(file);
   });
 }

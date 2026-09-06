@@ -1,11 +1,11 @@
-# dbt project for CarbonSite — SQL transformation orchestration
+# dbt project for MetricOra — SQL transformation orchestration
 # Builds immutable fact tables, aggregates, and tests from emission calculations
 
-name: 'carbonsite_dbt'
+name: 'metricora_dbt'
 version: '1.0.0'
 config-version: 2
 
-profile: 'carbonsite'
+profile: 'metricora'
 
 model-paths: ["models"]
 test-paths: ["tests"]
@@ -21,7 +21,7 @@ quoting:
   schema: false
 
 models:
-  carbonsite_dbt:
+  metricora_dbt:
     staging:
       materialized: view
     marts:

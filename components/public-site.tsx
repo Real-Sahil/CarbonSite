@@ -50,7 +50,7 @@ export function PublicFooter() {
     <footer className="border-t border-[#E5E7EB] mt-14">
       <div className="mx-auto max-w-7xl px-5 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
         <span className="text-sm text-[#374151] tracking-[-0.42px]">
-          &copy; {new Date().getFullYear()} CarbonSite. Built for construction carbon.
+          &copy; {new Date().getFullYear()} MetricOra. Built for construction carbon.
         </span>
         <div className="flex items-center gap-6 text-sm text-[#374151] tracking-[-0.42px]">
           <Link href="/product" className="hover:text-[#111827] transition-colors">Product</Link>

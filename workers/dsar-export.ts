@@ -74,7 +74,7 @@ export async function processDsarExport(dsarRequestId: string): Promise<void> {
       name: "README.txt",
       content:
         `Data export for ${user.email}, generated ${new Date().toISOString()}.\n\n` +
-        `Each file corresponds to one data category. See the CarbonSite privacy ` +
+        `Each file corresponds to one data category. See the MetricOra privacy ` +
         `policy for what each category means. Some records (e.g. activity records, ` +
         `evidence, field submissions) are retained by the organisation for its own ` +
         `compliance record-keeping even after an erasure request — see the erasure ` +

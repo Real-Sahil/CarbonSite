@@ -7,7 +7,7 @@ describe("notification email messages", () => {
       type: "report_ready",
       resourceId: "report-1",
       orgName: "Northbank",
-      appUrl: "https://app.carbonsite.test",
+      appUrl: "https://app.metricora.test",
       metadata: {
         orgId: "org-1",
         reportType: "audit_package",
@@ -17,7 +17,7 @@ describe("notification email messages", () => {
 
     expect(message.subject).toContain("audit package report is ready");
     expect(message.text).toContain("FY 2026");
-    expect(message.text).toContain("https://app.carbonsite.test/orgs/org-1/reports");
+    expect(message.text).toContain("https://app.metricora.test/orgs/org-1/reports");
   });
 
   test("builds import failure emails with the failure reason", () => {
@@ -25,7 +25,7 @@ describe("notification email messages", () => {
       type: "import_failed",
       resourceId: "import-1",
       orgName: "Northbank",
-      appUrl: "https://app.carbonsite.test",
+      appUrl: "https://app.metricora.test",
       metadata: {
         orgId: "org-1",
         sourceFilename: "waste.csv",
@@ -43,7 +43,7 @@ describe("notification email messages", () => {
       type: "task_assigned",
       resourceId: "task-1",
       orgName: "Northbank",
-      appUrl: "https://app.carbonsite.test",
+      appUrl: "https://app.metricora.test",
       metadata: {
         orgId: "org-1",
         targetType: "activity_record",
@@ -56,6 +56,6 @@ describe("notification email messages", () => {
     expect(message.subject).toContain("task assigned");
     expect(message.text).toContain("activity record review task");
     expect(message.text).toContain("Concrete delivery");
-    expect(message.text).toContain("https://app.carbonsite.test/orgs/org-1/records");
+    expect(message.text).toContain("https://app.metricora.test/orgs/org-1/records");
   });
 });

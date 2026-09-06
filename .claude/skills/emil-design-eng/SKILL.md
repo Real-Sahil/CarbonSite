@@ -69,7 +69,7 @@ CSS animations outperform JavaScript animations under load. Use CSS for simple s
 - Gate hover effects: `@media (hover: hover) { .btn:hover { ... } }`
 - Animated content must not be the sole means of conveying information
 
-## CarbonSite Specific Applications
+## MetricOra Specific Applications
 
 - Dashboard chart entrance: stagger bars/segments, 40ms delay, ease-out
 - Import progress indicator: indeterminate to determinate, spring fill

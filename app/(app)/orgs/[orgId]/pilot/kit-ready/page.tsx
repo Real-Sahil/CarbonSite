@@ -221,7 +221,7 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
           </CardHeader>
           <CardContent>
             <p className="text-slate-700 mb-4">
-              The documentation kit includes contact information for CarbonSite's onboarding team. Refer to the Executive Summary for direct support details, or visit your organization's dashboard for additional resources.
+              The documentation kit includes contact information for MetricOra's onboarding team. Refer to the Executive Summary for direct support details, or visit your organization's dashboard for additional resources.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild>

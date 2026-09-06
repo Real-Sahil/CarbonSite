@@ -1,6 +1,6 @@
 # Infrastructure Security Findings Report
 
-**Product:** CarbonSite — UK Construction Carbon Accounting Platform  
+**Product:** MetricOra — UK Construction Carbon Accounting Platform  
 **Audit Date:** 2026-08-06  
 **Auditor:** Automated code review + static analysis  
 **Scope:** Data transport infrastructure, authentication/invite flows, multi-tenant project isolation
@@ -153,7 +153,7 @@ void session;
 | Affects | Postgres-backed storage driver (`STORAGE_DRIVER=db`) |
 
 **Description**  
-`signStorageUrl()` falls back to `"carbonsite-dev-storage-secret"` when `BETTER_AUTH_SECRET` is unset. This string is public in the repository. Anyone who knows the string can forge valid presigned download or upload URLs for any storage key — bypassing the 15-minute expiry and the org-membership check in `/api/uploads/presign`.
+`signStorageUrl()` falls back to `"metricora-dev-storage-secret"` when `BETTER_AUTH_SECRET` is unset. This string is public in the repository. Anyone who knows the string can forge valid presigned download or upload URLs for any storage key — bypassing the 15-minute expiry and the org-membership check in `/api/uploads/presign`.
 
 **Remediation**  
 Remove the fallback and throw at module load time if the secret is absent:

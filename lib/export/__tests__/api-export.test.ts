@@ -207,6 +207,6 @@ describe("API Export", () => {
     // Verify JSON-LD structure
     expect((jsonld as any).emissions.scope1["@type"]).toBe("qudt:QuantityValue");
     expect((jsonld as any).emissions.scope1["qudt:hasUnit"]).toBe("tCO2e");
-    expect((jsonld as any)["@id"]).toContain("urn:carbonsite");
+    expect((jsonld as any)["@id"]).toContain("urn:metricora");
   });
 });

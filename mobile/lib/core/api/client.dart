@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 const _storage = FlutterSecureStorage();
 const _configuredBaseUrl = String.fromEnvironment(
   'CARBONSITE_API_BASE_URL',
-  defaultValue: 'https://carbonsite-rosy.vercel.app',
+  defaultValue: 'https://metricora-rosy.vercel.app',
 );
 
 // ---------------------------------------------------------------------------
@@ -168,11 +168,11 @@ void invalidateClient() {
 String normalizeBaseUrl(String value) {
   final uri = Uri.tryParse(value.trim());
   if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
-    throw ArgumentError('CarbonSite API base URL must be an absolute URL.');
+    throw ArgumentError('MetricOra API base URL must be an absolute URL.');
   }
   if (uri.scheme != 'https' && uri.host != 'localhost') {
     throw ArgumentError(
-        'CarbonSite API base URL must use HTTPS outside localhost.');
+        'MetricOra API base URL must use HTTPS outside localhost.');
   }
   return uri.replace(path: trimTrailingSlash(uri.path)).toString();
 }

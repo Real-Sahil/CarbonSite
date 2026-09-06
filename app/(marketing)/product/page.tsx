@@ -8,7 +8,7 @@ import { VideoBackground } from "@/components/ui/video-background";
 import { ProductCtaBg } from "@/components/marketing/section-backgrounds";
 
 export const metadata: Metadata = {
-  title: "Product - CarbonSite",
+  title: "Product - MetricOra",
   description: "Platform overview: field capture, import centre, review queue, calculation engine, snapshot publishing, and audit-ready reports.",
 };
 

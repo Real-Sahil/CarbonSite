@@ -23,13 +23,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
 
   return {
-    title: `${post.title} | CarbonSite Blog`,
+    title: `${post.title} | MetricOra Blog`,
     description: post.excerpt,
     openGraph: {
       title: post.title,
       description: post.excerpt,
       type: 'article',
-      url: `https://carbonsite.ai/blog/${post.slug}`,
+      url: `https://metricora.co.uk/blog/${post.slug}`,
       images: post.image ? [{ url: post.image }] : [],
       publishedTime: post.date,
       authors: [post.author],
@@ -127,7 +127,7 @@ export default async function BlogPostPage({ params }: Props) {
               href="/pricing"
               className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
             >
-              Try CarbonSite
+              Try MetricOra
             </Link>
           </div>
         </footer>

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The IoT Device Integration enables real-time meter data ingestion into CarbonSite, eliminating manual CSV imports for utilities and facilities. Connect electric meters, gas meters, fuel pumps, and water meters to automatically capture Scope 1 and Scope 2 emissions data.
+The IoT Device Integration enables real-time meter data ingestion into MetricOra, eliminating manual CSV imports for utilities and facilities. Connect electric meters, gas meters, fuel pumps, and water meters to automatically capture Scope 1 and Scope 2 emissions data.
 
 **Supported device types:**
 - Electricity Meter → `s2-electricity-lb` (location-based grid electricity)

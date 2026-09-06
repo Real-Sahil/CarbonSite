@@ -1,6 +1,6 @@
-# CarbonSite dbt Project
+# MetricOra dbt Project
 
-Data transformation layer for CarbonSite emissions calculations and reporting.
+Data transformation layer for MetricOra emissions calculations and reporting.
 
 ## Architecture
 
@@ -53,7 +53,7 @@ dbt deps
 export DBT_POSTGRES_HOST=your-postgres-host
 export DBT_POSTGRES_USER=your-user
 export DBT_POSTGRES_PASS=your-password
-export DBT_POSTGRES_DBNAME=carbonsite
+export DBT_POSTGRES_DBNAME=metricora
 
 # Verify connection
 dbt debug
@@ -114,7 +114,7 @@ dbt test --select assert_no_negative_emissions
 dbt test --debug
 ```
 
-## Integration with CarbonSite
+## Integration with MetricOra
 
 ### Calculation Worker Flow
 

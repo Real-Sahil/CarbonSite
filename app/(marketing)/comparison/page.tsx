@@ -7,7 +7,7 @@ type Feature = {
   id: string;
   name: string;
   category: 'Field Capture' | 'Calculation' | 'Reporting' | 'Integration';
-  carbonsite: boolean | 'partial';
+  metricora: boolean | 'partial';
   gaia: boolean | 'partial';
   persefoni: boolean | 'partial';
   watershed: boolean | 'partial';
@@ -17,37 +17,37 @@ type Feature = {
 
 const FEATURES: Feature[] = [
   // Field Capture
-  { id: 'ocr', name: 'Mobile data capture', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
-  { id: 'offline', name: 'Offline sync capability', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
-  { id: 'mobile-app', name: 'Mobile field app', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
-  { id: 'photo-upload', name: 'Photo/document upload', category: 'Field Capture', carbonsite: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
-  { id: 'gps-tagging', name: 'GPS auto-tagging', category: 'Field Capture', carbonsite: true, gaia: false, persefoni: 'partial', watershed: false, emitwise: false },
+  { id: 'ocr', name: 'Mobile data capture', category: 'Field Capture', metricora: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'offline', name: 'Offline sync capability', category: 'Field Capture', metricora: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'mobile-app', name: 'Mobile field app', category: 'Field Capture', metricora: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'photo-upload', name: 'Photo/document upload', category: 'Field Capture', metricora: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
+  { id: 'gps-tagging', name: 'GPS auto-tagging', category: 'Field Capture', metricora: true, gaia: false, persefoni: 'partial', watershed: false, emitwise: false },
 
   // Calculation
-  { id: 'audit-trail', name: 'Append-only audit trail', category: 'Calculation', carbonsite: true, gaia: 'partial', persefoni: true, watershed: 'partial', emitwise: 'partial', differentiator: true },
-  { id: 'hash-chain', name: 'Immutable audit trail', category: 'Calculation', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
-  { id: 'scope3-estimation', name: 'Scope 3 smart estimation', category: 'Calculation', carbonsite: true, gaia: false, persefoni: true, watershed: true, emitwise: 'partial' },
-  { id: 'invoice-sync', name: 'Invoice sync (Xero/SAP/QB)', category: 'Calculation', carbonsite: true, gaia: false, persefoni: 'partial', watershed: 'partial', emitwise: false },
-  { id: 'anomaly-detection', name: 'Anomaly detection', category: 'Calculation', carbonsite: true, gaia: false, persefoni: 'partial', watershed: false, emitwise: false },
-  { id: 'custom-factors', name: 'Custom emission factors', category: 'Calculation', carbonsite: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
+  { id: 'audit-trail', name: 'Append-only audit trail', category: 'Calculation', metricora: true, gaia: 'partial', persefoni: true, watershed: 'partial', emitwise: 'partial', differentiator: true },
+  { id: 'hash-chain', name: 'Immutable audit trail', category: 'Calculation', metricora: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'scope3-estimation', name: 'Scope 3 smart estimation', category: 'Calculation', metricora: true, gaia: false, persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'invoice-sync', name: 'Invoice sync (Xero/SAP/QB)', category: 'Calculation', metricora: true, gaia: false, persefoni: 'partial', watershed: 'partial', emitwise: false },
+  { id: 'anomaly-detection', name: 'Anomaly detection', category: 'Calculation', metricora: true, gaia: false, persefoni: 'partial', watershed: false, emitwise: false },
+  { id: 'custom-factors', name: 'Custom emission factors', category: 'Calculation', metricora: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
 
   // Reporting
-  { id: 'real-time-dashboard', name: 'Real-time dashboard updates', category: 'Reporting', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },
-  { id: 'data-lineage', name: 'Data lineage visualization', category: 'Reporting', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
-  { id: 'compliance-export', name: 'Compliance evidence export', category: 'Reporting', carbonsite: true, gaia: false, persefoni: 'partial', watershed: 'partial', emitwise: false },
-  { id: 'multi-framework', name: 'Multi-framework (CSRD/SBTi)', category: 'Reporting', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },
-  { id: 'pdf-csv-export', name: 'PDF/CSV report export', category: 'Reporting', carbonsite: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
+  { id: 'real-time-dashboard', name: 'Real-time dashboard updates', category: 'Reporting', metricora: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'data-lineage', name: 'Data lineage visualization', category: 'Reporting', metricora: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'compliance-export', name: 'Compliance evidence export', category: 'Reporting', metricora: true, gaia: false, persefoni: 'partial', watershed: 'partial', emitwise: false },
+  { id: 'multi-framework', name: 'Multi-framework (CSRD/SBTi)', category: 'Reporting', metricora: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'pdf-csv-export', name: 'PDF/CSV report export', category: 'Reporting', metricora: true, gaia: true, persefoni: true, watershed: true, emitwise: true },
 
   // Integration
-  { id: 'api-versioning', name: 'API versioning', category: 'Integration', carbonsite: true, gaia: false, persefoni: true, watershed: true, emitwise: 'partial' },
-  { id: 'sso-saml', name: 'SSO/SAML (Okta/Azure)', category: 'Integration', carbonsite: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: false },
-  { id: 'webhooks', name: 'Webhooks & event streams', category: 'Integration', carbonsite: true, gaia: false, persefoni: true, watershed: true, emitwise: false },
-  { id: 'open-source', name: 'Open-source code', category: 'Integration', carbonsite: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
+  { id: 'api-versioning', name: 'API versioning', category: 'Integration', metricora: true, gaia: false, persefoni: true, watershed: true, emitwise: 'partial' },
+  { id: 'sso-saml', name: 'SSO/SAML (Okta/Azure)', category: 'Integration', metricora: true, gaia: 'partial', persefoni: true, watershed: true, emitwise: false },
+  { id: 'webhooks', name: 'Webhooks & event streams', category: 'Integration', metricora: true, gaia: false, persefoni: true, watershed: true, emitwise: false },
+  { id: 'open-source', name: 'Open-source code', category: 'Integration', metricora: true, gaia: false, persefoni: false, watershed: false, emitwise: false, differentiator: true },
 ];
 
-const COMPETITORS = ['carbonsite', 'gaia', 'persefoni', 'watershed', 'emitwise'] as const;
+const COMPETITORS = ['metricora', 'gaia', 'persefoni', 'watershed', 'emitwise'] as const;
 const COMPETITOR_DISPLAY = {
-  carbonsite: { name: 'CarbonSite', color: 'bg-blue-50 dark:bg-blue-950', accent: 'text-blue-700' },
+  metricora: { name: 'MetricOra', color: 'bg-blue-50 dark:bg-blue-950', accent: 'text-blue-700' },
   gaia: { name: 'Gaia', color: 'bg-gray-50 dark:bg-gray-900', accent: 'text-gray-700' },
   persefoni: { name: 'Persefoni', color: 'bg-gray-50 dark:bg-gray-900', accent: 'text-gray-700' },
   watershed: { name: 'Watershed', color: 'bg-gray-50 dark:bg-gray-900', accent: 'text-gray-700' },
@@ -55,7 +55,7 @@ const COMPETITOR_DISPLAY = {
 };
 
 const PRICING = {
-  carbonsite: { tier: 'Freemium', price: '$0–Custom' },
+  metricora: { tier: 'Freemium', price: '$0–Custom' },
   gaia: { tier: 'Enterprise', price: '$100+/mo' },
   persefoni: { tier: 'Enterprise', price: 'Custom' },
   watershed: { tier: 'Premium', price: '$500+/mo' },
@@ -99,10 +99,10 @@ export default function ComparisonPage() {
       <div className="bg-gradient-to-br from-blue-50 to-slate-50 dark:from-blue-950 dark:to-slate-950 border-b border-slate-200 dark:border-slate-800 px-4 py-12 md:py-16">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
-            CarbonSite vs. Competitors
+            MetricOra vs. Competitors
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">
-            See how CarbonSite stacks up. We focus on field-first architecture, transparency, and Scope 3 automation—advantages that matter for enterprises and mid-market companies managing emissions at scale.
+            See how MetricOra stacks up. We focus on field-first architecture, transparency, and Scope 3 automation—advantages that matter for enterprises and mid-market companies managing emissions at scale.
           </p>
         </div>
       </div>
@@ -128,7 +128,7 @@ export default function ComparisonPage() {
           </div>
           {differentiatorCount > 0 && (
             <p className="text-xs text-blue-600 dark:text-blue-400 mt-3">
-              Showing {differentiatorCount} CarbonSite-exclusive features in selected categories
+              Showing {differentiatorCount} MetricOra-exclusive features in selected categories
             </p>
           )}
         </div>
@@ -148,7 +148,7 @@ export default function ComparisonPage() {
                   <th key={comp} className="text-center py-4 px-4">
                     <div className={`py-3 rounded-lg ${COMPETITOR_DISPLAY[comp].color}`}>
                       <p className="font-bold text-slate-900 dark:text-white">{COMPETITOR_DISPLAY[comp].name}</p>
-                      {comp === 'carbonsite' && (
+                      {comp === 'metricora' && (
                         <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-1">LEADER</p>
                       )}
                     </div>
@@ -232,7 +232,7 @@ export default function ComparisonPage() {
             Ready to choose the right platform?
           </h2>
           <p className="text-blue-100 mb-8 text-lg">
-            CarbonSite brings field-first architecture, transparent methodology, and automated Scope 3 collection. See it in action.
+            MetricOra brings field-first architecture, transparent methodology, and automated Scope 3 collection. See it in action.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -257,7 +257,7 @@ export default function ComparisonPage() {
         <div className="space-y-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              Why does CarbonSite have on-device OCR when others don&apos;t?
+              Why does MetricOra have on-device OCR when others don&apos;t?
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
               Field workers often operate in areas with poor connectivity. Our Flutter app uses Google ML Kit for on-device OCR—zero API calls, zero latency, 100% privacy. Data syncs when they reconnect, offline-first.
@@ -273,10 +273,10 @@ export default function ComparisonPage() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              How does CarbonSite&apos;s Scope 3 estimation work compared to competitors?
+              How does MetricOra&apos;s Scope 3 estimation work compared to competitors?
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Competitors use historical industry averages (generic). CarbonSite trains ML models on YOUR historical data—learns your facility&apos;s patterns, then estimates missing values. More accurate than one-size-fits-all factors, and it improves as you submit more data.
+              Competitors use historical industry averages (generic). MetricOra trains ML models on YOUR historical data—learns your facility&apos;s patterns, then estimates missing values. More accurate than one-size-fits-all factors, and it improves as you submit more data.
             </p>
           </div>
           <div>
@@ -284,7 +284,7 @@ export default function ComparisonPage() {
               Why is open-source important for carbon accounting?
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Auditors and regulators need to verify calculation logic. Closed-box tools hide formulas. CarbonSite&apos;s code is public on GitHub. Auditors inspect it, fork it, verify it. That transparency builds enterprise trust.
+              Auditors and regulators need to verify calculation logic. Closed-box tools hide formulas. MetricOra&apos;s code is public on GitHub. Auditors inspect it, fork it, verify it. That transparency builds enterprise trust.
             </p>
           </div>
           <div>
@@ -292,7 +292,7 @@ export default function ComparisonPage() {
               Which platform should we choose based on this comparison?
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Choose based on your workflow. Field-heavy operations (contractors, waste management, logistics) benefit most from CarbonSite&apos;s mobile OCR and offline support. Enterprise audit-critical orgs (publicly traded, regulated) value our hash-chain immutability and compliance exports. Supplier-heavy companies (apparel, food, manufacturing) need our supplier portal and automated Scope 3 collection.
+              Choose based on your workflow. Field-heavy operations (contractors, waste management, logistics) benefit most from MetricOra&apos;s mobile OCR and offline support. Enterprise audit-critical orgs (publicly traded, regulated) value our hash-chain immutability and compliance exports. Supplier-heavy companies (apparel, food, manufacturing) need our supplier portal and automated Scope 3 collection.
             </p>
           </div>
         </div>

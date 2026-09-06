@@ -60,7 +60,7 @@ export default function SetupGuidePage() {
                       <strong>Authentication:</strong> Use if needed (optional)
                     </li>
                     <li>
-                      <strong>Save the webhook URL</strong> (you&apos;ll register it in CarbonSite)
+                      <strong>Save the webhook URL</strong> (you&apos;ll register it in MetricOra)
                     </li>
                   </ul>
                 </div>
@@ -91,10 +91,10 @@ export default function SetupGuidePage() {
               </div>
 
               <div className="space-y-3">
-                <h3 className="font-semibold">Step 4: Register in CarbonSite</h3>
+                <h3 className="font-semibold">Step 4: Register in MetricOra</h3>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p>
-                    Go to <strong>n8n Workflows</strong> in CarbonSite and click{' '}
+                    Go to <strong>n8n Workflows</strong> in MetricOra and click{' '}
                     <strong>New Workflow</strong>. Enter:
                   </p>
                   <ul className="list-disc list-inside space-y-1 ml-2">
@@ -118,8 +118,8 @@ export default function SetupGuidePage() {
                 <h3 className="font-semibold">Step 5: Test & Deploy</h3>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p>
-                    Click <strong>Test</strong> in CarbonSite to trigger a sample execution. Monitor
-                    logs in both n8n and CarbonSite to ensure workflow works.
+                    Click <strong>Test</strong> in MetricOra to trigger a sample execution. Monitor
+                    logs in both n8n and MetricOra to ensure workflow works.
                   </p>
                 </div>
               </div>
@@ -150,14 +150,14 @@ export default function SetupGuidePage() {
                 <h3 className="font-semibold">How dbt Works</h3>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p>
-                    dbt is already configured in CarbonSite. When an external data sync lands
+                    dbt is already configured in MetricOra. When an external data sync lands
                     rows in <code className="bg-slate-100 px-2 py-1 rounded text-xs">staged_external_data</code>,
                     a dbt job automatically:
                   </p>
                   <ol className="list-decimal list-inside space-y-1 ml-2">
                     <li>Reads from staged_external_data table</li>
                     <li>Cleans and normalizes data (removes duplicates, validates formats)</li>
-                    <li>Maps external fields to CarbonSite schema</li>
+                    <li>Maps external fields to MetricOra schema</li>
                     <li>Creates activity_records from transformed data</li>
                     <li>Builds audit trail with lineage</li>
                   </ol>
@@ -177,7 +177,7 @@ export default function SetupGuidePage() {
                   <div className="ml-4">↓</div>
                   <div>PostgreSQL: activity_records</div>
                   <div className="ml-4">↓</div>
-                  <div>CarbonSite Dashboard & Reports</div>
+                  <div>MetricOra Dashboard & Reports</div>
                 </div>
               </div>
 
@@ -261,7 +261,7 @@ export default function SetupGuidePage() {
             <div className="flex gap-3">
               <input type="checkbox" id="step3" className="mt-1" />
               <label htmlFor="step3" className="text-sm">
-                Monitor syncs and workflows in the CarbonSite dashboard
+                Monitor syncs and workflows in the MetricOra dashboard
               </label>
             </div>
           </div>

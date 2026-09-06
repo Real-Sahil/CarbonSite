@@ -5,7 +5,7 @@ import { VideoBackground } from "@/components/ui/video-background";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Waste and Haulage - CarbonSite",
+  title: "Waste and Haulage - MetricOra",
   description: "Waste ticket capture, EWC codes, transfer notes, carrier movements, and route evidence for waste and haulage operators.",
 };
 

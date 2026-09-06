@@ -12,7 +12,7 @@ export default function AppError({
   const [resetCount, setResetCount] = useState(0);
 
   useEffect(() => {
-    console.error("[CarbonSite] App error:", {
+    console.error("[MetricOra] App error:", {
       message: error.message,
       digest: error.digest,
       stack: error.stack,

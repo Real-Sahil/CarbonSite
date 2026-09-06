@@ -42,7 +42,7 @@ const STEP_DEFS: StepDef[] = [
     detail:
       "This ensures emission factors are matched correctly and reports use the right regional standards.",
     icon: Building2,
-    href: (orgId) => `/orgs/${orgId}/settings`,
+    href: (orgId) => `/orgs/${orgId}/settings/operations`,
     cta: "Go to settings",
   },
   {
@@ -62,7 +62,7 @@ const STEP_DEFS: StepDef[] = [
     detail:
       "All activity records and calculations are scoped to a reporting period. Create one before importing data.",
     icon: CalendarRange,
-    href: (orgId) => `/orgs/${orgId}/settings/periods`,
+    href: (orgId) => `/orgs/${orgId}/settings/operations`,
     cta: "Create period",
   },
   {
@@ -181,7 +181,7 @@ export default function OnboardingPage() {
             Setup
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mb-2">
-            Get CarbonSite ready
+            Get MetricOra ready
           </h1>
           <p className="text-sm text-[#6B7280] leading-relaxed">
             Complete these steps to start tracking emissions for your organisation. You can come

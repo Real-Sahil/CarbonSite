@@ -20,7 +20,7 @@ export async function sendSupplierCredentialsEmail(params: {
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h1 style="color: #333; margin: 0;">Your CarbonSite Account is Ready</h1>
+        <h1 style="color: #333; margin: 0;">Your MetricOra Account is Ready</h1>
       </div>
 
       <p style="font-size: 16px; color: #666; line-height: 1.6;">
@@ -28,7 +28,7 @@ export async function sendSupplierCredentialsEmail(params: {
       </p>
 
       <p style="font-size: 16px; color: #666; line-height: 1.6;">
-        <strong>${invitedByName}</strong> from <strong>${organizationName}</strong> has set up a CarbonSite account for you.
+        <strong>${invitedByName}</strong> from <strong>${organizationName}</strong> has set up a MetricOra account for you.
         Use the credentials below to log in and submit your emissions data.
       </p>
 
@@ -54,25 +54,25 @@ export async function sendSupplierCredentialsEmail(params: {
           font-weight: bold;
           font-size: 16px;
         ">
-          Log In to CarbonSite
+          Log In to MetricOra
         </a>
       </div>
 
       <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;" />
 
       <p style="font-size: 12px; color: #999;">
-        CarbonSite helps organizations track, report, and reduce their carbon emissions.
+        MetricOra helps organizations track, report, and reduce their carbon emissions.
         <br/>
-        <a href="https://carbonsite.ai" style="color: #3b82f6; text-decoration: none;">Learn more</a>
+        <a href="https://metricora.co.uk" style="color: #3b82f6; text-decoration: none;">Learn more</a>
       </p>
     </div>
   `;
 
   try {
     const response = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "noreply@carbonsite.ai",
+      from: process.env.EMAIL_FROM || "noreply@metricora.co.uk",
       to: supplierEmail,
-      subject: `Your CarbonSite account from ${organizationName}`,
+      subject: `Your MetricOra account from ${organizationName}`,
       html: htmlContent,
     });
 
@@ -101,7 +101,7 @@ export async function sendSupplierInviteEmail(params: {
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h1 style="color: #333; margin: 0;">You're Invited to CarbonSite</h1>
+        <h1 style="color: #333; margin: 0;">You're Invited to MetricOra</h1>
       </div>
 
       <p style="font-size: 16px; color: #666; line-height: 1.6;">
@@ -110,7 +110,7 @@ export async function sendSupplierInviteEmail(params: {
 
       <p style="font-size: 16px; color: #666; line-height: 1.6;">
         <strong>${invitedByName}</strong> from <strong>${organizationName}</strong> has invited you to join their
-        carbon emissions tracking and reporting platform on CarbonSite.
+        carbon emissions tracking and reporting platform on MetricOra.
       </p>
 
       <p style="font-size: 16px; color: #666; line-height: 1.6;">
@@ -154,18 +154,18 @@ export async function sendSupplierInviteEmail(params: {
       <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;" />
 
       <p style="font-size: 12px; color: #999;">
-        CarbonSite helps organizations track, report, and reduce their carbon emissions.
+        MetricOra helps organizations track, report, and reduce their carbon emissions.
         <br/>
-        <a href="https://carbonsite.ai" style="color: #3b82f6; text-decoration: none;">Learn more</a>
+        <a href="https://metricora.co.uk" style="color: #3b82f6; text-decoration: none;">Learn more</a>
       </p>
     </div>
   `;
 
   try {
     const response = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "noreply@carbonsite.ai",
+      from: process.env.EMAIL_FROM || "noreply@metricora.co.uk",
       to: supplierEmail,
-      subject: `${organizationName} invites you to CarbonSite`,
+      subject: `${organizationName} invites you to MetricOra`,
       html: htmlContent,
     });
 
@@ -242,7 +242,7 @@ export async function sendSupplierDataRequestEmail(params: {
 
   try {
     const response = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "noreply@carbonsite.ai",
+      from: process.env.EMAIL_FROM || "noreply@metricora.co.uk",
       to: supplierEmail,
       subject: `Data Request: ${emissionCategory} (${reportingYear})`,
       html: htmlContent,

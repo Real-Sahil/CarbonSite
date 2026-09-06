@@ -1,9 +1,9 @@
-# CarbonSite Content Pillars
+# MetricOra Content Pillars
 
 ## Pillar 1: Methodology & Transparency
 **Topics:** GHG Protocol compliance, DEFRA/EPA factor selection, calculation formulas, audit architecture
 
-- **Blog post:** "Building for Audit: How CarbonSite Ensures Immutability"
+- **Blog post:** "Building for Audit: How MetricOra Ensures Immutability"
 - **Resource:** Calculation engine deep-dive (interactive Mermaid diagram)
 - **SEO keywords:** carbon accounting audit trail, GHG Protocol implementation, emissions calculation methodology
 - **Target audience:** Auditors, compliance officers, CFOs, data engineers
@@ -98,7 +98,7 @@
 
 ### Phase 2: Depth (Weeks 3-4)
 **Posts 5-8:** Deep technical dives, enterprise features, thought leadership
-5. "Building for Audit: How CarbonSite Ensures Immutability" (methodology)
+5. "Building for Audit: How MetricOra Ensures Immutability" (methodology)
 6. "Carbon Accounting at Scale: Why Your Dashboard Feels Slow" (compliance + performance)
 7. "From Field to Finance: The Complete Emissions Data Journey" (data lineage)
 8. "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)" (supply chain quality)

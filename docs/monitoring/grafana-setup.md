@@ -1,6 +1,6 @@
 # Grafana Cloud Monitoring Setup
 
-This guide sets up real-time monitoring for CarbonSite using Grafana Cloud's free tier.
+This guide sets up real-time monitoring for MetricOra using Grafana Cloud's free tier.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ This guide sets up real-time monitoring for CarbonSite using Grafana Cloud's fre
 
 1. Go to https://grafana.com/auth/sign-up/create-user
 2. Sign up with your email
-3. Create organization name (e.g., "CarbonSite")
+3. Create organization name (e.g., "MetricOra")
 4. Note your organization ID and API token (Settings → API Keys)
 
 ## Step 2: Add PostgreSQL Data Source
@@ -25,7 +25,7 @@ This guide sets up real-time monitoring for CarbonSite using Grafana Cloud's fre
 ```
 Host: [your-neon-host].neon.tech
 Port: 5432
-Database: carbonsite
+Database: metricora
 User: [postgres-user]
 Password: [postgres-password]
 SSL Mode: require
@@ -109,4 +109,4 @@ Alert condition: `avg_seconds > 300` (5 minutes) over last 7 days
 - 10GB/month data
 - Basic alerting
 
-For CarbonSite MVP, free tier is sufficient.
+For MetricOra MVP, free tier is sufficient.

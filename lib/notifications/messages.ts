@@ -17,7 +17,7 @@ export function buildNotificationEmailMessage({
   appUrl,
   orgName,
 }: NotificationMessageInput): NotificationEmailMessage {
-  const orgPrefix = `[CarbonSite] ${orgName}`;
+  const orgPrefix = `[MetricOra] ${orgName}`;
 
   if (type === "report_ready") {
     const orgId = stringValue(metadata.orgId);
@@ -28,7 +28,7 @@ export function buildNotificationEmailMessage({
     return {
       subject: `${orgPrefix}: ${reportType.replaceAll("_", " ")} report is ready`,
       text: [
-        `Your CarbonSite report for ${periodLabel} is ready.`,
+        `Your MetricOra report for ${periodLabel} is ready.`,
         `Report ID: ${reportId}`,
         `Open reports: ${url}`,
       ].join("\n"),
@@ -43,7 +43,7 @@ export function buildNotificationEmailMessage({
     return {
       subject: `${orgPrefix}: import needs attention`,
       text: [
-        `CarbonSite could not process ${filename}.`,
+        `MetricOra could not process ${filename}.`,
         `Import ID: ${resourceId}`,
         `Reason: ${error}`,
         `Review imports: ${url}`,
@@ -74,7 +74,7 @@ export function buildNotificationEmailMessage({
   return {
     subject: `${orgPrefix}: task assigned`,
     text: [
-      `A CarbonSite ${targetType.replaceAll("_", " ")} review task has been assigned to you.`,
+      `A MetricOra ${targetType.replaceAll("_", " ")} review task has been assigned to you.`,
       `Target: ${targetLabel}`,
       targetDetail ? `Detail: ${targetDetail}` : undefined,
       `Task ID: ${resourceId}`,

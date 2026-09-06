@@ -1,6 +1,6 @@
 # n8n Workflow Orchestration Setup Guide
 
-n8n is a low-code workflow automation platform that extends CarbonSite capabilities with automated workflows. It connects via webhooks — no additional infrastructure needed.
+n8n is a low-code workflow automation platform that extends MetricOra capabilities with automated workflows. It connects via webhooks — no additional infrastructure needed.
 
 ## Quick Start
 
@@ -17,7 +17,7 @@ docker run -d --name n8n -p 5678:5678 n8n/n8n
 # Access at http://localhost:5678
 ```
 
-### 2. Configure CarbonSite Integration
+### 2. Configure MetricOra Integration
 
 Set environment variables:
 ```bash
@@ -33,7 +33,7 @@ On Vercel:
 
 ### 3. Create Webhook Endpoint in n8n
 
-All CarbonSite → n8n workflows use this pattern:
+All MetricOra → n8n workflows use this pattern:
 ```
 POST https://your-n8n-instance.com/webhook/{workflowName}
 
@@ -85,7 +85,7 @@ Body:
      Body: Review and approve/reject ASAP to keep data pipeline moving
      ```
 
-**Return to CarbonSite:** Optional webhook to /api/webhooks/n8n with:
+**Return to MetricOra:** Optional webhook to /api/webhooks/n8n with:
 ```json
 {
   "workflowName": "submission-reminder",
@@ -100,9 +100,9 @@ Body:
 
 **Purpose:** Automatically tag high-emission facilities
 
-**Trigger:** CarbonSite webhook (when calculation run completes)
+**Trigger:** MetricOra webhook (when calculation run completes)
 
-**CarbonSite Call:**
+**MetricOra Call:**
 ```typescript
 // In lib/calculation/run-worker.ts (already added)
 await triggerFacilityRiskFlag(orgId, calculationRunId);
@@ -125,7 +125,7 @@ await triggerFacilityRiskFlag(orgId, calculationRunId);
    - Medium: > 50th percentile
    - Normal: < 50th percentile
 4. **For each high-emission facility:**
-   - Update via CarbonSite API:
+   - Update via MetricOra API:
      ```http
      PATCH /api/orgs/${orgId}/facilities/${facilityId}
      {
@@ -140,7 +140,7 @@ await triggerFacilityRiskFlag(orgId, calculationRunId);
      ({{ total_co2e }} tonnes CO₂e in period)
      ```
 
-**Return to CarbonSite:**
+**Return to MetricOra:**
 ```json
 {
   "workflowName": "facility-risk-update",
@@ -156,9 +156,9 @@ await triggerFacilityRiskFlag(orgId, calculationRunId);
 
 **Purpose:** Instant report notifications to creator + team
 
-**Trigger:** CarbonSite webhook (when report status → 'ready')
+**Trigger:** MetricOra webhook (when report status → 'ready')
 
-**CarbonSite Call:**
+**MetricOra Call:**
 ```typescript
 // In lib/reports/worker.ts (already added)
 await triggerReportReadyNotification(
@@ -183,11 +183,11 @@ await triggerReportReadyNotification(
    Channel: #emissions-reports
    Notification: 📊 {{ reportType }} ready
    Creator: {{creatorEmail}}
-   Link: [View Report](https://carbonsite.app/reports/{{reportId}})
+   Link: [View Report](https://metricora.co.uk/reports/{{reportId}})
    ```
 4. **Optional: Create Slack thread** with report metadata
 
-**Return to CarbonSite:**
+**Return to MetricOra:**
 ```json
 {
   "workflowName": "report-ready-notification",
@@ -203,9 +203,9 @@ await triggerReportReadyNotification(
 
 **Purpose:** Flag unusual emissions data for auditor review
 
-**Trigger:** CarbonSite webhook (when anomaly score > threshold)
+**Trigger:** MetricOra webhook (when anomaly score > threshold)
 
-**CarbonSite Call:**
+**MetricOra Call:**
 ```typescript
 await triggerAnomalyAlert(orgId, recordId, anomalyScore, severity);
 ```
@@ -214,7 +214,7 @@ await triggerAnomalyAlert(orgId, recordId, anomalyScore, severity);
 1. **Parse anomaly details:**
    - Calculate impact: `(anomalyScore - baseline) / baseline * 100`
    - Determine severity: low (0.7-0.8), medium (0.8-0.9), high (>0.9)
-2. **Create ReviewTask** via CarbonSite API:
+2. **Create ReviewTask** via MetricOra API:
    ```http
    POST /api/orgs/${orgId}/review-tasks
    {
@@ -235,9 +235,9 @@ await triggerAnomalyAlert(orgId, recordId, anomalyScore, severity);
 
 **Purpose:** Auto-notify suppliers about data requests
 
-**Trigger:** CarbonSite webhook (when new SupplierDataRequest created)
+**Trigger:** MetricOra webhook (when new SupplierDataRequest created)
 
-**CarbonSite Call:**
+**MetricOra Call:**
 ```typescript
 await triggerSupplierDataRequest(orgId, supplierId, requestId, supplierEmail);
 ```
@@ -248,7 +248,7 @@ await triggerSupplierDataRequest(orgId, supplierId, requestId, supplierEmail);
    To: {{supplierEmail}}
    Subject: Data request from {{orgName}}: Please share emissions data
    Body: Help us calculate Scope 3 emissions
-   CTA: [Submit Data](https://carbonsite.app/supplier/requests/{{requestId}})
+   CTA: [Submit Data](https://metricora.co.uk/supplier/requests/{{requestId}})
    Deadline: 30 days
    ```
 2. **Track submission status** (optional):
@@ -257,14 +257,14 @@ await triggerSupplierDataRequest(orgId, supplierId, requestId, supplierEmail);
 
 ---
 
-## CarbonSite Webhook Integration
+## MetricOra Webhook Integration
 
-All workflows are triggered from CarbonSite via `lib/automation/n8n-client.ts`:
+All workflows are triggered from MetricOra via `lib/automation/n8n-client.ts`:
 
 ### Available Functions
 
 ```typescript
-// Workflow triggers (call from CarbonSite)
+// Workflow triggers (call from MetricOra)
 await triggerSubmissionReminder(orgId);
 await triggerFacilityRiskFlag(orgId, calculationRunId);
 await triggerReportReadyNotification(orgId, reportId, reportType, creatorEmail);
@@ -272,13 +272,13 @@ await triggerAnomalyAlert(orgId, recordId, anomalyScore, severity);
 await triggerSupplierDataRequest(orgId, supplierId, requestId, supplierEmail);
 ```
 
-### Return Webhooks (n8n → CarbonSite)
+### Return Webhooks (n8n → MetricOra)
 
 n8n can call `POST /api/webhooks/n8n` to trigger state updates:
 
 ```typescript
 // Example n8n HTTP node
-POST https://carbonsite.app/api/webhooks/n8n
+POST https://metricora.co.uk/api/webhooks/n8n
 Headers:
   Content-Type: application/json
   X-N8N-Signature: ${N8N_SIGNATURE_KEY}
@@ -306,7 +306,7 @@ Body:
 3. Provide test payload matching the trigger schema
 4. Verify output in execution history
 
-### Test from CarbonSite CLI
+### Test from MetricOra CLI
 
 ```bash
 # Trigger submission reminder
@@ -337,7 +337,7 @@ In n8n dashboard:
 - Monitor error rates
 - Set alerts for failures
 
-### CarbonSite Logs
+### MetricOra Logs
 
 n8n logs are written to stdout:
 ```bash
@@ -366,10 +366,10 @@ Monitor in Vercel Functions logs or your hosting platform's logging service.
 - In n8n, add HTTP auth header: `X-N8N-Signature: {{ signature }}`
 - Optional: Remove signature verification in development
 
-### Data Not Updating in CarbonSite
+### Data Not Updating in MetricOra
 
 - Verify return webhook payload matches schema
-- Check CarbonSite `/api/webhooks/n8n` is working:
+- Check MetricOra `/api/webhooks/n8n` is working:
   ```bash
   curl -X POST https://yourapp.com/api/webhooks/n8n \
     -H "Content-Type: application/json" \
@@ -383,7 +383,7 @@ Monitor in Vercel Functions logs or your hosting platform's logging service.
 
 1. **Idempotency:** Workflows should handle duplicate execution
 2. **Error Handling:** Set HTTP node to continue on error, log failures
-3. **Rate Limiting:** n8n respects CarbonSite rate limits; add backoff
+3. **Rate Limiting:** n8n respects MetricOra rate limits; add backoff
 4. **Security:**
    - Use HTTPS URLs only
    - Rotate `N8N_SIGNATURE_KEY` monthly

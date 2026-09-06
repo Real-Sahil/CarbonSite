@@ -61,7 +61,7 @@ export function PhoneCaptureMock() {
 
           {/* Header */}
           <div className="px-3 pb-2 border-b border-white/10">
-            <div className="text-white text-[11px] font-semibold">CarbonSite</div>
+            <div className="text-white text-[11px] font-semibold">MetricOra</div>
             <div className="text-zinc-400 text-[8px]">Field Capture</div>
           </div>
 

@@ -302,13 +302,13 @@ export default function N8nPage() {
               >
                 n8n
               </a>
-              . Use CarbonSite webhook triggers to automate responses to emissions events.
+              . Use MetricOra webhook triggers to automate responses to emissions events.
             </p>
           </div>
           <div>
             <strong>2. Webhook URL</strong>
             <p className="text-muted-foreground">
-              When creating workflows, register them in CarbonSite using the n8n webhook URL provided
+              When creating workflows, register them in MetricOra using the n8n webhook URL provided
               during workflow setup.
             </p>
           </div>
@@ -321,7 +321,7 @@ export default function N8nPage() {
           <div>
             <strong>4. Monitoring</strong>
             <p className="text-muted-foreground">
-              Workflow execution logs are tracked in CarbonSite. Check &quot;Last Triggered&quot; and &quot;Failures&quot; to
+              Workflow execution logs are tracked in MetricOra. Check &quot;Last Triggered&quot; and &quot;Failures&quot; to
               monitor health.
             </p>
           </div>

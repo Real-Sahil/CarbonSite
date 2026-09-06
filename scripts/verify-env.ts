@@ -16,4 +16,4 @@ if (!result.ok) {
   process.exit(1);
 }
 
-console.log("Environment configuration looks complete for CarbonSite.");
+console.log("Environment configuration looks complete for MetricOra.");

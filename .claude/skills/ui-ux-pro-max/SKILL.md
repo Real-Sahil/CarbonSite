@@ -2,7 +2,7 @@
 
 Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
 
-Design intelligence for CarbonSite across web (Next.js + shadcn/ui) and mobile (Flutter). Apply this skill when any task affects how features look, feel, move, or are interacted with.
+Design intelligence for MetricOra across web (Next.js + shadcn/ui) and mobile (Flutter). Apply this skill when any task affects how features look, feel, move, or are interacted with.
 
 ## 10 Priority Categories (Ranked by Impact)
 
@@ -10,7 +10,7 @@ Design intelligence for CarbonSite across web (Next.js + shadcn/ui) and mobile (
 - Contrast ratios: 4.5:1 for normal text, 3:1 for large text (WCAG AA)
 - All interactive elements keyboard-navigable with visible focus states
 - ARIA labels on icon-only buttons, charts, and complex widgets
-- Charts must have accessible text summaries (CarbonSite requirement: every chart needs a summary table)
+- Charts must have accessible text summaries (MetricOra requirement: every chart needs a summary table)
 
 ### 2. Touch & Interaction (CRITICAL — applies to Flutter)
 - Minimum 44×44px touch targets (iOS HIG + Material Design both require this)
@@ -23,7 +23,7 @@ Design intelligence for CarbonSite across web (Next.js + shadcn/ui) and mobile (
 - No layout shift on load (skeleton screens, not spinners for content areas)
 - Dashboard numbers animate in on first load (Motion countup, not instant flash)
 
-### 4. Style Selection (HIGH — CarbonSite is a professional SaaS tool)
+### 4. Style Selection (HIGH — MetricOra is a professional SaaS tool)
 - Category: **Product UI** (not Marketing/Brand) — earned familiarity over distinctiveness
 - Base: shadcn/ui + Tailwind v4 (web), Material 3 tokens via Flutter theme (mobile)
 - Icon family: Lucide (web), Material Symbols (Flutter) — one family only, no mixing
@@ -39,7 +39,7 @@ Design intelligence for CarbonSite across web (Next.js + shadcn/ui) and mobile (
 - Semantic color tokens (not hardcoded hex): `--color-primary`, `--color-destructive`, `--color-muted`
 - Line height 1.5–1.75 for body text
 - Chart/data colors: use accessible palette (avoid red/green as sole differentiators — add shape/pattern)
-- CarbonSite palette context: sustainability → greens work but must not be the only differentiator for accessibility
+- MetricOra palette context: sustainability → greens work but must not be the only differentiator for accessibility
 
 ### 7. Animation (MEDIUM)
 - Timing: 150–200ms for micro-interactions, 250–350ms for page transitions
@@ -59,11 +59,11 @@ Design intelligence for CarbonSite across web (Next.js + shadcn/ui) and mobile (
 - Deep linking from push notifications must land on the exact resource, not the list
 - Back navigation: predictable — never navigate to an unrelated section
 
-### 10. Charts & Data (LOW — but visible in CarbonSite dashboards)
+### 10. Charts & Data (LOW — but visible in MetricOra dashboards)
 - Always include legend or direct labels
 - Color palettes: accessible 8-color diverging scale for scope breakdowns
 - Responsive: mobile simplifies to bar/donut only (no complex scatter/bubble)
-- 25 chart types available — for CarbonSite use: bar (scope breakdown), line (trends), donut (category share), progress bar (target tracking)
+- 25 chart types available — for MetricOra use: bar (scope breakdown), line (trends), donut (category share), progress bar (target tracking)
 
 ## Pre-Delivery Validation
 

@@ -1,12 +1,12 @@
-import 'package:carbonsite_mobile/core/api/client.dart';
+import 'package:metricora_mobile/core/api/client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('normalizeBaseUrl', () {
     test('accepts production HTTPS URLs', () {
       expect(
-        normalizeBaseUrl('https://app.carbonsite.example/'),
-        'https://app.carbonsite.example',
+        normalizeBaseUrl('https://app.metricora.example/'),
+        'https://app.metricora.example',
       );
     });
 
@@ -17,7 +17,7 @@ void main() {
 
     test('rejects non-HTTPS remote URLs', () {
       expect(
-        () => normalizeBaseUrl('http://carbonsite.example'),
+        () => normalizeBaseUrl('http://metricora.example'),
         throwsArgumentError,
       );
     });

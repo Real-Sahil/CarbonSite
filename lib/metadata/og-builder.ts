@@ -28,7 +28,7 @@ export function buildOpenGraphMetadata(config: OpenGraphConfig): Partial<Metadat
       type: config.type === 'article' ? 'article' : 'website',
       ...(config.type === 'article' && config.publishedDate && {
         publishedTime: config.publishedDate,
-        authors: config.authors || ['CarbonSite'],
+        authors: config.authors || ['MetricOra'],
       }),
       url: config.url,
     },
@@ -37,7 +37,7 @@ export function buildOpenGraphMetadata(config: OpenGraphConfig): Partial<Metadat
       title: config.title,
       description: config.description,
       images: [config.image || '/og-default.jpg'],
-      creator: '@carbonsiteapp',
+      creator: '@metricoraapp',
     },
   };
 }

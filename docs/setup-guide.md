@@ -1,6 +1,6 @@
-# CarbonSite Setup Guide
+# MetricOra Setup Guide
 
-This guide covers local development, production backend setup, Vercel deployment, storage, jobs, mobile builds, and release verification for CarbonSite.
+This guide covers local development, production backend setup, Vercel deployment, storage, jobs, mobile builds, and release verification for MetricOra.
 
 ## 1. Services
 
@@ -86,7 +86,7 @@ BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false
 
 Use `JOB_PROCESSING_MODE=worker` only after a separate worker runtime is deployed and healthy.
 When `NODE_ENV=production`, `pnpm verify:env` rejects development-only local storage, console email, non-HTTPS app origins, and short auth secrets before release.
-Keep `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false` for immediate self-serve account setup. When it is set to `true`, CarbonSite sends Better Auth verification links through the configured transactional email driver and users must verify before signing in.
+Keep `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false` for immediate self-serve account setup. When it is set to `true`, MetricOra sends Better Auth verification links through the configured transactional email driver and users must verify before signing in.
 
 ## 4. Database
 
@@ -111,10 +111,10 @@ STORAGE_DRIVER=r2
 STORAGE_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
 STORAGE_ACCESS_KEY_ID=<r2-access-key>
 STORAGE_SECRET_ACCESS_KEY=<r2-secret-key>
-STORAGE_BUCKET=carbonsite
+STORAGE_BUCKET=metricora
 ```
 
-CarbonSite validates storage key shape for tenant-scoped evidence, imports, error exports, and reports. Production files are served through signed URLs.
+MetricOra validates storage key shape for tenant-scoped evidence, imports, error exports, and reports. Production files are served through signed URLs.
 
 ## 6. Email
 
@@ -148,7 +148,7 @@ The backend geocodes UK postcodes, stores coordinates, caches route distances, a
 
 ## 8. Vercel Deployment
 
-1. Connect Vercel to `Real-Sahil/CarbonSite`.
+1. Connect Vercel to `Real-Sahil/MetricOra`.
 2. Leave Install Command unset.
 3. Keep the repository build command as `pnpm run build`.
 4. Set all production environment variables.
@@ -195,8 +195,8 @@ flutter test
 Build with the production backend URL:
 
 ```bash
-flutter build apk --dart-define=CARBONSITE_API_BASE_URL=https://<your-vercel-domain>
-flutter build ios --dart-define=CARBONSITE_API_BASE_URL=https://<your-vercel-domain>
+flutter build apk --dart-define=METRICORA_API_BASE_URL=https://<your-vercel-domain>
+flutter build ios --dart-define=METRICORA_API_BASE_URL=https://<your-vercel-domain>
 ```
 
 The mobile app accepts field-worker invites, stores bearer sessions securely, captures OCR/GPS/evidence, queues submissions offline, uploads evidence through signed URLs, and submits to the org-scoped field submission APIs.
@@ -207,16 +207,16 @@ Use **Actions > Mobile release builds > Run workflow** or push a `v*` / `mobile-
 
 Inputs:
 
-- `api_base_url`: the deployed CarbonSite web URL used by the mobile app.
+- `api_base_url`: the deployed MetricOra web URL used by the mobile app.
 - `build_android`: produces release APK and AAB artifacts.
 - `build_ios`: produces an unsigned iOS app artifact on a macOS runner.
 
 Android artifacts can build without signing secrets by using the debug signing fallback. Those artifacts are suitable for CI verification and internal smoke testing only. Add these repository secrets before producing Play Store-ready release artifacts:
 
-- `CARBONSITE_ANDROID_KEYSTORE_BASE64`
-- `CARBONSITE_ANDROID_KEYSTORE_PASSWORD`
-- `CARBONSITE_ANDROID_KEY_ALIAS`
-- `CARBONSITE_ANDROID_KEY_PASSWORD`
+- `METRICORA_ANDROID_KEYSTORE_BASE64`
+- `METRICORA_ANDROID_KEYSTORE_PASSWORD`
+- `METRICORA_ANDROID_KEY_ALIAS`
+- `METRICORA_ANDROID_KEY_PASSWORD`
 
 The iOS workflow intentionally uses `--no-codesign`; App Store or TestFlight delivery still needs an Apple signing lane with certificate and provisioning profile secrets.
 
@@ -241,9 +241,9 @@ After deploy:
 
 ## 13. User Access Control And RBAC
 
-CarbonSite stores users separately from organisation memberships. Account creation happens through sign-up or invite acceptance; organisation access is controlled by `OrganizationMembership` rows with `admin`, `editor`, `reviewer`, `viewer`, `auditor`, and `field_worker` roles.
+MetricOra stores users separately from organisation memberships. Account creation happens through sign-up or invite acceptance; organisation access is controlled by `OrganizationMembership` rows with `admin`, `editor`, `reviewer`, `viewer`, `auditor`, and `field_worker` roles.
 
-Admins can add an existing CarbonSite user directly by email from Members & Access. If the email does not belong to an existing user, the system sends an invite link; accepting it creates the user account, membership, and session. Role changes, direct adds, invite creation, invite acceptance, and removals are written to the audit trail. The database records `created_at` and `updated_at` on memberships so RBAC changes are traceable through schema state and audit logs.
+Admins can add an existing MetricOra user directly by email from Members & Access. If the email does not belong to an existing user, the system sends an invite link; accepting it creates the user account, membership, and session. Role changes, direct adds, invite creation, invite acceptance, and removals are written to the audit trail. The database records `created_at` and `updated_at` on memberships so RBAC changes are traceable through schema state and audit logs.
 
 One-time public invite links are restricted to `field_worker` onboarding. Privileged roles such as admin, editor, reviewer, viewer, and auditor must be granted through email-bound member management so the account, invite, membership, and audit trail stay tied to a known identity.
 
@@ -271,4 +271,4 @@ CI runs the same web and mobile checks on `main` and pull requests.
 
 ## 15. Operations Runbook
 
-For production incident response, failed job recovery, backup and restore, rollback, and post-release smoke testing, use [CarbonSite Operations Runbook](./operations-runbook.md).
+For production incident response, failed job recovery, backup and restore, rollback, and post-release smoke testing, use [MetricOra Operations Runbook](./operations-runbook.md).

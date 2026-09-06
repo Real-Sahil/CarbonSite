@@ -54,7 +54,7 @@ export async function POST(
         include: { user: true },
       });
 
-      const email = member?.user.email || `org-${orgId}@carbonsite.app`;
+      const email = member?.user.email || `org-${orgId}@metricora.co.uk`;
 
       const stripeCustomer = await createOrGetStripeCustomer(orgId, email);
       stripeCustomerId = stripeCustomer.id;

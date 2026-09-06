@@ -11,7 +11,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[CarbonSite] Uncaught error:", error);
+    console.error("[MetricOra] Uncaught error:", error);
   }, [error]);
 
   return (

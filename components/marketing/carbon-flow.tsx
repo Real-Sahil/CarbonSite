@@ -32,7 +32,7 @@ export function CarbonFlowGraphic({ className = "" }: { className?: string }) {
     >
       <svg
         viewBox="0 0 660 170"
-        aria-label="CarbonSite workflow: Import, Review, Calculate, Publish, Report"
+        aria-label="MetricOra workflow: Import, Review, Calculate, Publish, Report"
         role="img"
         className="w-full"
       >

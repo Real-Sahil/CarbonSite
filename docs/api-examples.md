@@ -1,6 +1,6 @@
 # API Examples: Complete Workflow
 
-Practical examples for interacting with CarbonSite API using cURL and JavaScript.
+Practical examples for interacting with MetricOra API using cURL and JavaScript.
 
 ## Authentication
 
@@ -113,11 +113,11 @@ curl -X POST http://localhost:3000/api/orgs/org-abc123/imports \
 # {
 #   "id": "import-123",
 #   "status": "uploading",
-#   "uploadUrl": "https://carbonsite.r2.cloudflarestorage.com/org/org-abc123/imports/import-123/..."
+#   "uploadUrl": "https://metricora.r2.cloudflarestorage.com/org/org-abc123/imports/import-123/..."
 # }
 
 # 2. Upload CSV to presigned URL
-curl -X PUT "https://carbonsite.r2.cloudflarestorage.com/org/org-abc123/imports/import-123/data.csv" \
+curl -X PUT "https://metricora.r2.cloudflarestorage.com/org/org-abc123/imports/import-123/data.csv" \
   -H "Content-Type: text/csv" \
   --data-binary @energy-data.csv
 
@@ -419,7 +419,7 @@ curl -X GET http://localhost:3000/api/orgs/org-abc123/reports/report-123 \
 # {
 #   "id": "report-123",
 #   "status": "completed",
-#   "downloadUrl": "https://carbonsite.r2.cloudflarestorage.com/org/org-abc123/reports/report-123/report.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...",
+#   "downloadUrl": "https://metricora.r2.cloudflarestorage.com/org/org-abc123/reports/report-123/report.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...",
 #   "expiresAt": "2025-08-24T16:45:00Z",
 #   "generatedAt": "2025-08-24T16:35:00Z"
 # }
@@ -443,7 +443,7 @@ curl -X POST http://localhost:3000/api/orgs/org-abc123/field-submissions \
     "vehicleReg": "AB21CDE",
     "supplierName": "Local Waste Services",
     "gpsCoords": { "lat": 51.5074, "lng": -0.1278 },
-    "photoUrl": "https://carbonsite.r2.cloudflarestorage.com/org/org-abc123/evidence/...",
+    "photoUrl": "https://metricora.r2.cloudflarestorage.com/org/org-abc123/evidence/...",
     "idempotencyKey": "submission-mobile-001"
   }'
 
@@ -498,7 +498,7 @@ curl -X POST http://localhost:3000/api/orgs/org-abc123/invites \
 #   "email": "newuser@acme.com",
 #   "role": "editor",
 #   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-#   "inviteUrl": "https://carbonsite.com/join?token=eyJhbGc...",
+#   "inviteUrl": "https://metricora.co.uk/join?token=eyJhbGc...",
 #   "expiresAt": "2025-08-31T12:00:00Z"
 # }
 ```
@@ -519,8 +519,8 @@ curl -X POST http://localhost:3000/api/orgs/org-abc123/field-worker-invites \
 # Response:
 # {
 #   "id": "field-invite-001",
-#   "deepLink": "carbonsite://invite?token=eyJhbGc...",
-#   "webLink": "https://carbonsite.com/mobile/invite?token=eyJhbGc...",
+#   "deepLink": "metricora://invite?token=eyJhbGc...",
+#   "webLink": "https://metricora.co.uk/mobile/invite?token=eyJhbGc...",
 #   "expiresAt": "2025-09-23T12:00:00Z",
 #   "status": "pending"
 # }
@@ -586,9 +586,9 @@ Common error codes:
 ## JavaScript Client Example
 
 ```javascript
-// Minimal HTTP client for CarbonSite API
+// Minimal HTTP client for MetricOra API
 
-class CarbonSiteClient {
+class MetricOraClient {
   constructor(baseUrl, apiToken) {
     this.baseUrl = baseUrl;
     this.apiToken = apiToken;
@@ -651,7 +651,7 @@ class CarbonSiteClient {
 }
 
 // Usage
-const client = new CarbonSiteClient('https://carbonsite.com', 'your-api-token');
+const client = new MetricOraClient('https://metricora.co.uk', 'your-api-token');
 const dashboard = await client.getDashboard('org-abc123');
 console.log('Total emissions:', dashboard.totalEmissions.co2e);
 ```

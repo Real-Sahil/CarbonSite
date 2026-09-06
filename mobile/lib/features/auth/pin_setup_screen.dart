@@ -136,8 +136,8 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
 
   /// Extracts the invite token AND the server URL from whatever the user pastes.
   /// Accepts:
-  ///   - carbonsite://app/invite/TOKEN?server=https://org.example.com
-  ///   - https://carbonsite-rosy.vercel.app/invite/TOKEN
+  ///   - metricora://app/invite/TOKEN?server=https://org.example.com
+  ///   - https://metricora-rosy.vercel.app/invite/TOKEN
   ///   - TOKEN (bare token)
   ({String token, String? serverUrl})? _parseInviteInput(String value) {
     final trimmed = value.trim();
@@ -150,8 +150,8 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
         final token = uri.pathSegments[inviteIndex + 1];
         String? serverUrl;
 
-        // Custom scheme: carbonsite://app/invite/TOKEN?server=https://...
-        if (uri.scheme == 'carbonsite' &&
+        // Custom scheme: metricora://app/invite/TOKEN?server=https://...
+        if (uri.scheme == 'metricora' &&
             uri.queryParameters.containsKey('server')) {
           serverUrl = uri.queryParameters['server'];
         }
@@ -235,7 +235,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
 
                   Text(
                     _step == _PinStep.entry
-                        ? 'This PIN protects your device access to CarbonSite'
+                        ? 'This PIN protects your device access to MetricOra'
                         : 'Re-enter your PIN to confirm',
                     style: textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
@@ -339,7 +339,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Join your CarbonSite project',
+                'Join your MetricOra project',
                 style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: colorScheme.onSurface,

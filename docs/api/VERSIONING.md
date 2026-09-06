@@ -1,6 +1,6 @@
 # API Versioning Policy
 
-CarbonSite uses semantic versioning for API stability and backward compatibility. This document outlines the versioning strategy, deprecation timeline, and migration guide.
+MetricOra uses semantic versioning for API stability and backward compatibility. This document outlines the versioning strategy, deprecation timeline, and migration guide.
 
 ## Overview
 
@@ -27,7 +27,7 @@ GET /api/v1/orgs/{orgId}/activity-records
 
 ### Method 2: Accept-Version Header (Optional)
 ```bash
-curl -H "Accept-Version: 1.0" https://api.carbonsite.io/api/orgs/{orgId}/activity-records
+curl -H "Accept-Version: 1.0" https://api.metricora.co.uk/api/orgs/{orgId}/activity-records
 ```
 
 If both are specified, URL path takes precedence.
@@ -130,7 +130,7 @@ Breaking changes require a new major version (v2.0, v3.0, etc.).
 ```bash
 # Verify your code targets v1.0
 curl -H "Accept-Version: 1.0" \
-  https://api.carbonsite.io/api/orgs/{orgId}/activity-records
+  https://api.metricora.co.uk/api/orgs/{orgId}/activity-records
 ```
 
 ### Step 2: Review Changelog
@@ -142,7 +142,7 @@ curl -H "Accept-Version: 1.0" \
 ```bash
 # Add test coverage targeting v2.0
 curl -H "Accept-Version: 2.0" \
-  https://api.carbonsite.io/api/orgs/{orgId}/activity-records
+  https://api.metricora.co.uk/api/orgs/{orgId}/activity-records
 ```
 
 ### Step 4: Deploy to Production
@@ -206,9 +206,9 @@ app/api/v2/
 
 ## Support and Questions
 
-- **API Issues:** api-support@carbonsite.io
-- **Documentation:** https://docs.carbonsite.io/api
-- **Status Page:** https://status.carbonsite.io
+- **API Issues:** api-support@metricora.co.uk
+- **Documentation:** https://docs.metricora.co.uk/api
+- **Status Page:** https://status.metricora.co.uk
 
 ## Related Documents
 

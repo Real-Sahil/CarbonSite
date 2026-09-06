@@ -1,6 +1,6 @@
 # Accounting Invoice Sync Setup
 
-CarbonSite supports automated 2x daily invoice syncing from accounting platforms:
+MetricOra supports automated 2x daily invoice syncing from accounting platforms:
 - **Xero** — Fully implemented, production-ready
 - **QuickBooks** — OAuth connect works; invoice fetching is not implemented (no SDK integration)
 - **Sage** — OAuth connect works; invoice fetching is not implemented (no SDK integration)

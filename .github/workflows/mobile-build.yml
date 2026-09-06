@@ -16,21 +16,21 @@ on:
   workflow_dispatch:
     inputs:
       api_base_url:
-        description: Production CarbonSite web URL used by the mobile app.
+        description: Production MetricOra web URL used by the mobile app.
         required: true
-        default: https://carbonsite-rosy.vercel.app
+        default: https://metricora-rosy.vercel.app
       build_android:
         description: Build Android APK and app bundle artifacts.
         type: boolean
         required: true
         default: true
       build_ios:
-        description: Build an iOS artifact on macOS (signed .ipa if CARBONSITE_IOS_* secrets are set, otherwise an unsigned .app).
+        description: Build an iOS artifact on macOS (signed .ipa if METRICORA_IOS_* secrets are set, otherwise an unsigned .app).
         type: boolean
         required: true
         default: true
       ios_export_method:
-        description: Export method for the signed IPA (only used when CARBONSITE_IOS_* signing secrets are configured).
+        description: Export method for the signed IPA (only used when METRICORA_IOS_* signing secrets are configured).
         type: choice
         required: true
         default: app-store
@@ -41,7 +41,7 @@ on:
           - enterprise
 
 env:
-  CARBONSITE_API_BASE_URL: ${{ inputs.api_base_url || vars.CARBONSITE_API_BASE_URL || 'https://carbonsite-rosy.vercel.app' }}
+  METRICORA_API_BASE_URL: ${{ inputs.api_base_url || vars.METRICORA_API_BASE_URL || 'https://metricora-rosy.vercel.app' }}
 
 jobs:
   android:
@@ -60,14 +60,14 @@ jobs:
           cache: true
       - name: Inject google-services.json
         env:
-          CARBONSITE_GOOGLE_SERVICES_JSON: ${{ secrets.CARBONSITE_GOOGLE_SERVICES_JSON }}
+          METRICORA_GOOGLE_SERVICES_JSON: ${{ secrets.METRICORA_GOOGLE_SERVICES_JSON }}
         run: |
-          if [ -n "$CARBONSITE_GOOGLE_SERVICES_JSON" ]; then
-            echo "$CARBONSITE_GOOGLE_SERVICES_JSON" > android/app/google-services.json
-            echo "google-services.json injected from CARBONSITE_GOOGLE_SERVICES_JSON secret."
+          if [ -n "$METRICORA_GOOGLE_SERVICES_JSON" ]; then
+            echo "$METRICORA_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "google-services.json injected from METRICORA_GOOGLE_SERVICES_JSON secret."
           else
-            echo "::warning::CARBONSITE_GOOGLE_SERVICES_JSON secret is not set. FCM push notifications will not work. Add the secret in GitHub repo Settings > Secrets."
-            echo '{"project_info":{"project_number":"000000000000","project_id":"carbonsite-stub","storage_bucket":"carbonsite-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.carbonsite.carbonsite_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+            echo "::warning::METRICORA_GOOGLE_SERVICES_JSON secret is not set. FCM push notifications will not work. Add the secret in GitHub repo Settings > Secrets."
+            echo '{"project_info":{"project_number":"000000000000","project_id":"metricora-stub","storage_bucket":"metricora-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.metricora.metricora_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
           fi
       - run: flutter pub get
       - name: Generate code (drift)
@@ -82,41 +82,41 @@ jobs:
       - run: flutter test
       - name: Check Android release signing secrets
         env:
-          CARBONSITE_ANDROID_KEYSTORE_BASE64: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_BASE64 }}
-          CARBONSITE_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_PASSWORD }}
-          CARBONSITE_ANDROID_KEY_ALIAS: ${{ secrets.CARBONSITE_ANDROID_KEY_ALIAS }}
-          CARBONSITE_ANDROID_KEY_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEY_PASSWORD }}
+          METRICORA_ANDROID_KEYSTORE_BASE64: ${{ secrets.METRICORA_ANDROID_KEYSTORE_BASE64 }}
+          METRICORA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.METRICORA_ANDROID_KEYSTORE_PASSWORD }}
+          METRICORA_ANDROID_KEY_ALIAS: ${{ secrets.METRICORA_ANDROID_KEY_ALIAS }}
+          METRICORA_ANDROID_KEY_PASSWORD: ${{ secrets.METRICORA_ANDROID_KEY_PASSWORD }}
         run: |
           missing=0
-          for name in CARBONSITE_ANDROID_KEYSTORE_BASE64 CARBONSITE_ANDROID_KEYSTORE_PASSWORD CARBONSITE_ANDROID_KEY_ALIAS CARBONSITE_ANDROID_KEY_PASSWORD; do
+          for name in METRICORA_ANDROID_KEYSTORE_BASE64 METRICORA_ANDROID_KEYSTORE_PASSWORD METRICORA_ANDROID_KEY_ALIAS METRICORA_ANDROID_KEY_PASSWORD; do
             if [ -z "${!name}" ]; then
               echo "::warning::$name is not set; Android artifacts will use the debug signing fallback and are not Play Store ready."
               missing=1
             fi
           done
           if [ "$missing" -eq 0 ]; then
-            echo "CARBONSITE_ANDROID_SIGNING_READY=true" >> "$GITHUB_ENV"
+            echo "METRICORA_ANDROID_SIGNING_READY=true" >> "$GITHUB_ENV"
           fi
       - name: Configure Android release signing
-        if: env.CARBONSITE_ANDROID_SIGNING_READY == 'true'
+        if: env.METRICORA_ANDROID_SIGNING_READY == 'true'
         env:
-          CARBONSITE_ANDROID_KEYSTORE_BASE64: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_BASE64 }}
-          CARBONSITE_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEYSTORE_PASSWORD }}
-          CARBONSITE_ANDROID_KEY_ALIAS: ${{ secrets.CARBONSITE_ANDROID_KEY_ALIAS }}
-          CARBONSITE_ANDROID_KEY_PASSWORD: ${{ secrets.CARBONSITE_ANDROID_KEY_PASSWORD }}
+          METRICORA_ANDROID_KEYSTORE_BASE64: ${{ secrets.METRICORA_ANDROID_KEYSTORE_BASE64 }}
+          METRICORA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.METRICORA_ANDROID_KEYSTORE_PASSWORD }}
+          METRICORA_ANDROID_KEY_ALIAS: ${{ secrets.METRICORA_ANDROID_KEY_ALIAS }}
+          METRICORA_ANDROID_KEY_PASSWORD: ${{ secrets.METRICORA_ANDROID_KEY_PASSWORD }}
         run: |
-          echo "$CARBONSITE_ANDROID_KEYSTORE_BASE64" | base64 --decode > android/carbonsite-release.keystore
+          echo "$METRICORA_ANDROID_KEYSTORE_BASE64" | base64 --decode > android/metricora-release.keystore
           {
-            echo "storeFile=carbonsite-release.keystore"
-            echo "storePassword=$CARBONSITE_ANDROID_KEYSTORE_PASSWORD"
-            echo "keyAlias=$CARBONSITE_ANDROID_KEY_ALIAS"
-            echo "keyPassword=$CARBONSITE_ANDROID_KEY_PASSWORD"
+            echo "storeFile=metricora-release.keystore"
+            echo "storePassword=$METRICORA_ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$METRICORA_ANDROID_KEY_ALIAS"
+            echo "keyPassword=$METRICORA_ANDROID_KEY_PASSWORD"
           } > android/key.properties
-      - run: flutter build apk --release --no-tree-shake-icons --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
-      - run: flutter build appbundle --release --no-tree-shake-icons --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
+      - run: flutter build apk --release --no-tree-shake-icons --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
+      - run: flutter build appbundle --release --no-tree-shake-icons --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
       - uses: actions/upload-artifact@v4
         with:
-          name: carbonsite-android-release
+          name: metricora-android-release
           path: |
             mobile/build/app/outputs/flutter-apk/*.apk
             mobile/build/app/outputs/bundle/release/*.aab
@@ -139,12 +139,12 @@ jobs:
           cache: true
       - name: Inject google-services.json
         env:
-          CARBONSITE_GOOGLE_SERVICES_JSON: ${{ secrets.CARBONSITE_GOOGLE_SERVICES_JSON }}
+          METRICORA_GOOGLE_SERVICES_JSON: ${{ secrets.METRICORA_GOOGLE_SERVICES_JSON }}
         run: |
-          if [ -n "$CARBONSITE_GOOGLE_SERVICES_JSON" ]; then
-            echo "$CARBONSITE_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          if [ -n "$METRICORA_GOOGLE_SERVICES_JSON" ]; then
+            echo "$METRICORA_GOOGLE_SERVICES_JSON" > android/app/google-services.json
           else
-            echo '{"project_info":{"project_number":"000000000000","project_id":"carbonsite-stub","storage_bucket":"carbonsite-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.carbonsite.carbonsite_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+            echo '{"project_info":{"project_number":"000000000000","project_id":"metricora-stub","storage_bucket":"metricora-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.metricora.metricora_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
           fi
       - run: flutter pub get
       - name: Clean pub cache (macOS)
@@ -161,41 +161,41 @@ jobs:
       - run: flutter test
       - name: Check iOS signing secrets
         env:
-          CARBONSITE_IOS_DIST_CERTIFICATE_BASE64: ${{ secrets.CARBONSITE_IOS_DIST_CERTIFICATE_BASE64 }}
-          CARBONSITE_IOS_DIST_CERTIFICATE_PASSWORD: ${{ secrets.CARBONSITE_IOS_DIST_CERTIFICATE_PASSWORD }}
-          CARBONSITE_IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.CARBONSITE_IOS_PROVISIONING_PROFILE_BASE64 }}
-          CARBONSITE_IOS_TEAM_ID: ${{ secrets.CARBONSITE_IOS_TEAM_ID }}
+          METRICORA_IOS_DIST_CERTIFICATE_BASE64: ${{ secrets.METRICORA_IOS_DIST_CERTIFICATE_BASE64 }}
+          METRICORA_IOS_DIST_CERTIFICATE_PASSWORD: ${{ secrets.METRICORA_IOS_DIST_CERTIFICATE_PASSWORD }}
+          METRICORA_IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.METRICORA_IOS_PROVISIONING_PROFILE_BASE64 }}
+          METRICORA_IOS_TEAM_ID: ${{ secrets.METRICORA_IOS_TEAM_ID }}
         run: |
           missing=0
-          for name in CARBONSITE_IOS_DIST_CERTIFICATE_BASE64 CARBONSITE_IOS_DIST_CERTIFICATE_PASSWORD CARBONSITE_IOS_PROVISIONING_PROFILE_BASE64 CARBONSITE_IOS_TEAM_ID; do
+          for name in METRICORA_IOS_DIST_CERTIFICATE_BASE64 METRICORA_IOS_DIST_CERTIFICATE_PASSWORD METRICORA_IOS_PROVISIONING_PROFILE_BASE64 METRICORA_IOS_TEAM_ID; do
             if [ -z "${!name}" ]; then
-              echo "::warning::$name is not set; iOS build will fall back to an unsigned .app artifact (no .ipa). Add the four CARBONSITE_IOS_* secrets in repo Settings > Secrets to enable signed IPA builds."
+              echo "::warning::$name is not set; iOS build will fall back to an unsigned .app artifact (no .ipa). Add the four METRICORA_IOS_* secrets in repo Settings > Secrets to enable signed IPA builds."
               missing=1
             fi
           done
           if [ "$missing" -eq 0 ]; then
-            echo "CARBONSITE_IOS_SIGNING_READY=true" >> "$GITHUB_ENV"
+            echo "METRICORA_IOS_SIGNING_READY=true" >> "$GITHUB_ENV"
           fi
       - name: Import signing certificate and provisioning profile
-        if: env.CARBONSITE_IOS_SIGNING_READY == 'true'
+        if: env.METRICORA_IOS_SIGNING_READY == 'true'
         env:
-          CARBONSITE_IOS_DIST_CERTIFICATE_BASE64: ${{ secrets.CARBONSITE_IOS_DIST_CERTIFICATE_BASE64 }}
-          CARBONSITE_IOS_DIST_CERTIFICATE_PASSWORD: ${{ secrets.CARBONSITE_IOS_DIST_CERTIFICATE_PASSWORD }}
-          CARBONSITE_IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.CARBONSITE_IOS_PROVISIONING_PROFILE_BASE64 }}
+          METRICORA_IOS_DIST_CERTIFICATE_BASE64: ${{ secrets.METRICORA_IOS_DIST_CERTIFICATE_BASE64 }}
+          METRICORA_IOS_DIST_CERTIFICATE_PASSWORD: ${{ secrets.METRICORA_IOS_DIST_CERTIFICATE_PASSWORD }}
+          METRICORA_IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.METRICORA_IOS_PROVISIONING_PROFILE_BASE64 }}
         run: |
           set -euo pipefail
-          CERT_PATH="$RUNNER_TEMP/carbonsite_dist.p12"
-          PROFILE_PATH="$RUNNER_TEMP/carbonsite.mobileprovision"
-          KEYCHAIN_PATH="$RUNNER_TEMP/carbonsite-signing.keychain-db"
+          CERT_PATH="$RUNNER_TEMP/metricora_dist.p12"
+          PROFILE_PATH="$RUNNER_TEMP/metricora.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/metricora-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
 
-          echo -n "$CARBONSITE_IOS_DIST_CERTIFICATE_BASE64" | base64 -D > "$CERT_PATH"
-          echo -n "$CARBONSITE_IOS_PROVISIONING_PROFILE_BASE64" | base64 -D > "$PROFILE_PATH"
+          echo -n "$METRICORA_IOS_DIST_CERTIFICATE_BASE64" | base64 -D > "$CERT_PATH"
+          echo -n "$METRICORA_IOS_PROVISIONING_PROFILE_BASE64" | base64 -D > "$PROFILE_PATH"
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security import "$CERT_PATH" -P "$CARBONSITE_IOS_DIST_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -P "$METRICORA_IOS_DIST_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security list-keychains -d user -s login.keychain-db "$KEYCHAIN_PATH"
 
@@ -205,12 +205,12 @@ jobs:
           PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/profile.plist")"
           cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
 
-          echo "CARBONSITE_IOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
-          echo "CARBONSITE_IOS_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          echo "METRICORA_IOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          echo "METRICORA_IOS_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
       - name: Generate ExportOptions.plist
-        if: env.CARBONSITE_IOS_SIGNING_READY == 'true'
+        if: env.METRICORA_IOS_SIGNING_READY == 'true'
         env:
-          CARBONSITE_IOS_TEAM_ID: ${{ secrets.CARBONSITE_IOS_TEAM_ID }}
+          METRICORA_IOS_TEAM_ID: ${{ secrets.METRICORA_IOS_TEAM_ID }}
         run: |
           cat > ios/ExportOptions.plist <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
@@ -220,7 +220,7 @@ jobs:
             <key>method</key>
             <string>${{ inputs.ios_export_method || 'app-store' }}</string>
             <key>teamID</key>
-            <string>$CARBONSITE_IOS_TEAM_ID</string>
+            <string>$METRICORA_IOS_TEAM_ID</string>
             <key>signingStyle</key>
             <string>manual</string>
             <key>signingCertificate</key>
@@ -229,49 +229,49 @@ jobs:
             <true/>
             <key>provisioningProfiles</key>
             <dict>
-              <key>app.carbonsite.carbonsiteMobile</key>
-              <string>$CARBONSITE_IOS_PROFILE_NAME</string>
+              <key>app.metricora.metricoraMobile</key>
+              <string>$METRICORA_IOS_PROFILE_NAME</string>
             </dict>
           </dict>
           </plist>
           PLIST
       - name: Apply CI signing overrides
-        if: env.CARBONSITE_IOS_SIGNING_READY == 'true'
+        if: env.METRICORA_IOS_SIGNING_READY == 'true'
         env:
-          CARBONSITE_IOS_TEAM_ID: ${{ secrets.CARBONSITE_IOS_TEAM_ID }}
+          METRICORA_IOS_TEAM_ID: ${{ secrets.METRICORA_IOS_TEAM_ID }}
         run: |
           {
-            echo "DEVELOPMENT_TEAM=$CARBONSITE_IOS_TEAM_ID"
+            echo "DEVELOPMENT_TEAM=$METRICORA_IOS_TEAM_ID"
             echo "CODE_SIGN_STYLE=Manual"
             echo "CODE_SIGN_IDENTITY=Apple Distribution"
-            echo "PROVISIONING_PROFILE_SPECIFIER=$CARBONSITE_IOS_PROFILE_NAME"
+            echo "PROVISIONING_PROFILE_SPECIFIER=$METRICORA_IOS_PROFILE_NAME"
           } >> ios/Flutter/Release.xcconfig
       - name: Build signed IPA
-        if: env.CARBONSITE_IOS_SIGNING_READY == 'true'
-        run: flutter build ipa --release --no-tree-shake-icons --export-options-plist=ios/ExportOptions.plist --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
+        if: env.METRICORA_IOS_SIGNING_READY == 'true'
+        run: flutter build ipa --release --no-tree-shake-icons --export-options-plist=ios/ExportOptions.plist --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
       - name: Build unsigned iOS app (no signing secrets configured)
-        if: env.CARBONSITE_IOS_SIGNING_READY != 'true'
-        run: flutter build ios --release --no-codesign --no-tree-shake-icons --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
+        if: env.METRICORA_IOS_SIGNING_READY != 'true'
+        run: flutter build ios --release --no-codesign --no-tree-shake-icons --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
       - name: Package unsigned iOS app
-        if: env.CARBONSITE_IOS_SIGNING_READY != 'true'
-        run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/iphoneos/carbonsite-ios-unsigned.zip
+        if: env.METRICORA_IOS_SIGNING_READY != 'true'
+        run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/iphoneos/metricora-ios-unsigned.zip
       - name: Upload signed IPA artifact
-        if: env.CARBONSITE_IOS_SIGNING_READY == 'true'
+        if: env.METRICORA_IOS_SIGNING_READY == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: carbonsite-ios-release
+          name: metricora-ios-release
           path: mobile/build/ios/ipa/*.ipa
           if-no-files-found: error
       - name: Upload unsigned iOS artifact
-        if: env.CARBONSITE_IOS_SIGNING_READY != 'true'
+        if: env.METRICORA_IOS_SIGNING_READY != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: carbonsite-ios-unsigned-release
-          path: mobile/build/ios/iphoneos/carbonsite-ios-unsigned.zip
+          name: metricora-ios-unsigned-release
+          path: mobile/build/ios/iphoneos/metricora-ios-unsigned.zip
           if-no-files-found: error
       - name: Clean up signing keychain
         if: always()
         run: |
-          if [ -n "${CARBONSITE_IOS_KEYCHAIN_PATH:-}" ]; then
-            security delete-keychain "$CARBONSITE_IOS_KEYCHAIN_PATH" || true
+          if [ -n "${METRICORA_IOS_KEYCHAIN_PATH:-}" ]; then
+            security delete-keychain "$METRICORA_IOS_KEYCHAIN_PATH" || true
           fi

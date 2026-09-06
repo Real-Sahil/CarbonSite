@@ -1,6 +1,6 @@
 # Emission Calculation Walkthrough
 
-Complete step-by-step examples showing how CarbonSite calculates carbon emissions, with real-world data and DEFRA/EPA factors.
+Complete step-by-step examples showing how MetricOra calculates carbon emissions, with real-world data and DEFRA/EPA factors.
 
 ## The Calculation Pipeline
 

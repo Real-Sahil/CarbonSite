@@ -175,7 +175,7 @@ export async function fetchXeroInvoices(
 }
 
 /**
- * Sync Xero invoices to CarbonSite database
+ * Sync Xero invoices to MetricOra database
  */
 export async function syncXeroInvoices(
   organizationId: string,

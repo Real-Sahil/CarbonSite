@@ -1,7 +1,7 @@
 {
   "dashboard": {
     "title": "Field Submission Status",
-    "tags": ["carbonsite", "field-submissions"],
+    "tags": ["metricora", "field-submissions"],
     "timezone": "browser",
     "panels": [
       {

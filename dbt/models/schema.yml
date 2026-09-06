@@ -2,8 +2,8 @@ version: 2
 
 sources:
   - name: carbon_site
-    description: "CarbonSite production database"
-    database: "{{ env_var('DBT_POSTGRES_DBNAME', 'carbonsite') }}"
+    description: "MetricOra production database"
+    database: "{{ env_var('DBT_POSTGRES_DBNAME', 'metricora') }}"
     schema: public
     tables:
       - name: activity_records

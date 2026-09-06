@@ -18,7 +18,7 @@ describe("API Versioning Framework", () => {
       if (acceptVersion) {
         headers.set("Accept-Version", acceptVersion);
       }
-      return new NextRequest("https://api.carbonsite.test/orgs", { headers });
+      return new NextRequest("https://api.metricora.test/orgs", { headers });
     };
 
     test("returns Accept-Version header value when provided", () => {

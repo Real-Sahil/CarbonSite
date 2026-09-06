@@ -10,12 +10,12 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# CARBONSITE_API_BASE_URL must be set as a GitHub repository variable
+# METRICORA_API_BASE_URL must be set as a GitHub repository variable
 # (Settings → Variables) pointing at the production web app, e.g.:
-#   https://carbonsite-rosy.vercel.app
-# CI falls back to https://carbonsite-rosy.vercel.app when the variable is not set.
+#   https://metricora-rosy.vercel.app
+# CI falls back to https://metricora-rosy.vercel.app when the variable is not set.
 env:
-  CARBONSITE_API_BASE_URL: ${{ vars.CARBONSITE_API_BASE_URL || 'https://carbonsite-rosy.vercel.app' }}
+  METRICORA_API_BASE_URL: ${{ vars.METRICORA_API_BASE_URL || 'https://metricora-rosy.vercel.app' }}
 
 jobs:
   web:
@@ -30,9 +30,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: carbonsite
-          POSTGRES_PASSWORD: carbonsite
-          POSTGRES_DB: carbonsite_test
+          POSTGRES_USER: metricora
+          POSTGRES_PASSWORD: metricora
+          POSTGRES_DB: metricora_test
         ports:
           - 5432:5432
         options: >-
@@ -41,13 +41,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://carbonsite:carbonsite@localhost:5432/carbonsite_test
-      DIRECT_URL: postgresql://carbonsite:carbonsite@localhost:5432/carbonsite_test
+      DATABASE_URL: postgresql://metricora:metricora@localhost:5432/metricora_test
+      DIRECT_URL: postgresql://metricora:metricora@localhost:5432/metricora_test
       STORAGE_DRIVER: local
       STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
       STORAGE_ACCESS_KEY_ID: placeholder
       STORAGE_SECRET_ACCESS_KEY: placeholder
-      STORAGE_BUCKET: carbonsite
+      STORAGE_BUCKET: metricora
       BETTER_AUTH_SECRET: placeholder-secret-32-chars-minimum!!
       BETTER_AUTH_URL: http://localhost:3000
       EMAIL_DRIVER: console
@@ -106,7 +106,7 @@ jobs:
       # so playwright.config.ts's executablePath override would point at a binary
       # that was never installed. Let Playwright use its own default cache path,
       # which the "Install Playwright browsers" step below populates.
-      PLAYWRIGHT_BASE_URL: ${{ vars.CARBONSITE_API_BASE_URL || 'https://carbonsite-rosy.vercel.app' }}
+      PLAYWRIGHT_BASE_URL: ${{ vars.METRICORA_API_BASE_URL || 'https://metricora-rosy.vercel.app' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -158,10 +158,10 @@ jobs:
       - name: Inject google-services.json
         working-directory: mobile
         env:
-          CARBONSITE_GOOGLE_SERVICES_JSON: ${{ secrets.CARBONSITE_GOOGLE_SERVICES_JSON }}
+          METRICORA_GOOGLE_SERVICES_JSON: ${{ secrets.METRICORA_GOOGLE_SERVICES_JSON }}
         run: |
-          if [ -n "$CARBONSITE_GOOGLE_SERVICES_JSON" ]; then
-            echo "$CARBONSITE_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          if [ -n "$METRICORA_GOOGLE_SERVICES_JSON" ]; then
+            echo "$METRICORA_GOOGLE_SERVICES_JSON" > android/app/google-services.json
           fi
           # If the file is still missing (no secret set), the committed stub is used automatically.
 
@@ -193,11 +193,11 @@ jobs:
 
       - name: Build release APK
         working-directory: mobile
-        run: flutter build apk --release --dart-define=CARBONSITE_API_BASE_URL="$CARBONSITE_API_BASE_URL"
+        run: flutter build apk --release --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: carbonsite-android-${{ github.sha }}
+          name: metricora-android-${{ github.sha }}
           path: mobile/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30

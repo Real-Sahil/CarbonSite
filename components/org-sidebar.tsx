@@ -23,7 +23,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; roles?: string[]; }
-/** A micro-group of items within a product's accordion panel, e.g. "Calculations" inside "CarbonSite". */
+/** A micro-group of items within a product's accordion panel, e.g. "Calculations" inside "MetricOra". */
 interface NavSection { label?: string; items: NavItem[]; }
 /** A top-level, collapsible product group in the sidebar. */
 interface NavGroup { label: string; icon: React.ElementType; sections: NavSection[]; }
@@ -37,7 +37,7 @@ interface OrgSidebarProps {
   role?: string;
 }
 
-const COLLAPSED_KEY = "carbonsite:sidebar:collapsed";
+const COLLAPSED_KEY = "metricora:sidebar:collapsed";
 
 function getInitials(name?: string | null, email?: string): string {
   if (name) {
@@ -68,7 +68,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
   const dashboardItem: NavItem = { label: "Dashboard", href: `/orgs/${orgId}/dashboard`, icon: LayoutDashboard };
 
   const allGroups: NavGroup[] = [
-    { label: "CarbonSite", icon: Leaf, sections: [
+    { label: "MetricOra", icon: Leaf, sections: [
       { label: "Data", items: [
         { label: "Imports",          href: `/orgs/${orgId}/imports`,           icon: Upload,        roles: CORE_ROLES },
         { label: "Records",          href: `/orgs/${orgId}/records`,           icon: FileText,      roles: CORE_ROLES },
@@ -270,7 +270,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <Leaf className="h-4 w-4 text-white" />
             </span>
             <div className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold tracking-tight text-slate-900">CarbonSite</span>
+              <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
               <span className="text-[11px] text-slate-500 font-normal block truncate" title={orgName}>{orgName}</span>
             </div>
             <NotificationBell orgId={orgId} />
@@ -344,7 +344,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           <span className="h-6 w-6 rounded-md bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shrink-0">
             <Leaf className="h-3.5 w-3.5 text-white" />
           </span>
-          <span className="text-sm font-semibold tracking-tight text-slate-900">CarbonSite</span>
+          <span className="text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
           <span className="text-xs text-slate-500 truncate max-w-[120px]">/ {orgName}</span>
         </div>
         <div className="ml-auto">
@@ -364,7 +364,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                   <Leaf className="h-4 w-4 text-white" />
                 </span>
                 <div className="min-w-0">
-                  <span className="block text-sm font-semibold tracking-tight text-slate-900">CarbonSite</span>
+                  <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
                   <span className="text-xs text-slate-500 block truncate">{orgName}</span>
                 </div>
               </div>

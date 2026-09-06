@@ -21,7 +21,7 @@ export async function processUptimeMonitoring(): Promise<void> {
       method: "GET",
       signal: controller.signal,
       headers: {
-        "User-Agent": "CarbonSite-Uptime-Monitor/1.0",
+        "User-Agent": "MetricOra-Uptime-Monitor/1.0",
       },
     });
 

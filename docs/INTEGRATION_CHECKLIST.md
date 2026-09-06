@@ -36,9 +36,9 @@ Auto-sync invoices to calculate Scope 3 supplier emissions.
   XERO_REDIRECT_URI=http://localhost:3000/api/integrations/xero/callback
   ```
 - [ ] Add same three variables to Vercel environment variables
-- [ ] Login to CarbonSite as org admin
+- [ ] Login to MetricOra as org admin
 - [ ] Go to Settings → Integrations → Connect Xero
-- [ ] Authorize CarbonSite to access your Xero account
+- [ ] Authorize MetricOra to access your Xero account
 - [ ] Verify: Settings → Integrations shows "✓ Xero connected"
 - [ ] Test sync: Create invoice in Xero, click "Sync Now"
 - [ ] Verify: Check Activity Records for new entries with `source: "xero:*"`
@@ -112,12 +112,12 @@ Automate business processes without code (report notifications, submission remin
 - [ ] Create new workflow
 - [ ] Add Webhook trigger node
 - [ ] Copy webhook URL: `https://n8n.io/webhook/...`
-- [ ] In CarbonSite: Settings → Automations → Add Webhook
+- [ ] In MetricOra: Settings → Automations → Add Webhook
 - [ ] Paste webhook URL
 - [ ] Select events: `report_ready`, `import_failed`, `submission_received`
 - [ ] Save
 - [ ] Build workflow in n8n (example: send Slack message)
-- [ ] Test: Complete a report in CarbonSite
+- [ ] Test: Complete a report in MetricOra
 - [ ] Verify: Check n8n execution history and Slack message received
 
 ### Common Workflows

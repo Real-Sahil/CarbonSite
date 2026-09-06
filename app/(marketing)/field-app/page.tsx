@@ -6,7 +6,7 @@ import { VideoBackground } from "@/components/ui/video-background";
 import { FieldAppCtaBg } from "@/components/marketing/section-backgrounds";
 
 export const metadata: Metadata = {
-  title: "Field App - CarbonSite",
+  title: "Field App - MetricOra",
   description: "Mobile app for field workers. Capture data from job sites, works without internet, syncs automatically when online.",
 };
 

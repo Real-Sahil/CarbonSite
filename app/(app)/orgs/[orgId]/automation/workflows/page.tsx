@@ -236,7 +236,7 @@ export default function WorkflowsPage() {
         </CardHeader>
         <CardContent className="text-sm space-y-2 text-gray-700">
           <p>
-            CarbonSite uses n8n for low-code workflow automation. The following workflows are available:
+            MetricOra uses n8n for low-code workflow automation. The following workflows are available:
           </p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>

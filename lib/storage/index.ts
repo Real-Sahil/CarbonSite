@@ -76,7 +76,7 @@ const s3 =
       })
     : null;
 
-const BUCKET = process.env.STORAGE_BUCKET ?? "carbonsite";
+const BUCKET = process.env.STORAGE_BUCKET ?? "metricora";
 const SAFE_SEGMENT_RE = /^[A-Za-z0-9][A-Za-z0-9._ -]*$/;
 
 // ── Key conventions ───────────────────────────────────────────────────────────

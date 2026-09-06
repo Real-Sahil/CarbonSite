@@ -1,5 +1,5 @@
 /**
- * Predefined Causal Models for CarbonSite
+ * Predefined Causal Models for MetricOra
  * Three common emissions reduction scenarios with known causal structures
  */
 

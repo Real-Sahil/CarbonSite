@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { Check, X } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Pricing | CarbonSite',
+  title: 'Pricing | MetricOra',
   description: 'Simple, transparent pricing for carbon accounting. 30-day free trial included.',
   openGraph: {
-    title: 'Pricing | CarbonSite',
+    title: 'Pricing | MetricOra',
     description: 'Simple, transparent pricing. 30-day free trial. No hidden fees.',
     type: 'website',
-    url: 'https://carbonsite.ai/pricing',
+    url: 'https://metricora.co.uk/pricing',
   },
 };
 
@@ -235,7 +235,7 @@ export default function PricingPage() {
               Ready to get started?
             </h2>
             <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
-              Try CarbonSite free for 30 days. No credit card required.
+              Try MetricOra free for 30 days. No credit card required.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Link

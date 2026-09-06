@@ -3,13 +3,13 @@ import { BlogCard, type BlogPost } from '@/components/blog/BlogCard';
 import { getPosts } from '@/lib/blog/posts';
 
 export const metadata: Metadata = {
-  title: 'Blog | CarbonSite',
+  title: 'Blog | MetricOra',
   description: 'Insights on carbon accounting, field operations, supply chain collaboration, and compliance readiness.',
   openGraph: {
-    title: 'Blog | CarbonSite',
+    title: 'Blog | MetricOra',
     description: 'Thoughts on carbon accounting and sustainability.',
     type: 'website',
-    url: 'https://carbonsite.ai/blog',
+    url: 'https://metricora.co.uk/blog',
   },
 };
 

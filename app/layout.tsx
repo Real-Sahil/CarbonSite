@@ -8,7 +8,7 @@ import "./globals.css";
 import "@designcodeio/threeui/style.css";
 
 export const metadata: Metadata = {
-  title: "CarbonSite | GHG Emissions Tracking",
+  title: "MetricOra | GHG Emissions Tracking",
   description:
     "Multi-tenant GHG emissions tracking for construction and supply chains. Import activity data, run calculations to DEFRA 2025 and GHG Protocol standards, generate audit-ready reports.",
 };

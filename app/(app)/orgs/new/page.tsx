@@ -74,7 +74,7 @@ export default function NewOrgPage() {
           className="text-2xl text-[#111827] tracking-[-0.72px]"
           
         >
-          CarbonSite
+          MetricOra
         </span>
         <span className="text-xs text-[#374151] font-normal tracking-[-0.36px]">GHG Emissions Tracking</span>
       </div>

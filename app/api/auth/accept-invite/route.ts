@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     const email =
       invite.email?.toLowerCase() ??
       requestedEmail ??
-      `fw-${randomUUID().substring(0, 8)}@field.carbonsite.app`;
+      `fw-${randomUUID().substring(0, 8)}@field.metricora.co.uk`;
 
     // 3. Find or create the user
     let user = await prisma.user.findUnique({ where: { email } });

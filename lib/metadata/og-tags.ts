@@ -19,23 +19,23 @@ export function generateOGTags(metadata: OGMetadata): Record<string, string> {
     'og:description': metadata.description,
     'og:url': metadata.url,
     'og:type': metadata.type || 'website',
-    'og:image': metadata.image || 'https://carbonsite.app/og-default.png',
+    'og:image': metadata.image || 'https://metricora.co.uk/og-default.png',
     'og:image:width': '1200',
     'og:image:height': '630',
     'og:image:alt': metadata.title,
-    'og:site_name': 'CarbonSite',
+    'og:site_name': 'MetricOra',
     'og:locale': 'en_US',
 
     // Twitter Card tags (X/Twitter specific)
     'twitter:card': 'summary_large_image',
     'twitter:title': metadata.title,
     'twitter:description': metadata.description,
-    'twitter:image': metadata.image || 'https://carbonsite.app/og-default.png',
-    'twitter:creator': '@CarbonSiteApp',
-    'twitter:site': '@CarbonSiteApp',
+    'twitter:image': metadata.image || 'https://metricora.co.uk/og-default.png',
+    'twitter:creator': '@MetricOraApp',
+    'twitter:site': '@MetricOraApp',
 
     // Additional metadata
-    'article:author': metadata.author || 'CarbonSite',
+    'article:author': metadata.author || 'MetricOra',
     'article:published_time': metadata.publishedAt || new Date().toISOString(),
     'article:modified_time': metadata.updatedAt || new Date().toISOString(),
   };
@@ -46,8 +46,8 @@ export function generateTwitterCard(metadata: OGMetadata) {
     card: 'summary_large_image',
     title: metadata.title,
     description: metadata.description,
-    image: metadata.image || 'https://carbonsite.app/og-default.png',
-    creator: '@CarbonSiteApp',
+    image: metadata.image || 'https://metricora.co.uk/og-default.png',
+    creator: '@MetricOraApp',
   };
 }
 
@@ -91,21 +91,21 @@ export function generateMetadata(metadata: OGMetadata) {
       type: metadata.type || 'website',
       images: [
         {
-          url: metadata.image || 'https://carbonsite.app/og-default.png',
+          url: metadata.image || 'https://metricora.co.uk/og-default.png',
           width: 1200,
           height: 630,
           alt: metadata.title,
         },
       ],
-      siteName: 'CarbonSite',
+      siteName: 'MetricOra',
       locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
       title: metadata.title,
       description: metadata.description,
-      images: [metadata.image || 'https://carbonsite.app/og-default.png'],
-      creator: '@CarbonSiteApp',
+      images: [metadata.image || 'https://metricora.co.uk/og-default.png'],
+      creator: '@MetricOraApp',
     },
   };
 }

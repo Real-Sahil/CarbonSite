@@ -5,7 +5,7 @@ import { VideoBackground } from "@/components/ui/video-background";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Construction - CarbonSite",
+  title: "Construction - MetricOra",
   description: "GHG emissions tracking for main contractors, subcontractors, and site teams. Field capture, waste tickets, materials, and supplier evidence.",
 };
 
@@ -72,7 +72,7 @@ export default function ConstructionPage() {
               Common challenges, solved.
             </h2>
             <p className="text-sm text-[#6B7280] mb-14 max-w-[55ch]">
-              Construction carbon data collection is fragmented. CarbonSite closes the gap between site activity and auditable reporting.
+              Construction carbon data collection is fragmented. MetricOra closes the gap between site activity and auditable reporting.
             </p>
           </AnimateIn>
           <div className="space-y-px bg-[#E5E7EB]">
@@ -84,7 +84,7 @@ export default function ConstructionPage() {
                     <p className="text-sm text-[#111827] leading-relaxed">{p.problem}</p>
                   </div>
                   <div className="px-8 py-7">
-                    <div className="text-[10px] text-amber-600 uppercase tracking-[0.12em] mb-3">CarbonSite</div>
+                    <div className="text-[10px] text-amber-600 uppercase tracking-[0.12em] mb-3">MetricOra</div>
                     <p className="text-sm text-[#6B7280] leading-relaxed">{p.solution}</p>
                   </div>
                 </div>

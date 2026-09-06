@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
     const { execution, executionStatus, executionResult, executionError, metadata } = event;
 
-    // Metadata must be present for CarbonSite integration
+    // Metadata must be present for MetricOra integration
     if (!metadata?.organizationId || !metadata?.workflowDatabaseId) {
       securityLogger.warn('n8n webhook missing required metadata', {
         hasOrgId: !!metadata?.organizationId,

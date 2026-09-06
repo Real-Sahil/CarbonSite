@@ -21,7 +21,7 @@ const CASE_STUDIES = {
     },
     solution: {
       title: 'OCR Mobile App + Immutable Audit Trail',
-      description: 'RegioWaste deployed CarbonSite on field workers\' phones. Now when a waste ticket arrives, the field worker photographs it, the app extracts weight/date/vehicle/supplier via on-device OCR (no internet needed), and it syncs automatically when back online. Every OCR extraction is logged immutably with a hash chain.',
+      description: 'RegioWaste deployed MetricOra on field workers\' phones. Now when a waste ticket arrives, the field worker photographs it, the app extracts weight/date/vehicle/supplier via on-device OCR (no internet needed), and it syncs automatically when back online. Every OCR extraction is logged immutably with a hash chain.',
       features: [
         'On-device OCR: Field workers photograph, app auto-extracts data',
         'Offline-first: Works in areas with no signal, syncs when reconnected',
@@ -41,7 +41,7 @@ const CASE_STUDIES = {
         { label: 'Duplicate invoices', value: '0', detail: '(detected & prevented by anomaly detection)' },
       ],
       quote: {
-        text: 'CarbonSite cut our reporting time by 80%. Now our team can focus on actual reduction strategies instead of chasing data entry errors. The immutable audit trail gives us confidence when auditors call.',
+        text: 'MetricOra cut our reporting time by 80%. Now our team can focus on actual reduction strategies instead of chasing data entry errors. The immutable audit trail gives us confidence when auditors call.',
         author: 'Sarah Nowak',
         title: 'Sustainability Lead, RegioWaste',
       },
@@ -200,7 +200,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         {/* CTA */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-900 dark:to-blue-950 rounded-lg p-8 text-center">
           <h3 className="text-2xl font-bold text-white mb-3">Ready to get similar results?</h3>
-          <p className="text-blue-100 mb-6">Schedule a demo and see how CarbonSite can transform your emissions tracking.</p>
+          <p className="text-blue-100 mb-6">Schedule a demo and see how MetricOra can transform your emissions tracking.</p>
           <a
             href="/demo"
             className="inline-block bg-white text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-lg font-semibold transition-colors"

@@ -1,6 +1,6 @@
 # Data Retention Schedule
 
-**Organization:** CarbonSite  
+**Organization:** MetricOra  
 **Last Updated:** August 2026  
 **Purpose:** GDPR Art. 5(1)(e) compliance; defines retention windows for all data categories
 
@@ -8,7 +8,7 @@
 
 ## Overview
 
-CarbonSite retains personal data only for as long as necessary to provide the service and meet legal obligations. This schedule outlines retention periods, deletion methods, and responsible teams.
+MetricOra retains personal data only for as long as necessary to provide the service and meet legal obligations. This schedule outlines retention periods, deletion methods, and responsible teams.
 
 ---
 
@@ -81,9 +81,9 @@ CarbonSite retains personal data only for as long as necessary to provide the se
 | Data Type | Retention Period | Deletion Responsibility | Deletion Method | Notes |
 |--|--|--|--|--|
 | **Email Send Logs (Resend)** | 30 days at Resend | Resend (as sub-processor) | Automatic purge per Resend SLA | We have no separate deletion control; Resend manages |
-| **Email Invite Links** | 7 days (or until used) | CarbonSite | Automatic purge after 7 days or immediate if used | Prevents reuse of old links; single-use tokens |
-| **Password Reset Tokens** | 1 hour | CarbonSite | Auto-expire; manual purge if requested | Prevents accidental password resets from old links |
-| **Email Address (Account)** | Indefinite (account active) / 2 years (deleted account) | CarbonSite | Anonymized after account deletion + 2 years | Can restore account within 30-day window if needed |
+| **Email Invite Links** | 7 days (or until used) | MetricOra | Automatic purge after 7 days or immediate if used | Prevents reuse of old links; single-use tokens |
+| **Password Reset Tokens** | 1 hour | MetricOra | Auto-expire; manual purge if requested | Prevents accidental password resets from old links |
+| **Email Address (Account)** | Indefinite (account active) / 2 years (deleted account) | MetricOra | Anonymized after account deletion + 2 years | Can restore account within 30-day window if needed |
 
 ---
 
@@ -203,10 +203,10 @@ CarbonSite retains personal data only for as long as necessary to provide the se
 
 ## 17. Contact & Escalation
 
-- **Retention Questions:** compliance@carbonsite.io
-- **Legal Hold / Exception:** legal@carbonsite.io
-- **Deletion Failure / Incident:** privacy@carbonsite.io (escalate within 24 hours)
-- **Regulatory Inquiry (ICO):** compliance@carbonsite.io (forward to legal team)
+- **Retention Questions:** compliance@metricora.co.uk
+- **Legal Hold / Exception:** legal@metricora.co.uk
+- **Deletion Failure / Incident:** privacy@metricora.co.uk (escalate within 24 hours)
+- **Regulatory Inquiry (ICO):** compliance@metricora.co.uk (forward to legal team)
 
 ---
 

@@ -230,7 +230,7 @@ describe('Analytics Page', () => {
   it('should render with proper meta tags', () => {
     // Page should have proper title and description for SEO
     const meta = {
-      title: 'Advanced Analytics | CarbonSite',
+      title: 'Advanced Analytics | MetricOra',
       description: 'Multi-dimensional emissions analysis and reporting',
     };
     expect(meta.title).toBeDefined();

@@ -138,7 +138,7 @@ class _InviteScreenState extends State<InviteScreen> {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'CarbonSite',
+                      'MetricOra',
                       style: textTheme.headlineMedium?.copyWith(
                         color: colorScheme.primary,
                         fontWeight: FontWeight.w700,
@@ -267,7 +267,7 @@ class _InviteScreenState extends State<InviteScreen> {
                 const SizedBox(height: 24),
 
                 Text(
-                  'By joining you agree to use CarbonSite only for authorised document submissions.',
+                  'By joining you agree to use MetricOra only for authorised document submissions.',
                   style: textTheme.bodySmall
                       ?.copyWith(color: colorScheme.onSurfaceVariant),
                   textAlign: TextAlign.center,

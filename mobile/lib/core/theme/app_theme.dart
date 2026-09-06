@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// CarbonSite Material 3 theme.
+/// MetricOra Material 3 theme.
 ///
 /// Visual language: deep green + slate — professional construction-industry
 /// field tooling (BRE SmartWaste class), not consumer-app pastel.

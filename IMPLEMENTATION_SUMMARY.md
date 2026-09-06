@@ -1,8 +1,8 @@
-# CarbonSite Implementation Summary — Phases 1-4
+# MetricOra Implementation Summary — Phases 1-4
 
 ## Overview
 
-This document summarizes the comprehensive system enhancements implemented across four major phases, transforming CarbonSite from a core emissions tracking platform to an enterprise-grade, production-ready system with integrated data pipelines, automation, intelligence, and infrastructure.
+This document summarizes the comprehensive system enhancements implemented across four major phases, transforming MetricOra from a core emissions tracking platform to an enterprise-grade, production-ready system with integrated data pipelines, automation, intelligence, and infrastructure.
 
 **Total Implementation Effort:** ~8 weeks of development
 **Major Phases:** 4 (Foundation, Integration, Intelligence, Enterprise Infrastructure)
@@ -84,7 +84,7 @@ This document summarizes the comprehensive system enhancements implemented acros
 - **Status:** ✅ COMPLETE
 - **What it does:** Connect 1000+ data sources (ERP, CRM, IoT, billing)
 - **Architecture:**
-  - Docker container (self-hosted on same VM as CarbonSite)
+  - Docker container (self-hosted on same VM as MetricOra)
   - 1000+ pre-built connectors (Salesforce, SAP, QuickBooks, AWS IoT, etc.)
   - Configurable sync schedules (hourly, daily, weekly)
   - Auto-transforms to PostgreSQL staging tables
@@ -109,8 +109,8 @@ This document summarizes the comprehensive system enhancements implemented acros
 - **What it does:** Low-code visual workflows triggered by events
 - **Architecture:**
   - Self-hosted Docker container
-  - HTTP webhooks from CarbonSite → n8n workflows
-  - Workflows call CarbonSite APIs or external services
+  - HTTP webhooks from MetricOra → n8n workflows
+  - Workflows call MetricOra APIs or external services
 - **Workflows deployed:**
   1. **Field Worker Reminder** — Email reviewers if submission pending > 7 days
   2. **Facility Risk Flag** — Tag facilities as high-carbon after calc run
@@ -202,7 +202,7 @@ This document summarizes the comprehensive system enhancements implemented acros
 - **Features:**
   - SAML 2.0 + OIDC support
   - Auto-provision users on first login
-  - Map SAML groups to CarbonSite roles
+  - Map SAML groups to MetricOra roles
   - Admin UI for configuration
 - **Benefit:** Enterprise sales blocker removed
 
@@ -284,13 +284,13 @@ This document summarizes the comprehensive system enhancements implemented acros
   2. **ACL Plugin** (API Key Authentication)
      - Each org gets unique API key pair
      - Credentials stored in `kong` database
-     - Scoped to `carbonsite-api` group
+     - Scoped to `metricora-api` group
   3. **Request Logging**
      - Logs to `kong` database
      - Captures: method, path, status, latency, actor
      - Queryable for audit and debugging
   4. **Load Balancing**
-     - Can route to multiple CarbonSite instances
+     - Can route to multiple MetricOra instances
      - Health checks + automatic failover
 - **Deployment:**
   - **Local dev:** `docker-compose.kong.yml` (3 containers: Kong, Postgres, Konga UI)

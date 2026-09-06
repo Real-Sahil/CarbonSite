@@ -1,7 +1,7 @@
 import { TransactionalEmailPayload } from "@/lib/notifications/email";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://carbonsite.app";
-const FROM_NAME = "CarbonSite";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://metricora.co.uk";
+const FROM_NAME = "MetricOra";
 
 export type QualityFlag = {
   field: string;
@@ -346,7 +346,7 @@ When you first login, you'll be prompted to change your password.
 Questions? Contact ${organizationName} directly.
 
 Best regards,
-CarbonSite`;
+MetricOra`;
 
   const html = `
 <p>Hi ${supplierName},</p>
@@ -371,7 +371,7 @@ CarbonSite`;
 
 <p>Questions? Contact ${organizationName} directly.</p>
 
-<p>Best regards,<br>CarbonSite</p>
+<p>Best regards,<br>MetricOra</p>
   `.trim();
 
   return {

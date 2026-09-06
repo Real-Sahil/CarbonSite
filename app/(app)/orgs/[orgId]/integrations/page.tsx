@@ -26,7 +26,7 @@ interface IntegrationsPageProps {
 export async function generateMetadata({ params }: IntegrationsPageProps) {
   const { orgId } = await params;
   return {
-    title: "Integrations | CarbonSite",
+    title: "Integrations | MetricOra",
     description: "Connect your accounting software and invite suppliers to collaborate on emissions data",
   };
 }

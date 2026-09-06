@@ -32,17 +32,17 @@ void main() async {
     debugPrint('[FMTC] Map tile cache initialisation skipped: $e');
   }
 
-  runApp(const ProviderScope(child: CarbonSiteApp()));
+  runApp(const ProviderScope(child: MetricOraApp()));
 }
 
-class CarbonSiteApp extends ConsumerStatefulWidget {
-  const CarbonSiteApp({super.key});
+class MetricOraApp extends ConsumerStatefulWidget {
+  const MetricOraApp({super.key});
 
   @override
-  ConsumerState<CarbonSiteApp> createState() => _CarbonSiteAppState();
+  ConsumerState<MetricOraApp> createState() => _MetricOraAppState();
 }
 
-class _CarbonSiteAppState extends ConsumerState<CarbonSiteApp> {
+class _MetricOraAppState extends ConsumerState<MetricOraApp> {
   final _scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
@@ -58,7 +58,7 @@ class _CarbonSiteAppState extends ConsumerState<CarbonSiteApp> {
   }
 
   void _showForegroundBanner(RemoteMessage message) {
-    final title = message.notification?.title ?? 'CarbonSite';
+    final title = message.notification?.title ?? 'MetricOra';
     final body = message.notification?.body ?? '';
     _scaffoldKey.currentState?.showSnackBar(
       SnackBar(
@@ -82,7 +82,7 @@ class _CarbonSiteAppState extends ConsumerState<CarbonSiteApp> {
     ref.watch(syncServiceProvider);
 
     return MaterialApp.router(
-      title: 'CarbonSite',
+      title: 'MetricOra',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       routerConfig: router,

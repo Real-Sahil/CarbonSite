@@ -1,4 +1,4 @@
-# CarbonSite Handoff Document
+# MetricOra Handoff Document
 
 **Date:** 2026-08-24  
 **Session:** Claude Code Remote (claude-haiku-4-5-20251001)  
@@ -9,10 +9,10 @@
 
 ## Project Status Overview
 
-**CarbonSite** is a multi-tenant GHG emissions tracking platform for construction, waste haulage, and general corporate carbon accounting. This handoff documents the completion of recent work and the readiness for the next development cycle.
+**MetricOra** is a multi-tenant GHG emissions tracking platform for construction, waste haulage, and general corporate carbon accounting. This handoff documents the completion of recent work and the readiness for the next development cycle.
 
 ### Current Metrics
-- **Repository:** real-sahil/carbonsite (GitHub)
+- **Repository:** real-sahil/metricora (GitHub)
 - **Main Branch:** Up-to-date with origin/main
 - **Working Tree:** Active development on `claude/review-handoff-docs-woi4zm`
 - **Latest Commit (main):** `1485982` - "Add hand-off documentation and configure routine permissions"
@@ -62,12 +62,12 @@
 **Completed:**
 - ✅ Added permissions to `.claude/settings.json` for Claude Code Remote trigger tools
 - ✅ Configured scheduled routine (2 AM UTC daily)
-- ✅ Routine scope: project-scoped (CarbonSite only, not global)
+- ✅ Routine scope: project-scoped (MetricOra only, not global)
 - ✅ Documentation of routine behavior and requirements
 
 **Routine Configuration:**
 ```
-Name: CarbonSite Graphify Daily Update
+Name: MetricOra Graphify Daily Update
 Schedule: 0 2 * * * (2 AM UTC daily)
 Action: graphify update . → commit → push to origin/main
 Notifications: Push alert on completion
@@ -270,7 +270,7 @@ docs/emissions-walkthrough.md      # Calculation examples with DEFRA/EPA factors
 1. **User journey maps** — for each role (admin, editor, viewer, field_worker)
 2. **Key metrics to track** — adoption, calculation accuracy, report utilization
 3. **Feature prioritization framework** — how to decide what's next
-4. **Competitive analysis** — CarbonSite vs. existing tools
+4. **Competitive analysis** — MetricOra vs. existing tools
 5. **Compliance requirements matrix** — what regulations apply by geography
 
 ### Recommended Actions

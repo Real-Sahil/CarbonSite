@@ -6,7 +6,7 @@
 
 ## Problem Statement
 
-Supabase has flagged two critical security issues on the CarbonSite project:
+Supabase has flagged two critical security issues on the MetricOra project:
 
 1. **Table publicly accessible** - `rls_disabled_in_public`
    - Affected tables lack Row-Level Security (RLS) enforcement
@@ -187,4 +187,4 @@ This fix addresses requirements for:
 
 - [Supabase RLS Documentation](https://supabase.com/docs/guides/auth/row-level-security)
 - [PostgreSQL RLS Guide](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
-- [CarbonSite Security Architecture](./security-architecture.md)
+- [MetricOra Security Architecture](./security-architecture.md)

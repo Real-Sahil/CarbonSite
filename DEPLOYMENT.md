@@ -1,6 +1,6 @@
 # Deployment Checklist
 
-Pre-deployment verifications for CarbonSite production deployments.
+Pre-deployment verifications for MetricOra production deployments.
 
 ## Database Security
 
@@ -33,7 +33,7 @@ SELECT rolname, rolbypassrls FROM pg_roles WHERE rolname = 'postgres';
 ### Setting Environment Variables on Vercel
 
 1. Go to your Vercel project dashboard: https://vercel.com/dashboard
-2. Select your CarbonSite project
+2. Select your MetricOra project
 3. Click Settings → Environment Variables
 4. Add the following variables:
 
@@ -42,7 +42,7 @@ SELECT rolname, rolbypassrls FROM pg_roles WHERE rolname = 'postgres';
 DATABASE_URL          (Neon Postgres connection string)
 DIRECT_URL            (Same as DATABASE_URL for serverless functions)
 BETTER_AUTH_SECRET    (Generate: openssl rand -hex 32)
-BETTER_AUTH_URL       (Your production domain, e.g., https://carbonsite.example.com)
+BETTER_AUTH_URL       (Your production domain, e.g., https://metricora.example.com)
 TRUSTED_ORIGINS       (Same as BETTER_AUTH_URL)
 NEXT_PUBLIC_APP_URL   (Same as BETTER_AUTH_URL)
 ```

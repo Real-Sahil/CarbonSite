@@ -148,7 +148,7 @@ export function renderBreeamEvidenceHtml(d: BreeamData): string {
   </ul>
   <div class="note">
     <strong>BREEAM assessor note:</strong> The snapshot ID referenced in this pack uniquely identifies
-    the calculation run from which all totals are derived. Request access to the CarbonSite platform
+    the calculation run from which all totals are derived. Request access to the MetricOra platform
     to review individual activity records and supporting evidence files.
   </div>
 </section>

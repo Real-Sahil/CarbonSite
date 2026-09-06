@@ -1,6 +1,6 @@
 # Phase 1D: Real-Time Monitoring via Grafana Cloud
 
-This document provides setup instructions for Grafana Cloud monitoring of CarbonSite emissions data processing pipelines.
+This document provides setup instructions for Grafana Cloud monitoring of MetricOra emissions data processing pipelines.
 
 ## Overview
 
@@ -20,7 +20,7 @@ Grafana Cloud provides real-time dashboards for monitoring:
 1. Visit [grafana.com](https://grafana.com)
 2. Click "Sign Up" and create free account
 3. Select "Grafana Cloud" (free tier)
-4. Create organization (e.g., "CarbonSite")
+4. Create organization (e.g., "MetricOra")
 
 ### 2. Add PostgreSQL Data Source
 
@@ -29,9 +29,9 @@ Grafana Cloud provides real-time dashboards for monitoring:
 2. Click **Add new data source**
 3. Select **PostgreSQL**
 4. Configure:
-   - **Name:** `CarbonSite PostgreSQL`
+   - **Name:** `MetricOra PostgreSQL`
    - **Host:** Your Neon or PostgreSQL hostname
-   - **Database:** `carbonsite`
+   - **Database:** `metricora`
    - **User:** Database user (usually `neondb_owner`)
    - **Password:** Database password
    - **SSL Mode:** `require` (for Neon)
@@ -177,7 +177,7 @@ ORDER BY date DESC
 3. Configure:
    - **Name:** `orgId`
    - **Type:** `Query`
-   - **Data source:** CarbonSite PostgreSQL
+   - **Data source:** MetricOra PostgreSQL
    - **Query:**
    ```sql
    SELECT DISTINCT id FROM organizations
@@ -241,4 +241,4 @@ ORDER BY date DESC
 - [Grafana Dashboard Queries](https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/manage-dashboards/)
 - [PostgreSQL Data Source](https://grafana.com/docs/grafana/latest/datasources/postgres/)
 - [Alert Rules](https://grafana.com/docs/grafana/latest/alerting/alerting-rules/)
-- [CarbonSite Database Schema](../README.md)
+- [MetricOra Database Schema](../README.md)

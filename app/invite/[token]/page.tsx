@@ -35,7 +35,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
       <div className="mx-auto flex max-w-md flex-col gap-6">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-green-700">
-            CarbonSite invite
+            MetricOra invite
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-950">
             Join {invite.organization.name}

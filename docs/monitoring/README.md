@@ -1,10 +1,10 @@
-# CarbonSite Monitoring & Real-Time Dashboards
+# MetricOra Monitoring & Real-Time Dashboards
 
-This directory contains monitoring setup and operational guides for CarbonSite.
+This directory contains monitoring setup and operational guides for MetricOra.
 
 ## Overview
 
-CarbonSite includes comprehensive monitoring at three levels:
+MetricOra includes comprehensive monitoring at three levels:
 
 1. **Database-Level Audit Logging (Phase 1A)** → PostgreSQL audit trail via pgAudit
 2. **Data Quality Monitoring (Phase 1B)** → Import quality scores and issue tracking

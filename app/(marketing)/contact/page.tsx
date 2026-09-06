@@ -7,8 +7,8 @@ import { VideoBackground } from "@/components/ui/video-background";
 import { ArrowUpRight, Mail, Building2, FileText, MapPin } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contact - CarbonSite",
-  description: "Plan a CarbonSite pilot around real project data.",
+  title: "Contact - MetricOra",
+  description: "Plan a MetricOra pilot around real project data.",
 };
 
 export default function ContactPage() {
@@ -30,14 +30,14 @@ export default function ContactPage() {
               <span className="text-xs text-cyan-400 tracking-[0.12em] font-medium">Pilot contact</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[22ch]">
-              Plan a CarbonSite pilot around real project data.
+              Plan a MetricOra pilot around real project data.
             </h1>
             <p className="text-base text-slate-300 leading-relaxed max-w-[50ch] mb-8">
-              Bring one construction project, one reporting period, field evidence, supplier files, and postcode routes. CarbonSite proves the workflow with live tenant data.
+              Bring one construction project, one reporting period, field evidence, supplier files, and postcode routes. MetricOra proves the workflow with live tenant data.
             </p>
             <div className="flex flex-wrap gap-3">
               <a
-                href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request"
+                href="mailto:hello@metricora.co.uk?subject=MetricOra%20pilot%20request"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-cyan-500 text-slate-950 text-sm font-medium hover:bg-cyan-400 transition-colors active:scale-[0.97]"
               >
                 <Mail className="h-4 w-4" />
@@ -127,7 +127,7 @@ export default function ContactPage() {
               Email the pilot team with your project scope or create a free workspace to start exploring.
             </p>
             <a
-              href="mailto:pilot@carbonsite.app?subject=CarbonSite%20pilot%20request"
+              href="mailto:hello@metricora.co.uk?subject=MetricOra%20pilot%20request"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#111827] text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
             >
               Get in touch

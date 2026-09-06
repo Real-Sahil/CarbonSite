@@ -1,7 +1,7 @@
 // lib/reports/templates/cdp.ts
 // CDP (Carbon Disclosure Project) Climate Change questionnaire HTML template.
 // Covers modules C5 (Methodology), C6 (Scope 1 + 2 emissions), C7 (Scope 3),
-// and C8 (Energy) — the core modules relevant to CarbonSite's dataset.
+// and C8 (Energy) — the core modules relevant to MetricOra's dataset.
 
 import { brandStyles, esc } from "./shared";
 
@@ -123,7 +123,7 @@ export function renderCdpHtml(data: CdpData): string {
       </table>`
     )}
     ${questionBlock("C5.2", "Provide any additional context on your emission calculation methodology.",
-      `<p>Calculations performed using CarbonSite v${data.snapshotVersion}, applying DEFRA 2025 conversion factors for UK activities.
+      `<p>Calculations performed using MetricOra v${data.snapshotVersion}, applying DEFRA 2025 conversion factors for UK activities.
        Scope 1 includes stationary combustion, mobile combustion, and fugitive emissions.
        Scope 2 location-based uses UK grid average emission factors; market-based uses supplier-specific or residual mix factors where available.
        Scope 3 categories reported where material data is available. GWP values: CH4 = 27.9, N2O = 273 (AR6 100-year).</p>`

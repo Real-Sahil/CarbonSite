@@ -6,7 +6,7 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 
 // A per-org SSO deep link (shared by an admin, e.g.
-// https://app.carbonsite.com/sign-in?orgId=X&ssoProvider=saml) is how an
+// https://app.metricora.co.uk/sign-in?orgId=X&ssoProvider=saml) is how an
 // employee reaches SSO sign-in — there's no email-domain-based org
 // discovery here, so the button below only appears when both params are
 // present and valid.
@@ -126,7 +126,7 @@ export default function SignInPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-semibold tracking-tight text-white">Welcome back</h1>
-        <p className="text-sm text-white/40 mt-1">Sign in to your CarbonSite account.</p>
+        <p className="text-sm text-white/40 mt-1">Sign in to your MetricOra account.</p>
       </div>
 
       <Suspense fallback={null}>

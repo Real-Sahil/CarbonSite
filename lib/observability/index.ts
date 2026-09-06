@@ -1,5 +1,5 @@
 /**
- * Observability infrastructure for CarbonSite
+ * Observability infrastructure for MetricOra
  * Provides structured logging and metrics collection.
  * Integrates with Grafana Cloud via Loki (logs) and Prometheus (metrics).
  */

@@ -1,7 +1,7 @@
 {
   "dashboard": {
     "title": "Report Generation Pipeline",
-    "tags": ["carbonsite", "reports"],
+    "tags": ["metricora", "reports"],
     "timezone": "browser",
     "panels": [
       {

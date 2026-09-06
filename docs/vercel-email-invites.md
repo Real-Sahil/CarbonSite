@@ -1,6 +1,6 @@
 # Vercel Email Invites
 
-CarbonSite sends account, member, and field-worker invite emails through the
+MetricOra sends account, member, and field-worker invite emails through the
 transactional email driver in `lib/notifications/email.ts`. The production
 driver is Resend.
 
@@ -13,16 +13,16 @@ Production and Preview:
 ```bash
 EMAIL_DRIVER=resend
 RESEND_API_KEY=<resend-api-key>
-EMAIL_FROM=CarbonSite <onboarding@your-verified-domain>
+EMAIL_FROM=MetricOra <onboarding@your-verified-domain>
 ```
 
 Keep the app origin variables aligned with the deployed domain so invite links
 open the correct Vercel app:
 
 ```bash
-NEXT_PUBLIC_APP_URL=https://carbonsite-rosy.vercel.app
-BETTER_AUTH_URL=https://carbonsite-rosy.vercel.app
-TRUSTED_ORIGINS=https://carbonsite-rosy.vercel.app
+NEXT_PUBLIC_APP_URL=https://metricora-rosy.vercel.app
+BETTER_AUTH_URL=https://metricora-rosy.vercel.app
+TRUSTED_ORIGINS=https://metricora-rosy.vercel.app
 ```
 
 If a custom domain is added later, update all three values to the custom HTTPS
@@ -36,7 +36,7 @@ origin and redeploy.
   invite link. The invite acceptance page creates or signs into their web
   account before joining the organisation.
 - New field workers receive a mobile invite. If they open the link in a browser,
-  the page shows the invite token and tells them to continue in the CarbonSite
+  the page shows the invite token and tells them to continue in the MetricOra
   mobile app. The app creates the field profile, stores the bearer session, and
   then asks for the device PIN.
 - If Resend is not configured or email delivery fails, the admin invite form

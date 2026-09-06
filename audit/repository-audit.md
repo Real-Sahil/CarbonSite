@@ -3,8 +3,8 @@
 
 **Prepared by:** Engineering  
 **Date:** 2026-06-13  
-**Repository:** real-sahil/carbonsite (`main`, commit `8191156`)  
-**Current Brand:** CarbonSite (MVP)  
+**Repository:** real-sahil/metricora (`main`, commit `8191156`)  
+**Current Brand:** MetricOra (MVP)  
 **Target Brand:** Fluid  
 **Classification:** Internal — Engineering Confidential
 
@@ -40,9 +40,9 @@
 
 ### 1.1 Project Identity
 
-| Property | Current (CarbonSite MVP) | Target (Fluid Enterprise) |
+| Property | Current (MetricOra MVP) | Target (Fluid Enterprise) |
 |---|---|---|
-| Brand name | CarbonSite | Fluid |
+| Brand name | MetricOra | Fluid |
 | Positioning | GHG calculator for SMEs | Sustainability intelligence platform |
 | Primary audience | Sustainability managers | Enterprise procurement, ESG, sustainability teams |
 | Competitive tier | Free/prosumer | BRE SmartWaste, Sphera, Greenly, Emitwise |
@@ -310,7 +310,7 @@ POST /field-submissions/[id]/review
 
 ## 3. Architecture Diagram
 
-### 3.1 Current Architecture (CarbonSite MVP)
+### 3.1 Current Architecture (MetricOra MVP)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -672,7 +672,7 @@ No mechanism to pin a tenant's data to a specific Neon region or R2 datacenter. 
 **Result: Zero white-label capability.** The current codebase has no branding abstraction, no subdomain routing, no theming system, and no per-tenant visual configuration.
 
 All pages render with:
-- Hardcoded brand name "CarbonSite" in `android/app/src/main/AndroidManifest.xml:11`
+- Hardcoded brand name "MetricOra" in `android/app/src/main/AndroidManifest.xml:11`
 - Hardcoded Tailwind CSS colour palette (no CSS custom property overrides)
 - No `subdomain` or `customDomain` field on `Organization`
 - No logo or favicon upload endpoint
@@ -1212,7 +1212,7 @@ GET /api/orgs/[orgId]/reports/[reportId]/download
 - `dart run build_runner build --delete-conflicting-outputs` (drift codegen)
 - `flutter analyze --no-fatal-infos`
 - `flutter build apk --release`
-- Upload artifact: `carbonsite-release-{sha}.apk` (14-day retention)
+- Upload artifact: `metricora-release-{sha}.apk` (14-day retention)
 
 **Known configuration (verified after recent fixes):**
 - minSdk = 23 (ML Kit + flutter_secure_storage requirement)
@@ -1227,7 +1227,7 @@ GET /api/orgs/[orgId]/reports/[reportId]/download
 - Unsigned iOS build (no App Store delivery)
 - Keystore signing: reads `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` from GitHub Secrets
 - Gracefully degrades to debug signing if secrets absent (CI-safe)
-- CARBONSITE_API_BASE_URL injected at build time via `--dart-define`
+- METRICORA_API_BASE_URL injected at build time via `--dart-define`
 
 ### 14.4 Production DB Workflow (`production-db.yml` — 46 lines)
 
@@ -1569,7 +1569,7 @@ CREATE INDEX idx_audit_log_actor
 
 ### 20.1 Feature Gap Matrix
 
-| Capability | MVP (CarbonSite) | Enterprise (Fluid) | Gap |
+| Capability | MVP (MetricOra) | Enterprise (Fluid) | Gap |
 |---|---|---|---|
 | **Multi-tenancy depth** | Org (flat) | Platform→Tenant→BU→Contract→Project→Site | 🔴 Critical |
 | **White-label portals** | None | Unlimited branded subdomains | 🔴 Critical |

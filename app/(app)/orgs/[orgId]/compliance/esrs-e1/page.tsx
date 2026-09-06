@@ -60,7 +60,7 @@ function buildDisclosures(org: OrgData): DisclosureRequirement[] {
           id: 'e1-1-sbti',
           label: 'Science-Based Target (SBTi) committed or validated',
           status: org.hasSbtiTarget ? 'met' : 'gap',
-          detail: org.hasSbtiTarget ? 'SBTi target recorded in CarbonSite' : 'No SBTi target set. Navigate to SBTi Roadmap to create one.',
+          detail: org.hasSbtiTarget ? 'SBTi target recorded in MetricOra' : 'No SBTi target set. Navigate to SBTi Roadmap to create one.',
         },
         {
           id: 'e1-1-reduction',
@@ -232,7 +232,7 @@ function buildDisclosures(org: OrgData): DisclosureRequirement[] {
           id: 'e1-8-icp',
           label: 'Internal carbon price configured',
           status: 'gap',
-          detail: 'Internal carbon pricing is not yet tracked in CarbonSite. This is a planned future feature.',
+          detail: 'Internal carbon pricing is not yet tracked in MetricOra. This is a planned future feature.',
         },
       ],
     },
@@ -246,7 +246,7 @@ function buildDisclosures(org: OrgData): DisclosureRequirement[] {
           id: 'e1-9-risk',
           label: 'Climate risk and scenario analysis documented',
           status: 'gap',
-          detail: 'Climate risk scenario analysis (TCFD-aligned) is not yet tracked in CarbonSite. This is a planned future feature.',
+          detail: 'Climate risk scenario analysis (TCFD-aligned) is not yet tracked in MetricOra. This is a planned future feature.',
         },
       ],
     },
@@ -378,7 +378,7 @@ export default function EsrsE1GapPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">CSRD ESRS E1 Gap Analysis</h1>
           <p className="mt-2 text-gray-600">
-            Maps your CarbonSite data against ESRS E1 disclosure requirements (E1-1 through E1-9)
+            Maps your MetricOra data against ESRS E1 disclosure requirements (E1-1 through E1-9)
           </p>
         </div>
         <a

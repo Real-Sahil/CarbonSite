@@ -28,7 +28,7 @@ export default function CaseStudiesPage() {
             Customer Case Studies
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl">
-            See how companies like yours use CarbonSite to streamline emissions tracking, reduce manual work, and pass audits with confidence.
+            See how companies like yours use MetricOra to streamline emissions tracking, reduce manual work, and pass audits with confidence.
           </p>
         </div>
       </div>

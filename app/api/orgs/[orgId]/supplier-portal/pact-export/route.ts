@@ -168,7 +168,7 @@ export async function GET(
 }
 
 /**
- * Map CarbonSite emission categories to PACT Scope 3 categories.
+ * Map MetricOra emission categories to PACT Scope 3 categories.
  */
 function mapCategoryToPact(categoryCode: string): string {
   const mapping: Record<string, string> = {

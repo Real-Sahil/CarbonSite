@@ -107,9 +107,9 @@ export async function POST(
       let delivery = "email";
       await sendTransactionalEmail({
         to: email,
-        subject: `[CarbonSite] ${organization.name}: access granted`,
+        subject: `[MetricOra] ${organization.name}: access granted`,
         text: [
-          `${session.user.name ?? session.user.email} added you to ${organization.name} on CarbonSite.`,
+          `${session.user.name ?? session.user.email} added you to ${organization.name} on MetricOra.`,
           `Role: ${membership.role.replaceAll("_", " ")}`,
           `Open workspace: ${appUrl}/orgs/${orgId}/dashboard`,
         ].join("\n"),
@@ -171,9 +171,9 @@ export async function POST(
     let delivery = "email";
     await sendTransactionalEmail({
       to: email,
-      subject: `[CarbonSite] ${organization.name}: you have been invited`,
+      subject: `[MetricOra] ${organization.name}: you have been invited`,
       text: [
-        `${session.user.name ?? session.user.email} invited you to ${organization.name} on CarbonSite.`,
+        `${session.user.name ?? session.user.email} invited you to ${organization.name} on MetricOra.`,
         `Role: ${invite.role.replaceAll("_", " ")}`,
         `Accept invite: ${inviteUrl}`,
         `This invite expires on ${invite.expiresAt.toLocaleDateString("en-GB")}.`,

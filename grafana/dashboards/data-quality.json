@@ -1,7 +1,7 @@
 {
   "dashboard": {
     "title": "Data Quality Metrics",
-    "tags": ["carbonsite", "data-quality"],
+    "tags": ["metricora", "data-quality"],
     "timezone": "browser",
     "panels": [
       {

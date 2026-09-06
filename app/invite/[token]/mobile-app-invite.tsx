@@ -14,9 +14,9 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
   const [showFallback, setShowFallback] = useState(false);
 
   function buildAppLink(): string {
-    // carbonsite://app/invite/TOKEN?server=https://yourorg.com
+    // metricora://app/invite/TOKEN?server=https://yourorg.com
     if (typeof window === "undefined") return "";
-    return `carbonsite://app/invite/${token}?server=${encodeURIComponent(window.location.origin)}`;
+    return `metricora://app/invite/${token}?server=${encodeURIComponent(window.location.origin)}`;
   }
 
   function handleOpenApp() {
@@ -43,7 +43,7 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
         </div>
         <div>
           <p className="font-semibold text-green-900 text-lg">
-            Open in CarbonSite app
+            Open in MetricOra app
           </p>
           <p className="text-sm text-green-800 mt-1">
             You&apos;ve been invited to join <strong>{orgName}</strong>.
@@ -60,7 +60,7 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
             "Opening app…"
           ) : (
             <>
-              Open CarbonSite App
+              Open MetricOra App
               <ArrowRight className="h-5 w-5" />
             </>
           )}
@@ -74,11 +74,11 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
             App not installed?
           </p>
           <p className="text-sm text-slate-500">
-            Download the CarbonSite app, then tap{" "}
-            <strong>Open CarbonSite App</strong> again.
+            Download the MetricOra app, then tap{" "}
+            <strong>Open MetricOra App</strong> again.
           </p>
           <a
-            href="https://play.google.com/store/apps/details?id=com.carbonsite.mobile"
+            href="https://play.google.com/store/apps/details?id=com.metricora.mobile"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-600 font-medium"

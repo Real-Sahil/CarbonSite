@@ -1,6 +1,6 @@
 # Operators Guide: Deployment, Monitoring & Scaling
 
-This guide is for DevOps engineers, operations staff, and anyone managing CarbonSite infrastructure.
+This guide is for DevOps engineers, operations staff, and anyone managing MetricOra infrastructure.
 
 ## Pre-Deployment Checklist
 
@@ -9,7 +9,7 @@ Before deploying to production, verify:
 ### Infrastructure
 - [ ] PostgreSQL instance provisioned (Neon free tier or self-hosted)
   - Minimum: 0.5 GB storage (Neon free), 100 compute-hours/month
-  - Verify connection string: `postgresql://user:password@host:5432/carbonsite`
+  - Verify connection string: `postgresql://user:password@host:5432/metricora`
 - [ ] Cloudflare R2 bucket created (free tier: 10 GB/month, zero egress)
   - Keys: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT`
 - [ ] Resend account active (free: 3,000 emails/month, 100/day)
@@ -85,8 +85,8 @@ vercel rollback
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/Real-Sahil/CarbonSite
-cd CarbonSite
+git clone https://github.com/Real-Sahil/MetricOra
+cd MetricOra
 pnpm install --production
 
 # 2. Build
@@ -101,10 +101,10 @@ export NODE_ENV=production
 pnpm prisma migrate deploy
 
 # 5. Start web process (use PM2 or systemd)
-pm2 start "pnpm start" --name carbonsite-web
+pm2 start "pnpm start" --name metricora-web
 
 # 6. Start worker process (separate, required!)
-pm2 start "pnpm worker" --name carbonsite-worker
+pm2 start "pnpm worker" --name metricora-worker
 
 # 7. Verify both processes running
 pm2 list
@@ -338,10 +338,10 @@ SELECT id, queue_name, retry_count, data FROM pgboss.job
 WHERE state = 'failed' AND retry_count > 10;
 
 # 3. Check worker logs
-pm2 logs carbonsite-worker | tail -50
+pm2 logs metricora-worker | tail -50
 
 # 4. Restart worker
-pm2 restart carbonsite-worker
+pm2 restart metricora-worker
 
 # 5. If still backing up, scale worker (run multiple instances)
 ```
@@ -360,7 +360,7 @@ pm2 restart carbonsite-worker
 pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
 
 # Or backup to S3
-pg_dump $DATABASE_URL | gzip | aws s3 cp - s3://backups/carbonsite_$(date +%Y%m%d).sql.gz
+pg_dump $DATABASE_URL | gzip | aws s3 cp - s3://backups/metricora_$(date +%Y%m%d).sql.gz
 ```
 
 ### Knowledge Graph Backups
@@ -406,7 +406,7 @@ SELECT COUNT(*) FROM emission_calculation;
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:pass@host:5432/carbonsite
+DATABASE_URL=postgresql://user:pass@host:5432/metricora
 
 # Auth & Security
 BETTER_AUTH_SECRET=<random-32-char-string>
@@ -414,13 +414,13 @@ BETTER_AUTH_TRUST_HOST=true
 
 # Email (Resend)
 RESEND_API_KEY=re_<your-key>
-EMAIL_FROM=noreply@carbonsite.com
+EMAIL_FROM=noreply@metricora.co.uk
 EMAIL_DRIVER=resend          # or 'console' for dev logging
 
 # Storage (Cloudflare R2)
 R2_ACCESS_KEY_ID=<access-key>
 R2_SECRET_ACCESS_KEY=<secret>
-R2_BUCKET=carbonsite
+R2_BUCKET=metricora
 R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
 STORAGE_DRIVER=r2            # or 'local' for dev filesystem
 

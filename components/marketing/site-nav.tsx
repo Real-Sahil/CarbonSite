@@ -59,7 +59,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
             <span className="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-amber-400">
               <Leaf className="h-3 w-3 text-white" />
             </span>
-            CarbonSite
+            MetricOra
           </Link>
 
           {/* Desktop links */}

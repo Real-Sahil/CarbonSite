@@ -1,13 +1,13 @@
 # Developer Guide: Feature Development Workflow
 
-This guide is for developers adding new features, fixing bugs, or refactoring CarbonSite.
+This guide is for developers adding new features, fixing bugs, or refactoring MetricOra.
 
 ## Quick Start
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/Real-Sahil/CarbonSite
-cd CarbonSite
+git clone https://github.com/Real-Sahil/MetricOra
+cd MetricOra
 pnpm install
 
 # 2. Set up environment

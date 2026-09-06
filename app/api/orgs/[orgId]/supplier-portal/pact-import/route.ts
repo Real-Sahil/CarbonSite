@@ -155,7 +155,7 @@ export async function POST(
 }
 
 /**
- * Map PACT Scope 3 categories to CarbonSite category codes.
+ * Map PACT Scope 3 categories to MetricOra category codes.
  */
 function mapPactCategoryToInternal(pactCategory: string): string {
   const mapping: Record<string, string> = {

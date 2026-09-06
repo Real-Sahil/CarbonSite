@@ -183,7 +183,7 @@ export async function POST(
       },
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite-rosy.vercel.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://metricora-rosy.vercel.app";
     const loginUrl = `${appUrl}/sign-in`;
     const inviteUrl = `${appUrl}/supplier-invite/${invite.token}`;
 
@@ -196,7 +196,7 @@ export async function POST(
           temporaryPassword,
           loginUrl,
           invitedByName: session.user.name || session.user.email,
-          organizationName: org?.name || "CarbonSite",
+          organizationName: org?.name || "MetricOra",
           companyName: body.companyName,
         });
       } else {
@@ -206,7 +206,7 @@ export async function POST(
           supplierEmail: body.email,
           inviteUrl,
           invitedByName: session.user.name || session.user.email,
-          organizationName: org?.name || "CarbonSite",
+          organizationName: org?.name || "MetricOra",
           companyName: body.companyName,
         });
       }

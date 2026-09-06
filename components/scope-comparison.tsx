@@ -110,7 +110,7 @@ export function ScopeComparison() {
       {/* Header */}
       <div className="mb-12">
         <h2 className="text-3xl font-bold text-[#0F172A] mb-2">Understanding Scope 1, 2, and 3</h2>
-        <p className="text-[#64748B]">GHG Protocol defines three categories of emissions. CarbonSite tracks all of them.</p>
+        <p className="text-[#64748B]">GHG Protocol defines three categories of emissions. MetricOra tracks all of them.</p>
       </div>
 
       {/* Scope Selector Tabs */}
@@ -202,7 +202,7 @@ export function ScopeComparison() {
             {/* GHG Protocol Note */}
             <div className="mt-8 p-4 rounded-lg bg-gray-100 border border-gray-200">
               <p className="text-xs text-[#0F172A]">
-                <strong>GHG Protocol Corporate Standard v2026-01</strong> is the international standard for measuring and reporting corporate greenhouse gas emissions. CarbonSite implements all three scopes with full audit trail and immutable recording.
+                <strong>GHG Protocol Corporate Standard v2026-01</strong> is the international standard for measuring and reporting corporate greenhouse gas emissions. MetricOra implements all three scopes with full audit trail and immutable recording.
               </p>
             </div>
           </div>

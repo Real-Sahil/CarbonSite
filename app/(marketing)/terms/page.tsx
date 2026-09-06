@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Terms of Service | CarbonSite",
-  description: "Legal terms governing your use of CarbonSite.",
+  title: "Terms of Service | MetricOra",
+  description: "Legal terms governing your use of MetricOra.",
 };
 
 export default function TermsPage() {
@@ -20,7 +20,7 @@ export default function TermsPage() {
               1. Acceptance of Terms
             </h2>
             <p>
-              By accessing and using CarbonSite, you accept and agree to be bound
+              By accessing and using MetricOra, you accept and agree to be bound
               by the terms and provision of this agreement. If you do not agree to
               abide by the above, please do not use this service.
             </p>
@@ -31,7 +31,7 @@ export default function TermsPage() {
               2. License & Use Restrictions
             </h2>
             <p>
-              CarbonSite grants you a limited, non-exclusive, non-transferable
+              MetricOra grants you a limited, non-exclusive, non-transferable
               license to use the platform for calculating and tracking greenhouse
               gas (GHG) emissions in accordance with this agreement.
             </p>
@@ -66,7 +66,7 @@ export default function TermsPage() {
             </h2>
             <p>
               <strong>You are responsible</strong> for the accuracy, legality, and
-              non-infringing nature of all data you upload or enter. CarbonSite
+              non-infringing nature of all data you upload or enter. MetricOra
               does not independently verify emissions calculations or the validity
               of underlying activity data. You represent that:
             </p>
@@ -91,7 +91,7 @@ export default function TermsPage() {
               4. Calculation Methodology & Disclaimers
             </h2>
             <p>
-              CarbonSite uses published emission factors (DEFRA 2025, EPA GHG Hub
+              MetricOra uses published emission factors (DEFRA 2025, EPA GHG Hub
               2025, SustainMetrics) and the GHG Protocol framework. However:
             </p>
             <ul className="list-inside list-disc space-y-2">
@@ -110,7 +110,7 @@ export default function TermsPage() {
                 limitations
               </li>
               <li>
-                <strong>Professional Advice:</strong> CarbonSite is not a
+                <strong>Professional Advice:</strong> MetricOra is not a
                 substitute for professional environmental or accounting advice
               </li>
               <li>
@@ -126,7 +126,7 @@ export default function TermsPage() {
               5. Intellectual Property Rights
             </h2>
             <p>
-              CarbonSite retains all right, title, and interest in the platform,
+              MetricOra retains all right, title, and interest in the platform,
               software, features, and functionality. Your data and uploaded evidence
               files remain your property; we use them only to provide the service.
             </p>
@@ -144,7 +144,7 @@ export default function TermsPage() {
             <p>
               <strong>
                 TO THE FULLEST EXTENT PERMITTED BY LAW, IN NO EVENT SHALL
-                CARBONSITE, ITS OFFICERS, DIRECTORS, EMPLOYEES, OR AGENTS BE
+                METRICORA, ITS OFFICERS, DIRECTORS, EMPLOYEES, OR AGENTS BE
                 LIABLE FOR:
               </strong>
             </p>
@@ -177,7 +177,7 @@ export default function TermsPage() {
               7. Indemnification
             </h2>
             <p>
-              You agree to defend, indemnify, and hold harmless CarbonSite from
+              You agree to defend, indemnify, and hold harmless MetricOra from
               any claims, damages, or costs (including legal fees) arising from:
             </p>
             <ul className="list-inside list-disc space-y-2">
@@ -195,7 +195,7 @@ export default function TermsPage() {
               8. Service Availability & Uptime
             </h2>
             <p>
-              CarbonSite operates on a best-effort basis. We do not guarantee
+              MetricOra operates on a best-effort basis. We do not guarantee
               uninterrupted service. Scheduled maintenance, unforeseeable outages,
               or third-party service interruptions may affect availability.
             </p>
@@ -280,7 +280,7 @@ export default function TermsPage() {
             <p>
               These terms, together with our Privacy Policy and any other
               agreements you sign, constitute the entire agreement between you and
-              CarbonSite. No oral modifications or side agreements are valid unless
+              MetricOra. No oral modifications or side agreements are valid unless
               in writing and signed by both parties.
             </p>
           </section>
@@ -301,10 +301,10 @@ export default function TermsPage() {
             <p>
               Questions about these terms? Email{" "}
               <a
-                href="mailto:legal@carbonsite.io"
+                href="mailto:legal@metricora.co.uk"
                 className="font-semibold text-blue-600 hover:text-blue-700"
               >
-                legal@carbonsite.io
+                legal@metricora.co.uk
               </a>
             </p>
           </section>

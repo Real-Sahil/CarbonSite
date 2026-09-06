@@ -1,8 +1,8 @@
-# CarbonSite vs. Competitors: Technical Differentiation
+# MetricOra vs. Competitors: Technical Differentiation
 
 ## Head-to-Head Feature Comparison
 
-| **Feature** | **CarbonSite** | **Gaia** | **Persefoni** | **Watershed** | **Emitwise** |
+| **Feature** | **MetricOra** | **Gaia** | **Persefoni** | **Watershed** | **Emitwise** |
 |---|---|---|---|---|---|
 | **Field Capture** | ✅ On-device OCR | ❌ API only | ❌ Portal only | ❌ Portal only | ❌ Portal only |
 | **Offline-First Sync** | ✅ SQLite drift | ❌ Online only | ❌ Online only | ❌ Online only | ❌ Online only |
@@ -29,11 +29,11 @@
 
 ## Positioning Thesis
 
-**"CarbonSite leads in field-first architecture (mobile OCR, offline-first), transparency (open-source, audit trails), and Scope 3 automation (supplier portal, invoice sync, ML estimation)."**
+**"MetricOra leads in field-first architecture (mobile OCR, offline-first), transparency (open-source, audit trails), and Scope 3 automation (supplier portal, invoice sync, ML estimation)."**
 
 ### Why This Matters
 
-Competitors focus on dashboard UI + reporting. CarbonSite emphasizes:
+Competitors focus on dashboard UI + reporting. MetricOra emphasizes:
 1. **Data collection** (mobile OCR, field workers, suppliers) → eliminates manual entry
 2. **Data trust** (immutable logs, open-source, audit trails) → enables compliance
 3. **Data automation** (supplier portal, anomaly detection, forecasting) → reduces operational burden
@@ -42,104 +42,104 @@ Competitors focus on dashboard UI + reporting. CarbonSite emphasizes:
 
 ## Competitive Advantages (Ranked by Impact)
 
-### 🥇 Tier 1: Unique Differentiators (CarbonSite only)
+### 🥇 Tier 1: Unique Differentiators (MetricOra only)
 
 **1. On-Device Mobile OCR Capture**
 - **Competitors:** All require portal entry or manual data import
-- **CarbonSite:** Field workers photograph delivery tickets → instant extraction → zero manual entry
+- **MetricOra:** Field workers photograph delivery tickets → instant extraction → zero manual entry
 - **Market impact:** Eliminates #1 data quality issue for logistics/waste/manufacturing
 - **Proof point:** "95%+ OCR accuracy on real-world delivery tickets"
 
 **2. Offline-First Sync**
 - **Competitors:** Require always-on internet (not viable for field workers)
-- **CarbonSite:** SQLite local database + background sync when online
+- **MetricOra:** SQLite local database + background sync when online
 - **Market impact:** Field workers in remote sites (warehouses, construction) can submit anytime
 - **Proof point:** "Zero lost submissions even with 72-hour offline periods"
 
 **3. Immutable Audit Trail with Hash Chain**
 - **Competitors:** Logging only (can be altered or lost)
-- **CarbonSite:** SHA-256 hash chain proves no data was retroactively changed
+- **MetricOra:** SHA-256 hash chain proves no data was retroactively changed
 - **Market impact:** Auditors can verify data integrity without manual inspection
 - **Proof point:** "Audit verification in 30 minutes instead of 3 weeks"
 
 **4. Supplier Performance Analytics**
 - **Competitors:** No tracking of supplier response rates or data quality trends
-- **CarbonSite:** Submission history, approval rate, quality score, peer benchmarking
+- **MetricOra:** Submission history, approval rate, quality score, peer benchmarking
 - **Market impact:** Procurement teams optimize supplier programs based on data
 - **Proof point:** "Identify top-responding suppliers, improve underperformers"
 
 **5. Open-Source Calculation Engine**
 - **Competitors:** Black-box formulas (customers can't verify methodology)
-- **CarbonSite:** GitHub public repo + editable factor library
-- **Market impact:** Customers audit CarbonSite's math themselves
+- **MetricOra:** GitHub public repo + editable factor library
+- **Market impact:** Customers audit MetricOra's math themselves
 - **Proof point:** "Every calculation formula visible on GitHub"
 
 ---
 
-### 🥈 Tier 2: Strong Advantages (CarbonSite leads vs. most)
+### 🥈 Tier 2: Strong Advantages (MetricOra leads vs. most)
 
 **6. Invoice Anomaly Detection**
 - **Gap:** Competitors don't detect duplicate invoices or over-billing
-- **CarbonSite:** 8-rule ML model catches 92% of anomalies
+- **MetricOra:** 8-rule ML model catches 92% of anomalies
 - **Market impact:** Scope 3 spend calculations 10–20% more accurate
 - **Proof point:** "Detect duplicate invoices, price spikes, missing receipts automatically"
 
 **7. Real-Time Dashboard**
 - **Gap:** Most competitors use 30-second polling or hourly refresh
-- **CarbonSite:** Server-Sent Events (SSE) sub-2-second updates
+- **MetricOra:** Server-Sent Events (SSE) sub-2-second updates
 - **Market impact:** Executives see live calculation progress, not stale data
 - **Proof point:** "Dashboard updates in <2 seconds after calculation starts"
 
 **8. Supplier Portal (No Login Required)**
 - **Gap:** Competitors require suppliers to create logins
-- **CarbonSite:** Shareable link + immediate data submission
+- **MetricOra:** Shareable link + immediate data submission
 - **Market impact:** Supplier adoption 40%+ higher (no vendor login friction)
 - **Proof point:** "50-supplier onboarding in 1 day vs. 4 weeks"
 
 ---
 
-### 🥉 Tier 3: Table Stakes (CarbonSite is competitive)
+### 🥉 Tier 3: Table Stakes (MetricOra is competitive)
 
 **9. SSO/SAML Support**
-- **CarbonSite:** OIDC + SAML 2.0 (Okta, Azure AD, Google Workspace)
+- **MetricOra:** OIDC + SAML 2.0 (Okta, Azure AD, Google Workspace)
 - **Market:** All enterprise platforms offer this
-- **Advantage:** CarbonSite ships with it from day one (not "enterprise add-on")
+- **Advantage:** MetricOra ships with it from day one (not "enterprise add-on")
 
 **10. API Versioning**
-- **CarbonSite:** v1/v2 framework ready for backward compatibility
-- **Market:** Mature platforms have versioning; CarbonSite future-proofs early
+- **MetricOra:** v1/v2 framework ready for backward compatibility
+- **Market:** Mature platforms have versioning; MetricOra future-proofs early
 - **Advantage:** Customers won't break when new features ship
 
 **11. CSRD Compliance Export**
-- **CarbonSite:** Automated evidence package with audit trail + calculation formulas
-- **Market:** Enterprise platforms export CSRD data; CarbonSite automates + trusts immutability
+- **MetricOra:** Automated evidence package with audit trail + calculation formulas
+- **Market:** Enterprise platforms export CSRD data; MetricOra automates + trusts immutability
 - **Advantage:** Faster audit signoff
 
 ---
 
 ## Win-Loss Analysis
 
-### How CarbonSite Wins vs. Gaia (Mid-market)
+### How MetricOra Wins vs. Gaia (Mid-market)
 - **Gaia strength:** Affordable, simple
-- **CarbonSite advantage:** Field worker mobile app (Gaia has none) → no manual data entry
+- **MetricOra advantage:** Field worker mobile app (Gaia has none) → no manual data entry
 - **Win scenario:** Mid-market with warehouse/construction workers who need to capture data on-site
 - **Messaging:** "Eliminate field worker data entry delays with mobile OCR"
 
-### How CarbonSite Wins vs. Persefoni (Enterprise)
+### How MetricOra Wins vs. Persefoni (Enterprise)
 - **Persefoni strength:** Industry-leading, trusted by Fortune 500
-- **CarbonSite advantage:** Immutable audit trail with hash chain (Persefoni has basic logs) → faster audits
+- **MetricOra advantage:** Immutable audit trail with hash chain (Persefoni has basic logs) → faster audits
 - **Win scenario:** Enterprise with strict audit requirements or external auditor already selected
 - **Messaging:** "Audit-ready emissions data. Your auditor reviews in 30 minutes, not 3 weeks."
 
-### How CarbonSite Wins vs. Watershed (Mid-market)
+### How MetricOra Wins vs. Watershed (Mid-market)
 - **Watershed strength:** Strong Scope 3 focus, real-time dashboards
-- **CarbonSite advantage:** Supplier performance analytics + invoice anomaly detection (Watershed lacks) → better data quality
+- **MetricOra advantage:** Supplier performance analytics + invoice anomaly detection (Watershed lacks) → better data quality
 - **Win scenario:** Mid-market with 50+ suppliers and data quality concerns
 - **Messaging:** "Know which suppliers are responsive. Catch duplicate invoices before they inflate Scope 3."
 
-### How CarbonSite Wins vs. Emitwise (Mid-market, Europe)
+### How MetricOra Wins vs. Emitwise (Mid-market, Europe)
 - **Emitwise strength:** Transparent pricing, local support
-- **CarbonSite advantage:** Open-source + mobile app (Emitwise has neither)
+- **MetricOra advantage:** Open-source + mobile app (Emitwise has neither)
 - **Win scenario:** Tech-forward sustainability teams who want to audit the math
 - **Messaging:** "Open-source carbon accounting. Audit our methodology on GitHub."
 
@@ -149,29 +149,29 @@ Competitors focus on dashboard UI + reporting. CarbonSite emphasizes:
 
 ### "We already use Persefoni"
 - **Context:** Enterprise with existing tool
-- **CarbonSite pitch:** "Audit your Persefoni data with our immutable trail. Or use CarbonSite for Scope 3 + field capture; integrate via API."
-- **Outcome:** Co-exist or replace over time as CarbonSite scales
+- **MetricOra pitch:** "Audit your Persefoni data with our immutable trail. Or use MetricOra for Scope 3 + field capture; integrate via API."
+- **Outcome:** Co-exist or replace over time as MetricOra scales
 
-### "We're too small for CarbonSite"
+### "We're too small for MetricOra"
 - **Context:** 20–50 employees, minimal Scope 3
-- **CarbonSite pitch:** "Start free. Field worker app scales with you. If you grow to 500 employees + 50 suppliers, you outgrow cheaper tools."
+- **MetricOra pitch:** "Start free. Field worker app scales with you. If you grow to 500 employees + 50 suppliers, you outgrow cheaper tools."
 - **Outcome:** Customer grows into Growth tier
 
 ### "We need custom factors for our industry"
 - **Context:** Industry-specific methodology not in DEFRA/EPA
-- **CarbonSite pitch:** "GitHub repo is yours. Import custom factors. Or work with us to add to library."
+- **MetricOra pitch:** "GitHub repo is yours. Import custom factors. Or work with us to add to library."
 - **Outcome:** Unlock use case, contribute to open-source
 
 ### "Auditor requires Persefoni/Watershed"
 - **Context:** External auditor mandates specific tool
-- **CarbonSite pitch:** "Use Persefoni for reporting. Export immutable audit trail from CarbonSite to verify data integrity."
+- **MetricOra pitch:** "Use Persefoni for reporting. Export immutable audit trail from MetricOra to verify data integrity."
 - **Outcome:** Complementary positioning
 
 ---
 
 ## Pricing Positioning
 
-| **Tier** | **CarbonSite** | **Gaia** | **Persefoni** | **Watershed** | **Emitwise** |
+| **Tier** | **MetricOra** | **Gaia** | **Persefoni** | **Watershed** | **Emitwise** |
 |---|---|---|---|---|---|
 | **Entry Price** | Free | $100/mo | Enterprise | $500/mo | €50/mo |
 | **User Limit (Free)** | 100 records | None | None | None | None |
@@ -179,7 +179,7 @@ Competitors focus on dashboard UI + reporting. CarbonSite emphasizes:
 | **Typical Customer** | Startup, pilot | SMB | Enterprise | Mid-market | European SMB |
 | **Differentiation** | Free tier + field app | Low cost | Gold standard | Balance of cost + features | Pricing transparency |
 
-**CarbonSite positioning:** "Free forever for pilots. Affordable for mid-market ($50/mo). Enterprise pricing available for large orgs."
+**MetricOra positioning:** "Free forever for pilots. Affordable for mid-market ($50/mo). Enterprise pricing available for large orgs."
 
 ---
 
@@ -229,9 +229,9 @@ Competitors focus on dashboard UI + reporting. CarbonSite emphasizes:
 
 ## Sales Enablement Artifacts
 
-- **One-pager:** CarbonSite vs. [Competitor] feature comparison
+- **One-pager:** MetricOra vs. [Competitor] feature comparison
 - **Deck:** Competitive landscape positioning (market map)
 - **ROI calculator:** Cost + time savings vs. manual + competitor pricing
-- **Case study:** "How [Customer] moved from [Competitor] to CarbonSite"
+- **Case study:** "How [Customer] moved from [Competitor] to MetricOra"
 - **FAQ:** Addressing common objections from each competitor's customers
 

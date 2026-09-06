@@ -32,7 +32,7 @@ export default async function AppEntryPage() {
             className="text-[28px] leading-[1.35] tracking-[-0.4px] text-[#111827]"
             
           >
-            Use the CarbonSite mobile app
+            Use the MetricOra mobile app
           </h1>
           <p className="mt-3 text-sm text-[#374151] tracking-[-0.42px]">
             Your account is a field worker account — submissions, photos, and

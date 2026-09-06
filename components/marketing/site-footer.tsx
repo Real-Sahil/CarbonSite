@@ -46,7 +46,7 @@ export function SiteFooter() {
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-400 shadow-[0_0_12px_rgba(249,115,22,0.35)]">
                 <Leaf className="h-3.5 w-3.5 text-white" />
               </span>
-              <span className="text-[#F8FAFC] font-semibold text-[14px] tracking-tight">CarbonSite</span>
+              <span className="text-[#F8FAFC] font-semibold text-[14px] tracking-tight">MetricOra</span>
             </Link>
             <p className="text-sm text-[#94A3B8] leading-relaxed max-w-[200px]">
               GHG emissions tracking for construction and supply chains. DEFRA 2025. GHG Protocol Corporate Standard.
@@ -75,7 +75,7 @@ export function SiteFooter() {
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <span className="text-xs text-[#64748B]">
-            &copy; {new Date().getFullYear()} CarbonSite Ltd. Calculations follow GHG Protocol Corporate Standard, IPCC AR6 GWPs.
+            &copy; {new Date().getFullYear()} MetricOra Ltd. Calculations follow GHG Protocol Corporate Standard, IPCC AR6 GWPs.
           </span>
           <div className="flex items-center gap-2 flex-wrap">
             {["GHG Protocol", "DEFRA 2025", "IPCC AR6", "SECR"].map((s) => (

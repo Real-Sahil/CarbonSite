@@ -24,7 +24,7 @@ interface SuppliersPageProps {
 export async function generateMetadata({ params }: SuppliersPageProps) {
   const { orgId } = await params;
   return {
-    title: "Supplier Invitations | CarbonSite",
+    title: "Supplier Invitations | MetricOra",
     description: "Invite suppliers to submit emissions data and collaborate on Scope 3 calculations",
   };
 }
@@ -148,7 +148,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-slate-900">Use estimates:</strong> CarbonSite estimates Scope 3 if suppliers don&apos;t respond</span>
+                  <span><strong className="text-slate-900">Use estimates:</strong> MetricOra estimates Scope 3 if suppliers don&apos;t respond</span>
                 </li>
               </ul>
             </CardContent>

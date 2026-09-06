@@ -2,7 +2,7 @@
 
 ## Overview
 
-The CSRD (Corporate Sustainability Reporting Directive) Compliance Mapper helps EU organizations navigate mandatory emissions reporting requirements. It maps CarbonSite emission categories to CSRD Article 8 requirements and provides a phased implementation roadmap.
+The CSRD (Corporate Sustainability Reporting Directive) Compliance Mapper helps EU organizations navigate mandatory emissions reporting requirements. It maps MetricOra emission categories to CSRD Article 8 requirements and provides a phased implementation roadmap.
 
 **CSRD applies to:**
 - Large EU companies (>500 employees) — reporting starts 2025
@@ -27,7 +27,7 @@ The CSRD (Corporate Sustainability Reporting Directive) Compliance Mapper helps 
 - Unit: tCO₂e
 - Timeline: Mandatory by 2025
 
-**CarbonSite Categories:**
+**MetricOra Categories:**
 - `s1-stationary` — Direct fuel combustion (boilers, furnaces)
 - `s1-mobile` — Company vehicle fleet
 - `s1-fugitive` — Refrigerants, process venting
@@ -40,7 +40,7 @@ The CSRD (Corporate Sustainability Reporting Directive) Compliance Mapper helps 
 - Report both methods: location-based (grid average) and market-based (renewable procurement)
 - Timeline: Mandatory by 2025
 
-**CarbonSite Categories:**
+**MetricOra Categories:**
 - `s2-electricity-lb` — Location-based (grid mix)
 - `s2-electricity-mb` — Market-based (RECs, green tariffs)
 
@@ -54,7 +54,7 @@ The CSRD (Corporate Sustainability Reporting Directive) Compliance Mapper helps 
 - Materiality assessment: >5% of total Scope 1+2
 - Timeline: Phased (encouraged 2027, mandatory 2028)
 
-**CarbonSite Categories:**
+**MetricOra Categories:**
 - `s3-purchased-goods` — Supplier emissions
 - `s3-upstream-transport` — Freight, logistics
 - `s3-business-travel` — Air, rail, accommodation
@@ -75,7 +75,7 @@ The CSRD (Corporate Sustainability Reporting Directive) Compliance Mapper helps 
 - Specify: boundary, scopes included, calculation approach
 - Timeline: Mandatory by 2025
 
-**CarbonSite Advantage:** Audit trail records methodology per calculation; automatic methodology disclosure
+**MetricOra Advantage:** Audit trail records methodology per calculation; automatic methodology disclosure
 
 ### Article 8.1(f) — Assurance
 **Requirement:** Provide verified emissions data with third-party assurance
@@ -109,7 +109,7 @@ The CSRD (Corporate Sustainability Reporting Directive) Compliance Mapper helps 
 - [ ] Supplier engagement program (emissions verification)
 - [ ] Transition to reasonable assurance (if large org)
 
-## Using CarbonSite for CSRD Compliance
+## Using MetricOra for CSRD Compliance
 
 ### 1. Generate Compliance Status Report
 
@@ -164,7 +164,7 @@ GET /api/orgs/{orgId}/compliance/csrd?category=s2-electricity-lb
 **Alignment:**
 - SBTi sets emission reduction targets aligned with 1.5°C/2°C science
 - CSRD mandates transparent disclosure of those emissions
-- CarbonSite bridges both: calculate targets (SBTi) → track progress (CSRD reports)
+- MetricOra bridges both: calculate targets (SBTi) → track progress (CSRD reports)
 
 **Workflow:**
 1. Set SBTi 1.5°C target (e.g., -4.2%/year through 2030)
@@ -210,10 +210,10 @@ General rule: If Scope 3 >5% of Scope 1+2, it's material.
 - 2026 report: Limited assurance required
 - 2027+: Reasonable assurance for large orgs
 
-CarbonSite prepares audit trail; assurance is external process.
+MetricOra prepares audit trail; assurance is external process.
 
 ### Q: How does CSRD relate to GHG Protocol?
-**A:** CSRD mandates GHG Protocol Scope 1, 2, 3 structure. CarbonSite uses GHG Protocol methodology; CSRD adds regulatory reporting/assurance layer.
+**A:** CSRD mandates GHG Protocol Scope 1, 2, 3 structure. MetricOra uses GHG Protocol methodology; CSRD adds regulatory reporting/assurance layer.
 
 ## Regulatory References
 
@@ -225,7 +225,7 @@ CarbonSite prepares audit trail; assurance is external process.
 
 ## Support & Audit Preparation
 
-Use CarbonSite CSRD reports for audit preparation:
+Use MetricOra CSRD reports for audit preparation:
 1. Export annual CSRD compliance report (PDF)
 2. Share with external auditor for third-party verification
 3. Track audit feedback in audit log

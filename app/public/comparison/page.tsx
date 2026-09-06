@@ -21,7 +21,7 @@ interface Feature {
 }
 
 const competitors: Competitor[] = [
-  { name: 'CarbonSite', website: 'carbonsite.app' },
+  { name: 'MetricOra', website: 'metricora.co.uk' },
   { name: 'Persefoni', website: 'persefoni.com' },
   { name: 'Watershed', website: 'watershed.com' },
   { name: 'Normative', website: 'normative.io' },
@@ -364,10 +364,10 @@ export default function ComparisonPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            How CarbonSite Compares
+            How MetricOra Compares
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl">
-            See how CarbonSite stacks up against enterprise platforms. We compete on transparency,
+            See how MetricOra stacks up against enterprise platforms. We compete on transparency,
             field capture, and cost-efficiency.
           </p>
         </div>
@@ -417,7 +417,7 @@ export default function ComparisonPage() {
                   <th
                     key={comp.name}
                     className={`text-center py-4 px-4 font-bold min-w-32 ${
-                      comp.name === 'CarbonSite' ? 'bg-blue-50' : 'bg-gray-50'
+                      comp.name === 'MetricOra' ? 'bg-blue-50' : 'bg-gray-50'
                     }`}
                   >
                     <div className="text-sm font-bold text-gray-900">{comp.name}</div>
@@ -484,7 +484,7 @@ export default function ComparisonPage() {
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-12 text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Ready to switch?</h2>
           <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-            CarbonSite is 10x cheaper than Persefoni, with field capture, open-source transparency,
+            MetricOra is 10x cheaper than Persefoni, with field capture, open-source transparency,
             and audit-ready controls built in.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">

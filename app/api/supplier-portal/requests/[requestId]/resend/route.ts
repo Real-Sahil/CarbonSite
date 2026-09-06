@@ -7,7 +7,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { writeAuditLog } from "@/lib/db/audit";
 import { sendEmail, supplierDataRequestEmail } from "@/lib/notifications/email";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://carbonsite-rosy.vercel.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://metricora-rosy.vercel.app";
 const EXPIRES_DAYS = 30;
 
 const resendSchema = z.object({

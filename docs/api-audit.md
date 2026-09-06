@@ -1,4 +1,4 @@
-# CarbonSite API Security Audit
+# MetricOra API Security Audit
 
 **Date:** 2026-08-06  
 **Scope:** Authentication/invite flows, field-worker submission transport, multi-tenant isolation  
@@ -164,7 +164,7 @@ Invitee clicks link → web browser → POST /api/auth/accept-invite
 
 ### FINDING-005 — DB-driver storage URLs use a fallback secret (Low)
 **File:** `lib/storage/signing.ts`, line 9  
-**Detail:** When `BETTER_AUTH_SECRET` is unset, `signStorageUrl()` falls back to the hardcoded string `"carbonsite-dev-storage-secret"`. If this string is known (it's public in the repo), anyone can forge valid presigned download/upload URLs for any storage key.  
+**Detail:** When `BETTER_AUTH_SECRET` is unset, `signStorageUrl()` falls back to the hardcoded string `"metricora-dev-storage-secret"`. If this string is known (it's public in the repo), anyone can forge valid presigned download/upload URLs for any storage key.  
 **Remediation:** Remove the fallback; throw at startup if `BETTER_AUTH_SECRET` is absent. Already guarded in `lib/auth/index.ts` for non-build phases — apply the same to the signing module.
 
 ### FINDING-006 — `ROLE_GROUPS.anyMember` excludes `field_worker` (Low, intentional)
@@ -214,7 +214,7 @@ All database queries in org-scoped routes include `organizationId: orgId` in the
 ```yaml
 openapi: "3.1.0"
 info:
-  title: CarbonSite Field Worker API
+  title: MetricOra Field Worker API
   version: "1.0.0"
 servers:
   - url: "{APP_URL}"

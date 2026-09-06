@@ -186,7 +186,7 @@ export function InviteLinkGenerator({
           </p>
           <p className="text-xs text-[#555555]">
             Share this link via WhatsApp, SMS, or email. When the field worker taps it on their
-            phone, it will open the CarbonSite app automatically.
+            phone, it will open the MetricOra app automatically.
           </p>
           {links.map((link) => {
             const url = buildInviteUrl(link.token);

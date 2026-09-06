@@ -354,7 +354,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
           </CardTitle>
           <CardDescription>
             Generate a one-time link for subcontractors or field workers. They
-            will be onboarded directly via the CarbonSite mobile app without
+            will be onboarded directly via the MetricOra mobile app without
             needing an email and password. Site-scoped links grant site access
             automatically; org-wide links need a manual site assignment above.
           </CardDescription>

@@ -62,7 +62,7 @@ class _PinLockScreenState extends State<PinLockScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign out of CarbonSite?'),
+        title: const Text('Sign out of MetricOra?'),
         content: const Text(
           'This clears the app on this device. You will need a new invite '
           'link from your administrator to sign back in. Unsynced drafts '
