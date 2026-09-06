@@ -13,6 +13,9 @@ __pycache__/
 # customer emissions figures.
 scripts/real_series.json
 
+# Disposable local benchmarking/debug scripts — never part of the deliverable.
+scripts/_tmp_*
+
 # Next.js
 .next/
 out/
