@@ -26,7 +26,7 @@
 // - Quantity extraction first tries labeled lookup (Qty:, No.:, Units: …),
 //   then falls back to the weight/count pattern in the raw text.
 
-enum DocumentType { wasteTicket, deliveryNote, fuelReceipt, other }
+enum DocumentType { wasteTicket, deliveryNote, fuelReceipt, waterMeterReading, other }
 
 class ExtractedFields {
   final DocumentType documentType;

@@ -10,7 +10,7 @@ import {
   Menu, X, Layers, Leaf, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
-  TrendingUp,
+  TrendingUp, Droplets,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -95,7 +95,8 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Legal Register", href: `/orgs/${orgId}/environment/legal-register`, icon: Scale,       roles: EXTENDED_VIEW_ROLES },
         { label: "Aspects",        href: `/orgs/${orgId}/environment/aspects`,        icon: ListChecks,  roles: EXTENDED_VIEW_ROLES },
         { label: "Biodiversity",   href: `/orgs/${orgId}/biodiversity`,               icon: Sprout,      roles: EXTENDED_VIEW_ROLES },
-        { label: "Waste",         href: `/orgs/${orgId}/waste`,                       icon: Trash2,      roles: CORE_ROLES },
+        { label: "Water",         href: `/orgs/${orgId}/water`,                       icon: Droplets,    roles: EXTENDED_VIEW_ROLES },
+        { label: "Waste",         href: `/orgs/${orgId}/waste`,                       icon: Trash2,      roles: EXTENDED_VIEW_ROLES },
       ]},
     ]},
     { label: "Social Value", icon: Heart, sections: [

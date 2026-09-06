@@ -2,16 +2,17 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
 type Params = { params: Promise<{ orgId: string }> };
 
-// GET /api/orgs/[orgId]/reporting-periods — list reporting periods for approval dropdowns
+// GET /api/orgs/[orgId]/reporting-periods — list reporting periods for
+// dropdowns (approvals, waste/water capture, completeness matrix, etc.)
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const periods = await prisma.reportingPeriod.findMany({
       where: { organizationId: orgId },

@@ -5,17 +5,19 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
-import { updateWasteRecordSchema } from "@/lib/validation/environmental";
-import { syncWasteRecordCalculation, rebuildEnvironmentalMetricAggregates } from "@/lib/calculation/environmental-metrics";
+import { updateWaterRecordSchema } from "@/lib/validation/environmental";
+import { rebuildEnvironmentalMetricAggregates } from "@/lib/calculation/environmental-metrics";
 
 type Params = { params: Promise<{ orgId: string; recordId: string }> };
+
+const WATER_STRESSED_LEVELS = new Set(["medium_high", "high", "extremely_high"]);
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, recordId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
-    const record = await prisma.wasteRecord.findFirst({
+    const record = await prisma.waterRecord.findFirst({
       where: { id: recordId, organizationId: orgId },
       include: { facility: { select: { id: true, name: true } } },
     });
@@ -32,12 +34,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const { orgId, recordId } = await params;
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.sustainability);
 
-    const existing = await prisma.wasteRecord.findFirst({ where: { id: recordId, organizationId: orgId } });
+    const existing = await prisma.waterRecord.findFirst({ where: { id: recordId, organizationId: orgId } });
     if (!existing) return apiError("NOT_FOUND", "Record not found.", 404);
 
-    const parsed = updateWasteRecordSchema.safeParse(await req.json().catch(() => null));
+    const parsed = updateWaterRecordSchema.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {
-      return apiError("VALIDATION_ERROR", "Invalid waste record.", 400, parsed.error.flatten());
+      return apiError("VALIDATION_ERROR", "Invalid water record.", 400, parsed.error.flatten());
     }
     const body = parsed.data;
 
@@ -50,26 +52,29 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       if (!period) return apiError("NOT_FOUND", "Reporting period not found.", 404);
     }
 
-    const record = await prisma.wasteRecord.update({
+    const facilityForStress = await prisma.facility.findUnique({
+      where: { id: body.facilityId ?? existing.facilityId },
+      select: { waterStressLevel: true },
+    });
+
+    const record = await prisma.waterRecord.update({
       where: { id: recordId },
       data: {
         facilityId: body.facilityId,
-        projectId: body.projectId,
         reportingPeriodId: body.reportingPeriodId,
-        wasteType: body.wasteType,
-        disposalRoute: body.disposalRoute,
-        hazardous: body.hazardous,
-        weightTonnes: body.weightTonnes,
-        ewcCode: body.ewcCode,
-        carrierName: body.carrierName,
+        metricType: body.metricType,
+        source: body.source,
+        volumeM3: body.volumeM3,
+        isWaterStressedArea: facilityForStress?.waterStressLevel
+          ? WATER_STRESSED_LEVELS.has(facilityForStress.waterStressLevel)
+          : false,
         recordedAt: body.recordedAt ? new Date(body.recordedAt) : undefined,
         notes: body.notes,
       },
     });
 
-    const calc = await syncWasteRecordCalculation(recordId, session.user.id);
-    await rebuildEnvironmentalMetricAggregates(orgId, record.reportingPeriodId ?? existing.reportingPeriodId!);
-    if (existing.reportingPeriodId && existing.reportingPeriodId !== record.reportingPeriodId) {
+    await rebuildEnvironmentalMetricAggregates(orgId, record.reportingPeriodId);
+    if (existing.reportingPeriodId !== record.reportingPeriodId) {
       await rebuildEnvironmentalMetricAggregates(orgId, existing.reportingPeriodId);
     }
 
@@ -77,12 +82,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       organizationId: orgId,
       actorUserId: session.user.id,
       action: "record.updated",
-      resourceType: "waste_record",
+      resourceType: "water_record",
       resourceId: recordId,
-      metadata: { changes: body, co2eTonnes: calc?.co2eTonnes ?? null },
+      metadata: { changes: body },
     });
 
-    return NextResponse.json({ ...record, co2eTonnes: calc?.co2eTonnes ?? record.co2eTonnes });
+    return NextResponse.json(record);
   } catch (err) {
     return handleRouteError(err);
   }
@@ -93,29 +98,17 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const { orgId, recordId } = await params;
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.sustainability);
 
-    const record = await prisma.wasteRecord.findUnique({
-      where: { id: recordId },
-      select: { id: true, organizationId: true, activityRecordId: true, reportingPeriodId: true },
-    });
-    if (!record) return apiError("NOT_FOUND", "Record not found", 404);
-    if (record.organizationId !== orgId) return apiError("FORBIDDEN", "Access denied", 403);
+    const existing = await prisma.waterRecord.findFirst({ where: { id: recordId, organizationId: orgId } });
+    if (!existing) return apiError("NOT_FOUND", "Record not found.", 404);
 
-    // Deleting the WasteRecord cascades to nothing on ActivityRecord (the FK
-    // is SET NULL) — the linked ActivityRecord and its immutable
-    // EmissionCalculation history stay, matching "never delete calculation
-    // history" elsewhere in this codebase. Clear the link explicitly so a
-    // stale activityRecordId can't reappear if this row's id is ever reused.
-    await prisma.wasteRecord.delete({ where: { id: recordId } });
-
-    if (record.reportingPeriodId) {
-      await rebuildEnvironmentalMetricAggregates(orgId, record.reportingPeriodId);
-    }
+    await prisma.waterRecord.delete({ where: { id: recordId } });
+    await rebuildEnvironmentalMetricAggregates(orgId, existing.reportingPeriodId);
 
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
       action: "record.deleted",
-      resourceType: "waste_record",
+      resourceType: "water_record",
       resourceId: recordId,
       metadata: {},
     });

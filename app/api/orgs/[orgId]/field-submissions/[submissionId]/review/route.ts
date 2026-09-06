@@ -54,12 +54,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       if (blocker) {
         return apiError(blocker.code, blocker.message, 422);
       }
-      const category = await prisma.emissionCategory.findUnique({
-        where: { id: emissionCategoryId! },
-        select: { id: true },
-      });
-      if (!category) {
-        return apiError("INVALID_EMISSION_CATEGORY", "Emission category does not exist.", 422);
+      // Water meter readings promote to a WaterRecord, not an
+      // ActivityRecord — they never carry an EmissionCategory.
+      if (submission.documentType !== "water_meter_reading") {
+        const category = await prisma.emissionCategory.findUnique({
+          where: { id: emissionCategoryId! },
+          select: { id: true },
+        });
+        if (!category) {
+          return apiError("INVALID_EMISSION_CATEGORY", "Emission category does not exist.", 422);
+        }
       }
 
       const submissionWithEdits = {
@@ -81,7 +85,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         return approveSubmissionInTx(tx, {
           orgId,
           submission: submissionWithEdits,
-          emissionCategoryId: emissionCategoryId!,
+          emissionCategoryId: emissionCategoryId ?? null,
           facilityId: body.facilityId,
           reviewerUserId: session.user.id,
           reviewNote: body.reviewNote,
@@ -90,14 +94,25 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       activityRecordId = result.activityRecordId;
       updated = result.submission;
 
-      await writeAuditLog({
-        organizationId: orgId,
-        actorUserId: session.user.id,
-        action: "record.created",
-        resourceType: "activity_record",
-        resourceId: activityRecordId!,
-        metadata: { fromFieldSubmission: submissionId },
-      });
+      if (activityRecordId) {
+        await writeAuditLog({
+          organizationId: orgId,
+          actorUserId: session.user.id,
+          action: "record.created",
+          resourceType: "activity_record",
+          resourceId: activityRecordId,
+          metadata: { fromFieldSubmission: submissionId },
+        });
+      } else {
+        await writeAuditLog({
+          organizationId: orgId,
+          actorUserId: session.user.id,
+          action: "record.created",
+          resourceType: "water_record",
+          resourceId: submissionId,
+          metadata: { fromFieldSubmission: submissionId },
+        });
+      }
 
       // Auto-trigger a calculation run so the approved record is reflected
       // on the dashboard without requiring a manual run.

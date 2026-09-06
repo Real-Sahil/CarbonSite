@@ -103,7 +103,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       // otherwise the resulting ActivityRecord could not be calculated.
       const approved: string[] = [];
       const skipped: { id: string; reason: string }[] = [];
-      const notifiable: { submissionId: string; recipientUserId: string; activityRecordId: string }[] = [];
+      const notifiable: { submissionId: string; recipientUserId: string; activityRecordId: string | null }[] = [];
 
       for (const submission of submissions) {
         const blocker = approvalBlocker(submission, submission.emissionCategoryId);
@@ -115,7 +115,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           approveSubmissionInTx(tx, {
             orgId,
             submission,
-            emissionCategoryId: submission.emissionCategoryId!,
+            emissionCategoryId: submission.emissionCategoryId,
             reviewerUserId: session.user.id,
             reviewNote: body.reviewNote,
           }),
@@ -124,7 +124,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         notifiable.push({
           submissionId: submission.id,
           recipientUserId: submission.submittedByUserId,
-          activityRecordId: result.activityRecordId!,
+          activityRecordId: result.activityRecordId,
         });
         await writeAuditLog({
           organizationId: orgId,
@@ -138,8 +138,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           organizationId: orgId,
           actorUserId: session.user.id,
           action: "record.created",
-          resourceType: "activity_record",
-          resourceId: result.activityRecordId!,
+          resourceType: result.activityRecordId ? "activity_record" : "water_record",
+          resourceId: result.activityRecordId ?? submission.id,
           metadata: { fromFieldSubmission: submission.id, bulk: true },
         });
       }

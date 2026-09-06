@@ -9,6 +9,8 @@ import { renderNhsEvergreenHtml, type NhsEvergreenData } from "./templates/nhs-e
 import { renderNationalTomsHtml, type NationalTomsData, type TomsThemeSummary } from "./templates/national-toms";
 import { renderBreeamEvidenceHtml, type BreeamData } from "./templates/breeam-evidence";
 import { renderCsrdEsrsE1Html, type CsrdEsrsE1Data } from "./templates/csrd-esrs-e1";
+import { renderCsrdEsrsE3Html, type CsrdEsrsE3Data } from "./templates/csrd-esrs-e3";
+import { renderCsrdEsrsE5Html, type CsrdEsrsE5Data } from "./templates/csrd-esrs-e5";
 import { renderContractCarbonHtml, type ContractCarbonData } from "./templates/contract-carbon";
 import { renderGhgProtocolHtml, type GhgProtocolData } from "./templates/ghg-protocol";
 import { renderCdpHtml, type CdpData } from "./templates/cdp";
@@ -254,6 +256,118 @@ const handlers: Record<string, ReportHandler> = {
       categories: [...agg.catTotals.values()],
     };
     return { html: renderCsrdEsrsE1Html(data), pdfkitData: basePdfData };
+  },
+
+  // Water (ESRS E3) and waste (ESRS E5) read WaterRecord/WasteRecord
+  // directly rather than the calcs/agg the GHG handlers above use — those
+  // are EmissionCalculation-shaped (kg CO2e), and water has no CO2e figure
+  // at all. This reflects the org's current data for the period, not the
+  // locked published snapshot the GHG reports use (Phase 1 simplification;
+  // see lib/calculation/environmental-metrics.ts).
+  csrd_esrs_e3: async (ctx) => {
+    const { report, logoDataUri, publishedBy } = ctx;
+    const [waterRecords, facilities] = await Promise.all([
+      prisma.waterRecord.findMany({
+        where: { organizationId: ctx.orgId, reportingPeriodId: report.reportingPeriodId },
+        include: { facility: { select: { name: true, waterStressLevel: true } } },
+      }),
+      prisma.facility.findMany({
+        where: { organizationId: ctx.orgId },
+        select: { id: true, name: true, waterStressLevel: true },
+      }),
+    ]);
+
+    const byFacility = new Map<string, { name: string; withdrawalM3: number; dischargeM3: number; consumptionM3: number; waterStressLevel: string | null }>();
+    for (const f of facilities) {
+      byFacility.set(f.id, { name: f.name, withdrawalM3: 0, dischargeM3: 0, consumptionM3: 0, waterStressLevel: f.waterStressLevel });
+    }
+
+    let withdrawalM3 = 0, dischargeM3 = 0, consumptionM3 = 0, withdrawalStressedM3 = 0;
+    for (const r of waterRecords) {
+      const vol = Number(r.volumeM3);
+      const bucket = byFacility.get(r.facilityId);
+      if (r.metricType === "withdrawal") {
+        withdrawalM3 += vol;
+        if (bucket) bucket.withdrawalM3 += vol;
+        if (r.isWaterStressedArea) withdrawalStressedM3 += vol;
+      } else if (r.metricType === "discharge") {
+        dischargeM3 += vol;
+        if (bucket) bucket.dischargeM3 += vol;
+      } else {
+        consumptionM3 += vol;
+        if (bucket) bucket.consumptionM3 += vol;
+      }
+    }
+
+    const data: CsrdEsrsE3Data = {
+      orgName: report.organization.name,
+      logoDataUri,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      publishedAt: new Date(),
+      publishedBy,
+      withdrawalM3, dischargeM3, consumptionM3, withdrawalStressedM3,
+      recordCount: waterRecords.length,
+      facilities: [...byFacility.values()].filter((f) => f.withdrawalM3 || f.dischargeM3 || f.consumptionM3),
+    };
+    // No pdfkitData: unlike the GHG report handlers, there is no
+    // meaningful generic-PDFKit fallback for water data, so the real PDF
+    // comes from rendering this HTML directly (see worker.ts's
+    // `pdfkitData ? generateReportPdf(...) : renderPdf(html)` branch).
+    return { html: renderCsrdEsrsE3Html(data) };
+  },
+
+  csrd_esrs_e5: async (ctx) => {
+    const { report, logoDataUri, publishedBy } = ctx;
+    const [wasteRecords, facilities] = await Promise.all([
+      prisma.wasteRecord.findMany({
+        where: { organizationId: ctx.orgId, reportingPeriodId: report.reportingPeriodId },
+      }),
+      prisma.facility.findMany({ where: { organizationId: ctx.orgId }, select: { id: true, name: true } }),
+    ]);
+
+    const LANDFILL_ROUTES = new Set(["landfill_mixed", "landfill_food", "landfill_wood", "landfill_plastic", "hazardous_landfill"]);
+    const RECOVERY_ROUTES = new Set(["incineration_efw"]);
+    const hierarchyOf = (route: string): "recycle" | "recovery" | "landfill" =>
+      LANDFILL_ROUTES.has(route) ? "landfill" : RECOVERY_ROUTES.has(route) ? "recovery" : "recycle";
+
+    const byFacility = new Map<string, { name: string; generatedTonnes: number; hazardousTonnes: number }>();
+    for (const f of facilities) byFacility.set(f.id, { name: f.name, generatedTonnes: 0, hazardousTonnes: 0 });
+
+    const byRoute = new Map<string, number>();
+    let totalGeneratedTonnes = 0, totalHazardousTonnes = 0;
+    for (const r of wasteRecords) {
+      const tonnes = Number(r.weightTonnes);
+      totalGeneratedTonnes += tonnes;
+      if (r.hazardous) totalHazardousTonnes += tonnes;
+      byRoute.set(r.disposalRoute, (byRoute.get(r.disposalRoute) ?? 0) + tonnes);
+      if (r.facilityId) {
+        const bucket = byFacility.get(r.facilityId);
+        if (bucket) {
+          bucket.generatedTonnes += tonnes;
+          if (r.hazardous) bucket.hazardousTonnes += tonnes;
+        }
+      }
+    }
+    const totalDivertedTonnes = [...byRoute.entries()]
+      .filter(([route]) => hierarchyOf(route) !== "landfill")
+      .reduce((sum, [, tonnes]) => sum + tonnes, 0);
+
+    const data: CsrdEsrsE5Data = {
+      orgName: report.organization.name,
+      logoDataUri,
+      periodLabel: report.reportingPeriod.label,
+      periodStart: report.reportingPeriod.startDate,
+      periodEnd: report.reportingPeriod.endDate,
+      publishedAt: new Date(),
+      publishedBy,
+      totalGeneratedTonnes, totalDivertedTonnes, totalHazardousTonnes,
+      recordCount: wasteRecords.length,
+      byDisposalRoute: [...byRoute.entries()].map(([route, tonnes]) => ({ route, tonnes, hierarchy: hierarchyOf(route) })),
+      facilities: [...byFacility.values()].filter((f) => f.generatedTonnes > 0),
+    };
+    return { html: renderCsrdEsrsE5Html(data) };
   },
 
   contract_carbon: async (ctx) => {

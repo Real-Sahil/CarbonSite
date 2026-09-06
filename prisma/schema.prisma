@@ -77,6 +77,8 @@ model User {
   ssoSessions                       SsoSession[]                 @relation("SsoSessions")
   invoiceAnomaliesResolved          InvoiceAnomaly[]             @relation("InvoiceAnomalyResolutions")
   investigatedAnalyses              CausalAnalysis[]             @relation("causalInvestigator")
+  waterRecordsCreated                WaterRecord[]                @relation("WaterRecordCreator")
+  wasteRecordsCreated                WasteRecord[]                @relation("WasteRecordCreator")
 
   platformMembership PlatformMembership?
 
@@ -226,6 +228,7 @@ model Organization {
   subcontractorCarbonSubmissions SubcontractorCarbonSubmission[]
   dataCompletenessRequirements DataCompletenessRequirement[]
   wasteRecords                WasteRecord[]
+  waterRecords                WaterRecord[]
   sbtiTarget                  SbtiTarget?
   bulkOperations              BulkOperation[]
   calculationSchedules        CalculationSchedule[]
@@ -295,6 +298,7 @@ model Organization {
   assuranceSamples            AssuranceSample[]             @relation("OrgAssuranceSamples")
   assuranceFindings           AssuranceFinding[]            @relation("OrgAssuranceFindings")
   datapointStatuses           OrganizationDatapointStatus[] @relation("OrgDatapointStatuses")
+  environmentalMetricAggregates EnvironmentalMetricAggregate[]
 
   @@map("organizations")
 }
@@ -481,6 +485,11 @@ model Facility {
   /// Date the facility left the boundary (divestiture, closure).
   operationalTo   DateTime? @map("operational_to") @db.Date
   externalRef     String?   @map("external_ref")
+  /// ESRS E3 water-stress classification for this facility's location.
+  /// Manually assessed for now (e.g. against WRI Aqueduct); not live-looked-up.
+  waterStressLevel     WaterStressLevel? @map("water_stress_level")
+  waterStressSource    String?           @map("water_stress_source")
+  waterStressAssessedAt DateTime?        @map("water_stress_assessed_at")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -498,6 +507,9 @@ model Facility {
   aspects                EnvironmentalAspect[]   @relation("FacilityAspects")
   completenessRequirements DataCompletenessRequirement[]
   reductionInitiatives    ReductionInitiative[]
+  waterRecords             WaterRecord[]
+  wasteRecords             WasteRecord[]
+  environmentalMetricAggregates EnvironmentalMetricAggregate[]
 
   @@index([organizationId])
   @@index([organizationId, legalEntityId])
@@ -515,6 +527,7 @@ model BusinessUnit {
   activityRecords ActivityRecord[]
   aggregates      DashboardAggregate[]
   contracts       Contract[]
+  environmentalMetricAggregates EnvironmentalMetricAggregate[]
 
   @@index([organizationId])
   @@map("business_units")
@@ -571,6 +584,9 @@ model ReportingPeriod {
   analyticsDashboardCaches  AnalyticsDashboardCache[]   @relation("dashboardCachePeriod")
   baseYears                 BaseYear[]                  @relation("BaseYearPeriod")
   assuranceEngagements      AssuranceEngagement[]       @relation("EngagementPeriod")
+  waterRecords              WaterRecord[]
+  wasteRecords              WasteRecord[]
+  environmentalMetricAggregates EnvironmentalMetricAggregate[]
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -781,6 +797,7 @@ model ActivityRecord {
   meterReadings    MeterReading[]
   scope3Estimates  Scope3Estimate[]         @relation("ActivityRecordEstimate")
   assuranceSamples AssuranceSample[]        @relation("SampleActivityRecord")
+  wasteRecord      WasteRecord?             @relation("WasteRecordActivityRecord")
 
   @@index([organizationId, reportingPeriodId, emissionCategoryId, facilityId, reviewStatus, createdAt])
   @@index([organizationId, routeDistanceId])
@@ -905,6 +922,7 @@ enum FieldDocumentType {
   waste_ticket
   delivery_note
   fuel_receipt
+  water_meter_reading
   other
 
   @@map("field_document_type")
@@ -961,6 +979,8 @@ model FieldSubmission {
   resubmittedFrom  FieldSubmission?      @relation("FieldSubmissionResubmit", fields: [resubmittedFromId], references: [id])
   resubmissions    FieldSubmission[]     @relation("FieldSubmissionResubmit")
   files            FieldSubmissionFile[]
+  waterRecords     WaterRecord[]         @relation("WaterRecordSubmission")
+  wasteRecords     WasteRecord[]         @relation("WasteRecordSubmission")
 
   @@unique([organizationId, submittedByUserId, idempotencyKey], map: "field_submission_idempotency_key")
   @@index([organizationId, status, createdAt])
@@ -1238,6 +1258,7 @@ model PublishedSnapshot {
   restatementsSuperseding Restatement[] @relation("RestatementSuperseded")
   restatementsReplacing   Restatement[] @relation("RestatementReplacement")
   assuranceEngagements    AssuranceEngagement[] @relation("EngagementSnapshot")
+  environmentalMetricAggregates EnvironmentalMetricAggregate[] @relation("EnvironmentalAggregateSnapshot")
 
   @@index([organizationId, reportingPeriodId])
   @@index([organizationId, verificationStatus])
@@ -1462,19 +1483,33 @@ model DataCompletenessRequirement {
   id                 String   @id @default(cuid())
   organizationId     String   @map("organization_id")
   facilityId         String   @map("facility_id")
-  emissionCategoryId String   @map("emission_category_id")
+  /// Exactly one of emissionCategoryId / metricType is set - a completeness
+  /// requirement targets either a GHG category or a non-GHG physical metric
+  /// (water/waste), never both. Enforced in application code, not the DB,
+  /// same soft-polymorphism approach used elsewhere in this schema
+  /// (ReviewTask.targetId, Comment.targetId).
+  emissionCategoryId String?  @map("emission_category_id")
+  metricType         EnvironmentalMetricType? @map("metric_type")
   ownerUserId        String?  @map("owner_user_id")
   required           Boolean  @default(true)
   notes              String?
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
-  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  facility         Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  emissionCategory EmissionCategory @relation(fields: [emissionCategoryId], references: [id], onDelete: Cascade)
-  owner            User?            @relation("CompletenessRequirementOwner", fields: [ownerUserId], references: [id])
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility         Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  emissionCategory EmissionCategory? @relation(fields: [emissionCategoryId], references: [id], onDelete: Cascade)
+  owner            User?             @relation("CompletenessRequirementOwner", fields: [ownerUserId], references: [id])
 
-  @@unique([organizationId, facilityId, emissionCategoryId])
+  // Two separate compound uniques rather than one spanning both nullable
+  // columns: Postgres unique indexes never treat NULL as equal to NULL, so
+  // a single (..., emissionCategoryId, metricType) key would silently stop
+  // enforcing uniqueness for every GHG row (metricType always null there)
+  // and every physical-metric row (emissionCategoryId always null there).
+  // Each constraint below only ever "activates" for the row kind whose key
+  // column is actually populated - exactly the row kind it's meant to guard.
+  @@unique([organizationId, facilityId, emissionCategoryId], map: "completeness_req_org_facility_category_key")
+  @@unique([organizationId, facilityId, metricType], map: "completeness_req_org_facility_metric_key")
   @@index([organizationId])
   @@map("data_completeness_requirements")
 }
@@ -1492,6 +1527,8 @@ enum ReportType {
   breeam_evidence
   national_toms
   csrd_esrs_e1
+  csrd_esrs_e3
+  csrd_esrs_e5
   contract_carbon
   ghg_protocol
   cdp
@@ -2402,29 +2439,178 @@ model SubcontractorCarbonSubmission {
   @@map("subcontractor_carbon_submissions")
 }
 
-// ─── Phase 6: Waste Emissions Module ─────────────────────────────────────────
+// ─── Phase H: Water & Waste (ESRS E3 / E5) ───────────────────────────────────
 
+enum WaterMetricType {
+  withdrawal
+  discharge
+  consumption
+
+  @@map("water_metric_type")
+}
+
+enum WaterSource {
+  municipal_supply
+  groundwater
+  surface_water
+  rainwater_harvested
+  recycled_reused
+  third_party_wastewater
+  other
+
+  @@map("water_source")
+}
+
+enum WaterStressLevel {
+  low
+  medium_high
+  high
+  extremely_high
+  unknown
+
+  @@map("water_stress_level")
+}
+
+/// Provenance of a physical-quantity environmental record: mirrors how
+/// ActivityRecord distinguishes data origin, but for records that never
+/// enter the GHG calculation pipeline (water) or that drive it indirectly
+/// (waste, via a linked ActivityRecord).
+enum EnvironmentalDataSource {
+  manual
+  import
+  field_submission
+  iot_meter
+
+  @@map("environmental_data_source")
+}
+
+enum EnvironmentalMetricType {
+  water_withdrawal
+  water_discharge
+  water_consumption
+  waste_generated
+  waste_diverted
+  waste_hazardous
+
+  @@map("environmental_metric_type")
+}
+
+/// ESRS E3 water tracking. Deliberately outside ActivityRecord/
+/// EmissionCalculation: water withdrawal/discharge/consumption has no GHG
+/// Protocol scope, so it never drives a CO2e calculation. See
+/// lib/calculation/environmental-metrics.ts for the aggregate rebuild.
+model WaterRecord {
+  id                  String                  @id @default(cuid())
+  organizationId      String                  @map("organization_id")
+  facilityId          String                  @map("facility_id")
+  reportingPeriodId   String                  @map("reporting_period_id")
+  metricType          WaterMetricType         @map("metric_type")
+  source              WaterSource             @default(other)
+  volumeM3            Decimal                 @map("volume_m3") @db.Decimal(15, 4)
+  /// Denormalized from Facility.waterStressLevel at record time so a
+  /// historical disclosure doesn't silently change if the facility's
+  /// classification is reassessed later.
+  isWaterStressedArea Boolean                 @default(false) @map("is_water_stressed_area")
+  dataSource          EnvironmentalDataSource @default(manual) @map("data_source")
+  fieldSubmissionId   String?                 @map("field_submission_id")
+  recordedAt          DateTime                @map("recorded_at")
+  notes               String?
+  createdByUserId     String                  @map("created_by_user_id")
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility        Facility          @relation(fields: [facilityId], references: [id])
+  reportingPeriod ReportingPeriod   @relation(fields: [reportingPeriodId], references: [id])
+  fieldSubmission FieldSubmission?  @relation("WaterRecordSubmission", fields: [fieldSubmissionId], references: [id], onDelete: SetNull)
+  createdBy       User              @relation("WaterRecordCreator", fields: [createdByUserId], references: [id])
+  assuranceSamples AssuranceSample[] @relation("SampleWaterRecord")
+
+  @@index([organizationId, facilityId, recordedAt])
+  @@index([organizationId, reportingPeriodId, metricType])
+  @@map("water_records")
+}
+
+/// ESRS E5 waste tracking. Unlike water, waste already has a real GHG angle
+/// (Scope 3 Category 5, EmissionCategory "s3-waste"): on save this creates
+/// or updates a linked ActivityRecord so its CO2e flows through the same
+/// factor-selection/calculation engine every other category uses, instead
+/// of a hardcoded factor table. See lib/calculation/environmental-metrics.ts.
 model WasteRecord {
-  id             String   @id @default(cuid())
-  organizationId String   @map("organization_id")
-  projectId      String?  @map("project_id")
-  wasteType      String   @map("waste_type")
-  disposalRoute  String   @map("disposal_route")
-  weightTonnes   Decimal  @map("weight_tonnes") @db.Decimal(12, 4)
-  co2eTonnes     Decimal? @map("co2e_tonnes") @db.Decimal(12, 6)
-  ewcCode        String?  @map("ewc_code")
-  carrierName    String?  @map("carrier_name")
-  recordedAt     DateTime @map("recorded_at")
-  notes          String?
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id                String                  @id @default(cuid())
+  organizationId    String                  @map("organization_id")
+  facilityId        String?                 @map("facility_id")
+  projectId         String?                 @map("project_id")
+  reportingPeriodId String?                 @map("reporting_period_id")
+  wasteType         String                  @map("waste_type")
+  disposalRoute     String                  @map("disposal_route")
+  /// ESRS E5 hazardous/non-hazardous split.
+  hazardous         Boolean                 @default(false)
+  weightTonnes      Decimal                 @map("weight_tonnes") @db.Decimal(12, 4)
+  /// Denormalized read-through of the linked ActivityRecord's calculated
+  /// EmissionCalculation.totalCo2e (kg), kept for fast listing. The
+  /// calculation itself is authoritative, not this column.
+  co2eTonnes        Decimal?                @map("co2e_tonnes") @db.Decimal(12, 6)
+  ewcCode           String?                 @map("ewc_code")
+  carrierName       String?                 @map("carrier_name")
+  /// The ActivityRecord (category s3-waste) this record drives through the
+  /// real calculation engine. Nullable only during the backfill window.
+  activityRecordId  String?                 @unique @map("activity_record_id")
+  dataSource        EnvironmentalDataSource @default(manual) @map("data_source")
+  fieldSubmissionId String?                 @map("field_submission_id")
+  recordedAt        DateTime                @map("recorded_at")
+  notes             String?
+  createdByUserId   String?                 @map("created_by_user_id")
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  project      Project?     @relation(fields: [projectId], references: [id])
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility        Facility?         @relation(fields: [facilityId], references: [id])
+  project         Project?          @relation(fields: [projectId], references: [id])
+  reportingPeriod ReportingPeriod?  @relation(fields: [reportingPeriodId], references: [id])
+  activityRecord  ActivityRecord?   @relation("WasteRecordActivityRecord", fields: [activityRecordId], references: [id], onDelete: SetNull)
+  fieldSubmission FieldSubmission?  @relation("WasteRecordSubmission", fields: [fieldSubmissionId], references: [id], onDelete: SetNull)
+  createdBy       User?             @relation("WasteRecordCreator", fields: [createdByUserId], references: [id])
+  assuranceSamples AssuranceSample[] @relation("SampleWasteRecord")
 
   @@index([organizationId, recordedAt])
   @@index([organizationId, projectId])
+  @@index([organizationId, facilityId, recordedAt])
+  @@index([organizationId, reportingPeriodId])
   @@map("waste_records")
+}
+
+/// Facility/period rollups for water and waste physical-quantity metrics,
+/// parallel to DashboardAggregate rather than bolted onto it - totalCo2e
+/// there is a non-nullable column literally named for CO2e, and m3/tonnes
+/// don't belong in it. Rebuilt on every WaterRecord save and on every
+/// WasteRecord recalculation, same "never raw-aggregate at request time"
+/// rule as the rest of the dashboard.
+model EnvironmentalMetricAggregate {
+  id                      String                   @id @default(cuid())
+  organizationId          String                   @map("organization_id")
+  reportingPeriodId       String                   @map("reporting_period_id")
+  snapshotId              String?                  @map("snapshot_id")
+  metricType              EnvironmentalMetricType  @map("metric_type")
+  facilityId              String?                  @map("facility_id")
+  businessUnitId          String?                  @map("business_unit_id")
+  totalValue              Decimal                  @map("total_value") @db.Decimal(18, 6)
+  unit                    String
+  recordCount             Int                      @map("record_count")
+  intensityPerRevenueUnit Decimal?                 @map("intensity_per_revenue_unit") @db.Decimal(18, 8)
+  intensityPerFte         Decimal?                 @map("intensity_per_fte") @db.Decimal(18, 8)
+  intensityPerM2          Decimal?                 @map("intensity_per_m2") @db.Decimal(18, 8)
+  createdAt               DateTime                 @default(now()) @map("created_at")
+
+  organization    Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod    @relation(fields: [reportingPeriodId], references: [id])
+  snapshot        PublishedSnapshot? @relation("EnvironmentalAggregateSnapshot", fields: [snapshotId], references: [id])
+  facility        Facility?          @relation(fields: [facilityId], references: [id])
+  businessUnit    BusinessUnit?      @relation(fields: [businessUnitId], references: [id])
+
+  @@index([organizationId, reportingPeriodId, snapshotId])
+  @@index([organizationId, snapshotId, metricType])
+  @@map("environmental_metric_aggregates")
 }
 
 // ─── Phase 6: SBTi Net-Zero Roadmap ──────────────────────────────────────────
@@ -4823,6 +5009,8 @@ enum FindingStatus {
 
 enum SupportedFramework {
   esrs_e1
+  esrs_e3
+  esrs_e5
   gri_305
   cdp_climate
   secr
@@ -4923,6 +5111,8 @@ model AssuranceSample {
   engagementId         String          @map("engagement_id")
   emissionCalculationId String?        @map("emission_calculation_id")
   activityRecordId     String?         @map("activity_record_id")
+  waterRecordId        String?         @map("water_record_id")
+  wasteRecordId        String?         @map("waste_record_id")
   samplingMethod       SamplingMethod  @map("sampling_method")
   /// Why this item was pulled: the stratum, the anomaly, the threshold.
   selectionRationale   String          @map("selection_rationale")
@@ -4940,6 +5130,8 @@ model AssuranceSample {
   engagement         AssuranceEngagement  @relation("EngagementSamples", fields: [engagementId], references: [id], onDelete: Cascade)
   emissionCalculation EmissionCalculation? @relation("SampleCalculation", fields: [emissionCalculationId], references: [id], onDelete: SetNull)
   activityRecord      ActivityRecord?      @relation("SampleActivityRecord", fields: [activityRecordId], references: [id], onDelete: SetNull)
+  waterRecord         WaterRecord?         @relation("SampleWaterRecord", fields: [waterRecordId], references: [id], onDelete: SetNull)
+  wasteRecord         WasteRecord?         @relation("SampleWasteRecord", fields: [wasteRecordId], references: [id], onDelete: SetNull)
   testedBy            User?                @relation("SampleTester", fields: [testedByUserId], references: [id])
   findings            AssuranceFinding[]   @relation("FindingSample")
 
@@ -4960,6 +5152,10 @@ model AssuranceFinding {
   description    String
   /// tCO2e effect on the reported total, when the finding is quantifiable.
   quantifiedImpactCo2e Decimal?  @map("quantified_impact_co2e") @db.Decimal(18, 4)
+  /// Generic non-GHG counterpart to quantifiedImpactCo2e, for findings
+  /// against a water or waste record (e.g. "120 m3" or "4.2 tonnes").
+  quantifiedImpactValue Decimal? @map("quantified_impact_value") @db.Decimal(18, 4)
+  quantifiedImpactUnit  String?  @map("quantified_impact_unit")
   managementResponse String?    @map("management_response")
   managementRespondedAt DateTime? @map("management_responded_at")
   managementRespondedByUserId String? @map("management_responded_by_user_id")

@@ -18,12 +18,24 @@ type ReportingPeriod = {
   status: string;
 };
 
+type WaterStressLevel = "low" | "medium_high" | "high" | "extremely_high" | "unknown";
+
 type Facility = {
   id: string;
   name: string;
   country: string;
   region: string;
+  waterStressLevel: WaterStressLevel | null;
 };
+
+const WATER_STRESS_OPTIONS: { value: WaterStressLevel | ""; label: string }[] = [
+  { value: "", label: "Not assessed" },
+  { value: "low", label: "Low" },
+  { value: "medium_high", label: "Medium-high" },
+  { value: "high", label: "High" },
+  { value: "extremely_high", label: "Extremely high" },
+  { value: "unknown", label: "Unknown / data unavailable" },
+];
 
 type BusinessUnit = {
   id: string;
@@ -663,15 +675,19 @@ function FacilityRow({ orgId, facility }: { orgId: string; facility: Facility })
   const [name, setName] = useState(facility.name);
   const [country, setCountry] = useState(facility.country ?? "");
   const [region, setRegion] = useState(facility.region ?? "");
+  const [waterStressLevel, setWaterStressLevel] = useState<WaterStressLevel | "">(facility.waterStressLevel ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const changed = name !== facility.name || country !== (facility.country ?? "") || region !== (facility.region ?? "");
+  const changed = name !== facility.name || country !== (facility.country ?? "") || region !== (facility.region ?? "")
+    || waterStressLevel !== (facility.waterStressLevel ?? "");
 
   function save() {
     setError(null);
     startTransition(async () => {
       try {
-        await requestJson(`/api/orgs/${orgId}/facilities/${facility.id}`, "PATCH", { name, country, region });
+        await requestJson(`/api/orgs/${orgId}/facilities/${facility.id}`, "PATCH", {
+          name, country, region, waterStressLevel: waterStressLevel || null,
+        });
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not update facility");
@@ -693,12 +709,23 @@ function FacilityRow({ orgId, facility }: { orgId: string; facility: Facility })
   }
 
   return (
-    <div className="grid gap-3 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_8rem_10rem_auto]">
+    <div className="grid gap-3 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_8rem_10rem_10rem_auto]">
       <Input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} />
       <Input value={country} disabled={isPending} onChange={(event) => setCountry(event.target.value)} />
       <Input value={region} disabled={isPending} onChange={(event) => setRegion(event.target.value)} />
+      <select
+        value={waterStressLevel}
+        disabled={isPending}
+        onChange={(event) => setWaterStressLevel(event.target.value as WaterStressLevel | "")}
+        className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs disabled:opacity-50"
+        title="ESRS E3 water-stress classification"
+      >
+        {WATER_STRESS_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
       <RowActions save={save} remove={remove} disabled={isPending} canSave={changed && name.trim().length > 0} />
-      {error && <p className="text-xs text-red-600 sm:col-span-2 lg:col-span-4">{error}</p>}
+      {error && <p className="text-xs text-red-600 sm:col-span-2 lg:col-span-5">{error}</p>}
     </div>
   );
 }

@@ -15,6 +15,8 @@ const MANAGE_ROLES: OrgRole[] = ["admin", "sustainability_director", "sustainabi
 
 const FRAMEWORK_LABEL: Record<string, string> = {
   esrs_e1: "ESRS E1 (CSRD)",
+  esrs_e3: "ESRS E3 (Water)",
+  esrs_e5: "ESRS E5 (Waste)",
   gri_305: "GRI 305",
   cdp_climate: "CDP Climate",
   secr: "SECR",

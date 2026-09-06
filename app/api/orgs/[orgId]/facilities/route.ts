@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -23,15 +23,13 @@ export async function GET(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-      "field_worker",
-    );
+    // Read-only listing used to populate dropdowns (waste/water capture,
+    // completeness matrix, etc.) across many roles — widened to anyMember
+    // rather than the narrower legacy list, which excluded sustainability
+    // and project/site roles that need to log facility-scoped records.
+    // field_worker kept explicitly (mobile facility-picker on submission)
+    // even though ROLE_GROUPS.anyMember deliberately excludes it elsewhere.
+    await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember, "field_worker");
 
     const facilities = await prisma.facility.findMany({
       where: { organizationId: orgId },

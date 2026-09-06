@@ -33,6 +33,7 @@ export type AuditAction =
   | "record.updated"
   | "record.deleted"
   | "record.reviewed"
+  | "record.bulk_imported"
   | "factor.library_imported"
   | "material_library.imported"
   | "calculation.run_triggered"

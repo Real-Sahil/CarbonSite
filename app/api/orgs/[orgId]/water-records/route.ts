@@ -1,21 +1,21 @@
 export const dynamic = "force-dynamic";
 
-// ESRS E5 waste tracking. Unlike water, waste already has a real GHG angle
-// (Scope 3 Category 5, EmissionCategory "s3-waste"): every save creates or
-// updates a linked ActivityRecord and runs it through the real
-// factor-selection/CO2e engine (see lib/calculation/environmental-metrics.ts)
-// instead of a hardcoded factor table, so the CO2e actually reaches the
-// dashboard and published reports.
+// ESRS E3 water tracking. Deliberately outside the ActivityRecord/
+// EmissionCalculation pipeline — water withdrawal/discharge/consumption has
+// no GHG Protocol scope, so a WaterRecord never drives a CO2e calculation.
+// See lib/calculation/environmental-metrics.ts.
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
-import { createWasteRecordSchema } from "@/lib/validation/environmental";
-import { syncWasteRecordCalculation, rebuildEnvironmentalMetricAggregates } from "@/lib/calculation/environmental-metrics";
+import { createWaterRecordSchema } from "@/lib/validation/environmental";
+import { rebuildEnvironmentalMetricAggregates } from "@/lib/calculation/environmental-metrics";
 
 type Params = { params: Promise<{ orgId: string }> };
+
+const WATER_STRESSED_LEVELS = new Set(["medium_high", "high", "extremely_high"]);
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
@@ -24,16 +24,14 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     const { searchParams } = new URL(req.url);
     const facilityId = searchParams.get("facilityId");
-    const projectId = searchParams.get("projectId");
     const reportingPeriodId = searchParams.get("reportingPeriodId");
     const cursor = searchParams.get("cursor");
     const limit = Math.min(Number(searchParams.get("limit") ?? "50"), 100);
 
-    const records = await prisma.wasteRecord.findMany({
+    const records = await prisma.waterRecord.findMany({
       where: {
         organizationId: orgId,
         ...(facilityId ? { facilityId } : {}),
-        ...(projectId ? { projectId } : {}),
         ...(reportingPeriodId ? { reportingPeriodId } : {}),
         ...(cursor ? { recordedAt: { lt: new Date(cursor) } } : {}),
       },
@@ -46,21 +44,16 @@ export async function GET(req: NextRequest, { params }: Params) {
     const data = hasMore ? records.slice(0, limit) : records;
     const nextCursor = hasMore ? data[data.length - 1]?.recordedAt.toISOString() : null;
 
-    const totals = await prisma.wasteRecord.aggregate({
-      where: {
-        organizationId: orgId,
-        ...(facilityId ? { facilityId } : {}),
-        ...(projectId ? { projectId } : {}),
-        ...(reportingPeriodId ? { reportingPeriodId } : {}),
-      },
-      _sum: { weightTonnes: true, co2eTonnes: true },
+    const totals = await prisma.waterRecord.groupBy({
+      by: ["metricType"],
+      where: { organizationId: orgId, ...(facilityId ? { facilityId } : {}), ...(reportingPeriodId ? { reportingPeriodId } : {}) },
+      _sum: { volumeM3: true },
     });
 
     return NextResponse.json({
       data,
       nextCursor,
-      totalWeightTonnes: Number(totals._sum.weightTonnes ?? 0),
-      totalCo2eTonnes: Number(totals._sum.co2eTonnes ?? 0),
+      totalsByMetricType: Object.fromEntries(totals.map((t) => [t.metricType, Number(t._sum.volumeM3 ?? 0)])),
     });
   } catch (err) {
     return handleRouteError(err);
@@ -72,9 +65,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.sustainability);
 
-    const parsed = createWasteRecordSchema.safeParse(await req.json().catch(() => null));
+    const parsed = createWaterRecordSchema.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {
-      return apiError("VALIDATION_ERROR", "Invalid waste record.", 400, parsed.error.flatten());
+      return apiError("VALIDATION_ERROR", "Invalid water record.", 400, parsed.error.flatten());
     }
     const body = parsed.data;
 
@@ -84,23 +77,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     ]);
     if (!facility) return apiError("NOT_FOUND", "Facility not found.", 404);
     if (!reportingPeriod) return apiError("NOT_FOUND", "Reporting period not found.", 404);
-    if (body.projectId) {
-      const project = await prisma.project.findFirst({ where: { id: body.projectId, organizationId: orgId } });
-      if (!project) return apiError("NOT_FOUND", "Project not found.", 404);
-    }
 
-    const record = await prisma.wasteRecord.create({
+    const record = await prisma.waterRecord.create({
       data: {
         organizationId: orgId,
         facilityId: body.facilityId,
-        projectId: body.projectId,
         reportingPeriodId: body.reportingPeriodId,
-        wasteType: body.wasteType,
-        disposalRoute: body.disposalRoute,
-        hazardous: body.hazardous,
-        weightTonnes: body.weightTonnes,
-        ewcCode: body.ewcCode,
-        carrierName: body.carrierName,
+        metricType: body.metricType,
+        source: body.source,
+        volumeM3: body.volumeM3,
+        isWaterStressedArea: facility.waterStressLevel ? WATER_STRESSED_LEVELS.has(facility.waterStressLevel) : false,
         dataSource: "manual",
         recordedAt: new Date(body.recordedAt),
         notes: body.notes,
@@ -108,19 +94,18 @@ export async function POST(req: NextRequest, { params }: Params) {
       },
     });
 
-    const calc = await syncWasteRecordCalculation(record.id, session.user.id);
     await rebuildEnvironmentalMetricAggregates(orgId, body.reportingPeriodId);
 
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
       action: "record.created",
-      resourceType: "waste_record",
+      resourceType: "water_record",
       resourceId: record.id,
-      metadata: { disposalRoute: body.disposalRoute, weightTonnes: body.weightTonnes, co2eTonnes: calc?.co2eTonnes ?? null },
+      metadata: { metricType: body.metricType, volumeM3: body.volumeM3, facilityId: body.facilityId },
     });
 
-    return NextResponse.json({ ...record, co2eTonnes: calc?.co2eTonnes ?? null }, { status: 201 });
+    return NextResponse.json(record, { status: 201 });
   } catch (err) {
     return handleRouteError(err);
   }

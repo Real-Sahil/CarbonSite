@@ -49,7 +49,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
       orderBy: { startDate: "desc" },
     }),
     prisma.dataCompletenessRequirement.findMany({
-      where: { organizationId: orgId },
+      where: { organizationId: orgId, emissionCategoryId: { not: null } },
       include: {
         facility: { select: { id: true, name: true } },
         emissionCategory: { select: { id: true, name: true } },
@@ -103,7 +103,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
       const counts = countsByKey.get(`${req.facilityId}:${req.emissionCategoryId}`) ?? { recordCount: 0, approvedCount: 0 };
       return {
         facilityId: req.facilityId,
-        emissionCategoryId: req.emissionCategoryId,
+        emissionCategoryId: req.emissionCategoryId!,
         required: req.required,
         ownerUserId: req.ownerUserId,
         recordCount: counts.recordCount,

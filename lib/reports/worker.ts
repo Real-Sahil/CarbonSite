@@ -77,7 +77,10 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       });
 
       let csvBuffer: Buffer | null = null;
-      if (report.type !== "national_toms" && report.type !== "cbam") {
+      // Water/waste reports have no EmissionCalculation rows to export —
+      // WaterRecord/WasteRecord aren't part of fetchCalculations()'s shape.
+      if (report.type !== "national_toms" && report.type !== "cbam"
+        && report.type !== "csrd_esrs_e3" && report.type !== "csrd_esrs_e5") {
         const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
         csvBuffer = buildCsv(calculations, report);
         reportLogger.info("CSV buffer built", {

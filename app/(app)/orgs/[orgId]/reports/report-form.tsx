@@ -105,6 +105,8 @@ const REPORT_TYPE_OPTIONS = [
   { value: "breeam_evidence",  label: "BREEAM Evidence Pack" },
   { value: "national_toms",    label: "National TOMS Social Value" },
   { value: "csrd_esrs_e1",     label: "CSRD ESRS E1" },
+  { value: "csrd_esrs_e3",     label: "CSRD ESRS E3 (Water)" },
+  { value: "csrd_esrs_e5",     label: "CSRD ESRS E5 (Waste & Resources)" },
   { value: "contract_carbon",  label: "Contract Carbon Report" },
 ];
 

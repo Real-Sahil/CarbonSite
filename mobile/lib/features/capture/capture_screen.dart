@@ -578,6 +578,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         return 'delivery_note';
       case DocumentType.fuelReceipt:
         return 'fuel_receipt';
+      case DocumentType.waterMeterReading:
+        return 'water_meter_reading';
       case DocumentType.other:
         return 'other';
     }
@@ -591,6 +593,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         return DocumentType.deliveryNote;
       case 'fuel_receipt':
         return DocumentType.fuelReceipt;
+      case 'water_meter_reading':
+        return DocumentType.waterMeterReading;
       default:
         return DocumentType.other;
     }
@@ -693,6 +697,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                     label: 'Fuel Receipt',
                     caption: 'Diesel, gas oil, AdBlue',
                     onTap: () => _onTypeSelected(DocumentType.fuelReceipt),
+                  ),
+                  _TypeCard(
+                    icon: Icons.water_drop_outlined,
+                    label: 'Water Meter',
+                    caption: 'Withdrawal / consumption reading',
+                    onTap: () => _onTypeSelected(DocumentType.waterMeterReading),
                   ),
                   _TypeCard(
                     icon: Icons.description_outlined,
@@ -931,6 +941,15 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           _field('supplierName', 'Supplier / forecourt'),
           _field('notes', 'Notes', maxLines: 3),
         ];
+      case DocumentType.waterMeterReading:
+        return [
+          _field('meterId', 'Meter ID / serial', requiredField: true),
+          _field('reading', 'Reading', hint: 'e.g. 1250.5',
+              keyboard: TextInputType.number, requiredField: true),
+          _unitField('readingUnit', const ['m3', 'litres']),
+          _field('date', 'Reading date', hint: 'e.g. 12/06/2026'),
+          _field('notes', 'Notes', maxLines: 3),
+        ];
       case DocumentType.other:
         return [
           _field('description', 'Description', requiredField: true, maxLines: 2),
@@ -1060,6 +1079,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         return 'Delivery Note';
       case DocumentType.fuelReceipt:
         return 'Fuel Receipt';
+      case DocumentType.waterMeterReading:
+        return 'Water Meter Reading';
       case DocumentType.other:
         return 'Other Document';
     }

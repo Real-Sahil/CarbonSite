@@ -27,6 +27,8 @@ const createReportSchema = z.object({
     "breeam_evidence",
     "national_toms",
     "csrd_esrs_e1",
+    "csrd_esrs_e3",
+    "csrd_esrs_e5",
     "contract_carbon",
     "ghg_protocol",
     "cdp",

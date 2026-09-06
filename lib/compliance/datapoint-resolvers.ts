@@ -248,6 +248,80 @@ async function allScopesDisclosed(orgId: string, db: PrismaClient): Promise<Reso
   };
 }
 
+async function waterMetricsDisclosed(orgId: string, db: PrismaClient): Promise<ResolverResult> {
+  const metricTypes = await db.waterRecord.findMany({
+    where: { organizationId: orgId },
+    select: { metricType: true },
+    distinct: ["metricType"],
+  });
+  const covered = new Set(metricTypes.map((m) => m.metricType));
+  if (covered.size === 0) {
+    return { status: "gap", evidenceSummary: "No water records recorded." };
+  }
+  if (covered.size < 3) {
+    return { status: "partial", evidenceSummary: `${covered.size} of 3 water metrics recorded (${[...covered].join(", ")}).` };
+  }
+  return { status: "satisfied", evidenceSummary: "Withdrawal, discharge and consumption are all recorded." };
+}
+
+async function waterStressAssessed(orgId: string, db: PrismaClient): Promise<ResolverResult> {
+  const facilitiesWithWater = await db.waterRecord.findMany({
+    where: { organizationId: orgId },
+    select: { facilityId: true },
+    distinct: ["facilityId"],
+  });
+  if (facilitiesWithWater.length === 0) {
+    return { status: "gap", evidenceSummary: "No facilities have recorded water data." };
+  }
+  const facilityIds = facilitiesWithWater.map((f) => f.facilityId);
+  const assessedCount = await db.facility.count({
+    where: { id: { in: facilityIds }, waterStressLevel: { not: null } },
+  });
+  if (assessedCount === 0) {
+    return { status: "gap", evidenceSummary: "No facility with water data has a water-stress classification." };
+  }
+  if (assessedCount < facilityIds.length) {
+    return {
+      status: "partial",
+      evidenceSummary: `${assessedCount} of ${facilityIds.length} facilities with water data are water-stress assessed.`,
+    };
+  }
+  return {
+    status: "satisfied",
+    evidenceSummary: `All ${facilityIds.length} facilities with water data are water-stress assessed.`,
+  };
+}
+
+async function wasteMetricsDisclosed(orgId: string, db: PrismaClient): Promise<ResolverResult> {
+  const count = await db.wasteRecord.count({ where: { organizationId: orgId } });
+  if (count === 0) return { status: "gap", evidenceSummary: "No waste records recorded." };
+  const hazardousCount = await db.wasteRecord.count({ where: { organizationId: orgId, hazardous: true } });
+  return {
+    status: "satisfied",
+    evidenceSummary: `${count} waste records recorded, ${hazardousCount} flagged hazardous.`,
+  };
+}
+
+async function wasteDiversionDisclosed(orgId: string, db: PrismaClient): Promise<ResolverResult> {
+  const routes = await db.wasteRecord.findMany({
+    where: { organizationId: orgId },
+    select: { disposalRoute: true },
+    distinct: ["disposalRoute"],
+  });
+  if (routes.length === 0) return { status: "gap", evidenceSummary: "No waste records recorded." };
+  const landfillOnly = routes.every((r) => r.disposalRoute.startsWith("landfill"));
+  if (landfillOnly) {
+    return {
+      status: "partial",
+      evidenceSummary: "All recorded waste is landfilled; no diversion (recycling/recovery) route recorded.",
+    };
+  }
+  return {
+    status: "satisfied",
+    evidenceSummary: `${routes.length} distinct disposal routes recorded, including at least one diversion route.`,
+  };
+}
+
 export const DATAPOINT_RESOLVERS: Record<string, Resolver> = {
   scope1_gross_emissions: scope1GrossEmissions,
   scope2_dual_reporting: scope2DualReporting,
@@ -264,6 +338,10 @@ export const DATAPOINT_RESOLVERS: Record<string, Resolver> = {
   transition_plan_disclosed: transitionPlanDisclosed,
   restatement_disclosed: restatementDisclosed,
   offsets_disclosed: offsetsDisclosed,
+  water_metrics_disclosed: waterMetricsDisclosed,
+  water_stress_assessed: waterStressAssessed,
+  waste_metrics_disclosed: wasteMetricsDisclosed,
+  waste_diversion_disclosed: wasteDiversionDisclosed,
 };
 
 export async function runResolver(

@@ -28,10 +28,10 @@ describe("FRAMEWORK_DATAPOINTS", () => {
     }
   });
 
-  it("covers all five disclosure frameworks plus the GHG Protocol", () => {
+  it("covers all seven disclosure frameworks plus the GHG Protocol", () => {
     const frameworks = new Set(FRAMEWORK_DATAPOINTS.map((dp) => dp.framework));
     expect(frameworks).toEqual(
-      new Set(["esrs_e1", "gri_305", "cdp_climate", "secr", "ifrs_s2", "ghg_protocol"]),
+      new Set(["esrs_e1", "esrs_e3", "esrs_e5", "gri_305", "cdp_climate", "secr", "ifrs_s2", "ghg_protocol"]),
     );
   });
 

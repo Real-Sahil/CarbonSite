@@ -15,7 +15,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const requirements = await prisma.dataCompletenessRequirement.findMany({
-      where: { organizationId: orgId },
+      where: { organizationId: orgId, emissionCategoryId: { not: null } },
       include: {
         facility: { select: { id: true, name: true } },
         emissionCategory: { select: { id: true, code: true, name: true, scope: true } },

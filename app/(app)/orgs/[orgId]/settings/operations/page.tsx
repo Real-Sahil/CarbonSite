@@ -116,6 +116,7 @@ export default async function OperationsSettingsPage({
           name: facility.name,
           country: facility.country ?? "",
           region: facility.region ?? "",
+          waterStressLevel: facility.waterStressLevel,
         }))}
         businessUnits={businessUnits.map((businessUnit) => ({
           id: businessUnit.id,

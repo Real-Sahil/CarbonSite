@@ -10,6 +10,8 @@ import {
   ClipboardCheck,
   Clock,
   Download,
+  Droplets,
+  Trash2,
   FileText,
   Gauge,
   Handshake,
@@ -641,6 +643,24 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     })(),
   ]);
 
+  // Water & waste (ESRS E3/E5) — reads the pre-computed
+  // EnvironmentalMetricAggregate rollup, never raw-aggregates
+  // WaterRecord/WasteRecord at request time, same rule as the scope cards.
+  const environmentalAggregates = currentPeriod
+    ? await prisma.environmentalMetricAggregate.groupBy({
+        by: ["metricType"],
+        where: { organizationId: orgId, reportingPeriodId: currentPeriod.id, snapshotId: null },
+        _sum: { totalValue: true },
+      })
+    : [];
+  const environmentalTotals = Object.fromEntries(
+    environmentalAggregates.map((row) => [row.metricType, Number(row._sum.totalValue ?? 0)]),
+  ) as Record<string, number>;
+  const hasEnvironmentalData = environmentalAggregates.length > 0;
+  const wasteDiversionPct = environmentalTotals.waste_generated
+    ? Math.round(((environmentalTotals.waste_diverted ?? 0) / environmentalTotals.waste_generated) * 100)
+    : null;
+
   const approvedCountsByPeriod = await prisma.activityRecord.groupBy({
     by: ["reportingPeriodId"],
     where: { organizationId: orgId, reviewStatus: "approved" },
@@ -1157,6 +1177,45 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 </Link>
               </>
             )}
+          </div>
+        </section>
+      )}
+
+      {hasEnvironmentalData && (
+        <section aria-label="Water and waste" className="mt-8">
+          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
+            Water &amp; waste (ESRS E3 / E5)
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              icon={Droplets}
+              label="Water withdrawal"
+              value={`${(environmentalTotals.water_withdrawal ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })} m3`}
+              detail="This reporting period"
+              href={`/orgs/${orgId}/water`}
+            />
+            <MetricCard
+              icon={Droplets}
+              label="Water consumption"
+              value={`${(environmentalTotals.water_consumption ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })} m3`}
+              detail="This reporting period"
+              href={`/orgs/${orgId}/water`}
+            />
+            <MetricCard
+              icon={Trash2}
+              label="Waste generated"
+              value={`${(environmentalTotals.waste_generated ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} t`}
+              detail={wasteDiversionPct != null ? `${wasteDiversionPct}% diverted from disposal` : "This reporting period"}
+              href={`/orgs/${orgId}/waste`}
+            />
+            <MetricCard
+              icon={AlertTriangle}
+              label="Hazardous waste"
+              value={`${(environmentalTotals.waste_hazardous ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} t`}
+              detail="This reporting period"
+              href={`/orgs/${orgId}/waste`}
+              tone={environmentalTotals.waste_hazardous ? "bad" : "neutral"}
+            />
           </div>
         </section>
       )}

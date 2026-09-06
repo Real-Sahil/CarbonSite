@@ -28,8 +28,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orgI
       return apiError("NOT_FOUND", "No reporting period found for this organisation.", 404);
     }
 
+    // This GHG-only matrix covers emission-category requirements; water/waste
+    // completeness (metricType-based rows) has its own surface.
     const requirements = await prisma.dataCompletenessRequirement.findMany({
-      where: { organizationId: orgId },
+      where: { organizationId: orgId, emissionCategoryId: { not: null } },
       include: {
         facility: { select: { id: true, name: true } },
         emissionCategory: { select: { id: true, code: true, name: true, scope: true } },
@@ -76,7 +78,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orgI
       };
       return {
         facilityId: req.facilityId,
-        emissionCategoryId: req.emissionCategoryId,
+        emissionCategoryId: req.emissionCategoryId!,
         required: req.required,
         ownerUserId: req.ownerUserId,
         recordCount: counts.recordCount,
@@ -95,7 +97,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orgI
 
     const facilities = [...new Map(requirements.map((r) => [r.facility.id, r.facility])).values()];
     const categories = [
-      ...new Map(requirements.map((r) => [r.emissionCategory.id, r.emissionCategory])).values(),
+      ...new Map(requirements.map((r) => [r.emissionCategory!.id, r.emissionCategory!])).values(),
     ].sort((a, b) => a.scope - b.scope || a.name.localeCompare(b.name));
 
     return NextResponse.json({
