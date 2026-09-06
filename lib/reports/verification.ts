@@ -1,7 +1,16 @@
 import crypto from "crypto";
 
-const VERIFICATION_SECRET = process.env.REPORT_VERIFICATION_SECRET || "dev-secret-key";
 const TOKEN_EXPIRY_DAYS = 90;
+
+// Signs public report-verification tokens. No insecure fallback: if this is
+// unset, anyone could forge a valid verification token for any report/org.
+function getVerificationSecret(): string {
+  const secret = process.env.REPORT_VERIFICATION_SECRET;
+  if (!secret) {
+    throw new Error("REPORT_VERIFICATION_SECRET must be set — refusing to sign/verify with an insecure default.");
+  }
+  return secret;
+}
 
 interface VerificationPayload {
   reportId: string;
@@ -20,7 +29,7 @@ export function generateReportToken(reportId: string, orgId: string): string {
   const payloadB64 = Buffer.from(payloadStr).toString("base64");
 
   const signature = crypto
-    .createHmac("sha256", VERIFICATION_SECRET)
+    .createHmac("sha256", getVerificationSecret())
     .update(payloadB64)
     .digest("base64");
 
@@ -38,11 +47,15 @@ export function verifyReportToken(
     }
 
     const expectedSignature = crypto
-      .createHmac("sha256", VERIFICATION_SECRET)
+      .createHmac("sha256", getVerificationSecret())
       .update(payloadB64)
       .digest("base64");
 
-    if (signature !== expectedSignature) {
+    const expectedBuf = Buffer.from(expectedSignature, "utf8");
+    const providedBuf = Buffer.from(signature, "utf8");
+    const valid =
+      expectedBuf.length === providedBuf.length && crypto.timingSafeEqual(expectedBuf, providedBuf);
+    if (!valid) {
       return null;
     }
 

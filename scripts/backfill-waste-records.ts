@@ -16,10 +16,12 @@ import { prisma } from "../lib/db";
 import { syncWasteRecordCalculation } from "../lib/calculation/environmental-metrics";
 
 async function main() {
+  // facilityId/reportingPeriodId are NOT NULL as of the follow-up migration
+  // (see migration 20260906000001) — this script now only needs to catch
+  // rows that were backfilled with a facility/period but never got their
+  // linked ActivityRecord calculated (e.g. a prior run's calculationFailed).
   const unassigned = await prisma.wasteRecord.findMany({
-    where: {
-      OR: [{ facilityId: null }, { reportingPeriodId: null }, { activityRecordId: null }],
-    },
+    where: { activityRecordId: null },
   });
 
   if (unassigned.length === 0) {

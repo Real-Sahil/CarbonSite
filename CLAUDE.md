@@ -131,7 +131,7 @@ org/{orgId}/imports/{importId}/source.csv
 org/{orgId}/imports/{importId}/errors.csv
 org/{orgId}/reports/{reportId}/report.pdf
 ```
-All presigned URLs generated server-side after auth checks. Expiry: 15 minutes. Never expose raw R2 keys to clients.
+All presigned URLs generated server-side after auth checks. Expiry: 1 hour (`PRESIGN_TTL` in `lib/storage/index.ts`, raised from 15 minutes to tolerate slow/interrupted downloads). Never expose raw R2 keys to clients.
 
 ### API Routes
 - Validate all input with Zod before touching the database.
@@ -207,7 +207,7 @@ Submissions are always written to local SQLite (`drift`) first. A background syn
 `ReviewTask.targetId` and `Comment.targetId` are polymorphic references (resolved in application code, not via Prisma FK relations). Query the specific resource table after reading `targetType`.
 
 ### Reporting
-Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Report totals must match dashboard totals for the same snapshot — this is a core trust invariant. Generated PDFs/CSVs stored in R2 with checksums. Download links are 15-minute signed URLs.
+Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Report totals must match dashboard totals for the same snapshot — this is a core trust invariant. Generated PDFs/CSVs stored in R2 with checksums. Download links are 1-hour signed URLs.
 
 ### Audit Log
 `AuditLog` is append-only via `writeAuditLog()` in `lib/db/audit.ts`. Never update or delete rows. Required events: auth, role changes, imports, record mutations, factor imports, calculation runs, snapshot publication, report publication, field submission submission/review.

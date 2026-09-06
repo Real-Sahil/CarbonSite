@@ -184,6 +184,18 @@ export async function PATCH(
       );
     }
 
+    // A facilityId here later becomes the ActivityRecord/WasteRecord/
+    // WaterRecord's facility on approval (see lib/field-submissions/approve.ts)
+    // — it must belong to this org, or a reviewer could attach another
+    // tenant's facility to this org's data.
+    if (body.data.facilityId !== undefined && body.data.facilityId !== null) {
+      const facility = await prisma.facility.findFirst({
+        where: { id: body.data.facilityId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!facility) return apiError("NOT_FOUND", "Facility not found.", 404);
+    }
+
     // Determine final pickup/delivery GPS coords (new values override existing).
     const pickupLat = body.data.pickupLat !== undefined
       ? body.data.pickupLat

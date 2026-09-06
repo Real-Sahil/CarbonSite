@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { prisma } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { handleRouteError } from '@/lib/validation/api';
 import { z } from 'zod';
 import { securityLogger } from '@/lib/logger';
+
+// Verifies X-N8N-Signature (HMAC-SHA256 of the raw body, hex-encoded) against
+// N8N_WEBHOOK_SECRET. Configure the same secret in the n8n workflow's HTTP
+// Request node (a Function node computing the HMAC, or a Set node header)
+// that posts execution results back here. Without this, the previous check
+// (workflowDatabaseId maps to organizationId) only verified the two
+// attacker-supplied fields were self-consistent, not that the request came
+// from n8n at all.
+function verifyN8nSignature(rawBody: string, signatureHeader: string | null): boolean {
+  const secret = process.env.N8N_WEBHOOK_SECRET;
+  if (!secret || !signatureHeader) return false;
+
+  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  const expectedBuf = Buffer.from(expected, 'utf8');
+  const providedBuf = Buffer.from(signatureHeader, 'utf8');
+  return expectedBuf.length === providedBuf.length && crypto.timingSafeEqual(expectedBuf, providedBuf);
+}
 
 const N8nExecutionEventSchema = z.object({
   execution: z.object({
@@ -38,7 +56,17 @@ const N8nExecutionEventSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+    const signature = req.headers.get('x-n8n-signature');
+    if (!verifyN8nSignature(rawBody, signature)) {
+      securityLogger.warn('n8n webhook signature verification failed');
+      return NextResponse.json(
+        { error: 'Invalid or missing signature', code: 'INVALID_SIGNATURE' },
+        { status: 401 }
+      );
+    }
+
+    const body = JSON.parse(rawBody);
     const event = N8nExecutionEventSchema.parse(body);
 
     const { execution, executionStatus, executionResult, executionError, metadata } = event;

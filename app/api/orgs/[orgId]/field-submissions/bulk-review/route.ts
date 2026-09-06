@@ -106,7 +106,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const notifiable: { submissionId: string; recipientUserId: string; activityRecordId: string | null }[] = [];
 
       for (const submission of submissions) {
-        const blocker = approvalBlocker(submission, submission.emissionCategoryId);
+        const blocker = approvalBlocker(submission, submission.emissionCategoryId, submission.facilityId);
         if (blocker) {
           skipped.push({ id: submission.id, reason: blocker.message });
           continue;

@@ -1,16 +1,27 @@
 import crypto from "crypto";
 
-const ENCRYPTION_KEY = process.env.INTEGRATION_ENCRYPTION_KEY || "dev-key-change-in-production";
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
+
+// Third-party integration credentials (Xero/QuickBooks/OIDC client secrets)
+// are encrypted at rest with this key. There is no insecure fallback here —
+// an unset key must fail loudly at first use, not silently encrypt every
+// stored credential with a string that's sitting in source control.
+function getEncryptionKey(): string {
+  const key = process.env.INTEGRATION_ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error("INTEGRATION_ENCRYPTION_KEY must be set — refusing to encrypt/decrypt with an insecure default.");
+  }
+  return key;
+}
 
 export function encryptCredential(plaintext: string): string {
   try {
     if (!plaintext) return "";
 
     const iv = crypto.randomBytes(IV_LENGTH);
-    const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+    const key = crypto.scryptSync(getEncryptionKey(), "salt", 32);
     const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
     let encrypted = cipher.update(plaintext, "utf8", "hex");
@@ -35,7 +46,7 @@ export function decryptCredential(encrypted: string): string {
 
     const iv = Buffer.from(ivHex, "hex");
     const authTag = Buffer.from(authTagHex, "hex");
-    const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
+    const key = crypto.scryptSync(getEncryptionKey(), "salt", 32);
 
     const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     decipher.setAuthTag(authTag);

@@ -3,7 +3,7 @@
 // Covers modules C5 (Methodology), C6 (Scope 1 + 2 emissions), C7 (Scope 3),
 // and C8 (Energy) — the core modules relevant to CarbonSite's dataset.
 
-import { brandStyles } from "./shared";
+import { brandStyles, esc } from "./shared";
 
 export interface CdpCategoryRow {
   code: string;
@@ -75,8 +75,8 @@ export function renderCdpHtml(data: CdpData): string {
   const hasBaseline = data.baselineYear !== undefined && data.baselineTonnes !== undefined;
 
   const logoHtml = data.logoDataUri
-    ? `<img src="${data.logoDataUri}" alt="${data.orgName} logo" style="height:44px;max-width:180px;object-fit:contain;">`
-    : `<span style="font-size:1.1rem;font-weight:700;color:#228B22;">${data.orgName}</span>`;
+    ? `<img src="${esc(data.logoDataUri)}" alt="${esc(data.orgName)} logo" style="height:44px;max-width:180px;object-fit:contain;">`
+    : `<span style="font-size:1.1rem;font-weight:700;color:#228B22;">${esc(data.orgName)}</span>`;
 
   const reductionVsBaseline =
     hasBaseline && data.baselineTonnes! > 0
@@ -113,9 +113,9 @@ export function renderCdpHtml(data: CdpData): string {
     ${questionBlock("C5.1", "Describe your methodology for calculating your Scope 1 and 2 emissions.",
       `<table class="data-table">
         ${row2("Accounting standard", "GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition)")}
-        ${row2("Methodology version", data.methodology)}
-        ${row2("GWP dataset", `IPCC AR6 (${data.gwpVersion})`)}
-        ${row2("Emission factor library", data.factorLibrary)}
+        ${row2("Methodology version", esc(data.methodology))}
+        ${row2("GWP dataset", `IPCC AR6 (${esc(data.gwpVersion)})`)}
+        ${row2("Emission factor library", esc(data.factorLibrary))}
         ${row2("Scope 2 methods", "Location-based and market-based (dual-reporting per GHG Protocol Scope 2 Guidance)")}
         ${row2("Consolidation approach", "Operational control (default)")}
         ${row2("Reporting period", `${fmt(data.periodStart)} to ${fmt(data.periodEnd)}`)}
@@ -161,7 +161,7 @@ export function renderCdpHtml(data: CdpData): string {
             <thead><tr><th>Source category</th><th>tCO₂e</th><th>% of Scope 1</th></tr></thead>
             <tbody>${s1Cats.map((c) => {
               const pct = data.scope1Tonnes > 0 ? (c.totalKg / 1000 / data.scope1Tonnes * 100).toFixed(1) : "—";
-              return `<tr><td class="row-label">${c.name}</td><td class="row-value">${fmtN(c.totalKg / 1000)}</td><td class="row-value">${pct}%</td></tr>`;
+              return `<tr><td class="row-label">${esc(c.name)}</td><td class="row-value">${fmtN(c.totalKg / 1000)}</td><td class="row-value">${pct}%</td></tr>`;
             }).join("")}</tbody>
           </table>`
         : `<p class="not-reported">No Scope 1 categories found for this reporting period.</p>`
@@ -170,7 +170,7 @@ export function renderCdpHtml(data: CdpData): string {
       (() => {
         const baselineRow = hasBaseline && reductionVsBaseline !== null
           ? row2(
-              `Change vs baseline (${data.baselineYear})`,
+              `Change vs baseline (${esc(data.baselineYear)})`,
               `${reductionVsBaseline >= 0 ? "-" : "+"}${Math.abs(reductionVsBaseline).toFixed(1)}% (${fmtN(data.baselineTonnes!)} to ${fmtN(data.totalTonnes)} tCO2e)`,
               "Absolute change"
             )
@@ -204,7 +204,7 @@ export function renderCdpHtml(data: CdpData): string {
           ${s3Cats.map((c) => {
             const pct = data.scope3Tonnes > 0 ? (c.totalKg / 1000 / data.scope3Tonnes * 100).toFixed(1) : "—";
             return `<tr>
-              <td class="row-label">${c.name}</td>
+              <td class="row-label">${esc(c.name)}</td>
               <td class="row-value">${fmtN(c.totalKg / 1000)}</td>
               <td class="row-value">${pct}%</td>
               <td class="row-value" style="color:#228B22;">Relevant, calculated</td>
@@ -225,7 +225,7 @@ export function renderCdpHtml(data: CdpData): string {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CDP Climate Change Response — ${data.orgName} — ${data.periodLabel}</title>
+<title>CDP Climate Change Response — ${esc(data.orgName)} — ${esc(data.periodLabel)}</title>
 <style>
 ${brandStyles()}
 body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; background: #fff; font-size: 0.88rem; }
@@ -266,14 +266,14 @@ body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; background: #fff
     <div>${logoHtml}</div>
     <h1>CDP Climate Change — Emissions Response</h1>
     <p>Modules C5, C6, C7 — Methodology, Scope 1, 2 &amp; 3 Emissions</p>
-    <p>${data.periodLabel} &nbsp;|&nbsp; ${fmt(data.periodStart)} – ${fmt(data.periodEnd)}</p>
+    <p>${esc(data.periodLabel)} &nbsp;|&nbsp; ${fmt(data.periodStart)} – ${fmt(data.periodEnd)}</p>
     <span class="badge">CDP CLIMATE CHANGE · FULL DISCLOSURE</span>
   </div>
   <div style="text-align:right;font-size:0.8rem;opacity:0.85;">
-    <p>Responding organisation: <strong>${data.orgName}</strong></p>
+    <p>Responding organisation: <strong>${esc(data.orgName)}</strong></p>
     <p>Snapshot: v${data.snapshotVersion}</p>
     <p>Generated: ${fmt(data.publishedAt)}</p>
-    <p>By: ${data.publishedBy}</p>
+    <p>By: ${esc(data.publishedBy)}</p>
   </div>
 </div>
 
@@ -306,7 +306,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; background: #fff
   </div>
   ${hasBaseline && reductionVsBaseline !== null ? `
   <div class="kpi" style="border-color:${reductionVsBaseline >= 0 ? "#228B22" : "#f59e0b"};">
-    <div class="kpi-label">vs ${data.baselineYear} baseline</div>
+    <div class="kpi-label">vs ${esc(data.baselineYear)} baseline</div>
     <div class="kpi-value" style="color:${reductionVsBaseline >= 0 ? "#228B22" : "#d97706"};">${reductionVsBaseline >= 0 ? "-" : "+"}${Math.abs(reductionVsBaseline).toFixed(1)}%</div>
     <div class="kpi-unit">absolute change</div>
   </div>` : ""}
@@ -334,17 +334,17 @@ body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; background: #fff
   ${c7}
 
   <p style="margin-top:28px;font-size:0.78rem;color:#6b7280;">
-    This document was generated automatically from the published snapshot v${data.snapshotVersion} using ${data.factorLibrary}.
+    This document was generated automatically from the published snapshot v${data.snapshotVersion} using ${esc(data.factorLibrary)}.
     All figures are in metric tonnes of CO₂ equivalent (tCO₂e) using AR6 GWP values.
     CDP submission is made directly through the CDP portal at <em>cdp.net</em>.
-    Data generated: ${fmt(data.publishedAt)} by ${data.publishedBy}.
+    Data generated: ${fmt(data.publishedAt)} by ${esc(data.publishedBy)}.
   </p>
 </div>
 
 <!-- Footer -->
 <div class="footer">
-  <span>${data.orgName} — CDP Climate Change Response — ${data.periodLabel}</span>
-  <span>Snapshot v${data.snapshotVersion} · Generated ${fmt(data.publishedAt)} · ${data.factorLibrary}</span>
+  <span>${esc(data.orgName)} — CDP Climate Change Response — ${esc(data.periodLabel)}</span>
+  <span>Snapshot v${data.snapshotVersion} · Generated ${fmt(data.publishedAt)} · ${esc(data.factorLibrary)}</span>
 </div>
 
 </body>

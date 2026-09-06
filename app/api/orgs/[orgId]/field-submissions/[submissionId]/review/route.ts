@@ -50,7 +50,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     if (body.action === "approved") {
       const emissionCategoryId = body.emissionCategoryId ?? submission.emissionCategoryId;
-      const blocker = approvalBlocker(submission, emissionCategoryId);
+      const resolvedFacilityId = body.facilityId ?? submission.facilityId;
+      const blocker = approvalBlocker(submission, emissionCategoryId, resolvedFacilityId);
       if (blocker) {
         return apiError(blocker.code, blocker.message, 422);
       }

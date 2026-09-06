@@ -108,7 +108,7 @@ describe('Supplier Analytics', () => {
 
   describe('forecastSupplierEmissions', () => {
     it('returns default forecast for supplier with no historical data', async () => {
-      vi.spyOn(prisma, '$queryRawUnsafe').mockResolvedValueOnce([]);
+      vi.spyOn(prisma, '$queryRaw').mockResolvedValueOnce([]);
 
       const forecast = await forecastSupplierEmissions(testOrgId, testSupplierId);
 
@@ -127,7 +127,7 @@ describe('Supplier Analytics', () => {
         { totalSpendGbp: 13000, sameQuarterLastYear: 11000, yoyGrowth: 0.182 },
       ];
 
-      vi.spyOn(prisma, '$queryRawUnsafe').mockResolvedValueOnce(mockData);
+      vi.spyOn(prisma, '$queryRaw').mockResolvedValueOnce(mockData);
 
       const forecast = await forecastSupplierEmissions(testOrgId, testSupplierId, 12);
 
@@ -237,7 +237,7 @@ describe('Supplier Analytics', () => {
       ] as any);
 
       vi.spyOn(prisma.supplierAnalytic, 'findUnique').mockResolvedValueOnce(null);
-      vi.spyOn(prisma, '$queryRawUnsafe').mockResolvedValueOnce([]);
+      vi.spyOn(prisma, '$queryRaw').mockResolvedValueOnce([]);
 
       const mockUpsert = vi.spyOn(prisma.supplierAnalytic, 'upsert').mockResolvedValueOnce({
         id: 'analytics-1',

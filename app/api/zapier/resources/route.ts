@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateZapierConfig } from '@/lib/integrations/zapier';
+import { validateZapierConfig, verifyZapierApiKey, ZapierAuthError } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
@@ -9,12 +9,22 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const resourceType = searchParams.get('type');
     const orgId = searchParams.get('orgId');
+    const apiKey = searchParams.get('apiKey') ?? undefined;
 
     if (!orgId) {
       return NextResponse.json(
         { code: 'INVALID_REQUEST', message: 'Organization ID required' },
         { status: 400 },
       );
+    }
+
+    try {
+      await verifyZapierApiKey(orgId, apiKey);
+    } catch (err) {
+      if (err instanceof ZapierAuthError) {
+        return NextResponse.json({ code: 'UNAUTHORIZED', message: err.message }, { status: 401 });
+      }
+      throw err;
     }
 
     // Verify organization exists

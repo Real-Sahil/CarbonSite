@@ -4,7 +4,7 @@
 // Per-gas breakdown (CO2, CH4, N2O, biogenic CO2)
 // Reference: GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition)
 
-import { brandStyles } from "./shared";
+import { brandStyles, esc } from "./shared";
 
 export interface GhgProtocolCategoryRow {
   code: string;
@@ -82,8 +82,8 @@ const SCOPE3_CATEGORIES: Record<number, string> = {
 
 export function renderGhgProtocolHtml(data: GhgProtocolData): string {
   const logoHtml = data.logoDataUri
-    ? `<img src="${data.logoDataUri}" alt="${data.orgName} logo" style="height:48px;max-width:200px;object-fit:contain;">`
-    : `<span style="font-size:1.1rem;font-weight:700;color:#228B22;">${data.orgName}</span>`;
+    ? `<img src="${esc(data.logoDataUri)}" alt="${esc(data.orgName)} logo" style="height:48px;max-width:200px;object-fit:contain;">`
+    : `<span style="font-size:1.1rem;font-weight:700;color:#228B22;">${esc(data.orgName)}</span>`;
 
   const scope1Pct  = pct(data.scope1Kg, data.totalKg);
   const scope2LPct = pct(data.scope2LocationKg, data.totalKg);
@@ -98,8 +98,8 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
     if (cats.length === 0) return `<tr><td colspan="6" style="padding:12px 14px;color:#9ca3af;font-style:italic;">No data reported for this scope.</td></tr>`;
     return cats.map((c) => `
       <tr>
-        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">${c.name}</td>
-        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;font-family:monospace;">${c.code}</td>
+        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">${esc(c.name)}</td>
+        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;font-family:monospace;">${esc(c.code)}</td>
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.co2Kg != null ? fmtT(c.co2Kg) : "—"}</td>
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.ch4Kg != null ? fmtT(c.ch4Kg) : "—"}</td>
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.n2oKg != null ? fmtT(c.n2oKg) : "—"}</td>
@@ -155,7 +155,7 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GHG Protocol Inventory — ${data.orgName} — ${data.periodLabel}</title>
+<title>GHG Protocol Inventory — ${esc(data.orgName)} — ${esc(data.periodLabel)}</title>
 <style>
 ${brandStyles()}
 body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; background: #fff; font-size: 0.88rem; }
@@ -186,12 +186,12 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
     <div>
       <div>${logoHtml}</div>
       <h1>GHG Protocol Corporate Inventory</h1>
-      <p>Scope 1, 2 &amp; 3 — ${data.periodLabel} &nbsp;|&nbsp; ${fmt(data.periodStart)} – ${fmt(data.periodEnd)}</p>
-      <div class="header-meta">Snapshot v${data.snapshotVersion} · ${data.factorLibrary} · ${data.methodology} (AR6 GWP ${data.gwpVersion}) · ${data.recordCount.toLocaleString("en-GB")} records</div>
+      <p>Scope 1, 2 &amp; 3 — ${esc(data.periodLabel)} &nbsp;|&nbsp; ${fmt(data.periodStart)} – ${fmt(data.periodEnd)}</p>
+      <div class="header-meta">Snapshot v${data.snapshotVersion} · ${esc(data.factorLibrary)} · ${esc(data.methodology)} (AR6 GWP ${esc(data.gwpVersion)}) · ${data.recordCount.toLocaleString("en-GB")} records</div>
     </div>
     <div style="text-align:right;font-size:0.8rem;opacity:0.85;">
       <p>Published: ${fmt(data.publishedAt)}</p>
-      <p>By: ${data.publishedBy}</p>
+      <p>By: ${esc(data.publishedBy)}</p>
     </div>
   </div>
 </div>
@@ -307,7 +307,7 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
   <div style="margin-top:24px;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">
     <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin:0 0 8px;">Reporting Assurance &amp; Limitations</p>
     <p style="font-size:0.8rem;color:#374151;margin:0 0 4px;">
-      This inventory is prepared in accordance with the GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition) and uses ${data.factorLibrary} emission factors with ${data.methodology} (GWP ${data.gwpVersion}).
+      This inventory is prepared in accordance with the GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition) and uses ${esc(data.factorLibrary)} emission factors with ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}).
     </p>
     <p style="font-size:0.8rem;color:#374151;margin:0;">
       Data is sourced from ${data.recordCount.toLocaleString("en-GB")} approved activity records. Immutable calculation snapshot v${data.snapshotVersion} published ${fmt(data.publishedAt)}.
@@ -317,8 +317,8 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
 </div>
 
 <div class="footer">
-  <span>${data.orgName} — GHG Protocol Inventory — ${data.periodLabel}</span>
-  <span>v${data.snapshotVersion} · ${fmt(data.publishedAt)} · ${data.publishedBy} · CarbonSite</span>
+  <span>${esc(data.orgName)} — GHG Protocol Inventory — ${esc(data.periodLabel)}</span>
+  <span>v${data.snapshotVersion} · ${fmt(data.publishedAt)} · ${esc(data.publishedBy)} · CarbonSite</span>
 </div>
 
 </body>

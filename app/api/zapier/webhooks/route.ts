@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { validateZapierConfig, validateZapierSignature } from '@/lib/integrations/zapier';
+import { validateZapierConfig, verifyZapierWebhookSignature, decryptSecret, getZapierIntegration } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
 
 const webhookSchema = z.object({
@@ -14,20 +14,37 @@ export async function POST(req: NextRequest) {
   try {
     validateZapierConfig();
 
-    // Verify signature
     const signature = req.headers.get('x-zapier-signature');
     const rawBody = await req.text();
 
-    if (!signature || !validateZapierSignature(rawBody, signature, process.env.ZAPIER_WEBHOOK_SECRET || '')) {
+    if (!signature) {
+      return NextResponse.json(
+        { code: 'INVALID_SIGNATURE', message: 'Missing signature' },
+        { status: 401 },
+      );
+    }
+
+    // Parse and validate body first so we know which org's own secret to
+    // verify against — a single shared ZAPIER_WEBHOOK_SECRET would let any
+    // org's Zapier connection forge webhooks claiming to be a different org.
+    const body = JSON.parse(rawBody);
+    const webhook = webhookSchema.parse(body);
+
+    const integration = await getZapierIntegration(webhook.organizationId);
+    if (!integration || !integration.enabled) {
+      return NextResponse.json(
+        { code: 'NOT_FOUND', message: 'Zapier integration not configured for this organization' },
+        { status: 404 },
+      );
+    }
+
+    const secret = decryptSecret(integration.encryptedSecret);
+    if (!verifyZapierWebhookSignature(rawBody, signature, secret)) {
       return NextResponse.json(
         { code: 'INVALID_SIGNATURE', message: 'Webhook signature verification failed' },
         { status: 401 },
       );
     }
-
-    // Parse and validate body
-    const body = JSON.parse(rawBody);
-    const webhook = webhookSchema.parse(body);
 
     // Verify organization exists
     const org = await prisma.organization.findUnique({

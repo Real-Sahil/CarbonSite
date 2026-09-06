@@ -84,6 +84,7 @@ export type ApprovalIssue = { code: string; message: string };
 export function approvalBlocker(
   submission: ApprovableSubmission,
   emissionCategoryId: string | null | undefined,
+  facilityId?: string | null,
 ): ApprovalIssue | null {
   // Water meter readings never get an EmissionCategory — water has no GHG
   // Protocol scope, so they promote to a WaterRecord, not an ActivityRecord.
@@ -91,6 +92,15 @@ export function approvalBlocker(
     return {
       code: "MISSING_CATEGORY",
       message: "Assign an emission category before approving this submission.",
+    };
+  }
+  // waste_ticket submissions promote to a WasteRecord, whose facilityId is
+  // NOT NULL — without this check, approval would fail with a raw DB
+  // constraint error instead of a clear reviewer-facing message.
+  if (submission.documentType === "waste_ticket" && !facilityId) {
+    return {
+      code: "MISSING_FACILITY",
+      message: "Assign a facility before approving this waste ticket.",
     };
   }
   const formData = (submission.formData ?? {}) as Record<string, unknown>;
@@ -203,6 +213,12 @@ export async function approveSubmissionInTx(
     // has no room for — linked to the ActivityRecord this same submission
     // just created so its CO2e already flows through the normal engine.
     if (submission.documentType === "waste_ticket") {
+      // approvalBlocker() must have already rejected any waste_ticket
+      // submission with no resolvable facility — WasteRecord.facilityId is
+      // NOT NULL, so this would otherwise fail as a raw DB constraint error.
+      if (!facilityId) {
+        throw new Error("Cannot approve a waste_ticket submission with no facility assigned.");
+      }
       const weightTonnes = convertBetween(amount, unit, "kg") != null ? convertBetween(amount, unit, "kg")! / 1000 : amount;
       await tx.wasteRecord.create({
         data: {

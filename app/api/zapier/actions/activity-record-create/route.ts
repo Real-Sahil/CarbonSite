@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { validateZapierConfig } from '@/lib/integrations/zapier';
+import { validateZapierConfig, verifyZapierApiKey, ZapierAuthError } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
 import { writeAuditLog } from '@/lib/db/audit';
 import { normalizeUnit } from '@/lib/calculation/units';
 
 const createActivityRecordSchema = z.object({
   organizationId: z.string().min(1),
+  apiKey: z.string().min(1),
   quantity: z.number().min(0),
   unit: z.string().min(1),
   category: z.string().min(1),
@@ -22,6 +23,18 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const input = createActivityRecordSchema.parse(body);
+
+    // This endpoint has no session/cookie — it's called by Zapier's
+    // servers, not a logged-in browser — so the API key is the only thing
+    // authenticating the caller to this org.
+    try {
+      await verifyZapierApiKey(input.organizationId, input.apiKey);
+    } catch (err) {
+      if (err instanceof ZapierAuthError) {
+        return NextResponse.json({ code: 'UNAUTHORIZED', message: err.message }, { status: 401 });
+      }
+      throw err;
+    }
 
     // Verify organization exists
     const org = await prisma.organization.findUnique({

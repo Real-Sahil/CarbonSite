@@ -33,18 +33,18 @@ export async function getSupplierTrends(
   supplierId: string,
   monthsBack: number = 24
 ): Promise<SupplierTrend[]> {
-  const query = `
+  return prisma.$queryRaw<SupplierTrend[]>`
     WITH supplier_monthly AS (
       SELECT
-        '${supplierId}'::text as supplier_id,
+        ${supplierId}::text as supplier_id,
         DATE_TRUNC('month', ar.activity_date)::date as month,
         SUM(ec.total_co2e_kg) / 1000 as monthly_co2e,
         COUNT(*) as record_count
       FROM activity_records ar
       JOIN emission_calculations ec ON ar.id = ec.activity_record_id
-      WHERE ar.organization_id = '${organizationId}'
-        AND ar.supplier_id = '${supplierId}'
-        AND ar.activity_date >= NOW() - INTERVAL '${monthsBack} months'
+      WHERE ar.organization_id = ${organizationId}
+        AND ar.supplier_id = ${supplierId}
+        AND ar.activity_date >= NOW() - make_interval(months => ${monthsBack})
       GROUP BY DATE_TRUNC('month', ar.activity_date)
     )
     SELECT
@@ -69,9 +69,6 @@ export async function getSupplierTrends(
     FROM supplier_monthly
     ORDER BY month DESC;
   `;
-
-  const result = await prisma.$queryRawUnsafe<SupplierTrend[]>(query);
-  return result;
 }
 
 /**
@@ -81,9 +78,9 @@ export async function getFacilityVolatility(
   organizationId: string,
   facilityId: string
 ): Promise<FacilityVolatility[]> {
-  const query = `
+  return prisma.$queryRaw<FacilityVolatility[]>`
     SELECT
-      '${facilityId}'::text as facility_id,
+      ${facilityId}::text as facility_id,
       DATE_TRUNC('month', ar.activity_date)::date as month,
       ROUND(
         (
@@ -103,13 +100,10 @@ export async function getFacilityVolatility(
       ) as p95_co2e
     FROM activity_records ar
     JOIN emission_calculations ec ON ar.id = ec.activity_record_id
-    WHERE ar.organization_id = '${organizationId}'
-      AND ar.facility_id = '${facilityId}'
+    WHERE ar.organization_id = ${organizationId}
+      AND ar.facility_id = ${facilityId}
     ORDER BY month DESC;
   `;
-
-  const result = await prisma.$queryRawUnsafe<FacilityVolatility[]>(query);
-  return result;
 }
 
 /**
@@ -119,9 +113,9 @@ export async function getScope3Growth(
   organizationId: string,
   supplierId: string
 ): Promise<Scope3Growth[]> {
-  const query = `
+  return prisma.$queryRaw<Scope3Growth[]>`
     SELECT
-      '${supplierId}'::text as supplier_id,
+      ${supplierId}::text as supplier_id,
       DATE_TRUNC('quarter', ar.activity_date)::date as quarter,
       EXTRACT(YEAR FROM ar.activity_date)::int as year,
       ROUND(SUM(CAST(ar.normalized_amount AS numeric)), 2) as total_spend_gbp,
@@ -147,17 +141,14 @@ export async function getScope3Growth(
         4
       ) as yoy_growth
     FROM activity_records ar
-    WHERE ar.organization_id = '${organizationId}'
-      AND ar.supplier_id = '${supplierId}'
+    WHERE ar.organization_id = ${organizationId}
+      AND ar.supplier_id = ${supplierId}
       AND ar.emission_category_id LIKE 's3-%'
     GROUP BY
       DATE_TRUNC('quarter', ar.activity_date),
       EXTRACT(YEAR FROM ar.activity_date)
     ORDER BY year DESC, quarter DESC;
   `;
-
-  const result = await prisma.$queryRawUnsafe<Scope3Growth[]>(query);
-  return result;
 }
 
 /**
@@ -167,7 +158,9 @@ export async function getOrgEmissionsTrend(
   organizationId: string,
   monthsBack: number = 24
 ): Promise<Array<{ month: Date; totalCo2e: number; scope1: number; scope2: number; scope3: number }>> {
-  const query = `
+  return prisma.$queryRaw<
+    Array<{ month: Date; totalCo2e: number; scope1: number; scope2: number; scope3: number }>
+  >`
     WITH monthly_emissions AS (
       SELECT
         DATE_TRUNC('month', ar.activity_date)::date as month,
@@ -180,8 +173,8 @@ export async function getOrgEmissionsTrend(
         SUM(ec.total_co2e_kg) / 1000 as co2e
       FROM activity_records ar
       JOIN emission_calculations ec ON ar.id = ec.activity_record_id
-      WHERE ar.organization_id = '${organizationId}'
-        AND ar.activity_date >= NOW() - INTERVAL '${monthsBack} months'
+      WHERE ar.organization_id = ${organizationId}
+        AND ar.activity_date >= NOW() - make_interval(months => ${monthsBack})
       GROUP BY
         DATE_TRUNC('month', ar.activity_date),
         CASE
@@ -201,11 +194,6 @@ export async function getOrgEmissionsTrend(
     GROUP BY month
     ORDER BY month DESC;
   `;
-
-  const result = await prisma.$queryRawUnsafe<
-    Array<{ month: Date; totalCo2e: number; scope1: number; scope2: number; scope3: number }>
-  >(query);
-  return result;
 }
 
 /**
@@ -224,7 +212,15 @@ export async function getTopSuppliersByEmissions(
     trend: string;
   }>
 > {
-  const query = `
+  return prisma.$queryRaw<
+    Array<{
+      supplierId: string;
+      supplierName: string;
+      totalCo2e: number;
+      submissionCount: number;
+      trend: string;
+    }>
+  >`
     SELECT
       ar.supplier_id as supplier_id,
       'Supplier ' || ar.supplier_id as supplier_name,
@@ -239,24 +235,13 @@ export async function getTopSuppliersByEmissions(
       END as trend
     FROM activity_records ar
     JOIN emission_calculations ec ON ar.id = ec.activity_record_id
-    WHERE ar.organization_id = '${organizationId}'
-      AND ar.activity_date >= NOW() - INTERVAL '${monthsBack} months'
+    WHERE ar.organization_id = ${organizationId}
+      AND ar.activity_date >= NOW() - make_interval(months => ${monthsBack})
       AND ar.supplier_id IS NOT NULL
     GROUP BY ar.supplier_id
     ORDER BY total_co2e DESC
     LIMIT ${limit};
   `;
-
-  const result = await prisma.$queryRawUnsafe<
-    Array<{
-      supplierId: string;
-      supplierName: string;
-      totalCo2e: number;
-      submissionCount: number;
-      trend: string;
-    }>
-  >(query);
-  return result;
 }
 
 /**
@@ -275,7 +260,15 @@ export async function detectFacilityAnomalies(
     severity: string;
   }>
 > {
-  const query = `
+  return prisma.$queryRaw<
+    Array<{
+      activityRecordId: string;
+      date: Date;
+      value: number;
+      expectedValue: number;
+      severity: string;
+    }>
+  >`
     WITH facility_stats AS (
       SELECT
         ar.facility_id,
@@ -283,8 +276,8 @@ export async function detectFacilityAnomalies(
         STDDEV_POP(ec.total_co2e_kg) as stddev_value
       FROM activity_records ar
       JOIN emission_calculations ec ON ar.id = ec.activity_record_id
-      WHERE ar.organization_id = '${organizationId}'
-        AND ar.facility_id = '${facilityId}'
+      WHERE ar.organization_id = ${organizationId}
+        AND ar.facility_id = ${facilityId}
       GROUP BY ar.facility_id
     ),
     anomaly_detection AS (
@@ -297,8 +290,8 @@ export async function detectFacilityAnomalies(
       FROM activity_records ar
       JOIN emission_calculations ec ON ar.id = ec.activity_record_id
       JOIN facility_stats fs ON ar.facility_id = fs.facility_id
-      WHERE ar.organization_id = '${organizationId}'
-        AND ar.facility_id = '${facilityId}'
+      WHERE ar.organization_id = ${organizationId}
+        AND ar.facility_id = ${facilityId}
     )
     SELECT
       activity_record_id,
@@ -315,15 +308,4 @@ export async function detectFacilityAnomalies(
     WHERE z_score > 2
     ORDER BY z_score DESC;
   `;
-
-  const result = await prisma.$queryRawUnsafe<
-    Array<{
-      activityRecordId: string;
-      date: Date;
-      value: number;
-      expectedValue: number;
-      severity: string;
-    }>
-  >(query);
-  return result;
 }

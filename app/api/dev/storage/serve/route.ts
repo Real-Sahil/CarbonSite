@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getObjectBuffer, isValidStorageKey } from "@/lib/storage";
 import { verifyStorageSignature } from "@/lib/storage/signing";
+import { requireSession } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 export async function GET(req: NextRequest) {
@@ -10,6 +11,11 @@ export async function GET(req: NextRequest) {
     if (process.env.NODE_ENV === "production" || process.env.STORAGE_DRIVER !== "local") {
       return apiError("NOT_FOUND", "Local storage route is disabled.", 404);
     }
+    // FIND-004: require auth even in dev, matching the upload route —
+    // relying on the signature alone means anyone who can reach a shared
+    // staging environment could serve any file whose signature they guessed
+    // or replayed.
+    await requireSession();
 
     const key = req.nextUrl.searchParams.get("key") ?? "";
     const exp = Number(req.nextUrl.searchParams.get("exp"));

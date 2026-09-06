@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { validateZapierConfig } from '@/lib/integrations/zapier';
+import { validateZapierConfig, verifyZapierApiKey, ZapierAuthError } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
 import { writeAuditLog } from '@/lib/db/audit';
 
 const createSupplierSchema = z.object({
   organizationId: z.string().min(1),
+  apiKey: z.string().min(1),
   email: z.string().email(),
   name: z.string().min(1),
   company: z.string().optional(),
@@ -17,6 +18,19 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const input = createSupplierSchema.parse(body);
+
+    // This endpoint creates a real User + OrganizationMembership from an
+    // unauthenticated-looking request — it MUST verify the caller holds
+    // this org's Zapier credential before doing anything, or anyone on the
+    // internet could provision themselves an account in any org.
+    try {
+      await verifyZapierApiKey(input.organizationId, input.apiKey);
+    } catch (err) {
+      if (err instanceof ZapierAuthError) {
+        return NextResponse.json({ code: 'UNAUTHORIZED', message: err.message }, { status: 401 });
+      }
+      throw err;
+    }
 
     // Verify organization exists
     const org = await prisma.organization.findUnique({

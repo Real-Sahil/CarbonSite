@@ -3,9 +3,17 @@ import crypto from 'crypto';
 
 const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
 
+function getEncryptionKey(): Buffer {
+  const key = process.env.ZAPIER_ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error('ZAPIER_ENCRYPTION_KEY must be set — refusing to encrypt/decrypt with an insecure default.');
+  }
+  return Buffer.from(key, 'utf-8').slice(0, 32);
+}
+
 export function encryptSecret(secret: string): string {
   const iv = crypto.randomBytes(12);
-  const key = Buffer.from(process.env.ZAPIER_ENCRYPTION_KEY || 'default-dev-key-32-chars-needed!!', 'utf-8').slice(0, 32);
+  const key = getEncryptionKey();
   const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, key, iv);
 
   let encrypted = cipher.update(secret, 'utf8', 'hex');
@@ -19,7 +27,7 @@ export function decryptSecret(encryptedSecret: string): string {
   const [ivHex, authTagHex, encrypted] = encryptedSecret.split(':');
   const iv = Buffer.from(ivHex, 'hex');
   const authTag = Buffer.from(authTagHex, 'hex');
-  const key = Buffer.from(process.env.ZAPIER_ENCRYPTION_KEY || 'default-dev-key-32-chars-needed!!', 'utf-8').slice(0, 32);
+  const key = getEncryptionKey();
 
   const decipher = crypto.createDecipheriv(ENCRYPTION_ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
@@ -74,7 +82,11 @@ export function verifyZapierWebhookSignature(
   const hmac = crypto.createHmac('sha256', secret);
   hmac.update(payload);
   const computed = hmac.digest('base64');
-  return computed === signature;
+
+  const computedBuf = Buffer.from(computed, 'utf8');
+  const signatureBuf = Buffer.from(signature, 'utf8');
+  if (computedBuf.length !== signatureBuf.length) return false;
+  return crypto.timingSafeEqual(computedBuf, signatureBuf);
 }
 
 export async function logZapierWebhookActivity(
@@ -171,6 +183,38 @@ export function extractOrgIdFromBundle(bundle: { authData?: { orgId?: string } }
   return orgId;
 }
 
-export function validateZapierSignature(signature: string, payload: string, secret: string): boolean {
-  return verifyZapierWebhookSignature(payload, signature, secret);
+export class ZapierAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ZapierAuthError';
+  }
+}
+
+/**
+ * Verifies that `apiKey` is the credential on file for `organizationId`'s
+ * ZapierIntegration. Every /api/zapier/actions/* and /api/zapier/auth/*
+ * route MUST call this before touching any org data — these endpoints have
+ * no session/cookie auth (they're called by Zapier's servers, not a
+ * logged-in browser), so this is the only thing standing between them and
+ * an anonymous caller who supplies an arbitrary organizationId.
+ */
+export async function verifyZapierApiKey(organizationId: string, apiKey: string | undefined) {
+  if (!apiKey) {
+    throw new ZapierAuthError('Missing API key');
+  }
+
+  const integration = await prisma.zapierIntegration.findUnique({ where: { organizationId } });
+  if (!integration || !integration.enabled) {
+    throw new ZapierAuthError('No active Zapier integration for this organization');
+  }
+
+  const expected = decryptSecret(integration.encryptedSecret);
+  const expectedBuf = Buffer.from(expected, 'utf8');
+  const providedBuf = Buffer.from(apiKey, 'utf8');
+  const valid = expectedBuf.length === providedBuf.length && crypto.timingSafeEqual(expectedBuf, providedBuf);
+  if (!valid) {
+    throw new ZapierAuthError('Invalid API key');
+  }
+
+  return integration;
 }
