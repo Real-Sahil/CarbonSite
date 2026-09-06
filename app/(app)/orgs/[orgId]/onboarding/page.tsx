@@ -42,7 +42,7 @@ const STEP_DEFS: StepDef[] = [
     detail:
       "This ensures emission factors are matched correctly and reports use the right regional standards.",
     icon: Building2,
-    href: (orgId) => `/orgs/${orgId}/settings`,
+    href: (orgId) => `/orgs/${orgId}/settings/operations`,
     cta: "Go to settings",
   },
   {
@@ -62,7 +62,7 @@ const STEP_DEFS: StepDef[] = [
     detail:
       "All activity records and calculations are scoped to a reporting period. Create one before importing data.",
     icon: CalendarRange,
-    href: (orgId) => `/orgs/${orgId}/settings/periods`,
+    href: (orgId) => `/orgs/${orgId}/settings/operations`,
     cta: "Create period",
   },
   {

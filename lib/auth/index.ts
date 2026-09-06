@@ -31,11 +31,12 @@ const roleMapping = process.env.OIDC_ROLE_MAPPING
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   secret:
-    process.env.BETTER_AUTH_SECRET ??
+    process.env.BETTER_AUTH_SECRET ||
     (isNextBuild ? "carbonsite-build-time-secret-not-used-at-runtime" : undefined),
   baseURL:
-    process.env.BETTER_AUTH_URL ??
+    process.env.BETTER_AUTH_URL ||
     (isNextBuild ? "http://localhost:3000" : undefined),
+  trustHost: true,
   emailAndPassword: {
     enabled: true,
     requireEmailVerification,
