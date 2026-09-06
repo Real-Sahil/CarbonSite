@@ -7,12 +7,17 @@ const isNextBuild = process.env.NEXT_PHASE === "phase-production-build";
 // Email verification disabled until a sending domain is configured.
 // Re-enable by setting BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=true once Resend is set up.
 const requireEmailVerification = false;
+// Build trusted origins from env vars. VERCEL_URL is injected automatically
+// by Vercel at runtime (no https:// prefix, so we add it). When the list is
+// empty we omit it entirely so that trustHost:true can derive the origin from
+// the incoming request host — passing an empty array would block all origins.
 const trustedOrigins = Array.from(
   new Set(
     [
       ...(process.env.TRUSTED_ORIGINS?.split(",") ?? []),
       process.env.NEXT_PUBLIC_APP_URL,
       process.env.BETTER_AUTH_URL,
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
     ]
       .map((origin) => origin?.trim())
       .filter((origin): origin is string => Boolean(origin)),
@@ -96,7 +101,9 @@ export const auth = betterAuth({
       httpOnly: true,
     },
   },
-  trustedOrigins,
+  // Only set trustedOrigins when non-empty. An empty array blocks all origins;
+  // omitting it lets trustHost:true derive the origin from the request host.
+  ...(trustedOrigins.length > 0 ? { trustedOrigins } : {}),
   ...(Object.keys(oidcConfig).length > 0 ? oidcConfig : {}),
 });
 
