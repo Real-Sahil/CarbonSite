@@ -57,7 +57,7 @@ jobs:
       ROUTING_PROVIDER: none
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -109,7 +109,7 @@ jobs:
       PLAYWRIGHT_BASE_URL: ${{ vars.METRICORA_API_BASE_URL || 'https://metricora-rosy.vercel.app' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 22
