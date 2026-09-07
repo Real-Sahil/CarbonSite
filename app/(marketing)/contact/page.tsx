@@ -5,6 +5,7 @@ import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { VideoBackground } from "@/components/ui/video-background";
 import { ArrowUpRight, Mail, Building2, FileText, MapPin } from "lucide-react";
+import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
   title: "Contact - MetricOra",
@@ -116,6 +117,40 @@ export default function ContactPage() {
         </div>
       </section>
 
+      {/* Contact form */}
+      <section className="bg-white border-b border-[#E2E8F0]">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-16 items-start">
+            <AnimateIn>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-6 h-px bg-[#06B6D4]" />
+                <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">Get in touch</span>
+              </div>
+              <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-4">
+                Start your pilot request.
+              </h2>
+              <p className="text-sm text-[#64748B] max-w-[48ch] leading-relaxed mb-8">
+                Describe your project and we'll plan a pilot around your actual operational data. We typically respond within one business day.
+              </p>
+              <div className="flex items-center gap-3">
+                <a
+                  href="mailto:hello@metricora.co.uk"
+                  className="inline-flex items-center gap-2 text-sm text-[#64748B] hover:text-[#0F172A] transition-colors"
+                >
+                  <Mail className="h-4 w-4" />
+                  hello@metricora.co.uk
+                </a>
+              </div>
+            </AnimateIn>
+            <AnimateIn>
+              <div className="bg-[#F5F4F0] rounded-xl p-8">
+                <ContactForm />
+              </div>
+            </AnimateIn>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="bg-[#F5F4F0]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 text-center">
@@ -124,15 +159,15 @@ export default function ContactPage() {
               Ready to start your pilot?
             </h2>
             <p className="text-sm text-[#64748B] mb-8 max-w-[45ch] mx-auto">
-              Email the pilot team with your project scope or create a free workspace to start exploring.
+              Fill in the form above or create a free workspace to start exploring.
             </p>
-            <a
-              href="mailto:hello@metricora.co.uk?subject=MetricOra%20pilot%20request"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#111827] text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+            <Link
+              href="/sign-up"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#111827] text-sm font-medium hover:bg-[#1A1A18] hover:text-white transition-colors active:scale-[0.97]"
             >
-              Get in touch
+              Create workspace
               <ArrowUpRight className="h-3.5 w-3.5" />
-            </a>
+            </Link>
           </AnimateIn>
         </div>
       </section>

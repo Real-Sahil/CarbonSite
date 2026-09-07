@@ -96,6 +96,10 @@ export const createInviteLinkSchema = z.object({
     (value) => (value === "" || value === null ? undefined : value),
     z.string().min(1).optional(),
   ),
+  email: z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    z.string().email().optional(),
+  ),
 });
 
 export const acceptInviteSchema = z.object({
