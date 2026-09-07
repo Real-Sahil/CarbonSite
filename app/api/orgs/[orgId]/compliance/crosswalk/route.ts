@@ -35,38 +35,42 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     const overrideByDatapoint = new Map(overrides.map((o) => [o.datapointId, o]));
 
-    const results = await Promise.all(
-      datapoints.map(async (dp) => {
-        const override = overrideByDatapoint.get(dp.id);
+    // Sequential to avoid a burst of 50+ parallel DB connections per request.
+    const results: Array<typeof datapoints[number] & {
+      status: string;
+      evidenceSummary: string;
+      source: "automatic" | "manual";
+      manualOverride: { status: string; evidenceSummary: string | null; recordedBy: { name: string | null; email: string } | null } | null;
+    }> = [];
+    for (const dp of datapoints) {
+      const override = overrideByDatapoint.get(dp.id);
 
-        if (dp.resolverKey) {
-          const resolved = await runResolver(dp.resolverKey, orgId, prisma);
-          if (resolved) {
-            return {
-              ...dp,
-              status: resolved.status,
-              evidenceSummary: resolved.evidenceSummary,
-              source: "automatic" as const,
-              manualOverride: override
-                ? { status: override.status, evidenceSummary: override.evidenceSummary, recordedBy: override.recordedBy }
-                : null,
-            };
-          }
+      if (dp.resolverKey) {
+        const resolved = await runResolver(dp.resolverKey, orgId, prisma);
+        if (resolved) {
+          results.push({
+            ...dp,
+            status: resolved.status,
+            evidenceSummary: resolved.evidenceSummary,
+            source: "automatic" as const,
+            manualOverride: override
+              ? { status: override.status, evidenceSummary: override.evidenceSummary, recordedBy: override.recordedBy }
+              : null,
+          });
+          continue;
         }
+      }
 
-        // Narrative datapoint, or a resolver key that no longer exists: fall
-        // back to whatever a human has recorded, defaulting to a gap.
-        return {
-          ...dp,
-          status: override?.status ?? "gap",
-          evidenceSummary: override?.evidenceSummary ?? "No evidence recorded. This disclosure needs a manual entry.",
-          source: "manual" as const,
-          manualOverride: override
-            ? { status: override.status, evidenceSummary: override.evidenceSummary, recordedBy: override.recordedBy }
-            : null,
-        };
-      }),
-    );
+      results.push({
+        ...dp,
+        status: override?.status ?? "gap",
+        evidenceSummary: override?.evidenceSummary ?? "No evidence recorded. This disclosure needs a manual entry.",
+        source: "manual" as const,
+        manualOverride: override
+          ? { status: override.status, evidenceSummary: override.evidenceSummary, recordedBy: override.recordedBy }
+          : null,
+      });
+    }
 
     const byFramework = new Map<string, typeof results>();
     for (const r of results) {

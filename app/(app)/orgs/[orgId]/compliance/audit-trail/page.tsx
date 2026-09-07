@@ -65,6 +65,7 @@ export default function AuditTrailPage() {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
   const limit = 50;
   const [filters, setFilters] = useState({
@@ -75,6 +76,7 @@ export default function AuditTrailPage() {
   useEffect(() => {
     const loadLogs = async () => {
       setLoading(true);
+      setFetchError(null);
       try {
         const params = new URLSearchParams({
           limit: limit.toString(),
@@ -84,11 +86,17 @@ export default function AuditTrailPage() {
         });
 
         const response = await fetch(`/api/orgs/${orgId}/audit-logs?${params}`);
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          setFetchError(err?.message ?? `Server error (${response.status})`);
+          return;
+        }
         const data: PaginatedResponse = await response.json();
         setLogs(data.data);
         setTotal(data.pagination.total);
       } catch (error) {
         console.error("Failed to fetch audit logs:", error);
+        setFetchError("Could not reach the server. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -108,6 +116,12 @@ export default function AuditTrailPage() {
           Complete record of all actions and changes in your organization.
         </p>
       </div>
+
+      {fetchError && (
+        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          Failed to load audit logs: {fetchError}
+        </div>
+      )}
 
       <Card>
         <CardHeader>

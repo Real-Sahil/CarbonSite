@@ -53,44 +53,58 @@ export default async function CrosswalkPage({ params }: PageProps) {
 
   const overrideByDatapoint = new Map(overrides.map((o) => [o.datapointId, o]));
 
-  const results = await Promise.all(
-    datapoints.map(async (dp) => {
-      const override = overrideByDatapoint.get(dp.id);
+  // Run resolvers sequentially to avoid a burst of 50+ parallel DB connections
+  // that exhausts Supabase's 15-slot session-mode pool.
+  const results: Array<{
+    id: string;
+    framework: string;
+    code: string;
+    title: string;
+    description: string | null;
+    category: string | null;
+    resolverKey: string | null;
+    status: string;
+    evidenceSummary: string;
+    source: "automatic" | "manual";
+    manualEvidenceSummary: string | null;
+  }> = [];
+  for (const dp of datapoints) {
+    const override = overrideByDatapoint.get(dp.id);
 
-      if (dp.resolverKey) {
-        const resolved = await runResolver(dp.resolverKey, orgId, prisma);
-        if (resolved) {
-          return {
-            id: dp.id,
-            framework: dp.framework,
-            code: dp.code,
-            title: dp.title,
-            description: dp.description,
-            category: dp.category,
-            resolverKey: dp.resolverKey,
-            status: resolved.status,
-            evidenceSummary: resolved.evidenceSummary,
-            source: "automatic" as const,
-            manualEvidenceSummary: override?.evidenceSummary ?? null,
-          };
-        }
+    if (dp.resolverKey) {
+      const resolved = await runResolver(dp.resolverKey, orgId, prisma);
+      if (resolved) {
+        results.push({
+          id: dp.id,
+          framework: dp.framework,
+          code: dp.code,
+          title: dp.title,
+          description: dp.description,
+          category: dp.category,
+          resolverKey: dp.resolverKey,
+          status: resolved.status,
+          evidenceSummary: resolved.evidenceSummary,
+          source: "automatic" as const,
+          manualEvidenceSummary: override?.evidenceSummary ?? null,
+        });
+        continue;
       }
+    }
 
-      return {
-        id: dp.id,
-        framework: dp.framework,
-        code: dp.code,
-        title: dp.title,
-        description: dp.description,
-        category: dp.category,
-        resolverKey: dp.resolverKey,
-        status: override?.status ?? "gap",
-        evidenceSummary: override?.evidenceSummary ?? "No evidence recorded. This disclosure needs a manual entry.",
-        source: "manual" as const,
-        manualEvidenceSummary: override?.evidenceSummary ?? null,
-      };
-    }),
-  );
+    results.push({
+      id: dp.id,
+      framework: dp.framework,
+      code: dp.code,
+      title: dp.title,
+      description: dp.description,
+      category: dp.category,
+      resolverKey: dp.resolverKey,
+      status: override?.status ?? "gap",
+      evidenceSummary: override?.evidenceSummary ?? "No evidence recorded. This disclosure needs a manual entry.",
+      source: "manual" as const,
+      manualEvidenceSummary: override?.evidenceSummary ?? null,
+    });
+  }
 
   const byFramework = new Map<string, typeof results>();
   for (const r of results) {
