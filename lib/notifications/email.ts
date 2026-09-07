@@ -5,7 +5,7 @@ import { notificationLogger } from "@/lib/logger";
 
 const DRIVER =
   process.env.EMAIL_DRIVER ??
-  (process.env.SMTP_HOST ? "smtp" : process.env.RESEND_API_KEY ? "resend" : "console");
+  (process.env.RESEND_API_KEY ? "resend" : process.env.SMTP_HOST ? "smtp" : "console");
 const FROM = process.env.EMAIL_FROM ?? "MetricOra <noreply@metricora.co.uk>";
 
 export type TransactionalEmailPayload = {

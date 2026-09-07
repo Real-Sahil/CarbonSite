@@ -680,7 +680,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         by: ["metricType"],
         where: { organizationId: orgId, reportingPeriodId: currentPeriod.id, snapshotId: null },
         _sum: { totalValue: true },
-      })
+      }).catch(() => [])
     : [];
   const environmentalTotals = Object.fromEntries(
     environmentalAggregates.map((row) => [row.metricType, Number(row._sum.totalValue ?? 0)]),
