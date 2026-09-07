@@ -274,7 +274,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                             </div>
                           </TableCell>
                           <TableCell className="text-sm text-[#9CA3AF] py-3.5">
-                            {run.triggeredBy.name ?? run.triggeredBy.email}
+                            {run.triggeredBy ? (run.triggeredBy.name ?? run.triggeredBy.email) : "System"}
                           </TableCell>
                           <TableCell className="text-sm text-[#9CA3AF] py-3.5 tabular-nums">
                             {formatTimestamp(run.startedAt)}

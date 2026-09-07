@@ -513,12 +513,15 @@ async function processOneChunk(calculationRunId: string, orgId: string): Promise
   }
 
   // Feature 4: Auto-create supplier data requests for high-uncertainty Scope 3 records
-  await autoCreateSupplierDataRequests(
-    orgId,
-    run.reportingPeriodId,
-    calculationRunId,
-    run.triggeredByUserId,
-  );
+  // Skip when run was triggered by the cron scheduler (no user to attribute the requests to).
+  if (run.triggeredByUserId) {
+    await autoCreateSupplierDataRequests(
+      orgId,
+      run.reportingPeriodId,
+      calculationRunId,
+      run.triggeredByUserId,
+    );
+  }
 
   await prisma.calculationRun.update({
     where: { id: calculationRunId },

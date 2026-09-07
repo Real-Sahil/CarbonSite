@@ -224,7 +224,13 @@ export type AuditAction =
   | "subcontractor_submission.rejected"
   | "whole_life_carbon.assessment_set"
   | "completeness.requirement_set"
-  | "completeness.requirement_deleted";
+  | "completeness.requirement_deleted"
+  | "calculation.schedule_triggered"
+  | "calculation.schedule_manually_triggered"
+  | "report.signature_request_created"
+  | "report.signature_signed"
+  | "report.signature_declined"
+  | "report.signature_expired";
 
 export async function writeAuditLog(params: {
   organizationId: string;

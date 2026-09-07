@@ -41,6 +41,7 @@ model User {
   snapshots                         PublishedSnapshot[]
   dsarRequestsAsSubject             DsarRequest[]                @relation("DsarSubject")
   dsarRequestsCreated               DsarRequest[]                @relation("DsarRequestedBy")
+  signatureRequestsCreated          DocumentSignatureRequest[]   @relation("SignatureRequestsCreated")
   targets                           ReductionTarget[]
   ownedInitiatives                  ReductionInitiative[]        @relation("InitiativeOwner")
   createdInitiatives                ReductionInitiative[]        @relation("InitiativeCreator")
@@ -236,6 +237,7 @@ model Organization {
   projectRoleAssignments      ProjectRoleAssignment[]
   snapshotAssurances          SnapshotAssurance[]
   reportVerificationTokens    ReportVerificationToken[]
+  signatureRequests           DocumentSignatureRequest[]
   apiDataSources              ApiDataSource[]
   supplierTags                SupplierTag[]
   supplierCategoryAssignments SupplierCategoryAssignment[]
@@ -1138,7 +1140,7 @@ model CalculationRun {
   reportingPeriodId    String               @map("reporting_period_id")
   methodologyVersionId String               @map("methodology_version_id")
   factorLibraryId      String               @map("factor_library_id")
-  triggeredByUserId    String               @map("triggered_by_user_id")
+  triggeredByUserId    String?              @map("triggered_by_user_id")
   status               CalculationRunStatus @default(queued)
   triggerHash          String?              @unique @map("trigger_hash")
   startedAt            DateTime?            @map("started_at")
@@ -1171,7 +1173,7 @@ model CalculationRun {
   reportingPeriod    ReportingPeriod       @relation(fields: [reportingPeriodId], references: [id])
   methodologyVersion MethodologyVersion    @relation(fields: [methodologyVersionId], references: [id])
   factorLibrary      FactorLibrary         @relation(fields: [factorLibraryId], references: [id])
-  triggeredBy        User                  @relation(fields: [triggeredByUserId], references: [id])
+  triggeredBy        User?                 @relation(fields: [triggeredByUserId], references: [id])
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
@@ -1614,7 +1616,8 @@ model Report {
   createdBy       User              @relation(fields: [createdByUserId], references: [id])
   contract        Contract?         @relation("ContractReports", fields: [contractId], references: [id], onDelete: SetNull)
 
-  verificationTokens ReportVerificationToken[]
+  verificationTokens  ReportVerificationToken[]
+  signatureRequests   DocumentSignatureRequest[]
 
   @@index([organizationId, reportingPeriodId, status])
   @@map("reports")
@@ -1636,6 +1639,42 @@ model ReportVerificationToken {
   @@unique([reportId])
   @@index([organizationId, expiresAt])
   @@map("report_verification_tokens")
+}
+
+// ─── DocuSeal: digital signing for audit packages ────────────────────────────
+
+enum SignatureRequestStatus {
+  pending
+  sent
+  signed
+  declined
+  expired
+
+  @@map("signature_request_status")
+}
+
+model DocumentSignatureRequest {
+  id                    String                 @id @default(cuid())
+  organizationId        String                 @map("organization_id")
+  reportId              String                 @map("report_id")
+  status                SignatureRequestStatus  @default(pending)
+  signatoryEmail        String                 @map("signatory_email")
+  signatoryName         String                 @map("signatory_name")
+  docusealSubmissionId  Int?                   @map("docuseal_submission_id")
+  docusealSigningUrl    String?                @map("docuseal_signing_url")
+  signedAt              DateTime?              @map("signed_at")
+  declinedAt            DateTime?              @map("declined_at")
+  requestedByUserId     String                 @map("requested_by_user_id")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  report         Report       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  requestedBy    User         @relation("SignatureRequestsCreated", fields: [requestedByUserId], references: [id])
+
+  @@index([organizationId, reportId])
+  @@index([docusealSubmissionId])
+  @@map("document_signature_requests")
 }
 
 // ─── Collaboration & Audit ────────────────────────────────────────────────────

@@ -245,7 +245,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
 
       <Card className="mb-6">
         <CardContent className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-5">
-          <MetaItem label="Triggered by" value={run.triggeredBy.name ?? run.triggeredBy.email} />
+          <MetaItem label="Triggered by" value={run.triggeredBy ? (run.triggeredBy.name ?? run.triggeredBy.email) : "System (scheduled)"} />
           <MetaItem label="Started" value={formatTimestamp(run.startedAt)} />
           <MetaItem label="Finished" value={formatTimestamp(run.finishedAt)} />
           <MetaItem
