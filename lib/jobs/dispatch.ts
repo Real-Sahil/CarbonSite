@@ -8,6 +8,8 @@ import {
   enqueueNotification,
   enqueueReport,
   enqueueXeroSync,
+  enqueueSupplierPerformanceUpdate,
+  enqueueCausalAnalysis,
   type CalculationJobData,
   type DsarJobData,
   type ForecastingJobData,
@@ -16,6 +18,8 @@ import {
   type NotificationJobData,
   type ReportJobData,
   type XeroSyncJobData,
+  type SupplierPerformanceJobData,
+  type CausalAnalysisJobData,
 } from "./queues";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -25,6 +29,8 @@ import { processDsarExport } from "@/workers/dsar-export";
 import { processDsarErasure } from "@/workers/dsar-erasure";
 import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
 import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
+import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
+import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
 import { hasFeature, type Plan } from "@/lib/billing/limits";
 import { prisma } from "@/lib/db";
@@ -109,6 +115,26 @@ export async function dispatchInvoiceAnomalyDetection(data: InvoiceAnomalyJobDat
 
   const result = await detectInvoiceAnomalies(data.orgId);
   return { status: "processed" as const, ...result };
+}
+
+export async function dispatchSupplierPerformanceUpdate(data: SupplierPerformanceJobData) {
+  if (mode === "worker") {
+    await enqueueSupplierPerformanceUpdate(data);
+    return "queued" as const;
+  }
+
+  await processSupplierPerformanceUpdate(data.orgId, data.supplierId);
+  return "processed" as const;
+}
+
+export async function dispatchCausalAnalysis(data: CausalAnalysisJobData) {
+  if (mode === "worker") {
+    await enqueueCausalAnalysis(data);
+    return "queued" as const;
+  }
+
+  await processCausalAnalysisRun(data.causalInferenceRunId, data.orgId);
+  return "processed" as const;
 }
 
 export async function dispatchXeroSync(

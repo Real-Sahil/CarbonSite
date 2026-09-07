@@ -127,7 +127,209 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
   }
 }
 
-// ── Email templates (minimal, no external template engine needed) ─────────────
+// ── Branded email layout ──────────────────────────────────────────────────────
+
+const BRAND_GREEN = "#16a34a";
+const BRAND_DARK = "#0f172a";
+const BODY_BG = "#f1f5f9";
+const CARD_BG = "#ffffff";
+const TEXT_MUTED = "#64748b";
+const TEXT_SUBTLE = "#94a3b8";
+const BORDER = "#e2e8f0";
+const ROW_BG = "#f8fafc";
+
+export type OrgBranding = {
+  orgName?: string;
+  orgLogoUrl?: string | null;
+};
+
+function btn(label: string, href: string, color = BRAND_GREEN): string {
+  return `<a href="${href}" style="display:inline-block;background:${color};color:#ffffff;padding:13px 28px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:0.01em;line-height:1;">${label}</a>`;
+}
+
+function kv(label: string, value: string): string {
+  return `<tr>
+    <td style="padding:10px 24px 10px 0;font-size:13px;color:${TEXT_SUBTLE};font-weight:500;white-space:nowrap;vertical-align:top;border-bottom:1px solid ${BORDER};">${label}</td>
+    <td style="padding:10px 0;font-size:13px;font-weight:600;color:${BRAND_DARK};vertical-align:top;border-bottom:1px solid ${BORDER};">${value}</td>
+  </tr>`;
+}
+
+function orgInitialsAvatar(orgName: string): string {
+  const initials = orgName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+  return `<div style="display:inline-block;width:40px;height:40px;background:#dbeafe;border-radius:10px;text-align:center;line-height:40px;font-size:16px;font-weight:700;color:#1d4ed8;vertical-align:middle;">${initials}</div>`;
+}
+
+function emailLayout(bodyHtml: string, branding?: OrgBranding): string {
+  const hasOrgLogo = Boolean(branding?.orgLogoUrl);
+  const hasOrgName = Boolean(branding?.orgName);
+
+  // Co-branded header: MetricOra left, org logo right (if provided)
+  const headerContent = hasOrgLogo
+    ? `<table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="vertical-align:middle;">
+            <table cellpadding="0" cellspacing="0"><tr>
+              <td style="width:30px;height:30px;background:${BRAND_GREEN};border-radius:7px;text-align:center;vertical-align:middle;">
+                <span style="color:#fff;font-size:16px;font-weight:800;line-height:30px;display:inline-block;width:30px;text-align:center;">M</span>
+              </td>
+              <td style="padding-left:9px;font-size:16px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.01em;vertical-align:middle;">MetricOra</td>
+            </tr></table>
+          </td>
+          <td style="vertical-align:middle;text-align:right;">
+            <img src="${branding!.orgLogoUrl}" alt="${branding!.orgName ?? "Organisation"}" height="32" style="display:inline-block;max-width:140px;max-height:32px;object-fit:contain;vertical-align:middle;">
+          </td>
+        </tr>
+      </table>`
+    : `<table cellpadding="0" cellspacing="0"><tr>
+        <td style="width:32px;height:32px;background:${BRAND_GREEN};border-radius:8px;text-align:center;vertical-align:middle;">
+          <span style="color:#fff;font-size:18px;font-weight:800;line-height:32px;display:inline-block;width:32px;text-align:center;">M</span>
+        </td>
+        <td style="padding-left:10px;font-size:18px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.01em;vertical-align:middle;">MetricOra</td>
+      </tr></table>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MetricOra</title>
+</head>
+<body style="margin:0;padding:0;background:${BODY_BG};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:${BODY_BG};padding:36px 16px 40px;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+      <!-- Card with integrated header -->
+      <tr><td style="background:${CARD_BG};border-radius:12px;border:1px solid ${BORDER};overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+
+        <!-- Card header bar -->
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:20px 32px;border-bottom:1px solid ${BORDER};">
+            ${headerContent}
+          </td></tr>
+
+          <!-- Card body -->
+          <tr><td style="padding:36px 32px 32px;">
+            ${bodyHtml}
+          </td></tr>
+        </table>
+
+      </td></tr>
+
+      <!-- Footer -->
+      <tr><td style="padding-top:24px;text-align:center;">
+        <p style="margin:0 0 4px;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+          MetricOra - GHG emissions tracking for growing businesses
+        </p>
+        <a href="https://www.metricora.co.uk" style="font-size:12px;color:${TEXT_MUTED};text-decoration:none;">www.metricora.co.uk</a>
+        ${hasOrgName ? `<span style="color:${BORDER};padding:0 8px;">|</span><span style="font-size:12px;color:${TEXT_SUBTLE};">Sent on behalf of ${branding!.orgName}</span>` : ""}
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
+
+// ── Email templates ───────────────────────────────────────────────────────────
+
+export function memberAccessGrantedEmail(params: {
+  addedByName: string;
+  orgName: string;
+  role: string;
+  dashboardUrl: string;
+  branding?: OrgBranding;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const roleLabel = params.role.replaceAll("_", " ");
+  const subject = `You've been added to ${params.orgName} on MetricOra`;
+  const text = [
+    `${params.addedByName} added you to ${params.orgName} on MetricOra.`,
+    `Role: ${roleLabel}`,
+    `Open workspace: ${params.dashboardUrl}`,
+    ``,
+    `If you did not expect this, you can safely ignore this email.`,
+  ].join("\n");
+  const html = emailLayout(`
+    <p style="margin:0 0 8px;">
+      <span style="display:inline-block;background:#dcfce7;color:#15803d;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Access granted</span>
+    </p>
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
+      You've been added to ${params.orgName}
+    </p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.6;">
+      <strong style="color:${BRAND_DARK};font-weight:600;">${params.addedByName}</strong> has given you access to their sustainability data workspace on MetricOra.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
+      <tbody>
+        ${kv("Organisation", params.orgName)}
+        ${kv("Your role", roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1))}
+      </tbody>
+    </table>
+    ${btn("Open workspace", params.dashboardUrl)}
+    <p style="margin:28px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      If you were not expecting this, you can safely ignore this email. Your account will only be active once you sign in.
+    </p>
+  `, params.branding ?? { orgName: params.orgName });
+  return { subject, html, text };
+}
+
+export function memberInviteEmail(params: {
+  invitedByName: string;
+  orgName: string;
+  role: string;
+  inviteUrl: string;
+  expiresAt: Date;
+  branding?: OrgBranding;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const roleLabel = params.role.replaceAll("_", " ");
+  const expiryStr = params.expiresAt.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const subject = `${params.invitedByName} invited you to join ${params.orgName} on MetricOra`;
+  const text = [
+    `${params.invitedByName} invited you to join ${params.orgName} on MetricOra.`,
+    `Role: ${roleLabel}`,
+    ``,
+    `Accept your invitation: ${params.inviteUrl}`,
+    ``,
+    `This invitation expires on ${expiryStr}.`,
+    `If you were not expecting this, you can safely ignore this email.`,
+  ].join("\n");
+  const html = emailLayout(`
+    <p style="margin:0 0 8px;">
+      <span style="display:inline-block;background:#f0fdf4;color:#15803d;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Invitation</span>
+    </p>
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
+      Join ${params.orgName} on MetricOra
+    </p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.6;">
+      <strong style="color:${BRAND_DARK};font-weight:600;">${params.invitedByName}</strong> has invited you to collaborate on their sustainability data. Click below to accept and set up your account.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
+      <tbody>
+        ${kv("Organisation", params.orgName)}
+        ${kv("Your role", roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1))}
+        ${kv("Invitation expires", expiryStr)}
+      </tbody>
+    </table>
+    ${btn("Accept invitation", params.inviteUrl)}
+    <p style="margin:24px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      Or copy this link into your browser:<br>
+      <span style="font-family:monospace;font-size:11px;color:${TEXT_MUTED};word-break:break-all;">${params.inviteUrl}</span>
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      If you were not expecting this invitation, you can safely ignore this email.
+    </p>
+  `, params.branding ?? { orgName: params.orgName });
+  return { subject, html, text };
+}
 
 export function taskAssignedEmail(params: {
   recipientName: string;
@@ -138,7 +340,21 @@ export function taskAssignedEmail(params: {
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Action required: ${params.taskType} review task assigned`;
   const text = `Hi ${params.recipientName},\n\nA review task has been assigned to you in ${params.orgName}.\n\nTask: ${params.targetLabel}\n\nOpen in MetricOra: ${params.appUrl}\n\nThe MetricOra team`;
-  const html = `<p>Hi ${params.recipientName},</p><p>A review task has been assigned to you in <strong>${params.orgName}</strong>.</p><p><strong>Task:</strong> ${params.targetLabel}</p><p><a href="${params.appUrl}">Open in MetricOra</a></p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Review task assigned</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, a review task has been assigned to you in
+      <strong style="color:${BRAND_DARK};">${params.orgName}</strong>.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        ${kv("Task type", params.taskType)}
+        ${kv("Record", params.targetLabel)}
+        ${kv("Organisation", params.orgName)}
+      </tbody>
+    </table>
+    ${btn("Open task", params.appUrl)}
+  `);
   return { subject, html, text };
 }
 
@@ -153,7 +369,21 @@ export function submissionReceivedEmail(params: {
   const siteSuffix = params.siteLabel ? ` at ${params.siteLabel}` : "";
   const subject = `New field submission awaiting review — ${params.orgName}`;
   const text = `Hi ${params.recipientName},\n\n${params.submitterLabel} submitted a ${params.documentLabel}${siteSuffix} for review in ${params.orgName}.\n\nReview it in MetricOra: ${params.appUrl}`;
-  const html = `<p>Hi ${params.recipientName},</p><p><strong>${params.submitterLabel}</strong> submitted a ${params.documentLabel}${siteSuffix} for review in <strong>${params.orgName}</strong>.</p><p><a href="${params.appUrl}">Review it in MetricOra</a></p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">New submission for review</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, a new field submission is waiting for your review.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        ${kv("Submitted by", params.submitterLabel)}
+        ${kv("Document type", params.documentLabel)}
+        ${params.siteLabel ? kv("Site", params.siteLabel) : ""}
+        ${kv("Organisation", params.orgName)}
+      </tbody>
+    </table>
+    ${btn("Review submission", params.appUrl)}
+  `);
   return { subject, html, text };
 }
 
@@ -166,7 +396,20 @@ export function importFailedEmail(params: {
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Import needs attention: ${params.filename}`;
   const text = `Hi ${params.recipientName},\n\nYour import "${params.filename}" in ${params.orgName} has ${params.errorCount} validation error(s) that need attention.\n\nOpen in MetricOra: ${params.appUrl}`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your import <strong>${params.filename}</strong> in <strong>${params.orgName}</strong> has <strong>${params.errorCount}</strong> validation error(s) that need attention.</p><p><a href="${params.appUrl}">Review errors in MetricOra</a></p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Import needs attention</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your import has validation errors that need resolving before it can be committed.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        ${kv("File", params.filename)}
+        ${kv("Errors", String(params.errorCount))}
+        ${kv("Organisation", params.orgName)}
+      </tbody>
+    </table>
+    ${btn("Review errors", params.appUrl)}
+  `);
   return { subject, html, text };
 }
 
@@ -178,7 +421,19 @@ export function reportReadyEmail(params: {
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Report ready: ${params.reportLabel}`;
   const text = `Hi ${params.recipientName},\n\nYour report "${params.reportLabel}" in ${params.orgName} is ready to download.\n\nOpen in MetricOra: ${params.appUrl}`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your report <strong>${params.reportLabel}</strong> in <strong>${params.orgName}</strong> is ready to download.</p><p><a href="${params.appUrl}">Download in MetricOra</a></p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Report ready</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your report is ready to download.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        ${kv("Report", params.reportLabel)}
+        ${kv("Organisation", params.orgName)}
+      </tbody>
+    </table>
+    ${btn("Download report", params.appUrl)}
+  `);
   return { subject, html, text };
 }
 
@@ -190,11 +445,26 @@ export function submissionReviewedEmail(params: {
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const statusLabel = params.status === "approved" ? "approved" : params.status === "rejected" ? "rejected" : "needs more info";
+  const statusColor = params.status === "approved" ? BRAND_GREEN : params.status === "rejected" ? "#dc2626" : "#d97706";
   const subject = `Your submission was ${statusLabel}`;
-  const noteHtml = params.reviewNote ? `<p><strong>Reviewer note:</strong> ${params.reviewNote}</p>` : "";
   const noteText = params.reviewNote ? `\n\nReviewer note: ${params.reviewNote}` : "";
   const text = `Hi ${params.recipientName},\n\nYour submission in ${params.orgName} was ${statusLabel}.${noteText}\n\nOpen in MetricOra: ${params.appUrl}`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your submission in <strong>${params.orgName}</strong> was <strong>${statusLabel}</strong>.</p>${noteHtml}<p><a href="${params.appUrl}">View in MetricOra</a></p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Submission reviewed</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your submission in <strong style="color:${BRAND_DARK};">${params.orgName}</strong> has been reviewed.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        <tr>
+          <td style="padding:5px 20px 5px 0;font-size:13px;color:${TEXT_MUTED};white-space:nowrap;vertical-align:top;">Status</td>
+          <td style="padding:5px 0;font-size:13px;font-weight:600;color:${statusColor};vertical-align:top;text-transform:capitalize;">${statusLabel}</td>
+        </tr>
+        ${params.reviewNote ? kv("Reviewer note", params.reviewNote) : ""}
+      </tbody>
+    </table>
+    ${btn("View submission", params.appUrl)}
+  `);
   return { subject, html, text };
 }
 
@@ -231,22 +501,26 @@ export function supplierDataRequestEmail(params: {
     `The MetricOra team on behalf of ${params.orgName}`,
   ].join("\n");
 
-  const html = `
-<p>Hi ${params.recipientName},</p>
-<p><strong>${params.orgName}</strong> is requesting your emissions data to support their GHG inventory.</p>
-<table style="border-collapse:collapse;margin:16px 0;">
-  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Category</td><td style="padding:4px 0;font-weight:600;">${params.categoryName}</td></tr>
-  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Reporting period</td><td style="padding:4px 0;font-weight:600;">${params.periodLabel}</td></tr>
-  <tr><td style="padding:4px 16px 4px 0;color:#6b7280;font-size:14px;">Deadline</td><td style="padding:4px 0;font-weight:600;">${expires}</td></tr>
-</table>
-<p>
-  <a href="${params.formUrl}" style="display:inline-block;background:#0ea5e9;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
-    Complete data form (5 min)
-  </a>
-</p>
-<p style="color:#6b7280;font-size:13px;">You will need: annual spend or activity quantity, preferred unit (kg / tonnes / kWh / £).</p>
-<p style="color:#6b7280;font-size:13px;">Reply to this email if you have questions.</p>
-`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Emissions data request</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName},
+      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> is requesting your emissions data
+      to support their GHG inventory. The form takes about 5 minutes.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        ${kv("Category", params.categoryName)}
+        ${kv("Reporting period", params.periodLabel)}
+        ${kv("Deadline", expires)}
+      </tbody>
+    </table>
+    ${btn("Complete data form (5 min)", params.formUrl)}
+    <p style="margin:20px 0 0;font-size:12px;color:${TEXT_MUTED};line-height:1.6;">
+      You will need: annual spend or activity quantity, preferred unit (kg / tonnes / kWh / £).<br>
+      Reply to this email if you have questions.
+    </p>
+  `);
 
   return { subject, html, text };
 }
@@ -257,7 +531,13 @@ export function supplierDataApprovedEmail(params: {
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Your emissions data submission was approved`;
   const text = `Hi ${params.recipientName},\n\nYour emissions data submission for ${params.orgName} was approved.\n\nThank you!`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your emissions data submission for <strong>${params.orgName}</strong> was approved.</p><p>Thank you!</p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Submission approved</p>
+    <p style="margin:0 0 0;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your emissions data submission for
+      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> has been approved. Thank you for contributing to their GHG inventory.
+    </p>
+  `);
   return { subject, html, text };
 }
 
@@ -268,9 +548,15 @@ export function supplierDataRejectedEmail(params: {
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Your emissions data submission needs revision`;
   const reasonText = params.reason ? `\n\nReason: ${params.reason}` : "";
-  const reasonHtml = params.reason ? `<p><strong>Reason:</strong> ${params.reason}</p>` : "";
   const text = `Hi ${params.recipientName},\n\nYour emissions data submission for ${params.orgName} needs revision.${reasonText}`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your emissions data submission for <strong>${params.orgName}</strong> needs revision.</p>${reasonHtml}`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Submission needs revision</p>
+    <p style="margin:0 0 ${params.reason ? "28px" : "0"};font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your emissions data submission for
+      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> needs revision before it can be accepted.
+    </p>
+    ${params.reason ? `<table cellpadding="0" cellspacing="0" style="background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;"><tbody>${kv("Reason", params.reason)}</tbody></table>` : ""}
+  `);
   return { subject, html, text };
 }
 
@@ -280,7 +566,13 @@ export function supplierDataFlaggedEmail(params: {
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Your emissions data submission is under review`;
   const text = `Hi ${params.recipientName},\n\nYour emissions data submission for ${params.orgName} is currently under review by our team.`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your emissions data submission for <strong>${params.orgName}</strong> is currently under review by our team.</p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Submission under review</p>
+    <p style="margin:0 0 0;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your emissions data submission for
+      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> is currently under review. You will receive another email once a decision has been made.
+    </p>
+  `);
   return { subject, html, text };
 }
 
@@ -290,17 +582,26 @@ export function supplierPasswordExpiringEmail(params: {
   daysRemaining: number;
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
-  const subject = `Action required: your MetricOra password expires in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
+  const days = `${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
+  const subject = `Action required: your MetricOra password expires in ${days}`;
   const text = [
     `Hi ${params.recipientName},`,
     ``,
-    `Your MetricOra password for ${params.orgName} will expire in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}.`,
+    `Your MetricOra password for ${params.orgName} will expire in ${days}.`,
     ``,
     `Please update your password before it expires to avoid losing access.`,
     ``,
     `Update your password: ${params.appUrl}`,
   ].join("\n");
-  const html = `<p>Hi ${params.recipientName},</p><p>Your MetricOra password for <strong>${params.orgName}</strong> will expire in <strong>${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}</strong>.</p><p>Please update your password before it expires to avoid losing access.</p><p><a href="${params.appUrl}">Update your password</a></p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Password expiring soon</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your MetricOra password for
+      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> will expire in <strong style="color:#d97706;">${days}</strong>.
+      Please update it before it expires to avoid losing access.
+    </p>
+    ${btn("Update password", params.appUrl)}
+  `);
   return { subject, html, text };
 }
 
@@ -310,7 +611,14 @@ export function supplierAccountTerminatedEmail(params: {
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const subject = `Your MetricOra supplier account has been closed`;
   const text = `Hi ${params.recipientName},\n\nYour supplier account with ${params.orgName} on MetricOra has been closed. If you believe this is an error, please contact ${params.orgName} directly.`;
-  const html = `<p>Hi ${params.recipientName},</p><p>Your supplier account with <strong>${params.orgName}</strong> on MetricOra has been closed.</p><p>If you believe this is an error, please contact ${params.orgName} directly.</p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Supplier account closed</p>
+    <p style="margin:0 0 0;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your supplier account with
+      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> on MetricOra has been closed.
+      If you believe this is an error, please contact ${params.orgName} directly.
+    </p>
+  `);
   return { subject, html, text };
 }
 
@@ -320,17 +628,27 @@ export function supplierAccountExpiringEmail(params: {
   daysRemaining: number;
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
-  const subject = `Your MetricOra supplier access expires in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
+  const days = `${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
+  const subject = `Your MetricOra supplier access expires in ${days}`;
   const text = [
     `Hi ${params.recipientName},`,
     ``,
-    `Your supplier access to ${params.orgName} on MetricOra will expire in ${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}.`,
+    `Your supplier access to ${params.orgName} on MetricOra will expire in ${days}.`,
     ``,
     `If you need continued access, please contact ${params.orgName} to renew your account.`,
     ``,
     `View your account: ${params.appUrl}`,
   ].join("\n");
-  const html = `<p>Hi ${params.recipientName},</p><p>Your supplier access to <strong>${params.orgName}</strong> on MetricOra will expire in <strong>${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}</strong>.</p><p>If you need continued access, please contact ${params.orgName} to renew your account.</p><p><a href="${params.appUrl}">View your account</a></p>`;
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Supplier access expiring soon</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${params.recipientName}, your supplier access to
+      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> on MetricOra will expire in
+      <strong style="color:#d97706;">${days}</strong>.
+      Contact ${params.orgName} if you need continued access.
+    </p>
+    ${btn("View account", params.appUrl)}
+  `);
   return { subject, html, text };
 }
 

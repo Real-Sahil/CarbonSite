@@ -238,6 +238,26 @@ export async function getObjectBuffer(key: string): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
+// ── Public URL (for email embeds — never expires) ─────────────────────────────
+// Branding objects (org/*/branding/*) have a Supabase storage policy that
+// allows anonymous public read, so they can be served without a signed URL.
+// Supabase public URL format:
+//   {SUPABASE_URL}/storage/v1/object/public/{bucket}/{key}
+// Only works for keys under org/*/branding/ — all other paths stay private.
+export function getPublicUrl(key: string): string | null {
+  assertStorageKey(key);
+  const segments = key.split("/");
+  const isBrandingKey = segments[0] === "org" && segments[2] === "branding";
+  if (!isBrandingKey) return null;
+
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ??
+    process.env.SUPABASE_URL;
+  if (!supabaseUrl) return null;
+
+  return `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${BUCKET}/${key}`;
+}
+
 // ── Delete ────────────────────────────────────────────────────────────────────
 export async function deleteObject(key: string): Promise<void> {
   assertStorageKey(key);

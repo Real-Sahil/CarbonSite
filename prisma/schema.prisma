@@ -377,6 +377,7 @@ model TenantBranding {
   primaryHex          String   @default("#0f4c8a") @map("primary_hex")
   accentHex           String   @default("#e8f0fe") @map("accent_hex")
   logoStorageKey      String?  @map("logo_storage_key")
+  logoPublicUrl       String?  @map("logo_public_url")
   faviconStorageKey   String?  @map("favicon_storage_key")
   reportHeaderLogoKey String?  @map("report_header_logo_key")
   emailFromName       String?  @map("email_from_name")

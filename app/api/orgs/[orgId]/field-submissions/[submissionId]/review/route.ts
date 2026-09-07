@@ -7,7 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { reviewFieldSubmissionSchema } from "@/lib/validation/records";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
-import { enqueueSupplierPerformanceUpdate } from "@/lib/jobs/queues/index";
+import { dispatchSupplierPerformanceUpdate } from "@/lib/jobs/dispatch";
 import {
   approvalBlocker,
   approveSubmissionInTx,
@@ -169,12 +169,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     });
 
     if (submitterMembership) {
-      await enqueueSupplierPerformanceUpdate({
+      await dispatchSupplierPerformanceUpdate({
         orgId,
         supplierId: submitterMembership.organizationId,
       }).catch((err) =>
         console.error(
-          `[field-submissions] Failed to enqueue supplier performance update for ${submitterMembership.organizationId}:`,
+          `[field-submissions] Failed to dispatch supplier performance update for ${submitterMembership.organizationId}:`,
           err,
         ),
       );
