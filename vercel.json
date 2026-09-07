@@ -6,15 +6,5 @@
     "api/forecast.py": {
       "maxDuration": 60
     }
-  },
-  "crons": [
-    {
-      "path": "/api/admin/schedule/calculation-schedules",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/admin/schedule/advance-calculation-runs",
-      "schedule": "*/5 * * * *"
-    }
-  ]
+  }
 }
