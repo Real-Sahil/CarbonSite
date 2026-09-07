@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -95,7 +95,6 @@ interface StepState {
 export default function OnboardingPage() {
   const params = useParams<{ orgId: string }>();
   const orgId = params.orgId;
-  const router = useRouter();
 
   const [steps, setSteps] = useState<StepState[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,29 +107,44 @@ export default function OnboardingPage() {
       const data = await res.json();
       setSteps(data.steps ?? []);
       if (data.isComplete) {
-        router.push(`/orgs/${orgId}/dashboard`);
+        // Hard navigation: the sidebar's persistent "Dashboard" link prefetches
+        // that route while this page is open, caching a stale "redirect to
+        // onboarding" response from before completion. router.push() would
+        // reuse that cache and bounce straight back here; a full page load
+        // forces the server to re-check completion against current data.
+        window.location.href = `/orgs/${orgId}/dashboard`;
       }
     } finally {
       setLoading(false);
     }
-  }, [orgId, router]);
+  }, [orgId]);
 
   useEffect(() => {
     void fetchProgress();
   }, [fetchProgress]);
 
   const [skipping, setSkipping] = useState(false);
+  const [skipError, setSkipError] = useState<string | null>(null);
 
   const skipAll = async () => {
     setSkipping(true);
+    setSkipError(null);
     try {
-      await fetch(`/api/orgs/${orgId}/onboarding`, {
+      const res = await fetch(`/api/orgs/${orgId}/onboarding`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skipAll: true }),
       });
-    } finally {
-      router.push(`/orgs/${orgId}/dashboard`);
+      if (!res.ok) {
+        setSkipError("Couldn't skip setup. Please try again.");
+        setSkipping(false);
+        return;
+      }
+      // Hard navigation — see the comment in fetchProgress() above.
+      window.location.href = `/orgs/${orgId}/dashboard`;
+    } catch {
+      setSkipError("Couldn't skip setup. Please try again.");
+      setSkipping(false);
     }
   };
 
@@ -151,7 +165,8 @@ export default function OnboardingPage() {
         })),
       );
       if (data.isComplete) {
-        router.push(`/orgs/${orgId}/dashboard`);
+        // Hard navigation — see the comment in fetchProgress() above.
+        window.location.href = `/orgs/${orgId}/dashboard`;
       }
     } finally {
       setMarkingStep(null);
@@ -316,6 +331,9 @@ export default function OnboardingPage() {
             Skip setup and go to dashboard
             <ChevronRight className="h-3 w-3" />
           </button>
+          {skipError && (
+            <p className="mt-2 text-xs text-red-500">{skipError}</p>
+          )}
         </div>
       </div>
     </div>
