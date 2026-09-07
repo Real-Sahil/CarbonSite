@@ -1,8 +1,11 @@
-// Email sending — RESEND_API_KEY in prod, console log in dev (EMAIL_DRIVER=console)
+// Email sending — RESEND_API_KEY in prod, SMTP via nodemailer, or console log in dev
+// EMAIL_DRIVER=smtp | resend | console (auto-detected when not set)
 
 import { notificationLogger } from "@/lib/logger";
 
-const DRIVER = process.env.EMAIL_DRIVER ?? (process.env.RESEND_API_KEY ? "resend" : "console");
+const DRIVER =
+  process.env.EMAIL_DRIVER ??
+  (process.env.SMTP_HOST ? "smtp" : process.env.RESEND_API_KEY ? "resend" : "console");
 const FROM = process.env.EMAIL_FROM ?? "MetricOra <noreply@metricora.co.uk>";
 
 export type TransactionalEmailPayload = {
@@ -35,6 +38,27 @@ export async function sendTransactionalEmail(
     return { provider: "console", messageId: null };
   }
 
+  if (DRIVER === "smtp") {
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT ?? 465),
+      secure: Number(process.env.SMTP_PORT ?? 465) === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+    const info = await transporter.sendMail({
+      from: FROM,
+      to: payload.to,
+      subject: payload.subject,
+      text: payload.text,
+      html: payload.html ?? `<pre>${payload.text}</pre>`,
+    });
+    return { provider: "smtp", messageId: info.messageId ?? null };
+  }
+
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY!);
 
@@ -63,6 +87,27 @@ export type EmailPayload = {
 export async function sendEmail(payload: EmailPayload): Promise<void> {
   if (DRIVER === "console") {
     notificationLogger.debug("Email sent via console driver", { to: payload.to, subject: payload.subject });
+    return;
+  }
+
+  if (DRIVER === "smtp") {
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT ?? 465),
+      secure: Number(process.env.SMTP_PORT ?? 465) === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+    await transporter.sendMail({
+      from: FROM,
+      to: payload.to,
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    });
     return;
   }
 
