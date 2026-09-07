@@ -68,6 +68,34 @@ pnpm prisma migrate deploy
 pnpm prisma db seed
 ```
 
+### Scheduled Jobs (Hobby Plan)
+
+Vercel's native Crons feature caps Hobby-plan projects at once-per-day
+schedules. Two routes need sub-daily invocation and are **not** wired into
+`vercel.json` for that reason (an hourly or every-N-minute entry there gets
+the deployment rejected outright with `cron_jobs_limits_reached`, blocking
+every future deploy until removed):
+
+| Route | Required cadence | Purpose |
+|---|---|---|
+| `/api/admin/schedule/calculation-schedules` | hourly | Processes due `CalculationSchedule` rows |
+| `/api/admin/schedule/advance-calculation-runs` | every 1-5 min | Sweeps stalled chunked calculation runs |
+
+Both accept either `X-Cron-Secret: $CRON_SECRET` header or `?secret=$CRON_SECRET`
+query param (`CRON_SECRET` is already a required env var — see below). Point a
+free external scheduler at them, e.g. [cron-job.org](https://cron-job.org) — no
+credit card, supports minute-level intervals:
+
+```
+GET https://your-domain/api/admin/schedule/calculation-schedules?secret=$CRON_SECRET
+    — every hour
+GET https://your-domain/api/admin/schedule/advance-calculation-runs?secret=$CRON_SECRET
+    — every 1-5 minutes
+```
+
+On a Pro plan (or self-hosted), these can instead be added back to
+`vercel.json`'s `crons` array at their documented cadence.
+
 ### Monitoring Deployment
 
 ```bash
