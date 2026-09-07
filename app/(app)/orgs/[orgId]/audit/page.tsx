@@ -248,36 +248,28 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                     Page {currentPage} of {pageCount} ({totalCount.toLocaleString("en-GB")} total events)
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      asChild
-                      variant="outline"
-                      disabled={offset === 0}
-                      className={offset === 0 ? "opacity-50 cursor-not-allowed" : ""}
-                    >
-                      <a
-                        href={`/orgs/${orgId}/audit?action=${filters.action ?? ""}&resource=${filters.resource ?? ""}&actor=${filters.actor ?? ""}&since=${filters.since ?? ""}&offset=${Math.max(0, offset - PAGE_SIZE)}`}
-                        onClick={(e) => {
-                          if (offset === 0) e.preventDefault();
-                        }}
-                      >
+                    {offset === 0 ? (
+                      <Button variant="outline" disabled className="opacity-50 cursor-not-allowed">
                         Previous
-                      </a>
-                    </Button>
-                    <Button
-                      asChild
-                      variant="outline"
-                      disabled={offset + PAGE_SIZE >= totalCount}
-                      className={offset + PAGE_SIZE >= totalCount ? "opacity-50 cursor-not-allowed" : ""}
-                    >
-                      <a
-                        href={`/orgs/${orgId}/audit?action=${filters.action ?? ""}&resource=${filters.resource ?? ""}&actor=${filters.actor ?? ""}&since=${filters.since ?? ""}&offset=${offset + PAGE_SIZE}`}
-                        onClick={(e) => {
-                          if (offset + PAGE_SIZE >= totalCount) e.preventDefault();
-                        }}
-                      >
+                      </Button>
+                    ) : (
+                      <Button asChild variant="outline">
+                        <a href={`/orgs/${orgId}/audit?action=${filters.action ?? ""}&resource=${filters.resource ?? ""}&actor=${filters.actor ?? ""}&since=${filters.since ?? ""}&offset=${Math.max(0, offset - PAGE_SIZE)}`}>
+                          Previous
+                        </a>
+                      </Button>
+                    )}
+                    {offset + PAGE_SIZE >= totalCount ? (
+                      <Button variant="outline" disabled className="opacity-50 cursor-not-allowed">
                         Next
-                      </a>
-                    </Button>
+                      </Button>
+                    ) : (
+                      <Button asChild variant="outline">
+                        <a href={`/orgs/${orgId}/audit?action=${filters.action ?? ""}&resource=${filters.resource ?? ""}&actor=${filters.actor ?? ""}&since=${filters.since ?? ""}&offset=${offset + PAGE_SIZE}`}>
+                          Next
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </>
