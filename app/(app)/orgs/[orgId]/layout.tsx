@@ -36,6 +36,8 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
 
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
   let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
+  let layoutAuthErr: AuthError | null = null;
+  let layoutDbErr = false;
 
   try {
     const result = await requireOrgMember(orgId);
@@ -43,29 +45,39 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     membership = result.membership;
   } catch (err) {
     if (err instanceof AuthError) {
-      if (err.status === 401) {
-        redirect("/sign-in");
-      }
-      // 403 - access denied (not a member, insufficient role, etc.)
-      const message =
-        err.code === "NOT_MEMBER"
-          ? "You are not a member of this organisation."
-          : err.code === "INSUFFICIENT_ROLE"
-          ? "You don't have permission to access this area."
-          : "You don't have access to this organisation.";
-      return (
-        <div className="min-h-[100dvh] flex items-center justify-center bg-white">
-          <div className="text-center">
-            <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mb-2">
-              Access denied
-            </h1>
-            <p className="text-sm text-[#6B7280]">
-              {message}
-            </p>
-          </div>
-        </div>
-      );
+      layoutAuthErr = err;
+    } else {
+      layoutDbErr = true;
     }
+  }
+
+  // redirect() must be called outside try/catch — it throws NEXT_REDIRECT internally
+  if (layoutAuthErr) {
+    if (layoutAuthErr.status === 401) {
+      redirect("/sign-in");
+    }
+    // 403 - access denied (not a member, insufficient role, etc.)
+    const message =
+      layoutAuthErr.code === "NOT_MEMBER"
+        ? "You are not a member of this organisation."
+        : layoutAuthErr.code === "INSUFFICIENT_ROLE"
+        ? "You don't have permission to access this area."
+        : "You don't have access to this organisation.";
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-white">
+        <div className="text-center">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mb-2">
+            Access denied
+          </h1>
+          <p className="text-sm text-[#6B7280]">
+            {message}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (layoutDbErr) {
     // Non-AuthError from Prisma (e.g. missing DB column) — show a recoverable error
     // rather than crashing the layout and making every page inaccessible.
     return (
@@ -144,8 +156,8 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   }
 
   const user = {
-    name: session.user.name,
-    email: session.user.email,
+    name: session!.user.name,
+    email: session!.user.email,
   };
 
   const cssVars = buildBrandingCssVars(branding);
@@ -153,7 +165,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   return (
     <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F8F9FA]">
       {cssVars && <style>{`:root { ${cssVars} }`}</style>}
-      <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership.role} />
+      <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} />
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
         <PageTransition>{children}</PageTransition>
       </main>

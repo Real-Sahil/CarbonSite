@@ -54,19 +54,32 @@ interface PageProps {
 export default async function BoundaryPage({ params }: PageProps) {
   const { orgId } = await params;
 
-  let role: OrgRole;
+  let role: OrgRole | null = null;
+  let authErr: AuthError | null = null;
   try {
     const result = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
     role = result.membership.role;
   } catch (err) {
     if (err instanceof AuthError) {
-      if (err.status === 401) redirect("/sign-in");
-      return <AccessDenied />;
+      authErr = err;
+    } else {
+      return (
+        <div className="p-8">
+          <p className="text-sm text-red-600">
+            Failed to load page. The database may be updating — try refreshing in a moment.
+          </p>
+        </div>
+      );
     }
-    throw err;
   }
 
-  const canEdit = EDIT_ROLES.includes(role);
+  // redirect() must be called outside try/catch — it throws NEXT_REDIRECT internally
+  if (authErr) {
+    if (authErr.status === 401) redirect("/sign-in");
+    return <AccessDenied />;
+  }
+
+  const canEdit = EDIT_ROLES.includes(role!);
 
   const [org, entities, facilities] = await Promise.all([
     prisma.organization.findUniqueOrThrow({

@@ -10,15 +10,28 @@ interface PilotPageProps {
 export default async function PilotPage({ params }: PilotPageProps) {
   const { orgId } = await params;
 
+  let authErr: AuthError | null = null;
   try {
     // Authorization: admin or editor only
     await requireOrgMember(orgId, "admin", "editor");
   } catch (err) {
     if (err instanceof AuthError) {
-      if (err.status === 401) redirect("/sign-in");
-      redirect(`/orgs/${orgId}/dashboard`);
+      authErr = err;
+    } else {
+      return (
+        <div className="p-8">
+          <p className="text-sm text-red-600">
+            Failed to load page. The database may be updating — try refreshing in a moment.
+          </p>
+        </div>
+      );
     }
-    throw err;
+  }
+
+  // redirect() must be called outside try/catch — it throws NEXT_REDIRECT internally
+  if (authErr) {
+    if (authErr.status === 401) redirect("/sign-in");
+    redirect(`/orgs/${orgId}/dashboard`);
   }
 
   // Fetch organization details
