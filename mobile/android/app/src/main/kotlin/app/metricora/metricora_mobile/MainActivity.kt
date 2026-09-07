@@ -1,4 +1,4 @@
-package app.carbonsite.carbonsite_mobile
+package app.metricora.metricora_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

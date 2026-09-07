@@ -9,7 +9,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
 
     <application
-        android:label="CarbonSite"
+        android:label="MetricOra"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -34,34 +34,34 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Custom scheme: carbonsite://app/invite/{token}?server=https://... -->
+            <!-- Custom scheme: metricora://app/invite/{token}?server=https://... -->
             <!-- host=app means GoRouter receives path /invite/{token}, matching the route -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="carbonsite" android:host="app" android:pathPrefix="/invite"/>
+                <data android:scheme="metricora" android:host="app" android:pathPrefix="/invite"/>
             </intent-filter>
 
-            <!-- HTTPS app link: https://carbonsite-rosy.vercel.app/invite/{token} -->
+            <!-- HTTPS app link: https://www.metricora.co.uk/invite/{token} -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
                     android:scheme="https"
-                    android:host="carbonsite-rosy.vercel.app"
+                    android:host="www.metricora.co.uk"
                     android:pathPrefix="/invite"/>
             </intent-filter>
 
-            <!-- HTTPS app link: future custom domain, once carbonsite.app is registered -->
+            <!-- HTTPS app link: metricora.co.uk (apex domain) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
                     android:scheme="https"
-                    android:host="carbonsite.app"
+                    android:host="metricora.co.uk"
                     android:pathPrefix="/invite"/>
             </intent-filter>
         </activity>
