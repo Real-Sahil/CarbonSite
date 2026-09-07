@@ -688,6 +688,59 @@ export function dsarSlaAlertEmail(params: {
   return { subject, html, text };
 }
 
+export function signatureRequestEmail(params: {
+  signatoryName: string;
+  orgName: string;
+  reportLabel: string;
+  signingUrl: string;
+  expiresAt: Date;
+  branding?: OrgBranding;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const expiryStr = params.expiresAt.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const subject = `Action required: acknowledge ${params.reportLabel} for ${params.orgName}`;
+  const text = [
+    `Hi ${params.signatoryName},`,
+    ``,
+    `${params.orgName} has asked you to review and acknowledge their ${params.reportLabel}.`,
+    ``,
+    `Review and acknowledge: ${params.signingUrl}`,
+    ``,
+    `This link expires on ${expiryStr}.`,
+    `If you were not expecting this, you can safely ignore this email.`,
+  ].join("\n");
+  const html = emailLayout(`
+    <p style="margin:0 0 8px;">
+      <span style="display:inline-block;background:#fef9c3;color:#a16207;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Acknowledgment requested</span>
+    </p>
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
+      Review and acknowledge ${params.reportLabel}
+    </p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.6;">
+      <strong style="color:${BRAND_DARK};font-weight:600;">${params.orgName}</strong> has asked you to review the audit report and confirm your acknowledgment.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
+      <tbody>
+        ${kv("Organisation", params.orgName)}
+        ${kv("Report", params.reportLabel)}
+        ${kv("Link expires", expiryStr)}
+      </tbody>
+    </table>
+    ${btn("Review and acknowledge", params.signingUrl)}
+    <p style="margin:24px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      Or copy this link into your browser:<br>
+      <span style="font-family:monospace;font-size:11px;color:${TEXT_MUTED};word-break:break-all;">${params.signingUrl}</span>
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      Your name, email address, timestamp, and network address will be embedded in the acknowledged PDF and recorded in the audit log when you complete this action.
+    </p>
+  `, params.branding ?? { orgName: params.orgName });
+  return { subject, html, text };
+}
+
 export function securityAlertEmail(params: {
   recipientName: string;
   orgName: string;

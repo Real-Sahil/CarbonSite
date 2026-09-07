@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
+import { sendEmail, signatureRequestEmail } from "@/lib/notifications/email";
 
 type Params = { params: Promise<{ orgId: string; reportId: string }> };
 
@@ -30,10 +31,20 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const body = createRequestSchema.parse(await req.json());
 
-    const report = await prisma.report.findFirst({
-      where: { id: reportId, organizationId: orgId },
-      select: { id: true, type: true, status: true },
-    });
+    const [report, organization, branding] = await Promise.all([
+      prisma.report.findFirst({
+        where: { id: reportId, organizationId: orgId },
+        select: { id: true, type: true, status: true },
+      }),
+      prisma.organization.findUniqueOrThrow({
+        where: { id: orgId },
+        select: { name: true },
+      }),
+      prisma.tenantBranding.findUnique({
+        where: { organizationId: orgId },
+        select: { logoPublicUrl: true },
+      }),
+    ]);
 
     if (!report) {
       return apiError("NOT_FOUND", "Report not found.", 404);
@@ -63,6 +74,26 @@ export async function POST(req: NextRequest, { params }: Params) {
       },
     });
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+    const signingLink = `${appUrl}/sign/${token}`;
+    const reportLabel = report.type.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+    let delivery = "email";
+    await sendEmail({
+      to: body.signatoryEmail,
+      ...signatureRequestEmail({
+        signatoryName: body.signatoryName,
+        orgName: organization.name,
+        reportLabel,
+        signingUrl: signingLink,
+        expiresAt: tokenExpiresAt,
+        branding: { orgName: organization.name, orgLogoUrl: branding?.logoPublicUrl ?? null },
+      }),
+    }).catch((emailErr: unknown) => {
+      delivery = "email_failed";
+      console.error("[signature-request] notification email failed", emailErr);
+    });
+
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
@@ -73,11 +104,9 @@ export async function POST(req: NextRequest, { params }: Params) {
         reportId,
         signatoryEmail: body.signatoryEmail,
         expiresAt: tokenExpiresAt.toISOString(),
+        delivery,
       },
     });
-
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-    const signingLink = `${appUrl}/sign/${token}`;
 
     return NextResponse.json(
       {
@@ -88,6 +117,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         signingLink,
         expiresAt: tokenExpiresAt.toISOString(),
         createdAt: record.createdAt.toISOString(),
+        delivery,
       },
       { status: 201 },
     );
