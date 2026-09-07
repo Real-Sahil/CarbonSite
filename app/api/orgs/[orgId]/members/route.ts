@@ -9,7 +9,7 @@ import { handleRouteError, apiError } from "@/lib/validation/api";
 import { inviteMemberSchema } from "@/lib/validation/org";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
-import { sendTransactionalEmail } from "@/lib/notifications/email";
+import { sendEmail, memberAccessGrantedEmail, sendTransactionalEmail } from "@/lib/notifications/email";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
@@ -105,14 +105,14 @@ export async function POST(
 
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
       let delivery = "email";
-      await sendTransactionalEmail({
+      await sendEmail({
         to: email,
-        subject: `[MetricOra] ${organization.name}: access granted`,
-        text: [
-          `${session.user.name ?? session.user.email} added you to ${organization.name} on MetricOra.`,
-          `Role: ${membership.role.replaceAll("_", " ")}`,
-          `Open workspace: ${appUrl}/orgs/${orgId}/dashboard`,
-        ].join("\n"),
+        ...memberAccessGrantedEmail({
+          addedByName: session.user.name ?? session.user.email ?? "A team member",
+          orgName: organization.name,
+          role: membership.role,
+          dashboardUrl: `${appUrl}/orgs/${orgId}/dashboard`,
+        }),
       }).catch((emailErr: unknown) => {
         delivery = "email_failed";
         console.error("[members] direct add notification failed", emailErr);
