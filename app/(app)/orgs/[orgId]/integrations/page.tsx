@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { requireOrgMember } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
+import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import {
   Card,
@@ -34,7 +35,17 @@ export async function generateMetadata({ params }: IntegrationsPageProps) {
 export default async function IntegrationsPage({ params }: IntegrationsPageProps) {
   const { orgId } = await params;
 
-  await requireOrgMember(orgId, "admin", "editor");
+  let authErr: AuthError | null = null;
+  try {
+    await requireOrgMember(orgId, "admin", "editor");
+  } catch (err) {
+    if (err instanceof AuthError) { authErr = err; }
+    else { return <div className="p-8"><p className="text-sm text-red-600">Failed to load page. The database may be updating — try refreshing in a moment.</p></div>; }
+  }
+  if (authErr) {
+    if (authErr.status === 401) redirect("/sign-in");
+    return <div className="p-8"><h1 className="text-lg font-semibold text-zinc-900">Access denied</h1><p className="mt-1 text-sm text-zinc-500">Admin or editor access required.</p></div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">

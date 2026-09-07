@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { requireOrgMember } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
+import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import {
   Card,
@@ -32,12 +33,35 @@ export async function generateMetadata({ params }: SuppliersPageProps) {
 export default async function SuppliersPage({ params }: SuppliersPageProps) {
   const { orgId } = await params;
 
-  const user = await requireOrgMember(orgId, "admin", "editor");
+  let authErr: AuthError | null = null;
+  try {
+    await requireOrgMember(orgId, "admin", "editor");
+  } catch (err) {
+    if (err instanceof AuthError) {
+      authErr = err;
+    } else {
+      return (
+        <div className="p-8">
+          <p className="text-sm text-red-600">Failed to load page. The database may be updating — try refreshing in a moment.</p>
+        </div>
+      );
+    }
+  }
+  if (authErr) {
+    if (authErr.status === 401) redirect("/sign-in");
+    return (
+      <div className="p-8">
+        <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
+        <p className="mt-1 text-sm text-zinc-500">You need admin or editor access to manage supplier invitations.</p>
+      </div>
+    );
+  }
 
-  const org = await prisma.organization.findUniqueOrThrow({
+  const org = await prisma.organization.findUnique({
     where: { id: orgId },
     select: { name: true },
   });
+  if (!org) redirect("/");
 
   const invites = await prisma.supplierInvite.findMany({
     where: { organizationId: orgId },

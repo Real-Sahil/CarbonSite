@@ -31,7 +31,7 @@ import {
   Upload,
 } from "lucide-react";
 import { redirect } from "next/navigation";
-import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { requireOrgMember, AuthError, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import {
@@ -85,8 +85,22 @@ function formatPercent(complete: number, total: number): string {
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
   const { facilityId: selectedFacilityId, contractId: selectedContractId } = await searchParams;
-  const { session, membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
-  const role = membership.role;
+  let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
+  let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
+  let dashAuthErr: AuthError | null = null;
+  try {
+    const result = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
+    session = result.session;
+    membership = result.membership;
+  } catch (err) {
+    if (err instanceof AuthError) { dashAuthErr = err; }
+    else { return <div className="p-8"><p className="text-sm text-red-600">Failed to load dashboard. The database may be updating — try refreshing in a moment.</p></div>; }
+  }
+  if (dashAuthErr) {
+    if (dashAuthErr.status === 401) redirect("/sign-in");
+    redirect("/");
+  }
+  const role = membership!.role;
 
   // Field workers and suppliers have no visibility into org emissions data — send them to their own submissions view.
   if (role === "field_worker" || role === "supplier") {
@@ -199,7 +213,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       prisma.reviewTask.findMany({
         where: {
           organizationId: orgId,
-          assigneeUserId: session.user.id,
+          assigneeUserId: session!.user.id,
           status: "open",
         },
         include: {
@@ -876,9 +890,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     label: assignee.user.name ?? assignee.user.email,
   }));
   const defaultAssigneeId =
-    reviewAssigneeOptions.find((assignee) => assignee.id === session.user.id)?.id ??
+    reviewAssigneeOptions.find((assignee) => assignee.id === session!.user.id)?.id ??
     reviewAssigneeOptions[0]?.id ??
-    session.user.id;
+    session!.user.id;
 
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFB]">
