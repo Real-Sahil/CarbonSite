@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { enqueueCalculation } from "@/lib/jobs/queues";
+import { dispatchCalculation } from "@/lib/jobs/dispatch";
 import { writeAuditLog } from "@/lib/db/audit";
 
 export interface CalculationSchedule {
@@ -105,15 +105,16 @@ export async function triggerCalculation(
     throw new Error("Reporting period not found");
   }
 
-  // Enqueue calculation job
-  const jobId = await enqueueCalculation({
+  // Dispatch calculation job (inline on Vercel, queued when JOB_PROCESSING_MODE=worker).
+  // NOTE: a real CalculationRun record must be created before calling this
+  // function — the scheduler is currently an MVP stub that uses reportingPeriodId
+  // as a placeholder for calculationRunId.
+  await dispatchCalculation({
     orgId: organizationId,
     calculationRunId: reportingPeriodId,
   });
 
-  if (!jobId) {
-    throw new Error("Failed to enqueue calculation job");
-  }
+  const jobId = `dispatch-${Date.now()}`;
 
   console.log(
     `[Scheduler] Triggered calculation for org ${organizationId}, period ${reportingPeriodId}, job ${jobId}`

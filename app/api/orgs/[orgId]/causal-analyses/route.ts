@@ -6,7 +6,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion } from "@/lib/api/versioned-handler";
-import { enqueueCausalAnalysis } from "@/lib/jobs/queues";
+import { dispatchCausalAnalysis } from "@/lib/jobs/dispatch";
 import { z } from "zod";
 
 const createCausalAnalysisSchema = z.object({
@@ -58,8 +58,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       },
     });
 
-    // Enqueue the job — inline mode runs immediately, worker mode queues it
-    await enqueueCausalAnalysis({ causalInferenceRunId: run.id, orgId }).catch(async (err) => {
+    await dispatchCausalAnalysis({ causalInferenceRunId: run.id, orgId }).catch(async (err) => {
       console.error(`[causal-analysis] run ${run.id} failed:`, err);
       await prisma.causalInferenceRun.update({
         where: { id: run.id },
