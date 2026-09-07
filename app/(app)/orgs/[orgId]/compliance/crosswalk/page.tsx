@@ -55,19 +55,19 @@ export default async function CrosswalkPage({ params }: PageProps) {
 
   // Run resolvers sequentially to avoid a burst of 50+ parallel DB connections
   // that exhausts Supabase's 15-slot session-mode pool.
-  const results: Array<{
+  const results = [] as Array<{
     id: string;
     framework: string;
     code: string;
     title: string;
-    description: string | null;
+    description: string;
     category: string | null;
     resolverKey: string | null;
     status: string;
     evidenceSummary: string;
     source: "automatic" | "manual";
     manualEvidenceSummary: string | null;
-  }> = [];
+  }>;
   for (const dp of datapoints) {
     const override = overrideByDatapoint.get(dp.id);
 
