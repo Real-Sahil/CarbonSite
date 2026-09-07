@@ -43,20 +43,26 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   const filters = await searchParams;
   const offset = Math.max(0, parseInt(filters.offset || "0", 10));
 
+  let authErr: AuthError | null = null;
   try {
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
   } catch (err) {
     if (err instanceof AuthError) {
-      if (err.status === 401) redirect("/sign-in");
-      return <AccessDenied />;
+      authErr = err;
+    } else {
+      return (
+        <div className="p-8">
+          <p className="text-red-600 text-sm">
+            Failed to load page. The database may be updating — try refreshing in a moment.
+          </p>
+        </div>
+      );
     }
-    return (
-      <div className="p-8">
-        <p className="text-red-600 text-sm">
-          Failed to load page. The database may be updating — try refreshing in a moment.
-        </p>
-      </div>
-    );
+  }
+  // redirect() must be called outside try/catch — it throws NEXT_REDIRECT internally
+  if (authErr) {
+    if (authErr.status === 401) redirect("/sign-in");
+    return <AccessDenied />;
   }
 
   const where = buildAuditWhere(orgId, filters);
@@ -319,7 +325,11 @@ function formatLabel(value: string) {
 
 function formatMetadata(value: unknown) {
   if (value == null || value === Prisma.JsonNull) return "{}";
-  return JSON.stringify(value, null, 2);
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return "{}";
+  }
 }
 
 function badgeVariant(action: string) {
