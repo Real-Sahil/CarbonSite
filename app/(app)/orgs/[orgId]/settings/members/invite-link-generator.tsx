@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, Copy, Check, Trash2, RefreshCw, MapPin } from "lucide-react";
+import { Link, Copy, Check, Trash2, RefreshCw, MapPin, Send } from "lucide-react";
 
 interface SiteOption {
   id: string;
@@ -38,6 +38,8 @@ export function InviteLinkGenerator({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sites, setSites] = useState<SiteOption[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [emailSent, setEmailSent] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +68,9 @@ export function InviteLinkGenerator({
 
   async function handleGenerate() {
     setError("");
+    setEmailSent(null);
     setLoading(true);
+    const trimmedEmail = emailInput.trim();
     try {
       const res = await fetch(`/api/orgs/${orgId}/invite-links`, {
         method: "POST",
@@ -75,6 +79,7 @@ export function InviteLinkGenerator({
           role: "field_worker",
           expiresInDays: 30,
           ...(selectedSiteId ? { siteId: selectedSiteId } : {}),
+          ...(trimmedEmail ? { email: trimmedEmail } : {}),
         }),
       });
 
@@ -87,6 +92,10 @@ export function InviteLinkGenerator({
 
       const link = await res.json();
       setLinks((prev) => [link, ...prev]);
+      if (trimmedEmail) {
+        setEmailSent(trimmedEmail);
+        setEmailInput("");
+      }
     } catch {
       setError("An unexpected error occurred.");
     } finally {
@@ -152,22 +161,53 @@ export function InviteLinkGenerator({
               </option>
             ))}
           </select>
-          <Button
-            onClick={handleGenerate}
-            disabled={loading}
-            variant="outline"
-            size="sm"
-          >
-            {loading ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Link className="h-4 w-4 mr-2" />
-            )}
-            {loading ? "Generating..." : "Generate field worker link"}
-          </Button>
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap mt-1">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="invite-email" className="text-xs text-[#555555]">
+              Send invite by email <span className="text-[#9CA3AF]">(optional)</span>
+            </label>
+            <Input
+              id="invite-email"
+              type="email"
+              value={emailInput}
+              onChange={(e) => { setEmailInput(e.target.value); setEmailSent(null); }}
+              placeholder="worker@company.com"
+              disabled={loading}
+              className="h-9 w-60 text-sm"
+            />
+          </div>
+          <div className="flex flex-col justify-end" style={{ paddingBottom: "1px" }}>
+            <Button
+              onClick={handleGenerate}
+              disabled={loading}
+              variant="outline"
+              size="sm"
+              className="self-end"
+            >
+              {loading ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : emailInput.trim() ? (
+                <Send className="h-4 w-4 mr-2" />
+              ) : (
+                <Link className="h-4 w-4 mr-2" />
+              )}
+              {loading
+                ? "Generating..."
+                : emailInput.trim()
+                ? "Generate and send invite"
+                : "Generate field worker link"}
+            </Button>
+          </div>
           {error && (
-            <p className="text-sm text-red-600" role="alert">
+            <p className="text-sm text-red-600 w-full" role="alert">
               {error}
+            </p>
+          )}
+          {emailSent && (
+            <p className="text-sm text-emerald-600 w-full" role="status">
+              Invite link sent to {emailSent}.
             </p>
           )}
         </div>
