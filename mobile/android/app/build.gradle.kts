@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "app.carbonsite.carbonsite_mobile"
+    namespace = "app.metricora.metricora_mobile"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -26,7 +26,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.carbonsite.carbonsite_mobile"
+        applicationId = "app.metricora.metricora_mobile"
         minSdk = 23          // ML Kit + flutter_secure_storage require >= 23
         targetSdk = 35
         versionCode = flutter.versionCode

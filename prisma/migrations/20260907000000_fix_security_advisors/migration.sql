@@ -33,6 +33,16 @@ AS $$
 $$;
 
 -- Revoke pgaudit event trigger functions from anon/authenticated roles
--- (internal C functions that must not be callable via PostgREST)
-REVOKE EXECUTE ON FUNCTION public.pgaudit_ddl_command_end() FROM anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.pgaudit_sql_drop() FROM anon, authenticated;
+-- (internal C functions that must not be callable via PostgREST; conditional
+--  because pgaudit may not be installed in all environments, e.g. CI postgres)
+DO $$
+BEGIN
+  REVOKE EXECUTE ON FUNCTION public.pgaudit_ddl_command_end() FROM anon, authenticated;
+EXCEPTION WHEN undefined_function THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  REVOKE EXECUTE ON FUNCTION public.pgaudit_sql_drop() FROM anon, authenticated;
+EXCEPTION WHEN undefined_function THEN NULL;
+END $$;

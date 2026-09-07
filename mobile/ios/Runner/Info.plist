@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>CarbonSite</string>
+	<string>MetricOra</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>CarbonSite</string>
+	<string>MetricOra</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -25,29 +25,29 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>CarbonSite uses the camera to capture delivery notes, waste tickets, fuel receipts, and evidence documents.</string>
+	<string>MetricOra uses the camera to capture delivery notes, waste tickets, fuel receipts, and evidence documents.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>CarbonSite records site location for auditable field evidence submissions.</string>
+	<string>MetricOra records site location for auditable field evidence submissions.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>CarbonSite records site location for auditable field evidence submissions.</string>
+	<string>MetricOra records site location for auditable field evidence submissions.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>CarbonSite lets you attach existing photos and documents from your photo library.</string>
+	<string>MetricOra lets you attach existing photos and documents from your photo library.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>CarbonSite saves captured evidence photos to your photo library.</string>
+	<string>MetricOra saves captured evidence photos to your photo library.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>CarbonSite may use the microphone when recording video evidence.</string>
+	<string>MetricOra may use the microphone when recording video evidence.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>CarbonSite uses Face ID to secure your account and protect submission data.</string>
-	<!-- Deep links: carbonsite:// scheme for invite links -->
+	<string>MetricOra uses Face ID to secure your account and protect submission data.</string>
+	<!-- Deep links: metricora:// scheme for invite links -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>carbonsite</string>
+				<string>metricora</string>
 			</array>
 			<key>CFBundleURLName</key>
-			<string>io.carbonsite.app</string>
+			<string>io.metricora.app</string>
 		</dict>
 	</array>
 	<!-- Background fetch for offline sync -->
