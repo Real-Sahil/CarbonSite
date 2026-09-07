@@ -131,23 +131,66 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
 
 const BRAND_GREEN = "#16a34a";
 const BRAND_DARK = "#0f172a";
-const BODY_BG = "#f8fafc";
+const BODY_BG = "#f1f5f9";
 const CARD_BG = "#ffffff";
 const TEXT_MUTED = "#64748b";
+const TEXT_SUBTLE = "#94a3b8";
 const BORDER = "#e2e8f0";
+const ROW_BG = "#f8fafc";
 
-function btn(label: string, href: string): string {
-  return `<a href="${href}" style="display:inline-block;background:${BRAND_GREEN};color:#ffffff;padding:11px 26px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:0.01em;">${label}</a>`;
+export type OrgBranding = {
+  orgName?: string;
+  orgLogoUrl?: string | null;
+};
+
+function btn(label: string, href: string, color = BRAND_GREEN): string {
+  return `<a href="${href}" style="display:inline-block;background:${color};color:#ffffff;padding:13px 28px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:0.01em;line-height:1;">${label}</a>`;
 }
 
 function kv(label: string, value: string): string {
   return `<tr>
-    <td style="padding:5px 20px 5px 0;font-size:13px;color:${TEXT_MUTED};white-space:nowrap;vertical-align:top;">${label}</td>
-    <td style="padding:5px 0;font-size:13px;font-weight:600;color:${BRAND_DARK};vertical-align:top;">${value}</td>
+    <td style="padding:10px 24px 10px 0;font-size:13px;color:${TEXT_SUBTLE};font-weight:500;white-space:nowrap;vertical-align:top;border-bottom:1px solid ${BORDER};">${label}</td>
+    <td style="padding:10px 0;font-size:13px;font-weight:600;color:${BRAND_DARK};vertical-align:top;border-bottom:1px solid ${BORDER};">${value}</td>
   </tr>`;
 }
 
-function emailLayout(bodyHtml: string): string {
+function orgInitialsAvatar(orgName: string): string {
+  const initials = orgName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+  return `<div style="display:inline-block;width:40px;height:40px;background:#dbeafe;border-radius:10px;text-align:center;line-height:40px;font-size:16px;font-weight:700;color:#1d4ed8;vertical-align:middle;">${initials}</div>`;
+}
+
+function emailLayout(bodyHtml: string, branding?: OrgBranding): string {
+  const hasOrgLogo = Boolean(branding?.orgLogoUrl);
+  const hasOrgName = Boolean(branding?.orgName);
+
+  // Co-branded header: MetricOra left, org logo right (if provided)
+  const headerContent = hasOrgLogo
+    ? `<table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="vertical-align:middle;">
+            <table cellpadding="0" cellspacing="0"><tr>
+              <td style="width:30px;height:30px;background:${BRAND_GREEN};border-radius:7px;text-align:center;vertical-align:middle;">
+                <span style="color:#fff;font-size:16px;font-weight:800;line-height:30px;display:inline-block;width:30px;text-align:center;">M</span>
+              </td>
+              <td style="padding-left:9px;font-size:16px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.01em;vertical-align:middle;">MetricOra</td>
+            </tr></table>
+          </td>
+          <td style="vertical-align:middle;text-align:right;">
+            <img src="${branding!.orgLogoUrl}" alt="${branding!.orgName ?? "Organisation"}" height="32" style="display:inline-block;max-width:140px;max-height:32px;object-fit:contain;vertical-align:middle;">
+          </td>
+        </tr>
+      </table>`
+    : `<table cellpadding="0" cellspacing="0"><tr>
+        <td style="width:32px;height:32px;background:${BRAND_GREEN};border-radius:8px;text-align:center;vertical-align:middle;">
+          <span style="color:#fff;font-size:18px;font-weight:800;line-height:32px;display:inline-block;width:32px;text-align:center;">M</span>
+        </td>
+        <td style="padding-left:10px;font-size:18px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.01em;vertical-align:middle;">MetricOra</td>
+      </tr></table>`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -156,31 +199,34 @@ function emailLayout(bodyHtml: string): string {
 <title>MetricOra</title>
 </head>
 <body style="margin:0;padding:0;background:${BODY_BG};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:${BODY_BG};padding:32px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:${BODY_BG};padding:36px 16px 40px;">
   <tr><td align="center">
     <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
-      <!-- Header -->
-      <tr><td style="padding-bottom:24px;" align="center">
-        <table cellpadding="0" cellspacing="0">
-          <tr>
-            <td style="width:32px;height:32px;background:${BRAND_GREEN};border-radius:8px;text-align:center;vertical-align:middle;">
-              <span style="color:#ffffff;font-size:18px;font-weight:800;line-height:32px;display:inline-block;width:32px;text-align:center;">M</span>
-            </td>
-            <td style="padding-left:10px;font-size:18px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.01em;vertical-align:middle;">MetricOra</td>
-          </tr>
-        </table>
-      </td></tr>
+      <!-- Card with integrated header -->
+      <tr><td style="background:${CARD_BG};border-radius:12px;border:1px solid ${BORDER};overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
 
-      <!-- Card -->
-      <tr><td style="background:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};padding:36px 40px;">
-        ${bodyHtml}
+        <!-- Card header bar -->
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:20px 32px;border-bottom:1px solid ${BORDER};">
+            ${headerContent}
+          </td></tr>
+
+          <!-- Card body -->
+          <tr><td style="padding:36px 32px 32px;">
+            ${bodyHtml}
+          </td></tr>
+        </table>
+
       </td></tr>
 
       <!-- Footer -->
-      <tr><td style="padding-top:24px;text-align:center;font-size:12px;color:${TEXT_MUTED};line-height:1.6;">
-        MetricOra &mdash; GHG emissions tracking for growing businesses<br>
-        <a href="https://www.metricora.co.uk" style="color:${TEXT_MUTED};text-decoration:none;">www.metricora.co.uk</a>
+      <tr><td style="padding-top:24px;text-align:center;">
+        <p style="margin:0 0 4px;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+          MetricOra - GHG emissions tracking for growing businesses
+        </p>
+        <a href="https://www.metricora.co.uk" style="font-size:12px;color:${TEXT_MUTED};text-decoration:none;">www.metricora.co.uk</a>
+        ${hasOrgName ? `<span style="color:${BORDER};padding:0 8px;">|</span><span style="font-size:12px;color:${TEXT_SUBTLE};">Sent on behalf of ${branding!.orgName}</span>` : ""}
       </td></tr>
 
     </table>
@@ -197,6 +243,7 @@ export function memberAccessGrantedEmail(params: {
   orgName: string;
   role: string;
   dashboardUrl: string;
+  branding?: OrgBranding;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const roleLabel = params.role.replaceAll("_", " ");
   const subject = `You've been added to ${params.orgName} on MetricOra`;
@@ -208,22 +255,79 @@ export function memberAccessGrantedEmail(params: {
     `If you did not expect this, you can safely ignore this email.`,
   ].join("\n");
   const html = emailLayout(`
-    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Access granted</p>
-    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
-      <strong style="color:${BRAND_DARK};">${params.addedByName}</strong> has added you to
-      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> on MetricOra.
+    <p style="margin:0 0 8px;">
+      <span style="display:inline-block;background:#dcfce7;color:#15803d;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Access granted</span>
     </p>
-    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
+      You've been added to ${params.orgName}
+    </p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.6;">
+      <strong style="color:${BRAND_DARK};font-weight:600;">${params.addedByName}</strong> has given you access to their sustainability data workspace on MetricOra.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
       <tbody>
         ${kv("Organisation", params.orgName)}
-        ${kv("Your role", roleLabel)}
+        ${kv("Your role", roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1))}
       </tbody>
     </table>
     ${btn("Open workspace", params.dashboardUrl)}
-    <p style="margin:28px 0 0;font-size:12px;color:${TEXT_MUTED};line-height:1.6;">
-      If you did not expect this invitation, you can safely ignore this email.
+    <p style="margin:28px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      If you were not expecting this, you can safely ignore this email. Your account will only be active once you sign in.
     </p>
-  `);
+  `, params.branding ?? { orgName: params.orgName });
+  return { subject, html, text };
+}
+
+export function memberInviteEmail(params: {
+  invitedByName: string;
+  orgName: string;
+  role: string;
+  inviteUrl: string;
+  expiresAt: Date;
+  branding?: OrgBranding;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const roleLabel = params.role.replaceAll("_", " ");
+  const expiryStr = params.expiresAt.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const subject = `${params.invitedByName} invited you to join ${params.orgName} on MetricOra`;
+  const text = [
+    `${params.invitedByName} invited you to join ${params.orgName} on MetricOra.`,
+    `Role: ${roleLabel}`,
+    ``,
+    `Accept your invitation: ${params.inviteUrl}`,
+    ``,
+    `This invitation expires on ${expiryStr}.`,
+    `If you were not expecting this, you can safely ignore this email.`,
+  ].join("\n");
+  const html = emailLayout(`
+    <p style="margin:0 0 8px;">
+      <span style="display:inline-block;background:#f0fdf4;color:#15803d;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Invitation</span>
+    </p>
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
+      Join ${params.orgName} on MetricOra
+    </p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.6;">
+      <strong style="color:${BRAND_DARK};font-weight:600;">${params.invitedByName}</strong> has invited you to collaborate on their sustainability data. Click below to accept and set up your account.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
+      <tbody>
+        ${kv("Organisation", params.orgName)}
+        ${kv("Your role", roleLabel.charAt(0).toUpperCase() + roleLabel.slice(1))}
+        ${kv("Invitation expires", expiryStr)}
+      </tbody>
+    </table>
+    ${btn("Accept invitation", params.inviteUrl)}
+    <p style="margin:24px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      Or copy this link into your browser:<br>
+      <span style="font-family:monospace;font-size:11px;color:${TEXT_MUTED};word-break:break-all;">${params.inviteUrl}</span>
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      If you were not expecting this invitation, you can safely ignore this email.
+    </p>
+  `, params.branding ?? { orgName: params.orgName });
   return { subject, html, text };
 }
 

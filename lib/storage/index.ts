@@ -238,6 +238,18 @@ export async function getObjectBuffer(key: string): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
+// ── Public URL (for email embeds — never expires) ─────────────────────────────
+// R2_PUBLIC_URL must point to the bucket's public domain or R2.dev subdomain,
+// e.g. "https://pub-abc123.r2.dev" or "https://assets.metricora.co.uk".
+// Returns null when the bucket is not publicly accessible so callers can
+// omit the logo from email templates rather than embed a broken image.
+export function getPublicUrl(key: string): string | null {
+  assertStorageKey(key);
+  const base = process.env.R2_PUBLIC_URL;
+  if (!base) return null;
+  return `${base.replace(/\/$/, "")}/${key}`;
+}
+
 // ── Delete ────────────────────────────────────────────────────────────────────
 export async function deleteObject(key: string): Promise<void> {
   assertStorageKey(key);

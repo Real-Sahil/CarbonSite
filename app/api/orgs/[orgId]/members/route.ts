@@ -9,7 +9,7 @@ import { handleRouteError, apiError } from "@/lib/validation/api";
 import { inviteMemberSchema } from "@/lib/validation/org";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
-import { sendEmail, memberAccessGrantedEmail, sendTransactionalEmail } from "@/lib/notifications/email";
+import { sendEmail, memberAccessGrantedEmail, memberInviteEmail } from "@/lib/notifications/email";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
@@ -71,7 +71,7 @@ export async function POST(
     if (limited) return limited;
 
     const email = body.email.trim().toLowerCase();
-    const [organization, user] = await Promise.all([
+    const [organization, user, branding] = await Promise.all([
       prisma.organization.findUniqueOrThrow({
         where: { id: orgId },
         select: { name: true },
@@ -80,7 +80,12 @@ export async function POST(
         where: { email },
         select: { id: true, email: true, name: true },
       }),
+      prisma.tenantBranding.findUnique({
+        where: { organizationId: orgId },
+        select: { logoPublicUrl: true },
+      }),
     ]);
+    const orgBranding = { orgName: organization.name, orgLogoUrl: branding?.logoPublicUrl ?? null };
 
     if (user) {
       const existing = await prisma.organizationMembership.findUnique({
@@ -112,6 +117,7 @@ export async function POST(
           orgName: organization.name,
           role: membership.role,
           dashboardUrl: `${appUrl}/orgs/${orgId}/dashboard`,
+          branding: orgBranding,
         }),
       }).catch((emailErr: unknown) => {
         delivery = "email_failed";
@@ -169,15 +175,16 @@ export async function POST(
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const inviteUrl = `${appUrl}/invite/${invite.token}`;
     let delivery = "email";
-    await sendTransactionalEmail({
+    await sendEmail({
       to: email,
-      subject: `[MetricOra] ${organization.name}: you have been invited`,
-      text: [
-        `${session.user.name ?? session.user.email} invited you to ${organization.name} on MetricOra.`,
-        `Role: ${invite.role.replaceAll("_", " ")}`,
-        `Accept invite: ${inviteUrl}`,
-        `This invite expires on ${invite.expiresAt.toLocaleDateString("en-GB")}.`,
-      ].join("\n"),
+      ...memberInviteEmail({
+        invitedByName: session.user.name ?? session.user.email ?? "A team member",
+        orgName: organization.name,
+        role: invite.role,
+        inviteUrl,
+        expiresAt: invite.expiresAt,
+        branding: orgBranding,
+      }),
     }).catch((emailErr) => {
       delivery = "email_failed";
       console.error("[members] invite email failed", emailErr);

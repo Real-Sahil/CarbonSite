@@ -6,7 +6,8 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
-import { putObject, presignDownload, keys } from "@/lib/storage";
+import { putObject, presignDownload, getPublicUrl, keys } from "@/lib/storage";
+import { prisma } from "@/lib/db";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2 MB — logos are small
@@ -62,17 +63,33 @@ export async function POST(
     const key = keys.brandingLogo(orgId, `logo-${randomUUID()}.${ext}`);
     await putObject(key, buffer, mime);
 
+    // If the bucket has a public domain configured, persist the stable URL so
+    // it can be embedded in email templates without expiry concerns.
+    const publicUrl = getPublicUrl(key);
+    if (publicUrl) {
+      await prisma.tenantBranding.upsert({
+        where: { organizationId: orgId },
+        update: { logoPublicUrl: publicUrl },
+        create: {
+          organizationId: orgId,
+          subdomain: orgId,
+          logoStorageKey: key,
+          logoPublicUrl: publicUrl,
+        },
+      });
+    }
+
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
       action: "branding.logo_uploaded",
       resourceType: "tenant_branding",
       resourceId: orgId,
-      metadata: { key, bytes: file.size, mime },
+      metadata: { key, bytes: file.size, mime, hasPublicUrl: Boolean(publicUrl) },
     });
 
     const url = await presignDownload(key);
-    return NextResponse.json({ key, url }, { status: 201 });
+    return NextResponse.json({ key, url, publicUrl }, { status: 201 });
   } catch (err) {
     return handleRouteError(err);
   }
