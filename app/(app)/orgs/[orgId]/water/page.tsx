@@ -163,10 +163,26 @@ function AddRecordModal({
   );
 }
 
+const WATER_TEMPLATE_CSV = [
+  "facilityId,reportingPeriodId,metricType,source,volumeM3,recordedAt,notes",
+  "facility-id-here,period-id-here,withdrawal,municipal_supply,100.5,2024-01-15,Example note",
+  "facility-id-here,period-id-here,discharge,surface_water,80.0,2024-01-15,",
+].join("\n");
+
 function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: () => void; onDone: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ created: number; failed: number; errors: { row: number; message: string }[] } | null>(null);
+
+  function downloadTemplate() {
+    const blob = new Blob([WATER_TEMPLATE_CSV], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "water-records-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   async function handleUpload() {
     if (!file) return;
@@ -194,9 +210,23 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
           </button>
         </div>
         <div className="p-6 flex flex-col gap-4">
-          <p className="text-xs text-gray-500">
-            CSV columns: facilityId, reportingPeriodId, metricType, source, volumeM3, recordedAt, notes
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium text-gray-700 mb-1">Required columns</p>
+              <p className="text-xs text-gray-500 font-mono leading-relaxed">
+                facilityId, reportingPeriodId, metricType,<br />
+                source, volumeM3, recordedAt, notes
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={downloadTemplate}
+              className="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <Upload className="h-3.5 w-3.5 rotate-180" />
+              Template
+            </button>
+          </div>
           <input type="file" accept=".csv,.xlsx,.xls"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-xs file:font-medium" />

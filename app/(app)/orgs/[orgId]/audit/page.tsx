@@ -63,7 +63,15 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   const dbResult = await Promise.all([
     prisma.auditLog.findMany({
       where,
-      include: { actor: { select: { name: true, email: true } } },
+      select: {
+        id: true,
+        createdAt: true,
+        action: true,
+        resourceType: true,
+        resourceId: true,
+        metadata: true,
+        actor: { select: { name: true, email: true } },
+      },
       orderBy: { createdAt: "desc" },
       skip: offset,
       take: PAGE_SIZE,
