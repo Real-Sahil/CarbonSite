@@ -1660,8 +1660,11 @@ model DocumentSignatureRequest {
   status                SignatureRequestStatus  @default(pending)
   signatoryEmail        String                 @map("signatory_email")
   signatoryName         String                 @map("signatory_name")
-  docusealSubmissionId  Int?                   @map("docuseal_submission_id")
-  docusealSigningUrl    String?                @map("docuseal_signing_url")
+  token                 String?                @unique @map("token")
+  tokenExpiresAt        DateTime?              @map("token_expires_at")
+  acknowledgedIp        String?                @map("acknowledged_ip")
+  acknowledgedUserAgent String?                @map("acknowledged_user_agent")
+  signedPdfKey          String?                @map("signed_pdf_key")
   signedAt              DateTime?              @map("signed_at")
   declinedAt            DateTime?              @map("declined_at")
   requestedByUserId     String                 @map("requested_by_user_id")
@@ -1673,7 +1676,7 @@ model DocumentSignatureRequest {
   requestedBy    User         @relation("SignatureRequestsCreated", fields: [requestedByUserId], references: [id])
 
   @@index([organizationId, reportId])
-  @@index([docusealSubmissionId])
+  @@index([token])
   @@map("document_signature_requests")
 }
 

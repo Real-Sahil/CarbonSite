@@ -2,30 +2,25 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import type { SignatureRequestStatus } from "@prisma/client";
-import { createSubmission, getSubmission, DocuSealError } from "@/lib/integrations/docuseal";
 
 type Params = { params: Promise<{ orgId: string; reportId: string }> };
+
+const TOKEN_TTL_DAYS = 7;
 
 const createRequestSchema = z.object({
   signatoryEmail: z.string().email(),
   signatoryName: z.string().min(1).max(200),
-  /**
-   * DocuSeal template ID for audit report sign-off.
-   * Stored in the DOCUSEAL_TEMPLATE_ID env var if you have a single org-wide template,
-   * or passed per-request for multi-template setups.
-   */
-  templateId: z.number().int().positive().optional(),
-  completedRedirectUrl: z.string().url().optional(),
 });
 
 /**
  * POST /api/orgs/[orgId]/reports/[reportId]/signature-request
- * Create a DocuSeal signature request for an audit report package.
+ * Create an acknowledgment request for an audit report.
+ * Sends the signatory a one-time link; no external service required.
  * Admins only.
  */
 export async function POST(req: NextRequest, { params }: Params) {
@@ -34,18 +29,6 @@ export async function POST(req: NextRequest, { params }: Params) {
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const body = createRequestSchema.parse(await req.json());
-
-    const templateId =
-      body.templateId ??
-      (process.env.DOCUSEAL_TEMPLATE_ID ? parseInt(process.env.DOCUSEAL_TEMPLATE_ID, 10) : undefined);
-
-    if (!templateId) {
-      return apiError(
-        "DOCUSEAL_TEMPLATE_NOT_CONFIGURED",
-        "No DocuSeal template ID configured. Set DOCUSEAL_TEMPLATE_ID or pass templateId in the request body.",
-        422,
-      );
-    }
 
     const report = await prisma.report.findFirst({
       where: { id: reportId, organizationId: orgId },
@@ -64,22 +47,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       );
     }
 
-    let submission;
-    try {
-      submission = await createSubmission({
-        templateId,
-        submitters: [{ email: body.signatoryEmail, name: body.signatoryName }],
-        fields: { report_type: report.type, report_id: reportId },
-        completedRedirectUrl: body.completedRedirectUrl,
-      });
-    } catch (err) {
-      if (err instanceof DocuSealError) {
-        return apiError("DOCUSEAL_ERROR", err.message, 502);
-      }
-      throw err;
-    }
-
-    const firstSubmitter = submission.submitters[0];
+    const token = randomUUID();
+    const tokenExpiresAt = new Date(Date.now() + TOKEN_TTL_DAYS * 86_400_000);
 
     const record = await prisma.documentSignatureRequest.create({
       data: {
@@ -87,8 +56,8 @@ export async function POST(req: NextRequest, { params }: Params) {
         reportId,
         signatoryEmail: body.signatoryEmail,
         signatoryName: body.signatoryName,
-        docusealSubmissionId: submission.id,
-        docusealSigningUrl: firstSubmitter?.embed_src ?? null,
+        token,
+        tokenExpiresAt,
         requestedByUserId: session.user.id,
         status: "sent",
       },
@@ -103,9 +72,12 @@ export async function POST(req: NextRequest, { params }: Params) {
       metadata: {
         reportId,
         signatoryEmail: body.signatoryEmail,
-        docusealSubmissionId: submission.id,
+        expiresAt: tokenExpiresAt.toISOString(),
       },
     });
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+    const signingLink = `${appUrl}/sign/${token}`;
 
     return NextResponse.json(
       {
@@ -113,7 +85,8 @@ export async function POST(req: NextRequest, { params }: Params) {
         status: record.status,
         signatoryEmail: record.signatoryEmail,
         signatoryName: record.signatoryName,
-        signingUrl: record.docusealSigningUrl,
+        signingLink,
+        expiresAt: tokenExpiresAt.toISOString(),
         createdAt: record.createdAt.toISOString(),
       },
       { status: 201 },
@@ -125,7 +98,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
 /**
  * GET /api/orgs/[orgId]/reports/[reportId]/signature-request
- * List all signature requests for this report, refreshing live status from DocuSeal.
+ * List all acknowledgment requests for this report.
  */
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
@@ -137,52 +110,19 @@ export async function GET(_req: NextRequest, { params }: Params) {
       orderBy: { createdAt: "desc" },
     });
 
-    const results = await Promise.all(
-      records.map(async (r) => {
-        if (!r.docusealSubmissionId || r.status === "signed" || r.status === "declined") {
-          return r;
-        }
-
-        try {
-          const live = await getSubmission(r.docusealSubmissionId);
-          const submitter = live.submitters[0];
-
-          let newStatus: SignatureRequestStatus = r.status ?? "pending";
-          let signedAt = r.signedAt;
-          let declinedAt = r.declinedAt;
-
-          if (submitter?.status === "completed") {
-            newStatus = "signed";
-            signedAt = submitter.completed_at ? new Date(submitter.completed_at) : new Date();
-          } else if (submitter?.status === "declined") {
-            newStatus = "declined";
-            declinedAt = new Date();
-          }
-
-          if (newStatus !== r.status) {
-            const updated = await prisma.documentSignatureRequest.update({
-              where: { id: r.id },
-              data: { status: newStatus, signedAt, declinedAt },
-            });
-            return updated;
-          }
-        } catch {
-          // DocuSeal unavailable — return cached state
-        }
-
-        return r;
-      }),
-    );
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
     return NextResponse.json(
-      results.map((r) => ({
+      records.map((r) => ({
         id: r.id,
         status: r.status,
         signatoryEmail: r.signatoryEmail,
         signatoryName: r.signatoryName,
-        signingUrl: r.docusealSigningUrl,
+        signingLink: r.token ? `${appUrl}/sign/${r.token}` : null,
+        expired: r.tokenExpiresAt ? r.tokenExpiresAt < new Date() : false,
         signedAt: r.signedAt?.toISOString() ?? null,
         declinedAt: r.declinedAt?.toISOString() ?? null,
+        signedPdfKey: r.signedPdfKey ?? null,
         createdAt: r.createdAt.toISOString(),
       })),
     );
