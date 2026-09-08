@@ -19,9 +19,11 @@ const HF_API_KEY = process.env.HUGGINGFACE_TOKEN ?? '';
 const HF_API_BASE = 'https://api-inference.huggingface.co/v1';
 const HF_DEFAULT_MODEL = 'mistralai/Mistral-7B-Instruct-v0.3';
 
-const NIM_API_KEY = process.env.NVIDIA_NIM_API_KEY ?? '';
-const NIM_API_BASE = process.env.NVIDIA_NIM_BASE_URL ?? 'http://localhost:8000';
-const NIM_DEFAULT_MODEL = 'mistral-7b-instruct';
+// Accept either name; NVIDIA_API_KEY is the standard key name in the Vercel dashboard.
+const NIM_API_KEY = process.env.NVIDIA_API_KEY ?? process.env.NVIDIA_NIM_API_KEY ?? '';
+// Default to NVIDIA's cloud inference endpoint when not self-hosting.
+const NIM_API_BASE = process.env.NVIDIA_NIM_BASE_URL ?? 'https://integrate.api.nvidia.com/v1';
+const NIM_DEFAULT_MODEL = 'meta/llama-3.1-8b-instruct';
 
 async function callAnthropic(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {
   if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set');
