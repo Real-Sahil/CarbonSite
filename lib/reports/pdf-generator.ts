@@ -550,11 +550,6 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
 
     // ── Methodology note ──────────────────────────────────────────────────────
 
-    if (doc.y > 680) {
-      doc.addPage();
-      drawPageHeader();
-    }
-
     moveDown(10);
     rule();
     moveDown(8);

@@ -115,13 +115,29 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         expiresAt: verificationTokenData.expiresAt,
       });
 
-      // Construct verification URL — must point to HTML page, NOT /api endpoint
-      let baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "").trim();
+      // Construct verification URL — must point to the web app, NOT Supabase or a raw API endpoint.
+      // Resolution order:
+      //   1. NEXT_PUBLIC_APP_URL (explicit app domain, set in Vercel env)
+      //   2. VERCEL_URL (auto-set by Vercel to the deployment hostname, without protocol)
+      //   3. Error — can't build a valid URL without either.
+      let rawUrl = (process.env.NEXT_PUBLIC_APP_URL || "").trim();
 
-      // Remove trailing slashes and /api if present
-      baseUrl = baseUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+      // Reject Supabase project URLs that were mistakenly set as the app URL.
+      if (rawUrl.includes("supabase.co")) {
+        reportLogger.warn("NEXT_PUBLIC_APP_URL points to Supabase — falling back to VERCEL_URL", { rawUrl });
+        rawUrl = "";
+      }
 
-      // Ensure we have a valid base URL with protocol
+      if (!rawUrl || !rawUrl.startsWith("http")) {
+        // Vercel sets VERCEL_URL to the hostname of the current deployment (no protocol).
+        const vercelHost = (process.env.VERCEL_URL || "").trim();
+        if (vercelHost) {
+          rawUrl = `https://${vercelHost}`;
+        }
+      }
+
+      let baseUrl = rawUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+
       if (!baseUrl || !baseUrl.startsWith("http")) {
         throw new Error(
           "NEXT_PUBLIC_APP_URL not configured correctly for QR code generation. " +
