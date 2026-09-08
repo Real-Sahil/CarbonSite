@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -21,11 +20,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Calculator, Play, AlertTriangle, CheckCircle2, Clock, Loader2 } from "lucide-react";
+import { Calculator, AlertTriangle, CheckCircle2, Clock, Loader2 } from "lucide-react";
 import { StatusPoller } from "@/components/ui/status-poller";
 import { RetryCalculationButton } from "./retry-button";
 import { CancelRunButton } from "./cancel-run-button";
 import { CalculationRunContinuation } from "./calculation-run-continuation";
+import { CalculationControls } from "@/app/(app)/orgs/[orgId]/dashboard/calculation-controls";
 
 interface CalculationsPageProps {
   params: Promise<{ orgId: string }>;
@@ -85,8 +85,10 @@ function formatDuration(start: Date | null, end: Date | null): string {
 export default async function CalculationsPage({ params }: CalculationsPageProps) {
   const { orgId } = await params;
 
+  let role = "viewer";
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const { membership } = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    role = membership.role;
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
@@ -105,18 +107,40 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
     );
   }
 
-  const runs = await prisma.calculationRun.findMany({
-    where: { organizationId: orgId },
-    include: {
-      reportingPeriod: { select: { label: true } },
-      factorLibrary: { select: { name: true, version: true } },
-      methodologyVersion: { select: { name: true } },
-      triggeredBy: { select: { name: true, email: true } },
-      _count: { select: { calculations: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  }).catch(() => null);
+  const canRunCalculations = ["admin", "editor"].includes(role);
+
+  const [runs, reportingPeriods, methodologies, factorLibraries, approvedCountsByPeriod] = await Promise.all([
+    prisma.calculationRun.findMany({
+      where: { organizationId: orgId },
+      include: {
+        reportingPeriod: { select: { label: true } },
+        factorLibrary: { select: { name: true, version: true } },
+        methodologyVersion: { select: { name: true } },
+        triggeredBy: { select: { name: true, email: true } },
+        _count: { select: { calculations: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }).catch(() => null),
+    prisma.reportingPeriod.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, label: true },
+      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+    }).catch(() => [] as { id: string; label: string }[]),
+    prisma.methodologyVersion.findMany({
+      select: { id: true, name: true, gwpVersion: true },
+      orderBy: { createdAt: "desc" },
+    }).catch(() => [] as { id: string; name: string; gwpVersion: string }[]),
+    prisma.factorLibrary.findMany({
+      select: { id: true, name: true, version: true },
+      orderBy: { publishedAt: "desc" },
+    }).catch(() => [] as { id: string; name: string; version: string }[]),
+    prisma.activityRecord.groupBy({
+      by: ["reportingPeriodId"],
+      where: { organizationId: orgId, reviewStatus: "approved" },
+      _count: { _all: true },
+    }).catch(() => [] as { reportingPeriodId: string; _count: { _all: number } }[]),
+  ]);
 
   if (runs === null) {
     return (
@@ -128,10 +152,11 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
     );
   }
 
+  const approvedCountByPeriod: Record<string, number> = Object.fromEntries(
+    approvedCountsByPeriod.map((row) => [row.reportingPeriodId, row._count._all]),
+  );
+
   const hasInFlight = runs.some((r) => r.status === "queued" || r.status === "running");
-  // A run large enough to need multiple chunks (lib/calculation/run-worker.ts)
-  // doesn't advance between requests on its own — needs its continue
-  // endpoint called again while it's still short of totalRecordCount.
   const runsNeedingContinuation = runs
     .filter((r) => r.status === "running" && (r.totalRecordCount == null || r.processedRecordCount < r.totalRecordCount))
     .map((r) => r.id);
@@ -150,30 +175,20 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
       {/* Page header */}
       <div className="bg-white border-b border-[#E5E7EB]">
         <div className="max-w-[1200px] mx-auto px-8 py-8">
-          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
-                  <Calculator className="h-4 w-4 text-[#111827]" />
-                </div>
-                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
-                  Calculations
-                </span>
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
-                Calculation runs
-              </h1>
-              <p className="mt-1 text-sm text-[#9CA3AF] max-w-[65ch]">
-                Deterministic emission calculations from approved activity records. Results are immutable per run.
-              </p>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+              <Calculator className="h-4 w-4 text-[#111827]" />
             </div>
-            <Button asChild size="sm" className="bg-[#f97316] hover:bg-[#ea580c] text-white shrink-0">
-              <Link href={`/orgs/${orgId}/dashboard#run-calculation`}>
-                <Play className="h-3.5 w-3.5 mr-1.5" />
-                Run calculation
-              </Link>
-            </Button>
+            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+              Calculations
+            </span>
           </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+            Calculation runs
+          </h1>
+          <p className="mt-1 text-sm text-[#9CA3AF] max-w-[65ch]">
+            Deterministic emission calculations from approved activity records. Results are immutable per run.
+          </p>
 
           {/* Stat pills */}
           {runs.length > 0 && (
@@ -192,9 +207,49 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
       </div>
 
       {/* Content */}
-      <div className="max-w-[1200px] mx-auto px-8 py-8">
+      <div className="max-w-[1200px] mx-auto px-8 py-8 space-y-6">
+
+        {/* Run a calculation card — visible to admins and editors */}
+        {canRunCalculations && (
+          <Card className="border-[#E5E7EB] shadow-none">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base">Run a calculation</CardTitle>
+              <CardDescription>
+                Convert approved activity records into CO₂e for a reporting period. Each run is
+                immutable and fully traceable.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CalculationControls
+                orgId={orgId}
+                periods={reportingPeriods}
+                approvedCountByPeriod={approvedCountByPeriod}
+                methodologies={methodologies.map((item) => ({
+                  id: item.id,
+                  label: `${item.name} (${item.gwpVersion})`,
+                }))}
+                factorLibraries={factorLibraries.map((item) => ({
+                  id: item.id,
+                  label: `${item.name} ${item.version}`,
+                }))}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Runs table */}
         {runs.length === 0 ? (
-          <EmptyState orgId={orgId} />
+          !canRunCalculations ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-5">
+                <Calculator className="h-7 w-7 text-[#111827]" />
+              </div>
+              <h3 className="text-base font-semibold text-[#111827] mb-2">No calculation runs yet</h3>
+              <p className="text-sm text-[#9CA3AF] max-w-sm">
+                An admin or editor must trigger a calculation from approved activity records.
+              </p>
+            </div>
+          ) : null
         ) : (
           <Card className="border-[#E5E7EB] shadow-none">
             <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
@@ -346,26 +401,6 @@ function StatPill({
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base} ${pulse ? "animate-pulse" : ""}`}>
       <span className="tabular-nums font-semibold">{value}</span>
       <span>{label}</span>
-    </div>
-  );
-}
-
-function EmptyState({ orgId }: { orgId: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-5">
-        <Calculator className="h-7 w-7 text-[#111827]" />
-      </div>
-      <h3 className="text-base font-semibold text-[#111827] mb-2">No calculation runs yet</h3>
-      <p className="text-sm text-[#9CA3AF] max-w-sm mb-6">
-        Approve activity records, then trigger a calculation from the dashboard to compute scope 1, 2, and 3 emissions.
-      </p>
-      <Button asChild size="sm" className="bg-[#f97316] hover:bg-[#1a5c26] text-white">
-        <Link href={`/orgs/${orgId}/dashboard#run-calculation`}>
-          <Play className="h-3.5 w-3.5 mr-1.5" />
-          Go to dashboard
-        </Link>
-      </Button>
     </div>
   );
 }
