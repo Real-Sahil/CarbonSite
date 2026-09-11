@@ -103,6 +103,7 @@ model User {
   biodiversityCreated      BiodiversityAssessment[] @relation("BiodiversityCreator")
   speciesRecordsCreated    ProtectedSpeciesRecord[] @relation("SpeciesRecordCreator")
   managementPlansCreated   HabitatManagementPlan[]  @relation("ManagementPlanCreator")
+  ecologicalScansCreated   EcologicalScan[]         @relation("EcologicalScanCreator")
   engagementsCreated       AssuranceEngagement[]    @relation("EngagementCreator")
   evidenceRequestsOwned    EvidenceRequest[]        @relation("EvidenceRequestOwner")
   samplesTested            AssuranceSample[]        @relation("SampleTester")
@@ -295,6 +296,7 @@ model Organization {
   protectedSpeciesRecords     ProtectedSpeciesRecord[]     @relation("OrgSpeciesRecords")
   habitatManagementPlans      HabitatManagementPlan[]      @relation("OrgManagementPlans")
   ecologicalMonitoringEvents  EcologicalMonitoringEvent[]  @relation("OrgMonitoringEvents")
+  ecologicalScans             EcologicalScan[]             @relation("OrgEcologicalScans")
   assuranceEngagements        AssuranceEngagement[]        @relation("OrgAssuranceEngagements")
   evidenceRequests            EvidenceRequest[]             @relation("OrgEvidenceRequests")
   assuranceSamples            AssuranceSample[]             @relation("OrgAssuranceSamples")
@@ -1597,6 +1599,7 @@ enum ReportType {
   ghg_protocol
   cdp
   cbam
+  ecology_survey
 
   @@map("report_type")
 }
@@ -1909,6 +1912,7 @@ model Project {
   name           String
   projectCode    String?       @map("project_code")
   description    String?
+  postcode       String?
   startDate      DateTime?     @map("start_date") @db.Date
   endDate        DateTime?     @map("end_date") @db.Date
   status         ProjectStatus @default(active)
@@ -1926,6 +1930,7 @@ model Project {
   incidents             EnvironmentalIncident[] @relation("ProjectIncidents")
   biodiversityAssessments BiodiversityAssessment[] @relation("ProjectBiodiversity")
   speciesRecords        ProtectedSpeciesRecord[]  @relation("ProjectSpeciesRecords")
+  ecologicalScans       EcologicalScan[]          @relation("ProjectEcologicalScans")
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -5340,4 +5345,69 @@ model OrganizationDatapointStatus {
   @@unique([organizationId, datapointId])
   @@index([organizationId])
   @@map("organization_datapoint_statuses")
+}
+
+// ─── Phase H: Ecological Live Data Scan ──────────────────────────────────────
+
+enum EcologicalScanStatus {
+  pending
+  running
+  completed
+  failed
+
+  @@map("ecological_scan_status")
+}
+
+/// Live ecological data snapshot for a project, fetched from NBN Atlas
+/// (species occurrences), Natural England MAGIC (designated sites),
+/// and Forestry Commission NI (woodland cover).
+model EcologicalScan {
+  id             String               @id @default(cuid())
+  organizationId String               @map("organization_id")
+  projectId      String               @map("project_id")
+  postcode       String
+  radiusKm       Decimal              @default(1) @map("radius_km") @db.Decimal(6, 2)
+  status         EcologicalScanStatus @default(pending)
+  scannedAt      DateTime?            @map("scanned_at")
+  errorMessage   String?              @map("error_message")
+
+  /// NBN Atlas — total species records found within the radius.
+  totalSpeciesCount    Int @default(0) @map("total_species_count")
+  plantSpeciesCount    Int @default(0) @map("plant_species_count")
+  birdSpeciesCount     Int @default(0) @map("bird_species_count")
+  mammalSpeciesCount   Int @default(0) @map("mammal_species_count")
+  invertSpeciesCount   Int @default(0) @map("invert_species_count")
+  reptileSpeciesCount  Int @default(0) @map("reptile_species_count")
+  amphibianSpeciesCount Int @default(0) @map("amphibian_species_count")
+  otherSpeciesCount    Int @default(0) @map("other_species_count")
+  /// Full species list from NBN Atlas. Each element:
+  /// { name, commonName, kingdom, group, occurrenceCount, lastSeen }
+  speciesRecords Json @default("[]") @map("species_records")
+
+  /// Natural England MAGIC — statutory designated sites within radius.
+  /// Each element: { name, type, distance, area, notifiedOn, status }
+  designatedSites      Json    @default("[]") @map("designated_sites")
+  sssiCount            Int     @default(0) @map("sssi_count")
+  sacCount             Int     @default(0) @map("sac_count")
+  spaCount             Int     @default(0) @map("spa_count")
+  nvrCount             Int     @default(0) @map("nvr_count")
+  ancientWoodlandCount Int     @default(0) @map("ancient_woodland_count")
+
+  /// Forestry Commission — woodland parcels within radius.
+  /// Each element: { name, type, areaHa, ifc, managementPlan }
+  woodlandData         Json    @default("[]") @map("woodland_data")
+  woodlandTotalHa      Decimal @default(0) @map("woodland_total_ha") @db.Decimal(14, 4)
+  broadleafHa          Decimal @default(0) @map("broadleaf_ha") @db.Decimal(14, 4)
+  coniferHa            Decimal @default(0) @map("conifer_ha") @db.Decimal(14, 4)
+  mixedWoodlandHa      Decimal @default(0) @map("mixed_woodland_ha") @db.Decimal(14, 4)
+
+  createdByUserId String   @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation("OrgEcologicalScans", fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project      @relation("ProjectEcologicalScans", fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("EcologicalScanCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, projectId, createdAt])
+  @@map("ecological_scans")
 }
