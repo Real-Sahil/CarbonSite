@@ -142,7 +142,7 @@ export async function POST(
     // Compute supplementary info for the response (not persisted to Facility)
     let speciesRichness: number | undefined;
     if (speciesGroupResult.status === "fulfilled") {
-      speciesRichness = speciesGroupResult.value.reduce((sum, g) => sum + g.count, 0);
+      speciesRichness = speciesGroupResult.value.reduce((sum: number, g: { count: number }) => sum + g.count, 0);
     }
 
     let nearestGridRegion: { shortname: string; intensity: number; index: string } | undefined;
