@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select';
 import { AlertCircle, CheckCircle2, Info, AlertTriangle } from 'lucide-react';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 interface InvoiceAnomaly {
   id: string;
   invoiceId: string;

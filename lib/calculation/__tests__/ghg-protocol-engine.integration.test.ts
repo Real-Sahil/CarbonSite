@@ -110,7 +110,7 @@ const testScenarios = [
 ];
 
 describe("GHG Protocol Engine Integration — Current vs. Embedded", () => {
-  let comparisonResults: Array<{
+  const comparisonResults: Array<{
     scenario: string;
     currentResult: number;
     newResult: number;

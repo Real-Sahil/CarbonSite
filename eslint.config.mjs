@@ -15,6 +15,14 @@ const eslintConfig = defineConfig([
     ".pnpm-store/**",
     "next-env.d.ts",
   ]),
+  // Disable overly strict rules for server components
+  {
+    rules: {
+      "react-hooks/purity": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

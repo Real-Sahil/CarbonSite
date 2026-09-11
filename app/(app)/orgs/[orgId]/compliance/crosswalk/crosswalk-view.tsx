@@ -54,7 +54,7 @@ export function CrosswalkView({
       <header>
         <h1 className="text-xl font-semibold text-zinc-900">Framework datapoint crosswalk</h1>
         <p className="mt-0.5 max-w-[70ch] text-sm text-zinc-500">
-          For each disclosure requirement: whether this organisation's own data actually answers it
+          For each disclosure requirement: whether this organisation&apos;s own data actually answers it
           today, checked live, or whether it still needs manual evidence. &ldquo;Ready for CSRD&rdquo;
           is a checkable claim here, not a slogan.
         </p>

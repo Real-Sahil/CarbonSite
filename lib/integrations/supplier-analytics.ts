@@ -80,7 +80,7 @@ export async function calculateSupplierScore(
   let totalCompleteness = 0;
   submissions.forEach((sub) => {
     let filledFields = 0;
-    let totalFields = 6;
+    const totalFields = 6;
 
     // Extract data from JSON fields
     const formData = sub.formData as Record<string, unknown>;

@@ -8,7 +8,7 @@ describe.skip("Anomaly Detection", () => {
   let orgId: string;
   let facilityId: string;
   let userId: string;
-  let recordIds: string[] = [];
+  const recordIds: string[] = [];
 
   beforeAll(async () => {
     // Create test user

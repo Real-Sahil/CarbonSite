@@ -136,7 +136,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         }
       }
 
-      let baseUrl = rawUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+      const baseUrl = rawUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
 
       if (!baseUrl || !baseUrl.startsWith("http")) {
         throw new Error(

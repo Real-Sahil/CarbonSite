@@ -111,7 +111,7 @@ export class CorporateCardsConnector implements IConnector {
     const spendAmount = this.parseAmount(row.amount);
 
     // Determine emission category from merchant or card category
-    let categoryCode = this.determineCategoryFromMerchant(row.merchant) || CARD_TO_EMISSION[row.category];
+    const categoryCode = this.determineCategoryFromMerchant(row.merchant) || CARD_TO_EMISSION[row.category];
 
     const supplierName = row.merchant || "Unknown Merchant";
 

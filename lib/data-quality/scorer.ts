@@ -32,7 +32,7 @@ export async function calculateDataQualityScore(
   organizationId: string,
   reportingPeriodId?: string
 ): Promise<DataQualityMetrics> {
-  let whereClause: Prisma.ActivityRecordWhereInput = { organizationId };
+  const whereClause: Prisma.ActivityRecordWhereInput = { organizationId };
 
   if (reportingPeriodId) {
     whereClause.reportingPeriodId = reportingPeriodId;

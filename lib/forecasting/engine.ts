@@ -61,7 +61,7 @@ export function exponentialSmoothing(
   // Generate forecast
   const predictions: ForecastPrediction[] = [];
   const lastDate = new Date(dates[dates.length - 1]);
-  let forecastValue = smoothed[smoothed.length - 1];
+  const forecastValue = smoothed[smoothed.length - 1];
 
   // Calculate standard deviation for confidence intervals
   let variance = 0;
@@ -168,7 +168,7 @@ export function seasonalDecomposition(
   const trendSlope =
     (validTrends[validTrends.length - 1] - validTrends[0]) /
     validTrends.length;
-  let lastTrendValue = validTrends[validTrends.length - 1];
+  const lastTrendValue = validTrends[validTrends.length - 1];
 
   // Generate predictions
   const predictions: ForecastPrediction[] = [];

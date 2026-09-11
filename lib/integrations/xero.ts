@@ -185,7 +185,7 @@ export async function syncXeroInvoices(
 
   const invoices = await fetchXeroInvoices(organizationId, fromDate);
   let created = 0;
-  let updated = 0;
+  const updated = 0;
   let skipped = 0;
 
   for (const invoice of invoices) {
