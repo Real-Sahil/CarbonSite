@@ -8,6 +8,7 @@ import {
   enqueueNotification,
   enqueueReport,
   enqueueXeroSync,
+  enqueueQuickBooksSync,
   enqueueSupplierPerformanceUpdate,
   enqueueCausalAnalysis,
   enqueueAccountPoliciesCheck,
@@ -19,6 +20,7 @@ import {
   type NotificationJobData,
   type ReportJobData,
   type XeroSyncJobData,
+  type QuickBooksSyncJobData,
   type SupplierPerformanceJobData,
   type CausalAnalysisJobData,
   type AccountPoliciesJobData,
@@ -36,6 +38,7 @@ import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
 import { runDbtTransformation, type DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
 import { processAccountPolicies } from "@/workers/account-policies";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
+import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
 import { hasFeature, type Plan } from "@/lib/billing/limits";
 import { prisma } from "@/lib/db";
 
@@ -162,6 +165,31 @@ export async function dispatchXeroSync(
       // The sync itself already succeeded and its rows are committed — don't
       // fail the whole sync over a problem in the follow-up enrichment step.
       console.error(`[dispatchXeroSync] anomaly detection failed for org ${data.orgId}:`, err);
+    }
+  }
+
+  return { status: "processed", ...result };
+}
+
+export async function dispatchQuickBooksSync(
+  data: QuickBooksSyncJobData,
+): Promise<{ status: "queued" } | { status: "processed"; created: number; updated: number; skipped: number }> {
+  if (mode === "worker") {
+    await enqueueQuickBooksSync(data);
+    return { status: "queued" };
+  }
+
+  const result = await syncQuickBooksInvoices(data.orgId, data.fromDate);
+
+  if (result.created > 0) {
+    try {
+      const org = await prisma.organization.findUnique({ where: { id: data.orgId }, select: { plan: true } });
+      const plan = (org?.plan ?? "trial") as Plan;
+      if (hasFeature(plan, "invoiceAnomalyDetection")) {
+        await dispatchInvoiceAnomalyDetection({ orgId: data.orgId });
+      }
+    } catch (err) {
+      console.error(`[dispatchQuickBooksSync] anomaly detection failed for org ${data.orgId}:`, err);
     }
   }
 

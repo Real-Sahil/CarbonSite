@@ -3,8 +3,20 @@
 
 import type { Decimal } from "@prisma/client/runtime/library";
 
+export interface ConnectorWaterRecord {
+  externalRecordId: string;
+  externalBatchId?: string;
+  meterId: string;
+  volumeM3: number;
+  activityDate: Date;
+  facilityCode?: string;
+  notes?: string;
+}
+
 export interface ConnectorPayload {
   records: ConnectorActivityRecord[];
+  /** Water meter readings routed to WaterRecord, not ActivityRecord */
+  waterRecords?: ConnectorWaterRecord[];
   metadata: ConnectorMetadata;
 }
 

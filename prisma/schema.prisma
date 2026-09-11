@@ -523,6 +523,13 @@ model Facility {
   aurnStationCode      String?   @map("aurn_station_code")
   /// ISO timestamp of the last successful run of the facility enrichment endpoint.
   eaEnrichmentLastRunAt DateTime? @map("ea_enrichment_last_run_at")
+  /// UK EPC (Energy Performance Certificate) data from epc.opendatacommunities.org.
+  /// Populated by the facility enrichment endpoint when a UK postcode is set.
+  epcRating          String?   @map("epc_rating")          // A–G
+  epcSapScore        Decimal?  @map("epc_sap_score") @db.Decimal(6, 2)
+  epcCertNumber      String?   @map("epc_cert_number")
+  epcAssessedAt      DateTime? @map("epc_assessed_at")
+  epcHeatingType     String?   @map("epc_heating_type")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -2372,6 +2379,11 @@ model CarbonOffset {
   serialNumbers  String?  @map("serial_numbers")
   retirementRef  String?  @map("retirement_ref")
   notes          String?
+  /// OffsetsDB verification — https://offsets-db-data.readthedocs.io (free REST, no auth)
+  /// Populated when the retirement cert is verified against Verra/Gold Standard/ACR/CAR.
+  retirementVerified   Boolean   @default(false) @map("retirement_verified")
+  retirementVerifiedAt DateTime? @map("retirement_verified_at")
+  offsetsDbProjectId   String?   @map("offsets_db_project_id")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -4211,6 +4223,11 @@ model LegalEntity {
   /// Date the entity left the group. Emissions after this are excluded.
   divestedOn         DateTime? @map("divested_on") @db.Date
   notes              String?
+  /// GLEIF LEI (Legal Entity Identifier) from api.gleif.org — free, no auth.
+  /// Auto-populated on entity creation when a registration number is provided.
+  gleifLei           String?   @map("gleif_lei")
+  gleifStatus        String?   @map("gleif_status")   // ISSUED | LAPSED | RETIRED | PENDING_TRANSFER | etc.
+  gleifLookedUpAt    DateTime? @map("gleif_looked_up_at")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 

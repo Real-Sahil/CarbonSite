@@ -35,8 +35,7 @@ describe("UtilitiesConnector", () => {
     const meterTests = [
       { type: "electricity", expected: "s2-electricity-lb" },
       { type: "gas", expected: "s1-stationary" },
-      { type: "water", expected: "s3-purchased-goods" },
-      { type: "waste", expected: "s3-purchased-goods" },
+      { type: "waste", expected: "s3-waste" },
     ];
 
     for (const test of meterTests) {
@@ -44,7 +43,7 @@ describe("UtilitiesConnector", () => {
         rows: [
           {
             meterId: `METER-${test.type}`,
-            meterType: test.type as "electricity" | "gas" | "water" | "waste",
+            meterType: test.type as "electricity" | "gas" | "waste",
             readingDate: "2026-08-01",
             usage: "100",
             unit: test.type === "electricity" ? "kWh" : "m³",
@@ -55,6 +54,24 @@ describe("UtilitiesConnector", () => {
       const result = await connector.ingest(payload);
       expect(result.records[0].emissionCategoryCode).toBe(test.expected);
     }
+  });
+
+  it("should route water readings to waterRecords not records", async () => {
+    const payload = {
+      rows: [
+        {
+          meterId: "METER-WATER",
+          meterType: "water" as const,
+          readingDate: "2026-08-01",
+          usage: "100",
+          unit: "m³",
+        },
+      ],
+    };
+    const result = await connector.ingest(payload);
+    expect(result.records).toHaveLength(0);
+    expect(result.waterRecords).toHaveLength(1);
+    expect(result.waterRecords![0].volumeM3).toBe(100);
   });
 
   it("should support market-based electricity", async () => {
@@ -183,8 +200,11 @@ describe("UtilitiesConnector", () => {
 
     const result = await connector.ingest(payload);
 
-    expect(result.records[0].amount).toBe(500.5);
-    expect(result.records[0].emissionCategoryCode).toBe("s3-purchased-goods");
+    // Water readings route to waterRecords, not records (ESRS E3)
+    expect(result.records).toHaveLength(0);
+    expect(result.waterRecords).toHaveLength(1);
+    expect(result.waterRecords![0].volumeM3).toBe(500.5);
+    expect(result.waterRecords![0].meterId).toBe("WATER-001");
   });
 
   it("should set country to UK by default", async () => {
