@@ -87,10 +87,10 @@ export async function POST(
       Date.now() + body.expiresInDays * 24 * 60 * 60 * 1000,
     );
 
-    const org = await prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { name: true },
-    });
+    const [org, branding] = await Promise.all([
+      prisma.organization.findUnique({ where: { id: orgId }, select: { name: true } }),
+      prisma.tenantBranding.findUnique({ where: { organizationId: orgId }, select: { logoPublicUrl: true } }),
+    ]);
 
     let userId: string | undefined;
     let temporaryPassword: string | undefined;
@@ -188,8 +188,8 @@ export async function POST(
     const inviteUrl = `${appUrl}/supplier-invite/${invite.token}`;
 
     try {
+      const orgLogoUrl = branding?.logoPublicUrl ?? null;
       if (body.inviteMethod === "credentials" && temporaryPassword) {
-        // Send credentials email
         const { sendSupplierCredentialsEmail } = await import("@/workers/supplier-invite-email");
         await sendSupplierCredentialsEmail({
           supplierEmail: body.email,
@@ -198,9 +198,9 @@ export async function POST(
           invitedByName: session.user.name || session.user.email,
           organizationName: org?.name || "MetricOra",
           companyName: body.companyName,
+          orgLogoUrl,
         });
       } else {
-        // Send magic link email
         const { sendSupplierInviteEmail } = await import("@/workers/supplier-invite-email");
         await sendSupplierInviteEmail({
           supplierEmail: body.email,
@@ -208,6 +208,7 @@ export async function POST(
           invitedByName: session.user.name || session.user.email,
           organizationName: org?.name || "MetricOra",
           companyName: body.companyName,
+          orgLogoUrl,
         });
       }
     } catch (emailError) {
