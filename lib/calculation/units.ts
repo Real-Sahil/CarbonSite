@@ -3,6 +3,39 @@
 
 type UnitConversion = { toCanonical: number; canonical: string };
 
+// ---------------------------------------------------------------------------
+// Live FX cache — populated by refreshFxRates() before each calculation run.
+// Falls back to the hardcoded rates below when Frankfurter is unavailable.
+// Keys are uppercase ISO-4217 currency codes; values are GBP equivalent of 1 unit.
+// ---------------------------------------------------------------------------
+let liveFxRates: Record<string, number> = {};
+let liveFxFetchedAt = 0;
+const FX_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
+
+/**
+ * Fetch the latest ECB FX rates from Frankfurter and cache them.
+ * Silently falls back to hardcoded rates on any error.
+ * Call once at the start of each calculation run.
+ */
+export async function refreshFxRates(): Promise<void> {
+  if (Date.now() - liveFxFetchedAt < FX_TTL_MS) return; // still fresh
+  try {
+    const { getLatestRatesGbp } = await import("@/lib/data-sources/frankfurter");
+    const rates = await getLatestRatesGbp();
+    // rates is { USD: 1.27, EUR: 1.16, ... } (1 GBP = x foreign)
+    // We need the inverse: 1 foreign = y GBP
+    const incoming: Record<string, number> = {};
+    for (const [ccy, perGbp] of Object.entries(rates)) {
+      if (perGbp > 0) incoming[ccy.toUpperCase()] = 1 / perGbp;
+    }
+    incoming["GBP"] = 1;
+    liveFxRates = incoming;
+    liveFxFetchedAt = Date.now();
+  } catch {
+    // leave liveFxRates as-is (empty or stale) — hardcoded fallback will apply
+  }
+}
+
 const registry: Record<string, UnitConversion> = {
   // Energy - canonical: kWh
   kwh: { toCanonical: 1, canonical: "kWh" },
@@ -77,6 +110,11 @@ const registry: Record<string, UnitConversion> = {
 export type NormalizedUnit = { amount: number; unit: string };
 
 export function normalizeUnit(amount: number, unit: string): NormalizedUnit {
+  const upper = unit.toUpperCase().trim();
+  // Check live FX cache first for currency conversions
+  if (liveFxRates[upper] !== undefined) {
+    return { amount: amount * liveFxRates[upper], unit: "GBP" };
+  }
   const entry = registry[unit.toLowerCase().trim()];
   if (!entry) throw new UnitError(`Unsupported unit: ${unit}`);
   return { amount: amount * entry.toCanonical, unit: entry.canonical };

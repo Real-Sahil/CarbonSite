@@ -29,6 +29,7 @@ import {
 } from "@/lib/inventory/consolidation";
 import { ConsolidationApproachForm } from "./consolidation-form";
 import { CreateLegalEntityForm } from "./legal-entity-form";
+import { LookupLeiButton } from "./lookup-lei-button";
 
 const APPROACH_LABEL: Record<string, string> = {
   operational_control: "Operational control",
@@ -89,6 +90,20 @@ export default async function BoundaryPage({ params }: PageProps) {
     prisma.legalEntity.findMany({
       where: { organizationId: orgId },
       orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        registrationNumber: true,
+        country: true,
+        parentId: true,
+        ownershipPercent: true,
+        operationalControl: true,
+        financialControl: true,
+        acquiredOn: true,
+        divestedOn: true,
+        gleifLei: true,
+        gleifStatus: true,
+      },
     }),
     prisma.facility.findMany({
       where: { organizationId: orgId },
@@ -205,6 +220,7 @@ export default async function BoundaryPage({ params }: PageProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="pl-4">Entity</TableHead>
+                    <TableHead>LEI</TableHead>
                     <TableHead>Parent</TableHead>
                     <TableHead className="text-right">Direct stake</TableHead>
                     <TableHead className="text-right">Effective share</TableHead>
@@ -222,6 +238,23 @@ export default async function BoundaryPage({ params }: PageProps) {
                           <div className="font-medium text-zinc-900">{e.name}</div>
                           {e.registrationNumber && (
                             <div className="text-xs text-zinc-500">{e.registrationNumber}</div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {e.gleifLei ? (
+                            <div>
+                              <span className="font-mono text-xs text-zinc-700">{e.gleifLei}</span>
+                              {e.gleifStatus && e.gleifStatus !== "ISSUED" && (
+                                <span className="ml-1 text-xs text-amber-600">({e.gleifStatus})</span>
+                              )}
+                            </div>
+                          ) : (
+                            canEdit
+                              ? <LookupLeiButton orgId={orgId} entityId={e.id} hasLei={false} />
+                              : <span className="text-zinc-400">-</span>
+                          )}
+                          {e.gleifLei && canEdit && (
+                            <LookupLeiButton orgId={orgId} entityId={e.id} hasLei={true} />
                           )}
                         </TableCell>
                         <TableCell className="text-sm text-zinc-500">

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { calculationLogger } from "@/lib/logger";
 import { triggerFacilityRiskFlag } from "@/lib/automation/n8n-client";
 import { broadcastDashboardUpdate } from "@/lib/realtime/dashboard-broadcaster";
-import { normalizeUnit, convertBetween, UnitError } from "./units";
+import { normalizeUnit, convertBetween, UnitError, refreshFxRates } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
@@ -66,6 +66,10 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
   if (!(await claimRun(calculationRunId))) {
     return { done: false };
   }
+
+  // Best-effort: refresh live FX rates once per run so spend-based Scope 3
+  // records use current ECB rates. Silently falls back to hardcoded rates.
+  await refreshFxRates();
 
   try {
     const overallDeadline = Date.now() + REQUEST_TIME_BUDGET_MS;
