@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Leaf, Plus, Trash2, ExternalLink, X } from "lucide-react";
+import { Leaf, Plus, Trash2, ExternalLink, X, ShieldCheck, Loader2 } from "lucide-react";
 
 interface CarbonOffset {
   id: string;
@@ -18,6 +18,8 @@ interface CarbonOffset {
   currency: string;
   purchasedAt: string;
   retirementRef: string | null;
+  retirementVerified: boolean;
+  retirementVerifiedAt: string | null;
   notes: string | null;
 }
 
@@ -166,6 +168,7 @@ export default function OffsetsPage() {
   const [totalTonnes, setTotalTonnes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [verifying, setVerifying] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/orgs/${orgId}/offsets`);
@@ -183,6 +186,24 @@ export default function OffsetsPage() {
     if (!confirm("Delete this offset record?")) return;
     await fetch(`/api/orgs/${orgId}/offsets/${id}`, { method: "DELETE" });
     load();
+  }
+
+  async function handleVerify(id: string, retirementRef: string | null) {
+    if (!retirementRef) {
+      alert("Add a retirement reference before verifying.");
+      return;
+    }
+    setVerifying(id);
+    try {
+      await fetch(`/api/orgs/${orgId}/offsets/${id}/verify-retirement`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: retirementRef }),
+      });
+      load();
+    } finally {
+      setVerifying(null);
+    }
   }
 
   return (
@@ -233,7 +254,7 @@ export default function OffsetsPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
               <tr>
-                {["Project", "Type", "Standard", "Vintage", "Quantity (tCO2e)", "Purchased", ""].map((h) => (
+                {["Project", "Type", "Standard", "Vintage", "Quantity (tCO2e)", "Purchased", "Verified", ""].map((h) => (
                   <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
                 ))}
               </tr>
@@ -254,12 +275,34 @@ export default function OffsetsPage() {
                   <td className="py-3 px-4 text-gray-600 tabular-nums">{o.vintage}</td>
                   <td className="py-3 px-4 text-gray-900 font-medium tabular-nums">{Number(o.quantityTonnes).toFixed(2)}</td>
                   <td className="py-3 px-4 text-gray-500 tabular-nums">{new Date(o.purchasedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+                  <td className="py-3 px-4">
+                    {o.retirementVerified ? (
+                      <span title={`Verified ${o.retirementVerifiedAt ? new Date(o.retirementVerifiedAt).toLocaleDateString("en-GB") : ""}`} className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+                        <ShieldCheck className="h-3 w-3" /> Verified
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </td>
                   <td className="py-3 pl-4 pr-6">
                     <div className="flex items-center gap-2 justify-end">
                       {o.retirementRef && (
                         <span title={o.retirementRef}>
                           <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
                         </span>
+                      )}
+                      {!o.retirementVerified && (
+                        <button
+                          onClick={() => handleVerify(o.id, o.retirementRef)}
+                          disabled={verifying === o.id}
+                          title="Verify via OffsetsDB"
+                          className="h-7 w-7 rounded-lg hover:bg-green-50 flex items-center justify-center group disabled:opacity-50"
+                        >
+                          {verifying === o.id
+                            ? <Loader2 className="h-3.5 w-3.5 text-gray-400 animate-spin" />
+                            : <ShieldCheck className="h-3.5 w-3.5 text-gray-300 group-hover:text-green-600 transition-colors" />
+                          }
+                        </button>
                       )}
                       <button onClick={() => handleDelete(o.id)} className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center group">
                         <Trash2 className="h-3.5 w-3.5 text-gray-300 group-hover:text-red-500 transition-colors" />

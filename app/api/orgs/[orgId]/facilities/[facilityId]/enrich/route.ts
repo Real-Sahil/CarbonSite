@@ -29,6 +29,7 @@ import { getNearbyAurnStations } from "@/lib/data-sources/uk-air";
 import { getWaterRiskAtPoint } from "@/lib/data-sources/wri-aqueduct";
 import { getSpeciesGroupSummary } from "@/lib/data-sources/nbn-atlas";
 import { getRegionalIntensities } from "@/lib/data-sources/carbon-intensity";
+import { lookupEpcByPostcode } from "@/lib/data-sources/epc";
 
 export async function POST(
   req: NextRequest,
@@ -67,6 +68,7 @@ export async function POST(
       waterRiskResult,
       speciesGroupResult,
       carbonIntensityResult,
+      epcResult,
     ] = await Promise.allSettled([
       getFloodRiskAtPoint(lat, lng),
       getWaterBodyAtPoint(lat, lng),
@@ -75,6 +77,7 @@ export async function POST(
       getWaterRiskAtPoint(lat, lng),
       getSpeciesGroupSummary(lat, lng, 2),
       getRegionalIntensities(),
+      facility.postcode ? lookupEpcByPostcode(facility.postcode) : Promise.resolve(null),
     ]);
 
     // Build the patch object from whatever succeeded
@@ -121,6 +124,16 @@ export async function POST(
       patch.waterStressAssessedAt = new Date();
     }
 
+    // EPC (Energy Performance Certificate) — non-domestic energy rating
+    if (epcResult.status === "fulfilled" && epcResult.value !== null) {
+      const epc = epcResult.value;
+      patch.epcRating = epc.currentEnergyRating || null;
+      patch.epcSapScore = epc.currentEnergyEfficiency || null;
+      patch.epcCertNumber = epc.lmkKey || null;
+      patch.epcHeatingType = epc.mainFuelType || null;
+      patch.epcAssessedAt = epc.lodgementDate ? new Date(epc.lodgementDate) : null;
+    }
+
     await prisma.facility.update({
       where: { id: facilityId },
       data: patch,
@@ -153,6 +166,7 @@ export async function POST(
     if (waterRiskResult.status === "rejected") errors.push(`waterRisk: ${waterRiskResult.reason}`);
     if (speciesGroupResult.status === "rejected") errors.push(`speciesGroups: ${speciesGroupResult.reason}`);
     if (carbonIntensityResult.status === "rejected") errors.push(`carbonIntensity: ${carbonIntensityResult.reason}`);
+    if (epcResult.status === "rejected") errors.push(`epc: ${epcResult.reason}`);
 
     return NextResponse.json({
       facilityId,
@@ -161,6 +175,9 @@ export async function POST(
       supplementary: {
         speciesRichnessNear2km: speciesRichness,
         gridCarbonIntensity: nearestGridRegion,
+        epc: epcResult.status === "fulfilled" && epcResult.value
+          ? { rating: epcResult.value.currentEnergyRating, sapScore: epcResult.value.currentEnergyEfficiency }
+          : null,
       },
       lookupErrors: errors.length > 0 ? errors : undefined,
     });
