@@ -121,18 +121,21 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     redirect(`/orgs/${orgId}/onboarding`);
   }
 
-  const [organization, recentPeriods] = await Promise.all([
-    prisma.organization.findUniqueOrThrow({
-      where: { id: orgId },
-      select: { name: true, industry: true, hqCountry: true },
-    }),
-    prisma.reportingPeriod.findMany({
-      where: { organizationId: orgId },
-      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-      select: { id: true, label: true, status: true },
-      take: 2,
-    }),
-  ]);
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { name: true, industry: true, hqCountry: true },
+  }).catch(() => null);
+  if (!org) {
+    return <div className="p-8"><p className="text-sm text-red-600">Organisation not found or database is temporarily unavailable — please refresh.</p></div>;
+  }
+  const organization = org;
+
+  const recentPeriods = await prisma.reportingPeriod.findMany({
+    where: { organizationId: orgId },
+    orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+    select: { id: true, label: true, status: true },
+    take: 2,
+  }).catch(() => [] as { id: string; label: string; status: string }[]);
   const currentPeriod = recentPeriods[0] ?? null;
   const priorPeriod = recentPeriods[1] ?? null;
 
@@ -142,28 +145,32 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       where: { organizationId: orgId, status: "active" },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
-    }),
+    }).catch(() => [] as { id: string; name: string }[]),
     selectedContractId
       ? prisma.contract.findUnique({
           where: { id: selectedContractId },
           select: { name: true },
-        })
+        }).catch(() => null)
       : Promise.resolve(null),
   ]);
 
   // Get facilityIds linked to the selected contract via sites → activity records
   let contractFacilityIds: string[] | null = null;
   if (selectedContractId) {
-    const rows = await prisma.$queryRaw<Array<{ facility_id: string }>>`
-      SELECT DISTINCT ar.facility_id
-      FROM activity_records ar
-      INNER JOIN sites s ON s.id = ar.site_id
-      INNER JOIN projects p ON p.id = s.project_id
-      WHERE p.contract_id = ${selectedContractId}
-        AND ar.organization_id = ${orgId}
-        AND ar.facility_id IS NOT NULL
-    `;
-    contractFacilityIds = rows.map((r) => r.facility_id);
+    try {
+      const rows = await prisma.$queryRaw<Array<{ facility_id: string }>>`
+        SELECT DISTINCT ar.facility_id
+        FROM activity_records ar
+        INNER JOIN sites s ON s.id = ar.site_id
+        INNER JOIN projects p ON p.id = s.project_id
+        WHERE p.contract_id = ${selectedContractId}
+          AND ar.organization_id = ${orgId}
+          AND ar.facility_id IS NOT NULL
+      `;
+      contractFacilityIds = rows.map((r) => r.facility_id);
+    } catch {
+      contractFacilityIds = [];
+    }
   }
 
   // Latest succeeded calculation run (used for data quality metrics)
@@ -171,7 +178,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     where: { organizationId: orgId, status: "succeeded" },
     orderBy: { createdAt: "desc" },
     select: { id: true, finishedAt: true, reportingPeriodId: true },
-  });
+  }).catch(() => null);
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
   const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch, priorScopeAggregates] = await Promise.all([
@@ -191,25 +198,25 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             orderBy: { scope: "asc" },
           })
         : Promise.resolve([] as { scope: number; _sum: { totalCo2e: string | null; recordCount: number | null } }[]),
-      prisma.activityRecord.count({ where: { organizationId: orgId } }),
+      prisma.activityRecord.count({ where: { organizationId: orgId } }).catch(() => 0),
       prisma.activityRecord.count({
         where: { organizationId: orgId, reviewStatus: "approved" },
-      }),
+      }).catch(() => 0),
       prisma.fieldSubmission.count({
         where: {
           organizationId: orgId,
           status: { in: ["pending", "submitted", "under_review", "needs_info"] },
         },
-      }),
-      prisma.importBatch.count({ where: { organizationId: orgId } }),
+      }).catch(() => 0),
+      prisma.importBatch.count({ where: { organizationId: orgId } }).catch(() => 0),
       prisma.importBatch.count({
         where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
-      }),
-      prisma.report.count({ where: { organizationId: orgId } }),
-      prisma.report.count({ where: { organizationId: orgId, status: "ready" } }),
-      prisma.report.count({ where: { organizationId: orgId, status: "failed" } }),
-      prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }),
-      prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }),
+      }).catch(() => 0),
+      prisma.report.count({ where: { organizationId: orgId } }).catch(() => 0),
+      prisma.report.count({ where: { organizationId: orgId, status: "ready" } }).catch(() => 0),
+      prisma.report.count({ where: { organizationId: orgId, status: "failed" } }).catch(() => 0),
+      prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }).catch(() => 0),
+      prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }).catch(() => 0),
       prisma.reviewTask.findMany({
         where: {
           organizationId: orgId,
@@ -222,7 +229,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { createdAt: "desc" },
         take: 6,
-      }),
+      }).catch(() => []),
       prisma.importBatch.findMany({
         where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
         select: {
@@ -234,7 +241,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { updatedAt: "desc" },
         take: 4,
-      }),
+      }).catch(() => []),
       prisma.activityRecord.findMany({
         where: { organizationId: orgId, reviewStatus: { in: ["in_review", "rejected"] } },
         include: {
@@ -243,7 +250,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { updatedAt: "desc" },
         take: 4,
-      }),
+      }).catch(() => []),
       prisma.report.findMany({
         where: { organizationId: orgId, status: "failed" },
         select: {
@@ -254,35 +261,35 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { updatedAt: "desc" },
         take: 4,
-      }),
+      }).catch(() => []),
     ] as const),
     Promise.all([
       prisma.organizationMembership.findMany({
         where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { createdAt: "asc" },
-      }),
+      }).catch(() => []),
       prisma.auditLog.findMany({
         where: { organizationId: orgId },
         include: { actor: { select: { name: true, email: true } } },
         orderBy: { createdAt: "desc" },
         take: 6,
-      }),
-      prisma.reductionTarget.count({ where: { organizationId: orgId } }),
-      prisma.reductionInitiative.count({ where: { organizationId: orgId } }),
+      }).catch(() => []),
+      prisma.reductionTarget.count({ where: { organizationId: orgId } }).catch(() => 0),
+      prisma.reductionInitiative.count({ where: { organizationId: orgId } }).catch(() => 0),
       prisma.reportingPeriod.findMany({
         where: { organizationId: orgId },
         select: { id: true, label: true },
         orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-      }),
+      }).catch(() => []),
       prisma.methodologyVersion.findMany({
         select: { id: true, name: true, gwpVersion: true },
         orderBy: { createdAt: "desc" },
-      }),
+      }).catch(() => []),
       prisma.factorLibrary.findMany({
         select: { id: true, name: true, version: true },
         orderBy: { publishedAt: "desc" },
-      }),
+      }).catch(() => []),
       prisma.calculationRun.findMany({
         where: { organizationId: orgId },
         include: {
@@ -291,31 +298,31 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { createdAt: "desc" },
         take: 6,
-      }),
-      prisma.evidenceFile.count({ where: { organizationId: orgId } }),
+      }).catch(() => []),
+      prisma.evidenceFile.count({ where: { organizationId: orgId } }).catch(() => 0),
       prisma.fieldSubmission.groupBy({
         by: ["status"],
         where: { organizationId: orgId },
         _count: { _all: true },
         orderBy: { status: "asc" },
-      }),
+      }).catch(() => []),
       prisma.fieldSubmission.groupBy({
         by: ["documentType"],
         where: { organizationId: orgId },
         _count: { _all: true },
         orderBy: { documentType: "asc" },
-      }),
+      }).catch(() => []),
       prisma.reductionInitiative.groupBy({
         by: ["status"],
         where: { organizationId: orgId },
         _count: { _all: true },
         _sum: { costAmount: true, expectedImpactCo2e: true },
         orderBy: { status: "asc" },
-      }),
+      }).catch(() => []),
       prisma.reductionTarget.aggregate({
         where: { organizationId: orgId },
         _sum: { reductionAmount: true },
-      }),
+      }).catch(() => ({ _sum: { reductionAmount: null } })),
       currentPeriod
         ? prisma.dashboardAggregate.findMany({
             where: {
@@ -329,26 +336,25 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             },
             orderBy: { totalCo2e: "desc" },
             take: 5,
-          })
+          }).catch(() => [])
         : Promise.resolve([] as { id: string; scope: number; totalCo2e: string; recordCount: number; emissionCategory: { name: string; scope: number } | null }[]),
       prisma.report.groupBy({
         by: ["status"],
         where: { organizationId: orgId },
         _count: { _all: true },
         orderBy: { status: "asc" },
-      }),
+      }).catch(() => []),
       prisma.socialValueRecord.aggregate({
         where: { organizationId: orgId },
         _sum: { valuePounds: true },
         _count: { _all: true },
       }).catch(() => ({ _sum: { valuePounds: null }, _count: { _all: 0 } })),
-      prisma.site.count({ where: { organizationId: orgId } }),
+      prisma.site.count({ where: { organizationId: orgId } }).catch(() => 0),
       prisma.organizationMembership.count({
         where: { organizationId: orgId, role: "field_worker" },
-      }),
+      }).catch(() => 0),
     ] as const),
     // Period trend: live scope-level aggregates across all reporting periods.
-    // Reads DashboardAggregate only — never raw EmissionCalculation rows.
     prisma.dashboardAggregate.findMany({
       where: {
         organizationId: orgId,
@@ -362,7 +368,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         totalCo2e: true,
         reportingPeriod: { select: { id: true, label: true, startDate: true } },
       },
-    }),
+    }).catch(() => []),
     // Facility breakdowns for the current period (live, no snapshot)
     currentPeriod
       ? prisma.dashboardAggregate.findMany({
@@ -378,7 +384,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             facility: { select: { id: true, name: true } },
           },
           orderBy: { totalCo2e: "desc" },
-        })
+        }).catch(() => [])
       : Promise.resolve(
           [] as {
             id: string;
@@ -390,14 +396,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         ),
     // Data quality metrics
     Promise.all([
-      // Total CO2e for all records in the latest calculation run
       latestSucceededRun
         ? prisma.emissionCalculation.aggregate({
             where: { calculationRunId: latestSucceededRun.id, organizationId: orgId },
             _sum: { totalCo2e: true },
-          })
+          }).catch(() => ({ _sum: { totalCo2e: null } }))
         : Promise.resolve({ _sum: { totalCo2e: null } }),
-      // CO2e for approved records only (join via activityRecord reviewStatus)
       latestSucceededRun
         ? prisma.emissionCalculation.aggregate({
             where: {
@@ -406,24 +410,21 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               activityRecord: { reviewStatus: "approved" },
             },
             _sum: { totalCo2e: true },
-          })
+          }).catch(() => ({ _sum: { totalCo2e: null } }))
         : Promise.resolve({ _sum: { totalCo2e: null } }),
-      // Approved records missing evidence (no ActivityRecordEvidence rows)
       prisma.activityRecord.count({
         where: {
           organizationId: orgId,
           reviewStatus: "approved",
           evidence: { none: {} },
         },
-      }),
-      // Records needing attention (in_review or draft)
+      }).catch(() => 0),
       prisma.activityRecord.count({
         where: {
           organizationId: orgId,
           reviewStatus: { in: ["in_review", "draft"] },
         },
-      }),
-      // Signal 1: records added after last calculation run (stale warning)
+      }).catch(() => 0),
       latestSucceededRun?.finishedAt && latestSucceededRun.reportingPeriodId
         ? prisma.activityRecord.count({
             where: {
@@ -431,9 +432,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               reportingPeriodId: latestSucceededRun.reportingPeriodId,
               createdAt: { gt: latestSucceededRun.finishedAt },
             },
-          })
+          }).catch(() => 0)
         : Promise.resolve(0),
-      // Signal 2: fallback factor exposure — CO2e from fallback selections
       latestSucceededRun
         ? prisma.emissionCalculation.aggregate({
             where: {
@@ -442,9 +442,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               selectionReason: { contains: "fallback", mode: "insensitive" },
             },
             _sum: { totalCo2e: true },
-          })
+          }).catch(() => ({ _sum: { totalCo2e: null } }))
         : Promise.resolve({ _sum: { totalCo2e: null } }),
-      // Signal 3: approved field submissions with both ocrExtractedData and formData set
       prisma.fieldSubmission.findMany({
         where: {
           organizationId: orgId,
@@ -455,7 +454,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         select: { ocrExtractedData: true, formData: true },
         take: 200,
         orderBy: { createdAt: "desc" },
-      }),
+      }).catch(() => []),
     ] as const),
     // Prior period scope-level aggregates for year-on-year comparison
     priorPeriod
@@ -468,7 +467,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           },
           _sum: { totalCo2e: true, recordCount: true },
           orderBy: { scope: "asc" },
-        })
+        }).catch(() => [])
       : Promise.resolve([] as { scope: number; _sum: { totalCo2e: string | null; recordCount: number | null } }[]),
   ]);
 
@@ -627,7 +626,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             ...(currentPeriod ? { reportingPeriodId: currentPeriod.id } : {}),
           },
           _sum: { totalCo2e: true, recordCount: true },
-        });
+        }).catch(() => ({ _sum: { totalCo2e: null, recordCount: null } }));
         return {
           type: "logistics" as const,
           transportKgCo2e: Number(transportAgg._sum.totalCo2e ?? 0),
@@ -638,7 +637,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         const electricityCategory = await prisma.emissionCategory.findFirst({
           where: { code: { in: ["s2-electricity-lb", "s2-electricity-mb"] } },
           select: { id: true },
-        });
+        }).catch(() => null);
         const energyAgg = electricityCategory
           ? await prisma.dashboardAggregate.aggregate({
               where: {
@@ -648,7 +647,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 ...(currentPeriod ? { reportingPeriodId: currentPeriod.id } : {}),
               },
               _sum: { totalCo2e: true, recordCount: true },
-            })
+            }).catch(() => ({ _sum: { totalCo2e: null, recordCount: null } }))
           : { _sum: { totalCo2e: null, recordCount: null } };
         return {
           type: "facilities_management" as const,
@@ -694,7 +693,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     by: ["reportingPeriodId"],
     where: { organizationId: orgId, reviewStatus: "approved" },
     _count: { _all: true },
-  });
+  }).catch(() => []);
   const approvedCountByPeriod: Record<string, number> = Object.fromEntries(
     approvedCountsByPeriod.map((row) => [row.reportingPeriodId, row._count._all]),
   );
