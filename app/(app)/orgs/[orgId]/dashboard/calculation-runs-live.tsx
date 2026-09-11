@@ -23,37 +23,65 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
   const [runs, setRuns] = useState<Run[]>(initialRuns);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wasInFlightRef = useRef(false);
+  const refreshingRef = useRef(false);
 
   const hasInFlight = runs.some(
     (r) => r.status === "queued" || r.status === "running",
   );
 
   useEffect(() => {
+    const tick = async () => {
+      // Skip polling when the page is hidden to avoid triggering the Next.js
+      // error boundary on tab-switch. The interval is kept running but no-ops
+      // until the tab is visible again.
+      if (document.visibilityState === "hidden") return;
+      try {
+        const res = await fetch(`/api/orgs/${orgId}/calculation-runs`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const fresh: Run[] = data.data ?? [];
+        setRuns(fresh);
+        const stillInFlight = fresh.some(
+          (r) => r.status === "queued" || r.status === "running",
+        );
+        if (!stillInFlight) {
+          clearInterval(pollRef.current!);
+          pollRef.current = null;
+          // Debounce: only call router.refresh() once even if the interval
+          // fires multiple times in quick succession on tab re-focus.
+          if (!refreshingRef.current) {
+            refreshingRef.current = true;
+            try {
+              router.refresh();
+            } catch {
+              // router.refresh() can fail if the server returns an error
+              // while the user is switching tabs. The error boundary must not
+              // trigger — silently swallow and let the user refresh manually.
+            } finally {
+              refreshingRef.current = false;
+            }
+          }
+        }
+      } catch {
+        // network blip — keep polling
+      }
+    };
+
     if (hasInFlight) {
       wasInFlightRef.current = true;
-      pollRef.current = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/orgs/${orgId}/calculation-runs`);
-          if (!res.ok) return;
-          const data = await res.json();
-          const fresh: Run[] = data.data ?? [];
-          setRuns(fresh);
-          const stillInFlight = fresh.some(
-            (r) => r.status === "queued" || r.status === "running",
-          );
-          if (!stillInFlight) {
-            clearInterval(pollRef.current!);
-            pollRef.current = null;
-            router.refresh();
-          }
-        } catch {
-          // network blip — keep polling
-        }
-      }, 3000);
+      pollRef.current = setInterval(tick, 3000);
     } else if (wasInFlightRef.current) {
-      // Just resolved — refresh server data
       wasInFlightRef.current = false;
-      router.refresh();
+      if (!refreshingRef.current) {
+        refreshingRef.current = true;
+        try {
+          router.refresh();
+        } catch {
+          // swallow — see comment above
+        } finally {
+          refreshingRef.current = false;
+        }
+      }
     }
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -72,7 +100,7 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
               Calculation in progress
             </p>
             <p className="text-xs text-[#374151] tracking-[-0.36px]">
-              Updating automatically — no need to refresh.
+              Updating automatically - no need to refresh.
             </p>
           </div>
         </div>
