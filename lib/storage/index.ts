@@ -1,10 +1,11 @@
-// Storage abstraction — supports three drivers:
-//   STORAGE_DRIVER=r2    — Cloudflare R2 / any S3-compatible bucket
-//   STORAGE_DRIVER=db    — bytes persisted in Postgres (zero-cost default
-//                          for production when no bucket is configured)
-//   STORAGE_DRIVER=local — local filesystem under ./uploads/ (development
-//                          only; serverless filesystems are ephemeral, so
-//                          "local" silently upgrades to "db" in production)
+// Storage abstraction — supports four drivers:
+//   STORAGE_DRIVER=supabase — Supabase Storage (recommended for production).
+//                             Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
+//   STORAGE_DRIVER=r2       — Cloudflare R2 / any S3-compatible endpoint.
+//   STORAGE_DRIVER=db       — bytes persisted in Postgres (zero-infra fallback).
+//   STORAGE_DRIVER=local    — local filesystem under ./uploads/ (development
+//                             only; serverless filesystems are ephemeral, so
+//                             "local" silently upgrades to "db" in production)
 
 import {
   S3Client,
@@ -18,15 +19,19 @@ import path from "path";
 import { prisma } from "@/lib/db";
 import { signStorageUrl } from "./signing";
 
-function resolveDriver(): "r2" | "db" | "local" {
+function resolveDriver(): "supabase" | "r2" | "db" | "local" {
   const configured = process.env.STORAGE_DRIVER;
   const isProd = process.env.NODE_ENV === "production";
+  const hasSupabase = Boolean(
+    process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY,
+  );
   const hasR2 = Boolean(
     process.env.STORAGE_ENDPOINT &&
       process.env.STORAGE_ACCESS_KEY_ID &&
       process.env.STORAGE_SECRET_ACCESS_KEY,
   );
 
+  if (configured === "supabase") return "supabase";
   if (configured === "r2") return "r2";
   if (configured === "db") return "db";
   if (configured === "local") {
@@ -38,8 +43,8 @@ function resolveDriver(): "r2" | "db" | "local" {
     }
     return "local";
   }
-  // Nothing configured: prefer R2 when its credentials exist, otherwise a
-  // driver that actually works in the current environment.
+  // Auto-detect: prefer Supabase when credentials exist, then R2, then env-appropriate default.
+  if (hasSupabase) return "supabase";
   if (hasR2) return "r2";
   return isProd ? "db" : "local";
 }
@@ -62,7 +67,7 @@ function appOrigin(): string {
   return "http://localhost:3000";
 }
 
-// ── R2 client (only initialised when driver = r2) ────────────────────────────
+// ── S3 client (only initialised when driver = r2) ────────────────────────────
 const s3 =
   DRIVER === "r2"
     ? new S3Client({
@@ -75,6 +80,76 @@ const s3 =
         },
       })
     : null;
+
+// ── Supabase Storage helpers (only used when driver = supabase) ───────────────
+function supabaseStorageBase(): string {
+  const url = (process.env.SUPABASE_URL ?? "").replace(/\/$/, "");
+  return `${url}/storage/v1`;
+}
+
+function supabaseHeaders(): Record<string, string> {
+  return {
+    Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+    "Content-Type": "application/json",
+  };
+}
+
+async function supabaseUpload(key: string, body: Buffer, contentType: string): Promise<void> {
+  const base = supabaseStorageBase();
+  const res = await fetch(`${base}/object/${BUCKET}/${key}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+      "Content-Type": contentType,
+      "x-upsert": "true",
+    },
+    body: body as BodyInit,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Supabase upload failed (${res.status}): ${text}`);
+  }
+}
+
+async function supabaseDownload(key: string): Promise<Buffer> {
+  const base = supabaseStorageBase();
+  const res = await fetch(`${base}/object/${BUCKET}/${key}`, {
+    headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}` },
+  });
+  if (!res.ok) throw new Error(`Supabase download failed (${res.status}): ${key}`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
+async function supabaseSignedUrl(key: string, expiresIn: number): Promise<string> {
+  const base = supabaseStorageBase();
+  const res = await fetch(`${base}/object/sign/${BUCKET}/${key}`, {
+    method: "POST",
+    headers: supabaseHeaders(),
+    body: JSON.stringify({ expiresIn }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Supabase sign failed (${res.status}): ${text}`);
+  }
+  const json = await res.json() as { signedURL: string };
+  const supabaseUrl = (process.env.SUPABASE_URL ?? "").replace(/\/$/, "");
+  // Supabase returns a relative path; resolve to absolute URL.
+  const signed = json.signedURL.startsWith("http") ? json.signedURL : `${supabaseUrl}${json.signedURL}`;
+  return signed;
+}
+
+async function supabaseDelete(key: string): Promise<void> {
+  const base = supabaseStorageBase();
+  const res = await fetch(`${base}/object/${BUCKET}`, {
+    method: "DELETE",
+    headers: supabaseHeaders(),
+    body: JSON.stringify({ prefixes: [key] }),
+  });
+  if (!res.ok && res.status !== 404) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Supabase delete failed (${res.status}): ${text}`);
+  }
+}
 
 const BUCKET = process.env.STORAGE_BUCKET ?? "metricora";
 const SAFE_SEGMENT_RE = /^[A-Za-z0-9][A-Za-z0-9._ -]*$/;
@@ -158,6 +233,13 @@ export async function presignUpload(key: string, contentType: string): Promise<s
     const sig = signStorageUrl(key, exp);
     return `${appOrigin()}/api/storage/upload?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}&contentType=${encodeURIComponent(contentType)}`;
   }
+  if (DRIVER === "supabase") {
+    // Supabase Storage doesn't support client-side presigned uploads via the REST API
+    // in the same way S3 does — route through our internal upload proxy instead.
+    const exp = Date.now() + PRESIGN_TTL * 1000;
+    const sig = signStorageUrl(key, exp);
+    return `${appOrigin()}/api/storage/upload?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}&contentType=${encodeURIComponent(contentType)}`;
+  }
   const cmd = new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType });
   return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
@@ -175,6 +257,9 @@ export async function presignDownload(key: string): Promise<string> {
     const sig = signStorageUrl(key, exp);
     return `${appOrigin()}/api/storage/serve?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}`;
   }
+  if (DRIVER === "supabase") {
+    return supabaseSignedUrl(key, PRESIGN_TTL);
+  }
   const cmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
   return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
@@ -188,6 +273,9 @@ export async function getObject(key: string): Promise<Buffer> {
     const { readFile } = await import("fs/promises");
     const localPath = path.join(process.cwd(), "uploads", key);
     return readFile(localPath);
+  }
+  if (DRIVER === "supabase") {
+    return supabaseDownload(key);
   }
   const { GetObjectCommand } = await import("@aws-sdk/client-s3");
   const response = await s3!.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
@@ -215,6 +303,10 @@ export async function putObject(key: string, body: Buffer, contentType: string):
     await writeFile(localPath, body);
     return;
   }
+  if (DRIVER === "supabase") {
+    await supabaseUpload(key, body, contentType);
+    return;
+  }
   await s3!.send(
     new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: body, ContentType: contentType }),
   );
@@ -229,7 +321,9 @@ export async function getObjectBuffer(key: string): Promise<Buffer> {
     const localPath = localStoragePath(key);
     return readFile(localPath);
   }
-
+  if (DRIVER === "supabase") {
+    return supabaseDownload(key);
+  }
   const result = await s3!.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
   const chunks: Buffer[] = [];
   for await (const chunk of result.Body as AsyncIterable<Uint8Array>) {
@@ -250,9 +344,7 @@ export function getPublicUrl(key: string): string | null {
   const isBrandingKey = segments[0] === "org" && segments[2] === "branding";
   if (!isBrandingKey) return null;
 
-  const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL ??
-    process.env.SUPABASE_URL;
+  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) return null;
 
   return `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${BUCKET}/${key}`;
@@ -268,6 +360,10 @@ export async function deleteObject(key: string): Promise<void> {
   if (DRIVER === "local") {
     const localPath = localStoragePath(key);
     await unlink(localPath).catch(() => {}); // ignore if already gone
+    return;
+  }
+  if (DRIVER === "supabase") {
+    await supabaseDelete(key);
     return;
   }
   await s3!.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
