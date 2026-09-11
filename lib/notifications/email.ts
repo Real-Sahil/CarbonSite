@@ -168,7 +168,7 @@ function emailLayout(bodyHtml: string, branding?: OrgBranding): string {
   const hasOrgName = Boolean(branding?.orgName);
 
   // Co-branded header: MetricOra left, org logo right (if provided)
-  const headerContent = hasOrgLogo
+  const headerContent = hasOrgLogo && branding
     ? `<table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td style="vertical-align:middle;">
@@ -180,7 +180,7 @@ function emailLayout(bodyHtml: string, branding?: OrgBranding): string {
             </tr></table>
           </td>
           <td style="vertical-align:middle;text-align:right;">
-            <img src="${branding!.orgLogoUrl}" alt="${branding!.orgName ?? "Organisation"}" height="32" style="display:inline-block;max-width:140px;max-height:32px;object-fit:contain;vertical-align:middle;">
+            <img src="${branding.orgLogoUrl}" alt="${branding.orgName ?? "Organisation"}" height="32" style="display:inline-block;max-width:140px;max-height:32px;object-fit:contain;vertical-align:middle;border-radius:4px;">
           </td>
         </tr>
       </table>`
