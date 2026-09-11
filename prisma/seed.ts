@@ -742,6 +742,125 @@ async function main() {
       co2e: 2.34658,
       usageNotes: "Gasoline (petrol). EPA GHG Emission Factors Hub 2025 (converted from per gallon).",
     },
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // EPA USEEIO v1.3 — SPEND-BASED SCOPE 3 FACTORS (NAICS-sector, kg CO₂e/USD)
+    // Source: US EPA USEEIO v1.3, 2021 basis.
+    // Apply to Scope 3 Cat 1 (purchased goods/services) when physical data unavailable.
+    // All factors in kg CO₂e per 1 USD of spend (2012 USD basis).
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+      externalId: "useeio-v1.3-naics-111-crop-production",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 1.2340,
+      usageNotes: "NAICS 111 — Crop Production. EPA USEEIO v1.3. kg CO₂e per USD spend.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-112-animal-production",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 1.8910,
+      usageNotes: "NAICS 112 — Animal Production. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-211-oil-gas",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 2.1560,
+      usageNotes: "NAICS 211 — Oil and Gas Extraction. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-236-construction",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.5430,
+      usageNotes: "NAICS 236 — Construction of Buildings. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-311-food",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.9820,
+      usageNotes: "NAICS 311 — Food Manufacturing. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-324-petroleum",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 3.4720,
+      usageNotes: "NAICS 324 — Petroleum & Coal Products. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-325-chemicals",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 1.1450,
+      usageNotes: "NAICS 325 — Chemical Manufacturing. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-331-primary-metals",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 1.6830,
+      usageNotes: "NAICS 331 — Primary Metal Manufacturing. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-336-transport-equip",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.5210,
+      usageNotes: "NAICS 336 — Transportation Equipment. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-481-air-transport",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-upstream-transport",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.7640,
+      usageNotes: "NAICS 481 — Air Transportation. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-484-trucking",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-upstream-transport",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.8910,
+      usageNotes: "NAICS 484 — Truck Transportation. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-518-data-processing",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.2340,
+      usageNotes: "NAICS 518 — Data Processing, Hosting & Related. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-531-real-estate",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.1820,
+      usageNotes: "NAICS 531 — Real Estate. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-541-professional-svcs",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.1650,
+      usageNotes: "NAICS 541 — Professional & Technical Services. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-621-ambulatory-health",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.2910,
+      usageNotes: "NAICS 621 — Ambulatory Health Care Services. EPA USEEIO v1.3.",
+    },
+    {
+      externalId: "useeio-v1.3-naics-722-food-services",
+      libraryId: epa.id, scope: 3, categoryCode: "s3-purchased-goods",
+      activityType: "spend_based", geographyCountry: "US", inputUnit: "USD",
+      co2e: 0.6730,
+      usageNotes: "NAICS 722 — Food Services & Drinking Places. EPA USEEIO v1.3.",
+    },
   ];
 
   let createdFactors = 0;

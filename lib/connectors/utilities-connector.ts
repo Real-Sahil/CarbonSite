@@ -2,7 +2,7 @@
 // Supports CSV exports from major UK suppliers (EDF, Shell Energy, Severn Trent, Thames Water, etc.)
 
 import { z } from "zod";
-import type { ConnectorPayload, ConnectorActivityRecord, IConnector } from "./types";
+import type { ConnectorPayload, ConnectorActivityRecord, ConnectorWaterRecord, IConnector } from "./types";
 
 const UtilitiesRowSchema = z.object({
   meterId: z.string(), // Meter ID/MPAN for electricity, MPRN for gas
@@ -19,12 +19,11 @@ const UtilitiesRowSchema = z.object({
 
 type UtilitiesRow = z.infer<typeof UtilitiesRowSchema>;
 
-// Meter type → Category mapping
+// Meter type → Category mapping (water is handled separately — routes to WaterRecord, not ActivityRecord)
 const METER_TO_CATEGORY: Record<string, string> = {
   electricity: "s2-electricity-lb", // Location-based by default
   gas: "s1-stationary", // On-site combustion
-  water: "s3-purchased-goods", // Water supply as purchased good
-  waste: "s3-purchased-goods", // Waste disposal
+  waste: "s3-waste", // Waste disposal (ESRS E5)
 };
 
 export class UtilitiesConnector implements IConnector {
@@ -40,6 +39,7 @@ export class UtilitiesConnector implements IConnector {
     const parsed = payloadSchema.parse(payload);
 
     const records: ConnectorActivityRecord[] = [];
+    const waterRecords: ConnectorWaterRecord[] = [];
     const errors: string[] = [];
 
     for (let idx = 0; idx < parsed.rows.length; idx++) {
@@ -62,20 +62,36 @@ export class UtilitiesConnector implements IConnector {
           throw new Error(`Unit '${row.unit}' not recognized (expected kWh, m³, tonnes, litres, etc.)`);
         }
 
-        const record = this.parseUtilitiesRow(row, idx + 1, parsed.externalBatchId);
-        records.push(record);
+        // Water readings route to WaterRecord (ESRS E3), not ActivityRecord
+        if (row.meterType === "water") {
+          const normalizedUnit = this.normalizeUnit(row.unit, "water");
+          const volumeM3 = normalizedUnit === "litres" ? usage / 1000 : usage;
+          waterRecords.push({
+            externalRecordId: `${row.meterId}-${row.readingDate}`,
+            externalBatchId: parsed.externalBatchId,
+            meterId: row.meterId,
+            volumeM3,
+            activityDate: this.parseDate(row.readingDate),
+            facilityCode: row.meterPostcode,
+            notes: row.description,
+          });
+        } else {
+          const record = this.parseUtilitiesRow(row, idx + 1, parsed.externalBatchId);
+          records.push(record);
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         errors.push(`Row ${idx + 1}: ${msg}`);
       }
     }
 
-    if (records.length === 0) {
+    if (records.length === 0 && waterRecords.length === 0) {
       throw new Error(`No valid records found in utilities export. Errors: ${errors.join("; ")}`);
     }
 
     return {
       records,
+      waterRecords: waterRecords.length > 0 ? waterRecords : undefined,
       metadata: {
         provider: "utilities",
         ingestionDate: new Date(),
