@@ -32,6 +32,18 @@ export const OGL_V3: Pick<DataSourceMeta, "licence" | "licenceUrl"> = {
   licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
 };
 
+/** Standard error thrown by data source clients on non-2xx responses. */
+export class DataSourceError extends Error {
+  constructor(
+    public readonly source: string,
+    public readonly statusCode: number,
+    public readonly body: string,
+  ) {
+    super(`[${source}] HTTP ${statusCode}: ${body.slice(0, 200)}`);
+    this.name = "DataSourceError";
+  }
+}
+
 /** Fetch with a sensible timeout and user-agent. Never throws on HTTP error —
  *  returns the response so callers can inspect the status code. */
 export async function govFetch(url: string, timeoutMs = 10_000): Promise<Response> {
