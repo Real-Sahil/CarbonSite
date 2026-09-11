@@ -508,6 +508,21 @@ model Facility {
   waterStressLevel     WaterStressLevel? @map("water_stress_level")
   waterStressSource    String?           @map("water_stress_source")
   waterStressAssessedAt DateTime?        @map("water_stress_assessed_at")
+  /// EA Flood Monitoring API — flood zone at this facility's coordinates.
+  /// Populated by the facility enrichment endpoint (GET /facilities/:id/enrich).
+  eaFloodZone          String?   @map("ea_flood_zone")
+  eaFloodRiskAssessedAt DateTime? @map("ea_flood_risk_assessed_at")
+  /// Nearest SSSI (Site of Special Scientific Interest) within 2 km.
+  /// Distance 0 means the facility falls within the SSSI boundary.
+  sssiProximityM       Int?      @map("sssi_proximity_m")
+  sssiName             String?   @map("sssi_name")
+  /// WFD (Water Framework Directive) water body that contains this facility.
+  wfdWaterBodyId       String?   @map("wfd_water_body_id")
+  wfdEcologicalStatus  String?   @map("wfd_ecological_status")
+  /// Nearest AURN (Automatic Urban Rural Network) monitoring station code.
+  aurnStationCode      String?   @map("aurn_station_code")
+  /// ISO timestamp of the last successful run of the facility enrichment endpoint.
+  eaEnrichmentLastRunAt DateTime? @map("ea_enrichment_last_run_at")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -4484,6 +4499,11 @@ model EnvironmentalPermit {
   ownerUserId    String?      @map("owner_user_id")
   documentEvidenceId String?  @map("document_evidence_id")
   notes          String?
+  /// EA Environmental Permitting Public Register reference number.
+  /// Set when this permit has been cross-referenced against the EA register.
+  eaRegisterRef  String?   @map("ea_register_ref")
+  /// When the EA public register was last queried for this permit.
+  eaLastSyncAt   DateTime? @map("ea_last_sync_at")
   createdByUserId String      @map("created_by_user_id")
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
