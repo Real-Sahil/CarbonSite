@@ -45,6 +45,10 @@ class ExtractedFields {
   final String? postcode;
   final String? pickupPostcode;
   final String? deliveryPostcode;
+  // Water meter reading fields
+  final String? meterId;
+  final String? reading;
+  final String? readingUnit;
 
   /// Per-field confidence scores.
   /// Keys match [toMap()] keys.  Values are in [0.0, 1.0]:
@@ -71,6 +75,9 @@ class ExtractedFields {
     this.postcode,
     this.pickupPostcode,
     this.deliveryPostcode,
+    this.meterId,
+    this.reading,
+    this.readingUnit,
     this.fieldConfidence = const {},
   });
 
@@ -93,6 +100,9 @@ class ExtractedFields {
       if (postcode != null) 'postcode': postcode!,
       if (pickupPostcode != null) 'pickupPostcode': pickupPostcode!,
       if (deliveryPostcode != null) 'deliveryPostcode': deliveryPostcode!,
+      if (meterId != null) 'meterId': meterId!,
+      if (reading != null) 'reading': reading!,
+      if (readingUnit != null) 'readingUnit': readingUnit!,
       'fieldConfidence': fieldConfidence,
     };
   }
@@ -196,7 +206,29 @@ class OcrExtractor {
   );
 
   static final _volumePattern = RegExp(
-    r'(\d{1,6}(?:[.,]\d{1,3})?)\s*(litres?|liters?|ltrs?|l|gallons?|gal)\b',
+    r'(\d{1,6}(?:[.,]\d{1,3})?)\s*(litres?|liters?|ltrs?|l|gallons?|gal|m3|m³|cubic\s*m(?:etres?|eters?)?)\b',
+    caseSensitive: false,
+  );
+
+  // ── Water meter reading patterns ────────────────────────────────────────────
+
+  // Meter serial/ID: "Meter No: 12345678", "Serial: M-001234", "Meter ID: …"
+  static final _meterIdLabelled = RegExp(
+    r'(?:meter\s*(?:no|number|id|serial|ref)|serial\s*(?:no|number)|meter\s*reference)'
+    r'\s*[:\-#]?\s*([A-Z0-9][A-Z0-9\-/_]{1,30})',
+    caseSensitive: false,
+  );
+
+  // Meter reading value with m³ unit, e.g. "Reading: 1234.5 m3" or "12345 M³"
+  static final _meterReadingPattern = RegExp(
+    r'(?:reading|read|current\s*read|register|consumption|usage)\s*[:\-]?\s*'
+    r'(\d{1,8}(?:[.,]\d{1,4})?)\s*(m3|m³|cubic\s*m(?:etres?|eters?)?|litres?|liters?|l)\b',
+    caseSensitive: false,
+  );
+
+  // Fallback: bare numeric value followed by m³ unit when no label present
+  static final _meterReadingBare = RegExp(
+    r'\b(\d{3,8}(?:[.,]\d{1,3})?)\s*(m3|m³|cubic\s*metres?|cubic\s*meters?)\b',
     caseSensitive: false,
   );
 
@@ -239,6 +271,11 @@ class OcrExtractor {
   // ── Core extraction ─────────────────────────────────────────────────────────
 
   static ExtractedFields extract(String rawText, DocumentType type) {
+    // ── Water meter reading — dedicated fast path ──────────────────────────
+    if (type == DocumentType.waterMeterReading) {
+      return _extractWaterMeterReading(rawText);
+    }
+
     final lines = rawText
         .split(RegExp(r'[\r\n]+'))
         .map((l) => l.trim())
@@ -367,6 +404,83 @@ class OcrExtractor {
       postcode: postcode,
       pickupPostcode: pickupPostcode,
       deliveryPostcode: deliveryPostcode,
+      fieldConfidence: confidence,
+    );
+  }
+
+  // ── Water meter reading extraction ─────────────────────────────────────────
+
+  static ExtractedFields _extractWaterMeterReading(String rawText) {
+    final lines = rawText
+        .split(RegExp(r'[\r\n]+'))
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    final working = rawText.replaceAll(RegExp(r'[\r\n]+'), ' ');
+
+    // 1. Date
+    final dateResult = _extractDateWithConfidence(working);
+    final date = dateResult.$1;
+    final dateConfidence = dateResult.$2;
+
+    // 2. Meter ID — labeled lookup first
+    String? meterId;
+    double meterIdConfidence = _notFound;
+    final meterIdMatch = _meterIdLabelled.firstMatch(working);
+    if (meterIdMatch != null) {
+      meterId = meterIdMatch.group(1)?.trim();
+      meterIdConfidence = _exactMatch;
+    }
+
+    // 3. Reading value + unit — labeled lookup first
+    String? reading;
+    String? readingUnit;
+    double readingConfidence = _notFound;
+
+    final labeledReadingMatch = _meterReadingPattern.firstMatch(working);
+    if (labeledReadingMatch != null) {
+      reading = _normalizeNumber(labeledReadingMatch.group(1)!);
+      readingUnit = _normalizeVolumeUnit(labeledReadingMatch.group(2)!);
+      readingConfidence = _exactMatch;
+    } else {
+      // Fallback: bare m³ value
+      final bareMatch = _meterReadingBare.firstMatch(working);
+      if (bareMatch != null) {
+        reading = _normalizeNumber(bareMatch.group(1)!);
+        readingUnit = _normalizeVolumeUnit(bareMatch.group(2)!);
+        readingConfidence = _fuzzyMatch;
+      }
+    }
+
+    // 4. If still no reading, try two-phase labeled extraction with aliases
+    if (reading == null) {
+      final twoPhase = _tryLabeledExtraction(
+        lines,
+        ['reading', 'meter reading', 'current read', 'consumption', 'usage'],
+      );
+      if (twoPhase.$1 != null) {
+        final numMatch = RegExp(r'(\d[\d.,]*)').firstMatch(twoPhase.$1!);
+        if (numMatch != null) {
+          reading = _normalizeNumber(numMatch.group(1)!);
+          readingUnit = 'm3'; // default unit when not stated
+          readingConfidence = twoPhase.$2;
+        }
+      }
+    }
+
+    final confidence = <String, double>{
+      'date': dateConfidence,
+      'meterId': meterIdConfidence,
+      'reading': readingConfidence,
+      'readingUnit': readingConfidence > 0 ? _exactMatch : _notFound,
+    };
+
+    return ExtractedFields(
+      documentType: DocumentType.waterMeterReading,
+      date: date,
+      meterId: meterId,
+      reading: reading,
+      readingUnit: readingUnit,
       fieldConfidence: confidence,
     );
   }

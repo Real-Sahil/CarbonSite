@@ -122,31 +122,123 @@ export async function exchangeOidcCodeForToken(
   return response.json();
 }
 
+interface JwkKey {
+  kty: string;
+  kid?: string;
+  use?: string;
+  alg?: string;
+  n?: string;
+  e?: string;
+  x?: string;
+  y?: string;
+  crv?: string;
+}
+
+const jwksCache = new Map<string, { keys: JwkKey[]; fetchedAt: number }>();
+const JWKS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+async function fetchJwks(jwksUri: string): Promise<JwkKey[]> {
+  const cached = jwksCache.get(jwksUri);
+  if (cached && Date.now() - cached.fetchedAt < JWKS_CACHE_TTL_MS) {
+    return cached.keys;
+  }
+  const res = await fetch(jwksUri);
+  if (!res.ok) throw new Error(`JWKS fetch failed: ${res.status}`);
+  const { keys } = await res.json() as { keys: JwkKey[] };
+  jwksCache.set(jwksUri, { keys, fetchedAt: Date.now() });
+  return keys;
+}
+
+function base64urlDecode(s: string): Buffer {
+  // Pad to a multiple of 4 and convert base64url → base64
+  const padded = s.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(s.length / 4) * 4, "=");
+  return Buffer.from(padded, "base64");
+}
+
+async function verifyRs256(header: Record<string, string>, signingInput: string, signature: Buffer, key: JwkKey): Promise<boolean> {
+  if (!key.n || !key.e) throw new Error("RSA key missing n or e");
+  const jwk = {
+    kty: "RSA",
+    n: key.n,
+    e: key.e,
+    alg: header.alg ?? "RS256",
+    use: "sig",
+  };
+  const cryptoKey = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+  return crypto.subtle.verify("RSASSA-PKCS1-v1_5", cryptoKey, signature, Buffer.from(signingInput));
+}
+
+async function verifyEs256(header: Record<string, string>, signingInput: string, signature: Buffer, key: JwkKey): Promise<boolean> {
+  if (!key.x || !key.y) throw new Error("EC key missing x or y");
+  const jwk = {
+    kty: "EC",
+    crv: key.crv ?? "P-256",
+    x: key.x,
+    y: key.y,
+    alg: header.alg ?? "ES256",
+    use: "sig",
+  };
+  // ECDSA signature in JWT is r||s (raw), but WebCrypto expects IEEE P1363 (same for P-256)
+  const cryptoKey = await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: key.crv ?? "P-256" }, false, ["verify"]);
+  return crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, cryptoKey, signature, Buffer.from(signingInput));
+}
+
 export async function verifyOidcIdToken(
   config: OidcConfig,
   idToken: string,
   clientId: string
 ): Promise<Record<string, unknown>> {
-  // In production, verify JWT signature using JWKS
-  // For MVP, decode without verification (insecure - only for development)
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("JWT verification not yet implemented for production");
-  }
-
   const parts = idToken.split(".");
-  if (parts.length !== 3) {
-    throw new Error("Invalid JWT format");
+  if (parts.length !== 3) throw new Error("Invalid JWT format");
+
+  const [rawHeader, rawPayload, rawSignature] = parts;
+  const header = JSON.parse(base64urlDecode(rawHeader).toString()) as Record<string, string>;
+  const payload = JSON.parse(base64urlDecode(rawPayload).toString()) as Record<string, unknown>;
+
+  const alg = header.alg;
+  if (!alg || !["RS256", "RS384", "RS512", "ES256", "ES384", "ES512"].includes(alg)) {
+    throw new Error(`Unsupported or missing JWT algorithm: ${alg}`);
   }
 
-  const payload = JSON.parse(Buffer.from(parts[1], "base64").toString());
+  const jwksUri = config.jwksUri || (config.metadataUrl ? inferOidcEndpoint(config.metadataUrl, "jwks_uri") : "");
+  if (!jwksUri) throw new Error("JWKS URI is not configured");
 
-  // Basic validation
-  if (payload.aud !== clientId) {
-    throw new Error("Invalid audience in ID token");
+  const keys = await fetchJwks(jwksUri);
+  const candidateKeys = header.kid
+    ? keys.filter((k) => k.kid === header.kid)
+    : keys.filter((k) => !k.use || k.use === "sig");
+
+  if (candidateKeys.length === 0) throw new Error("No matching JWKS key found for JWT");
+
+  const signingInput = `${rawHeader}.${rawPayload}`;
+  const signature = base64urlDecode(rawSignature);
+
+  let verified = false;
+  for (const key of candidateKeys) {
+    try {
+      if (alg.startsWith("RS")) {
+        verified = await verifyRs256(header, signingInput, signature, key);
+      } else if (alg.startsWith("ES")) {
+        verified = await verifyEs256(header, signingInput, signature, key);
+      }
+      if (verified) break;
+    } catch {
+      // try next key
+    }
   }
+  if (!verified) throw new Error("JWT signature verification failed");
 
-  if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+  // Standard claims validation
+  const aud = payload.aud;
+  const audiences = Array.isArray(aud) ? aud : [aud];
+  if (!audiences.includes(clientId)) throw new Error("Invalid audience in ID token");
+
+  if (typeof payload.exp === "number" && payload.exp < Math.floor(Date.now() / 1000)) {
     throw new Error("ID token expired");
+  }
+
+  if (typeof payload.nbf === "number" && payload.nbf > Math.floor(Date.now() / 1000) + 60) {
+    throw new Error("ID token not yet valid");
   }
 
   return payload;

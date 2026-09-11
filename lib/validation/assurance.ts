@@ -67,6 +67,8 @@ export const generateSamplingPlanSchema = z.object({
 export const createManualSampleSchema = z.object({
   emissionCalculationId: z.string().min(1).optional(),
   activityRecordId: z.string().min(1).optional(),
+  waterRecordId: z.string().min(1).optional(),
+  wasteRecordId: z.string().min(1).optional(),
   samplingMethod: z.enum(["full_population", "risk_based", "random", "targeted"]),
   selectionRationale: z.string().min(1).max(2000),
   testProcedure: z.string().min(1).max(2000),

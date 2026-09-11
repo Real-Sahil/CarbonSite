@@ -39,51 +39,76 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const body = generateSamplingPlanSchema.parse(await req.json());
 
-    const calculations = await prisma.emissionCalculation.findMany({
-      where: { organizationId: orgId, activityRecord: { reportingPeriodId: engagement.reportingPeriodId } },
-      select: {
-        id: true,
-        activityRecordId: true,
-        totalCo2e: true,
-        activityRecord: { select: { dataOrigin: true } },
-      },
-      take: 20_000,
-    });
+    const [calculations, waterRecords, wasteRecords] = await Promise.all([
+      prisma.emissionCalculation.findMany({
+        where: { organizationId: orgId, activityRecord: { reportingPeriodId: engagement.reportingPeriodId } },
+        select: {
+          id: true,
+          activityRecordId: true,
+          totalCo2e: true,
+          activityRecord: { select: { dataOrigin: true } },
+        },
+        take: 20_000,
+      }),
+      prisma.waterRecord.findMany({
+        where: { organizationId: orgId, reportingPeriodId: engagement.reportingPeriodId },
+        select: { id: true, volumeM3: true, dataSource: true },
+        take: 5_000,
+      }),
+      prisma.wasteRecord.findMany({
+        where: { organizationId: orgId, reportingPeriodId: engagement.reportingPeriodId },
+        select: { id: true, weightTonnes: true },
+        take: 5_000,
+      }),
+    ]);
 
-    if (calculations.length === 0) {
-      return apiError("NO_DATA", "No emission calculations found for this reporting period to sample from.", 422);
+    if (calculations.length === 0 && waterRecords.length === 0 && wasteRecords.length === 0) {
+      return apiError("NO_DATA", "No emission calculations or environmental records found for this reporting period to sample from.", 422);
     }
 
     const alreadySampled = await prisma.assuranceSample.findMany({
       where: { engagementId },
-      select: { emissionCalculationId: true },
+      select: { emissionCalculationId: true, waterRecordId: true, wasteRecordId: true },
     });
-    const alreadySampledIds = new Set(alreadySampled.map((s) => s.emissionCalculationId).filter(Boolean));
+    const alreadySampledCalcIds = new Set(alreadySampled.map((s) => s.emissionCalculationId).filter(Boolean));
+    const alreadySampledWaterIds = new Set(alreadySampled.map((s) => s.waterRecordId).filter(Boolean));
+    const alreadySampledWasteIds = new Set(alreadySampled.map((s) => s.wasteRecordId).filter(Boolean));
 
     const totalCo2e = calculations.reduce((sum, c) => sum + Number(c.totalCo2e), 0);
     const materialityThreshold =
       body.materialityThresholdCo2e ??
       (engagement.materialityThresholdCo2e ? Number(engagement.materialityThresholdCo2e) : suggestMaterialityThreshold(totalCo2e));
 
+    const calcCandidates = calculations
+      .filter((c) => !alreadySampledCalcIds.has(c.id))
+      .map((c) => ({
+        id: c.id,
+        activityRecordId: c.activityRecordId,
+        dataOrigin: c.activityRecord.dataOrigin,
+        totalCo2e: Number(c.totalCo2e),
+      }));
+
     const plan = buildSamplingPlan({
-      candidates: calculations
-        .filter((c) => !alreadySampledIds.has(c.id))
-        .map((c) => ({
-          id: c.id,
-          activityRecordId: c.activityRecordId,
-          dataOrigin: c.activityRecord.dataOrigin,
-          totalCo2e: Number(c.totalCo2e),
-        })),
+      candidates: calcCandidates,
       materialityThresholdCo2e: materialityThreshold,
       targetSampleSize: body.targetSampleSize,
     });
 
-    if (plan.length === 0) {
-      return Response.json({ created: [], materialityThresholdUsed: materialityThreshold });
+    // Include a risk-based sample of water/waste records (up to 10% of target size each)
+    const envSampleSize = Math.max(1, Math.floor((body.targetSampleSize ?? 25) * 0.1));
+    const waterSamples = waterRecords
+      .filter((r) => !alreadySampledWaterIds.has(r.id))
+      .slice(0, envSampleSize);
+    const wasteSamples = wasteRecords
+      .filter((r) => !alreadySampledWasteIds.has(r.id))
+      .slice(0, envSampleSize);
+
+    if (plan.length === 0 && waterSamples.length === 0 && wasteSamples.length === 0) {
+      return Response.json({ created: 0, materialityThresholdUsed: materialityThreshold });
     }
 
-    const created = await prisma.$transaction(
-      plan.map((item) =>
+    const created = await prisma.$transaction([
+      ...plan.map((item) =>
         prisma.assuranceSample.create({
           data: {
             organizationId: orgId,
@@ -96,7 +121,31 @@ export async function POST(req: NextRequest, { params }: Params) {
           },
         }),
       ),
-    );
+      ...waterSamples.map((r) =>
+        prisma.assuranceSample.create({
+          data: {
+            organizationId: orgId,
+            engagementId,
+            waterRecordId: r.id,
+            samplingMethod: "risk_based",
+            selectionRationale: `Water record ${r.id}: ${Number(r.volumeM3).toFixed(1)} m³ (${r.dataSource})`,
+            testProcedure: "Agree volume to meter reading or supporting evidence; verify facility water-stress classification.",
+          },
+        }),
+      ),
+      ...wasteSamples.map((r) =>
+        prisma.assuranceSample.create({
+          data: {
+            organizationId: orgId,
+            engagementId,
+            wasteRecordId: r.id,
+            samplingMethod: "risk_based",
+            selectionRationale: `Waste record ${r.id}: ${Number(r.weightTonnes).toFixed(3)} tonnes`,
+            testProcedure: "Agree weight to waste transfer note; verify disposal route, EWC code and hazardous classification.",
+          },
+        }),
+      ),
+    ]);
 
     await writeAuditLog({
       organizationId: orgId,
@@ -107,9 +156,12 @@ export async function POST(req: NextRequest, { params }: Params) {
       metadata: {
         sampleCount: created.length,
         materialityThresholdUsed: materialityThreshold,
+        ghgSamples: plan.length,
+        waterSamples: waterSamples.length,
+        wasteSamples: wasteSamples.length,
         byMethod: {
           full_population: plan.filter((p) => p.samplingMethod === "full_population").length,
-          risk_based: plan.filter((p) => p.samplingMethod === "risk_based").length,
+          risk_based: plan.filter((p) => p.samplingMethod === "risk_based").length + waterSamples.length + wasteSamples.length,
           random: plan.filter((p) => p.samplingMethod === "random").length,
         },
       },
@@ -146,12 +198,30 @@ export async function PUT(req: NextRequest, { params }: Params) {
       if (!calc) return apiError("NOT_FOUND", "Emission calculation not found in this organisation.", 404);
     }
 
+    if (body.waterRecordId) {
+      const wr = await prisma.waterRecord.findFirst({
+        where: { id: body.waterRecordId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!wr) return apiError("NOT_FOUND", "Water record not found in this organisation.", 404);
+    }
+
+    if (body.wasteRecordId) {
+      const wsr = await prisma.wasteRecord.findFirst({
+        where: { id: body.wasteRecordId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!wsr) return apiError("NOT_FOUND", "Waste record not found in this organisation.", 404);
+    }
+
     const sample = await prisma.assuranceSample.create({
       data: {
         organizationId: orgId,
         engagementId,
         emissionCalculationId: body.emissionCalculationId ?? null,
         activityRecordId: body.activityRecordId ?? null,
+        waterRecordId: body.waterRecordId ?? null,
+        wasteRecordId: body.wasteRecordId ?? null,
         samplingMethod: body.samplingMethod,
         selectionRationale: body.selectionRationale,
         testProcedure: body.testProcedure,

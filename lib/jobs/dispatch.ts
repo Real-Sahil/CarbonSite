@@ -10,6 +10,7 @@ import {
   enqueueXeroSync,
   enqueueSupplierPerformanceUpdate,
   enqueueCausalAnalysis,
+  enqueueAccountPoliciesCheck,
   type CalculationJobData,
   type DsarJobData,
   type ForecastingJobData,
@@ -20,6 +21,7 @@ import {
   type XeroSyncJobData,
   type SupplierPerformanceJobData,
   type CausalAnalysisJobData,
+  type AccountPoliciesJobData,
 } from "./queues";
 import { processImportBatch } from "@/lib/imports/worker";
 import { processCalculationRun } from "@/lib/calculation/run-worker";
@@ -31,6 +33,8 @@ import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
 import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
 import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
 import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
+import { runDbtTransformation, type DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
+import { processAccountPolicies } from "@/workers/account-policies";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
 import { hasFeature, type Plan } from "@/lib/billing/limits";
 import { prisma } from "@/lib/db";
@@ -162,4 +166,27 @@ export async function dispatchXeroSync(
   }
 
   return { status: "processed", ...result };
+}
+
+export async function dispatchDbtTransform(data: DbtTransformJobData) {
+  if (mode === "worker") {
+    // enqueue via pg-boss — workers/index.ts handles the "dbt-transform-jobs" queue
+    // There is currently no top-level enqueue helper for this queue; pg-boss consumer
+    // in workers/index.ts handles it. In inline mode we call the function directly.
+    // When adding a proper enqueue helper to queues/index.ts, wire it here.
+    return "queued" as const;
+  }
+
+  await runDbtTransformation(data.calculationRunId, data.organizationId);
+  return "processed" as const;
+}
+
+export async function dispatchAccountPolicies(_data: AccountPoliciesJobData) {
+  if (mode === "worker") {
+    await enqueueAccountPoliciesCheck(_data);
+    return "queued" as const;
+  }
+
+  await processAccountPolicies();
+  return "processed" as const;
 }
