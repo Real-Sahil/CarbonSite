@@ -49,13 +49,13 @@ async function fetchWithTimeout(url: string, options: RequestInit): Promise<Resp
 function buildHeaders(): HeadersInit | null {
   const apiKey = process.env.EPC_API_KEY;
   if (!apiKey) return null;
-  // API uses HTTP Basic auth: username=email, password=api-key
-  // The key itself is the password; username is the registered email.
-  // Alternatively, token can be passed as Bearer.
-  const email = process.env.EPC_API_EMAIL ?? "api@metricora.co.uk";
-  const token = Buffer.from(`${email}:${apiKey}`).toString("base64");
+  // Prefer Bearer token (key only). Fall back to Basic auth if EPC_API_EMAIL set.
+  const email = process.env.EPC_API_EMAIL;
+  const authValue = email
+    ? `Basic ${Buffer.from(`${email}:${apiKey}`).toString("base64")}`
+    : `Bearer ${apiKey}`;
   return {
-    Authorization: `Basic ${token}`,
+    Authorization: authValue,
     Accept: "application/json",
   };
 }
