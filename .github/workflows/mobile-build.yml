@@ -405,6 +405,27 @@ jobs:
           name: metricora-ios-release
           path: mobile/build/ios/ipa/*.ipa
           if-no-files-found: error
+      - name: Upload to TestFlight / App Store Connect
+        if: env.METRICORA_IOS_SIGNING_READY == 'true'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_PRIVATE_KEY: ${{ secrets.ASC_API_PRIVATE_KEY }}
+        run: |
+          if [ -z "$ASC_API_KEY_ID" ] || [ -z "$ASC_API_ISSUER_ID" ] || [ -z "$ASC_API_PRIVATE_KEY" ]; then
+            echo "::notice::ASC_API_* secrets not set — skipping TestFlight upload. Add ASC_API_KEY_ID, ASC_API_ISSUER_ID, and ASC_API_PRIVATE_KEY in repo Settings > Secrets to enable automatic upload."
+            exit 0
+          fi
+          mkdir -p ~/.private_keys
+          printf '%s' "$ASC_API_PRIVATE_KEY" > ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8
+          chmod 600 ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8
+          xcrun altool --upload-app \
+            -f build/ios/ipa/Runner.ipa \
+            -t ios \
+            --apiKey "$ASC_API_KEY_ID" \
+            --apiIssuer "$ASC_API_ISSUER_ID" \
+            --verbose
+          rm -f ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8
       - name: Upload unsigned iOS artifact
         if: env.METRICORA_IOS_SIGNING_READY != 'true'
         uses: actions/upload-artifact@v4
