@@ -272,18 +272,9 @@ jobs:
           security list-keychains -d user -s login.keychain-db "$KEYCHAIN_PATH"
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          # Extract UUID/Name by scanning raw binary — avoids security cms -D which fails on
-          # certain CMS variants (-8183). The plist XML is embedded as plaintext inside CMS.
-          python3 -c "
-import re, sys
-data = open(sys.argv[1], 'rb').read()
-m = re.search(b'<key>UUID</key>\\s*<string>([^<]+)</string>', data)
-uuid = m.group(1).decode().strip() if m else ''
-m2 = re.search(b'<key>Name</key>\\s*<string>([^<]+)</string>', data)
-name = m2.group(1).decode().strip() if m2 else 'MetricOra Distribution'
-print('PROFILE_UUID=' + uuid)
-print('PROFILE_NAME=' + name)
-" "$PROFILE_PATH" > "$RUNNER_TEMP/profile_meta.txt"
+          # Extract UUID/Name by scanning raw binary (single-line to avoid YAML indent issues).
+          # security cms -D fails -8183 on this profile; plist XML is plaintext inside CMS.
+          python3 -c 'import re,sys; data=open(sys.argv[1],"rb").read(); m=re.search(b"<key>UUID</key>\s*<string>([^<]+)</string>",data); uuid=m.group(1).decode().strip() if m else ""; m2=re.search(b"<key>Name</key>\s*<string>([^<]+)</string>",data); name=m2.group(1).decode().strip() if m2 else "MetricOra Distribution"; print("PROFILE_UUID="+uuid); print("PROFILE_NAME="+name)' "$PROFILE_PATH" > "$RUNNER_TEMP/profile_meta.txt"
           cat "$RUNNER_TEMP/profile_meta.txt"
           PROFILE_UUID="$(grep '^PROFILE_UUID=' "$RUNNER_TEMP/profile_meta.txt" | cut -d= -f2)"
           PROFILE_NAME="$(grep '^PROFILE_NAME=' "$RUNNER_TEMP/profile_meta.txt" | cut -d= -f2)"
