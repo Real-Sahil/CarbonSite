@@ -312,11 +312,6 @@ jobs:
             <string>Apple Distribution</string>
             <key>uploadSymbols</key>
             <true/>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>app.metricora.metricoraMobile</key>
-              <string>$METRICORA_IOS_PROFILE_NAME</string>
-            </dict>
           </dict>
           </plist>
           PLIST
