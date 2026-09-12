@@ -140,6 +140,7 @@ export interface NbnSpeciesRecord {
   group: string;
   occurrenceCount: number;
   lastSeen: string | null;
+  conservationStatus?: string;
 }
 
 interface NbnSearchResponse {
@@ -152,7 +153,23 @@ interface NbnSearchResponse {
     speciesGroup?: string;
     taxonConceptID?: string;
     year?: number;
+    countryConservation?: string;
   }>;
+}
+
+// IUCN / UK conservation risk levels, derived from NBN Atlas countryConservation strings.
+export type ConservationRisk = "critical" | "endangered" | "vulnerable" | "near_threatened" | "protected" | "least_concern" | "unknown";
+
+export function conservationRisk(status: string | undefined): ConservationRisk {
+  if (!status) return "unknown";
+  const s = status.toLowerCase();
+  if (/critically.endangered|\\bCR\\b/.test(s)) return "critical";
+  if (/\\bendangered\\b|\\bEN\\b/.test(s)) return "endangered";
+  if (/vulnerable|\\bVU\\b/.test(s)) return "vulnerable";
+  if (/near.threatened|\\bNT\\b/.test(s)) return "near_threatened";
+  if (/schedule [158]|protected|wildlife.*act/i.test(s)) return "protected";
+  if (/least.concern|\\bLC\\b/.test(s)) return "least_concern";
+  return "unknown";
 }
 
 const GROUP_KEYWORDS: Record<string, string[]> = {
@@ -266,6 +283,7 @@ export async function scanSpecies(
             group: occ.speciesGroup ?? occ.classs ?? occ.kingdom ?? "Unknown",
             occurrenceCount: 1,
             lastSeen: occ.year ? String(occ.year) : null,
+            conservationStatus: occ.countryConservation || undefined,
           },
         });
       }

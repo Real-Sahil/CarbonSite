@@ -18,6 +18,7 @@ import { renderCbamHtml, type CbamHtmlData } from "./templates/cbam";
 import { generateCbamXml, type CbamReportData, type CbamGoodsItem, MATERIAL_TO_CN } from "./cbam-xml";
 import { renderPpn006CrpHtml, type Ppn006CrpData, type CrpScopeRow } from "./templates/ppn-006-crp";
 import { renderEcologySurveyHtml, type EcologySurveyData, type EcologySurveyAssessment } from "./templates/ecology-survey";
+import { renderEcologyScanHtml, type EcologyScanReportData, type EcologyScanRecord, type EcologyScanSpecies, type EcologyScanSite, type EcologyScanWoodland } from "./templates/ecology-scan";
 
 export type ReportContext = {
   orgId: string;
@@ -636,6 +637,52 @@ const handlers: Record<string, ReportHandler> = {
       totalSpeciesRecords: speciesCount,
     };
     return { html: renderEcologySurveyHtml(data) };
+  },
+  ecology_scan: async (ctx) => {
+    const { report, logoDataUri, publishedBy } = ctx;
+
+    const scans = await prisma.ecologicalScan.findMany({
+      where: { organizationId: ctx.orgId, status: "completed" },
+      include: { project: { select: { name: true } } },
+      orderBy: { scannedAt: "desc" },
+    });
+
+    const mappedScans: EcologyScanRecord[] = scans.map((s) => ({
+      id: s.id,
+      postcode: s.postcode,
+      radiusKm: Number(s.radiusKm),
+      scannedAt: s.scannedAt,
+      projectName: s.project.name ?? null,
+      totalSpeciesCount: s.totalSpeciesCount,
+      plantSpeciesCount: s.plantSpeciesCount,
+      birdSpeciesCount: s.birdSpeciesCount,
+      mammalSpeciesCount: s.mammalSpeciesCount,
+      invertSpeciesCount: s.invertSpeciesCount,
+      reptileSpeciesCount: s.reptileSpeciesCount,
+      amphibianSpeciesCount: s.amphibianSpeciesCount,
+      otherSpeciesCount: s.otherSpeciesCount,
+      sssiCount: s.sssiCount,
+      sacCount: s.sacCount,
+      spaCount: s.spaCount,
+      nvrCount: s.nvrCount,
+      ancientWoodlandCount: s.ancientWoodlandCount,
+      woodlandTotalHa: Number(s.woodlandTotalHa),
+      broadleafHa: Number(s.broadleafHa),
+      coniferHa: Number(s.coniferHa),
+      mixedWoodlandHa: Number(s.mixedWoodlandHa),
+      designatedSites: (s.designatedSites as unknown as EcologyScanSite[]) ?? [],
+      woodlandData: (s.woodlandData as unknown as EcologyScanWoodland[]) ?? [],
+      speciesRecords: (s.speciesRecords as unknown as EcologyScanSpecies[]) ?? [],
+    }));
+
+    const data: EcologyScanReportData = {
+      orgName: report.organization.name,
+      logoDataUri,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      scans: mappedScans,
+    };
+    return { html: renderEcologyScanHtml(data) };
   },
 };
 
