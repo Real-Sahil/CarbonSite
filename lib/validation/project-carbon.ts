@@ -51,6 +51,7 @@ export const createProjectSchema = z
     projectCode: z.string().max(100).optional(),
     description: z.string().max(2000).optional(),
     status: projectStatusSchema.default("active"),
+    postcode: z.string().max(20).optional(),
     startDate: z.coerce.date().optional(),
     endDate: z.coerce.date().optional(),
   })
@@ -64,6 +65,7 @@ export const updateProjectSchema = z.object({
   projectCode: z.string().max(100).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
   status: projectStatusSchema.optional(),
+  postcode: z.string().max(20).nullable().optional(),
   startDate: z.coerce.date().nullable().optional(),
   endDate: z.coerce.date().nullable().optional(),
 });

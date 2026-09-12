@@ -964,6 +964,44 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         return <OnboardingChecklist orgId={orgId} steps={checklistSteps} />;
       })()}
 
+      {/* Quick setup links — shown to admins who skipped the wizard but haven't run a calculation yet */}
+      {role === "admin" && onboardingProgress?.isComplete && calculationRuns.length === 0 && (
+        <div className="mb-8 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-medium text-[#111827] tracking-[-0.42px]">Quick setup</h2>
+              <p className="text-xs text-[#6B7280] tracking-[-0.36px] mt-0.5">
+                Jump to any area to configure your organisation. This panel disappears once you run your first calculation.
+              </p>
+            </div>
+            <Link href={`/orgs/${orgId}/onboarding`} className="text-xs text-[#6B7280] hover:text-[#374151] underline underline-offset-2 shrink-0 ml-4">
+              Open setup guide
+            </Link>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {[
+              { label: "Org settings", description: "Industry, country, currency", href: `/orgs/${orgId}/settings` },
+              { label: "Invite team", description: "Add editors and reviewers", href: `/orgs/${orgId}/settings/members` },
+              { label: "Reporting period", description: "Define your reporting window", href: `/orgs/${orgId}/settings/periods` },
+              { label: "Contracts & projects", description: "Add sites and assign field workers", href: `/orgs/${orgId}/contracts` },
+              { label: "Import data", description: "Upload CSV or enter records", href: `/orgs/${orgId}/imports` },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-start gap-2.5 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 hover:bg-[#F3F4F6] hover:border-[#D1D5DB] transition-colors"
+              >
+                <ArrowRight className="h-3.5 w-3.5 text-[#9CA3AF] mt-0.5 shrink-0" aria-hidden="true" />
+                <div>
+                  <p className="text-xs font-medium text-[#111827] tracking-[-0.36px]">{item.label}</p>
+                  <p className="text-[11px] text-[#6B7280] tracking-[-0.33px] mt-0.5 leading-snug">{item.description}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Role-contextual quick-action banner */}
       {role === "auditor" && (
         <div className="mb-6 rounded-[10px] border border-[#D1FAE5] bg-[#ECFDF5] px-4 py-3 flex items-center gap-3">

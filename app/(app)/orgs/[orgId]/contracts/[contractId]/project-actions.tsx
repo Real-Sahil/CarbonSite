@@ -27,6 +27,7 @@ export function CreateProjectForm({
       name: data.get("name") as string,
       projectCode: (data.get("projectCode") as string) || undefined,
       status: data.get("status") as string,
+      postcode: (data.get("postcode") as string) || undefined,
       startDate: (data.get("startDate") as string) || undefined,
       endDate: (data.get("endDate") as string) || undefined,
     };
@@ -73,6 +74,10 @@ export function CreateProjectForm({
             <option value="on_hold">On hold</option>
             <option value="cancelled">Cancelled</option>
           </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="project-postcode" className="text-xs text-[#374151] tracking-[-0.36px]">Postcode</Label>
+          <Input id="project-postcode" name="postcode" placeholder="e.g. SW1A 2AA" className="h-9 text-sm" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="project-start" className="text-xs text-[#374151] tracking-[-0.36px]">Start date</Label>
