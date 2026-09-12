@@ -21,6 +21,17 @@ const COLS = [
     ],
   },
   {
+    heading: "Legal",
+    links: [
+      { href: "/privacy", label: "Privacy Policy" },
+      { href: "/terms", label: "Terms of Service" },
+      { href: "/cookies", label: "Cookie Policy" },
+      { href: "/dpa", label: "DPA" },
+      { href: "/acceptable-use", label: "Acceptable Use" },
+      { href: "/eula", label: "Mobile EULA" },
+    ],
+  },
+  {
     heading: "Standards",
     links: [
       { href: "https://ghgprotocol.org", label: "GHG Protocol", external: true },
@@ -39,7 +50,7 @@ export function SiteFooter() {
       <div className="absolute top-0 right-1/3 w-[400px] h-[250px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(251,191,36,0.04)_0%,transparent_70%)] pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-6 md:px-10 pt-16 pb-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10 mb-14">
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2 mb-4 w-fit">

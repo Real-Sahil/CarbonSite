@@ -17,6 +17,7 @@ import { renderCdpHtml, type CdpData } from "./templates/cdp";
 import { renderCbamHtml, type CbamHtmlData } from "./templates/cbam";
 import { generateCbamXml, type CbamReportData, type CbamGoodsItem, MATERIAL_TO_CN } from "./cbam-xml";
 import { renderPpn006CrpHtml, type Ppn006CrpData, type CrpScopeRow } from "./templates/ppn-006-crp";
+import { renderEcologySurveyHtml, type EcologySurveyData, type EcologySurveyAssessment } from "./templates/ecology-survey";
 
 export type ReportContext = {
   orgId: string;
@@ -305,7 +306,7 @@ const handlers: Record<string, ReportHandler> = {
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
       periodEnd: report.reportingPeriod.endDate,
-      publishedAt: new Date(),
+      publishedAt: report.snapshot.publishedAt,
       publishedBy,
       withdrawalM3, dischargeM3, consumptionM3, withdrawalStressedM3,
       recordCount: waterRecords.length,
@@ -360,7 +361,7 @@ const handlers: Record<string, ReportHandler> = {
       periodLabel: report.reportingPeriod.label,
       periodStart: report.reportingPeriod.startDate,
       periodEnd: report.reportingPeriod.endDate,
-      publishedAt: new Date(),
+      publishedAt: report.snapshot.publishedAt,
       publishedBy,
       totalGeneratedTonnes, totalDivertedTonnes, totalHazardousTonnes,
       recordCount: wasteRecords.length,
@@ -581,6 +582,60 @@ const handlers: Record<string, ReportHandler> = {
     const xmlString = generateCbamXml(cbamReportData);
     const xmlBuffer = Buffer.from(xmlString, "utf-8");
     return { html: renderCbamHtml(cbamHtmlData), xmlBuffer, pdfkitData: basePdfData };
+  },
+
+  ecology_survey: async (ctx) => {
+    const { report, logoDataUri, publishedBy } = ctx;
+
+    const [assessments, speciesCount] = await Promise.all([
+      prisma.biodiversityAssessment.findMany({
+        where: { organizationId: ctx.orgId },
+        include: {
+          project: { select: { name: true } },
+          site: { select: { name: true } },
+          _count: { select: { parcels: true, speciesRecords: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.protectedSpeciesRecord.count({ where: { organizationId: ctx.orgId } }),
+    ]);
+
+    const mapped: EcologySurveyAssessment[] = assessments.map((a) => ({
+      id: a.id,
+      name: a.name,
+      reference: a.reference,
+      projectName: a.project?.name ?? null,
+      siteName: a.site?.name ?? null,
+      assessmentDate: a.assessmentDate,
+      ecologistName: a.ecologistName,
+      ecologistOrganisation: a.ecologistOrganisation,
+      planningAuthority: a.planningAuthority,
+      planningReference: a.planningReference,
+      metricVersion: a.metricVersion,
+      status: a.status,
+      meetsRequirement: a.meetsRequirement,
+      baselineAreaUnits: Number(a.baselineAreaUnits),
+      baselineHedgerowUnits: Number(a.baselineHedgerowUnits),
+      baselineWatercourseUnits: Number(a.baselineWatercourseUnits),
+      postAreaUnits: Number(a.postAreaUnits),
+      postHedgerowUnits: Number(a.postHedgerowUnits),
+      postWatercourseUnits: Number(a.postWatercourseUnits),
+      parcelCount: a._count.parcels,
+      speciesRecordCount: a._count.speciesRecords,
+    }));
+
+    const data: EcologySurveyData = {
+      orgName: report.organization.name,
+      logoDataUri,
+      publishedAt: report.snapshot.publishedAt,
+      publishedBy,
+      reportingPeriodLabel: report.reportingPeriod.label,
+      assessments: mapped,
+      totalAssessments: mapped.length,
+      meetingRequirementCount: mapped.filter((a) => a.meetsRequirement).length,
+      totalSpeciesRecords: speciesCount,
+    };
+    return { html: renderEcologySurveyHtml(data) };
   },
 };
 
