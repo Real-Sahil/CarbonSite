@@ -350,13 +350,22 @@ jobs:
 
           # Extract entitlements from the provisioning profile binary.
           # security cms -D fails (-8183) on this profile; parse XML directly from CMS payload.
+          # Python 3.13+ plistlib strict base64 rejects <data> nodes (DeveloperCertificates)
+          # in the full profile plist. Regex-extract just the Entitlements <dict> subtree
+          # (contains only strings/booleans — no <data> nodes) and parse that subset only.
           python3 -c "
           import re, sys, plistlib
           data = open(sys.argv[1], 'rb').read()
           start = data.find(b'<?xml')
           end = data.rfind(b'</plist>') + 8
-          plist = plistlib.loads(data[start:end])
-          ents = plist.get('Entitlements', {})
+          xml_bytes = data[start:end]
+          m = re.search(rb'<key>Entitlements</key>\s*(<dict>.*?</dict>)', xml_bytes, re.DOTALL)
+          if not m:
+              print('ERROR: Entitlements key not found', file=sys.stderr); sys.exit(1)
+          ents_xml = (b'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n'
+              b'<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n'
+              b'<plist version=\"1.0\">\n' + m.group(1) + b'\n</plist>')
+          ents = plistlib.loads(ents_xml)
           with open(sys.argv[2], 'wb') as f:
               plistlib.dump(ents, f)
           print('Entitlements extracted:', list(ents.keys()))
