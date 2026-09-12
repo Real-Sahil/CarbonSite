@@ -33,7 +33,7 @@ jobs:
       - name: Show safe database target
         run: |
           node -e "const value=process.env.DATABASE_URL||''; let url; try { url=new URL(value); } catch { console.error('::error::DATABASE_URL is not a valid URL. It must look like postgresql://user:password@host/database?sslmode=require'); process.exit(1); } if (!['postgresql:','postgres:'].includes(url.protocol)) { console.error('::error::DATABASE_URL must start with postgresql:// or postgres://'); process.exit(1); } console.log('Database protocol: '+url.protocol); console.log('Database host: '+url.hostname); console.log('Database name: '+(url.pathname.replace(/^\\//,'') || '(missing)')); console.log('SSL mode: '+(url.searchParams.get('sslmode') || '(not set)'));"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 10.12.3
