@@ -69,6 +69,15 @@ kotlin {
 dependencies {
     // Core library desugaring — required by drift/sqlite3 for Java 8+ time APIs
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    // Firebase BoM — keeps all Firebase libraries on compatible versions
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+
+    // Firebase Cloud Messaging (FCM) for push notifications
+    implementation("com.google.firebase:firebase-messaging")
+
+    // Firebase Analytics
+    implementation("com.google.firebase:firebase-analytics")
 }
 
 flutter {
