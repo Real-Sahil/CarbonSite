@@ -29,9 +29,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
     });
     if (!project) return apiError("NOT_FOUND", "Project not found.", 404);
 
+    const url = new URL(_req.url);
+    const cursor = url.searchParams.get("cursor");
+    const take = 20;
+
     const scans = await prisma.ecologicalScan.findMany({
       where: { projectId, organizationId: orgId },
       orderBy: { createdAt: "desc" },
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       select: {
         id: true,
         postcode: true,
@@ -52,16 +58,27 @@ export async function GET(_req: NextRequest, { params }: Params) {
         spaCount: true,
         nvrCount: true,
         ancientWoodlandCount: true,
+        ramsarCount: true,
+        aonbCount: true,
+        lnrCount: true,
         woodlandTotalHa: true,
         broadleafHa: true,
         coniferHa: true,
         mixedWoodlandHa: true,
+        priorityHabitatHa: true,
+        speciesRecords: true,
+        designatedSites: true,
+        woodlandData: true,
         createdAt: true,
         createdBy: { select: { name: true, email: true } },
       },
     });
 
-    return NextResponse.json({ data: scans });
+    const hasMore = scans.length > take;
+    const page = hasMore ? scans.slice(0, take) : scans;
+    const nextCursor = hasMore ? page[page.length - 1].id : null;
+
+    return NextResponse.json({ data: page, nextCursor });
   } catch (err) {
     return handleRouteError(err);
   }

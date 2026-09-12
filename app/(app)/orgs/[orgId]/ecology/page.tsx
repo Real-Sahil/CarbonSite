@@ -350,13 +350,16 @@ export default async function EcologyPage({ params }: Props) {
                               <ShieldAlert className="h-4 w-4 text-amber-600" />
                               Designated sites (within 5 km minimum)
                             </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                               {[
                                 { label: "SSSI", value: scan.sssiCount },
                                 { label: "SAC", value: scan.sacCount },
                                 { label: "SPA", value: scan.spaCount },
                                 { label: "NNR", value: scan.nvrCount },
                                 { label: "Ancient Woodland", value: scan.ancientWoodlandCount },
+                                { label: "Ramsar", value: scan.ramsarCount ?? 0 },
+                                { label: "AONB", value: scan.aonbCount ?? 0 },
+                                { label: "LNR", value: scan.lnrCount ?? 0 },
                               ].map(({ label, value }) => (
                                 <div
                                   key={label}
@@ -414,6 +417,7 @@ export default async function EcologyPage({ params }: Props) {
                                 { label: "Broadleaf", value: formatHa(scan.broadleafHa) },
                                 { label: "Conifer", value: formatHa(scan.coniferHa) },
                                 { label: "Mixed", value: formatHa(scan.mixedWoodlandHa) },
+                                { label: "Priority habitat", value: formatHa(Number(scan.priorityHabitatHa ?? 0)) },
                               ].map(({ label, value }) => (
                                 <div
                                   key={label}
