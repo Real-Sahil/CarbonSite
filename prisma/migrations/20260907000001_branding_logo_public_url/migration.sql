@@ -11,12 +11,22 @@ ALTER TABLE "tenant_branding"
 -- The carbonsite bucket is otherwise fully private. Only objects under the
 -- org/*/branding/ path prefix are accessible without a signed URL, so this
 -- policy is narrowly scoped and does not expose any tenant data.
-CREATE POLICY IF NOT EXISTS "branding_public_read"
-ON storage.objects
-FOR SELECT
-TO anon, authenticated
-USING (
-  bucket_id = 'carbonsite'
-  AND (storage.foldername(name))[1] = 'org'
-  AND (storage.foldername(name))[3] = 'branding'
-);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'branding_public_read'
+  ) THEN
+    CREATE POLICY "branding_public_read"
+    ON storage.objects
+    FOR SELECT
+    TO anon, authenticated
+    USING (
+      bucket_id = 'carbonsite'
+      AND (storage.foldername(name))[1] = 'org'
+      AND (storage.foldername(name))[3] = 'branding'
+    );
+  END IF;
+END $$;

@@ -1600,6 +1600,7 @@ enum ReportType {
   cdp
   cbam
   ecology_survey
+  ecology_scan
 
   @@map("report_type")
 }

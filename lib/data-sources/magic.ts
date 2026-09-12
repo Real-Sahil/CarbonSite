@@ -124,32 +124,61 @@ export async function scanDesignatedSitesAndWoodland(
 
   const designatedSites: DesignatedSite[] = [];
 
+  // Resolve the first non-null value for a list of candidate field names.
+  // DEFRA ArcGIS layers have inconsistent capitalisation across service versions.
+  function pickField(attrs: Record<string, unknown>, ...candidates: string[]): unknown {
+    for (const c of candidates) {
+      const val = attrs[c] ?? attrs[c.toUpperCase()] ?? attrs[c.toLowerCase()];
+      if (val != null && val !== "") return val;
+    }
+    return null;
+  }
+
   function parseSites(
     data: ArcGISFeatureResponse | null,
     type: string,
-    nameField: string,
-    dateField?: string,
-    conditionField?: string,
-    areaField?: string,
+    nameFields: string[],
+    dateFields?: string[],
+    conditionFields?: string[],
+    areaFields?: string[],
   ) {
     for (const f of data?.features ?? []) {
       const a = f.attributes ?? {};
       designatedSites.push({
-        name: safeStr(a[nameField]) ?? "Unknown",
+        name: safeStr(pickField(a, ...nameFields)) ?? "Unknown",
         type,
         distanceKm: null,
-        areaSqKm: areaField ? safeNum(a[areaField]) : null,
-        notifiedOn: dateField ? safeStr(a[dateField]) : null,
-        condition: conditionField ? safeStr(a[conditionField]) : null,
+        areaSqKm: areaFields ? safeNum(pickField(a, ...areaFields)) : null,
+        notifiedOn: dateFields ? safeStr(pickField(a, ...dateFields)) : null,
+        condition: conditionFields ? safeStr(pickField(a, ...conditionFields)) : null,
       });
     }
   }
 
-  parseSites(sssiData, "SSSI", "SSSI_NAME", "NOTIFICATION_DATE", "CONDITION");
-  parseSites(sacData,  "SAC",  "SAC_NAME",  "DATE_CONFIRMED");
-  parseSites(spaData,  "SPA",  "SPA_NAME",  "DATE_CONFIRMED");
-  parseSites(nnrData,  "NNR",  "NNR_NAME",  "NOTIFICATION_DATE");
-  parseSites(awData,   "AncientWoodland", "NAME", undefined, undefined, "AREA");
+  // Field name variants observed across DEFRA ArcGIS service versions.
+  parseSites(sssiData, "SSSI",
+    ["SSSI_NAME", "sssi_name", "SITENAME", "NAME"],
+    ["NOTIFICATION_DATE", "NOTIFIED_DATE"],
+    ["CONDITION", "SSSI_CONDITION_SUMMARY", "CONDITION_SUMMARY"],
+  );
+  parseSites(sacData, "SAC",
+    ["SAC_NAME", "siteName", "NAME"],
+    ["DATE_CONFIRMED", "CONFIRMATION_DATE"],
+  );
+  parseSites(spaData, "SPA",
+    ["SPA_NAME", "siteName", "NAME"],
+    ["DATE_CONFIRMED", "CLASSIFICATION_DATE"],
+  );
+  parseSites(nnrData, "NNR",
+    ["NNR_NAME", "siteName", "NAME"],
+    ["NOTIFICATION_DATE", "NOTIFIED_DATE"],
+  );
+  // Ancient Woodland Inventory — DEFRA uses AW_NAME; fallback to NAME for older snapshots.
+  parseSites(awData, "AncientWoodland",
+    ["AW_NAME", "NAME", "WOODLAND_NAME"],
+    undefined, undefined,
+    ["AREA_HA", "AREA", "Shape_Area"],
+  );
 
   const woodlandData: WoodlandParcel[] = [];
   let woodlandTotalHa = 0;

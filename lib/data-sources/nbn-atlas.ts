@@ -140,6 +140,7 @@ export interface NbnSpeciesRecord {
   group: string;
   occurrenceCount: number;
   lastSeen: string | null;
+  conservationStatus?: string;
 }
 
 interface NbnSearchResponse {
@@ -148,9 +149,27 @@ interface NbnSearchResponse {
     scientificName?: string;
     vernacularName?: string;
     kingdom?: string;
+    classs?: string;
+    speciesGroup?: string;
     taxonConceptID?: string;
     year?: number;
+    countryConservation?: string;
   }>;
+}
+
+// IUCN / UK conservation risk levels, derived from NBN Atlas countryConservation strings.
+export type ConservationRisk = "critical" | "endangered" | "vulnerable" | "near_threatened" | "protected" | "least_concern" | "unknown";
+
+export function conservationRisk(status: string | undefined): ConservationRisk {
+  if (!status) return "unknown";
+  const s = status.toLowerCase();
+  if (/critically.endangered|\\bCR\\b/.test(s)) return "critical";
+  if (/\\bendangered\\b|\\bEN\\b/.test(s)) return "endangered";
+  if (/vulnerable|\\bVU\\b/.test(s)) return "vulnerable";
+  if (/near.threatened|\\bNT\\b/.test(s)) return "near_threatened";
+  if (/schedule [158]|protected|wildlife.*act/i.test(s)) return "protected";
+  if (/least.concern|\\bLC\\b/.test(s)) return "least_concern";
+  return "unknown";
 }
 
 const GROUP_KEYWORDS: Record<string, string[]> = {
@@ -182,46 +201,112 @@ export interface NbnScanResult {
   speciesRecords: NbnSpeciesRecord[];
 }
 
+// Map NBN Atlas speciesGroup strings to our classification keys.
+// NBN Atlas returns e.g. "Birds", "Mammals", "Plants", "Insects" etc.
+const NBN_GROUP_MAP: Record<string, keyof typeof GROUP_KEYWORDS> = {
+  birds:       "birds",
+  aves:        "birds",
+  mammals:     "mammals",
+  mammalia:    "mammals",
+  plants:      "plants",
+  plantae:     "plants",
+  bryophytes:  "plants",
+  lichens:     "plants",
+  insects:     "invertebrates",
+  insecta:     "invertebrates",
+  invertebrates: "invertebrates",
+  arachnids:   "invertebrates",
+  molluscs:    "invertebrates",
+  crustaceans: "invertebrates",
+  reptiles:    "reptiles",
+  reptilia:    "reptiles",
+  amphibians:  "amphibians",
+  amphibia:    "amphibians",
+};
+
+function classifyFromNbnGroup(speciesGroup: string | undefined, kingdom: string, classs: string | undefined): keyof typeof GROUP_KEYWORDS | "other" {
+  // Prefer the API's own speciesGroup label — it's already human-readable.
+  if (speciesGroup) {
+    const key = NBN_GROUP_MAP[speciesGroup.toLowerCase()];
+    if (key) return key;
+  }
+  // Fallback: check class-level taxonomy (kingdom alone is always "Animalia"/"Plantae").
+  const combined = `${kingdom} ${classs ?? ""}`;
+  return classifyGroup(kingdom, classs ?? combined);
+}
+
+const MAX_SPECIES_PAGES = 10;
+const PAGE_SIZE = 200;
+
 export async function scanSpecies(
   lat: number,
   lon: number,
   radiusKm = 1,
 ): Promise<NbnScanResult> {
-  const pageSize = 200;
-  const url =
-    `${BASE}/occurrences/search?q=*` +
-    `&lat=${lat}&lon=${lon}&radius=${radiusKm}` +
-    `&pageSize=${pageSize}` +
-    `&sort=taxonConceptID&dir=asc` +
-    `&facets=species_group&flimit=100`;
+  const seen = new Map<string, { record: NbnSpeciesRecord; count: number }>();
+  let totalRecords = 0;
 
-  const res = await fetchWithTimeout(url);
-  if (!res.ok) throw new DataSourceError("nbn-atlas", res.status, await res.text().catch(() => ""));
-  const data = await res.json() as NbnSearchResponse;
+  for (let page = 0; page < MAX_SPECIES_PAGES; page++) {
+    const start = page * PAGE_SIZE;
+    const url =
+      `${BASE}/occurrences/search?q=*` +
+      `&lat=${lat}&lon=${lon}&radius=${radiusKm}` +
+      `&pageSize=${PAGE_SIZE}&startIndex=${start}` +
+      `&sort=taxonConceptID&dir=asc`;
 
-  const seen = new Map<string, NbnSpeciesRecord>();
-  for (const occ of data.occurrences ?? []) {
-    const name = occ.scientificName ?? "";
-    if (!name || seen.has(name)) continue;
-    const group = occ.kingdom ?? "Unknown";
-    seen.set(name, {
-      name,
-      commonName: occ.vernacularName ?? null,
-      kingdom: occ.kingdom ?? "Unknown",
-      group,
-      occurrenceCount: 1,
-      lastSeen: occ.year ? String(occ.year) : null,
-    });
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new DataSourceError("nbn-atlas", res.status, await res.text().catch(() => ""));
+    const data = await res.json() as NbnSearchResponse;
+
+    if (page === 0) totalRecords = data.totalRecords;
+
+    const occurrences = data.occurrences ?? [];
+    if (occurrences.length === 0) break;
+
+    for (const occ of occurrences) {
+      const name = occ.scientificName ?? "";
+      if (!name) continue;
+      const existing = seen.get(name);
+      if (existing) {
+        existing.count++;
+        // Update lastSeen to the most recent year observed.
+        if (occ.year && (!existing.record.lastSeen || occ.year > Number(existing.record.lastSeen))) {
+          existing.record.lastSeen = String(occ.year);
+        }
+      } else {
+        seen.set(name, {
+          count: 1,
+          record: {
+            name,
+            commonName: occ.vernacularName ?? null,
+            kingdom: occ.kingdom ?? "Unknown",
+            group: occ.speciesGroup ?? occ.classs ?? occ.kingdom ?? "Unknown",
+            occurrenceCount: 1,
+            lastSeen: occ.year ? String(occ.year) : null,
+            conservationStatus: occ.countryConservation || undefined,
+          },
+        });
+      }
+    }
+
+    // Fetched all available records.
+    if (start + occurrences.length >= data.totalRecords) break;
   }
 
-  const speciesRecords = Array.from(seen.values());
+  // Write aggregated occurrence counts back.
+  const speciesRecords: NbnSpeciesRecord[] = [];
+  for (const { record, count } of seen.values()) {
+    record.occurrenceCount = count;
+    speciesRecords.push(record);
+  }
 
   const counts = {
     plants: 0, birds: 0, mammals: 0,
     invertebrates: 0, reptiles: 0, amphibians: 0, other: 0,
   };
   for (const s of speciesRecords) {
-    const g = classifyGroup(s.kingdom, s.group);
+    const nbnGroup = s.group;
+    const g = classifyFromNbnGroup(nbnGroup, s.kingdom, undefined);
     if (g === "invertebrates") counts.invertebrates++;
     else if (g === "reptiles") counts.reptiles++;
     else if (g === "amphibians") counts.amphibians++;
@@ -230,7 +315,8 @@ export async function scanSpecies(
   }
 
   return {
-    totalSpeciesCount: data.totalRecords,
+    // Unique species found (not occurrence records).
+    totalSpeciesCount: seen.size,
     plantSpeciesCount: counts.plants,
     birdSpeciesCount: counts.birds,
     mammalSpeciesCount: counts.mammals,
