@@ -242,10 +242,32 @@ jobs:
             exit 1
           fi
 
+          # macOS security import only supports legacy PKCS12 (RC2/3DES encryption).
+          # Modern p12 files use AES-256/PBKDF2 (PBES2), which security import rejects with a
+          # misleading "wrong password" error even when the password is correct.
+          # Re-export to legacy format using Homebrew OpenSSL 3 (pre-installed on macos-14).
+          BREW_SSL=""
+          if command -v brew >/dev/null 2>&1; then
+            BREW_PREFIX="$(brew --prefix openssl@3 2>/dev/null)"
+            [ -f "$BREW_PREFIX/bin/openssl" ] && BREW_SSL="$BREW_PREFIX/bin/openssl"
+          fi
+          [ -z "$BREW_SSL" ] && [ -f /opt/homebrew/opt/openssl@3/bin/openssl ] && BREW_SSL=/opt/homebrew/opt/openssl@3/bin/openssl
+          if [ -n "$BREW_SSL" ]; then
+            echo "Homebrew OpenSSL at $BREW_SSL — converting p12 to legacy format (3DES/RC2)..."
+            "$BREW_SSL" pkcs12 -in "$CERT_PATH" -passin "pass:$CERT_PASSWORD" -nodes -out "$RUNNER_TEMP/cert_pem.pem" 2>/dev/null
+            "$BREW_SSL" pkcs12 -legacy -export -in "$RUNNER_TEMP/cert_pem.pem" -out "$RUNNER_TEMP/metricora_dist_legacy.p12" -passout "pass:$CERT_PASSWORD"
+            rm -f "$RUNNER_TEMP/cert_pem.pem"
+            IMPORT_CERT_PATH="$RUNNER_TEMP/metricora_dist_legacy.p12"
+            echo "Legacy p12 ready"
+          else
+            echo "::warning::Homebrew OpenSSL not found — using original p12 (may fail on modern encryption)"
+            IMPORT_CERT_PATH="$CERT_PATH"
+          fi
+
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security import "$CERT_PATH" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security import "$IMPORT_CERT_PATH" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security list-keychains -d user -s login.keychain-db "$KEYCHAIN_PATH"
 
