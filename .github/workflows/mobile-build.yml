@@ -219,10 +219,11 @@ jobs:
           KEYCHAIN_PATH="$RUNNER_TEMP/metricora-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
 
-          printf '%s' "$METRICORA_IOS_DIST_CERTIFICATE_BASE64" | tr -d '[:space:]' > "$RUNNER_TEMP/cert_raw.b64"
-          openssl base64 -d -A -in "$RUNNER_TEMP/cert_raw.b64" -out "$CERT_PATH"
-          printf '%s' "$METRICORA_IOS_PROVISIONING_PROFILE_BASE64" | tr -d '[:space:]' > "$RUNNER_TEMP/profile_raw.b64"
-          openssl base64 -d -A -in "$RUNNER_TEMP/profile_raw.b64" -out "$PROFILE_PATH"
+          # Decode with Python3 — more robust than LibreSSL openssl base64 on macos-14
+          printf '%s' "$METRICORA_IOS_DIST_CERTIFICATE_BASE64" > "$RUNNER_TEMP/cert_raw.b64"
+          python3 -c "import base64,sys; d=''.join(open(sys.argv[1]).read().split()); print(len(d),'chars cert b64'); open(sys.argv[2],'wb').write(base64.b64decode(d+'='*(-len(d)%4)))" "$RUNNER_TEMP/cert_raw.b64" "$CERT_PATH"
+          printf '%s' "$METRICORA_IOS_PROVISIONING_PROFILE_BASE64" > "$RUNNER_TEMP/profile_raw.b64"
+          python3 -c "import base64,sys; d=''.join(open(sys.argv[1]).read().split()); print(len(d),'chars profile b64'); open(sys.argv[2],'wb').write(base64.b64decode(d+'='*(-len(d)%4)))" "$RUNNER_TEMP/profile_raw.b64" "$PROFILE_PATH"
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
