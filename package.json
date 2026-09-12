@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "tsx scripts/generate-blog-manifest.ts && next build",
-    "vercel-build": "prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && tsx prisma/seed.ts && next build",
+    "vercel-build": "node -e \"if(!process.env.DIRECT_URL){console.error('\\nERROR: DIRECT_URL env var is not set.\\nPrisma migrate requires a direct Supabase connection (port 5432), not the pooler.\\nAdd DIRECT_URL in Vercel → Settings → Environment Variables.\\nValue: postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres\\n');process.exit(1)}\" && prisma migrate deploy && tsx scripts/generate-blog-manifest.ts && tsx prisma/seed.ts && next build",
     "migrate:prod": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "start": "next start",
