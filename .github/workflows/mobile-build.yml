@@ -126,7 +126,7 @@ jobs:
     name: iOS release artifact
     # iOS builds only on tags or manual dispatch — branch pushes build Android only.
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_ios) || startsWith(github.ref, 'refs/tags/') }}
-    runs-on: macos-14
+    runs-on: macos-15
     defaults:
       run:
         working-directory: mobile
