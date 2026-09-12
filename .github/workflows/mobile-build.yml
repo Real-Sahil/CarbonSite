@@ -320,41 +320,69 @@ jobs:
         env:
           METRICORA_IOS_TEAM_ID: ${{ secrets.METRICORA_IOS_TEAM_ID }}
         run: |
+          # Disable Xcode code signing in xcconfig so flutter build ios --no-codesign
+          # does not trigger xcodebuild's internal profile DB lookup (empty on CI).
+          # Manual codesign runs after the build using the cert imported into the keychain.
           {
             echo "DEVELOPMENT_TEAM=$METRICORA_IOS_TEAM_ID"
-            echo "CODE_SIGN_STYLE=Manual"
-            echo "CODE_SIGN_IDENTITY=Apple Distribution"
-            echo "PROVISIONING_PROFILE_SPECIFIER=$METRICORA_IOS_PROFILE_UUID"
+            echo "CODE_SIGNING_ALLOWED=NO"
+            echo "CODE_SIGNING_REQUIRED=NO"
+            echo "CODE_SIGN_IDENTITY="
+            echo "PROVISIONING_PROFILE_SPECIFIER="
           } >> ios/Flutter/Release.xcconfig
       - name: Build signed IPA
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
         run: |
           set -euo pipefail
-          FLUTTER_EXIT=0
-          # flutter build ipa archives correctly but xcodebuild -exportArchive always fails on
-          # CI: Xcode's internal profile DB (queried by exportArchive) is empty without a GUI
-          # Xcode sign-in. The archive step reads profiles from the filesystem and succeeds.
-          # Capture the exit so we can recover by packaging the IPA manually when only the
-          # export phase fails.
-          flutter build ipa --release --no-tree-shake-icons \
-            --export-options-plist=ios/ExportOptions.plist \
-            --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL" || FLUTTER_EXIT=$?
 
-          ARCHIVE_PATH="build/ios/archive/Runner.xcarchive"
-          FLUTTER_IPA="build/ios/ipa/Runner.ipa"
+          PROFILE_PATH="$RUNNER_TEMP/metricora.mobileprovision"
+          APP_PATH="build/ios/iphoneos/Runner.app"
+          ENTITLEMENTS_PATH="$RUNNER_TEMP/entitlements.plist"
 
-          if [ -f "$FLUTTER_IPA" ]; then
-            echo "flutter export succeeded — IPA at $FLUTTER_IPA"
-          elif [ -d "$ARCHIVE_PATH/Products/Applications" ]; then
-            echo "Archive OK; export failed (exit $FLUTTER_EXIT) — packaging IPA from xcarchive"
-            mkdir -p build/ios/ipa/Payload
-            cp -R "$ARCHIVE_PATH/Products/Applications/Runner.app" build/ios/ipa/Payload/
-            cd build/ios/ipa && zip -qr Runner.ipa Payload
-            echo "Packaged: build/ios/ipa/Runner.ipa"
-          else
-            echo "::error::Build failed (exit $FLUTTER_EXIT) and no archive found at $ARCHIVE_PATH"
-            exit 1
+          # Compile Dart + generate iOS app bundle without Xcode code signing.
+          # flutter build ipa uses xcodebuild -exportArchive which queries Xcode's internal
+          # profile DB (empty on CI without GUI sign-in). --no-codesign skips that entirely.
+          flutter build ios --release --no-codesign --no-tree-shake-icons \
+            --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
+
+          # Embed provisioning profile into the app bundle.
+          cp "$PROFILE_PATH" "$APP_PATH/embedded.mobileprovision"
+
+          # Extract entitlements from the provisioning profile binary.
+          # security cms -D fails (-8183) on this profile; parse XML directly from CMS payload.
+          python3 -c "
+          import re, sys, plistlib
+          data = open(sys.argv[1], 'rb').read()
+          start = data.find(b'<?xml')
+          end = data.rfind(b'</plist>') + 8
+          plist = plistlib.loads(data[start:end])
+          ents = plist.get('Entitlements', {})
+          with open(sys.argv[2], 'wb') as f:
+              plistlib.dump(ents, f)
+          print('Entitlements extracted:', list(ents.keys()))
+          " "$PROFILE_PATH" "$ENTITLEMENTS_PATH"
+
+          # Sign nested frameworks and dylibs first (deepest paths first).
+          if [ -d "$APP_PATH/Frameworks" ]; then
+            find "$APP_PATH/Frameworks" \( -name "*.framework" -o -name "*.dylib" \) | sort -r | while read item; do
+              codesign --force --sign "Apple Distribution" \
+                --keychain "$METRICORA_IOS_KEYCHAIN_PATH" "$item"
+            done
           fi
+
+          # Sign the app bundle itself.
+          codesign --force --sign "Apple Distribution" \
+            --keychain "$METRICORA_IOS_KEYCHAIN_PATH" \
+            --entitlements "$ENTITLEMENTS_PATH" \
+            "$APP_PATH"
+
+          codesign --verify --deep --strict "$APP_PATH" && echo "Signature verified OK"
+
+          # Package as IPA: standard Payload/Runner.app structure.
+          mkdir -p build/ios/ipa/Payload
+          cp -R "$APP_PATH" build/ios/ipa/Payload/
+          cd build/ios/ipa && zip -qr Runner.ipa Payload
+          echo "IPA packaged: build/ios/ipa/Runner.ipa"
       - name: Build unsigned iOS app (no signing secrets configured)
         if: env.METRICORA_IOS_SIGNING_READY != 'true'
         run: flutter build ios --release --no-codesign --no-tree-shake-icons --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
