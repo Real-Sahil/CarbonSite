@@ -291,7 +291,7 @@ jobs:
           cat /tmp/integration-status.md
 
       - name: Upload Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-status-report
           path: /tmp/integration-status.md
