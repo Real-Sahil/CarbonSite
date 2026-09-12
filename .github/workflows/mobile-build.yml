@@ -226,14 +226,9 @@ jobs:
           python3 -c "import base64,sys; d=''.join(open(sys.argv[1]).read().split()); print(len(d),'chars profile b64'); open(sys.argv[2],'wb').write(base64.b64decode(d+'='*(-len(d)%4)))" "$RUNNER_TEMP/profile_raw.b64" "$PROFILE_PATH"
 
           # Strip all surrounding whitespace from password (GitHub Secrets UI can add trailing newline)
-          # Python3 strips more thoroughly than tr; also prints the length for diagnostics.
+          # Python3 strips more thoroughly than tr; prints the trimmed length for diagnostics.
           printf '%s' "$METRICORA_IOS_DIST_CERTIFICATE_PASSWORD" > "$RUNNER_TEMP/password_raw.txt"
-          python3 - "$RUNNER_TEMP/password_raw.txt" "$RUNNER_TEMP/password_clean.txt" <<'PYEOF'
-import sys
-p = open(sys.argv[1]).read().strip()
-print(len(p), 'chars password (after strip; value is masked by GitHub)')
-open(sys.argv[2], 'w').write(p)
-PYEOF
+          python3 -c "import sys; p=open(sys.argv[1]).read().strip(); print(len(p),'chars password (after strip; value masked by GitHub)'); open(sys.argv[2],'w').write(p)" "$RUNNER_TEMP/password_raw.txt" "$RUNNER_TEMP/password_clean.txt"
           CERT_PASSWORD="$(cat "$RUNNER_TEMP/password_clean.txt")"
 
           # Pre-check password against p12 before touching the keychain.
