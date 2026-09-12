@@ -1,0 +1,102 @@
+name: App Store & Play Store screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    name: Build screenshot APK (Android)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.0"
+          channel: stable
+          cache: true
+      - name: Stub google-services.json
+        run: |
+          echo '{"project_info":{"project_number":"000000000000","project_id":"metricora-stub","storage_bucket":"metricora-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.metricora.metricora_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+      - run: flutter pub get
+      - name: Generate code (drift)
+        run: dart run build_runner build --verbose --delete-conflicting-outputs
+      - name: Build screenshot APK
+        run: flutter build apk --release --no-tree-shake-icons --dart-define=SCREENSHOT_MODE=true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metricora-screenshot-android
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+  build-ios:
+    name: Build screenshot iOS app (simulator)
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.0"
+          channel: stable
+          cache: true
+      - name: Stub google-services.json
+        run: |
+          echo '{"project_info":{"project_number":"000000000000","project_id":"metricora-stub","storage_bucket":"metricora-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.metricora.metricora_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+      - run: flutter pub get
+      - name: Clean pub cache (macOS)
+        run: flutter pub cache repair
+      - name: Generate code (drift)
+        run: dart run build_runner build --verbose --delete-conflicting-outputs
+      - name: Build iOS simulator app
+        run: flutter build ios --simulator --no-tree-shake-icons --dart-define=SCREENSHOT_MODE=true
+      - name: Zip simulator app for Appetize
+        run: |
+          cd build/ios/iphonesimulator
+          zip -r metricora-screenshot-ios.zip Runner.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metricora-screenshot-ios
+          path: mobile/build/ios/iphonesimulator/metricora-screenshot-ios.zip
+          if-no-files-found: error
+
+  screenshots:
+    name: Generate screenshots via Appetize
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+      - uses: actions/download-artifact@v4
+        with:
+          name: metricora-screenshot-android
+          path: builds/android
+      - uses: actions/download-artifact@v4
+        with:
+          name: metricora-screenshot-ios
+          path: builds/ios
+      - name: Run Appetize screenshot automation
+        env:
+          APPETIZE_TOKEN: ${{ secrets.APPETIZE_TOKEN }}
+          ANDROID_APK: ${{ github.workspace }}/builds/android/app-release.apk
+          IOS_IPA: ${{ github.workspace }}/builds/ios/metricora-screenshot-ios.zip
+        run: node scripts/appetize-screenshots.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metricora-screenshots
+          path: screenshots/
+          if-no-files-found: error
