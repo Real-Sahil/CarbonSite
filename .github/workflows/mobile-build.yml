@@ -284,6 +284,10 @@ jobs:
           fi
           echo "Profile UUID: $PROFILE_UUID  Name: $PROFILE_NAME"
           cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          # Xcode 15+ resolves profiles from this SQLite-backed path during export;
+          # the old MobileDevice path works for archive but not exportArchive.
+          mkdir -p "$HOME/Library/Developer/Xcode/UserData/ProvisioningProfiles"
+          cp "$PROFILE_PATH" "$HOME/Library/Developer/Xcode/UserData/ProvisioningProfiles/$PROFILE_UUID.mobileprovision"
 
           echo "METRICORA_IOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
           echo "METRICORA_IOS_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
