@@ -200,7 +200,7 @@ export default function OnboardingPage() {
           </h1>
           <p className="text-sm text-[#6B7280] leading-relaxed">
             Complete these steps to start tracking emissions for your organisation. You can come
-            back to this at any time from the dashboard.
+            back to this page at any time from the dashboard, or navigate directly using the sidebar.
           </p>
         </div>
 

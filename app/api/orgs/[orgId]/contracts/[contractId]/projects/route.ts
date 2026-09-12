@@ -52,6 +52,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         projectCode: data.projectCode,
         description: data.description,
         status: data.status,
+        postcode: data.postcode,
         startDate: data.startDate,
         endDate: data.endDate,
       },
