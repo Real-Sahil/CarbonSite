@@ -170,7 +170,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
 
   async function handleSignOut() { await authClient.signOut(); router.push("/sign-in"); }
 
-  const NavLink = ({ item, onClick, indent }: { item: NavItem; onClick?: () => void; indent?: boolean }) => {
+  const NavLink = ({ item, onClick, indent, isCollapsed = collapsed }: { item: NavItem; onClick?: () => void; indent?: boolean; isCollapsed?: boolean }) => {
     const Icon = item.icon;
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
     return (
@@ -180,39 +180,39 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         onClick={onClick}
         className={cn(
           "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-normal tracking-tight transition-all",
-          collapsed ? "justify-center px-2" : indent ? "ml-1" : "",
+          isCollapsed ? "justify-center px-2" : indent ? "ml-1" : "",
           isActive
             ? "bg-[#fff7ed] text-[#f97316] border border-[#fed7aa]"
             : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent",
         )}
       >
         <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#f97316]" : "text-slate-400")} aria-hidden="true" />
-        {!collapsed && item.label}
+        {!isCollapsed && item.label}
       </Link>
     );
   };
 
   /** Renders the full nav: ungrouped Dashboard link, then one collapsible product group per accordion panel. */
-  const NavContent = ({ onNavClick }: { onNavClick?: () => void }) => (
+  const NavContent = ({ onNavClick, isCollapsed = collapsed }: { onNavClick?: () => void; isCollapsed?: boolean }) => (
     <>
       <div className="mb-1">
-        {collapsed ? (
+        {isCollapsed ? (
           <Tooltip>
-            <TooltipTrigger asChild>{<NavLink item={dashboardItem} onClick={onNavClick} />}</TooltipTrigger>
+            <TooltipTrigger asChild>{<NavLink item={dashboardItem} onClick={onNavClick} isCollapsed={isCollapsed} />}</TooltipTrigger>
             <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">{dashboardItem.label}</TooltipContent>
           </Tooltip>
         ) : (
-          <NavLink item={dashboardItem} onClick={onNavClick} />
+          <NavLink item={dashboardItem} onClick={onNavClick} isCollapsed={isCollapsed} />
         )}
       </div>
 
       {navGroups.map((group) => {
         const GroupIcon = group.icon;
-        const isOpen = collapsed || openGroup === group.label;
+        const isOpen = isCollapsed || openGroup === group.label;
         const isActive = groupIsActive(group);
         return (
           <div key={group.label} className="mt-1">
-            {!collapsed && (
+            {!isCollapsed && (
               <button
                 type="button"
                 onClick={() => setOpenGroup((prev) => (prev === group.label ? null : group.label))}
@@ -228,16 +228,16 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               </button>
             )}
             {isOpen && (
-              <div className={cn("flex flex-col gap-0.5", !collapsed && "mt-0.5")}>
+              <div className={cn("flex flex-col gap-0.5", !isCollapsed && "mt-0.5")}>
                 {group.sections.map((section, sIdx) => (
-                  <div key={section.label ?? sIdx} className={cn(sIdx > 0 && !collapsed && "mt-2")}>
-                    {section.label && !collapsed && (
+                  <div key={section.label ?? sIdx} className={cn(sIdx > 0 && !isCollapsed && "mt-2")}>
+                    {section.label && !isCollapsed && (
                       <p className="px-2.5 mb-1 text-[9px] uppercase tracking-[0.12em] font-semibold text-slate-600">{section.label}</p>
                     )}
                     <div className="flex flex-col gap-0.5">
                       {section.items.map((item) => {
-                        const link = <NavLink key={item.href} item={item} onClick={onNavClick} indent />;
-                        if (collapsed) {
+                        const link = <NavLink key={item.href} item={item} onClick={onNavClick} indent isCollapsed={isCollapsed} />;
+                        if (isCollapsed) {
                           return (
                             <Tooltip key={item.href}>
                               <TooltipTrigger asChild>{link}</TooltipTrigger>
@@ -369,7 +369,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               </button>
             </div>
             <nav className="flex-1 px-2 py-3 flex flex-col overflow-y-auto" aria-label="Organisation navigation">
-              <NavContent onNavClick={() => setMobileOpen(false)} />
+              <NavContent onNavClick={() => setMobileOpen(false)} isCollapsed={false} />
             </nav>
             <div className="border-t border-slate-200 px-2 py-3">
               <DropdownMenu>
