@@ -219,8 +219,10 @@ jobs:
           KEYCHAIN_PATH="$RUNNER_TEMP/metricora-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
 
-          echo "$METRICORA_IOS_DIST_CERTIFICATE_BASE64" | tr -d '[:space:]' | base64 -D > "$CERT_PATH"
-          echo "$METRICORA_IOS_PROVISIONING_PROFILE_BASE64" | tr -d '[:space:]' | base64 -D > "$PROFILE_PATH"
+          printf '%s' "$METRICORA_IOS_DIST_CERTIFICATE_BASE64" | tr -d '[:space:]' > "$RUNNER_TEMP/cert_raw.b64"
+          base64 -D -i "$RUNNER_TEMP/cert_raw.b64" -o "$CERT_PATH"
+          printf '%s' "$METRICORA_IOS_PROVISIONING_PROFILE_BASE64" | tr -d '[:space:]' > "$RUNNER_TEMP/profile_raw.b64"
+          base64 -D -i "$RUNNER_TEMP/profile_raw.b64" -o "$PROFILE_PATH"
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
