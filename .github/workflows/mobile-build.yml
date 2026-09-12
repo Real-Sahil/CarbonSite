@@ -46,7 +46,7 @@ env:
 jobs:
   android:
     name: Android release artifacts
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_android }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_android) || startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -287,6 +287,7 @@ jobs:
 
           echo "METRICORA_IOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
           echo "METRICORA_IOS_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          echo "METRICORA_IOS_PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
       - name: Generate ExportOptions.plist
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
         env:
@@ -324,7 +325,7 @@ jobs:
             echo "DEVELOPMENT_TEAM=$METRICORA_IOS_TEAM_ID"
             echo "CODE_SIGN_STYLE=Manual"
             echo "CODE_SIGN_IDENTITY=Apple Distribution"
-            echo "PROVISIONING_PROFILE_SPECIFIER=$METRICORA_IOS_PROFILE_NAME"
+            echo "PROVISIONING_PROFILE_SPECIFIER=$METRICORA_IOS_PROFILE_UUID"
           } >> ios/Flutter/Release.xcconfig
       - name: Build signed IPA
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
