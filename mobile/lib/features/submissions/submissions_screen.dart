@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/endpoints.dart';
+import '../../core/screenshot/screenshot_mode.dart';
 import '../../core/storage/app_database.dart';
 import '../../core/widgets/offline_banner.dart';
 import '../../core/widgets/status_chip.dart';
@@ -39,7 +40,18 @@ class _SubmissionsScreenState extends ConsumerState<SubmissionsScreen> {
   @override
   void initState() {
     super.initState();
-    _refresh();
+    if (kScreenshotMode) {
+      _loadMock();
+    } else {
+      _refresh();
+    }
+  }
+
+  void _loadMock() {
+    setState(() {
+      _remote = ScreenshotMockData.submissions;
+      _loading = false;
+    });
   }
 
   Future<void> _refresh() async {

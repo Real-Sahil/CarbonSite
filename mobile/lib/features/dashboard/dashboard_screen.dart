@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/endpoints.dart';
+import '../../core/screenshot/screenshot_mode.dart';
 import '../../core/storage/app_database.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/offline_banner.dart';
@@ -35,7 +36,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    if (kScreenshotMode) {
+      _loadMock();
+    } else {
+      _load();
+    }
+  }
+
+  void _loadMock() {
+    setState(() {
+      _userName = ScreenshotMockData.userName;
+      _orgName = ScreenshotMockData.orgName;
+      _submissions = ScreenshotMockData.submissions;
+      _loading = false;
+    });
   }
 
   Future<void> _load() async {

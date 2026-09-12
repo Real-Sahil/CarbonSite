@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/client.dart';
 import '../../core/api/endpoints.dart';
+import '../../core/screenshot/screenshot_mode.dart';
 import '../../core/widgets/offline_banner.dart';
 import '../auth/pin_lock_screen.dart';
 
@@ -26,7 +27,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    if (kScreenshotMode) {
+      _loadMock();
+    } else {
+      _loadData();
+    }
+  }
+
+  void _loadMock() {
+    setState(() {
+      _userName = ScreenshotMockData.userName;
+      _orgName = ScreenshotMockData.orgName;
+      _orgId = 'mock-org';
+      _projects = ScreenshotMockData.projects;
+      _loading = false;
+    });
   }
 
   Future<void> _loadData() async {

@@ -12,6 +12,7 @@ import '../../features/submissions/submission_detail_screen.dart';
 import '../../features/submissions/submissions_screen.dart';
 import '../api/client.dart';
 import '../notifications/fcm_handler.dart';
+import '../screenshot/screenshot_mode.dart';
 import 'main_shell.dart';
 
 const _storage = FlutterSecureStorage();
@@ -32,6 +33,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     // Redirect is async-capable via GoRouter's refreshListenable pattern, but
     // for simplicity here we read storage directly in the redirect callback.
     redirect: (context, state) async {
+      if (kScreenshotMode) {
+        return state.uri.path == '/' ? '/dashboard' : null;
+      }
+
       final token = await _storage.read(key: 'session_token');
       final path = state.uri.path;
 
@@ -72,6 +77,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         redirect: (_, __) async {
+          if (kScreenshotMode) return '/dashboard';
           final token = await _storage.read(key: 'session_token');
           final hasSession = token != null && token.isNotEmpty;
           return hasSession ? '/dashboard' : '/pin-setup';

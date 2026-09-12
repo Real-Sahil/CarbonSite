@@ -22,7 +22,8 @@
     "vercel:env": "tsx scripts/apply-vercel-env.ts",
     "check:rls-bypass": "tsx scripts/check-rls-bypass.ts",
     "worker": "tsx workers/index.ts",
-    "prisma": "prisma"
+    "prisma": "prisma",
+    "screenshots": "node scripts/appetize-screenshots.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
