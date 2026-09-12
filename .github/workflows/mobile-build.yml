@@ -328,7 +328,33 @@ jobs:
           } >> ios/Flutter/Release.xcconfig
       - name: Build signed IPA
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
-        run: flutter build ipa --release --no-tree-shake-icons --export-options-plist=ios/ExportOptions.plist --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
+        run: |
+          set -euo pipefail
+          FLUTTER_EXIT=0
+          # flutter build ipa archives correctly but xcodebuild -exportArchive always fails on
+          # CI: Xcode's internal profile DB (queried by exportArchive) is empty without a GUI
+          # Xcode sign-in. The archive step reads profiles from the filesystem and succeeds.
+          # Capture the exit so we can recover by packaging the IPA manually when only the
+          # export phase fails.
+          flutter build ipa --release --no-tree-shake-icons \
+            --export-options-plist=ios/ExportOptions.plist \
+            --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL" || FLUTTER_EXIT=$?
+
+          ARCHIVE_PATH="build/ios/archive/Runner.xcarchive"
+          FLUTTER_IPA="build/ios/ipa/Runner.ipa"
+
+          if [ -f "$FLUTTER_IPA" ]; then
+            echo "flutter export succeeded — IPA at $FLUTTER_IPA"
+          elif [ -d "$ARCHIVE_PATH/Products/Applications" ]; then
+            echo "Archive OK; export failed (exit $FLUTTER_EXIT) — packaging IPA from xcarchive"
+            mkdir -p build/ios/ipa/Payload
+            cp -R "$ARCHIVE_PATH/Products/Applications/Runner.app" build/ios/ipa/Payload/
+            cd build/ios/ipa && zip -qr Runner.ipa Payload
+            echo "Packaged: build/ios/ipa/Runner.ipa"
+          else
+            echo "::error::Build failed (exit $FLUTTER_EXIT) and no archive found at $ARCHIVE_PATH"
+            exit 1
+          fi
       - name: Build unsigned iOS app (no signing secrets configured)
         if: env.METRICORA_IOS_SIGNING_READY != 'true'
         run: flutter build ios --release --no-codesign --no-tree-shake-icons --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
