@@ -5,6 +5,15 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +24,110 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScanLine, Loader2, Trash2 } from "lucide-react";
+
+export type SpeciesRecord = {
+  name: string;
+  commonName: string | null;
+  kingdom: string;
+  group: string;
+  occurrenceCount: number;
+  lastSeen: string | null;
+  conservationStatus?: string;
+};
+
+const RISK_PRIORITY: Record<string, number> = {
+  critical: 0, endangered: 1, vulnerable: 2,
+  near_threatened: 3, protected: 4, least_concern: 5, unknown: 6,
+};
+
+function riskLevel(status: string | undefined): string {
+  if (!status) return "unknown";
+  const s = status.toLowerCase();
+  if (/critically.endangered|\bcr\b/.test(s)) return "critical";
+  if (/\bendangered\b|\ben\b/.test(s)) return "endangered";
+  if (/vulnerable|\bvu\b/.test(s)) return "vulnerable";
+  if (/near.threatened|\bnt\b/.test(s)) return "near_threatened";
+  if (/schedule [158]|protected|wildlife.*act/i.test(s)) return "protected";
+  if (/least.concern|\blc\b/.test(s)) return "least_concern";
+  return "unknown";
+}
+
+const RISK_BADGE: Record<string, { label: string; cls: string }> = {
+  critical:        { label: "CR",   cls: "bg-red-100 text-red-800 border-red-300" },
+  endangered:      { label: "EN",   cls: "bg-orange-100 text-orange-800 border-orange-300" },
+  vulnerable:      { label: "VU",   cls: "bg-amber-100 text-amber-800 border-amber-300" },
+  near_threatened: { label: "NT",   cls: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+  protected:       { label: "Protected", cls: "bg-blue-100 text-blue-800 border-blue-300" },
+  least_concern:   { label: "LC",   cls: "bg-green-100 text-green-800 border-green-300" },
+};
+
+const PAGE_SIZE = 50;
+
+export function SpeciesTable({ species }: { species: SpeciesRecord[] }) {
+  const [limit, setLimit] = useState(PAGE_SIZE);
+
+  const sorted = [...species].sort((a, b) => {
+    const pa = RISK_PRIORITY[riskLevel(a.conservationStatus)] ?? 6;
+    const pb = RISK_PRIORITY[riskLevel(b.conservationStatus)] ?? 6;
+    return pa !== pb ? pa - pb : a.name.localeCompare(b.name);
+  });
+
+  const visible = sorted.slice(0, limit);
+
+  return (
+    <div className="space-y-2">
+      <div className="rounded-md border overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Scientific name</TableHead>
+              <TableHead>Common name</TableHead>
+              <TableHead>Group</TableHead>
+              <TableHead className="text-right">Occurrences</TableHead>
+              <TableHead>Last recorded</TableHead>
+              <TableHead>Conservation status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {visible.map((s, i) => {
+              const risk = riskLevel(s.conservationStatus);
+              const badge = RISK_BADGE[risk];
+              return (
+                <TableRow key={i}>
+                  <TableCell className="italic font-medium">{s.name}</TableCell>
+                  <TableCell className="text-muted-foreground">{s.commonName ?? "—"}</TableCell>
+                  <TableCell>{s.group}</TableCell>
+                  <TableCell className="text-right tabular-nums">{s.occurrenceCount}</TableCell>
+                  <TableCell>{s.lastSeen ?? "—"}</TableCell>
+                  <TableCell>
+                    {badge ? (
+                      <Badge variant="outline" className={`text-xs ${badge.cls}`}>
+                        {badge.label}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+      {sorted.length > limit && (
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>Showing {limit} of {sorted.length} species</span>
+          <Button variant="outline" size="sm" onClick={() => setLimit((l) => l + PAGE_SIZE)}>
+            Show {Math.min(PAGE_SIZE, sorted.length - limit)} more
+          </Button>
+        </div>
+      )}
+      {limit >= sorted.length && sorted.length > PAGE_SIZE && (
+        <p className="text-xs text-muted-foreground">All {sorted.length} species shown.</p>
+      )}
+    </div>
+  );
+}
 
 export function RunScanDialog({
   orgId,

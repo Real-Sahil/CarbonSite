@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -20,8 +21,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Leaf, TreePine, Bird, ShieldAlert, AlertCircle, CheckCircle2 } from "lucide-react";
-import { RunScanDialog, DeleteScanButton } from "./scan-actions";
+import { Leaf, TreePine, Bird, ShieldAlert, AlertCircle, CheckCircle2, FileText } from "lucide-react";
+import Link from "next/link";
+import { RunScanDialog, DeleteScanButton, SpeciesTable, type SpeciesRecord } from "./scan-actions";
 
 const MANAGE_ROLES: OrgRole[] = [
   "admin",
@@ -95,13 +97,11 @@ type DesignatedSite = {
   condition: string | null;
 };
 
-type SpeciesRecord = {
+type WoodlandParcel = {
   name: string;
-  commonName: string | null;
-  kingdom: string;
-  group: string;
-  occurrenceCount: number;
-  lastSeen: string | null;
+  type: string;
+  areaHa: number;
+  ifc: string | null;
 };
 
 export default async function EcologyPage({ params }: Props) {
@@ -306,41 +306,14 @@ export default async function EcologyPage({ params }: Props) {
                             </div>
                           </div>
 
-                          {/* Species records table */}
+                          {/* Species records table — paginated, sorted high-risk first */}
                           {Array.isArray(scan.speciesRecords) &&
                             (scan.speciesRecords as unknown as SpeciesRecord[]).length > 0 && (
                               <div>
                                 <h3 className="text-sm font-semibold mb-2">
-                                  Species records (up to 200 shown)
+                                  Species inventory ({(scan.speciesRecords as unknown as SpeciesRecord[]).length} species — sorted by conservation risk)
                                 </h3>
-                                <div className="rounded-md border overflow-x-auto">
-                                  <Table>
-                                    <TableHeader>
-                                      <TableRow>
-                                        <TableHead>Scientific name</TableHead>
-                                        <TableHead>Common name</TableHead>
-                                        <TableHead>Group</TableHead>
-                                        <TableHead>Last recorded</TableHead>
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {(scan.speciesRecords as unknown as SpeciesRecord[]).map(
-                                        (s, i) => (
-                                          <TableRow key={i}>
-                                            <TableCell className="italic font-medium">
-                                              {s.name}
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground">
-                                              {s.commonName ?? "—"}
-                                            </TableCell>
-                                            <TableCell>{s.group}</TableCell>
-                                            <TableCell>{s.lastSeen ?? "—"}</TableCell>
-                                          </TableRow>
-                                        )
-                                      )}
-                                    </TableBody>
-                                  </Table>
-                                </div>
+                                <SpeciesTable species={scan.speciesRecords as unknown as SpeciesRecord[]} />
                               </div>
                             )}
 
@@ -408,7 +381,7 @@ export default async function EcologyPage({ params }: Props) {
                               <TreePine className="h-4 w-4 text-green-700" />
                               Woodland cover (National Forest Inventory)
                             </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                               {[
                                 { label: "Total woodland", value: formatHa(scan.woodlandTotalHa) },
                                 { label: "Broadleaf", value: formatHa(scan.broadleafHa) },
@@ -424,6 +397,37 @@ export default async function EcologyPage({ params }: Props) {
                                 </div>
                               ))}
                             </div>
+                            {Array.isArray(scan.woodlandData) &&
+                              (scan.woodlandData as unknown as WoodlandParcel[]).length > 0 && (
+                                <div className="rounded-md border overflow-x-auto">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead>Parcel name</TableHead>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead className="text-right">Area (ha)</TableHead>
+                                        <TableHead>IFC status</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {(scan.woodlandData as unknown as WoodlandParcel[]).map((w, i) => (
+                                        <TableRow key={i}>
+                                          <TableCell className="font-medium">{w.name}</TableCell>
+                                          <TableCell>
+                                            <Badge variant="outline">{w.type}</Badge>
+                                          </TableCell>
+                                          <TableCell className="text-right tabular-nums">
+                                            {w.areaHa.toLocaleString("en-GB", { maximumFractionDigits: 2 })}
+                                          </TableCell>
+                                          <TableCell className="text-muted-foreground">
+                                            {w.ifc ?? "—"}
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
+                              )}
                           </div>
                         </>
                       )}
@@ -432,13 +436,23 @@ export default async function EcologyPage({ params }: Props) {
                         <p className="text-xs text-muted-foreground">
                           Scanned by {scan.createdBy.name ?? scan.createdBy.email}
                         </p>
-                        {canManage && (
-                          <DeleteScanButton
-                            orgId={orgId}
-                            projectId={project.id}
-                            scanId={scan.id}
-                          />
-                        )}
+                        <div className="flex items-center gap-2">
+                          {scan.status === "completed" && (
+                            <Link href={`/orgs/${orgId}/reports`}>
+                              <Button variant="outline" size="sm" className="gap-1.5">
+                                <FileText className="h-3.5 w-3.5" />
+                                Generate Report
+                              </Button>
+                            </Link>
+                          )}
+                          {canManage && (
+                            <DeleteScanButton
+                              orgId={orgId}
+                              projectId={project.id}
+                              scanId={scan.id}
+                            />
+                          )}
+                        </div>
                       </div>
                     </div>
                   </details>

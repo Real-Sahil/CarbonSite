@@ -108,6 +108,8 @@ const REPORT_TYPE_OPTIONS = [
   { value: "csrd_esrs_e3",     label: "CSRD ESRS E3 (Water)" },
   { value: "csrd_esrs_e5",     label: "CSRD ESRS E5 (Waste & Resources)" },
   { value: "contract_carbon",  label: "Contract Carbon Report" },
+  { value: "ecology_survey",  label: "Ecology Survey (BNG/Biodiversity Net Gain)" },
+  { value: "ecology_scan",    label: "Ecology Scan (NBN Atlas / MAGIC / FC Woodland)" },
 ];
 
 export function CreateReportForm({
