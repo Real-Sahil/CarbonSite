@@ -65,7 +65,7 @@ const LAYER_URLS: Record<string, string> = {
 const FC_NFI_URL = `${FC_BASE}/Forestry/NFIWoodlandEngland/FeatureServer/0`;
 const PRIORITY_HABITAT_URL = `https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Priority_Habitat_Inventory_England/FeatureServer/0`;
 
-async function fetchJson<T>(url: string): Promise<T | null> {
+async function fetchJson<T>(url: string, layerName?: string): Promise<T | null> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT);
   try {
@@ -73,9 +73,14 @@ async function fetchJson<T>(url: string): Promise<T | null> {
       signal: controller.signal,
       headers: { Accept: "application/json" },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`[magic] ${layerName ?? "layer"} fetch failed: HTTP ${res.status} ${res.statusText}`);
+      return null;
+    }
     return res.json() as Promise<T>;
-  } catch {
+  } catch (err) {
+    const isTimeout = err instanceof Error && err.name === "AbortError";
+    console.warn(`[magic] ${layerName ?? "layer"} fetch error: ${isTimeout ? "timeout" : String(err)}`);
     return null;
   } finally {
     clearTimeout(timer);
@@ -122,16 +127,16 @@ export async function scanDesignatedSitesAndWoodland(
 
   // Fan out all layer queries in parallel — each query is independent.
   const [sssiData, sacData, spaData, nnrData, awData, ramsarData, aonbData, lnrData, fcData, phData] = await Promise.all([
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SSSI, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SAC, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SPA, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.NNR, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.AncientWoodland, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.Ramsar, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.AONB, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.LNR, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(FC_NFI_URL, lat, lon, radiusM)),
-    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(PRIORITY_HABITAT_URL, lat, lon, radiusM)),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SSSI, lat, lon, radiusM), "SSSI"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SAC, lat, lon, radiusM), "SAC"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SPA, lat, lon, radiusM), "SPA"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.NNR, lat, lon, radiusM), "NNR"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.AncientWoodland, lat, lon, radiusM), "AncientWoodland"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.Ramsar, lat, lon, radiusM), "Ramsar"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.AONB, lat, lon, radiusM), "AONB"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.LNR, lat, lon, radiusM), "LNR"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(FC_NFI_URL, lat, lon, radiusM), "FC-NFI"),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(PRIORITY_HABITAT_URL, lat, lon, radiusM), "PriorityHabitat"),
   ]);
 
   const designatedSites: DesignatedSite[] = [];

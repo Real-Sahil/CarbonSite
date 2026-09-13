@@ -152,11 +152,11 @@ jobs:
           xcodebuild -version
       - name: Install iOS 26 platform support
         run: |
-          # Xcode 26 app is installed but the iOS 26 platform support files
-          # (device support, simulator runtimes) are not pre-extracted on the runner.
-          # -runFirstLaunch installs them from the Xcode bundle — required before
-          # flutter build ios can target generic/platform=iOS on iOS 26.
+          # -runFirstLaunch installs Xcode toolchain components.
+          # -downloadPlatform iOS downloads the iOS device support files that
+          # flutter build ios needs to target generic/platform=iOS on iOS 26.
           sudo xcodebuild -runFirstLaunch
+          xcodebuild -downloadPlatform iOS
           echo "iOS 26 platform support installed"
       - uses: subosito/flutter-action@v2
         with:
