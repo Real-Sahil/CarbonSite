@@ -152,12 +152,15 @@ jobs:
           xcodebuild -version
       - name: Install iOS 26 platform support
         run: |
-          # -runFirstLaunch installs Xcode toolchain components.
-          # -downloadPlatform iOS downloads the iOS device support files that
-          # flutter build ios needs to target generic/platform=iOS on iOS 26.
+          # -runFirstLaunch registers Xcode toolchain components.
+          # The iOS device SDK ships inside Xcode.app — no separate download needed.
+          # xcrun simctl list initialises CoreSimulatorService (required by xcodebuild
+          # even for generic/platform=iOS device builds); without it xcodebuild
+          # reports "iOS 26.0 is not installed".
           sudo xcodebuild -runFirstLaunch
-          xcodebuild -downloadPlatform iOS
-          echo "iOS 26 platform support installed"
+          xcrun simctl list >/dev/null 2>&1 || true
+          echo "iOS SDK path: $(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo 'not found')"
+          echo "iOS 26 platform support initialised"
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.44.0"
