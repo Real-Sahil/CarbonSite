@@ -126,7 +126,7 @@ jobs:
     name: iOS release artifact
     # iOS builds only on tags or manual dispatch — branch pushes build Android only.
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_ios) || startsWith(github.ref, 'refs/tags/') }}
-    runs-on: macos-14
+    runs-on: macos-15
     defaults:
       run:
         working-directory: mobile
@@ -145,6 +145,36 @@ jobs:
             echo "$METRICORA_GOOGLE_SERVICES_JSON" > android/app/google-services.json
           else
             echo '{"project_info":{"project_number":"000000000000","project_id":"metricora-stub","storage_bucket":"metricora-stub.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"app.metricora.metricora_mobile"}},"oauth_client":[],"api_key":[{"current_key":"stub-key-replace-with-real"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+          fi
+      - name: Inject GoogleService-Info.plist (iOS FCM)
+        env:
+          METRICORA_IOS_GOOGLE_SERVICES_PLIST: ${{ secrets.METRICORA_IOS_GOOGLE_SERVICES_PLIST }}
+        run: |
+          if [ -n "$METRICORA_IOS_GOOGLE_SERVICES_PLIST" ]; then
+            echo "$METRICORA_IOS_GOOGLE_SERVICES_PLIST" > ios/Runner/GoogleService-Info.plist
+            echo "GoogleService-Info.plist injected from secret."
+          else
+            echo "::warning::METRICORA_IOS_GOOGLE_SERVICES_PLIST not set — using stub. FCM push notifications will not work."
+            cat > ios/Runner/GoogleService-Info.plist <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>API_KEY</key><string>stub-key-replace-with-real</string>
+            <key>GCM_SENDER_ID</key><string>000000000000</string>
+            <key>PLIST_VERSION</key><string>1</string>
+            <key>BUNDLE_ID</key><string>app.metricora.metricoraMobile</string>
+            <key>PROJECT_ID</key><string>metricora-stub</string>
+            <key>STORAGE_BUCKET</key><string>metricora-stub.appspot.com</string>
+            <key>IS_ADS_ENABLED</key><false/>
+            <key>IS_ANALYTICS_ENABLED</key><false/>
+            <key>IS_APPINVITE_ENABLED</key><true/>
+            <key>IS_GCM_ENABLED</key><true/>
+            <key>IS_SIGNIN_ENABLED</key><true/>
+            <key>GOOGLE_APP_ID</key><string>1:000000000000:ios:0000000000000000000000</string>
+          </dict>
+          </plist>
+          PLIST
           fi
       - run: flutter pub get
       - name: Clean pub cache (macOS)
@@ -189,75 +219,181 @@ jobs:
           KEYCHAIN_PATH="$RUNNER_TEMP/metricora-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
 
-          echo -n "$METRICORA_IOS_DIST_CERTIFICATE_BASE64" | base64 -D > "$CERT_PATH"
-          echo -n "$METRICORA_IOS_PROVISIONING_PROFILE_BASE64" | base64 -D > "$PROFILE_PATH"
+          # Decode with Python3 — more robust than LibreSSL openssl base64 on macOS
+          printf '%s' "$METRICORA_IOS_DIST_CERTIFICATE_BASE64" > "$RUNNER_TEMP/cert_raw.b64"
+          python3 -c "import base64,sys; d=''.join(open(sys.argv[1]).read().split()); print(len(d),'chars cert b64'); open(sys.argv[2],'wb').write(base64.b64decode(d+'='*(-len(d)%4)))" "$RUNNER_TEMP/cert_raw.b64" "$CERT_PATH"
+          printf '%s' "$METRICORA_IOS_PROVISIONING_PROFILE_BASE64" > "$RUNNER_TEMP/profile_raw.b64"
+          python3 -c "import base64,sys; d=''.join(open(sys.argv[1]).read().split()); print(len(d),'chars profile b64'); open(sys.argv[2],'wb').write(base64.b64decode(d+'='*(-len(d)%4)))" "$RUNNER_TEMP/profile_raw.b64" "$PROFILE_PATH"
+
+          # Strip whitespace from password (GitHub Secrets UI can add trailing newline)
+          printf '%s' "$METRICORA_IOS_DIST_CERTIFICATE_PASSWORD" > "$RUNNER_TEMP/password_raw.txt"
+          python3 -c "import sys; p=open(sys.argv[1]).read().strip(); print(len(p),'chars password (after strip; value masked by GitHub)'); open(sys.argv[2],'w').write(p)" "$RUNNER_TEMP/password_raw.txt" "$RUNNER_TEMP/password_clean.txt"
+          CERT_PASSWORD="$(cat "$RUNNER_TEMP/password_clean.txt")"
+
+          # Pre-check password against p12 before touching the keychain
+          if openssl pkcs12 -noout -in "$CERT_PATH" -passin "pass:$CERT_PASSWORD" 2>/dev/null || \
+             openssl pkcs12 -noout -legacy -in "$CERT_PATH" -passin "pass:$CERT_PASSWORD" 2>/dev/null; then
+            echo "P12 password pre-check: PASSED"
+          else
+            echo "::error::P12 password pre-check FAILED. The METRICORA_IOS_DIST_CERTIFICATE_PASSWORD secret does not match the .p12 certificate. Update the secret to the correct export password and re-run."
+            exit 1
+          fi
+
+          # Re-export to legacy PKCS12 format (3DES/RC2) for macOS security import compatibility
+          BREW_SSL=""
+          if command -v brew >/dev/null 2>&1; then
+            BREW_PREFIX="$(brew --prefix openssl@3 2>/dev/null)"
+            [ -f "$BREW_PREFIX/bin/openssl" ] && BREW_SSL="$BREW_PREFIX/bin/openssl"
+          fi
+          [ -z "$BREW_SSL" ] && [ -f /opt/homebrew/opt/openssl@3/bin/openssl ] && BREW_SSL=/opt/homebrew/opt/openssl@3/bin/openssl
+          if [ -n "$BREW_SSL" ]; then
+            echo "Homebrew OpenSSL at $BREW_SSL — converting p12 to legacy format..."
+            "$BREW_SSL" pkcs12 -in "$CERT_PATH" -passin "pass:$CERT_PASSWORD" -nodes -out "$RUNNER_TEMP/cert_pem.pem" 2>/dev/null
+            "$BREW_SSL" pkcs12 -legacy -export -in "$RUNNER_TEMP/cert_pem.pem" -out "$RUNNER_TEMP/metricora_dist_legacy.p12" -passout "pass:$CERT_PASSWORD"
+            rm -f "$RUNNER_TEMP/cert_pem.pem"
+            IMPORT_CERT_PATH="$RUNNER_TEMP/metricora_dist_legacy.p12"
+            echo "Legacy p12 ready"
+          else
+            echo "::warning::Homebrew OpenSSL not found — using original p12"
+            IMPORT_CERT_PATH="$CERT_PATH"
+          fi
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security import "$CERT_PATH" -P "$METRICORA_IOS_DIST_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security import "$IMPORT_CERT_PATH" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security list-keychains -d user -s login.keychain-db "$KEYCHAIN_PATH"
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          security cms -D -i "$PROFILE_PATH" > "$RUNNER_TEMP/profile.plist"
-          PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$RUNNER_TEMP/profile.plist")"
-          PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/profile.plist")"
+          # Extract UUID/Name by scanning raw binary (security cms -D fails -8183 on some profiles)
+          python3 -c 'import re,sys; data=open(sys.argv[1],"rb").read(); m=re.search(b"<key>UUID</key>\s*<string>([^<]+)</string>",data); uuid=m.group(1).decode().strip() if m else ""; m2=re.search(b"<key>Name</key>\s*<string>([^<]+)</string>",data); name=m2.group(1).decode().strip() if m2 else "MetricOra Distribution"; print("PROFILE_UUID="+uuid); print("PROFILE_NAME="+name)' "$PROFILE_PATH" > "$RUNNER_TEMP/profile_meta.txt"
+          cat "$RUNNER_TEMP/profile_meta.txt"
+          PROFILE_UUID="$(grep '^PROFILE_UUID=' "$RUNNER_TEMP/profile_meta.txt" | cut -d= -f2)"
+          PROFILE_NAME="$(grep '^PROFILE_NAME=' "$RUNNER_TEMP/profile_meta.txt" | cut -d= -f2)"
+          if [ -z "$PROFILE_UUID" ]; then
+            echo "::error::Could not extract UUID from provisioning profile binary"
+            exit 1
+          fi
+          echo "Profile UUID: $PROFILE_UUID  Name: $PROFILE_NAME"
           cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          # Xcode 15+ also reads from this path during exportArchive
+          mkdir -p "$HOME/Library/Developer/Xcode/UserData/ProvisioningProfiles"
+          cp "$PROFILE_PATH" "$HOME/Library/Developer/Xcode/UserData/ProvisioningProfiles/$PROFILE_UUID.mobileprovision"
 
           echo "METRICORA_IOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
           echo "METRICORA_IOS_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
           echo "METRICORA_IOS_PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
 
           echo "=== DIAGNOSTIC: Imported cert identity ==="
-          security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -i "distribution" || \
-            security find-identity -v -p codesigning "$KEYCHAIN_PATH"
-          echo "=== DIAGNOSTIC: Profile DeveloperCertificates fingerprint ==="
-          /usr/libexec/PlistBuddy -c 'Print :DeveloperCertificates' "$RUNNER_TEMP/profile.plist" 2>/dev/null | head -5 || true
-          echo "=== DIAGNOSTIC: Profile entitlements ==="
-          /usr/libexec/PlistBuddy -c 'Print :Entitlements' "$RUNNER_TEMP/profile.plist" 2>/dev/null || true
-      - name: Generate ExportOptions.plist
-        if: env.METRICORA_IOS_SIGNING_READY == 'true'
-        env:
-          METRICORA_IOS_TEAM_ID: ${{ secrets.METRICORA_IOS_TEAM_ID }}
-        run: |
-          cat > ios/ExportOptions.plist <<PLIST
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>${{ inputs.ios_export_method || 'app-store' }}</string>
-            <key>teamID</key>
-            <string>$METRICORA_IOS_TEAM_ID</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>signingCertificate</key>
-            <string>Apple Distribution</string>
-            <key>uploadSymbols</key>
-            <true/>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>app.metricora.metricoraMobile</key>
-              <string>$METRICORA_IOS_PROFILE_NAME</string>
-            </dict>
-          </dict>
-          </plist>
-          PLIST
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          echo "=== DIAGNOSTIC: Profile entitlements (raw from binary) ==="
+          python3 -c "
+          import re, sys, plistlib
+          data = open(sys.argv[1], 'rb').read()
+          start = data.find(b'<?xml')
+          end = data.rfind(b'</plist>') + 8
+          xml_bytes = data[start:end]
+          m = re.search(rb'<key>Entitlements</key>\s*(<dict>.*?</dict>)', xml_bytes, re.DOTALL)
+          if not m:
+              print('Entitlements key not found in profile'); sys.exit(0)
+          ents_xml = (b'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n'
+              b'<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n'
+              b'<plist version=\"1.0\">\n' + m.group(1) + b'\n</plist>')
+          ents = plistlib.loads(ents_xml)
+          for k, v in ents.items():
+              print(f'  {k}: {v}')
+          " "$PROFILE_PATH" || true
       - name: Apply CI signing overrides
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
         env:
           METRICORA_IOS_TEAM_ID: ${{ secrets.METRICORA_IOS_TEAM_ID }}
         run: |
+          # Disable Xcode code signing so flutter build ios --no-codesign skips
+          # xcodebuild's profile DB lookup (empty on CI without GUI sign-in).
+          # Manual codesign runs after the build using the cert imported into the keychain.
           {
             echo "DEVELOPMENT_TEAM=$METRICORA_IOS_TEAM_ID"
-            echo "CODE_SIGN_STYLE=Manual"
-            echo "CODE_SIGN_IDENTITY=Apple Distribution"
-            echo "PROVISIONING_PROFILE_SPECIFIER=$METRICORA_IOS_PROFILE_NAME"
+            echo "CODE_SIGNING_ALLOWED=NO"
+            echo "CODE_SIGNING_REQUIRED=NO"
+            echo "CODE_SIGN_IDENTITY="
+            echo "PROVISIONING_PROFILE_SPECIFIER="
           } >> ios/Flutter/Release.xcconfig
       - name: Build signed IPA
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
-        run: flutter build ipa --release --no-tree-shake-icons --export-options-plist=ios/ExportOptions.plist --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
+        run: |
+          set -euo pipefail
+
+          PROFILE_PATH="$RUNNER_TEMP/metricora.mobileprovision"
+          APP_PATH="build/ios/iphoneos/Runner.app"
+          ENTITLEMENTS_PATH="$RUNNER_TEMP/entitlements.plist"
+
+          # Compile Dart + generate iOS app bundle without Xcode code signing.
+          flutter build ios --release --no-codesign --no-tree-shake-icons \
+            --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
+
+          # Embed provisioning profile into the app bundle.
+          cp "$PROFILE_PATH" "$APP_PATH/embedded.mobileprovision"
+
+          # Extract entitlements from the provisioning profile binary.
+          # Regex-extract just the Entitlements <dict> subtree (no <data> nodes) and
+          # parse that subset — avoids plistlib strict-base64 issues on Python 3.13+.
+          python3 -c "
+          import re, sys, plistlib
+          data = open(sys.argv[1], 'rb').read()
+          start = data.find(b'<?xml')
+          end = data.rfind(b'</plist>') + 8
+          xml_bytes = data[start:end]
+          m = re.search(rb'<key>Entitlements</key>\s*(<dict>.*?</dict>)', xml_bytes, re.DOTALL)
+          if not m:
+              print('ERROR: Entitlements key not found', file=sys.stderr); sys.exit(1)
+          ents_xml = (b'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n'
+              b'<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n'
+              b'<plist version=\"1.0\">\n' + m.group(1) + b'\n</plist>')
+          ents = plistlib.loads(ents_xml)
+
+          # Remove wildcard associated-domains — Apple App Store validation rejects
+          # com.apple.developer.associated-domains with value '*' (wildcard is only
+          # for development profiles). The app uses a custom URL scheme (metricora://)
+          # not Universal Links, so this entitlement is not needed.
+          # Fix: in Apple Developer Portal, remove Associated Domains from the App ID
+          # and regenerate the profile to permanently eliminate this entitlement.
+          ad = ents.get('com.apple.developer.associated-domains')
+          if ad is not None and (ad == '*' or ad == ['*']):
+              del ents['com.apple.developer.associated-domains']
+              print('NOTE: stripped wildcard associated-domains from binary entitlements')
+              print('  Apple App Store rejects profiles with associated-domains=* wildcard.')
+              print('  Permanent fix: Apple Dev Portal -> Identifiers -> app.metricora.metricoraMobile')
+              print('  -> uncheck Associated Domains -> Save -> regenerate profile -> update secret.')
+
+          print('Entitlements being signed into binary:')
+          for k, v in ents.items():
+              print(f'  {k}: {v}')
+          with open(sys.argv[2], 'wb') as f:
+              plistlib.dump(ents, f)
+          " "$PROFILE_PATH" "$ENTITLEMENTS_PATH"
+
+          # Sign nested frameworks and dylibs first (deepest paths first).
+          if [ -d "$APP_PATH/Frameworks" ]; then
+            find "$APP_PATH/Frameworks" \( -name "*.framework" -o -name "*.dylib" \) | sort -r | while read item; do
+              codesign --force --sign "Apple Distribution" \
+                --keychain "$METRICORA_IOS_KEYCHAIN_PATH" "$item"
+            done
+          fi
+
+          # Sign the app bundle itself.
+          codesign --force --sign "Apple Distribution" \
+            --keychain "$METRICORA_IOS_KEYCHAIN_PATH" \
+            --entitlements "$ENTITLEMENTS_PATH" \
+            "$APP_PATH"
+
+          codesign --verify --deep --strict "$APP_PATH" && echo "Signature verified OK"
+
+          # Package as IPA: standard Payload/Runner.app structure.
+          mkdir -p build/ios/ipa/Payload
+          cp -R "$APP_PATH" build/ios/ipa/Payload/
+          cd build/ios/ipa && zip -qr Runner.ipa Payload
+          echo "IPA packaged: build/ios/ipa/Runner.ipa"
       - name: Inspect signed IPA
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
         run: |
@@ -269,10 +405,26 @@ jobs:
           echo "=== Signing identity used ==="
           codesign -dv --verbose=4 "$APP" 2>&1 | grep -E "^(Authority|Identifier|Format|CodeDirectory|TeamIdentifier)" || true
           echo "=== Embedded profile UUID ==="
-          security cms -D -i "$APP/embedded.mobileprovision" 2>/dev/null | \
-            /usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin 2>/dev/null || true
-          echo "=== IPA entitlements ==="
-          codesign -d --entitlements - "$APP" 2>/dev/null | head -40 || true
+          python3 -c "
+          import re, sys
+          data = open(sys.argv[1], 'rb').read()
+          m = re.search(b'<key>UUID</key>\s*<string>([^<]+)</string>', data)
+          print(m.group(1).decode().strip() if m else 'not found')
+          " "$APP/embedded.mobileprovision" 2>/dev/null || true
+          echo "=== IPA entitlements (what Apple will validate) ==="
+          codesign -d --entitlements - "$APP" 2>/dev/null | python3 -c "
+          import sys, plistlib
+          data = sys.stdin.buffer.read()
+          try:
+              # strip leading XML bytes before <?xml if any
+              start = data.find(b'<?xml')
+              d = plistlib.loads(data[start:]) if start >= 0 else plistlib.loads(data)
+              for k, v in d.items():
+                  print(f'  {k}: {v}')
+          except Exception as e:
+              print('parse error:', e)
+              print(data[:500])
+          " || true
           rm -rf "$WORK"
       - name: Build unsigned iOS app (no signing secrets configured)
         if: env.METRICORA_IOS_SIGNING_READY != 'true'
@@ -287,6 +439,27 @@ jobs:
           name: metricora-ios-release
           path: mobile/build/ios/ipa/*.ipa
           if-no-files-found: error
+      - name: Upload to TestFlight / App Store Connect
+        if: env.METRICORA_IOS_SIGNING_READY == 'true'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_PRIVATE_KEY: ${{ secrets.ASC_API_PRIVATE_KEY }}
+        run: |
+          if [ -z "$ASC_API_KEY_ID" ] || [ -z "$ASC_API_ISSUER_ID" ] || [ -z "$ASC_API_PRIVATE_KEY" ]; then
+            echo "::notice::ASC_API_* secrets not set — skipping TestFlight upload. Add ASC_API_KEY_ID, ASC_API_ISSUER_ID, and ASC_API_PRIVATE_KEY in repo Settings > Secrets to enable automatic upload."
+            exit 0
+          fi
+          mkdir -p ~/.private_keys
+          printf '%s' "$ASC_API_PRIVATE_KEY" > ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8
+          chmod 600 ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8
+          xcrun altool --upload-app \
+            -f build/ios/ipa/Runner.ipa \
+            -t ios \
+            --apiKey "$ASC_API_KEY_ID" \
+            --apiIssuer "$ASC_API_ISSUER_ID" \
+            --verbose
+          rm -f ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8
       - name: Upload unsigned iOS artifact
         if: env.METRICORA_IOS_SIGNING_READY != 'true'
         uses: actions/upload-artifact@v4
