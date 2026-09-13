@@ -436,15 +436,7 @@ async function renderPdf(html: string): Promise<Buffer> {
       });
     } else {
       const puppeteer = (await import("puppeteer")).default;
-      // Find executable: prefer Puppeteer's own Chromium, fall back to system / Playwright.
-      let executablePath: string | undefined;
-      try {
-        const candidate = puppeteer.executablePath();
-        const { existsSync } = await import("fs");
-        executablePath = existsSync(candidate) ? candidate : await resolveLocalChromiumPath();
-      } catch {
-        executablePath = await resolveLocalChromiumPath();
-      }
+      const executablePath = await resolveLocalChromiumPath();
       browser = await puppeteer.launch({
         headless: true,
         executablePath,
