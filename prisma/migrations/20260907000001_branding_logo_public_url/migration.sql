@@ -13,6 +13,11 @@ ALTER TABLE "tenant_branding"
 -- policy is narrowly scoped and does not expose any tenant data.
 DO $$
 BEGIN
+  -- anon/authenticated are Supabase-specific roles; skip in plain-Postgres
+  -- environments (e.g. CI containers) where they don't exist.
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    RETURN;
+  END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'storage'
