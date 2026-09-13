@@ -437,11 +437,24 @@ async function renderPdf(html: string): Promise<Buffer> {
     } else {
       const puppeteer = (await import("puppeteer")).default;
       const executablePath = await resolveLocalChromiumPath();
-      browser = await puppeteer.launch({
-        headless: true,
-        executablePath,
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-      });
+
+      try {
+        browser = await puppeteer.launch({
+          headless: true,
+          executablePath: executablePath || undefined,
+          args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+        });
+      } catch (launchErr) {
+        const errMsg = launchErr instanceof Error ? launchErr.message : String(launchErr);
+        if (errMsg.includes("ENOENT") || errMsg.includes("spawn")) {
+          throw new Error(
+            `Chromium not found. Tried: ${executablePath ? executablePath : "Puppeteer bundled (missing). "}\n` +
+            "Install Chromium: apt-get install chromium-browser (Linux) or use @sparticuz/chromium on Vercel. " +
+            `Original error: ${errMsg}`
+          );
+        }
+        throw launchErr;
+      }
     }
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });
