@@ -55,11 +55,15 @@ export interface EcologyScanRecord {
   spaCount: number;
   nvrCount: number;
   ancientWoodlandCount: number;
+  ramsarCount: number;
+  aonbCount: number;
+  lnrCount: number;
 
   woodlandTotalHa: number;
   broadleafHa: number;
   coniferHa: number;
   mixedWoodlandHa: number;
+  priorityHabitatHa: number;
 
   designatedSites: EcologyScanSite[];
   woodlandData: EcologyScanWoodland[];
@@ -230,12 +234,16 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
         <div class="kpi-label">At risk / protected</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-value">${scan.sssiCount + scan.sacCount + scan.spaCount + scan.nvrCount + scan.ancientWoodlandCount}</div>
+        <div class="kpi-value">${scan.sssiCount + scan.sacCount + scan.spaCount + scan.nvrCount + scan.ancientWoodlandCount + scan.ramsarCount + scan.aonbCount + scan.lnrCount}</div>
         <div class="kpi-label">Designated sites</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-value">${fmtNum(scan.woodlandTotalHa, 1)}</div>
         <div class="kpi-label">Woodland ha</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">${fmtNum(scan.priorityHabitatHa, 1)}</div>
+        <div class="kpi-label">Priority habitat ha</div>
       </div>
     </div>
 

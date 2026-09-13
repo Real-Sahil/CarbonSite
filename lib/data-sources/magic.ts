@@ -36,11 +36,15 @@ export interface MagicScanResult {
   spaCount: number;
   nvrCount: number;
   ancientWoodlandCount: number;
+  ramsarCount: number;
+  aonbCount: number;
+  lnrCount: number;
   woodlandData: WoodlandParcel[];
   woodlandTotalHa: number;
   broadleafHa: number;
   coniferHa: number;
   mixedWoodlandHa: number;
+  priorityHabitatHa: number;
 }
 
 const DEFRA_BASE = "https://environment.data.gov.uk/arcgis/rest/services";
@@ -53,9 +57,13 @@ const LAYER_URLS: Record<string, string> = {
   SPA:             `${DEFRA_BASE}/NE/SpecialProtectionAreasEngland/FeatureServer/0`,
   NNR:             `${DEFRA_BASE}/NE/NationalNatureReservesEngland/FeatureServer/0`,
   AncientWoodland: `${DEFRA_BASE}/NE/AncientWoodlandEngland/FeatureServer/0`,
+  Ramsar:          `${DEFRA_BASE}/NE/RamsarEngland/FeatureServer/0`,
+  AONB:            `${DEFRA_BASE}/NE/AreasOfOutstandingNaturalBeautyEngland/FeatureServer/0`,
+  LNR:             `${DEFRA_BASE}/NE/LocalNatureReservesEngland/FeatureServer/0`,
 };
 
 const FC_NFI_URL = `${FC_BASE}/Forestry/NFIWoodlandEngland/FeatureServer/0`;
+const PRIORITY_HABITAT_URL = `https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Priority_Habitat_Inventory_England/FeatureServer/0`;
 
 async function fetchJson<T>(url: string): Promise<T | null> {
   const controller = new AbortController();
@@ -113,13 +121,17 @@ export async function scanDesignatedSitesAndWoodland(
   const radiusM = radiusKm * 1000;
 
   // Fan out all layer queries in parallel — each query is independent.
-  const [sssiData, sacData, spaData, nnrData, awData, fcData] = await Promise.all([
+  const [sssiData, sacData, spaData, nnrData, awData, ramsarData, aonbData, lnrData, fcData, phData] = await Promise.all([
     fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SSSI, lat, lon, radiusM)),
     fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SAC, lat, lon, radiusM)),
     fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.SPA, lat, lon, radiusM)),
     fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.NNR, lat, lon, radiusM)),
     fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.AncientWoodland, lat, lon, radiusM)),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.Ramsar, lat, lon, radiusM)),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.AONB, lat, lon, radiusM)),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(LAYER_URLS.LNR, lat, lon, radiusM)),
     fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(FC_NFI_URL, lat, lon, radiusM)),
+    fetchJson<ArcGISFeatureResponse>(buildArcGISQuery(PRIORITY_HABITAT_URL, lat, lon, radiusM)),
   ]);
 
   const designatedSites: DesignatedSite[] = [];
@@ -179,6 +191,26 @@ export async function scanDesignatedSitesAndWoodland(
     undefined, undefined,
     ["AREA_HA", "AREA", "Shape_Area"],
   );
+  parseSites(ramsarData, "Ramsar",
+    ["RAMSAR_NAME", "siteName", "NAME"],
+    ["DATE_CONFIRMED", "DESIGNATION_DATE"],
+  );
+  parseSites(aonbData, "AONB",
+    ["AONB_NAME", "NAME"],
+    ["DATE_CONFIRMED"],
+  );
+  parseSites(lnrData, "LNR",
+    ["LNR_NAME", "siteName", "NAME"],
+    ["NOTIFICATION_DATE"],
+  );
+
+  // Priority Habitats Inventory — aggregate total ha in the radius.
+  let priorityHabitatHa = 0;
+  for (const f of phData?.features ?? []) {
+    const a = f.attributes ?? {};
+    const ha = safeNum(a["AREA_HA"] ?? a["Shape_Area"]);
+    if (ha) priorityHabitatHa += ha;
+  }
 
   const woodlandData: WoodlandParcel[] = [];
   let woodlandTotalHa = 0;
@@ -211,10 +243,14 @@ export async function scanDesignatedSitesAndWoodland(
     spaCount:  spaData?.features?.length ?? 0,
     nvrCount:  nnrData?.features?.length ?? 0,
     ancientWoodlandCount: awData?.features?.length ?? 0,
+    ramsarCount: ramsarData?.features?.length ?? 0,
+    aonbCount:   aonbData?.features?.length ?? 0,
+    lnrCount:    lnrData?.features?.length ?? 0,
     woodlandData,
     woodlandTotalHa,
     broadleafHa,
     coniferHa,
     mixedWoodlandHa,
+    priorityHabitatHa,
   };
 }

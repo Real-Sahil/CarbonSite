@@ -69,12 +69,16 @@ export async function runEcologicalScan(scanId: string): Promise<void> {
         spaCount:            magicResult.spaCount,
         nvrCount:            magicResult.nvrCount,
         ancientWoodlandCount: magicResult.ancientWoodlandCount,
+        ramsarCount:         magicResult.ramsarCount,
+        aonbCount:           magicResult.aonbCount,
+        lnrCount:            magicResult.lnrCount,
 
         woodlandData:        magicResult.woodlandData as unknown as import("@prisma/client").Prisma.InputJsonValue,
         woodlandTotalHa:     magicResult.woodlandTotalHa,
         broadleafHa:         magicResult.broadleafHa,
         coniferHa:           magicResult.coniferHa,
         mixedWoodlandHa:     magicResult.mixedWoodlandHa,
+        priorityHabitatHa:   magicResult.priorityHabitatHa,
       },
     });
   } catch (err) {

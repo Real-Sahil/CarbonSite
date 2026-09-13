@@ -5393,6 +5393,10 @@ model EcologicalScan {
   spaCount             Int     @default(0) @map("spa_count")
   nvrCount             Int     @default(0) @map("nvr_count")
   ancientWoodlandCount Int     @default(0) @map("ancient_woodland_count")
+  ramsarCount          Int     @default(0) @map("ramsar_count")
+  aonbCount            Int     @default(0) @map("aonb_count")
+  lnrCount             Int     @default(0) @map("lnr_count")
+  priorityHabitatHa   Decimal @default(0) @map("priority_habitat_ha") @db.Decimal(14, 4)
 
   /// Forestry Commission — woodland parcels within radius.
   /// Each element: { name, type, areaHa, ifc, managementPlan }

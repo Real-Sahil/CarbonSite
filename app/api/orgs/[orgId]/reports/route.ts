@@ -36,6 +36,8 @@ const createReportSchema = z.object({
     "cdp",
     "cbam",
     "ppn_006_crp",
+    "ecology_scan",
+    "ecology_survey",
   ]),
   options: z.record(z.any()).optional(),
   auditEventFilter: z.array(z.string()).optional(),

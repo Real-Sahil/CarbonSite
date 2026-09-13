@@ -10,8 +10,16 @@ import { runEcologicalScan } from "@/lib/ecology/scan";
 type Params = { params: Promise<{ orgId: string; projectId: string }> };
 
 const CreateScanBody = z.object({
-  postcode: z.string().min(1).max(10),
-  radiusKm: z.number().min(0.1).max(20).default(1),
+  postcode: z
+    .string()
+    .min(1)
+    .max(10)
+    .transform((v) => v.toUpperCase().trim())
+    .refine(
+      (v) => /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/.test(v),
+      { message: "Enter a valid UK postcode (e.g. SW1A 1AA)." },
+    ),
+  radiusKm: z.number().min(0.1).max(50).default(1),
 });
 
 /**
@@ -29,9 +37,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
     });
     if (!project) return apiError("NOT_FOUND", "Project not found.", 404);
 
+    const url = new URL(_req.url);
+    const cursor = url.searchParams.get("cursor");
+    const take = 20;
+
     const scans = await prisma.ecologicalScan.findMany({
       where: { projectId, organizationId: orgId },
       orderBy: { createdAt: "desc" },
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       select: {
         id: true,
         postcode: true,
@@ -52,16 +66,27 @@ export async function GET(_req: NextRequest, { params }: Params) {
         spaCount: true,
         nvrCount: true,
         ancientWoodlandCount: true,
+        ramsarCount: true,
+        aonbCount: true,
+        lnrCount: true,
         woodlandTotalHa: true,
         broadleafHa: true,
         coniferHa: true,
         mixedWoodlandHa: true,
+        priorityHabitatHa: true,
+        speciesRecords: true,
+        designatedSites: true,
+        woodlandData: true,
         createdAt: true,
         createdBy: { select: { name: true, email: true } },
       },
     });
 
-    return NextResponse.json({ data: scans });
+    const hasMore = scans.length > take;
+    const page = hasMore ? scans.slice(0, take) : scans;
+    const nextCursor = hasMore ? page[page.length - 1].id : null;
+
+    return NextResponse.json({ data: page, nextCursor });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -89,7 +114,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       data: {
         organizationId: orgId,
         projectId,
-        postcode: body.postcode.toUpperCase().trim(),
+        postcode: body.postcode,
         radiusKm: body.radiusKm,
         status: "pending",
         createdByUserId: session.user.id,

@@ -1,0 +1,111 @@
+name: Generate iOS Distribution Certificate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-cert:
+    runs-on: macos-15
+    steps:
+      - name: Generate CSR and create Distribution certificate via ASC API
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_PRIVATE_KEY: ${{ secrets.ASC_API_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          # Generate private key + CSR
+          openssl genrsa -out dist.key 2048
+          openssl req -new -key dist.key \
+            -subj "/CN=Apple Distribution/C=US" \
+            -out dist.csr
+
+          CSR_CONTENT=$(cat dist.csr | base64 | tr -d '\n')
+
+          # Build JWT for App Store Connect API
+          pip3 install PyJWT cryptography --quiet
+
+          python3 - <<PYEOF
+          import jwt, time, json, urllib.request, sys
+
+          key_id    = "$ASC_API_KEY_ID"
+          issuer_id = "$ASC_API_ISSUER_ID"
+          pem       = """$ASC_API_PRIVATE_KEY"""
+
+          payload = {
+              "iss": issuer_id,
+              "iat": int(time.time()),
+              "exp": int(time.time()) + 1200,
+              "aud": "appstoreconnect-v1"
+          }
+          token = jwt.encode(payload, pem, algorithm="ES256", headers={"kid": key_id})
+
+          body = json.dumps({
+              "data": {
+                  "type": "certificates",
+                  "attributes": {
+                      "certificateType": "DISTRIBUTION",
+                      "csrContent": "$CSR_CONTENT"
+                  }
+              }
+          }).encode()
+
+          req = urllib.request.Request(
+              "https://api.appstoreconnect.apple.com/v1/certificates",
+              data=body,
+              headers={
+                  "Authorization": f"Bearer {token}",
+                  "Content-Type": "application/json"
+              }
+          )
+          resp = urllib.request.urlopen(req)
+          data = json.loads(resp.read())
+          cert_b64 = data["data"]["attributes"]["certificateContent"]
+          with open("/tmp/cert_b64.txt", "w") as f:
+              f.write(cert_b64)
+          print("Certificate created successfully")
+          PYEOF
+
+          # Decode cert from base64 DER
+          python3 -c "
+          import base64
+          with open('/tmp/cert_b64.txt') as f:
+              b64 = f.read().strip()
+          with open('dist.cer', 'wb') as f:
+              f.write(base64.b64decode(b64))
+          "
+
+          # Convert DER cert to PEM
+          openssl x509 -in dist.cer -inform DER -out dist.pem
+
+          # Download Apple WWDR G3 intermediate cert
+          curl -s -o wwdr.cer https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
+          openssl x509 -in wwdr.cer -inform DER -out wwdr.pem
+
+          # Create P12 (no password — set one if desired by changing -passout)
+          P12_PASS="MetricOraCI2026"
+          openssl pkcs12 -export \
+            -out dist.p12 \
+            -inkey dist.key \
+            -in dist.pem \
+            -certfile wwdr.pem \
+            -passout pass:$P12_PASS \
+            -legacy
+
+          P12_B64=$(base64 -i dist.p12 | tr -d '\n')
+
+          echo "============================================"
+          echo "COPY THESE VALUES INTO GITHUB SECRETS:"
+          echo "============================================"
+          echo ""
+          echo "Secret name: METRICORA_IOS_CERT_P12"
+          echo "Value (base64):"
+          echo "$P12_B64"
+          echo ""
+          echo "Secret name: METRICORA_IOS_CERT_PASSWORD"
+          echo "Value: $P12_PASS"
+          echo "============================================"
+
+          # Clean up key material from runner
+          rm -f dist.key dist.csr dist.cer dist.pem dist.p12 wwdr.cer wwdr.pem /tmp/cert_b64.txt
