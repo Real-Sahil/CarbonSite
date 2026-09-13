@@ -652,7 +652,7 @@ const handlers: Record<string, ReportHandler> = {
       postcode: s.postcode,
       radiusKm: Number(s.radiusKm),
       scannedAt: s.scannedAt,
-      projectName: s.project.name ?? null,
+      projectName: s.project?.name ?? null,
       totalSpeciesCount: s.totalSpeciesCount,
       plantSpeciesCount: s.plantSpeciesCount,
       birdSpeciesCount: s.birdSpeciesCount,
