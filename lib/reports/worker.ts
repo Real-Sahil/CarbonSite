@@ -427,13 +427,21 @@ async function renderPdf(html: string): Promise<Buffer> {
   let browser: import("puppeteer-core").Browser | import("puppeteer").Browser | null = null;
   try {
     if (process.env.VERCEL) {
-      const chromium = (await import("@sparticuz/chromium")).default;
-      const puppeteer = (await import("puppeteer-core")).default;
-      browser = await puppeteer.launch({
-        args: chromium.args,
-        executablePath: await chromium.executablePath(),
-        headless: true,
-      });
+      try {
+        const chromium = (await import("@sparticuz/chromium")).default;
+        const puppeteer = (await import("puppeteer-core")).default;
+        browser = await puppeteer.launch({
+          args: chromium.args,
+          executablePath: await chromium.executablePath(),
+          headless: true,
+        });
+      } catch (vercelErr) {
+        const errMsg = vercelErr instanceof Error ? vercelErr.message : String(vercelErr);
+        throw new Error(
+          `Chromium launch failed on Vercel. This usually means @sparticuz/chromium is not bundled correctly. ` +
+          `Error: ${errMsg}`
+        );
+      }
     } else {
       const puppeteer = (await import("puppeteer")).default;
       const executablePath = await resolveLocalChromiumPath();
