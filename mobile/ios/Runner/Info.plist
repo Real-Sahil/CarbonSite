@@ -55,7 +55,6 @@
 	<array>
 		<string>fetch</string>
 		<string>remote-notification</string>
-		<string>processing</string>
 	</array>
 	<!-- App Store export compliance -->
 	<key>ITSAppUsesNonExemptEncryption</key>

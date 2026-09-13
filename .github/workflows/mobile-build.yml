@@ -126,12 +126,30 @@ jobs:
     name: iOS release artifact
     # iOS builds only on tags or manual dispatch — branch pushes build Android only.
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_ios) || startsWith(github.ref, 'refs/tags/') }}
-    runs-on: macos-15
+    runs-on: macos-latest
     defaults:
       run:
         working-directory: mobile
     steps:
       - uses: actions/checkout@v4
+      - name: Select Xcode 26 (iOS 26 SDK required)
+        run: |
+          # Apple requires iOS 26 SDK (Xcode 26) for App Store submissions.
+          # Try Xcode 26.0 first, then any Xcode_26.x available.
+          if sudo xcode-select -s /Applications/Xcode_26.0.app/Contents/Developer 2>/dev/null; then
+            echo "Selected Xcode 26.0"
+          else
+            XCODE26=$(ls /Applications/ | grep -E '^Xcode_26' | sort -V | tail -1)
+            if [ -n "$XCODE26" ]; then
+              sudo xcode-select -s "/Applications/$XCODE26/Contents/Developer"
+              echo "Selected $XCODE26"
+            else
+              echo "::error::Xcode 26 not found. Available Xcode installs:"
+              ls /Applications/ | grep -i xcode || echo "(none)"
+              exit 1
+            fi
+          fi
+          xcodebuild -version
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.44.0"

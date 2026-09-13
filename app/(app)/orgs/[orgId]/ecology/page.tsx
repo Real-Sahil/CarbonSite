@@ -133,21 +133,49 @@ export default async function EcologyPage({ params }: Props) {
 
   const canManage = MANAGE_ROLES.includes(role!);
 
-  const [projects, scansRaw] = await Promise.all([
-    prisma.project.findMany({
-      where: { organizationId: orgId },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, postcode: true },
-    }),
-    prisma.ecologicalScan.findMany({
-      where: { organizationId: orgId },
-      orderBy: { createdAt: "desc" },
-      include: {
-        project: { select: { id: true, name: true } },
-        createdBy: { select: { name: true, email: true } },
-      },
-    }),
-  ]);
+  const ecologyData = await (async () => {
+    try {
+      const [projects, scansRaw] = await Promise.all([
+        prisma.project.findMany({
+          where: { organizationId: orgId },
+          orderBy: { name: "asc" },
+          select: { id: true, name: true, postcode: true },
+        }),
+        prisma.ecologicalScan.findMany({
+          where: { organizationId: orgId },
+          orderBy: { createdAt: "desc" },
+          include: {
+            project: { select: { id: true, name: true } },
+            createdBy: { select: { name: true, email: true } },
+          },
+        }),
+      ]);
+      return { ok: true as const, projects, scansRaw };
+    } catch (err) {
+      console.error("Ecology page DB error:", err);
+      const msg =
+        err instanceof Error && /column|relation|does not exist/i.test(err.message)
+          ? "Database migration pending. Run `pnpm prisma migrate deploy` in production."
+          : "Failed to load ecology data. Try refreshing.";
+      return { ok: false as const, error: msg };
+    }
+  })();
+
+  if (!ecologyData.ok) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2 mb-4">
+          <Leaf className="h-6 w-6 text-green-600" />
+          Ecology Scans
+        </h1>
+        <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 p-4">
+          <p className="text-sm text-amber-800 dark:text-amber-300">{ecologyData.error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { projects, scansRaw } = ecologyData;
 
   const scansByProject = new Map<string, typeof scansRaw>();
   for (const scan of scansRaw) {
