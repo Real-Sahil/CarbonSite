@@ -77,10 +77,10 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       });
 
       let csvBuffer: Buffer | null = null;
-      // Water/waste reports have no EmissionCalculation rows to export —
-      // WaterRecord/WasteRecord aren't part of fetchCalculations()'s shape.
+      // Non-GHG report types have no EmissionCalculation rows to export.
       if (report.type !== "national_toms" && report.type !== "cbam"
-        && report.type !== "csrd_esrs_e3" && report.type !== "csrd_esrs_e5") {
+        && report.type !== "csrd_esrs_e3" && report.type !== "csrd_esrs_e5"
+        && report.type !== "ecology_scan" && report.type !== "ecology_survey") {
         const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
         csvBuffer = buildCsv(calculations, report);
         reportLogger.info("CSV buffer built", {
@@ -150,14 +150,14 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
 
       let pdfBuffer = await stampAuditMetadata(rawPdfBuffer, {
         snapshotId: report.snapshot.calculationRunId,
-        methodologyVersion: report.snapshot.calculationRun.methodologyVersion.name,
+        methodologyVersion: report.snapshot.calculationRun.methodologyVersion?.name ?? "—",
         sha256: pdfChecksum,
         generatedAt: new Date(),
         orgId,
       });
       reportLogger.info("Audit metadata stamped", {
         reportId,
-        methodology: report.snapshot.calculationRun.methodologyVersion.name,
+        methodology: report.snapshot.calculationRun.methodologyVersion?.name ?? "—",
       });
 
       // Add QR code to PDF footer
@@ -323,14 +323,18 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   const auditEventFilter = (opts.auditEventFilter as string[] | undefined) ?? undefined;
   const logoDataUri = await loadLogoDataUri(report.organization.branding?.reportHeaderLogoKey);
 
-  const calcs = report.type !== "national_toms"
+  // Ecology report types don't use emission calculations — they query
+  // EcologicalScan / BiodiversityAssessment directly by org.
+  const isEcologyType = report.type === "ecology_scan" || report.type === "ecology_survey";
+
+  const calcs = !isEcologyType && report.type !== "national_toms"
     ? await fetchCalculations(orgId, runId, report.contractId ?? undefined)
     : [];
 
   const agg = aggregate(calcs);
-  const factorLibrary = `${report.snapshot.calculationRun.factorLibrary.name} ${report.snapshot.calculationRun.factorLibrary.version}`;
-  const methodology = report.snapshot.calculationRun.methodologyVersion.name;
-  const gwpVersion = report.snapshot.calculationRun.methodologyVersion.gwpVersion;
+  const factorLibrary = `${report.snapshot.calculationRun.factorLibrary?.name ?? "—"} ${report.snapshot.calculationRun.factorLibrary?.version ?? ""}`.trim();
+  const methodology = report.snapshot.calculationRun.methodologyVersion?.name ?? "—";
+  const gwpVersion = report.snapshot.calculationRun.methodologyVersion?.gwpVersion ?? "—";
   const publishedBy = report.snapshot.publishedBy.name ?? report.snapshot.publishedBy.email;
 
   const basePdfData = await buildBasePdfData(

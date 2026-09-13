@@ -63,6 +63,87 @@ const RISK_BADGE: Record<string, { label: string; cls: string }> = {
 
 const PAGE_SIZE = 50;
 
+// Maps NBN Atlas speciesGroup strings (lowercased) to our card-label keys.
+const NBN_GROUP_MAP: Record<string, string> = {
+  birds: "Birds", aves: "Birds",
+  mammals: "Mammals", mammalia: "Mammals",
+  plants: "Plants", plantae: "Plants", bryophytes: "Plants", lichens: "Plants",
+  insects: "Invertebrates", insecta: "Invertebrates", invertebrates: "Invertebrates",
+  arachnids: "Invertebrates", molluscs: "Invertebrates", crustaceans: "Invertebrates",
+  reptiles: "Reptiles", reptilia: "Reptiles",
+  amphibians: "Amphibians", amphibia: "Amphibians",
+};
+
+function cardGroupForSpecies(s: SpeciesRecord): string {
+  const mapped = NBN_GROUP_MAP[s.group.toLowerCase()];
+  return mapped ?? "Other";
+}
+
+export function SpeciesBreakdownSection({
+  species,
+  counts,
+}: {
+  species: SpeciesRecord[];
+  counts: { plants: number; birds: number; mammals: number; invertebrates: number; reptiles: number; amphibians: number; other: number };
+}) {
+  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+
+  const cards = [
+    { label: "Plants",        value: counts.plants },
+    { label: "Birds",         value: counts.birds },
+    { label: "Mammals",       value: counts.mammals },
+    { label: "Invertebrates", value: counts.invertebrates },
+    { label: "Reptiles",      value: counts.reptiles },
+    { label: "Amphibians",    value: counts.amphibians },
+    { label: "Other",         value: counts.other },
+  ];
+
+  const filtered = activeGroup
+    ? species.filter((s) => cardGroupForSpecies(s) === activeGroup)
+    : species;
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {cards.map(({ label, value }) => {
+          const isActive = activeGroup === label;
+          return (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setActiveGroup(isActive ? null : label)}
+              className={[
+                "rounded-lg border p-3 text-center transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                isActive
+                  ? "bg-primary/10 border-primary"
+                  : "bg-background hover:bg-muted/50 cursor-pointer",
+              ].join(" ")}
+            >
+              <p className="text-2xl font-semibold tabular-nums">{value.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+              {isActive && (
+                <p className="text-[10px] text-primary mt-1">filtered - click to clear</p>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {species.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold mb-2">
+            Species inventory{" "}
+            {activeGroup
+              ? `(${filtered.length} ${activeGroup} species)`
+              : `(${species.length} species — sorted by conservation risk)`}
+          </h3>
+          <SpeciesTable species={filtered} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SpeciesTable({ species }: { species: SpeciesRecord[] }) {
   const [limit, setLimit] = useState(PAGE_SIZE);
 

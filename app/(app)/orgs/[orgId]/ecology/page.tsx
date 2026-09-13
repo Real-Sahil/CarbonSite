@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Leaf, TreePine, Bird, ShieldAlert, AlertCircle, CheckCircle2, FileText } from "lucide-react";
 import Link from "next/link";
-import { RunScanDialog, DeleteScanButton, SpeciesTable, type SpeciesRecord } from "./scan-actions";
+import { RunScanDialog, DeleteScanButton, SpeciesBreakdownSection, type SpeciesRecord } from "./scan-actions";
 
 const MANAGE_ROLES: OrgRole[] = [
   "admin",
@@ -305,45 +305,25 @@ export default async function EcologyPage({ params }: Props) {
 
                       {scan.status === "completed" && (
                         <>
-                          {/* Species breakdown */}
+                          {/* Species breakdown — clickable cards filter the table below */}
                           <div>
                             <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
                               <Bird className="h-4 w-4 text-sky-600" />
                               Species breakdown (within {Number(scan.radiusKm)} km)
                             </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                              {[
-                                { label: "Plants", value: scan.plantSpeciesCount },
-                                { label: "Birds", value: scan.birdSpeciesCount },
-                                { label: "Mammals", value: scan.mammalSpeciesCount },
-                                { label: "Invertebrates", value: scan.invertSpeciesCount },
-                                { label: "Reptiles", value: scan.reptileSpeciesCount },
-                                { label: "Amphibians", value: scan.amphibianSpeciesCount },
-                                { label: "Other", value: scan.otherSpeciesCount },
-                              ].map(({ label, value }) => (
-                                <div
-                                  key={label}
-                                  className="rounded-lg border bg-background p-3 text-center"
-                                >
-                                  <p className="text-2xl font-semibold tabular-nums">
-                                    {value.toLocaleString()}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-                                </div>
-                              ))}
-                            </div>
+                            <SpeciesBreakdownSection
+                              species={scan.speciesRecords as unknown as SpeciesRecord[]}
+                              counts={{
+                                plants: scan.plantSpeciesCount,
+                                birds: scan.birdSpeciesCount,
+                                mammals: scan.mammalSpeciesCount,
+                                invertebrates: scan.invertSpeciesCount,
+                                reptiles: scan.reptileSpeciesCount,
+                                amphibians: scan.amphibianSpeciesCount,
+                                other: scan.otherSpeciesCount,
+                              }}
+                            />
                           </div>
-
-                          {/* Species records table — paginated, sorted high-risk first */}
-                          {Array.isArray(scan.speciesRecords) &&
-                            (scan.speciesRecords as unknown as SpeciesRecord[]).length > 0 && (
-                              <div>
-                                <h3 className="text-sm font-semibold mb-2">
-                                  Species inventory ({(scan.speciesRecords as unknown as SpeciesRecord[]).length} species — sorted by conservation risk)
-                                </h3>
-                                <SpeciesTable species={scan.speciesRecords as unknown as SpeciesRecord[]} />
-                              </div>
-                            )}
 
                           {/* Designated sites */}
                           <div>

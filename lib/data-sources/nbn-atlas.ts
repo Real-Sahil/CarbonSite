@@ -163,12 +163,12 @@ export type ConservationRisk = "critical" | "endangered" | "vulnerable" | "near_
 export function conservationRisk(status: string | undefined): ConservationRisk {
   if (!status) return "unknown";
   const s = status.toLowerCase();
-  if (/critically.endangered|\\bCR\\b/.test(s)) return "critical";
-  if (/\\bendangered\\b|\\bEN\\b/.test(s)) return "endangered";
-  if (/vulnerable|\\bVU\\b/.test(s)) return "vulnerable";
-  if (/near.threatened|\\bNT\\b/.test(s)) return "near_threatened";
+  if (/critically.endangered|\bCR\b/.test(s)) return "critical";
+  if (/\bendangered\b|\bEN\b/.test(s)) return "endangered";
+  if (/vulnerable|\bVU\b/.test(s)) return "vulnerable";
+  if (/near.threatened|\bNT\b/.test(s)) return "near_threatened";
   if (/schedule [158]|protected|wildlife.*act/i.test(s)) return "protected";
-  if (/least.concern|\\bLC\\b/.test(s)) return "least_concern";
+  if (/least.concern|\bLC\b/.test(s)) return "least_concern";
   return "unknown";
 }
 
@@ -252,7 +252,8 @@ export async function scanSpecies(
       `${BASE}/occurrences/search?q=*` +
       `&lat=${lat}&lon=${lon}&radius=${radiusKm}` +
       `&pageSize=${PAGE_SIZE}&startIndex=${start}` +
-      `&sort=taxonConceptID&dir=asc`;
+      `&sort=taxonConceptID&dir=asc` +
+      `&fl=taxonConceptID,scientificName,vernacularName,kingdom,classs,speciesGroup,year,countryConservation`;
 
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new DataSourceError("nbn-atlas", res.status, await res.text().catch(() => ""));
