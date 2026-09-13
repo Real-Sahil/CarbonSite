@@ -53,7 +53,12 @@ export function RunScanDialog({
       );
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.message ?? "Scan failed.");
+        const firstFieldError =
+          json.details?.fieldErrors &&
+          Object.values(json.details.fieldErrors as Record<string, string[]>)
+            .flat()
+            .find(Boolean);
+        throw new Error(firstFieldError ?? json.message ?? "Scan failed.");
       }
       setOpen(false);
       router.refresh();
@@ -97,7 +102,7 @@ export function RunScanDialog({
               id="radius"
               type="number"
               min="0.1"
-              max="20"
+              max="50"
               step="0.5"
               value={radiusKm}
               onChange={(e) => setRadiusKm(e.target.value)}

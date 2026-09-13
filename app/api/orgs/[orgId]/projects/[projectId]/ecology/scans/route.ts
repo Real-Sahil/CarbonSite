@@ -10,8 +10,16 @@ import { runEcologicalScan } from "@/lib/ecology/scan";
 type Params = { params: Promise<{ orgId: string; projectId: string }> };
 
 const CreateScanBody = z.object({
-  postcode: z.string().min(1).max(10),
-  radiusKm: z.number().min(0.1).max(20).default(1),
+  postcode: z
+    .string()
+    .min(1)
+    .max(10)
+    .transform((v) => v.toUpperCase().trim())
+    .refine(
+      (v) => /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/.test(v),
+      { message: "Enter a valid UK postcode (e.g. SW1A 1AA)." },
+    ),
+  radiusKm: z.number().min(0.1).max(50).default(1),
 });
 
 /**
@@ -106,7 +114,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       data: {
         organizationId: orgId,
         projectId,
-        postcode: body.postcode.toUpperCase().trim(),
+        postcode: body.postcode,
         radiusKm: body.radiusKm,
         status: "pending",
         createdByUserId: session.user.id,
