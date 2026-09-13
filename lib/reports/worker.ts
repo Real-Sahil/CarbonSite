@@ -430,17 +430,40 @@ async function renderPdf(html: string): Promise<Buffer> {
       try {
         const chromium = (await import("@sparticuz/chromium")).default;
         const puppeteer = (await import("puppeteer-core")).default;
+        const executablePath = await chromium.executablePath();
+        reportLogger.info("Chromium paths", {
+          resolvedPath: executablePath,
+          args: chromium.args,
+        });
         browser = await puppeteer.launch({
           args: chromium.args,
-          executablePath: await chromium.executablePath(),
+          executablePath,
           headless: true,
         });
       } catch (vercelErr) {
         const errMsg = vercelErr instanceof Error ? vercelErr.message : String(vercelErr);
-        throw new Error(
-          `Chromium launch failed on Vercel. This usually means @sparticuz/chromium is not bundled correctly. ` +
-          `Error: ${errMsg}`
-        );
+        reportLogger.error("@sparticuz/chromium failed, trying puppeteer fallback", {
+          error: errMsg,
+        });
+        // Fallback: use puppeteer with bundled Chromium (heavier but more reliable on Vercel)
+        try {
+          const puppeteer = (await import("puppeteer")).default;
+          browser = await puppeteer.launch({
+            headless: true,
+            args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          });
+          reportLogger.info("Puppeteer bundled Chromium fallback succeeded");
+        } catch (fallbackErr) {
+          const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+          reportLogger.error("Both Chromium methods failed", {
+            sparticuzError: errMsg,
+            puppeteerError: fallbackMsg,
+          });
+          throw new Error(
+            `PDF rendering unavailable: @sparticuz/chromium failed (${errMsg}), ` +
+            `puppeteer fallback failed (${fallbackMsg})`
+          );
+        }
       }
     } else {
       const puppeteer = (await import("puppeteer")).default;
