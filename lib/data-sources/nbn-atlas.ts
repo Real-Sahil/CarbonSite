@@ -162,13 +162,12 @@ export type ConservationRisk = "critical" | "endangered" | "vulnerable" | "near_
 
 export function conservationRisk(status: string | undefined): ConservationRisk {
   if (!status) return "unknown";
-  const s = status.toLowerCase();
-  if (/critically.endangered|\bCR\b/.test(s)) return "critical";
-  if (/\bendangered\b|\bEN\b/.test(s)) return "endangered";
-  if (/vulnerable|\bVU\b/.test(s)) return "vulnerable";
-  if (/near.threatened|\bNT\b/.test(s)) return "near_threatened";
-  if (/schedule [158]|protected|wildlife.*act/i.test(s)) return "protected";
-  if (/least.concern|\bLC\b/.test(s)) return "least_concern";
+  if (/critically.endangered|\bCR\b/i.test(status)) return "critical";
+  if (/\bendangered\b|\bEN\b/i.test(status)) return "endangered";
+  if (/vulnerable|\bVU\b/i.test(status)) return "vulnerable";
+  if (/near.threatened|\bNT\b/i.test(status)) return "near_threatened";
+  if (/schedule [158]|protected|wildlife.*act/i.test(status)) return "protected";
+  if (/least.concern|\bLC\b/i.test(status)) return "least_concern";
   return "unknown";
 }
 

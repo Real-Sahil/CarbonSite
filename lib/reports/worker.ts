@@ -403,6 +403,26 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   return handler(ctx);
 }
 
+async function resolveLocalChromiumPath(): Promise<string | undefined> {
+  const { existsSync } = await import("fs");
+  // Explicit override wins
+  const envPath = process.env.PUPPETEER_EXECUTABLE_PATH?.trim();
+  if (envPath && existsSync(envPath)) return envPath;
+  // Playwright pre-installed Chromium (cloud / CI runners)
+  for (const p of ["/opt/pw-browsers/chromium", "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"]) {
+    if (existsSync(p)) return p;
+  }
+  // System Chromium
+  const { execSync } = await import("child_process");
+  for (const bin of ["google-chrome-stable", "google-chrome", "chromium-browser", "chromium"]) {
+    try {
+      const p = execSync(`which ${bin}`, { timeout: 2000 }).toString().trim();
+      if (p && existsSync(p)) return p;
+    } catch { /* not found */ }
+  }
+  return undefined;
+}
+
 async function renderPdf(html: string): Promise<Buffer> {
   let browser: import("puppeteer-core").Browser | import("puppeteer").Browser | null = null;
   try {
@@ -416,8 +436,18 @@ async function renderPdf(html: string): Promise<Buffer> {
       });
     } else {
       const puppeteer = (await import("puppeteer")).default;
+      // Find executable: prefer Puppeteer's own Chromium, fall back to system / Playwright.
+      let executablePath: string | undefined;
+      try {
+        const candidate = puppeteer.executablePath();
+        const { existsSync } = await import("fs");
+        executablePath = existsSync(candidate) ? candidate : await resolveLocalChromiumPath();
+      } catch {
+        executablePath = await resolveLocalChromiumPath();
+      }
       browser = await puppeteer.launch({
         headless: true,
+        executablePath,
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
       });
     }
