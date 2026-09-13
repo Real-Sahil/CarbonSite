@@ -138,6 +138,7 @@ export interface NbnSpeciesRecord {
   commonName: string | null;
   kingdom: string;
   group: string;
+  classs?: string;
   occurrenceCount: number;
   lastSeen: string | null;
   conservationStatus?: string;
@@ -281,6 +282,7 @@ export async function scanSpecies(
             commonName: occ.vernacularName ?? null,
             kingdom: occ.kingdom ?? "Unknown",
             group: occ.speciesGroup ?? occ.classs ?? occ.kingdom ?? "Unknown",
+            classs: occ.classs,
             occurrenceCount: 1,
             lastSeen: occ.year ? String(occ.year) : null,
             conservationStatus: occ.countryConservation || undefined,
@@ -306,7 +308,7 @@ export async function scanSpecies(
   };
   for (const s of speciesRecords) {
     const nbnGroup = s.group;
-    const g = classifyFromNbnGroup(nbnGroup, s.kingdom, undefined);
+    const g = classifyFromNbnGroup(nbnGroup, s.kingdom, s.classs);
     if (g === "invertebrates") counts.invertebrates++;
     else if (g === "reptiles") counts.reptiles++;
     else if (g === "amphibians") counts.amphibians++;
