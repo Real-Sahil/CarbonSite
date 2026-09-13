@@ -46,7 +46,7 @@ env:
 jobs:
   android:
     name: Android release artifacts
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_android }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_android) || startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -207,6 +207,15 @@ jobs:
 
           echo "METRICORA_IOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
           echo "METRICORA_IOS_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          echo "METRICORA_IOS_PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
+
+          echo "=== DIAGNOSTIC: Imported cert identity ==="
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -i "distribution" || \
+            security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          echo "=== DIAGNOSTIC: Profile DeveloperCertificates fingerprint ==="
+          /usr/libexec/PlistBuddy -c 'Print :DeveloperCertificates' "$RUNNER_TEMP/profile.plist" 2>/dev/null | head -5 || true
+          echo "=== DIAGNOSTIC: Profile entitlements ==="
+          /usr/libexec/PlistBuddy -c 'Print :Entitlements' "$RUNNER_TEMP/profile.plist" 2>/dev/null || true
       - name: Generate ExportOptions.plist
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
         env:
@@ -249,6 +258,22 @@ jobs:
       - name: Build signed IPA
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
         run: flutter build ipa --release --no-tree-shake-icons --export-options-plist=ios/ExportOptions.plist --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
+      - name: Inspect signed IPA
+        if: env.METRICORA_IOS_SIGNING_READY == 'true'
+        run: |
+          IPA="build/ios/ipa/Runner.ipa"
+          if [ ! -f "$IPA" ]; then echo "IPA not found"; exit 0; fi
+          WORK=$(mktemp -d)
+          unzip -q "$IPA" -d "$WORK"
+          APP=$(find "$WORK/Payload" -name "*.app" -maxdepth 1 | head -1)
+          echo "=== Signing identity used ==="
+          codesign -dv --verbose=4 "$APP" 2>&1 | grep -E "^(Authority|Identifier|Format|CodeDirectory|TeamIdentifier)" || true
+          echo "=== Embedded profile UUID ==="
+          security cms -D -i "$APP/embedded.mobileprovision" 2>/dev/null | \
+            /usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin 2>/dev/null || true
+          echo "=== IPA entitlements ==="
+          codesign -d --entitlements - "$APP" 2>/dev/null | head -40 || true
+          rm -rf "$WORK"
       - name: Build unsigned iOS app (no signing secrets configured)
         if: env.METRICORA_IOS_SIGNING_READY != 'true'
         run: flutter build ios --release --no-codesign --no-tree-shake-icons --dart-define=METRICORA_API_BASE_URL="$METRICORA_API_BASE_URL"
