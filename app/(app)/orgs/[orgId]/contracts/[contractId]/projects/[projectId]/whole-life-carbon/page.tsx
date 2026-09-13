@@ -152,7 +152,7 @@ export default function WholeLifeCarbonPage() {
     }
   }, [orgId, contractId, projectId]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => { load(); }, [load]);
 
   const maxModuleKg = result

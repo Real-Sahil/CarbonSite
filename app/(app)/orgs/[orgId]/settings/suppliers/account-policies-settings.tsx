@@ -39,11 +39,7 @@ export function AccountPoliciesSettings() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    loadPolicies();
-  }, []);
-
-  const loadPolicies = async () => {
+  const loadPolicies = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -56,7 +52,11 @@ export function AccountPoliciesSettings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
+
+  useEffect(() => {
+    loadPolicies();
+  }, [loadPolicies]);
 
   const handleSave = async () => {
     if (!policies) return;

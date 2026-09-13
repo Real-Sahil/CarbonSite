@@ -54,7 +54,7 @@ export default function WorkflowDetailPage() {
   }, [orgId, workflowId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     fetchExecutions();
   }, [fetchExecutions]);
 

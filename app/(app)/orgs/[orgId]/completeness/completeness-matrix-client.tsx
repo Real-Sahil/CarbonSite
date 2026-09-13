@@ -101,7 +101,7 @@ export function CompletenessMatrixClient({
     }
   }, [orgId, periodId]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => { load(); }, [load]);
 
   const cellFor = (facilityId: string, categoryId: string) =>

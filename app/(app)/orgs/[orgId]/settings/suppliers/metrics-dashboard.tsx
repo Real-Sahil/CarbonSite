@@ -50,20 +50,7 @@ export function MetricsDashboard() {
   const [period, setPeriod] = useState("30");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadMetrics();
-  }, [period]);
-
-  const handlePeriodChange = (value: string) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-    debounceTimeoutRef.current = setTimeout(() => {
-      setPeriod(value);
-    }, 300);
-  };
-
-  const loadMetrics = async () => {
+  const loadMetrics = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -78,6 +65,19 @@ export function MetricsDashboard() {
     } finally {
       setLoading(false);
     }
+  }, [orgId, period]);
+
+  useEffect(() => {
+    loadMetrics();
+  }, [loadMetrics]);
+
+  const handlePeriodChange = (value: string) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    debounceTimeoutRef.current = setTimeout(() => {
+      setPeriod(value);
+    }, 300);
   };
 
   const handleExportCsv = () => {

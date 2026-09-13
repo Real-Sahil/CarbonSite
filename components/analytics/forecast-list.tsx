@@ -72,7 +72,7 @@ export function ForecastList({
   }, [orgId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     loadForecasts();
     const interval = setInterval(loadForecasts, 10000);
     return () => clearInterval(interval);

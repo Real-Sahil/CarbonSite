@@ -275,7 +275,7 @@ export default function WaterPage() {
     setLoading(false);
   }
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => { load(); }, [orgId]);
 
   async function handleDelete(id: string) {

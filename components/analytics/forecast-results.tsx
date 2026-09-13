@@ -87,7 +87,7 @@ export function ForecastResults({ forecastId, orgId }: ForecastResultsProps) {
   }, [orgId, forecastId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     loadResult();
     const interval = setInterval(loadResult, 30000);
     return () => clearInterval(interval);

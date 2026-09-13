@@ -54,7 +54,7 @@ export function CausalAnalysisResults({
   }, [orgId, analysisId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     loadResult();
     const interval = setInterval(loadResult, 3000);
     return () => clearInterval(interval);

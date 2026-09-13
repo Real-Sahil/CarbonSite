@@ -58,7 +58,7 @@ export function SupplierAccountsPage({ orgId }: { orgId: string }) {
 
   useEffect(() => {
     setLoading(true);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     Promise.all([fetchAccounts(), fetchPolicies()]).finally(() => setLoading(false));
   }, [fetchAccounts, fetchPolicies]);
 

@@ -109,7 +109,7 @@ export default function SupplierPerformancePage() {
 
   useEffect(() => {
     // fetchPerformanceData is wrapped in useCallback and properly memoized
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     fetchPerformanceData();
   }, [fetchPerformanceData]);
 

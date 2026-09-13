@@ -84,7 +84,7 @@ export default function InvoiceReviewPage() {
   }, [orgId, severityFilter, typeFilter, resolutionFilter]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     fetchAnomalies();
   }, [fetchAnomalies]);
 
