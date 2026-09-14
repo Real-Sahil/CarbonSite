@@ -37,17 +37,15 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
       return apiError("NOT_FOUND", "Organization not found.", 404);
     }
 
-    let updated: { id: string; isPilot?: boolean; plan: string } | null = null;
-    try {
-      updated = await prisma.organization.update({
-        where: { id: orgId },
-        data: { isPilot: body.isPilot },
-        select: { id: true, isPilot: true, plan: true },
-      });
-    } catch (err) {
-      // Column should exist now after migration. If this catches, something else failed — rethrow.
-      throw err;
-    }
+    await prisma.organization.update({
+      where: { id: orgId },
+      data: { isPilot: body.isPilot },
+    });
+
+    const updated = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, isPilot: true, plan: true },
+    });
 
     await writeAuditLog({
       organizationId: orgId,
