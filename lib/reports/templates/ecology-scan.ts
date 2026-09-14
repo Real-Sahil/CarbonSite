@@ -76,6 +76,7 @@ export interface EcologyScanReportData {
   publishedAt: Date;
   publishedBy: string;
   scans: EcologyScanRecord[];
+  narrative?: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -384,6 +385,13 @@ export function renderEcologyScanHtml(d: EcologyScanReportData): string {
                   color: #374151 }
   .risk-legend-item { display: flex; align-items: center; gap: 5px }
   .risk-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0 }
+
+  /* Narrative */
+  .narrative-section { margin: 0 40px 8px; padding: 18px 20px; background: #f0fdf4;
+                        border-left: 4px solid #16a34a; border-radius: 0 6px 6px 0 }
+  .narrative-label { font-size: 8pt; font-weight: 700; color: #15803d; text-transform: uppercase;
+                      letter-spacing: 0.05em; margin-bottom: 8px }
+  .narrative-text { font-size: 9.5pt; color: #1a1a1a; line-height: 1.65; white-space: pre-wrap }
 </style>
 </head>
 <body>
@@ -430,6 +438,12 @@ export function renderEcologyScanHtml(d: EcologyScanReportData): string {
     <div class="risk-legend-item"><div class="risk-dot" style="background:#16a34a"></div>Least Concern (LC)</div>
   </div>
 </section>
+
+${d.narrative ? `
+<div class="narrative-section">
+  <div class="narrative-label">Executive Summary</div>
+  <div class="narrative-text">${esc(d.narrative)}</div>
+</div>` : ""}
 
 ${scanSections}
 

@@ -19,6 +19,7 @@ import { generateCbamXml, type CbamReportData, type CbamGoodsItem, MATERIAL_TO_C
 import { renderPpn006CrpHtml, type Ppn006CrpData, type CrpScopeRow } from "./templates/ppn-006-crp";
 import { renderEcologySurveyHtml, type EcologySurveyData, type EcologySurveyAssessment } from "./templates/ecology-survey";
 import { renderEcologyScanHtml, type EcologyScanReportData, type EcologyScanRecord, type EcologyScanSpecies, type EcologyScanSite, type EcologyScanWoodland } from "./templates/ecology-scan";
+import { llmClient } from "@/lib/llm/client";
 
 export type ReportContext = {
   orgId: string;
@@ -625,6 +626,27 @@ const handlers: Record<string, ReportHandler> = {
       speciesRecordCount: a._count.speciesRecords,
     }));
 
+    let surveyNarrative: string | null = null;
+    if (llmClient.isConfigured() && mapped.length > 0) {
+      try {
+        const meetCount = mapped.filter((a) => a.meetsRequirement).length;
+        const prompt = `You are an ecology and biodiversity consultant writing a Biodiversity Net Gain (BNG) assessment summary for ${report.organization.name}.
+
+Reporting period: ${report.reportingPeriod.label}
+Total BNG assessments: ${mapped.length}
+Assessments meeting 10% BNG requirement: ${meetCount} of ${mapped.length}
+Total species records across all assessments: ${speciesCount}
+
+Assessment details:
+${mapped.map((a) => `- ${a.name}: ${a.meetsRequirement ? "Meets" : "Does not meet"} 10% BNG. Area units baseline/post: ${a.baselineAreaUnits.toFixed(3)}/${a.postAreaUnits.toFixed(3)}. Hedgerow: ${a.baselineHedgerowUnits.toFixed(3)}/${a.postHedgerowUnits.toFixed(3)}. Watercourse: ${a.baselineWatercourseUnits.toFixed(3)}/${a.postWatercourseUnits.toFixed(3)}.`).join("\n")}
+
+Write a concise 2-3 paragraph executive summary of the biodiversity net gain performance, highlighting key findings, compliance status, and recommendations. Use professional, plain English suitable for a planning authority or sustainability report.`;
+        surveyNarrative = (await llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3 })).text;
+      } catch {
+        // narrative is optional — proceed without it
+      }
+    }
+
     const data: EcologySurveyData = {
       orgName: report.organization.name,
       logoDataUri,
@@ -635,8 +657,9 @@ const handlers: Record<string, ReportHandler> = {
       totalAssessments: mapped.length,
       meetingRequirementCount: mapped.filter((a) => a.meetsRequirement).length,
       totalSpeciesRecords: speciesCount,
+      narrative: surveyNarrative,
     };
-    return { html: renderEcologySurveyHtml(data), pdfkitData: ctx.basePdfData };
+    return { html: renderEcologySurveyHtml(data) };
   },
   ecology_scan: async (ctx) => {
     const { report, logoDataUri, publishedBy } = ctx;
@@ -679,14 +702,40 @@ const handlers: Record<string, ReportHandler> = {
       speciesRecords: (s.speciesRecords as unknown as EcologyScanSpecies[]) ?? [],
     }));
 
+    let scanNarrative: string | null = null;
+    if (llmClient.isConfigured() && mappedScans.length > 0) {
+      try {
+        const totalSpecies = mappedScans.reduce((sum, s) => sum + s.totalSpeciesCount, 0);
+        const totalSssi = mappedScans.reduce((sum, s) => sum + s.sssiCount, 0);
+        const totalAncientWoodland = mappedScans.reduce((sum, s) => sum + s.ancientWoodlandCount, 0);
+        const totalWoodlandHa = mappedScans.reduce((sum, s) => sum + s.woodlandTotalHa, 0);
+        const prompt = `You are an ecological consultant writing an NBN Atlas biodiversity scan summary for ${report.organization.name}.
+
+Number of site scans: ${mappedScans.length}
+Total species recorded across all sites: ${totalSpecies}
+Total SSSIs within scan radii: ${totalSssi}
+Ancient woodland sites: ${totalAncientWoodland}
+Total woodland area: ${totalWoodlandHa.toFixed(1)} ha
+
+Site scan breakdown:
+${mappedScans.map((s) => `- ${s.projectName ?? s.postcode} (${s.postcode}, radius ${s.radiusKm}km): ${s.totalSpeciesCount} species (birds: ${s.birdSpeciesCount}, plants: ${s.plantSpeciesCount}, mammals: ${s.mammalSpeciesCount}), ${s.sssiCount} SSSIs, ${s.ancientWoodlandCount} ancient woodland sites, ${s.woodlandTotalHa.toFixed(1)} ha woodland.`).join("\n")}
+
+Write a concise 2-3 paragraph executive summary of the ecological sensitivity findings, highlighting biodiversity richness, designated site constraints, woodland cover, and any material ecological risks that should inform planning or environmental management decisions. Use professional language suitable for an ecology report or Environmental Statement.`;
+        scanNarrative = (await llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3 })).text;
+      } catch {
+        // narrative is optional — proceed without it
+      }
+    }
+
     const data: EcologyScanReportData = {
       orgName: report.organization.name,
       logoDataUri,
       publishedAt: report.snapshot.publishedAt,
       publishedBy,
       scans: mappedScans,
+      narrative: scanNarrative,
     };
-    return { html: renderEcologyScanHtml(data), pdfkitData: ctx.basePdfData };
+    return { html: renderEcologyScanHtml(data) };
   },
 };
 
