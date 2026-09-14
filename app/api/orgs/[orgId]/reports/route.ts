@@ -111,12 +111,13 @@ export async function POST(req: NextRequest, { params }: Params) {
       select: { id: true, status: true },
     });
     if (existing) {
-      // For idempotency: return existing report if queued/generating.
-      // If failed/ready, allow retry by deleting and recreating.
-      if (existing.status === "queued" || existing.status === "generating") {
+      // Return existing report if it is in-flight or already succeeded.
+      // Only delete-and-retry on failure — deleting a ready report while the
+      // UI still holds the old ID causes a "report not found" 404 on download.
+      if (existing.status !== "failed") {
         return json(existing, { version });
       }
-      // Delete the old report so we can retry with a new one
+      // existing.status === "failed" — delete so user can retry
       await prisma.report.delete({ where: { id: existing.id } });
     }
 

@@ -341,8 +341,11 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
     report, agg, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion, auditEventFilter,
   );
 
-  // Generate audit narrative if any LLM provider is configured
-  if (llmClient.isConfigured() && report.type !== "national_toms" && report.type !== "cbam") {
+  // Ecology report types carry no GHG emission calculations — basePdfData has
+  // all-zero values, so an LLM narrative would reference "0.00 tCO2e" and be
+  // meaningless. Skip narrative for those types.
+  const noNarrativeTypes = new Set(["national_toms", "cbam", "ecology_scan", "ecology_survey"]);
+  if (llmClient.isConfigured() && !noNarrativeTypes.has(report.type)) {
     reportLogger.info("LLM configured, generating audit narrative", {
       reportId: report.id,
       reportType: report.type,
