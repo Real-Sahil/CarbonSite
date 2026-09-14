@@ -177,6 +177,7 @@ model Organization {
   /// change that triggers base year recalculation.
   consolidationApproach        ConsolidationApproach @default(operational_control) @map("consolidation_approach")
   plan                         String   @default("trial") @map("plan")
+  isPilot                      Boolean  @default(false) @map("is_pilot")
   supplierPasswordRotationDays Int?     @map("supplier_password_rotation_days")
   supplierAccountExpiryDays    Int?     @map("supplier_account_expiry_days")
   createdAt                    DateTime @default(now()) @map("created_at")

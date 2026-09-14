@@ -113,7 +113,8 @@ function minimumPlanFor(feature: PlanFeature): Plan {
 }
 
 export async function requireFeature(orgId: string, feature: PlanFeature): Promise<NextResponse | null> {
-  const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true } });
+  const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } });
+  if (org?.isPilot) return null;
   const plan = (org?.plan ?? "trial") as Plan;
   if (hasFeature(plan, feature)) return null;
   const requiredPlan = minimumPlanFor(feature);
@@ -145,10 +146,13 @@ export async function requireActiveBilling(orgId: string): Promise<NextResponse 
     where: { id: orgId },
     select: {
       plan: true,
+      isPilot: true,
       billingSubscription: { select: { status: true, trialEndsAt: true } },
     },
   });
   if (!org) return null; // let the caller's own not-found handling deal with this
+
+  if (org.isPilot) return null;
 
   const plan = org.plan as Plan;
   if (plan === "enterprise") return null;
@@ -209,10 +213,13 @@ export async function requireWithinUsageLimit(orgId: string, eventType: UsageEve
     where: { id: orgId },
     select: {
       plan: true,
+      isPilot: true,
       billingSubscription: { select: { currentPeriodStart: true, currentPeriodEnd: true } },
     },
   });
   if (!org) return null;
+
+  if (org.isPilot) return null;
 
   const limit = getLimits(org.plan)[limitKey];
   if (!isFinite(limit)) return null;
