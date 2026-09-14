@@ -18,7 +18,7 @@ export async function GET(
 
     const org = await prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
-      select: { plan: true, isPilot: true, billingSubscription: true },
+      select: { plan: true, billingSubscription: true },
     });
 
     const sub = org.billingSubscription;
@@ -36,7 +36,6 @@ export async function GET(
 
     return NextResponse.json({
       plan: org.plan,
-      isPilot: org.isPilot,
       subscription: sub
         ? {
             status: sub.status,

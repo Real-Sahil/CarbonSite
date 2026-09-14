@@ -17,7 +17,6 @@ type Plan = "trial" | "starter" | "growth" | "enterprise";
 
 interface UsageData {
   plan: Plan;
-  isPilot: boolean;
   subscription: {
     status: string;
     trialEndsAt: string | null;
@@ -89,12 +88,22 @@ export default function BillingPage() {
   const params = useParams<{ orgId: string }>();
   const orgId = params.orgId;
   const [data, setData] = useState<UsageData | null>(null);
+  const [isPilot, setIsPilot] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const refetchUsage = useCallback(() => {
-    fetch(`/api/orgs/${orgId}/billing/usage`)
-      .then((r) => r.json())
-      .then((d) => setData(d))
+    Promise.all([
+      fetch(`/api/orgs/${orgId}/billing/usage`).then((r) => r.json()),
+      fetch(`/api/orgs/${orgId}/pilot`).then((r) => r.json()),
+    ])
+      .then(([usage, pilot]) => {
+        setData(usage);
+        setIsPilot(pilot.isPilot || false);
+      })
+      .catch(() => {
+        // Pilot endpoint may not exist yet in legacy environments
+        setIsPilot(false);
+      })
       .finally(() => setLoading(false));
   }, [orgId]);
 
@@ -175,7 +184,7 @@ export default function BillingPage() {
       </div>
 
       {/* Pilot toggle */}
-      {data && <PilotToggle orgId={orgId} initialIsPilot={data.isPilot} />}
+      <PilotToggle orgId={orgId} initialIsPilot={isPilot} />
 
       {/* Payment Methods */}
       <PaymentMethodsSection orgId={orgId} />
