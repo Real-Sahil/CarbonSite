@@ -44,13 +44,17 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
         data: { isPilot: body.isPilot },
         select: { id: true, isPilot: true, plan: true },
       });
-    } catch {
-      // Column doesn't exist yet — return org as-is without isPilot update
-      updated = await prisma.organization.findUnique({
-        where: { id: orgId },
-        select: { id: true, plan: true },
-      });
-      if (updated) updated.isPilot = false;
+    } catch (err) {
+      // Check if column doesn't exist yet (migration not deployed)
+      const errorMsg = String(err);
+      if (errorMsg.includes("is_pilot") || errorMsg.includes("isPilot")) {
+        return apiError(
+          "MIGRATION_PENDING",
+          "Pilot flag feature not available yet — database migration pending deployment.",
+          503
+        );
+      }
+      throw err;
     }
 
     await writeAuditLog({
