@@ -56,11 +56,10 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
       metadata: {
         previousValue: org.isPilot ?? false,
         newValue: body.isPilot,
-        note: "isPilot column not yet deployed",
       },
     });
 
-    return NextResponse.json(updated || { id: orgId, isPilot: false, plan: "trial" });
+    return NextResponse.json(updated);
   } catch (err) {
     return handleRouteError(err);
   }
