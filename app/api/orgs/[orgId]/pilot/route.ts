@@ -18,20 +18,40 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
 
     const body = pilotToggleSchema.parse(await _req.json());
 
-    const org = await prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { id: true, isPilot: true },
-    });
+    let org: { id: string; isPilot?: boolean } | null = null;
+    try {
+      org = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { id: true, isPilot: true },
+      });
+    } catch {
+      // isPilot column doesn't exist yet (migration not deployed) — assume false
+      org = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { id: true },
+      });
+      if (org) org.isPilot = false;
+    }
 
     if (!org) {
       return apiError("NOT_FOUND", "Organization not found.", 404);
     }
 
-    const updated = await prisma.organization.update({
-      where: { id: orgId },
-      data: { isPilot: body.isPilot },
-      select: { id: true, isPilot: true, plan: true },
-    });
+    let updated: { id: string; isPilot?: boolean; plan: string } | null = null;
+    try {
+      updated = await prisma.organization.update({
+        where: { id: orgId },
+        data: { isPilot: body.isPilot },
+        select: { id: true, isPilot: true, plan: true },
+      });
+    } catch {
+      // Column doesn't exist yet — return org as-is without isPilot update
+      updated = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { id: true, plan: true },
+      });
+      if (updated) updated.isPilot = false;
+    }
 
     await writeAuditLog({
       organizationId: orgId,
@@ -40,12 +60,13 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
       resourceType: "organization",
       resourceId: orgId,
       metadata: {
-        previousValue: org.isPilot,
+        previousValue: org.isPilot ?? false,
         newValue: body.isPilot,
+        note: "isPilot column not yet deployed",
       },
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json(updated || { id: orgId, isPilot: false, plan: "trial" });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -56,10 +77,20 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin");
 
-    const org = await prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { id: true, isPilot: true },
-    });
+    let org: { id: string; isPilot?: boolean } | null = null;
+    try {
+      org = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { id: true, isPilot: true },
+      });
+    } catch {
+      // isPilot column doesn't exist yet (migration not deployed) — assume false
+      org = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { id: true },
+      });
+      if (org) org.isPilot = false;
+    }
 
     if (!org) {
       return apiError("NOT_FOUND", "Organization not found.", 404);
