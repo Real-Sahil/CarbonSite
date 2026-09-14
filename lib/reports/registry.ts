@@ -642,7 +642,8 @@ ${mapped.map((a) => `- ${a.name}: ${a.meetsRequirement ? "Meets" : "Does not mee
 
 Write a concise 2-3 paragraph executive summary of the biodiversity net gain performance, highlighting key findings, compliance status, and recommendations. Use professional, plain English suitable for a planning authority or sustainability report.`;
         surveyNarrative = (await llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3 })).text;
-      } catch {
+      } catch (err) {
+        console.error("[ecology_survey] narrative generation failed:", err);
         // narrative is optional — proceed without it
       }
     }
@@ -722,10 +723,12 @@ ${mappedScans.map((s) => `- ${s.projectName ?? s.postcode} (${s.postcode}, radiu
 
 Write a concise 2-3 paragraph executive summary of the ecological sensitivity findings, highlighting biodiversity richness, designated site constraints, woodland cover, and any material ecological risks that should inform planning or environmental management decisions. Use professional language suitable for an ecology report or Environmental Statement.`;
         scanNarrative = (await llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3 })).text;
-      } catch {
+      } catch (err) {
+        console.error("[ecology_scan] narrative generation failed:", err);
         // narrative is optional — proceed without it
       }
     }
+    console.log("[ecology_scan] scans found:", mappedScans.length, "llmConfigured:", llmClient.isConfigured(), "narrative:", scanNarrative ? "generated" : "not generated");
 
     const data: EcologyScanReportData = {
       orgName: report.organization.name,
