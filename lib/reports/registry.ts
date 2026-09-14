@@ -636,7 +636,7 @@ const handlers: Record<string, ReportHandler> = {
       meetingRequirementCount: mapped.filter((a) => a.meetsRequirement).length,
       totalSpeciesRecords: speciesCount,
     };
-    return { html: renderEcologySurveyHtml(data) };
+    return { html: renderEcologySurveyHtml(data), pdfkitData: ctx.basePdfData };
   },
   ecology_scan: async (ctx) => {
     const { report, logoDataUri, publishedBy } = ctx;
@@ -686,7 +686,7 @@ const handlers: Record<string, ReportHandler> = {
       publishedBy,
       scans: mappedScans,
     };
-    return { html: renderEcologyScanHtml(data) };
+    return { html: renderEcologyScanHtml(data), pdfkitData: ctx.basePdfData };
   },
 };
 

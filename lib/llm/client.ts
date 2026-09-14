@@ -122,7 +122,7 @@ async function callHuggingFace(messages: ChatMessage[], options: LlmOptions): Pr
 async function callNvidiaNim(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {
   if (!NIM_API_KEY) throw new Error('NVIDIA_NIM_API_KEY not set');
 
-  const response = await fetch(`${NIM_API_BASE}/v1/chat/completions`, {
+  const response = await fetch(`${NIM_API_BASE}/chat/completions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${NIM_API_KEY}`,
