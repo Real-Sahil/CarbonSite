@@ -113,7 +113,15 @@ function minimumPlanFor(feature: PlanFeature): Plan {
 }
 
 export async function requireFeature(orgId: string, feature: PlanFeature): Promise<NextResponse | null> {
-  const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } });
+  let org: any;
+  try {
+    org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } });
+  } catch {
+    // isPilot column doesn't exist yet (migration not deployed)
+    org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true } });
+    if (org) org.isPilot = false;
+  }
+
   if (org?.isPilot) return null;
   const plan = (org?.plan ?? "trial") as Plan;
   if (hasFeature(plan, feature)) return null;
@@ -142,14 +150,30 @@ export function usagePercent(used: number, limit: number): number {
  * product indefinitely.
  */
 export async function requireActiveBilling(orgId: string): Promise<NextResponse | null> {
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: {
-      plan: true,
-      isPilot: true,
-      billingSubscription: { select: { status: true, trialEndsAt: true } },
-    },
-  });
+  let org: any;
+  try {
+    org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: {
+        plan: true,
+        isPilot: true,
+        billingSubscription: { select: { status: true, trialEndsAt: true } },
+      },
+    });
+  } catch {
+    // isPilot column doesn't exist yet (migration not deployed) — query without it
+    org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: {
+        plan: true,
+        billingSubscription: { select: { status: true, trialEndsAt: true } },
+      },
+    });
+    if (org) {
+      org.isPilot = false; // assume false pre-migration
+    }
+  }
+
   if (!org) return null; // let the caller's own not-found handling deal with this
 
   if (org.isPilot) return null;
@@ -209,14 +233,28 @@ export async function requireWithinUsageLimit(orgId: string, eventType: UsageEve
   const limitKey = USAGE_EVENT_LIMIT_KEY[eventType];
   if (!limitKey) return null; // not a metered/enforced event type
 
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: {
-      plan: true,
-      isPilot: true,
-      billingSubscription: { select: { currentPeriodStart: true, currentPeriodEnd: true } },
-    },
-  });
+  let org: any;
+  try {
+    org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: {
+        plan: true,
+        isPilot: true,
+        billingSubscription: { select: { currentPeriodStart: true, currentPeriodEnd: true } },
+      },
+    });
+  } catch {
+    // isPilot column doesn't exist yet (migration not deployed)
+    org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: {
+        plan: true,
+        billingSubscription: { select: { currentPeriodStart: true, currentPeriodEnd: true } },
+      },
+    });
+    if (org) org.isPilot = false;
+  }
+
   if (!org) return null;
 
   if (org.isPilot) return null;
