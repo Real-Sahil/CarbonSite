@@ -54,11 +54,11 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
       throw err;
     }
 
-    // Read back to verify and return current state
-    const updated = await prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { id: true, isPilot: true, plan: true },
-    });
+    // Read back via raw SQL to verify write persisted (bypasses stale Prisma client)
+    const rows = await prisma.$queryRaw<{ id: string; is_pilot: boolean; plan: string }[]>`
+      SELECT id, is_pilot, plan FROM organizations WHERE id = ${orgId} LIMIT 1
+    `;
+    const updated = rows.length ? { id: rows[0].id, isPilot: rows[0].is_pilot, plan: rows[0].plan } : null;
 
     if (updated && updated.isPilot !== body.isPilot) {
       return apiError(
@@ -91,26 +91,16 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin");
 
-    let org: { id: string; isPilot?: boolean } | null = null;
-    try {
-      org = await prisma.organization.findUnique({
-        where: { id: orgId },
-        select: { id: true, isPilot: true },
-      });
-    } catch {
-      // isPilot column doesn't exist yet (migration not deployed) — assume false
-      org = await prisma.organization.findUnique({
-        where: { id: orgId },
-        select: { id: true },
-      });
-      if (org) org.isPilot = false;
-    }
+    // Raw SQL avoids Prisma client cache mismatches returning false for is_pilot
+    const rows = await prisma.$queryRaw<{ id: string; is_pilot: boolean; plan: string }[]>`
+      SELECT id, is_pilot, plan FROM organizations WHERE id = ${orgId} LIMIT 1
+    `;
 
-    if (!org) {
+    if (!rows.length) {
       return apiError("NOT_FOUND", "Organization not found.", 404);
     }
 
-    return NextResponse.json(org);
+    return NextResponse.json({ id: rows[0].id, isPilot: rows[0].is_pilot, plan: rows[0].plan });
   } catch (err) {
     return handleRouteError(err);
   }
