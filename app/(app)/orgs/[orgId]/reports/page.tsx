@@ -75,8 +75,10 @@ function formatTimestamp(value: Date | null): string {
 export default async function ReportsPage({ params }: ReportsPageProps) {
   const { orgId } = await params;
 
+  let isAdmin = false;
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const { membership } = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    isAdmin = membership.role === "admin";
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
@@ -347,6 +349,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                               hasCsv={!!report.csvStorageKey}
                               hasXml={!!report.xmlStorageKey}
                               ready={report.status === "ready"}
+                              isAdmin={isAdmin}
                             />
                           </TableCell>
                         </TableRow>

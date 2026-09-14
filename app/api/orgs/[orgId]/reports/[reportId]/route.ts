@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { presignDownload } from "@/lib/storage";
+import { presignDownload, deleteObject } from "@/lib/storage";
 
 type Params = { params: Promise<{ orgId: string; reportId: string }> };
 
@@ -55,6 +55,49 @@ export async function GET(_req: NextRequest, { params }: Params) {
     }
 
     return NextResponse.json({ ...report, pdfUrl, csvUrl });
+  } catch (err) {
+    return handleRouteError(err);
+  }
+}
+
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  try {
+    const { orgId, reportId } = await params;
+    const { session } = await requireOrgMember(orgId, "admin");
+
+    const report = await prisma.report.findUnique({
+      where: { id: reportId },
+      select: {
+        id: true,
+        organizationId: true,
+        pdfStorageKey: true,
+        csvStorageKey: true,
+        type: true,
+      },
+    });
+
+    if (!report || report.organizationId !== orgId) {
+      return apiError("NOT_FOUND", "Report not found.", 404);
+    }
+
+    // Delete storage objects first — if storage fails, DB row stays intact
+    const deleteKeys = [report.pdfStorageKey, report.csvStorageKey].filter(Boolean) as string[];
+    await Promise.all(deleteKeys.map((key) => deleteObject(key).catch((err) => {
+      console.warn(`[report.delete] storage delete failed for ${key}:`, err);
+    })));
+
+    await prisma.report.delete({ where: { id: reportId } });
+
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: session.user.id,
+      action: "report.deleted",
+      resourceType: "report",
+      resourceId: reportId,
+      metadata: { type: report.type, deletedStorageKeys: deleteKeys },
+    });
+
+    return new NextResponse(null, { status: 204 });
   } catch (err) {
     return handleRouteError(err);
   }

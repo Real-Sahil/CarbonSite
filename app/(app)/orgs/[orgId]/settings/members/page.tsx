@@ -237,6 +237,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
                       orgId={orgId}
                       memberId={m.id}
                       memberName={m.user.name ?? m.user.email}
+                      memberEmail={m.user.email}
                       currentRole={m.role}
                       isCurrentUser={m.user.id === currentUserId}
                     />
