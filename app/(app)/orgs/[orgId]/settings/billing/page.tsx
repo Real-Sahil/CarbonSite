@@ -8,6 +8,7 @@ import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2,
 import { getLimits, hasFeature, PLAN_LABELS, PLAN_PRICES, usagePercent, type PlanFeature } from "@/lib/billing/limits";
 import { PaymentMethodsSection } from "./payment-methods-section";
 import { SubscriptionActions } from "./subscription-actions";
+import { PilotToggle } from "./pilot-toggle";
 
 // Captured once at module load — pure constant, safe for React Compiler.
 const PAGE_LOAD_TIME = Date.now();
@@ -16,6 +17,7 @@ type Plan = "trial" | "starter" | "growth" | "enterprise";
 
 interface UsageData {
   plan: Plan;
+  isPilot: boolean;
   subscription: {
     status: string;
     trialEndsAt: string | null;
@@ -171,6 +173,9 @@ export default function BillingPage() {
           </div>
         )}
       </div>
+
+      {/* Pilot toggle */}
+      {data && <PilotToggle orgId={orgId} initialIsPilot={data.isPilot} />}
 
       {/* Payment Methods */}
       <PaymentMethodsSection orgId={orgId} />

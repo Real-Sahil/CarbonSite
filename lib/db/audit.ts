@@ -9,6 +9,7 @@ export type AuditAction =
   | "auth.sso_login"
   | "org.created"
   | "org.updated"
+  | "org.pilot_flag_changed"
   | "org.member.invite"
   | "org.member.invite_accepted"
   | "org.member.added"
