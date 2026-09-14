@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Save, Trash2 } from "lucide-react";
+import { Save, Trash2, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { handleSupabaseError } from "@/lib/utils/supabase-error-handler";
 
@@ -23,12 +23,14 @@ export function MemberActions({
   memberName,
   currentRole,
   isCurrentUser,
+  memberEmail,
 }: {
   orgId: string;
   memberId: string;
   memberName: string;
   currentRole: string;
   isCurrentUser: boolean;
+  memberEmail: string;
 }) {
   const router = useRouter();
   const [role, setRole] = useState(currentRole);
@@ -97,6 +99,38 @@ export function MemberActions({
     });
   }
 
+  function deleteAccount() {
+    const confirmed = window.confirm(
+      `Permanently delete the account for ${memberName} (${memberEmail})?\n\nThis removes them from this organisation and deletes their user account if they have no other organisation memberships. This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setError(null);
+    startTransition(async () => {
+      const res = await fetch(`/api/orgs/${orgId}/members/${memberId}?deleteAccount=true`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        const error = new Error(body?.message ?? "Could not delete account");
+        (error as StatusError).status = res.status;
+        const { action, message } = handleSupabaseError(error);
+
+        if (action === "logout") {
+          localStorage.removeItem("session");
+          router.push("/auth/sign-in");
+          return;
+        }
+
+        setError(message);
+        return;
+      }
+
+      router.refresh();
+    });
+  }
+
   return (
     <div className="flex min-w-64 flex-col gap-1.5">
       <div className="flex items-center gap-2">
@@ -133,6 +167,19 @@ export function MemberActions({
         >
           <Trash2 className="h-4 w-4" />
         </Button>
+        {!isCurrentUser && (
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            title="Delete user account"
+            disabled={isPending}
+            onClick={deleteAccount}
+            className="text-red-600 hover:text-red-700 hover:border-red-300"
+          >
+            <UserX className="h-4 w-4" />
+          </Button>
+        )}
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>

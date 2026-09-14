@@ -124,15 +124,36 @@ export async function DELETE(
       }
     }
 
+    const url = new URL(req.url);
+    const deleteAccount = url.searchParams.get("deleteAccount") === "true";
+
     await prisma.organizationMembership.delete({ where: { id: memberId } });
+
+    let accountDeleted = false;
+    if (deleteAccount) {
+      // Delete the user account only if they have no other org memberships.
+      const remainingMemberships = await prisma.organizationMembership.count({
+        where: { userId: target.userId },
+      });
+      if (remainingMemberships === 0) {
+        // Revoke sessions first, then delete the account.
+        await prisma.session.deleteMany({ where: { userId: target.userId } });
+        await prisma.user.delete({ where: { id: target.userId } });
+        accountDeleted = true;
+      }
+    }
 
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "org.member.remove",
+      action: accountDeleted ? "org.member.account_deleted" : "org.member.remove",
       resourceType: "membership",
       resourceId: memberId,
-      metadata: { removedUserId: target.userId, removedRole: target.role },
+      metadata: {
+        removedUserId: target.userId,
+        removedRole: target.role,
+        accountDeleted,
+      },
     });
 
     return new NextResponse(null, { status: 204 });

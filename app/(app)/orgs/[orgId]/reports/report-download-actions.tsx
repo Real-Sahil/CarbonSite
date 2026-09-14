@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Download } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function ReportDownloadActions({
@@ -11,6 +12,7 @@ export function ReportDownloadActions({
   hasCsv,
   hasXml,
   ready,
+  isAdmin = false,
 }: {
   orgId: string;
   reportId: string;
@@ -18,7 +20,9 @@ export function ReportDownloadActions({
   hasCsv: boolean;
   hasXml: boolean;
   ready: boolean;
+  isAdmin?: boolean;
 }) {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -35,6 +39,20 @@ export function ReportDownloadActions({
       }
       const body = (await res.json()) as { downloadUrl: string };
       window.location.assign(body.downloadUrl);
+    });
+  }
+
+  function deleteReport() {
+    if (!window.confirm("Delete this report and its generated files? This cannot be undone.")) return;
+    setError(null);
+    startTransition(async () => {
+      const res = await fetch(`/api/orgs/${orgId}/reports/${reportId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setError(body?.message ?? "Could not delete report");
+        return;
+      }
+      router.refresh();
     });
   }
 
@@ -71,6 +89,19 @@ export function ReportDownloadActions({
           >
             <Download className="h-4 w-4" />
             XML
+          </Button>
+        )}
+        {isAdmin && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={isPending}
+            title="Delete report and files"
+            onClick={deleteReport}
+            className="text-red-600 hover:text-red-700 hover:border-red-300"
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
         )}
       </div>
