@@ -428,53 +428,51 @@ async function renderPdf(html: string): Promise<Buffer> {
   try {
     const puppeteer = (await import("puppeteer")).default;
 
+    let executablePath: string | undefined;
+
     if (process.env.VERCEL) {
-      // On Vercel: use puppeteer with Chromium pre-downloaded during build
-      // vercel-build script downloads to ./.next/cache/puppeteer
-      // Set cache dir at runtime so puppeteer knows where to find the binary
-      const cacheDir = process.env.PUPPETEER_CACHE_DIR || "/var/task/.next/cache/puppeteer";
-      process.env.PUPPETEER_CACHE_DIR = cacheDir;
-
-      // Calculate Chrome binary path
-      const chromePath = `${cacheDir}/linux-149.0.7827.22/chrome-linux/chrome`;
-
-      reportLogger.info("Launching Chromium on Vercel via puppeteer", {
-        cacheDir,
-        chromePath,
-      });
+      // On Vercel: use @sparticuz/chromium which bundles pre-built binaries in node_modules
+      // These binaries ship with the npm package and are available at runtime in the Lambda
       try {
-        browser = await puppeteer.launch({
-          headless: true,
-          executablePath: chromePath,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        });
-        reportLogger.info("Puppeteer launched successfully on Vercel");
-      } catch (launchErr) {
-        const errMsg = launchErr instanceof Error ? launchErr.message : String(launchErr);
-        reportLogger.error("Puppeteer launch failed on Vercel", {
-          error: errMsg,
-          cacheDir,
-          chromePath,
-          hint: "Chromium should have been downloaded to .next/cache/puppeteer during vercel-build.",
-        });
+        const chromium = (await import("@sparticuz/chromium")).default;
+        executablePath = await chromium.executablePath();
+        reportLogger.info("Using @sparticuz/chromium on Vercel", { executablePath });
+      } catch (importErr) {
+        const errMsg = importErr instanceof Error ? importErr.message : String(importErr);
+        reportLogger.error("Failed to load @sparticuz/chromium", { error: errMsg });
         throw new Error(
-          `PDF rendering unavailable on Vercel: ${errMsg}. Expected Chrome at: ${chromePath}`
+          `@sparticuz/chromium not available on Vercel: ${errMsg}`
         );
       }
     } else {
-      // Local dev: use puppeteer with local Chromium resolution
-      const executablePath = await resolveLocalChromiumPath();
-      try {
-        browser = await puppeteer.launch({
-          headless: true,
-          executablePath: executablePath || undefined,
-          args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      // Local dev: resolve Chromium from multiple sources
+      executablePath = await resolveLocalChromiumPath();
+    }
+
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        executablePath: executablePath || undefined,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      });
+      reportLogger.info("Puppeteer launched successfully", {
+        isVercel: !!process.env.VERCEL,
+        executablePath,
+      });
+    } catch (launchErr) {
+      const errMsg = launchErr instanceof Error ? launchErr.message : String(launchErr);
+      if (process.env.VERCEL) {
+        reportLogger.error("Chromium launch failed on Vercel", {
+          error: errMsg,
+          executablePath,
         });
-      } catch (launchErr) {
-        const errMsg = launchErr instanceof Error ? launchErr.message : String(launchErr);
+        throw new Error(
+          `PDF rendering unavailable on Vercel: ${errMsg}`
+        );
+      } else {
         if (errMsg.includes("ENOENT") || errMsg.includes("spawn")) {
           throw new Error(
-            `Chromium not found. Tried: ${executablePath ? executablePath : "Puppeteer bundled (missing). "}\n` +
+            `Chromium not found. Tried: ${executablePath ? executablePath : "system paths"}.\n` +
             "Install Chromium: apt-get install chromium-browser (Linux) or download via `npx puppeteer browsers install chrome`. " +
             `Original error: ${errMsg}`
           );
