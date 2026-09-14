@@ -431,12 +431,21 @@ async function renderPdf(html: string): Promise<Buffer> {
     if (process.env.VERCEL) {
       // On Vercel: use puppeteer with Chromium pre-downloaded during build
       // vercel-build script downloads to ./.next/cache/puppeteer
+      // Set cache dir at runtime so puppeteer knows where to find the binary
+      const cacheDir = process.env.PUPPETEER_CACHE_DIR || "/var/task/.next/cache/puppeteer";
+      process.env.PUPPETEER_CACHE_DIR = cacheDir;
+
+      // Calculate Chrome binary path
+      const chromePath = `${cacheDir}/linux-149.0.7827.22/chrome-linux/chrome`;
+
       reportLogger.info("Launching Chromium on Vercel via puppeteer", {
-        cacheDir: process.env.PUPPETEER_CACHE_DIR || "default",
+        cacheDir,
+        chromePath,
       });
       try {
         browser = await puppeteer.launch({
           headless: true,
+          executablePath: chromePath,
           args: ["--no-sandbox", "--disable-setuid-sandbox"],
         });
         reportLogger.info("Puppeteer launched successfully on Vercel");
@@ -444,12 +453,12 @@ async function renderPdf(html: string): Promise<Buffer> {
         const errMsg = launchErr instanceof Error ? launchErr.message : String(launchErr);
         reportLogger.error("Puppeteer launch failed on Vercel", {
           error: errMsg,
-          cacheDir: process.env.PUPPETEER_CACHE_DIR,
-          hint: "Chromium should have been downloaded during vercel-build. Check build logs.",
+          cacheDir,
+          chromePath,
+          hint: "Chromium should have been downloaded to .next/cache/puppeteer during vercel-build.",
         });
         throw new Error(
-          `PDF rendering unavailable on Vercel: ${errMsg}. ` +
-          `Chromium cache path: ${process.env.PUPPETEER_CACHE_DIR || "default"}`
+          `PDF rendering unavailable on Vercel: ${errMsg}. Expected Chrome at: ${chromePath}`
         );
       }
     } else {
