@@ -45,15 +45,7 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
         select: { id: true, isPilot: true, plan: true },
       });
     } catch (err) {
-      // Check if column doesn't exist yet (migration not deployed)
-      const errorMsg = String(err);
-      if (errorMsg.includes("is_pilot") || errorMsg.includes("isPilot")) {
-        return apiError(
-          "FEATURE_UNAVAILABLE",
-          "This feature is temporarily unavailable. Please try again later.",
-          503
-        );
-      }
+      // Column should exist now after migration. If this catches, something else failed — rethrow.
       throw err;
     }
 
