@@ -18,13 +18,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
     ],
   },
-  turbopack: {},
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push("@sparticuz/chromium");
-    }
-    return config;
-  },
   async headers() {
     return [
       // Prevent browser and CDN caching of all API routes.
