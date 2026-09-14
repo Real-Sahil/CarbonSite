@@ -159,6 +159,7 @@ function speciesBar(label: string, count: number, total: number, color: string):
 // ── Single-scan section ───────────────────────────────────────────────────────
 
 function renderScanSection(scan: EcologyScanRecord, idx: number): string {
+  const SPECIES_TABLE_LIMIT = 100;
   const designatedSorted = [...scan.designatedSites].sort(
     (a, b) => siteTypeOrder(a.type) - siteTypeOrder(b.type),
   );
@@ -194,7 +195,9 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
     return a.name.localeCompare(b.name);
   });
 
-  const speciesRows = speciesSorted.map((s) => `
+  // Limit to first 100 species to avoid rendering huge tables with 200+ rows
+  const speciesForTable = speciesSorted.slice(0, SPECIES_TABLE_LIMIT);
+  const speciesRows = speciesForTable.map((s) => `
     <tr>
       <td><em>${esc(s.name)}</em></td>
       <td>${s.commonName ? esc(s.commonName) : ""}</td>
@@ -205,6 +208,12 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
     </tr>`).join("");
 
   const highlightedCount = speciesSorted.filter(
+    (s) => {
+      const r = conservationRisk(s.conservationStatus);
+      return r !== "unknown" && r !== "least_concern";
+    },
+  ).length;
+  const displayedHighlightedCount = speciesForTable.filter(
     (s) => {
       const r = conservationRisk(s.conservationStatus);
       return r !== "unknown" && r !== "least_concern";
@@ -295,7 +304,7 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
     ${scan.speciesRecords.length > 0 ? `
     <div class="page-break"></div>
     <h2>Species inventory <span class="section-count">(${scan.speciesRecords.length} species recorded)</span></h2>
-    <p class="disc-ref">Source: NBN Atlas (National Biodiversity Network). Conservation status: IUCN Red List / UK Wildlife and Countryside Act 1981. Species ordered by risk level.</p>
+    <p class="disc-ref">Source: NBN Atlas (National Biodiversity Network). Conservation status: IUCN Red List / UK Wildlife and Countryside Act 1981. Species ordered by risk level. ${scan.speciesRecords.length > SPECIES_TABLE_LIMIT ? `First ${SPECIES_TABLE_LIMIT} species shown.` : ""}</p>
     <table>
       <thead><tr>
         <th>Scientific name</th>
@@ -306,7 +315,8 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
         <th>Conservation status</th>
       </tr></thead>
       <tbody>${speciesRows}</tbody>
-    </table>` : ""}
+    </table>
+    ${scan.speciesRecords.length > SPECIES_TABLE_LIMIT ? `<p class="disc-ref" style="margin-top:8px;color:#dc2626;font-weight:600;">Additional records: ${scan.speciesRecords.length - SPECIES_TABLE_LIMIT} more species recorded (${highlightedCount} at risk or protected in total)</p>` : ""}` : ""}
   </section>`;
 }
 

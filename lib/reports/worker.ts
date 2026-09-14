@@ -495,7 +495,10 @@ async function renderPdf(html: string): Promise<Buffer> {
       }
     }
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "load" });
+    // Set timeout to 60s to handle large tables (ecology reports with 200+ species)
+    await page.setContent(html, { waitUntil: "load", timeout: 60000 });
+    reportLogger.info("HTML content loaded in Puppeteer", { timeout: "60s" });
+
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -508,6 +511,7 @@ async function renderPdf(html: string): Promise<Buffer> {
           <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
         </div>`,
     });
+    reportLogger.info("PDF rendered successfully", { pdfSizeBytes: Buffer.from(pdf).length });
     return Buffer.from(pdf);
   } finally {
     await browser?.close();
