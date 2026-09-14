@@ -424,51 +424,37 @@ async function resolveLocalChromiumPath(): Promise<string | undefined> {
 }
 
 async function renderPdf(html: string): Promise<Buffer> {
-  let browser: import("puppeteer-core").Browser | import("puppeteer").Browser | null = null;
+  let browser: import("puppeteer").Browser | null = null;
   try {
+    const puppeteer = (await import("puppeteer")).default;
+
     if (process.env.VERCEL) {
+      // On Vercel: use puppeteer with Chromium pre-downloaded during build
+      // vercel-build script downloads to ./.next/cache/puppeteer
+      reportLogger.info("Launching Chromium on Vercel via puppeteer", {
+        cacheDir: process.env.PUPPETEER_CACHE_DIR || "default",
+      });
       try {
-        const chromium = (await import("@sparticuz/chromium")).default;
-        const puppeteer = (await import("puppeteer-core")).default;
-        const executablePath = await chromium.executablePath();
-        reportLogger.info("Chromium paths", {
-          resolvedPath: executablePath,
-          args: chromium.args,
-        });
         browser = await puppeteer.launch({
-          args: chromium.args,
-          executablePath,
           headless: true,
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
         });
-      } catch (vercelErr) {
-        const errMsg = vercelErr instanceof Error ? vercelErr.message : String(vercelErr);
-        reportLogger.error("@sparticuz/chromium failed, trying puppeteer fallback", {
+        reportLogger.info("Puppeteer launched successfully on Vercel");
+      } catch (launchErr) {
+        const errMsg = launchErr instanceof Error ? launchErr.message : String(launchErr);
+        reportLogger.error("Puppeteer launch failed on Vercel", {
           error: errMsg,
+          cacheDir: process.env.PUPPETEER_CACHE_DIR,
+          hint: "Chromium should have been downloaded during vercel-build. Check build logs.",
         });
-        // Fallback: use puppeteer with bundled Chromium (heavier but more reliable on Vercel)
-        try {
-          const puppeteer = (await import("puppeteer")).default;
-          browser = await puppeteer.launch({
-            headless: true,
-            args: ["--no-sandbox", "--disable-setuid-sandbox"],
-          });
-          reportLogger.info("Puppeteer bundled Chromium fallback succeeded");
-        } catch (fallbackErr) {
-          const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
-          reportLogger.error("Both Chromium methods failed", {
-            sparticuzError: errMsg,
-            puppeteerError: fallbackMsg,
-          });
-          throw new Error(
-            `PDF rendering unavailable: @sparticuz/chromium failed (${errMsg}), ` +
-            `puppeteer fallback failed (${fallbackMsg})`
-          );
-        }
+        throw new Error(
+          `PDF rendering unavailable on Vercel: ${errMsg}. ` +
+          `Chromium cache path: ${process.env.PUPPETEER_CACHE_DIR || "default"}`
+        );
       }
     } else {
-      const puppeteer = (await import("puppeteer")).default;
+      // Local dev: use puppeteer with local Chromium resolution
       const executablePath = await resolveLocalChromiumPath();
-
       try {
         browser = await puppeteer.launch({
           headless: true,
@@ -480,7 +466,7 @@ async function renderPdf(html: string): Promise<Buffer> {
         if (errMsg.includes("ENOENT") || errMsg.includes("spawn")) {
           throw new Error(
             `Chromium not found. Tried: ${executablePath ? executablePath : "Puppeteer bundled (missing). "}\n` +
-            "Install Chromium: apt-get install chromium-browser (Linux) or use @sparticuz/chromium on Vercel. " +
+            "Install Chromium: apt-get install chromium-browser (Linux) or download via `npx puppeteer browsers install chrome`. " +
             `Original error: ${errMsg}`
           );
         }
