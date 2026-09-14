@@ -37,15 +37,29 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
       return apiError("NOT_FOUND", "Organization not found.", 404);
     }
 
-    await prisma.organization.update({
-      where: { id: orgId },
-      data: { isPilot: body.isPilot },
-    });
+    let updated: { id: string; isPilot?: boolean; plan: string } | null = null;
+    try {
+      await prisma.organization.update({
+        where: { id: orgId },
+        data: { isPilot: body.isPilot },
+      });
 
-    const updated = await prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { id: true, isPilot: true, plan: true },
-    });
+      updated = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { id: true, isPilot: true, plan: true },
+      });
+    } catch (err) {
+      const errorMsg = String(err);
+      // Check if column doesn't exist (migration not deployed to production)
+      if (errorMsg.includes("does not exist") && errorMsg.includes("is_pilot")) {
+        return apiError(
+          "FEATURE_UNAVAILABLE",
+          "This feature is temporarily unavailable. Please try again later.",
+          503
+        );
+      }
+      throw err;
+    }
 
     await writeAuditLog({
       organizationId: orgId,
