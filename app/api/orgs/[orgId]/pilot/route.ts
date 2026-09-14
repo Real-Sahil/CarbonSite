@@ -49,8 +49,8 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
       const errorMsg = String(err);
       if (errorMsg.includes("is_pilot") || errorMsg.includes("isPilot")) {
         return apiError(
-          "MIGRATION_PENDING",
-          "Pilot flag feature not available yet — database migration pending deployment.",
+          "FEATURE_UNAVAILABLE",
+          "This feature is temporarily unavailable. Please try again later.",
           503
         );
       }
