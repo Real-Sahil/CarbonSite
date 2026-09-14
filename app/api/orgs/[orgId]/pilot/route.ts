@@ -39,13 +39,9 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
 
     let updated: { id: string; isPilot?: boolean; plan: string } | null = null;
     try {
-      await prisma.organization.update({
+      updated = await prisma.organization.update({
         where: { id: orgId },
         data: { isPilot: body.isPilot },
-      });
-
-      updated = await prisma.organization.findUnique({
-        where: { id: orgId },
         select: { id: true, isPilot: true, plan: true },
       });
     } catch (err) {
