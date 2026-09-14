@@ -5,6 +5,8 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ orgId: string }> };
 
 const pilotToggleSchema = z.object({
@@ -37,16 +39,11 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
       return apiError("NOT_FOUND", "Organization not found.", 404);
     }
 
-    let updated: { id: string; isPilot?: boolean; plan: string } | null = null;
+    // Raw SQL bypasses ORM field-mapping and pgbouncer prepared-statement issues
     try {
-      updated = await prisma.organization.update({
-        where: { id: orgId },
-        data: { isPilot: body.isPilot },
-        select: { id: true, isPilot: true, plan: true },
-      });
+      await prisma.$executeRaw`UPDATE organizations SET is_pilot = ${body.isPilot} WHERE id = ${orgId}`;
     } catch (err) {
       const errorMsg = String(err);
-      // Check if column doesn't exist (migration not deployed to production)
       if (errorMsg.includes("does not exist") && errorMsg.includes("is_pilot")) {
         return apiError(
           "FEATURE_UNAVAILABLE",
@@ -55,6 +52,20 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
         );
       }
       throw err;
+    }
+
+    // Read back to verify and return current state
+    const updated = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, isPilot: true, plan: true },
+    });
+
+    if (updated && updated.isPilot !== body.isPilot) {
+      return apiError(
+        "UPDATE_FAILED",
+        "Pilot status could not be saved. Please try again.",
+        500
+      );
     }
 
     await writeAuditLog({
