@@ -837,7 +837,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         organizationId: orgId,
         type: task.type,
         targetId: task.targetId,
-      }),
+      }).catch(() => null),
     ),
   );
   const reviewTasks = myReviewTasks.flatMap((task, index) => {
