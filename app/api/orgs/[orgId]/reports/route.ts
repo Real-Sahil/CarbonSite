@@ -108,16 +108,24 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const existing = await prisma.report.findUnique({
       where: { requestHash },
-      select: { id: true, status: true },
+      select: { id: true, status: true, createdAt: true },
     });
     if (existing) {
-      // Return existing report if it is in-flight or already succeeded.
-      // Only delete-and-retry on failure — deleting a ready report while the
-      // UI still holds the old ID causes a "report not found" 404 on download.
-      if (existing.status !== "failed") {
+      // "ready" → return as-is; "failed" → delete and retry.
+      // "queued"/"generating" can get stuck if the Vercel function was killed
+      // mid-run (timeout at maxDuration:60). Treat those as stale after 5 min
+      // so the user can retry instead of being blocked permanently.
+      const STALE_MS = 5 * 60 * 1000;
+      const isStale =
+        (existing.status === "queued" || existing.status === "generating") &&
+        Date.now() - existing.createdAt.getTime() > STALE_MS;
+
+      if (existing.status === "ready") {
         return json(existing, { version });
       }
-      // existing.status === "failed" — delete so user can retry
+      if (existing.status !== "failed" && !isStale) {
+        return json(existing, { version });
+      }
       await prisma.report.delete({ where: { id: existing.id } });
     }
 

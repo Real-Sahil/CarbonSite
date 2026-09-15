@@ -51,7 +51,8 @@ import type { ReportData } from "../template";
 
 // ── Fixture data ─────────────────────────────────────────────────────────────
 
-function makeCalc(overrides: Partial<CalculationRow> = {}): CalculationRow {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function makeCalc(overrides: Record<string, any> = {}): CalculationRow {
   return {
     id: "calc-1",
     totalCo2e: "10000",  // 10 tCO2e

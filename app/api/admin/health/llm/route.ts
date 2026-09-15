@@ -9,7 +9,9 @@ import { llmClient } from "@/lib/llm/client";
 export async function GET(request: NextRequest) {
   const configured = llmClient.isConfigured();
   const hfToken = process.env.HUGGINGFACE_TOKEN;
-  const nimKey = process.env.NVIDIA_NIM_API_KEY;
+  // Client checks NVIDIA_API_KEY first, then NVIDIA_NIM_API_KEY as fallback
+  const nvidiKey = process.env.NVIDIA_API_KEY ?? process.env.NVIDIA_NIM_API_KEY;
+  const nimBaseUrl = process.env.NVIDIA_NIM_BASE_URL ?? "https://integrate.api.nvidia.com/v1";
 
   if (!configured) {
     return NextResponse.json({
@@ -18,15 +20,16 @@ export async function GET(request: NextRequest) {
       message: "No LLM provider configured",
       details: {
         huggingface_token_set: !!hfToken,
-        nvidia_nim_key_set: !!nimKey,
-        hint: "Set HUGGINGFACE_TOKEN (get from https://huggingface.co/settings/tokens) or NVIDIA_NIM_API_KEY in your environment variables",
+        nvidia_api_key_set: !!nvidiKey,
+        nvidia_nim_base_url: nimBaseUrl,
+        hint: "Set NVIDIA_API_KEY (Kimi via NVIDIA NIM) or HUGGINGFACE_TOKEN in your environment variables",
       },
       status: "error",
     });
   }
 
-  // Determine which provider is active
-  const provider = hfToken ? "huggingface" : nimKey ? "nvidia_nim" : "unknown";
+  // Determine which provider will be tried first
+  const provider = nvidiKey ? "kimi_via_nvidia_nim" : hfToken ? "huggingface" : "unknown";
 
   try {
     // Test the LLM with a simple prompt
@@ -46,6 +49,7 @@ export async function GET(request: NextRequest) {
           tokens_used: result.tokens,
           response_length: result.text.length,
           response_preview: result.text.substring(0, 50),
+          nvidia_nim_base_url: nimBaseUrl,
         },
       });
     } else {
@@ -68,7 +72,8 @@ export async function GET(request: NextRequest) {
       status: "error",
       details: {
         error: error instanceof Error ? error.message : String(error),
-        hint: "Check that your API key is valid and has remaining quota",
+        nvidia_nim_base_url: nimBaseUrl,
+        hint: "Check NVIDIA_API_KEY is valid and NVIDIA_NIM_BASE_URL points to https://integrate.api.nvidia.com/v1 (not localhost)",
       },
     }, { status: 500 });
   }
