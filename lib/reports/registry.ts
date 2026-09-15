@@ -21,6 +21,15 @@ import { renderEcologySurveyHtml, type EcologySurveyData, type EcologySurveyAsse
 import { renderEcologyScanHtml, type EcologyScanReportData, type EcologyScanRecord, type EcologyScanSpecies, type EcologyScanSite, type EcologyScanWoodland } from "./templates/ecology-scan";
 import { llmClient } from "@/lib/llm/client";
 
+function withQueryTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Database query timeout after ${timeoutMs}ms`)), timeoutMs)
+    ),
+  ]);
+}
+
 export type ReportContext = {
   orgId: string;
   reportId: string;
@@ -270,14 +279,18 @@ const handlers: Record<string, ReportHandler> = {
   csrd_esrs_e3: async (ctx) => {
     const { report, logoDataUri, publishedBy } = ctx;
     const [waterRecords, facilities] = await Promise.all([
-      prisma.waterRecord.findMany({
-        where: { organizationId: ctx.orgId, reportingPeriodId: report.reportingPeriodId },
-        include: { facility: { select: { name: true, waterStressLevel: true } } },
-      }),
-      prisma.facility.findMany({
-        where: { organizationId: ctx.orgId },
-        select: { id: true, name: true, waterStressLevel: true },
-      }),
+      withQueryTimeout(
+        prisma.waterRecord.findMany({
+          where: { organizationId: ctx.orgId, reportingPeriodId: report.reportingPeriodId },
+          include: { facility: { select: { name: true, waterStressLevel: true } } },
+        })
+      ),
+      withQueryTimeout(
+        prisma.facility.findMany({
+          where: { organizationId: ctx.orgId },
+          select: { id: true, name: true, waterStressLevel: true },
+        })
+      ),
     ]);
 
     const byFacility = new Map<string, { name: string; withdrawalM3: number; dischargeM3: number; consumptionM3: number; waterStressLevel: string | null }>();
@@ -324,10 +337,14 @@ const handlers: Record<string, ReportHandler> = {
   csrd_esrs_e5: async (ctx) => {
     const { report, logoDataUri, publishedBy } = ctx;
     const [wasteRecords, facilities] = await Promise.all([
-      prisma.wasteRecord.findMany({
-        where: { organizationId: ctx.orgId, reportingPeriodId: report.reportingPeriodId },
-      }),
-      prisma.facility.findMany({ where: { organizationId: ctx.orgId }, select: { id: true, name: true } }),
+      withQueryTimeout(
+        prisma.wasteRecord.findMany({
+          where: { organizationId: ctx.orgId, reportingPeriodId: report.reportingPeriodId },
+        })
+      ),
+      withQueryTimeout(
+        prisma.facility.findMany({ where: { organizationId: ctx.orgId }, select: { id: true, name: true } })
+      ),
     ]);
 
     const LANDFILL_ROUTES = new Set(["landfill_mixed", "landfill_food", "landfill_wood", "landfill_plastic", "hazardous_landfill"]);
@@ -671,11 +688,13 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
       orgName: report.organization.name,
     });
 
-    const scans = await prisma.ecologicalScan.findMany({
-      where: { organizationId: ctx.orgId, status: "completed" },
-      include: { project: { select: { name: true } } },
-      orderBy: { scannedAt: "desc" },
-    });
+    const scans = await withQueryTimeout(
+      prisma.ecologicalScan.findMany({
+        where: { organizationId: ctx.orgId, status: "completed" },
+        include: { project: { select: { name: true } } },
+        orderBy: { scannedAt: "desc" },
+      })
+    );
 
     console.log("[ecology_scan] query result:", {
       scansFound: scans.length,
