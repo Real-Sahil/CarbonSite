@@ -76,6 +76,7 @@ export interface EcologyScanReportData {
   publishedAt: Date;
   publishedBy: string;
   scans: EcologyScanRecord[];
+  narrative?: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -158,6 +159,7 @@ function speciesBar(label: string, count: number, total: number, color: string):
 // ── Single-scan section ───────────────────────────────────────────────────────
 
 function renderScanSection(scan: EcologyScanRecord, idx: number): string {
+  const SPECIES_TABLE_LIMIT = 100;
   const designatedSorted = [...scan.designatedSites].sort(
     (a, b) => siteTypeOrder(a.type) - siteTypeOrder(b.type),
   );
@@ -193,7 +195,9 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
     return a.name.localeCompare(b.name);
   });
 
-  const speciesRows = speciesSorted.map((s) => `
+  // Limit to first 100 species to avoid rendering huge tables with 200+ rows
+  const speciesForTable = speciesSorted.slice(0, SPECIES_TABLE_LIMIT);
+  const speciesRows = speciesForTable.map((s) => `
     <tr>
       <td><em>${esc(s.name)}</em></td>
       <td>${s.commonName ? esc(s.commonName) : ""}</td>
@@ -204,6 +208,12 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
     </tr>`).join("");
 
   const highlightedCount = speciesSorted.filter(
+    (s) => {
+      const r = conservationRisk(s.conservationStatus);
+      return r !== "unknown" && r !== "least_concern";
+    },
+  ).length;
+  const displayedHighlightedCount = speciesForTable.filter(
     (s) => {
       const r = conservationRisk(s.conservationStatus);
       return r !== "unknown" && r !== "least_concern";
@@ -294,7 +304,7 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
     ${scan.speciesRecords.length > 0 ? `
     <div class="page-break"></div>
     <h2>Species inventory <span class="section-count">(${scan.speciesRecords.length} species recorded)</span></h2>
-    <p class="disc-ref">Source: NBN Atlas (National Biodiversity Network). Conservation status: IUCN Red List / UK Wildlife and Countryside Act 1981. Species ordered by risk level.</p>
+    <p class="disc-ref">Source: NBN Atlas (National Biodiversity Network). Conservation status: IUCN Red List / UK Wildlife and Countryside Act 1981. Species ordered by risk level. ${scan.speciesRecords.length > SPECIES_TABLE_LIMIT ? `First ${SPECIES_TABLE_LIMIT} species shown.` : ""}</p>
     <table>
       <thead><tr>
         <th>Scientific name</th>
@@ -305,7 +315,8 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
         <th>Conservation status</th>
       </tr></thead>
       <tbody>${speciesRows}</tbody>
-    </table>` : ""}
+    </table>
+    ${scan.speciesRecords.length > SPECIES_TABLE_LIMIT ? `<p class="disc-ref" style="margin-top:8px;color:#dc2626;font-weight:600;">Additional records: ${scan.speciesRecords.length - SPECIES_TABLE_LIMIT} more species recorded (${highlightedCount} at risk or protected in total)</p>` : ""}` : ""}
   </section>`;
 }
 
@@ -384,6 +395,13 @@ export function renderEcologyScanHtml(d: EcologyScanReportData): string {
                   color: #374151 }
   .risk-legend-item { display: flex; align-items: center; gap: 5px }
   .risk-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0 }
+
+  /* Narrative */
+  .narrative-section { margin: 0 40px 8px; padding: 18px 20px; background: #f0fdf4;
+                        border-left: 4px solid #16a34a; border-radius: 0 6px 6px 0 }
+  .narrative-label { font-size: 8pt; font-weight: 700; color: #15803d; text-transform: uppercase;
+                      letter-spacing: 0.05em; margin-bottom: 8px }
+  .narrative-text { font-size: 9.5pt; color: #1a1a1a; line-height: 1.65; white-space: pre-wrap }
 </style>
 </head>
 <body>
@@ -430,6 +448,12 @@ export function renderEcologyScanHtml(d: EcologyScanReportData): string {
     <div class="risk-legend-item"><div class="risk-dot" style="background:#16a34a"></div>Least Concern (LC)</div>
   </div>
 </section>
+
+${d.narrative ? `
+<div class="narrative-section">
+  <div class="narrative-label">Executive Summary</div>
+  <div class="narrative-text">${esc(d.narrative)}</div>
+</div>` : ""}
 
 ${scanSections}
 

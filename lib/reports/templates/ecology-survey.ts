@@ -34,6 +34,7 @@ export interface EcologySurveyData {
   totalSpeciesRecords: number;
   totalAssessments: number;
   meetingRequirementCount: number;
+  narrative?: string | null;
 }
 
 function fmtDate(d: Date | null | undefined): string {
@@ -149,6 +150,9 @@ h1.report-title { font-size: 22pt; font-weight: 700; color: #14532d; letter-spac
 .assessment-footer-meta { font-size: 7.5pt; color: #6b7280; display: flex; flex-wrap: wrap; gap: 10pt; margin-top: 6pt; padding-top: 6pt; border-top: 0.5pt solid #e5e7eb; }
 .no-data { color: #6b7280; font-style: italic; padding: 12pt; text-align: center; }
 .footer { margin-top: 24pt; padding-top: 8pt; border-top: 0.75pt solid #d1d5db; font-size: 7.5pt; color: #9ca3af; display: flex; justify-content: space-between; }
+.narrative-section { margin: 16pt 0; padding: 16pt 18pt; background: #f0fdf4; border-left: 4pt solid #16a34a; border-radius: 0 6pt 6pt 0; }
+.narrative-label { font-size: 8pt; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8pt; }
+.narrative-text { font-size: 9.5pt; color: #1a1a1a; line-height: 1.65; white-space: pre-wrap; }
 </style>
 </head>
 <body>
@@ -174,6 +178,12 @@ h1.report-title { font-size: 22pt; font-weight: 700; color: #14532d; letter-spac
     <div class="kpi-label">Protected species records</div>
   </div>
 </div>
+
+${data.narrative ? `
+<div class="narrative-section">
+  <div class="narrative-label">Executive Summary</div>
+  <div class="narrative-text">${esc(data.narrative)}</div>
+</div>` : ""}
 
 <div class="section-title">Biodiversity Net Gain Assessments</div>
 ${anyAssessments ? assessmentRows : '<p class="no-data">No biodiversity assessments recorded for this reporting period.</p>'}
