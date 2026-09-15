@@ -1,5 +1,5 @@
 // Multi-provider LLM client.
-// Priority: Anthropic Claude (if ANTHROPIC_API_KEY set) → NVIDIA NIM → HuggingFace
+// Priority: Anthropic Claude → NVIDIA NIM (Kimi) → HuggingFace
 
 export type ChatMessage = { role: 'user' | 'assistant' | 'system'; content: string };
 export type LlmResult = { text: string; tokens: number; provider: string };
@@ -24,6 +24,11 @@ const NIM_API_KEY = process.env.NVIDIA_API_KEY ?? process.env.NVIDIA_NIM_API_KEY
 // Default to NVIDIA's cloud inference endpoint when not self-hosting.
 const NIM_API_BASE = process.env.NVIDIA_NIM_BASE_URL ?? 'https://integrate.api.nvidia.com/v1';
 const NIM_DEFAULT_MODEL = 'meta/llama-3.1-8b-instruct';
+
+// Kimi (moonshotai/kimi-k3) via NVIDIA NIM endpoint. Uses same API key as NIM.
+const KIMI_API_KEY = NIM_API_KEY;
+const KIMI_API_BASE = NIM_API_BASE;
+const KIMI_DEFAULT_MODEL = 'moonshotai/kimi-k3';
 
 async function callAnthropic(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {
   if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set');
@@ -151,8 +156,40 @@ async function callNvidiaNim(messages: ChatMessage[], options: LlmOptions): Prom
   return { text: text.trim(), tokens, provider: 'nvidia_nim' };
 }
 
+async function callKimi(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {
+  if (!KIMI_API_KEY) throw new Error('NVIDIA_API_KEY not set for Kimi');
+
+  const response = await fetch(`${KIMI_API_BASE}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${KIMI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: options.model ?? KIMI_DEFAULT_MODEL,
+      messages,
+      max_tokens: options.maxTokens ?? 1024,
+      temperature: options.temperature ?? 0.3,
+      reasoning_effort: 'max',
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Kimi API ${response.status}: ${body.slice(0, 200)}`);
+  }
+
+  const data = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+    usage?: { completion_tokens?: number };
+  };
+  const text = data.choices?.[0]?.message?.content ?? '';
+  const tokens = data.usage?.completion_tokens ?? 0;
+  return { text: text.trim(), tokens, provider: 'kimi' };
+}
+
 export class LlmClient {
-  // Try Anthropic first, then NVIDIA NIM, then HuggingFace.
+  // Try Anthropic first, then NVIDIA NIM (Kimi), then HuggingFace.
   async chat(messages: ChatMessage[], options: LlmOptions = {}): Promise<LlmResult> {
     if (ANTHROPIC_API_KEY) {
       try {
@@ -165,7 +202,18 @@ export class LlmClient {
       }
     }
 
-    if (NIM_API_KEY) {
+    if (KIMI_API_KEY) {
+      try {
+        return await callKimi(messages, options);
+      } catch (err) {
+        console.warn(
+          '[llm] Kimi failed, falling back to NIM or next provider:',
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+    }
+
+    if (NIM_API_KEY && options.model !== KIMI_DEFAULT_MODEL) {
       try {
         return await callNvidiaNim(messages, options);
       } catch (err) {
@@ -181,7 +229,7 @@ export class LlmClient {
     }
 
     throw new Error(
-      'No LLM provider configured. Set ANTHROPIC_API_KEY, NVIDIA_NIM_API_KEY, or HUGGINGFACE_TOKEN.',
+      'No LLM provider configured. Set ANTHROPIC_API_KEY, NVIDIA_API_KEY, or HUGGINGFACE_TOKEN.',
     );
   }
 
@@ -195,7 +243,7 @@ export class LlmClient {
   }
 
   isConfigured(): boolean {
-    return !!(ANTHROPIC_API_KEY || HF_API_KEY || NIM_API_KEY);
+    return !!(ANTHROPIC_API_KEY || KIMI_API_KEY || NIM_API_KEY || HF_API_KEY);
   }
 }
 
