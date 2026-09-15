@@ -81,10 +81,13 @@ RECOMMENDATIONS:
 
 Use professional language, avoid jargon, and focus on insights a CFO or board member would find valuable.`;
 
-    const result = await llmClient.complete(prompt, {
-      maxTokens: 800,
-      temperature: 0.3,
-    });
+    const LLM_TIMEOUT_MS = 30000;
+    const result = await Promise.race([
+      llmClient.complete(prompt, { maxTokens: 800, temperature: 0.3 }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`LLM narrative timeout after ${LLM_TIMEOUT_MS}ms`)), LLM_TIMEOUT_MS),
+      ),
+    ]);
 
     reportLogger.info("Narrative generated successfully", {
       provider: result.provider,

@@ -3,10 +3,19 @@ import { getObject } from "@/lib/storage";
 import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
 
+function withQueryTimeout<T>(promise: Promise<T>, timeoutMs = 30000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Database query timeout after ${timeoutMs}ms`)), timeoutMs),
+    ),
+  ]);
+}
+
 export type CalculationRow = Awaited<ReturnType<typeof fetchCalculations>>[number];
 
 export async function fetchCalculations(orgId: string, runId: string, contractId?: string) {
-  return prisma.emissionCalculation.findMany({
+  return withQueryTimeout(prisma.emissionCalculation.findMany({
     where: {
       organizationId: orgId,
       calculationRunId: runId,
@@ -21,7 +30,7 @@ export async function fetchCalculations(orgId: string, runId: string, contractId
       },
     },
     orderBy: { totalCo2e: "desc" },
-  });
+  }));
 }
 
 export type Aggregation = {
@@ -147,14 +156,14 @@ export async function buildBasePdfData(
   const runId = report.snapshot.calculationRunId;
   const orgId = report.organizationId;
 
-  const biogenicAgg = await prisma.emissionCalculation.aggregate({
+  const biogenicAgg = await withQueryTimeout(prisma.emissionCalculation.aggregate({
     where: { calculationRunId: runId, organizationId: orgId, biogenicCo2e: { not: null } },
     _sum: { biogenicCo2e: true },
-  });
+  }));
   const biogenicTotal = Number(biogenicAgg._sum.biogenicCo2e ?? 0);
 
   const auditEvents = auditEventFilter
-    ? await fetchReportAuditTrail(report.id, runId, orgId, auditEventFilter)
+    ? await withQueryTimeout(fetchReportAuditTrail(report.id, runId, orgId, auditEventFilter))
     : undefined;
 
   return {
