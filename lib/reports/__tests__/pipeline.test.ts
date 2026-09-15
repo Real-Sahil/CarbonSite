@@ -246,7 +246,7 @@ describe("generateAuditNarrative() timeout", () => {
 
     // The error is caught inside generateAuditNarrative and returns a degraded narrative
     const result = await promise;
-    expect(result.executive_summary).toContain("LLM narrative timeout after 30000ms");
+    expect(result.executive_summary).toContain("LLM narrative timeout after 20000ms");
     expect(result.key_findings).toHaveLength(0);
     vi.useRealTimers();
   });

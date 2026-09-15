@@ -81,9 +81,11 @@ RECOMMENDATIONS:
 
 Use professional language, avoid jargon, and focus on insights a CFO or board member would find valuable.`;
 
-    const LLM_TIMEOUT_MS = 30000;
+    // 20s cap keeps us well inside Vercel's 60s function limit.
+    // Kimi with reasoningEffort 'low' typically responds in 3-8s.
+    const LLM_TIMEOUT_MS = 20000;
     const result = await Promise.race([
-      llmClient.complete(prompt, { maxTokens: 800, temperature: 0.3 }),
+      llmClient.complete(prompt, { maxTokens: 800, temperature: 0.3, reasoningEffort: 'low' }),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error(`LLM narrative timeout after ${LLM_TIMEOUT_MS}ms`)), LLM_TIMEOUT_MS),
       ),

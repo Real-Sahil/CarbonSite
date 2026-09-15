@@ -8,6 +8,9 @@ export type LlmOptions = {
   maxTokens?: number;
   temperature?: number;
   systemPrompt?: string;
+  // Controls Kimi reasoning depth. 'low' (~3-8s) fits in a Vercel 60s budget;
+  // 'max' (~30-60s) is only safe in a long-running worker process.
+  reasoningEffort?: 'low' | 'medium' | 'max';
 };
 
 
@@ -124,7 +127,7 @@ async function callKimi(messages: ChatMessage[], options: LlmOptions): Promise<L
       messages,
       max_tokens: options.maxTokens ?? 1024,
       temperature: options.temperature ?? 0.3,
-      reasoning_effort: 'max',
+      reasoning_effort: options.reasoningEffort ?? 'low',
     }),
   });
 
