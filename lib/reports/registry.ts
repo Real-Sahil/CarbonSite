@@ -665,10 +665,21 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
   ecology_scan: async (ctx) => {
     const { report, logoDataUri, publishedBy } = ctx;
 
+    console.log("[ecology_scan] query params:", {
+      orgId: ctx.orgId,
+      reportOrgId: report.organizationId,
+      orgName: report.organization.name,
+    });
+
     const scans = await prisma.ecologicalScan.findMany({
       where: { organizationId: ctx.orgId, status: "completed" },
       include: { project: { select: { name: true } } },
       orderBy: { scannedAt: "desc" },
+    });
+
+    console.log("[ecology_scan] query result:", {
+      scansFound: scans.length,
+      scans: scans.map((s) => ({ id: s.id, totalSpeciesCount: s.totalSpeciesCount, projectId: s.projectId })),
     });
 
     const mappedScans: EcologyScanRecord[] = scans.map((s) => ({
