@@ -1623,6 +1623,7 @@ model Report {
   type              ReportType
   status            ReportStatus @default(queued)
   version           Int          @default(1)
+  errorMessage      String?      @map("error_message") @db.Text
   pdfStorageKey     String?      @map("pdf_storage_key")
   csvStorageKey     String?      @map("csv_storage_key")
   xmlStorageKey     String?      @map("xml_storage_key")

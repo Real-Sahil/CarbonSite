@@ -278,7 +278,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       try {
         await prisma.report.update({
           where: { id: reportId },
-          data: { status: "failed" }
+          data: { status: "failed", errorMessage: errorMsg }
         });
         reportLogger.info("Report status set to failed", { reportId });
       } catch (updateErr) {
@@ -303,7 +303,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
     try {
       await prisma.report.update({
         where: { id: reportId },
-        data: { status: "failed" }
+        data: { status: "failed", errorMessage: errorMsg }
       });
       reportLogger.info("Report status set to failed from outer catch", { reportId });
     } catch (updateErr) {
