@@ -335,11 +335,7 @@ const handlers: Record<string, ReportHandler> = {
       recordCount: waterRecords.length,
       facilities: [...byFacility.values()].filter((f) => f.withdrawalM3 || f.dischargeM3 || f.consumptionM3),
     };
-    // No pdfkitData: unlike the GHG report handlers, there is no
-    // meaningful generic-PDFKit fallback for water data, so the real PDF
-    // comes from rendering this HTML directly (see worker.ts's
-    // `pdfkitData ? generateReportPdf(...) : renderPdf(html)` branch).
-    return { html: renderCsrdEsrsE3Html(data) };
+    return { html: renderCsrdEsrsE3Html(data), pdfkitData: ctx.basePdfData };
   },
 
   csrd_esrs_e5: async (ctx) => {
@@ -395,7 +391,7 @@ const handlers: Record<string, ReportHandler> = {
       byDisposalRoute: [...byRoute.entries()].map(([route, tonnes]) => ({ route, tonnes, hierarchy: hierarchyOf(route) })),
       facilities: [...byFacility.values()].filter((f) => f.generatedTonnes > 0),
     };
-    return { html: renderCsrdEsrsE5Html(data) };
+    return { html: renderCsrdEsrsE5Html(data), pdfkitData: ctx.basePdfData };
   },
 
   contract_carbon: async (ctx) => {
@@ -668,7 +664,13 @@ Assessment details:
 ${mapped.map((a) => `- ${a.name}: ${a.meetsRequirement ? "Meets" : "Does not meet"} 10% BNG. Area units baseline/post: ${a.baselineAreaUnits.toFixed(3)}/${a.postAreaUnits.toFixed(3)}. Hedgerow: ${a.baselineHedgerowUnits.toFixed(3)}/${a.postHedgerowUnits.toFixed(3)}. Watercourse: ${a.baselineWatercourseUnits.toFixed(3)}/${a.postWatercourseUnits.toFixed(3)}.`).join("\n")}
 
 Write a concise 2-3 paragraph executive summary of the biodiversity net gain performance, highlighting key findings, compliance status, and recommendations. Use professional, plain English suitable for a planning authority or sustainability report.`;
-        surveyNarrative = (await llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3 })).text;
+        const LLM_TIMEOUT_MS = 20_000;
+        surveyNarrative = (await Promise.race([
+          llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3, reasoningEffort: 'low' }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`LLM narrative timeout after ${LLM_TIMEOUT_MS}ms`)), LLM_TIMEOUT_MS),
+          ),
+        ])).text;
       } catch (err) {
         console.error("[ecology_survey] narrative generation failed:", err);
         // narrative is optional — proceed without it
@@ -687,7 +689,7 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
       totalSpeciesRecords: speciesCount,
       narrative: surveyNarrative,
     };
-    return { html: renderEcologySurveyHtml(data) };
+    return { html: renderEcologySurveyHtml(data), pdfkitData: ctx.basePdfData };
   },
   ecology_scan: async (ctx) => {
     const { report, logoDataUri, publishedBy } = ctx;
@@ -762,7 +764,13 @@ Site scan breakdown:
 ${mappedScans.map((s) => `- ${s.projectName ?? s.postcode} (${s.postcode}, radius ${s.radiusKm}km): ${s.totalSpeciesCount} species (birds: ${s.birdSpeciesCount}, plants: ${s.plantSpeciesCount}, mammals: ${s.mammalSpeciesCount}), ${s.sssiCount} SSSIs, ${s.ancientWoodlandCount} ancient woodland sites, ${s.woodlandTotalHa.toFixed(1)} ha woodland.`).join("\n")}
 
 Write a concise 2-3 paragraph executive summary of the ecological sensitivity findings, highlighting biodiversity richness, designated site constraints, woodland cover, and any material ecological risks that should inform planning or environmental management decisions. Use professional language suitable for an ecology report or Environmental Statement.`;
-        scanNarrative = (await llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3 })).text;
+        const LLM_TIMEOUT_MS = 20_000;
+        scanNarrative = (await Promise.race([
+          llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3, reasoningEffort: 'low' }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`LLM narrative timeout after ${LLM_TIMEOUT_MS}ms`)), LLM_TIMEOUT_MS),
+          ),
+        ])).text;
       } catch (err) {
         console.error("[ecology_scan] narrative generation failed:", err);
         // narrative is optional — proceed without it
@@ -778,7 +786,7 @@ Write a concise 2-3 paragraph executive summary of the ecological sensitivity fi
       scans: mappedScans,
       narrative: scanNarrative,
     };
-    return { html: renderEcologyScanHtml(data) };
+    return { html: renderEcologyScanHtml(data), pdfkitData: ctx.basePdfData };
   },
 };
 
