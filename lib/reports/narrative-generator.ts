@@ -20,11 +20,11 @@ function pct(part: number, whole: number): string {
 export async function generateAuditNarrative(reportData: ReportData): Promise<AuditNarrative> {
   if (!llmClient.isConfigured()) {
     reportLogger.warn("LLM not configured - skipping narrative generation", {
-      reason: "Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY in environment"
+      reason: "Set NVIDIA_API_KEY or HUGGINGFACE_TOKEN in environment"
     });
     return {
       executive_summary:
-        "Unable to generate automated narrative — no LLM provider configured. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY in your .env file, then regenerate the report.",
+        "Unable to generate automated narrative — no LLM provider configured. Set NVIDIA_API_KEY or HUGGINGFACE_TOKEN in your .env file, then regenerate the report.",
       key_findings: [],
       recommendations: "",
     };
@@ -107,11 +107,11 @@ Use professional language, avoid jargon, and focus on insights a CFO or board me
     reportLogger.error("LLM error during narrative generation", {
       error: errorMsg,
       stack: errorStack,
-      hint: "Check HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY in environment variables",
+      hint: "Check NVIDIA_API_KEY or HUGGINGFACE_TOKEN in environment variables",
     });
 
     return {
-      executive_summary: `Error generating narrative: ${errorMsg}. Ensure HUGGINGFACE_TOKEN is set in your environment. Get it from: https://huggingface.co/settings/tokens`,
+      executive_summary: `Error generating narrative: ${errorMsg}. Ensure NVIDIA_API_KEY or HUGGINGFACE_TOKEN is set in your environment.`,
       key_findings: [],
       recommendations: "",
     };

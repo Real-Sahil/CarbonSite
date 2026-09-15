@@ -1,5 +1,5 @@
 // Scope 3 AI-powered emissions estimator.
-// Uses the multi-provider LLM client (HuggingFace primary, NVIDIA NIM fallback).
+// Uses the multi-provider LLM client (Kimi primary, NVIDIA NIM, then HuggingFace fallback).
 
 import { llmClient } from '@/lib/llm/client';
 
