@@ -110,7 +110,14 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
     }),
     prisma.report.findMany({
       where: { organizationId: orgId },
-      include: {
+      select: {
+        id: true,
+        type: true,
+        status: true,
+        pdfStorageKey: true,
+        csvStorageKey: true,
+        xmlStorageKey: true,
+        createdAt: true,
         reportingPeriod: { select: { label: true } },
         snapshot: { select: { version: true } },
         createdBy: { select: { name: true, email: true } },

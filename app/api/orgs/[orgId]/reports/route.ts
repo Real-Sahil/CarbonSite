@@ -64,7 +64,27 @@ export async function GET(req: NextRequest, { params }: Params) {
     const [reports, total] = await Promise.all([
       prisma.report.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          organizationId: true,
+          reportingPeriodId: true,
+          snapshotId: true,
+          type: true,
+          status: true,
+          version: true,
+          pdfStorageKey: true,
+          pdfChecksum: true,
+          csvStorageKey: true,
+          csvChecksum: true,
+          xmlStorageKey: true,
+          xmlChecksum: true,
+          options: true,
+          requestHash: true,
+          contractId: true,
+          createdByUserId: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
           reportingPeriod: { select: { label: true } },
           snapshot: { select: { version: true, publishedAt: true } },
           createdBy: { select: { name: true, email: true } },
