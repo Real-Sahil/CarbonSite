@@ -335,7 +335,7 @@ const handlers: Record<string, ReportHandler> = {
       recordCount: waterRecords.length,
       facilities: [...byFacility.values()].filter((f) => f.withdrawalM3 || f.dischargeM3 || f.consumptionM3),
     };
-    return { html: renderCsrdEsrsE3Html(data), pdfkitData: ctx.basePdfData };
+    return { html: renderCsrdEsrsE3Html(data) };
   },
 
   csrd_esrs_e5: async (ctx) => {
@@ -391,7 +391,7 @@ const handlers: Record<string, ReportHandler> = {
       byDisposalRoute: [...byRoute.entries()].map(([route, tonnes]) => ({ route, tonnes, hierarchy: hierarchyOf(route) })),
       facilities: [...byFacility.values()].filter((f) => f.generatedTonnes > 0),
     };
-    return { html: renderCsrdEsrsE5Html(data), pdfkitData: ctx.basePdfData };
+    return { html: renderCsrdEsrsE5Html(data) };
   },
 
   contract_carbon: async (ctx) => {
@@ -689,7 +689,7 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
       totalSpeciesRecords: speciesCount,
       narrative: surveyNarrative,
     };
-    return { html: renderEcologySurveyHtml(data), pdfkitData: ctx.basePdfData };
+    return { html: renderEcologySurveyHtml(data) };
   },
   ecology_scan: async (ctx) => {
     const { report, logoDataUri, publishedBy } = ctx;
@@ -786,7 +786,7 @@ Write a concise 2-3 paragraph executive summary of the ecological sensitivity fi
       scans: mappedScans,
       narrative: scanNarrative,
     };
-    return { html: renderEcologyScanHtml(data), pdfkitData: ctx.basePdfData };
+    return { html: renderEcologyScanHtml(data) };
   },
 };
 
