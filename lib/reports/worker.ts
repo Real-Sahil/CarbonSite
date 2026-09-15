@@ -462,13 +462,13 @@ async function renderPdf(html: string): Promise<Buffer> {
       }
     }
 
-    browser = await puppeteer.launch({
-      headless: true,
-      executablePath,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-    });
-
     try {
+      browser = await puppeteer.launch({
+        headless: true,
+        executablePath,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      });
+
       reportLogger.info("Puppeteer launched successfully", {
         isVercel: !!process.env.VERCEL,
         executablePath,
