@@ -94,11 +94,13 @@ const handlers: Record<string, ReportHandler> = {
 
   ppn_06_21: async (ctx) => {
     const { agg, opts, basePdfData, report, calcs, orgId, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
-    const initiatives = await prisma.reductionInitiative.findMany({
-      where: { organizationId: orgId },
-      select: { name: true, expectedImpactCo2e: true, status: true },
-      orderBy: { createdAt: "asc" },
-    });
+    const initiatives = await withQueryTimeout(
+      prisma.reductionInitiative.findMany({
+        where: { organizationId: orgId },
+        select: { name: true, expectedImpactCo2e: true, status: true },
+        orderBy: { createdAt: "asc" },
+      })
+    );
     const data: Ppn0621Data = {
       orgName: report.organization.name,
       logoDataUri,
@@ -131,11 +133,13 @@ const handlers: Record<string, ReportHandler> = {
 
   nhs_evergreen: async (ctx) => {
     const { agg, opts, basePdfData, report, calcs, orgId, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
-    const initiatives = await prisma.reductionInitiative.findMany({
-      where: { organizationId: orgId, status: { not: "canceled" } },
-      select: { name: true, status: true },
-      orderBy: { createdAt: "asc" },
-    });
+    const initiatives = await withQueryTimeout(
+      prisma.reductionInitiative.findMany({
+        where: { organizationId: orgId, status: { not: "canceled" } },
+        select: { name: true, status: true },
+        orderBy: { createdAt: "asc" },
+      })
+    );
     const data: NhsEvergreenData = {
       orgName: report.organization.name,
       logoDataUri,
@@ -163,13 +167,15 @@ const handlers: Record<string, ReportHandler> = {
     const contractId = report.contractId;
     if (!contractId) throw new Error("national_toms report requires a contractId.");
 
-    const svRecords = await prisma.socialValueRecord.findMany({
-      where: { organizationId: orgId, contractId, reportingPeriodId: report.reportingPeriodId },
-      include: {
-        measure: { include: { theme: { select: { code: true, name: true } } } },
-      },
-      orderBy: { measure: { tomsCode: "asc" } },
-    });
+    const svRecords = await withQueryTimeout(
+      prisma.socialValueRecord.findMany({
+        where: { organizationId: orgId, contractId, reportingPeriodId: report.reportingPeriodId },
+        include: {
+          measure: { include: { theme: { select: { code: true, name: true } } } },
+        },
+        orderBy: { measure: { tomsCode: "asc" } },
+      })
+    );
 
     const themeMap = new Map<string, TomsThemeSummary>();
     let grandTotalPounds = 0;
@@ -198,7 +204,9 @@ const handlers: Record<string, ReportHandler> = {
       }
     }
 
-    const contract = await prisma.contract.findUnique({ where: { id: contractId }, select: { name: true } });
+    const contract = await withQueryTimeout(
+      prisma.contract.findUnique({ where: { id: contractId }, select: { name: true } })
+    );
     const data: NationalTomsData = {
       orgName: report.organization.name,
       logoDataUri,
@@ -501,11 +509,13 @@ const handlers: Record<string, ReportHandler> = {
 
   ppn_006_crp: async (ctx) => {
     const { agg, opts, basePdfData, report, orgId, logoDataUri} = ctx;
-    const initiatives = await prisma.reductionInitiative.findMany({
-      where: { organizationId: orgId },
-      select: { name: true, expectedImpactCo2e: true, status: true },
-      orderBy: { createdAt: "asc" },
-    });
+    const initiatives = await withQueryTimeout(
+      prisma.reductionInitiative.findMany({
+        where: { organizationId: orgId },
+        select: { name: true, expectedImpactCo2e: true, status: true },
+        orderBy: { createdAt: "asc" },
+      })
+    );
 
     const scopeRows: CrpScopeRow[] = [...agg.catTotals.values()].map((c) => ({
       scope: c.scope as 1 | 2 | 3,
