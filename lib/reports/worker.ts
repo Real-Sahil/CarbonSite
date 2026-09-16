@@ -464,10 +464,21 @@ async function renderPdf(html: string): Promise<Buffer> {
         reportLogger.info("Using @sparticuz/chromium on Vercel", { executablePath });
       } catch (importErr) {
         const errMsg = importErr instanceof Error ? importErr.message : String(importErr);
-        reportLogger.error("Failed to load @sparticuz/chromium", { error: errMsg });
-        throw new Error(
-          `@sparticuz/chromium not available on Vercel: ${errMsg}`
-        );
+        reportLogger.warn("@sparticuz/chromium unavailable, attempting puppeteer fallback", { error: errMsg });
+        // Fallback: try puppeteer's bundled Chromium if @sparticuz fails
+        try {
+          executablePath = await puppeteer.executablePath();
+          reportLogger.info("Fallback to puppeteer.executablePath()", { executablePath });
+        } catch (fallbackErr) {
+          const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+          reportLogger.error("Both chromium sources failed on Vercel", {
+            sparticuzError: errMsg,
+            puppeteerError: fallbackMsg
+          });
+          throw new Error(
+            `Chromium unavailable on Vercel (Turbopack bundling issue). Set NEXT_BUILD_PRESET=legacy in Vercel env vars to force webpack. Errors: sparticuz="${errMsg}", puppeteer="${fallbackMsg}"`
+          );
+        }
       }
     } else {
       // Find executable: prefer Puppeteer's own Chromium, fall back to system / Playwright.
