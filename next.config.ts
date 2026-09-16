@@ -19,7 +19,9 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  turbopack: {},
+  // Turbopack is enabled by default in Next.js 16. serverExternalPackages (line 14) applies to both webpack and Turbopack.
+  // Note: On Vercel, Turbopack may still attempt to bundle native modules. If @sparticuz/chromium fails,
+  // set NEXT_BUILD_PRESET=legacy in Vercel env to force webpack instead.
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
