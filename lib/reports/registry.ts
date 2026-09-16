@@ -700,13 +700,20 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
       orgName: report.organization.name,
     });
 
-    const scans = await withQueryTimeout(
-      prisma.ecologicalScan.findMany({
-        where: { organizationId: ctx.orgId, status: "completed" },
-        include: { project: { select: { name: true } } },
-        orderBy: { scannedAt: "desc" },
-      })
-    );
+    let scans;
+    try {
+      scans = await withQueryTimeout(
+        prisma.ecologicalScan.findMany({
+          where: { organizationId: ctx.orgId, status: "completed" },
+          include: { project: { select: { name: true } } },
+          orderBy: { scannedAt: "desc" },
+        }),
+        60000 // 60s timeout for ecological scan query
+      );
+    } catch (err) {
+      console.error("[ecology_scan] database query failed:", err instanceof Error ? err.message : String(err));
+      throw new Error(`Failed to fetch ecological scans: ${err instanceof Error ? err.message : String(err)}`);
+    }
 
     console.log("[ecology_scan] query result:", {
       scansFound: scans.length,
@@ -786,7 +793,18 @@ Write a concise 2-3 paragraph executive summary of the ecological sensitivity fi
       scans: mappedScans,
       narrative: scanNarrative,
     };
-    return { html: renderEcologyScanHtml(data) };
+
+    try {
+      const html = renderEcologyScanHtml(data);
+      console.log("[ecology_scan] HTML render succeeded", {
+        htmlSizeBytes: html.length,
+        scans: mappedScans.length,
+      });
+      return { html };
+    } catch (err) {
+      console.error("[ecology_scan] HTML render failed:", err instanceof Error ? err.message : String(err));
+      throw new Error(`Failed to render ecology scan HTML: ${err instanceof Error ? err.message : String(err)}`);
+    }
   },
 };
 
