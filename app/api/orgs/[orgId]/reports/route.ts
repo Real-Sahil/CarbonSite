@@ -156,7 +156,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const usageBlock = await requireWithinUsageLimit(orgId, "report.generated");
     if (usageBlock) return usageBlock;
 
-    let report: Awaited<ReturnType<typeof prisma.report.create>>;
+    let report!: { id: string; organizationId: string; reportingPeriodId: string; snapshotId: string; type: string; status: string; version: number; pdfStorageKey: string | null; pdfChecksum: string | null; csvStorageKey: string | null; csvChecksum: string | null; xmlStorageKey: string | null; xmlChecksum: string | null; options: unknown; requestHash: string | null; contractId: string | null; createdByUserId: string | null; publishedAt: Date | null; createdAt: Date; updatedAt: Date };
     try {
       const reportOptions = {
         ...body.options,
@@ -172,6 +172,28 @@ export async function POST(req: NextRequest, { params }: Params) {
           options: reportOptions,
           requestHash,
           createdByUserId: session.user.id,
+        },
+        select: {
+          id: true,
+          organizationId: true,
+          reportingPeriodId: true,
+          snapshotId: true,
+          type: true,
+          status: true,
+          version: true,
+          pdfStorageKey: true,
+          pdfChecksum: true,
+          csvStorageKey: true,
+          csvChecksum: true,
+          xmlStorageKey: true,
+          xmlChecksum: true,
+          options: true,
+          requestHash: true,
+          contractId: true,
+          createdByUserId: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
     } catch (err) {

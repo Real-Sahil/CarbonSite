@@ -12,7 +12,16 @@ import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter } from "./pdf-
 import { generateAuditNarrative } from "./narrative-generator";
 import { llmClient } from "@/lib/llm/client";
 
-const REPORT_INCLUDE = {
+const REPORT_SELECT = {
+  id: true,
+  organizationId: true,
+  reportingPeriodId: true,
+  snapshotId: true,
+  type: true,
+  status: true,
+  options: true,
+  contractId: true,
+  createdByUserId: true,
   organization: {
     select: {
       name: true,
@@ -22,9 +31,12 @@ const REPORT_INCLUDE = {
   reportingPeriod: { select: { label: true, startDate: true, endDate: true } },
   contract: { select: { name: true } },
   snapshot: {
-    include: {
+    select: {
+      calculationRunId: true,
+      version: true,
+      publishedAt: true,
       calculationRun: {
-        include: {
+        select: {
           factorLibrary: { select: { name: true, version: true } },
           methodologyVersion: { select: { name: true, gwpVersion: true } },
         },
@@ -35,7 +47,7 @@ const REPORT_INCLUDE = {
   createdBy: { select: { name: true, email: true } },
 } as const;
 
-type ReportWithIncludes = Prisma.ReportGetPayload<{ include: typeof REPORT_INCLUDE }>;
+type ReportWithIncludes = Prisma.ReportGetPayload<{ select: typeof REPORT_SELECT }>;
 
 export async function processReport(reportId: string, orgId: string): Promise<void> {
   reportLogger.info("Report processing started", { reportId, orgId });
@@ -44,7 +56,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
   try {
     report = await prisma.report.findUniqueOrThrow({
       where: { id: reportId },
-      include: REPORT_INCLUDE,
+      select: REPORT_SELECT,
     });
     reportLogger.info("Report loaded", { reportId, type: report.type, status: report.status });
 
