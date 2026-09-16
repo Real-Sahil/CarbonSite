@@ -720,37 +720,44 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
       scans: scans.map((s) => ({ id: s.id, totalSpeciesCount: s.totalSpeciesCount, projectId: s.projectId })),
     });
 
-    const mappedScans: EcologyScanRecord[] = scans.map((s) => ({
-      id: s.id,
-      postcode: s.postcode,
-      radiusKm: Number(s.radiusKm),
-      scannedAt: s.scannedAt,
-      projectName: s.project?.name ?? null,
-      totalSpeciesCount: s.totalSpeciesCount,
-      plantSpeciesCount: s.plantSpeciesCount,
-      birdSpeciesCount: s.birdSpeciesCount,
-      mammalSpeciesCount: s.mammalSpeciesCount,
-      invertSpeciesCount: s.invertSpeciesCount,
-      reptileSpeciesCount: s.reptileSpeciesCount,
-      amphibianSpeciesCount: s.amphibianSpeciesCount,
-      otherSpeciesCount: s.otherSpeciesCount,
-      sssiCount: s.sssiCount,
-      sacCount: s.sacCount,
-      spaCount: s.spaCount,
-      nvrCount: s.nvrCount,
-      ancientWoodlandCount: s.ancientWoodlandCount,
-      ramsarCount: s.ramsarCount,
-      aonbCount: s.aonbCount,
-      lnrCount: s.lnrCount,
-      woodlandTotalHa: Number(s.woodlandTotalHa),
-      broadleafHa: Number(s.broadleafHa),
-      coniferHa: Number(s.coniferHa),
-      mixedWoodlandHa: Number(s.mixedWoodlandHa),
-      priorityHabitatHa: Number(s.priorityHabitatHa),
-      designatedSites: (s.designatedSites as unknown as EcologyScanSite[]) ?? [],
-      woodlandData: (s.woodlandData as unknown as EcologyScanWoodland[]) ?? [],
-      speciesRecords: (s.speciesRecords as unknown as EcologyScanSpecies[]) ?? [],
-    }));
+    const mappedScans: EcologyScanRecord[] = scans.map((s) => {
+      try {
+        return {
+          id: s.id,
+          postcode: s.postcode,
+          radiusKm: Number(s.radiusKm),
+          scannedAt: s.scannedAt,
+          projectName: s.project?.name ?? null,
+          totalSpeciesCount: s.totalSpeciesCount,
+          plantSpeciesCount: s.plantSpeciesCount,
+          birdSpeciesCount: s.birdSpeciesCount,
+          mammalSpeciesCount: s.mammalSpeciesCount,
+          invertSpeciesCount: s.invertSpeciesCount,
+          reptileSpeciesCount: s.reptileSpeciesCount,
+          amphibianSpeciesCount: s.amphibianSpeciesCount,
+          otherSpeciesCount: s.otherSpeciesCount,
+          sssiCount: s.sssiCount,
+          sacCount: s.sacCount,
+          spaCount: s.spaCount,
+          nvrCount: s.nvrCount,
+          ancientWoodlandCount: s.ancientWoodlandCount,
+          ramsarCount: s.ramsarCount,
+          aonbCount: s.aonbCount,
+          lnrCount: s.lnrCount,
+          woodlandTotalHa: Number(s.woodlandTotalHa),
+          broadleafHa: Number(s.broadleafHa),
+          coniferHa: Number(s.coniferHa),
+          mixedWoodlandHa: Number(s.mixedWoodlandHa),
+          priorityHabitatHa: Number(s.priorityHabitatHa),
+          designatedSites: Array.isArray(s.designatedSites) ? (s.designatedSites as unknown as EcologyScanSite[]) : [],
+          woodlandData: Array.isArray(s.woodlandData) ? (s.woodlandData as unknown as EcologyScanWoodland[]) : [],
+          speciesRecords: Array.isArray(s.speciesRecords) ? (s.speciesRecords as unknown as EcologyScanSpecies[]) : [],
+        };
+      } catch (err) {
+        console.error("[ecology_scan] Error mapping scan record:", s.id, err);
+        throw new Error(`Failed to map ecological scan ${s.id}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    });
 
     let scanNarrative: string | null = null;
     if (llmClient.isConfigured() && mappedScans.length > 0) {
