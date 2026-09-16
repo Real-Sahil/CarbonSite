@@ -462,22 +462,40 @@ async function renderPdf(html: string): Promise<Buffer> {
         const chromium = (await import("@sparticuz/chromium")).default;
         executablePath = await chromium.executablePath();
         reportLogger.info("Using @sparticuz/chromium on Vercel", { executablePath });
-      } catch (importErr) {
-        const errMsg = importErr instanceof Error ? importErr.message : String(importErr);
-        reportLogger.warn("@sparticuz/chromium unavailable, attempting puppeteer fallback", { error: errMsg });
-        // Fallback: try puppeteer's bundled Chromium if @sparticuz fails
+      } catch (sparticuzErr) {
+        const errMsg = sparticuzErr instanceof Error ? sparticuzErr.message : String(sparticuzErr);
+        reportLogger.warn("@sparticuz/chromium failed", { error: errMsg, stack: sparticuzErr instanceof Error ? sparticuzErr.stack : undefined });
+
+        // Fallback 1: try puppeteer's bundled Chromium
         try {
           executablePath = await puppeteer.executablePath();
-          reportLogger.info("Fallback to puppeteer.executablePath()", { executablePath });
+          reportLogger.info("Fallback 1: using puppeteer.executablePath()", { executablePath });
         } catch (fallbackErr) {
           const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
-          reportLogger.error("Both chromium sources failed on Vercel", {
-            sparticuzError: errMsg,
-            puppeteerError: fallbackMsg
-          });
-          throw new Error(
-            `Chromium unavailable on Vercel (Turbopack bundling issue). Set NEXT_BUILD_PRESET=legacy in Vercel env vars to force webpack. Errors: sparticuz="${errMsg}", puppeteer="${fallbackMsg}"`
-          );
+          reportLogger.warn("Fallback 1 failed", { error: fallbackMsg });
+
+          // Fallback 2: try direct path (maybe Turbopack bundled it despite serverExternalPackages)
+          try {
+            const { existsSync } = await import("fs");
+            const directPath = "./node_modules/@sparticuz/chromium/bin/chromium";
+            if (existsSync(directPath)) {
+              executablePath = directPath;
+              reportLogger.info("Fallback 2: found direct node_modules path", { executablePath });
+            } else {
+              reportLogger.warn("Fallback 2: direct path does not exist", { path: directPath });
+              throw new Error("Direct path not found");
+            }
+          } catch (fallback2Err) {
+            const fallback2Msg = fallback2Err instanceof Error ? fallback2Err.message : String(fallback2Err);
+            reportLogger.error("All chromium sources exhausted on Vercel", {
+              sparticuzError: errMsg,
+              puppeteerError: fallbackMsg,
+              directPathError: fallback2Msg
+            });
+            throw new Error(
+              `Chromium unavailable on Vercel. Tried: @sparticuz (${errMsg}), puppeteer (${fallbackMsg}), direct path (${fallback2Msg})`
+            );
+          }
         }
       }
     } else {
@@ -495,7 +513,17 @@ async function renderPdf(html: string): Promise<Buffer> {
       }
     }
 
+    if (!executablePath) {
+      reportLogger.error("No executable path found for Chromium on Vercel");
+      throw new Error("Chromium executable path unavailable on Vercel. Check that @sparticuz/chromium is installed and Turbopack correctly marks it as external.");
+    }
+
     try {
+      reportLogger.info("Attempting to launch Puppeteer", {
+        isVercel: !!process.env.VERCEL,
+        executablePath,
+      });
+
       browser = await puppeteer.launch({
         headless: true,
         executablePath,
@@ -508,9 +536,11 @@ async function renderPdf(html: string): Promise<Buffer> {
       });
     } catch (launchErr) {
       const errMsg = launchErr instanceof Error ? launchErr.message : String(launchErr);
+      const stack = launchErr instanceof Error ? launchErr.stack : undefined;
       if (process.env.VERCEL) {
         reportLogger.error("Chromium launch failed on Vercel", {
           error: errMsg,
+          stack,
           executablePath,
         });
         throw new Error(
