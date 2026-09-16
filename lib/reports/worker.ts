@@ -8,7 +8,7 @@ import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
 import type { ReportData } from "./template";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { getReportHandler, type ReportContext } from "./registry";
-import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHeader } from "./pdf-generator";
+import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter } from "./pdf-generator";
 import { generateAuditNarrative } from "./narrative-generator";
 import { llmClient } from "@/lib/llm/client";
 
@@ -82,11 +82,10 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
     let xmlKey: string | null = null;
 
     try {
-      const { html, pdfkitData, xmlBuffer, logoDataUri } = await renderForType(report);
+      const { html, pdfkitData, xmlBuffer } = await renderForType(report);
       reportLogger.info("Report rendering complete", {
         reportId,
         hasPdfKitData: !!pdfkitData,
-        hasLogo: !!logoDataUri,
       });
 
       let csvBuffer: Buffer | null = null;
@@ -161,15 +160,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       // QR code points to public verification page, NOT API endpoint
       const verificationUrl = `${baseUrl}/public/reports/verify/${verificationTokenData.token}`;
 
-      let pdfBuffer = rawPdfBuffer;
-
-      // Add logo to header for Puppeteer-rendered reports (not pdfkit, which includes logo in HTML)
-      if (!pdfkitData && logoDataUri) {
-        pdfBuffer = await addLogoToHeader(pdfBuffer, logoDataUri);
-        reportLogger.info("Logo added to header", { reportId });
-      }
-
-      pdfBuffer = await stampAuditMetadata(pdfBuffer, {
+      let pdfBuffer = await stampAuditMetadata(rawPdfBuffer, {
         snapshotId: report.snapshot.calculationRunId,
         methodologyVersion: report.snapshot.calculationRun.methodologyVersion?.name ?? "—",
         sha256: pdfChecksum,
@@ -337,7 +328,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
   }
 }
 
-async function renderForType(report: ReportWithIncludes): Promise<{ html: string; pdfkitData?: ReportData; xmlBuffer?: Buffer; logoDataUri?: string }> {
+async function renderForType(report: ReportWithIncludes): Promise<{ html: string; pdfkitData?: ReportData; xmlBuffer?: Buffer }> {
   const orgId = report.organizationId;
   const runId = report.snapshot.calculationRunId;
   const opts = (report.options ?? {}) as Record<string, unknown>;
@@ -424,8 +415,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   };
 
   const handler = getReportHandler(report.type);
-  const result = await handler(ctx);
-  return { ...result, logoDataUri };
+  return handler(ctx);
 }
 
 async function resolveLocalChromiumPath(): Promise<string | undefined> {
@@ -517,18 +507,47 @@ async function renderPdf(html: string): Promise<Buffer> {
       }
     }
     const page = await browser.newPage();
-    // Set timeout to 60s to handle large tables (ecology reports with 200+ species)
-    await page.setContent(html, { waitUntil: "load", timeout: 60000 });
-    reportLogger.info("HTML content loaded in Puppeteer", { timeout: "60s" });
 
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "18mm", bottom: "20mm", left: "14mm", right: "14mm" },
-      displayHeaderFooter: false,
-    });
-    reportLogger.info("PDF rendered successfully", { pdfSizeBytes: Buffer.from(pdf).length });
-    return Buffer.from(pdf);
+    // Ecology reports with 200+ species records need longer timeout
+    const isLargeHtml = html.length > 500000; // 500KB threshold
+    const contentTimeout = isLargeHtml ? 90000 : 60000; // 90s for large, 60s for normal
+
+    try {
+      await page.setContent(html, { waitUntil: "load", timeout: contentTimeout });
+      reportLogger.info("HTML content loaded in Puppeteer", {
+        timeout: `${contentTimeout}ms`,
+        htmlSizeBytes: html.length,
+      });
+    } catch (contentErr) {
+      const errMsg = contentErr instanceof Error ? contentErr.message : String(contentErr);
+      reportLogger.error("Failed to load HTML content in Puppeteer", {
+        error: errMsg,
+        htmlSizeBytes: html.length,
+        timeout: `${contentTimeout}ms`,
+      });
+      throw new Error(`Puppeteer HTML rendering timeout or failure: ${errMsg}`);
+    }
+
+    let pdfData: Uint8Array;
+    try {
+      pdfData = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: { top: "18mm", bottom: "20mm", left: "14mm", right: "14mm" },
+        displayHeaderFooter: false,
+      });
+    } catch (pdfErr) {
+      const errMsg = pdfErr instanceof Error ? pdfErr.message : String(pdfErr);
+      reportLogger.error("Failed to render PDF from HTML", {
+        error: errMsg,
+        htmlSizeBytes: html.length,
+      });
+      throw new Error(`Puppeteer PDF rendering failed: ${errMsg}`);
+    }
+
+    const pdf = Buffer.isBuffer(pdfData) ? pdfData : Buffer.from(pdfData);
+    reportLogger.info("PDF rendered successfully", { pdfSizeBytes: pdf.length });
+    return pdf;
   } finally {
     await browser?.close();
   }
