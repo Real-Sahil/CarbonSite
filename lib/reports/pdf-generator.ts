@@ -652,6 +652,52 @@ interface QrMeta {
   verificationTokenId: string;
 }
 
+export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): Promise<Buffer> {
+  if (!logoDataUri) return pdfBytes; // No logo, skip
+  const doc = await PdfLib.load(pdfBytes);
+
+  // Convert data URI to PNG bytes
+  const base64Match = logoDataUri.match(/base64,(.+)$/);
+  if (!base64Match) {
+    reportLogger.warn("Invalid logo data URI format, skipping logo header");
+    return pdfBytes;
+  }
+
+  let logoImage;
+  try {
+    const logoPngBytes = Buffer.from(base64Match[1], "base64");
+    if (logoDataUri.includes("image/png")) {
+      logoImage = await doc.embedPng(logoPngBytes);
+    } else if (logoDataUri.includes("image/jpeg")) {
+      logoImage = await doc.embedJpg(logoPngBytes);
+    } else {
+      return pdfBytes; // Unsupported format
+    }
+  } catch (err) {
+    reportLogger.warn("Failed to embed logo", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return pdfBytes;
+  }
+
+  const logoHeight = 24; // ~8mm
+  const margin = 18;
+
+  // Add logo to top-left of header on every page (except last if it's blank)
+  for (const page of doc.getPages()) {
+    const { width } = page.getSize();
+    // Draw logo in top-left corner (pdf-lib y=0 is at BOTTOM, so y = page height - margin - logo height)
+    page.drawImage(logoImage, {
+      x: margin,
+      y: 800 - margin - logoHeight, // Approximate top of A4 page
+      width: 100,
+      height: logoHeight,
+    });
+  }
+
+  return Buffer.from(await doc.save());
+}
+
 export async function addQrCodeToFooter(pdfBytes: Buffer, meta: QrMeta): Promise<Buffer> {
   const doc = await PdfLib.load(pdfBytes);
 
