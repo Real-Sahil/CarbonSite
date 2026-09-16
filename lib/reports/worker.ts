@@ -8,7 +8,7 @@ import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
 import type { ReportData } from "./template";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { getReportHandler, type ReportContext } from "./registry";
-import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter } from "./pdf-generator";
+import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHeader } from "./pdf-generator";
 import { generateAuditNarrative } from "./narrative-generator";
 import { llmClient } from "@/lib/llm/client";
 
@@ -182,6 +182,16 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         verificationTokenId: verificationTokenData.id,
         qrCodeUrl: verificationUrl,
       });
+
+      // Add logo to header for HTML-rendered reports (ecology_scan, ecology_survey, etc.)
+      // For pdfkitData reports, logo is already embedded in generateReportPdf
+      const logoDataUri = report.organization.branding?.reportHeaderLogoKey
+        ? await loadLogoDataUri(report.organization.branding.reportHeaderLogoKey)
+        : undefined;
+      if (logoDataUri && !pdfkitData) {
+        pdfBuffer = await addLogoToHeader(pdfBuffer, logoDataUri);
+        reportLogger.info("Logo added to header", { reportId });
+      }
 
       // Store PDF with validation
       pdfKey = keys.reportPdf(orgId, reportId);
