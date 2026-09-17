@@ -467,9 +467,17 @@ async function renderPdf(html: string): Promise<Buffer> {
         // Set CHROMIUM_REMOTE_EXEC_PATH in Vercel env vars to override the CDN URL.
         try {
           const chromium = (await import("@sparticuz/chromium-min")).default;
+          // v135+ uses architecture-specific pack naming (x64). Try arch-specific first, fall back to generic.
           const remoteUrl = process.env.CHROMIUM_REMOTE_EXEC_PATH ??
-            "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar";
-          executablePath = await chromium.executablePath(remoteUrl);
+            "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar";
+          let chromiumPath: string | undefined;
+          try {
+            chromiumPath = await chromium.executablePath(remoteUrl);
+          } catch {
+            const fallbackUrl = "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar";
+            chromiumPath = await chromium.executablePath(fallbackUrl);
+          }
+          executablePath = chromiumPath;
           // Use sparticuz-provided args — required for Lambda compatibility
           if (Array.isArray(chromium.args) && chromium.args.length > 0) {
             launchArgs = chromium.args as string[];

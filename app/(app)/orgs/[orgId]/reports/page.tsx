@@ -40,6 +40,10 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   breeam_evidence: "BREEAM Evidence",
   national_toms:   "National TOMS",
   csrd_esrs_e1:    "CSRD ESRS E1",
+  csrd_esrs_e3:    "CSRD ESRS E3 (Water)",
+  csrd_esrs_e5:    "CSRD ESRS E5 (Waste)",
+  ecology_scan:    "Ecology Scan",
+  ecology_survey:  "Ecology Survey",
   contract_carbon: "Contract Carbon",
   ghg_protocol:    "GHG Protocol",
   cdp:             "CDP Climate",
@@ -147,7 +151,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
 
   return (
     <div className="min-h-[100dvh] bg-[#f9fafb]">
-      <StatusPoller active={hasInFlight} intervalMs={5000} />
+      <StatusPoller active={true} intervalMs={5000} />
 
       {/* Page header */}
       <div className="bg-white border-b border-[#E5E7EB]">
