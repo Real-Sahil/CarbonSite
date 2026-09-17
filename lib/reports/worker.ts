@@ -345,11 +345,11 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   const auditEventFilter = (opts.auditEventFilter as string[] | undefined) ?? undefined;
   const logoDataUri = await loadLogoDataUri(report.organization.branding?.reportHeaderLogoKey);
 
-  // Ecology report types don't use emission calculations — they query
-  // EcologicalScan / BiodiversityAssessment directly by org.
-  const isEcologyType = report.type === "ecology_scan" || report.type === "ecology_survey";
+  // These types query their own tables directly — no EmissionCalculation rows.
+  const isNonGhgType = report.type === "ecology_scan" || report.type === "ecology_survey"
+    || report.type === "csrd_esrs_e3" || report.type === "csrd_esrs_e5";
 
-  const calcs = !isEcologyType && report.type !== "national_toms"
+  const calcs = !isNonGhgType && report.type !== "national_toms"
     ? await fetchCalculations(orgId, runId, report.contractId ?? undefined)
     : [];
 
@@ -366,7 +366,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   // Ecology report types carry no GHG emission calculations — basePdfData has
   // all-zero values, so an LLM narrative would reference "0.00 tCO2e" and be
   // meaningless. Skip narrative for those types.
-  const noNarrativeTypes = new Set(["national_toms", "cbam", "ecology_scan", "ecology_survey"]);
+  const noNarrativeTypes = new Set(["national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
   if (llmClient.isConfigured() && !noNarrativeTypes.has(report.type)) {
     reportLogger.info("LLM configured, generating audit narrative", {
       reportId: report.id,
@@ -383,7 +383,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       reportLogger.error("Failed to generate narrative", {
         reportId: report.id,
         error: err instanceof Error ? err.message : String(err),
-        hint: "Check if HUGGINGFACE_TOKEN is set and valid",
+        hint: "Check if NVIDIA_API_KEY is set and valid",
       });
       // Continue without narrative rather than failing the entire report
     }

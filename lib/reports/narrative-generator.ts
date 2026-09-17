@@ -20,11 +20,11 @@ function pct(part: number, whole: number): string {
 export async function generateAuditNarrative(reportData: ReportData): Promise<AuditNarrative> {
   if (!llmClient.isConfigured()) {
     reportLogger.warn("LLM not configured - skipping narrative generation", {
-      reason: "Set NVIDIA_API_KEY or HUGGINGFACE_TOKEN in environment"
+      reason: "Set NVIDIA_API_KEY in environment"
     });
     return {
       executive_summary:
-        "Unable to generate automated narrative — no LLM provider configured. Set NVIDIA_API_KEY or HUGGINGFACE_TOKEN in your .env file, then regenerate the report.",
+        "Unable to generate automated narrative — no LLM provider configured. Set NVIDIA_API_KEY in your .env file, then regenerate the report.",
       key_findings: [],
       recommendations: "",
     };
@@ -82,7 +82,6 @@ RECOMMENDATIONS:
 Use professional language, avoid jargon, and focus on insights a CFO or board member would find valuable.`;
 
     // 20s cap keeps us well inside Vercel's 60s function limit.
-    // Kimi with reasoningEffort 'low' typically responds in 3-8s.
     const LLM_TIMEOUT_MS = 20000;
     const result = await Promise.race([
       llmClient.complete(prompt, { maxTokens: 800, temperature: 0.3, reasoningEffort: 'low' }),
@@ -112,11 +111,11 @@ Use professional language, avoid jargon, and focus on insights a CFO or board me
     reportLogger.error("LLM error during narrative generation", {
       error: errorMsg,
       stack: errorStack,
-      hint: "Check NVIDIA_API_KEY or HUGGINGFACE_TOKEN in environment variables",
+      hint: "Check NVIDIA_API_KEY in environment variables",
     });
 
     return {
-      executive_summary: `Error generating narrative: ${errorMsg}. Ensure NVIDIA_API_KEY or HUGGINGFACE_TOKEN is set in your environment.`,
+      executive_summary: `Error generating narrative: ${errorMsg}. Ensure NVIDIA_API_KEY is set in your environment.`,
       key_findings: [],
       recommendations: "",
     };
