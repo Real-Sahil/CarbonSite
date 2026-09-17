@@ -475,32 +475,43 @@ async function renderPdf(html: string): Promise<Buffer> {
           const errMsg = sparticuzErr instanceof Error ? sparticuzErr.message : String(sparticuzErr);
           reportLogger.warn("@sparticuz/chromium failed", { error: errMsg, stack: sparticuzErr instanceof Error ? sparticuzErr.stack : undefined });
 
-          // Fallback: try absolute path to sparticuz binary in node_modules
+          // Fallback 1: try absolute path to sparticuz binary in node_modules
           try {
             const { existsSync } = await import("fs");
             const path = await import("path");
             const directPath = path.join(process.cwd(), "node_modules/@sparticuz/chromium/bin/chromium");
             if (existsSync(directPath)) {
               executablePath = directPath;
-              reportLogger.info("Fallback: found sparticuz binary via absolute node_modules path", { executablePath });
+              reportLogger.info("Fallback 1: found sparticuz binary via absolute node_modules path", { executablePath });
             } else {
-              reportLogger.error("Fallback: sparticuz binary not at absolute path", {
-                path: directPath,
-                cwd: process.cwd(),
-                sparticuzError: errMsg
-              });
-              throw new Error(`@sparticuz/chromium failed (${errMsg}) and binary not found at ${directPath}`);
+              throw new Error(`Binary not at ${directPath}`);
             }
-          } catch (fallbackErr) {
-            const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
-            reportLogger.error("All chromium sources exhausted on Vercel", {
-              sparticuzError: errMsg,
-              fallbackError: fallbackMsg,
-              hint: "Set CHROMIUM_PATH env var in Vercel dashboard to a Lambda-compatible Chromium binary path"
-            });
-            throw new Error(
-              `Chromium unavailable on Vercel. @sparticuz failed: ${errMsg}. Fallback failed: ${fallbackMsg}`
-            );
+          } catch (fallback1Err) {
+            const fallback1Msg = fallback1Err instanceof Error ? fallback1Err.message : String(fallback1Err);
+            reportLogger.warn("Fallback 1 failed, trying Puppeteer's bundled Chromium", { error: fallback1Msg });
+
+            // Fallback 2: use Puppeteer's bundled Chromium (should work on Vercel with webpack externals)
+            try {
+              const puppeteerExe = await puppeteer.executablePath();
+              const { existsSync } = await import("fs");
+              if (puppeteerExe && existsSync(puppeteerExe)) {
+                executablePath = puppeteerExe;
+                reportLogger.info("Fallback 2: using Puppeteer's bundled Chromium", { executablePath });
+              } else {
+                throw new Error(`Puppeteer executable path invalid or not found: ${puppeteerExe}`);
+              }
+            } catch (fallback2Err) {
+              const fallback2Msg = fallback2Err instanceof Error ? fallback2Err.message : String(fallback2Err);
+              reportLogger.error("All chromium sources exhausted on Vercel", {
+                sparticuzError: errMsg,
+                fallback1Error: fallback1Msg,
+                fallback2Error: fallback2Msg,
+                hint: "Set CHROMIUM_PATH env var in Vercel dashboard to a Lambda-compatible Chromium binary path"
+              });
+              throw new Error(
+                `Chromium unavailable on Vercel. @sparticuz failed: ${errMsg}. Fallback 1 failed: ${fallback1Msg}. Fallback 2 failed: ${fallback2Msg}`
+              );
+            }
           }
         }
       }
