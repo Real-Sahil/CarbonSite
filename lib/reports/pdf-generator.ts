@@ -680,7 +680,8 @@ export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): P
     return pdfBytes;
   }
 
-  const logoHeight = 24; // ~8mm
+  const logoHeight = 24; // ~8mm at 72 DPI
+  const logoWidth = 60; // maintains ~2.5:1 aspect ratio for typical logos
   const margin = 18;
 
   // Add logo to top-left of header on every page (except last if it's blank)
@@ -691,7 +692,7 @@ export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): P
     page.drawImage(logoImage, {
       x: margin,
       y: height - margin - logoHeight,
-      width: 100,
+      width: logoWidth,
       height: logoHeight,
     });
   }
