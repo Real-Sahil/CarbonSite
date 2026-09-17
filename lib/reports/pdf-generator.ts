@@ -685,11 +685,12 @@ export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): P
 
   // Add logo to top-left of header on every page (except last if it's blank)
   for (const page of doc.getPages()) {
-    const { width } = page.getSize();
+    const { width, height } = page.getSize();
+    void width; // unused but kept for destructuring clarity
     // Draw logo in top-left corner (pdf-lib y=0 is at BOTTOM, so y = page height - margin - logo height)
     page.drawImage(logoImage, {
       x: margin,
-      y: 800 - margin - logoHeight, // Approximate top of A4 page
+      y: height - margin - logoHeight,
       width: 100,
       height: logoHeight,
     });
