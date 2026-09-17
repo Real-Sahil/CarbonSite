@@ -11,20 +11,13 @@ import type { NextConfig } from "next";
 // Sentry.captureException() calls instead.
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "puppeteer", "pdfkit", "sharp"],
-  // Force Vercel's file tracer to include @sparticuz/chromium binary files (.br compressed).
-  // Without this, the bin/ directory is excluded from the Lambda deployment package and
-  // @sparticuz/chromium fails with "input directory does not exist" at runtime.
-  outputFileTracingIncludes: {
-    "/api/**": [
-      "./node_modules/@sparticuz/chromium/**",
-      "./node_modules/@sparticuz/chromium/bin/**",
-    ],
-  },
+  // chromium-min ships no binaries — it downloads from a CDN URL at runtime into /tmp.
+  // This keeps Lambda well under Vercel's 50 MB limit. No outputFileTracingIncludes needed.
+  serverExternalPackages: ["@sparticuz/chromium-min", "puppeteer-core", "puppeteer", "pdfkit", "sharp"],
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals || [];
-      config.externals.push("@sparticuz/chromium", "puppeteer", "puppeteer-core", "sharp");
+      config.externals.push("@sparticuz/chromium-min", "puppeteer", "puppeteer-core", "sharp");
     }
     return config;
   },

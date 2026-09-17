@@ -462,56 +462,43 @@ async function renderPdf(html: string): Promise<Buffer> {
         executablePath = process.env.CHROMIUM_PATH;
         reportLogger.info("Using CHROMIUM_PATH env var override", { executablePath });
       } else {
-        // Use @sparticuz/chromium which provides Lambda-compatible binaries + correct launch args
+        // Use @sparticuz/chromium-min: downloads binary from CDN into /tmp at runtime.
+        // No binaries bundled in the package — keeps Lambda well under the 50 MB limit.
+        // Set CHROMIUM_REMOTE_EXEC_PATH in Vercel env vars to override the CDN URL.
         try {
-          const chromium = (await import("@sparticuz/chromium")).default;
-          executablePath = await chromium.executablePath();
+          const chromium = (await import("@sparticuz/chromium-min")).default;
+          const remoteUrl = process.env.CHROMIUM_REMOTE_EXEC_PATH ??
+            "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar";
+          executablePath = await chromium.executablePath(remoteUrl);
           // Use sparticuz-provided args — required for Lambda compatibility
           if (Array.isArray(chromium.args) && chromium.args.length > 0) {
             launchArgs = chromium.args as string[];
           }
-          reportLogger.info("Using @sparticuz/chromium on Vercel", { executablePath, argsCount: launchArgs.length });
+          reportLogger.info("Using @sparticuz/chromium-min on Vercel", { executablePath, argsCount: launchArgs.length });
         } catch (sparticuzErr) {
           const errMsg = sparticuzErr instanceof Error ? sparticuzErr.message : String(sparticuzErr);
-          reportLogger.warn("@sparticuz/chromium failed", { error: errMsg, stack: sparticuzErr instanceof Error ? sparticuzErr.stack : undefined });
+          reportLogger.warn("@sparticuz/chromium-min failed", { error: errMsg, stack: sparticuzErr instanceof Error ? sparticuzErr.stack : undefined });
 
-          // Fallback 1: try absolute path to sparticuz binary in node_modules
+          // Fallback: use Puppeteer's bundled Chromium
           try {
+            const puppeteerExe = await puppeteer.executablePath();
             const { existsSync } = await import("fs");
-            const path = await import("path");
-            const directPath = path.join(process.cwd(), "node_modules/@sparticuz/chromium/bin/chromium");
-            if (existsSync(directPath)) {
-              executablePath = directPath;
-              reportLogger.info("Fallback 1: found sparticuz binary via absolute node_modules path", { executablePath });
+            if (puppeteerExe && existsSync(puppeteerExe)) {
+              executablePath = puppeteerExe;
+              reportLogger.info("Fallback: using Puppeteer's bundled Chromium", { executablePath });
             } else {
-              throw new Error(`Binary not at ${directPath}`);
+              throw new Error(`Puppeteer executable path invalid or not found: ${puppeteerExe}`);
             }
-          } catch (fallback1Err) {
-            const fallback1Msg = fallback1Err instanceof Error ? fallback1Err.message : String(fallback1Err);
-            reportLogger.warn("Fallback 1 failed, trying Puppeteer's bundled Chromium", { error: fallback1Msg });
-
-            // Fallback 2: use Puppeteer's bundled Chromium (should work on Vercel with webpack externals)
-            try {
-              const puppeteerExe = await puppeteer.executablePath();
-              const { existsSync } = await import("fs");
-              if (puppeteerExe && existsSync(puppeteerExe)) {
-                executablePath = puppeteerExe;
-                reportLogger.info("Fallback 2: using Puppeteer's bundled Chromium", { executablePath });
-              } else {
-                throw new Error(`Puppeteer executable path invalid or not found: ${puppeteerExe}`);
-              }
-            } catch (fallback2Err) {
-              const fallback2Msg = fallback2Err instanceof Error ? fallback2Err.message : String(fallback2Err);
-              reportLogger.error("All chromium sources exhausted on Vercel", {
-                sparticuzError: errMsg,
-                fallback1Error: fallback1Msg,
-                fallback2Error: fallback2Msg,
-                hint: "Set CHROMIUM_PATH env var in Vercel dashboard to a Lambda-compatible Chromium binary path"
-              });
-              throw new Error(
-                `Chromium unavailable on Vercel. @sparticuz failed: ${errMsg}. Fallback 1 failed: ${fallback1Msg}. Fallback 2 failed: ${fallback2Msg}`
-              );
-            }
+          } catch (fallbackErr) {
+            const fallbackMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+            reportLogger.error("All chromium sources exhausted on Vercel", {
+              sparticuzError: errMsg,
+              fallbackError: fallbackMsg,
+              hint: "Set CHROMIUM_PATH or CHROMIUM_REMOTE_EXEC_PATH env vars in Vercel dashboard"
+            });
+            throw new Error(
+              `Chromium unavailable on Vercel. chromium-min failed: ${errMsg}. Fallback failed: ${fallbackMsg}`
+            );
           }
         }
       }
