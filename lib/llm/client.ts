@@ -1,5 +1,5 @@
 // Multi-provider LLM client.
-// Priority: Anthropic Claude → NVIDIA NIM (Kimi) → HuggingFace
+// Priority: NVIDIA NIM (Kimi) → HuggingFace
 
 export type ChatMessage = { role: 'user' | 'assistant' | 'system'; content: string };
 export type LlmResult = { text: string; tokens: number; provider: string };
