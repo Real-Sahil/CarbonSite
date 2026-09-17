@@ -114,11 +114,9 @@ Use professional language, avoid jargon, and focus on insights a CFO or board me
       hint: "Check NVIDIA_API_KEY in environment variables",
     });
 
-    return {
-      executive_summary: `Error generating narrative: ${errorMsg}. Ensure NVIDIA_API_KEY is set in your environment.`,
-      key_findings: [],
-      recommendations: "",
-    };
+    // Throw so the caller (renderForType) can skip narrative gracefully
+    // rather than embedding an error string into the published report PDF.
+    throw error;
   }
 }
 

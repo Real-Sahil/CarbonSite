@@ -206,13 +206,17 @@ export async function buildBasePdfData(
 export async function loadLogoDataUri(logoKey: string | null | undefined): Promise<string | undefined> {
   if (!logoKey) return undefined;
   try {
-    const buf = await getObject(logoKey);
+    let buf = await getObject(logoKey);
     const ext = logoKey.split(".").pop()?.toLowerCase();
-    const mime =
-      ext === "png" ? "image/png"
-      : ext === "webp" ? "image/webp"
-      : ext === "svg" ? "image/svg+xml"
-      : "image/jpeg";
+    const isSvg = ext === "svg";
+    const isWebP = ext === "webp";
+    if (isSvg || isWebP) {
+      // pdfkit cannot render SVG/WebP natively — convert to PNG via sharp
+      const sharp = (await import("sharp")).default;
+      buf = await sharp(buf).png().toBuffer();
+      return `data:image/png;base64,${buf.toString("base64")}`;
+    }
+    const mime = ext === "png" ? "image/png" : "image/jpeg";
     return `data:${mime};base64,${buf.toString("base64")}`;
   } catch (err) {
     reportLogger.error("Failed to load branding logo", {
