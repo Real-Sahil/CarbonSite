@@ -1,5 +1,5 @@
 // Multi-provider LLM client.
-// Priority: Anthropic Claude → NVIDIA NIM (Kimi) → HuggingFace
+// Priority: NVIDIA NIM (Kimi) → HuggingFace
 
 export type ChatMessage = { role: 'user' | 'assistant' | 'system'; content: string };
 export type LlmResult = { text: string; tokens: number; provider: string };
@@ -12,51 +12,6 @@ export type LlmOptions = {
   // 'max' (~30-60s) is only safe in a long-running worker process.
   reasoningEffort?: 'low' | 'medium' | 'max';
 };
-
-// ─── Anthropic ───────────────────────────────────────────────────────────────
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? '';
-const ANTHROPIC_DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
-
-async function callAnthropic(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {
-  if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set');
-
-  const anthropicMessages = messages
-    .filter(m => m.role !== 'system')
-    .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
-
-  const systemMsg = messages.find(m => m.role === 'system')?.content;
-
-  const body: Record<string, unknown> = {
-    model: options.model ?? ANTHROPIC_DEFAULT_MODEL,
-    max_tokens: options.maxTokens ?? 800,
-    messages: anthropicMessages,
-  };
-  if (systemMsg) body.system = systemMsg;
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Anthropic API ${response.status}: ${text.slice(0, 200)}`);
-  }
-
-  const data = (await response.json()) as {
-    content?: Array<{ type: string; text?: string }>;
-    usage?: { output_tokens?: number };
-  };
-
-  const text = data.content?.find(c => c.type === 'text')?.text ?? '';
-  const tokens = data.usage?.output_tokens ?? 0;
-  return { text: text.trim(), tokens, provider: 'anthropic' };
-}
 
 
 const HF_API_KEY = process.env.HUGGINGFACE_TOKEN ?? '';
@@ -191,19 +146,8 @@ async function callKimi(messages: ChatMessage[], options: LlmOptions): Promise<L
 }
 
 export class LlmClient {
-  // Try Anthropic first, then Kimi, then NVIDIA NIM, then HuggingFace.
+  // Try Kimi first, then NVIDIA NIM, then HuggingFace.
   async chat(messages: ChatMessage[], options: LlmOptions = {}): Promise<LlmResult> {
-    if (ANTHROPIC_API_KEY) {
-      try {
-        return await callAnthropic(messages, options);
-      } catch (err) {
-        console.warn(
-          '[llm] Anthropic failed, falling back to next provider:',
-          err instanceof Error ? err.message : String(err),
-        );
-      }
-    }
-
     if (KIMI_API_KEY) {
       try {
         return await callKimi(messages, options);
@@ -231,7 +175,7 @@ export class LlmClient {
     }
 
     throw new Error(
-      'No LLM provider configured. Set ANTHROPIC_API_KEY, NVIDIA_API_KEY, or HUGGINGFACE_TOKEN.',
+      'No LLM provider configured. Set NVIDIA_API_KEY or HUGGINGFACE_TOKEN.',
     );
   }
 
@@ -245,7 +189,7 @@ export class LlmClient {
   }
 
   isConfigured(): boolean {
-    return !!(ANTHROPIC_API_KEY || KIMI_API_KEY || NIM_API_KEY || HF_API_KEY);
+    return !!(KIMI_API_KEY || NIM_API_KEY || HF_API_KEY);
   }
 }
 
