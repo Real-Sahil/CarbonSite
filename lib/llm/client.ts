@@ -11,7 +11,10 @@ export type LlmOptions = {
 };
 
 const NIM_API_KEY = process.env.NVIDIA_API_KEY ?? process.env.NVIDIA_NIM_API_KEY ?? '';
-const NIM_API_BASE = process.env.NVIDIA_NIM_BASE_URL ?? 'https://integrate.api.nvidia.com/v1';
+const NIM_API_BASE = (() => {
+  const base = (process.env.NVIDIA_NIM_BASE_URL ?? 'https://integrate.api.nvidia.com/v1').replace(/\/+$/, '');
+  return base.endsWith('/v1') ? base : `${base}/v1`;
+})();
 const NIM_DEFAULT_MODEL = 'mistralai/mistral-nemo-12b-instruct';
 
 async function callNvidiaNim(messages: ChatMessage[], options: LlmOptions): Promise<LlmResult> {
