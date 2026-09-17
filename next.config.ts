@@ -11,11 +11,20 @@ import type { NextConfig } from "next";
 // Sentry.captureException() calls instead.
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "puppeteer", "pdfkit"],
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core", "puppeteer", "pdfkit", "sharp"],
+  // Force Vercel's file tracer to include @sparticuz/chromium binary files (.br compressed).
+  // Without this, the bin/ directory is excluded from the Lambda deployment package and
+  // @sparticuz/chromium fails with "input directory does not exist" at runtime.
+  outputFileTracingIncludes: {
+    "/api/**": [
+      "./node_modules/@sparticuz/chromium/**",
+      "./node_modules/@sparticuz/chromium/bin/**",
+    ],
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals || [];
-      config.externals.push("@sparticuz/chromium", "puppeteer", "puppeteer-core");
+      config.externals.push("@sparticuz/chromium", "puppeteer", "puppeteer-core", "sharp");
     }
     return config;
   },

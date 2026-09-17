@@ -665,13 +665,27 @@ export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): P
 
   let logoImage;
   try {
-    const logoPngBytes = Buffer.from(base64Match[1], "base64");
-    if (logoDataUri.includes("image/png")) {
-      logoImage = await doc.embedPng(logoPngBytes);
+    let imageBytes = Buffer.from(base64Match[1], "base64");
+    const isSvg = logoDataUri.includes("image/svg");
+    const isWebP = logoDataUri.includes("image/webp");
+
+    if (isSvg || isWebP) {
+      // Convert SVG/WebP to PNG using sharp before embedding in pdf-lib
+      const sharp = (await import("sharp")).default;
+      imageBytes = await sharp(imageBytes).png().toBuffer();
+      logoImage = await doc.embedPng(imageBytes);
+    } else if (logoDataUri.includes("image/png")) {
+      logoImage = await doc.embedPng(imageBytes);
     } else if (logoDataUri.includes("image/jpeg")) {
-      logoImage = await doc.embedJpg(logoPngBytes);
+      logoImage = await doc.embedJpg(imageBytes);
     } else {
-      return pdfBytes; // Unsupported format
+      // Unknown format — attempt PNG; if it fails, skip silently
+      try {
+        logoImage = await doc.embedPng(imageBytes);
+      } catch {
+        reportLogger.warn("Unrecognised logo MIME type, skipping logo overlay");
+        return pdfBytes;
+      }
     }
   } catch (err) {
     reportLogger.warn("Failed to embed logo", {
