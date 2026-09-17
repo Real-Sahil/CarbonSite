@@ -86,6 +86,7 @@ export function SpeciesBreakdownSection({
   species: SpeciesRecord[];
   counts: { plants: number; birds: number; mammals: number; invertebrates: number; reptiles: number; amphibians: number; other: number };
 }) {
+  const safeSpecies = Array.isArray(species) ? species : [];
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
 
   const cards = [
@@ -99,8 +100,8 @@ export function SpeciesBreakdownSection({
   ];
 
   const filtered = activeGroup
-    ? species.filter((s) => cardGroupForSpecies(s) === activeGroup)
-    : species;
+    ? safeSpecies.filter((s) => cardGroupForSpecies(s) === activeGroup)
+    : safeSpecies;
 
   return (
     <div className="space-y-3">
@@ -129,13 +130,13 @@ export function SpeciesBreakdownSection({
           );
         })}
       </div>
-      {species.length > 0 && (
+      {safeSpecies.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold mb-2">
             Species inventory{" "}
             {activeGroup
               ? `(${filtered.length} ${activeGroup} species)`
-              : `(${species.length} species — sorted by conservation risk)`}
+              : `(${safeSpecies.length} species - sorted by conservation risk)`}
           </h3>
           <SpeciesTable species={filtered} />
         </div>
@@ -146,8 +147,9 @@ export function SpeciesBreakdownSection({
 
 export function SpeciesTable({ species }: { species: SpeciesRecord[] }) {
   const [limit, setLimit] = useState(PAGE_SIZE);
+  const safeSpecies = Array.isArray(species) ? species : [];
 
-  const sorted = [...species].sort((a, b) => {
+  const sorted = [...safeSpecies].sort((a, b) => {
     const pa = RISK_PRIORITY[riskLevel(a.conservationStatus)] ?? 6;
     const pb = RISK_PRIORITY[riskLevel(b.conservationStatus)] ?? 6;
     return pa !== pb ? pa - pb : a.name.localeCompare(b.name);

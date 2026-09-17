@@ -312,7 +312,7 @@ export default async function EcologyPage({ params }: Props) {
                               Species breakdown (within {Number(scan.radiusKm)} km)
                             </h3>
                             <SpeciesBreakdownSection
-                              species={scan.speciesRecords as unknown as SpeciesRecord[]}
+                              species={(Array.isArray(scan.speciesRecords) ? scan.speciesRecords : []) as unknown as SpeciesRecord[]}
                               counts={{
                                 plants: scan.plantSpeciesCount,
                                 birds: scan.birdSpeciesCount,
