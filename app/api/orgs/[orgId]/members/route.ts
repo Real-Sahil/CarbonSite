@@ -9,7 +9,7 @@ import { handleRouteError, apiError } from "@/lib/validation/api";
 import { inviteMemberSchema } from "@/lib/validation/org";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
-import { sendEmail, memberAccessGrantedEmail, memberInviteEmail } from "@/lib/notifications/email";
+import { sendEmail, memberAccessGrantedEmail, memberInviteEmail, resolveEmailLogoUrl } from "@/lib/notifications/email";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 export async function GET(
@@ -82,10 +82,11 @@ export async function POST(
       }),
       prisma.tenantBranding.findUnique({
         where: { organizationId: orgId },
-        select: { logoPublicUrl: true },
+        select: { logoPublicUrl: true, reportHeaderLogoKey: true, logoStorageKey: true },
       }),
     ]);
-    const orgBranding = { orgName: organization.name, orgLogoUrl: branding?.logoPublicUrl ?? null };
+    const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
+    const orgBranding = { orgName: organization.name, orgLogoUrl };
 
     if (user) {
       const existing = await prisma.organizationMembership.findUnique({

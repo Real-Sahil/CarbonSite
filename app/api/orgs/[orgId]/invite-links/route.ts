@@ -9,7 +9,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createInviteLinkSchema } from "@/lib/validation/org";
-import { sendEmail, memberInviteEmail } from "@/lib/notifications/email";
+import { sendEmail, memberInviteEmail, resolveEmailLogoUrl } from "@/lib/notifications/email";
 
 export async function GET(
   _req: NextRequest,
@@ -72,7 +72,7 @@ export async function POST(
 
     const [org, branding] = await Promise.all([
       prisma.organization.findUnique({ where: { id: orgId }, select: { name: true } }),
-      prisma.tenantBranding.findUnique({ where: { organizationId: orgId }, select: { logoPublicUrl: true } }),
+      prisma.tenantBranding.findUnique({ where: { organizationId: orgId }, select: { logoPublicUrl: true, reportHeaderLogoKey: true, logoStorageKey: true } }),
     ]);
 
     const link = await prisma.inviteLink.create({
@@ -101,7 +101,8 @@ export async function POST(
     const inviteUrl = `${appUrl}/invite/${token}`;
 
     if (body.email) {
-      const orgBranding = { orgName: org?.name ?? "MetricOra", orgLogoUrl: branding?.logoPublicUrl ?? null };
+      const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
+      const orgBranding = { orgName: org?.name ?? "MetricOra", orgLogoUrl };
       await sendEmail({
         to: body.email,
         ...memberInviteEmail({

@@ -99,12 +99,8 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
       <p className="text-xs text-slate-500 text-center">
         If you manage this organisation,{" "}
         <a
-          href="#web-form"
+          href="?webform=1"
           className="text-green-700 hover:underline"
-          onClick={(e) => {
-            e.preventDefault();
-            window.location.reload();
-          }}
         >
           use the web form instead
         </a>

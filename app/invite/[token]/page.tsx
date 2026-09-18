@@ -6,14 +6,16 @@ import { MobileAppInvite } from "./mobile-app-invite";
 
 interface InvitePageProps {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ webform?: string }>;
 }
 
 function isMobileUserAgent(ua: string): boolean {
   return /android|iphone|ipad|ipod/i.test(ua);
 }
 
-export default async function InvitePage({ params }: InvitePageProps) {
+export default async function InvitePage({ params, searchParams }: InvitePageProps) {
   const { token } = await params;
+  const { webform } = await searchParams;
   const invite = await prisma.inviteLink.findUnique({
     where: { token },
     include: { organization: { select: { id: true, name: true } } },
@@ -28,7 +30,8 @@ export default async function InvitePage({ params }: InvitePageProps) {
   const headersList = await headers();
   const ua = headersList.get("user-agent") ?? "";
   const isFieldWorkerRole = invite.role === "field_worker";
-  const showMobileFirst = isFieldWorkerRole && isMobileUserAgent(ua);
+  const forceWebForm = webform === "1";
+  const showMobileFirst = isFieldWorkerRole && isMobileUserAgent(ua) && !forceWebForm;
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10">

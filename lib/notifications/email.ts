@@ -2,6 +2,27 @@
 // EMAIL_DRIVER=smtp | resend | console (auto-detected when not set)
 
 import { notificationLogger } from "@/lib/logger";
+import { presignDownload } from "@/lib/storage";
+
+/**
+ * Resolve the best available logo URL for embedding in email.
+ * Prefers the stable public URL (works indefinitely), then falls back to
+ * a presigned URL (valid for 1 hour — email clients fetch images on open).
+ */
+export async function resolveEmailLogoUrl(branding: {
+  logoPublicUrl?: string | null;
+  reportHeaderLogoKey?: string | null;
+  logoStorageKey?: string | null;
+}): Promise<string | null> {
+  if (branding.logoPublicUrl) return branding.logoPublicUrl;
+  const key = branding.reportHeaderLogoKey ?? branding.logoStorageKey;
+  if (!key) return null;
+  try {
+    return await presignDownload(key);
+  } catch {
+    return null;
+  }
+}
 
 const DRIVER =
   process.env.EMAIL_DRIVER ??
