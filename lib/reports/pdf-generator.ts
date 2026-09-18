@@ -32,7 +32,22 @@ function shortDate(d: Date): string {
  * This is a synchronous-stream-to-buffer helper — await the returned promise.
  */
 export async function generateReportPdf(data: ReportData): Promise<Buffer> {
-  const logoDataUri = data.logoDataUri;
+  // pdfkit only supports PNG and JPEG — pre-convert SVG/WebP to PNG here,
+  // before entering the sync pdfkit callback chain.
+  let logoDataUri = data.logoDataUri;
+  if (logoDataUri && (logoDataUri.includes("image/svg") || logoDataUri.includes("image/webp"))) {
+    try {
+      const base64Match = logoDataUri.match(/base64,(.+)$/);
+      if (base64Match) {
+        const sharp = (await import("sharp")).default;
+        const imgBuf = Buffer.from(base64Match[1], "base64");
+        const pngBuf = await sharp(imgBuf).png().toBuffer();
+        logoDataUri = `data:image/png;base64,${pngBuf.toString("base64")}`;
+      }
+    } catch {
+      logoDataUri = undefined; // fall through to org-name text fallback in drawPageHeader
+    }
+  }
   return new Promise((resolve, reject) => {
     let doc: PDFKit.PDFDocument;
 
