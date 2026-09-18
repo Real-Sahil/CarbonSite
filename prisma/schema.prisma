@@ -766,6 +766,15 @@ enum EvidenceStatus {
   @@map("evidence_status")
 }
 
+enum VirusScanStatus {
+  pending
+  clean
+  infected
+  skipped
+
+  @@map("virus_scan_status")
+}
+
 enum Scope2Method {
   location_based
   market_based
@@ -905,6 +914,9 @@ model EvidenceFile {
   storageKey       String   @map("storage_key")
   checksum         String
   uploadedByUserId String   @map("uploaded_by_user_id")
+  virusScanStatus  VirusScanStatus @default(pending) @map("virus_scan_status")
+  scanTimestamp    DateTime? @map("scan_timestamp")
+  scanProvider     String?   @map("scan_provider")
   createdAt        DateTime @default(now()) @map("created_at")
 
   organization       Organization             @relation(fields: [organizationId], references: [id])
@@ -5307,17 +5319,20 @@ model AssuranceFinding {
 /// by every organisation. Resolution against an organisation's own data
 /// happens in application code via resolverKey, not stored per-org.
 model FrameworkDatapoint {
-  id           String             @id @default(cuid())
-  framework    SupportedFramework
-  code         String
-  title        String
-  description  String
-  category     String?
+  id               String             @id @default(cuid())
+  framework        SupportedFramework
+  code             String
+  title            String
+  description      String
+  category         String?
   /// Key into the named resolver registry in lib/compliance/datapoint-resolvers.ts.
   /// Null means the datapoint is narrative and can only be marked satisfied
   /// by manual evidence.
-  resolverKey  String?            @map("resolver_key")
-  createdAt    DateTime           @default(now()) @map("created_at")
+  resolverKey      String?            @map("resolver_key")
+  /// Public narrative disclosure for ESRS datapoints. Populated by org members
+  /// and published in assurance reports. Markdown-capable.
+  publicNarrative  String?            @map("public_narrative")
+  createdAt        DateTime           @default(now()) @map("created_at")
 
   overrides OrganizationDatapointStatus[] @relation("DatapointOverrides")
 

@@ -1,8 +1,9 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
+import { writeAuditLog } from "@/lib/db/audit";
 import * as XLSX from "xlsx";
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -67,10 +68,14 @@ const CATEGORY_CODES = [
   "s3-upstream-transport",
 ];
 
+/**
+ * GET /api/orgs/[orgId]/imports/template
+ * Download CSV import template (XLSX format with headers + reference sheet)
+ */
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const wb = XLSX.utils.book_new();
 
@@ -95,6 +100,14 @@ export async function GET(_req: NextRequest, { params }: Params) {
     XLSX.utils.book_append_sheet(wb, refWs, "Category Codes");
 
     const buffer = Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
+
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: session.user.id,
+      action: "import.template_downloaded",
+      resourceType: "import_template",
+      resourceId: orgId,
+    });
 
     return new NextResponse(buffer, {
       status: 200,

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { presignDownload } from "@/lib/storage";
@@ -12,41 +12,50 @@ type Params = { params: Promise<{ orgId: string; evidenceId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, evidenceId } = await params;
-    const { session } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-    );
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
-    const file = await prisma.evidenceFile.findUnique({
+    const evidence = await prisma.evidenceFile.findUnique({
       where: { id: evidenceId },
-      select: { organizationId: true, storageKey: true, filename: true, mimeType: true },
+      select: {
+        id: true,
+        organizationId: true,
+        filename: true,
+        storageKey: true,
+        byteSize: true,
+        virusScanStatus: true,
+      },
     });
 
-    if (!file || file.organizationId !== orgId) {
+    if (!evidence) {
       return apiError("NOT_FOUND", "Evidence file not found.", 404);
     }
 
-    const url = await presignDownload(file.storageKey);
+    if (evidence.organizationId !== orgId) {
+      return apiError("FORBIDDEN", "Access denied.", 403);
+    }
+
+    const downloadUrl = await presignDownload(evidence.storageKey);
 
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "evidence.downloaded",
+      action: "evidence.download_requested",
       resourceType: "evidence_file",
       resourceId: evidenceId,
+      metadata: {
+        filename: evidence.filename,
+        byteSize: evidence.byteSize,
+        virusScanStatus: evidence.virusScanStatus,
+      },
     });
 
-    // Make relative URLs absolute so NextResponse.redirect works in local dev
-    // (presignDownload returns "/api/dev/storage/serve?..." for local driver).
-    const absoluteUrl = url.startsWith("/")
-      ? new URL(url, _req.url).toString()
-      : url;
-
-    return NextResponse.redirect(absoluteUrl, { status: 302 });
+    return NextResponse.json({
+      id: evidenceId,
+      fileName: evidence.filename,
+      downloadUrl,
+      virusScanStatus: evidence.virusScanStatus,
+      expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+    });
   } catch (err) {
     return handleRouteError(err);
   }
