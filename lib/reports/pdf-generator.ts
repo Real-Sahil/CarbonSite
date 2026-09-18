@@ -737,7 +737,7 @@ export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): P
 
   let logoImage;
   try {
-    let imageBytes = Buffer.from(base64Match[1], "base64");
+    const imageBytes = Buffer.from(base64Match[1], "base64");
     const isSvg = logoDataUri.includes("image/svg");
     const isWebP = logoDataUri.includes("image/webp");
     const isPng = logoDataUri.includes("image/png");
@@ -828,7 +828,7 @@ export async function addQrCodeToFooter(pdfBytes: Buffer, meta: QrMeta): Promise
 
   // Add QR code to bottom-right of footer on every page
   for (const page of doc.getPages()) {
-    const { width, height } = page.getSize();
+    const { width } = page.getSize();
     const margin = 18;
 
     // QR code positioned at bottom-right corner (PDFKit y=0 is at BOTTOM)
