@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
+import { resolveEmailLogoUrl } from "@/lib/notifications/email";
 
 const createSchema = z.object({
   email: z.string().email().trim().toLowerCase(),
@@ -89,7 +90,7 @@ export async function POST(
 
     const [org, branding] = await Promise.all([
       prisma.organization.findUnique({ where: { id: orgId }, select: { name: true } }),
-      prisma.tenantBranding.findUnique({ where: { organizationId: orgId }, select: { logoPublicUrl: true } }),
+      prisma.tenantBranding.findUnique({ where: { organizationId: orgId }, select: { logoPublicUrl: true, reportHeaderLogoKey: true, logoStorageKey: true } }),
     ]);
 
     let userId: string | undefined;
@@ -188,7 +189,7 @@ export async function POST(
     const inviteUrl = `${appUrl}/supplier-invite/${invite.token}`;
 
     try {
-      const orgLogoUrl = branding?.logoPublicUrl ?? null;
+      const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
       if (body.inviteMethod === "credentials" && temporaryPassword) {
         const { sendSupplierCredentialsEmail } = await import("@/workers/supplier-invite-email");
         await sendSupplierCredentialsEmail({

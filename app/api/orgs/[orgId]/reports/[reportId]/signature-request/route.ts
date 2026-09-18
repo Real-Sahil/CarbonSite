@@ -7,7 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { sendEmail, signatureRequestEmail } from "@/lib/notifications/email";
+import { sendEmail, signatureRequestEmail, resolveEmailLogoUrl } from "@/lib/notifications/email";
 
 type Params = { params: Promise<{ orgId: string; reportId: string }> };
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       }),
       prisma.tenantBranding.findUnique({
         where: { organizationId: orgId },
-        select: { logoPublicUrl: true },
+        select: { logoPublicUrl: true, reportHeaderLogoKey: true, logoStorageKey: true },
       }),
     ]);
 
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         reportLabel,
         signingUrl: signingLink,
         expiresAt: tokenExpiresAt,
-        branding: { orgName: organization.name, orgLogoUrl: branding?.logoPublicUrl ?? null },
+        branding: { orgName: organization.name, orgLogoUrl: branding ? await resolveEmailLogoUrl(branding) : null },
       }),
     }).catch((emailErr: unknown) => {
       delivery = "email_failed";
