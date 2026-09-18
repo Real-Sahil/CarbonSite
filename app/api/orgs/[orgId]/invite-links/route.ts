@@ -9,7 +9,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createInviteLinkSchema } from "@/lib/validation/org";
-import { sendEmail, memberInviteEmail, resolveEmailLogoUrl } from "@/lib/notifications/email";
+import { sendEmail, memberInviteEmail, fieldWorkerInviteEmail, resolveEmailLogoUrl } from "@/lib/notifications/email";
 
 export async function GET(
   _req: NextRequest,
@@ -103,16 +103,25 @@ export async function POST(
     if (body.email) {
       const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
       const orgBranding = { orgName: org?.name ?? "MetricOra", orgLogoUrl };
+      const isFieldWorker = body.role === "field_worker";
       await sendEmail({
         to: body.email,
-        ...memberInviteEmail({
-          invitedByName: session.user.name ?? session.user.email ?? "A team member",
-          orgName: org?.name ?? "MetricOra",
-          role: body.role,
-          inviteUrl,
-          expiresAt,
-          branding: orgBranding,
-        }),
+        ...(isFieldWorker
+          ? fieldWorkerInviteEmail({
+              invitedByName: session.user.name ?? session.user.email ?? "A team member",
+              orgName: org?.name ?? "MetricOra",
+              inviteUrl,
+              expiresAt,
+              branding: orgBranding,
+            })
+          : memberInviteEmail({
+              invitedByName: session.user.name ?? session.user.email ?? "A team member",
+              orgName: org?.name ?? "MetricOra",
+              role: body.role,
+              inviteUrl,
+              expiresAt,
+              branding: orgBranding,
+            })),
       }).catch((emailErr: unknown) => {
         console.error("[invite-links] email delivery failed", emailErr);
       });

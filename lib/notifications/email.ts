@@ -762,6 +762,59 @@ export function signatureRequestEmail(params: {
   return { subject, html, text };
 }
 
+export function fieldWorkerInviteEmail(params: {
+  invitedByName: string;
+  orgName: string;
+  inviteUrl: string;
+  expiresAt: Date;
+  branding?: OrgBranding;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const expiryStr = params.expiresAt.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const subject = `${params.invitedByName} invited you to submit data for ${params.orgName}`;
+  const text = [
+    `${params.invitedByName} invited you to submit field records for ${params.orgName} on MetricOra.`,
+    ``,
+    `Open in mobile app: ${params.inviteUrl}`,
+    ``,
+    `This invitation expires on ${expiryStr}.`,
+    `You'll sign in using your PIN — no email account needed.`,
+    `If you were not expecting this, you can safely ignore this email.`,
+  ].join("\n");
+  const html = emailLayout(`
+    <p style="margin:0 0 8px;">
+      <span style="display:inline-block;background:#f0fdf4;color:#15803d;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Field worker invite</span>
+    </p>
+    <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
+      You're invited to submit field records
+    </p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.6;">
+      <strong style="color:${BRAND_DARK};font-weight:600;">${params.invitedByName}</strong> has invited you to submit field records for <strong style="color:${BRAND_DARK};font-weight:600;">${params.orgName}</strong> using the MetricOra mobile app.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
+      <tbody>
+        ${kv("Organisation", params.orgName)}
+        ${kv("Invitation expires", expiryStr)}
+      </tbody>
+    </table>
+    ${btn("Open in MetricOra App", params.inviteUrl)}
+    <p style="margin:24px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      Or copy this link into your browser, then open in the MetricOra mobile app:<br>
+      <span style="font-family:monospace;font-size:11px;color:${TEXT_MUTED};word-break:break-all;">${params.inviteUrl}</span>
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      You'll sign in using your PIN — no email account needed.
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:${TEXT_SUBTLE};line-height:1.6;">
+      If you were not expecting this invitation, you can safely ignore this email.
+    </p>
+  `, params.branding ?? { orgName: params.orgName });
+  return { subject, html, text };
+}
+
 export function securityAlertEmail(params: {
   recipientName: string;
   orgName: string;

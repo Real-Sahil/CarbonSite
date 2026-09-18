@@ -5,8 +5,8 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
-import { sendTransactionalEmail } from "@/lib/notifications/email";
-import { supplierInviteEmail } from "@/lib/suppliers/email-templates";
+import { resolveEmailLogoUrl } from "@/lib/notifications/email";
+import { sendSupplierInviteEmail } from "@/workers/supplier-invite-email";
 import { CATEGORY_GUIDANCE } from "@/lib/suppliers/category-guidance";
 
 // POST /api/orgs/[orgId]/supplier-invites/[inviteId]/resend — resend invite email (admin only)
@@ -58,17 +58,22 @@ export async function POST(
     const categoryName = categoryGuidance?.categoryName || "Data Request";
     const periodLabel = dataRequest?.reportingPeriod.label || "2026";
 
-    // Send the invite email
-    const emailPayload = supplierInviteEmail({
-      supplierEmail: invite.email,
-      supplierName: invite.companyName || undefined,
-      inviteToken: invite.token,
-      categoryName,
-      reportingPeriodLabel: periodLabel,
-      orgName: invite.organization.name || "Organization",
+    // Fetch branding
+    const branding = await prisma.tenantBranding.findUnique({
+      where: { organizationId: orgId },
+      select: { logoPublicUrl: true, reportHeaderLogoKey: true, logoStorageKey: true },
     });
+    const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
 
-    const emailResult = await sendTransactionalEmail(emailPayload);
+    // Send the invite email with branding
+    await sendSupplierInviteEmail({
+      supplierEmail: invite.email,
+      inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://metricora-rosy.vercel.app"}/supplier-invite/${invite.token}`,
+      invitedByName: session.user.name || session.user.email || "A team member",
+      organizationName: invite.organization.name || "MetricOra",
+      companyName: invite.companyName,
+      orgLogoUrl,
+    });
 
     await writeAuditLog({
       organizationId: orgId,
@@ -87,7 +92,6 @@ export async function POST(
       {
         success: true,
         message: `Invite resent to ${invite.email}`,
-        messageId: emailResult.messageId,
       },
       { status: 200 },
     );
