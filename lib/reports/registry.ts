@@ -694,12 +694,6 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
   ecology_scan: async (ctx) => {
     const { report, logoDataUri, publishedBy } = ctx;
 
-    console.log("[ecology_scan] query params:", {
-      orgId: ctx.orgId,
-      reportOrgId: report.organizationId,
-      orgName: report.organization.name,
-    });
-
     let scans;
     try {
       scans = await withQueryTimeout(
@@ -714,11 +708,6 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
       console.error("[ecology_scan] database query failed:", err instanceof Error ? err.message : String(err));
       throw new Error(`Failed to fetch ecological scans: ${err instanceof Error ? err.message : String(err)}`);
     }
-
-    console.log("[ecology_scan] query result:", {
-      scansFound: scans.length,
-      scans: scans.map((s) => ({ id: s.id, totalSpeciesCount: s.totalSpeciesCount, projectId: s.projectId })),
-    });
 
     const mappedScans: EcologyScanRecord[] = scans.map((s) => {
       try {
@@ -790,8 +779,6 @@ Write a concise 2-3 paragraph executive summary of the ecological sensitivity fi
         // narrative is optional — proceed without it
       }
     }
-    console.log("[ecology_scan] scans found:", mappedScans.length, "llmConfigured:", llmClient.isConfigured(), "narrative:", scanNarrative ? "generated" : "not generated");
-
     const data: EcologyScanReportData = {
       orgName: report.organization.name,
       logoDataUri,
@@ -803,10 +790,6 @@ Write a concise 2-3 paragraph executive summary of the ecological sensitivity fi
 
     try {
       const html = renderEcologyScanHtml(data);
-      console.log("[ecology_scan] HTML render succeeded", {
-        htmlSizeBytes: html.length,
-        scans: mappedScans.length,
-      });
       return { html };
     } catch (err) {
       console.error("[ecology_scan] HTML render failed:", err instanceof Error ? err.message : String(err));

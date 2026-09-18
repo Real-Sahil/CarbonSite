@@ -64,6 +64,15 @@ export async function PUT(
       }
     }
 
+    // Read existing logo key before upsert so we can detect changes
+    const existingBranding = await prisma.tenantBranding.findUnique({
+      where: { organizationId: orgId },
+      select: { reportHeaderLogoKey: true, logoStorageKey: true },
+    });
+    const prevLogoKey = existingBranding?.reportHeaderLogoKey ?? existingBranding?.logoStorageKey;
+    const newLogoKey = body.reportHeaderLogoKey !== undefined ? body.reportHeaderLogoKey : prevLogoKey;
+    const logoChanged = newLogoKey !== prevLogoKey;
+
     const branding = await prisma.tenantBranding.upsert({
       where: { organizationId: orgId },
       create: {
@@ -93,13 +102,23 @@ export async function PUT(
       },
     });
 
+    // When logo changes, bust the report idempotency cache so next generation
+    // picks up the new logo. Reports already at "ready" status are deleted from
+    // the cache (requestHash nulled) so they regenerate on next request.
+    if (logoChanged) {
+      await prisma.report.updateMany({
+        where: { organizationId: orgId, requestHash: { not: null } },
+        data: { requestHash: null },
+      });
+    }
+
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
       action: "branding.upserted",
       resourceType: "tenant_branding",
       resourceId: branding.id,
-      metadata: { subdomain: branding.subdomain },
+      metadata: { subdomain: branding.subdomain, logoChanged },
     });
 
     return NextResponse.json(branding);

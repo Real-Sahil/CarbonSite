@@ -58,37 +58,18 @@ export function getPosts(): BlogPostMeta[] {
 }
 
 export function getPost(slug: string): BlogPost | null {
-  console.log(`[getPost] Attempting to load slug: "${slug}"`);
-  console.log(`[getPost] Posts directory: ${postsDirectory}`);
+  if (!slug) return null;
 
-  if (!slug) {
-    console.warn(`[getPost] Invalid slug: "${slug}"`);
-    return null;
-  }
-
-  if (!fs.existsSync(postsDirectory)) {
-    console.warn(`[getPost] Directory not found: ${postsDirectory}`);
-    return null;
-  }
+  if (!fs.existsSync(postsDirectory)) return null;
 
   const fullPath = path.join(postsDirectory, `${slug}.mdx`);
-  console.log(`[getPost] Full path: ${fullPath}`);
-  console.log(`[getPost] File exists: ${fs.existsSync(fullPath)}`);
 
-  if (!fs.existsSync(fullPath)) {
-    console.warn(`[getPost] File not found: ${fullPath}`);
-    // List available files for debugging
-    const files = fs.readdirSync(postsDirectory).filter(f => f.endsWith('.mdx'));
-    console.warn(`[getPost] Available files: ${files.slice(0, 5).join(', ')}... (total: ${files.length})`);
-    return null;
-  }
+  if (!fs.existsSync(fullPath)) return null;
 
   try {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
     const readingTime = Math.ceil(content.split(/\s+/).length / 200);
-
-    console.log(`[getPost] Successfully loaded: ${slug}`);
 
     return {
       slug,
@@ -108,16 +89,7 @@ export function getPost(slug: string): BlogPost | null {
 }
 
 export function getPostSlugs(): string[] {
-  if (!fs.existsSync(postsDirectory)) {
-    console.warn(`[getPostSlugs] Directory not found: ${postsDirectory}`);
-    return [];
-  }
+  if (!fs.existsSync(postsDirectory)) return [];
   const files = fs.readdirSync(postsDirectory);
-  const mdxFiles = files.filter((f) => f.endsWith('.mdx'));
-  const slugs = mdxFiles.map((f) => f.replace(/\.mdx?$/, ''));
-  console.log(`[getPostSlugs] Directory: ${postsDirectory}`);
-  console.log(`[getPostSlugs] Files found: ${files.length}`);
-  console.log(`[getPostSlugs] MDX files: ${mdxFiles.length}`);
-  console.log(`[getPostSlugs] Slugs: ${JSON.stringify(slugs)}`);
-  return slugs;
+  return files.filter((f) => f.endsWith('.mdx')).map((f) => f.replace(/\.mdx?$/, ''));
 }

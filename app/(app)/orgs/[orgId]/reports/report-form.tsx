@@ -37,22 +37,17 @@ type ValidationResult = {
 };
 
 async function postJson(url: string, payload: Record<string, unknown>) {
-  console.log("[postJson] Fetching", url, "with payload:", payload);
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  console.log("[postJson] Response status:", res.status, res.statusText);
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     const errorMsg = body?.message ?? `Request failed with status ${res.status}`;
-    console.error("[postJson] Error response:", body, errorMsg);
     throw new Error(errorMsg);
   }
-  const data = await res.json();
-  console.log("[postJson] Response data:", data);
-  return data;
+  return res.json();
 }
 
 // Per-check fix actions — keyed by check.id, resolved with orgId at render time
@@ -170,20 +165,14 @@ export function CreateReportForm({
   }
 
   async function handleValidate() {
-    if (!snapshotId) {
-      console.warn("[CreateReportForm] Validate clicked but snapshotId is empty");
-      return;
-    }
-    console.log("[CreateReportForm] Starting validation for", { snapshotId, reportType });
+    if (!snapshotId) return;
     setIsValidating(true);
     setValidationError(null);
     setValidationResult(null);
     try {
       const url = `/api/orgs/${orgId}/reports/validate`;
       const payload = { snapshotId, reportType };
-      console.log("[CreateReportForm] Posting to", url, payload);
       const result = (await postJson(url, payload)) as ValidationResult;
-      console.log("[CreateReportForm] Validation result:", result);
       setValidationResult(result);
       setValidatedFor({ snapshotId, reportType });
     } catch (err) {
