@@ -361,10 +361,23 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   const runId = report.snapshot.calculationRunId;
   const opts = (report.options ?? {}) as Record<string, unknown>;
   const auditEventFilter = (opts.auditEventFilter as string[] | undefined) ?? undefined;
-  const logoDataUri = await loadLogoDataUri(
-    report.organization.branding?.reportHeaderLogoKey
-    ?? report.organization.branding?.logoStorageKey
-  );
+
+  const branding = report.organization.branding;
+  const logoKey = branding?.reportHeaderLogoKey ?? branding?.logoStorageKey;
+  reportLogger.info("buildBasePdfData logo resolution", {
+    reportId: report.id,
+    hasBranding: !!branding,
+    reportHeaderLogoKey: branding?.reportHeaderLogoKey ? "set" : "null",
+    logoStorageKey: branding?.logoStorageKey ? "set" : "null",
+    resolvedLogoKey: logoKey ? "has_key" : "null",
+  });
+
+  const logoDataUri = await loadLogoDataUri(logoKey);
+  reportLogger.info("buildBasePdfData logoDataUri result", {
+    reportId: report.id,
+    loaded: !!logoDataUri,
+    length: logoDataUri?.length,
+  });
 
   // These types query their own tables directly — no EmissionCalculation rows.
   const isNonGhgType = report.type === "ecology_scan" || report.type === "ecology_survey"

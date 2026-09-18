@@ -35,6 +35,12 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
   // pdfkit only supports PNG and JPEG — pre-convert SVG/WebP to PNG here,
   // before entering the sync pdfkit callback chain.
   let logoDataUri = data.logoDataUri;
+  reportLogger.info("generateReportPdf logoDataUri status", {
+    exists: !!logoDataUri,
+    length: logoDataUri?.length,
+    type: logoDataUri?.split(":")[1]?.split(";")[0],
+  });
+
   if (logoDataUri && (logoDataUri.includes("image/svg") || logoDataUri.includes("image/webp"))) {
     try {
       const base64Match = logoDataUri.match(/base64,(.+)$/);
@@ -43,8 +49,12 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         const imgBuf = Buffer.from(base64Match[1], "base64");
         const pngBuf = await sharp(imgBuf).png().toBuffer();
         logoDataUri = `data:image/png;base64,${pngBuf.toString("base64")}`;
+        reportLogger.info("SVG/WebP logo converted to PNG", { pngSize: pngBuf.length });
       }
-    } catch {
+    } catch (err) {
+      reportLogger.error("Logo conversion failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
       logoDataUri = undefined; // fall through to org-name text fallback in drawPageHeader
     }
   }
