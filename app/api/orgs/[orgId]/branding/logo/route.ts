@@ -66,18 +66,21 @@ export async function POST(
     // If the bucket has a public domain configured, persist the stable URL so
     // it can be embedded in email templates without expiry concerns.
     const publicUrl = getPublicUrl(key);
-    if (publicUrl) {
-      await prisma.tenantBranding.upsert({
-        where: { organizationId: orgId },
-        update: { logoPublicUrl: publicUrl },
-        create: {
-          organizationId: orgId,
-          subdomain: orgId,
-          logoStorageKey: key,
-          logoPublicUrl: publicUrl,
-        },
-      });
-    }
+    await prisma.tenantBranding.upsert({
+      where: { organizationId: orgId },
+      update: {
+        logoStorageKey: key,
+        reportHeaderLogoKey: key,
+        ...(publicUrl ? { logoPublicUrl: publicUrl } : {}),
+      },
+      create: {
+        organizationId: orgId,
+        subdomain: orgId,
+        logoStorageKey: key,
+        reportHeaderLogoKey: key,
+        ...(publicUrl ? { logoPublicUrl: publicUrl } : {}),
+      },
+    });
 
     await writeAuditLog({
       organizationId: orgId,

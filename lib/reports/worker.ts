@@ -25,7 +25,7 @@ const REPORT_SELECT = {
   organization: {
     select: {
       name: true,
-      branding: { select: { reportHeaderLogoKey: true } },
+      branding: { select: { reportHeaderLogoKey: true, logoStorageKey: true } },
     },
   },
   reportingPeriod: { select: { label: true, startDate: true, endDate: true } },
@@ -185,7 +185,8 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
 
       // Add logo to header for HTML-rendered reports (ecology_scan, ecology_survey, etc.)
       // For pdfkitData reports, logo is already embedded in generateReportPdf
-      const brandingKey = report.organization.branding?.reportHeaderLogoKey;
+      const brandingKey = report.organization.branding?.reportHeaderLogoKey
+        ?? report.organization.branding?.logoStorageKey;
       reportLogger.info("Checking logo for header", {
         reportId,
         hasBranding: !!report.organization.branding,
@@ -360,7 +361,10 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   const runId = report.snapshot.calculationRunId;
   const opts = (report.options ?? {}) as Record<string, unknown>;
   const auditEventFilter = (opts.auditEventFilter as string[] | undefined) ?? undefined;
-  const logoDataUri = await loadLogoDataUri(report.organization.branding?.reportHeaderLogoKey);
+  const logoDataUri = await loadLogoDataUri(
+    report.organization.branding?.reportHeaderLogoKey
+    ?? report.organization.branding?.logoStorageKey
+  );
 
   // These types query their own tables directly — no EmissionCalculation rows.
   const isNonGhgType = report.type === "ecology_scan" || report.type === "ecology_survey"
