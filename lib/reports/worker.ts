@@ -101,9 +101,29 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         });
       }
 
-      const rawPdfBuffer = pdfkitData
-        ? await generateReportPdf(pdfkitData)
-        : await renderPdf(html);
+      let rawPdfBuffer: Buffer;
+      if (pdfkitData) {
+        reportLogger.info("Starting pdfkit PDF generation", { reportId });
+        const pdfPromise = generateReportPdf(pdfkitData);
+        rawPdfBuffer = await Promise.race([
+          pdfPromise,
+          new Promise<Buffer>((_, reject) =>
+            setTimeout(() => reject(new Error("PDF generation timeout after 45 seconds")), 45000)
+          ),
+        ]);
+        reportLogger.info("PDFKit PDF generated successfully", { reportId, sizeBytes: rawPdfBuffer.length });
+      } else {
+        reportLogger.info("Starting Puppeteer PDF rendering", { reportId });
+        const pdfPromise = renderPdf(html);
+        rawPdfBuffer = await Promise.race([
+          pdfPromise,
+          new Promise<Buffer>((_, reject) =>
+            setTimeout(() => reject(new Error("PDF rendering timeout after 50 seconds")), 50000)
+          ),
+        ]);
+        reportLogger.info("Puppeteer PDF rendered successfully", { reportId, sizeBytes: rawPdfBuffer.length });
+      }
+
       const pdfChecksum = createHash("sha256").update(rawPdfBuffer).digest("hex");
       reportLogger.info("PDF generated", {
         reportId,

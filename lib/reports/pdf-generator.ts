@@ -32,11 +32,42 @@ function shortDate(d: Date): string {
  * This is a synchronous-stream-to-buffer helper — await the returned promise.
  */
 export async function generateReportPdf(data: ReportData): Promise<Buffer> {
-  const logoDataUri = data.logoDataUri;
+  reportLogger.info("generateReportPdf starting", {
+    orgName: data.orgName,
+    reportType: data.reportType,
+  });
+
+  let logoDataUri = data.logoDataUri;
+  reportLogger.info("generateReportPdf logoDataUri status", {
+    exists: !!logoDataUri,
+    length: logoDataUri?.length,
+  });
+
+  // Pre-convert SVG/WebP to PNG if needed
+  if (logoDataUri && (logoDataUri.includes("image/svg") || logoDataUri.includes("image/webp"))) {
+    try {
+      const base64Match = logoDataUri.match(/base64,(.+)$/);
+      if (base64Match) {
+        reportLogger.info("Converting logo to PNG", { originalLength: logoDataUri.length });
+        const sharp = (await import("sharp")).default;
+        const imgBuf = Buffer.from(base64Match[1], "base64");
+        const pngBuf = await sharp(imgBuf).png().toBuffer();
+        logoDataUri = `data:image/png;base64,${pngBuf.toString("base64")}`;
+        reportLogger.info("SVG/WebP logo converted to PNG", { pngSize: pngBuf.length });
+      }
+    } catch (err) {
+      reportLogger.error("Logo conversion failed, will use text fallback", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      logoDataUri = undefined;
+    }
+  }
+
   return new Promise((resolve, reject) => {
     let doc: PDFKit.PDFDocument;
 
     try {
+      reportLogger.info("Creating PDFDocument");
       doc = new PDFDocument({
         size: "A4",
         margin: MARGIN,
@@ -48,6 +79,7 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         },
         bufferPages: true,
       });
+      reportLogger.info("PDFDocument created successfully");
     } catch (err: unknown) {
       const e = err as Record<string, unknown>;
       reportLogger.error("PDFDocument initialization error", {
@@ -62,9 +94,34 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     }
 
     const chunks: Buffer[] = [];
-    doc.on("data", (chunk: Buffer) => chunks.push(chunk));
-    doc.on("end", () => resolve(Buffer.concat(chunks)));
-    doc.on("error", reject);
+    doc.on("data", (chunk: Buffer) => {
+      try {
+        chunks.push(chunk);
+      } catch (err) {
+        reportLogger.error("Error buffering PDF chunk", {
+          error: err instanceof Error ? err.message : String(err),
+        });
+        reject(err);
+      }
+    });
+    doc.on("end", () => {
+      try {
+        reportLogger.info("PDF generation complete", { chunks: chunks.length });
+        resolve(Buffer.concat(chunks));
+      } catch (err) {
+        reportLogger.error("Error concatenating PDF chunks", {
+          chunkCount: chunks.length,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        reject(err);
+      }
+    });
+    doc.on("error", (err) => {
+      reportLogger.error("PDFDocument error event", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      reject(err);
+    });
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -120,8 +177,12 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
           const base64 = logoDataUri.split(",")[1] ?? logoDataUri;
           const imgBuf = Buffer.from(base64, "base64");
           doc.image(imgBuf, MARGIN, top, { height: 28, fit: [100, 28] });
-        } catch {
+          reportLogger.info("Logo rendered in header");
+        } catch (err) {
           // Logo decode failed — render org name instead
+          reportLogger.warn("Logo rendering failed, using org name fallback", {
+            error: err instanceof Error ? err.message : String(err),
+          });
           fillColor(COLOR_DARK);
           setFont("Helvetica-Bold", 10);
           doc.text(data.orgName, MARGIN, top + 6);
@@ -601,7 +662,15 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       });
     }
 
-    doc.end();
+    try {
+      reportLogger.info("Finalizing PDF document");
+      doc.end();
+    } catch (err) {
+      reportLogger.error("Error calling doc.end()", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      reject(new Error(`Failed to finalize PDF: ${err instanceof Error ? err.message : String(err)}`));
+    }
   });
 }
 
