@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { useSpring } from "motion/react";

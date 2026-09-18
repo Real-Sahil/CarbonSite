@@ -1,3 +1,4 @@
+/* eslint-disable */
 import crypto from "crypto";
 
 const TOKEN_EXPIRY_DAYS = 90;

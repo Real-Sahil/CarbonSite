@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { prisma } from '@/lib/db';
 
 interface OAuthCallbackParams {

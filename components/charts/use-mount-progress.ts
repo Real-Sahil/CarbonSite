@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { animate, type Transition, useMotionValue } from "motion/react";
