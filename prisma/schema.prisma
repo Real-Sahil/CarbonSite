@@ -766,6 +766,15 @@ enum EvidenceStatus {
   @@map("evidence_status")
 }
 
+enum VirusScanStatus {
+  pending
+  clean
+  infected
+  skipped
+
+  @@map("virus_scan_status")
+}
+
 enum Scope2Method {
   location_based
   market_based
@@ -905,6 +914,9 @@ model EvidenceFile {
   storageKey       String   @map("storage_key")
   checksum         String
   uploadedByUserId String   @map("uploaded_by_user_id")
+  virusScanStatus  VirusScanStatus @default(pending) @map("virus_scan_status")
+  scanTimestamp    DateTime? @map("scan_timestamp")
+  scanProvider     String?   @map("scan_provider")
   createdAt        DateTime @default(now()) @map("created_at")
 
   organization       Organization             @relation(fields: [organizationId], references: [id])
