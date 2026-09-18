@@ -185,12 +185,29 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
 
       // Add logo to header for HTML-rendered reports (ecology_scan, ecology_survey, etc.)
       // For pdfkitData reports, logo is already embedded in generateReportPdf
-      const logoDataUri = report.organization.branding?.reportHeaderLogoKey
-        ? await loadLogoDataUri(report.organization.branding.reportHeaderLogoKey)
+      const brandingKey = report.organization.branding?.reportHeaderLogoKey;
+      reportLogger.info("Checking logo for header", {
+        reportId,
+        hasBranding: !!report.organization.branding,
+        brandingKey,
+        isPdfkitReport: !!pdfkitData,
+      });
+      const logoDataUri = brandingKey
+        ? await loadLogoDataUri(brandingKey)
         : undefined;
+      reportLogger.info("Logo loading result", {
+        reportId,
+        logoDataUriExists: !!logoDataUri,
+        logoDataUriLength: logoDataUri?.length,
+      });
       if (logoDataUri && !pdfkitData) {
         pdfBuffer = await addLogoToHeader(pdfBuffer, logoDataUri);
         reportLogger.info("Logo added to header", { reportId });
+      } else if (!logoDataUri && brandingKey && !pdfkitData) {
+        reportLogger.warn("Logo loading failed but branding key exists", {
+          reportId,
+          brandingKey,
+        });
       }
 
       // Store PDF with validation

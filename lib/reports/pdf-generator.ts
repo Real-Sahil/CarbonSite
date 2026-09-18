@@ -668,7 +668,10 @@ interface QrMeta {
 }
 
 export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): Promise<Buffer> {
-  if (!logoDataUri) return pdfBytes; // No logo, skip
+  if (!logoDataUri) {
+    reportLogger.warn("addLogoToHeader called with undefined logoDataUri");
+    return pdfBytes;
+  }
   const doc = await PdfLib.load(pdfBytes);
 
   // Convert data URI to PNG bytes
@@ -683,15 +686,23 @@ export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): P
     let imageBytes = Buffer.from(base64Match[1], "base64");
     const isSvg = logoDataUri.includes("image/svg");
     const isWebP = logoDataUri.includes("image/webp");
+    const isPng = logoDataUri.includes("image/png");
+    const isJpeg = logoDataUri.includes("image/jpeg");
+
+    reportLogger.info("addLogoToHeader processing image", {
+      isSvg, isWebP, isPng, isJpeg,
+      imageSizeBytes: imageBytes.length,
+    });
 
     if (isSvg || isWebP) {
       // Convert SVG/WebP to PNG using sharp before embedding in pdf-lib
       const sharp = (await import("sharp")).default;
-      imageBytes = await sharp(imageBytes).png().toBuffer();
+      const pngBuf = await sharp(imageBytes).png().toBuffer();
+      reportLogger.info("Image converted to PNG", { originalBytes: imageBytes.length, pngBytes: pngBuf.length });
+      logoImage = await doc.embedPng(pngBuf);
+    } else if (isPng) {
       logoImage = await doc.embedPng(imageBytes);
-    } else if (logoDataUri.includes("image/png")) {
-      logoImage = await doc.embedPng(imageBytes);
-    } else if (logoDataUri.includes("image/jpeg")) {
+    } else if (isJpeg) {
       logoImage = await doc.embedJpg(imageBytes);
     } else {
       // Unknown format — attempt PNG; if it fails, skip silently
@@ -703,8 +714,9 @@ export async function addLogoToHeader(pdfBytes: Buffer, logoDataUri?: string): P
       }
     }
   } catch (err) {
-    reportLogger.warn("Failed to embed logo", {
+    reportLogger.error("Failed to embed logo", {
       error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
     });
     return pdfBytes;
   }

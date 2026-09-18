@@ -29,11 +29,6 @@ export function brandStyles(): string {
   }
   @page {
     margin: 18mm 14mm 22mm;
-    @bottom-right {
-      content: "Page " counter(page) " of " counter(pages);
-      font-size: 8pt;
-      color: #aaa;
-    }
   }`;
 }
 
