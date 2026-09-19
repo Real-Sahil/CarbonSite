@@ -1,0 +1,97 @@
+testCases:
+  - id: "auth_flow_001"
+    name: "Field worker signup via invite link"
+    description: "Verify deep link opens app and PIN setup flow works"
+    devices:
+      - model: "Pixel 6"
+        osVersion: "13"
+        locale: "en_US"
+    steps:
+      - action: "open_app_with_deep_link"
+        target: "metricora://app/invite/test-token-123"
+        expectedResult: "PIN setup screen displayed"
+      - action: "enter_pin"
+        value: "123456"
+        expectedResult: "PIN confirmed, submission list visible"
+      - action: "verify_page"
+        expectedElements: ["submission_list", "create_button"]
+
+  - id: "capture_flow_001"
+    name: "Photograph and OCR waste ticket"
+    description: "Camera capture, on-device OCR, form pre-fill"
+    devices:
+      - model: "Pixel 7"
+        osVersion: "14"
+        locale: "en_GB"
+    steps:
+      - action: "tap_button"
+        target: "create_submission"
+        expectedResult: "Document type selector shown"
+      - action: "select_option"
+        value: "Waste Ticket"
+        expectedResult: "Camera screen opened"
+      - action: "capture_image"
+        imageFile: "test-fixtures/waste-ticket.jpg"
+        expectedResult: "OCR processing, form pre-filled with weight/date/code"
+      - action: "verify_fields_populated"
+        fields: ["weight", "ewc_code", "date"]
+
+  - id: "offline_sync_001"
+    name: "Submit while offline, sync when online"
+    description: "Verify offline queue and background sync"
+    devices:
+      - model: "Samsung Galaxy A13"
+        osVersion: "12"
+    networkConditions:
+      - mode: "offline"
+    steps:
+      - action: "enter_submission_data"
+        data: { weight: "500", category: "Metal scrap" }
+      - action: "tap_submit"
+        expectedResult: "Submission saved to local queue"
+      - action: "verify_status"
+        expectedStatus: "pending_sync"
+      - action: "enable_network"
+        networkConditions: "online"
+      - action: "wait_for_sync"
+        timeout: "10s"
+        expectedResult: "Submission status → submitted"
+
+  - id: "localization_001"
+    name: "UI renders in Welsh"
+    description: "Language switching and text display"
+    devices:
+      - model: "Pixel 5"
+        osVersion: "13"
+        locale: "cy_GB"
+    steps:
+      - action: "verify_ui_language"
+        expectedLanguage: "Welsh"
+      - action: "verify_strings"
+        strings: ["submit_button", "cancel_button", "form_title"]
+
+  - id: "permissions_001"
+    name: "Camera and location permission flows"
+    description: "Grant permissions and verify functionality"
+    devices:
+      - model: "Pixel 6 Pro"
+        osVersion: "14"
+    permissionGrants:
+      - permission: "CAMERA"
+        action: "allow"
+      - permission: "ACCESS_FINE_LOCATION"
+        action: "allow"
+    steps:
+      - action: "open_capture_screen"
+        expectedResult: "Camera permission prompt shown"
+      - action: "grant_permission"
+        expectedResult: "Camera feed displayed"
+      - action: "open_gps_tagging"
+        expectedResult: "Location permission prompt"
+      - action: "grant_permission"
+        expectedResult: "GPS tag added to submission"
+
+testTimeout: "300s"
+retryPolicy:
+  maxRetries: 2
+  backoffMultiplier: 1.5
