@@ -184,7 +184,7 @@ export async function POST(
       },
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://metricora-rosy.vercel.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.metricora.co.uk";
     const loginUrl = `${appUrl}/sign-in`;
     const inviteUrl = `${appUrl}/supplier-invite/${invite.token}`;
 

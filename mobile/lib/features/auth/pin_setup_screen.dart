@@ -137,7 +137,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   /// Extracts the invite token AND the server URL from whatever the user pastes.
   /// Accepts:
   ///   - metricora://app/invite/TOKEN?server=https://org.example.com
-  ///   - https://metricora-rosy.vercel.app/invite/TOKEN
+  ///   - https://www.metricora.co.uk/invite/TOKEN
   ///   - TOKEN (bare token)
   ({String token, String? serverUrl})? _parseInviteInput(String value) {
     final trimmed = value.trim();

@@ -1,0 +1,4 @@
+- displayName: "Home loads"
+  goal: "Load home screen"
+  hint: "Open app. Navigate past any onboarding screens. Dismiss any popups."
+  finalScreenAssertion: "Home screen is visible, no errors displayed"

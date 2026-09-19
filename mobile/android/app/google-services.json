@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "metricora-mobile-dev",
-    "storage_bucket": "metricora-mobile-dev.appspot.com"
+    "project_number": "1043641799809",
+    "project_id": "mtricora",
+    "storage_bucket": "mtricora.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "mobilesdk_app_id": "1:1043641799809:android:5956c7f01d09a70723a980",
         "android_client_info": {
           "package_name": "app.metricora.metricora_mobile"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "REPLACE_WITH_YOUR_FIREBASE_API_KEY"
+          "current_key": "AIzaSyCrN7nvYyYdLGh7cUZcBt-5D3PrNT1sj7Q"
         }
       ],
       "services": {

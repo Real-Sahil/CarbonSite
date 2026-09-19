@@ -1,0 +1,40 @@
+testCases:
+  - title: "Home screen loads without signin"
+    goal: "Launch app and verify home screen displays with submission list"
+    hint: "Do not sign in. Do not enter PIN if prompted. Navigate directly to submission list."
+    final_screen_assertion: "Submission list is visible, contains submission cards or empty state message, no error dialogs are displayed"
+
+  - title: "PIN entry for field worker"
+    goal: "Enter PIN code and confirm access to submission interface"
+    hint: "Use PIN 123456 if prompted. After PIN entry, submission list should display."
+    final_screen_assertion: "PIN entry successful, submission list is visible, submission creation button is accessible"
+
+  - title: "Create new submission"
+    goal: "Tap create button and see document type selection screen"
+    hint: "From submission list, tap the create/plus button. Do not proceed past document type selection."
+    final_screen_assertion: "Document type selector (Waste Ticket, Delivery Note, etc.) is displayed and tappable"
+
+  - title: "Select document type"
+    goal: "Select Waste Ticket document type and advance to next step"
+    hint: "Tap 'Waste Ticket' option from the document type menu"
+    final_screen_assertion: "Camera screen or image picker is displayed, ready for capture"
+
+  - title: "Basic navigation and menu"
+    goal: "Navigate through main UI sections without errors"
+    hint: "Open menu if visible. Tap through available navigation tabs or menu items. Return to home."
+    final_screen_assertion: "App navigates smoothly between screens, no crashes, home screen reachable"
+
+  - title: "Submission status display"
+    goal: "Verify submitted submissions display in list with correct status"
+    hint: "Look for any existing submissions in the list. Tap on a submission to view details."
+    final_screen_assertion: "Submission list displays items with readable status badges (submitted, pending, etc.)"
+
+  - title: "Offline indicator and sync state"
+    goal: "Check if app shows offline indicator and sync status"
+    hint: "Observe the app UI for any network status indicators. Tap submission if available to see sync state."
+    final_screen_assertion: "App displays sync status information, either in header or submission details"
+
+  - title: "Accessibility and text rendering"
+    goal: "Verify UI text is readable and buttons are tappable"
+    hint: "Scan through multiple screens. Observe font sizes, colors, button layouts."
+    final_screen_assertion: "All text is legible, buttons have adequate touch targets (48dp minimum), no text overlap"

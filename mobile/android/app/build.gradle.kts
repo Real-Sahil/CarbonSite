@@ -28,7 +28,7 @@ android {
     defaultConfig {
         applicationId = "app.metricora.metricora_mobile"
         minSdk = 23          // ML Kit + flutter_secure_storage require >= 23
-        targetSdk = 35
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

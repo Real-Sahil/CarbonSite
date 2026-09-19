@@ -20,9 +20,9 @@ Keep the app origin variables aligned with the deployed domain so invite links
 open the correct Vercel app:
 
 ```bash
-NEXT_PUBLIC_APP_URL=https://metricora-rosy.vercel.app
-BETTER_AUTH_URL=https://metricora-rosy.vercel.app
-TRUSTED_ORIGINS=https://metricora-rosy.vercel.app
+NEXT_PUBLIC_APP_URL=https://www.metricora.co.uk
+BETTER_AUTH_URL=https://www.metricora.co.uk
+TRUSTED_ORIGINS=https://www.metricora.co.uk
 ```
 
 If a custom domain is added later, update all three values to the custom HTTPS

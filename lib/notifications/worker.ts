@@ -18,7 +18,7 @@ import {
 import { sendPushToUser } from "./fcm";
 import { notificationPresentation } from "./presentation";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://metricora-rosy.vercel.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.metricora.co.uk";
 
 // Persist an in-app copy so the notification centre always has the item, even
 // if the email/push channels below fail. Failures here are logged, never thrown,

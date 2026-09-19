@@ -12,10 +12,10 @@ concurrency:
 
 # METRICORA_API_BASE_URL must be set as a GitHub repository variable
 # (Settings → Variables) pointing at the production web app, e.g.:
-#   https://metricora-rosy.vercel.app
-# CI falls back to https://metricora-rosy.vercel.app when the variable is not set.
+#   https://www.metricora.co.uk
+# CI falls back to https://www.metricora.co.uk when the variable is not set.
 env:
-  METRICORA_API_BASE_URL: ${{ vars.METRICORA_API_BASE_URL || 'https://metricora-rosy.vercel.app' }}
+  METRICORA_API_BASE_URL: ${{ vars.METRICORA_API_BASE_URL || 'https://www.metricora.co.uk' }}
 
 jobs:
   web:
@@ -106,7 +106,7 @@ jobs:
       # so playwright.config.ts's executablePath override would point at a binary
       # that was never installed. Let Playwright use its own default cache path,
       # which the "Install Playwright browsers" step below populates.
-      PLAYWRIGHT_BASE_URL: ${{ vars.METRICORA_API_BASE_URL || 'https://metricora-rosy.vercel.app' }}
+      PLAYWRIGHT_BASE_URL: ${{ vars.METRICORA_API_BASE_URL || 'https://www.metricora.co.uk' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
