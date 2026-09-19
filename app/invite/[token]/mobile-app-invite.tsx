@@ -78,12 +78,15 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
             <strong>Open MetricOra App</strong> again.
           </p>
           <a
-            href="https://play.google.com/store/apps/details?id=com.metricora.mobile"
+            href={
+              process.env.NEXT_PUBLIC_MOBILE_INSTALL_URL ??
+              "https://play.google.com/store/apps/details?id=app.metricora.metricora_mobile"
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-600 font-medium"
           >
-            Download from Google Play
+            Get the MetricOra app
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
