@@ -210,6 +210,18 @@ async function processOneChunk(calculationRunId: string, orgId: string): Promise
         }
       }
 
+      // Record which exchange rate a spend-based record was converted at.
+      // Without this the figure is not reproducible: the rate moves daily and
+      // nothing on the immutable row would say which one applied.
+      if (normalized.fx) {
+        const { currency, rate, source, fetchedAt } = normalized.fx;
+        unitWarnings.push(
+          source === "live"
+            ? `Converted ${currency} to GBP at ${rate.toFixed(6)} (ECB rate fetched ${fetchedAt?.toISOString() ?? "this run"}).`
+            : `Converted ${currency} to GBP at ${rate.toFixed(6)} using the built-in fallback rate, because live ECB rates could not be fetched. This figure is an approximation and will not reproduce against live rates.`,
+        );
+      }
+
       if (normalized.amount === 0) {
         unitWarnings.push(
           `Record amount is zero — CO2e will be zero. Verify the source data (record id: ${record.id}).`,
@@ -649,6 +661,23 @@ async function rebuildDashboardAggregates(
     // By facility (if set)
     if (record.facilityId) {
       add({ scope, scope2Method, emissionCategoryId: null, facilityId: record.facilityId, businessUnitId: null }, co2e);
+
+      // By category AND facility. Needed so a category breakdown can be scoped
+      // to a subset of facilities (a contract). The category-only rows above
+      // carry no facility, so without this cross-dimension a contract-filtered
+      // dashboard could only ever show an org-wide category breakdown next to
+      // contract-scoped totals, and the categories would exceed the total.
+      // Bounded by distinct category/facility pairs, not by record count.
+      add(
+        {
+          scope,
+          scope2Method,
+          emissionCategoryId: record.emissionCategoryId,
+          facilityId: record.facilityId,
+          businessUnitId: null,
+        },
+        co2e,
+      );
     }
 
     // By business unit (if set)

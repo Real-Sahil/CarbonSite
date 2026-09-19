@@ -39,6 +39,17 @@ export const CATEGORY_BREAKDOWN_DIMENSIONS = {
   ...PRIMARY_SCOPE2_METHOD,
 };
 
+/// One row per emission category within a given set of facilities, for a
+/// category breakdown scoped to a contract. Callers supply `facilityId`.
+/// These are the category-and-facility cross rows written by
+/// rebuildDashboardAggregates; the facility-agnostic category rows above carry
+/// `facilityId: null` and so are excluded from this set, and vice versa.
+export const CATEGORY_BY_FACILITY_DIMENSIONS = {
+  emissionCategoryId: { not: null },
+  businessUnitId: null,
+  ...PRIMARY_SCOPE2_METHOD,
+};
+
 /// One row per facility, deduplicated across Scope 2 methods.
 export const FACILITY_BREAKDOWN_DIMENSIONS = {
   emissionCategoryId: null,

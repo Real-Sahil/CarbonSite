@@ -33,6 +33,7 @@ import {
 import { redirect } from "next/navigation";
 import { requireOrgMember, AuthError, ROLE_GROUPS } from "@/lib/auth/session";
 import {
+  CATEGORY_BY_FACILITY_DIMENSIONS,
   PRIMARY_SCOPE2_METHOD,
   SCOPE_ROLLUP_DIMENSIONS,
 } from "@/lib/calculation/aggregate-filters";
@@ -107,6 +108,19 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   }
   const role = membership!.role;
 
+  // Every query below falls back to an empty value so one failure cannot blank
+  // the whole dashboard. Counting the failures is what stops a failed query
+  // from being indistinguishable from a genuine zero: without it the page
+  // renders "0 records" with full confidence when the truth is that it does not
+  // know. Request-local, so concurrent requests cannot see each other's count.
+  let failedFigureCount = 0;
+  const onLoadFailure =
+    <T,>(fallback: () => T) =>
+    (): T => {
+      failedFigureCount++;
+      return fallback();
+    };
+
   // Field workers and suppliers have no visibility into org emissions data — send them to their own submissions view.
   if (role === "field_worker" || role === "supplier") {
     redirect(`/orgs/${orgId}/submissions`);
@@ -119,7 +133,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     ? await prisma.onboardingProgress.findUnique({
         where: { organizationId: orgId },
         select: { isComplete: true, completedSteps: true },
-      }).catch(() => null)
+      }).catch(onLoadFailure(() => null))
     : null;
 
   if (role === "admin" && (!onboardingProgress || !onboardingProgress.isComplete)) {
@@ -129,7 +143,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
     select: { name: true, industry: true, hqCountry: true },
-  }).catch(() => null);
+  }).catch(onLoadFailure(() => null));
   if (!org) {
     return <div className="p-8"><p className="text-sm text-red-600">Organisation not found or database is temporarily unavailable — please refresh.</p></div>;
   }
@@ -140,7 +154,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
     select: { id: true, label: true, status: true },
     take: 2,
-  }).catch(() => [] as { id: string; label: string; status: string }[]);
+  }).catch(onLoadFailure(() => [] as { id: string; label: string; status: string }[]));
   const currentPeriod = recentPeriods[0] ?? null;
   const priorPeriod = recentPeriods[1] ?? null;
 
@@ -150,12 +164,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       where: { organizationId: orgId, status: "active" },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
-    }).catch(() => [] as { id: string; name: string }[]),
+    }).catch(onLoadFailure(() => [] as { id: string; name: string }[])),
     selectedContractId
       ? prisma.contract.findUnique({
           where: { id: selectedContractId },
           select: { name: true },
-        }).catch(() => null)
+        }).catch(onLoadFailure(() => null))
       : Promise.resolve(null),
   ]);
 
@@ -183,7 +197,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     where: { organizationId: orgId, status: "succeeded" },
     orderBy: { createdAt: "desc" },
     select: { id: true, finishedAt: true, reportingPeriodId: true },
-  }).catch(() => null);
+  }).catch(onLoadFailure(() => null));
 
   // Records the run processed but that contributed no emissions: a unit the
   // factor could not consume, no matching factor, or a zero input amount. Their
@@ -198,10 +212,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               calculationRunId: latestSucceededRun.id,
               totalCo2e: 0,
             },
-          }).catch(() => 0),
+          }).catch(onLoadFailure(() => 0)),
           prisma.emissionCalculation.count({
             where: { organizationId: orgId, calculationRunId: latestSucceededRun.id },
-          }).catch(() => 0),
+          }).catch(onLoadFailure(() => 0)),
         ])
       : Promise.resolve([0, 0] as [number, number]),
     // Reports are built from a PublishedSnapshot, but every figure on this page
@@ -213,7 +227,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           where: { organizationId: orgId, reportingPeriodId: currentPeriod.id },
           orderBy: { version: "desc" },
           select: { id: true, version: true, publishedAt: true },
-        }).catch(() => null)
+        }).catch(onLoadFailure(() => null))
       : Promise.resolve(null),
   ]);
 
@@ -232,7 +246,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             snapshotId: null,
           },
           _sum: { totalCo2e: true },
-        }).catch(() => ({ _sum: { totalCo2e: null } })),
+        }).catch(onLoadFailure(() => ({ _sum: { totalCo2e: null } }))),
         latestSnapshot
           ? prisma.dashboardAggregate.aggregate({
               where: {
@@ -241,7 +255,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 snapshotId: latestSnapshot.id,
               },
               _sum: { totalCo2e: true },
-            }).catch(() => ({ _sum: { totalCo2e: null } }))
+            }).catch(onLoadFailure(() => ({ _sum: { totalCo2e: null } })))
           : Promise.resolve({ _sum: { totalCo2e: null } }),
       ])
     : [{ _sum: { totalCo2e: null } }, { _sum: { totalCo2e: null } }];
@@ -276,25 +290,25 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             orderBy: { scope: "asc" },
           })
         : Promise.resolve([] as { scope: number; _sum: { totalCo2e: string | null; recordCount: number | null } }[]),
-      prisma.activityRecord.count({ where: { organizationId: orgId } }).catch(() => 0),
+      prisma.activityRecord.count({ where: { organizationId: orgId } }).catch(onLoadFailure(() => 0)),
       prisma.activityRecord.count({
         where: { organizationId: orgId, reviewStatus: "approved" },
-      }).catch(() => 0),
+      }).catch(onLoadFailure(() => 0)),
       prisma.fieldSubmission.count({
         where: {
           organizationId: orgId,
           status: { in: ["pending", "submitted", "under_review", "needs_info"] },
         },
-      }).catch(() => 0),
-      prisma.importBatch.count({ where: { organizationId: orgId } }).catch(() => 0),
+      }).catch(onLoadFailure(() => 0)),
+      prisma.importBatch.count({ where: { organizationId: orgId } }).catch(onLoadFailure(() => 0)),
       prisma.importBatch.count({
         where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
-      }).catch(() => 0),
-      prisma.report.count({ where: { organizationId: orgId } }).catch(() => 0),
-      prisma.report.count({ where: { organizationId: orgId, status: "ready" } }).catch(() => 0),
-      prisma.report.count({ where: { organizationId: orgId, status: "failed" } }).catch(() => 0),
-      prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }).catch(() => 0),
-      prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }).catch(() => 0),
+      }).catch(onLoadFailure(() => 0)),
+      prisma.report.count({ where: { organizationId: orgId } }).catch(onLoadFailure(() => 0)),
+      prisma.report.count({ where: { organizationId: orgId, status: "ready" } }).catch(onLoadFailure(() => 0)),
+      prisma.report.count({ where: { organizationId: orgId, status: "failed" } }).catch(onLoadFailure(() => 0)),
+      prisma.calculationRun.count({ where: { organizationId: orgId, status: "failed" } }).catch(onLoadFailure(() => 0)),
+      prisma.reviewTask.count({ where: { organizationId: orgId, status: "open" } }).catch(onLoadFailure(() => 0)),
       prisma.reviewTask.findMany({
         where: {
           organizationId: orgId,
@@ -307,7 +321,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { createdAt: "desc" },
         take: 6,
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.importBatch.findMany({
         where: { organizationId: orgId, state: { in: ["failed", "needs_attention"] } },
         select: {
@@ -319,7 +333,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { updatedAt: "desc" },
         take: 4,
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.activityRecord.findMany({
         where: { organizationId: orgId, reviewStatus: { in: ["in_review", "rejected"] } },
         include: {
@@ -328,7 +342,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { updatedAt: "desc" },
         take: 4,
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.report.findMany({
         where: { organizationId: orgId, status: "failed" },
         select: {
@@ -339,35 +353,35 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { updatedAt: "desc" },
         take: 4,
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
     ] as const),
     Promise.all([
       prisma.organizationMembership.findMany({
         where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { createdAt: "asc" },
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.auditLog.findMany({
         where: { organizationId: orgId },
         include: { actor: { select: { name: true, email: true } } },
         orderBy: { createdAt: "desc" },
         take: 6,
-      }).catch(() => []),
-      prisma.reductionTarget.count({ where: { organizationId: orgId } }).catch(() => 0),
-      prisma.reductionInitiative.count({ where: { organizationId: orgId } }).catch(() => 0),
+      }).catch(onLoadFailure(() => [])),
+      prisma.reductionTarget.count({ where: { organizationId: orgId } }).catch(onLoadFailure(() => 0)),
+      prisma.reductionInitiative.count({ where: { organizationId: orgId } }).catch(onLoadFailure(() => 0)),
       prisma.reportingPeriod.findMany({
         where: { organizationId: orgId },
         select: { id: true, label: true },
         orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.methodologyVersion.findMany({
         select: { id: true, name: true, gwpVersion: true },
         orderBy: { createdAt: "desc" },
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.factorLibrary.findMany({
         select: { id: true, name: true, version: true },
         orderBy: { publishedAt: "desc" },
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.calculationRun.findMany({
         where: { organizationId: orgId },
         include: {
@@ -376,67 +390,70 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         },
         orderBy: { createdAt: "desc" },
         take: 6,
-      }).catch(() => []),
-      prisma.evidenceFile.count({ where: { organizationId: orgId } }).catch(() => 0),
+      }).catch(onLoadFailure(() => [])),
+      prisma.evidenceFile.count({ where: { organizationId: orgId } }).catch(onLoadFailure(() => 0)),
       prisma.fieldSubmission.groupBy({
         by: ["status"],
         where: { organizationId: orgId },
         _count: { _all: true },
         orderBy: { status: "asc" },
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.fieldSubmission.groupBy({
         by: ["documentType"],
         where: { organizationId: orgId },
         _count: { _all: true },
         orderBy: { documentType: "asc" },
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.reductionInitiative.groupBy({
         by: ["status"],
         where: { organizationId: orgId },
         _count: { _all: true },
         _sum: { costAmount: true, expectedImpactCo2e: true },
         orderBy: { status: "asc" },
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.reductionTarget.aggregate({
         where: { organizationId: orgId },
         _sum: { reductionAmount: true },
-      }).catch(() => ({ _sum: { reductionAmount: null } })),
+      }).catch(onLoadFailure(() => ({ _sum: { reductionAmount: null } }))),
       currentPeriod
         ? prisma.dashboardAggregate.findMany({
             where: {
               organizationId: orgId,
               reportingPeriodId: currentPeriod.id,
               snapshotId: null,
-              emissionCategoryId: { not: null },
-              facilityId: null,
-              businessUnitId: null,
-              // A Scope 2 category has one row per reporting method, so
-              // without this filter it occupies two of the five slots and its
-              // CO2e is presented twice.
-              ...PRIMARY_SCOPE2_METHOD,
+              // A Scope 2 category has one row per reporting method, so without
+              // this filter it occupies two of the five slots and its CO2e is
+              // presented twice.
+              ...CATEGORY_BY_FACILITY_DIMENSIONS,
+              // With a contract selected, read the category-and-facility cross
+              // rows restricted to that contract's facilities, so the breakdown
+              // is scoped the same way the totals above are. Org-wide, read the
+              // facility-agnostic category rows.
+              facilityId:
+                contractFacilityIds !== null ? { in: contractFacilityIds } : null,
             },
             include: {
               emissionCategory: { select: { name: true, scope: true } },
             },
             orderBy: { totalCo2e: "desc" },
             take: 5,
-          }).catch(() => [])
+          }).catch(onLoadFailure(() => []))
         : Promise.resolve([] as { id: string; scope: number; totalCo2e: string; recordCount: number; emissionCategory: { name: string; scope: number } | null }[]),
       prisma.report.groupBy({
         by: ["status"],
         where: { organizationId: orgId },
         _count: { _all: true },
         orderBy: { status: "asc" },
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
       prisma.socialValueRecord.aggregate({
         where: { organizationId: orgId },
         _sum: { valuePounds: true },
         _count: { _all: true },
-      }).catch(() => ({ _sum: { valuePounds: null }, _count: { _all: 0 } })),
-      prisma.site.count({ where: { organizationId: orgId } }).catch(() => 0),
+      }).catch(onLoadFailure(() => ({ _sum: { valuePounds: null }, _count: { _all: 0 } }))),
+      prisma.site.count({ where: { organizationId: orgId } }).catch(onLoadFailure(() => 0)),
       prisma.organizationMembership.count({
         where: { organizationId: orgId, role: "field_worker" },
-      }).catch(() => 0),
+      }).catch(onLoadFailure(() => 0)),
     ] as const),
     // Period trend: live scope-level aggregates across all reporting periods.
     prisma.dashboardAggregate.findMany({
@@ -453,7 +470,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         totalCo2e: true,
         reportingPeriod: { select: { id: true, label: true, startDate: true } },
       },
-    }).catch(() => []),
+    }).catch(onLoadFailure(() => [])),
     // Facility breakdowns for the current period (live, no snapshot)
     currentPeriod
       ? prisma.dashboardAggregate.findMany({
@@ -470,7 +487,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             facility: { select: { id: true, name: true } },
           },
           orderBy: { totalCo2e: "desc" },
-        }).catch(() => [])
+        }).catch(onLoadFailure(() => []))
       : Promise.resolve(
           [] as {
             id: string;
@@ -486,7 +503,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         ? prisma.emissionCalculation.aggregate({
             where: { calculationRunId: latestSucceededRun.id, organizationId: orgId },
             _sum: { totalCo2e: true },
-          }).catch(() => ({ _sum: { totalCo2e: null } }))
+          }).catch(onLoadFailure(() => ({ _sum: { totalCo2e: null } })))
         : Promise.resolve({ _sum: { totalCo2e: null } }),
       latestSucceededRun
         ? prisma.emissionCalculation.aggregate({
@@ -496,7 +513,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               activityRecord: { reviewStatus: "approved" },
             },
             _sum: { totalCo2e: true },
-          }).catch(() => ({ _sum: { totalCo2e: null } }))
+          }).catch(onLoadFailure(() => ({ _sum: { totalCo2e: null } })))
         : Promise.resolve({ _sum: { totalCo2e: null } }),
       prisma.activityRecord.count({
         where: {
@@ -504,13 +521,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           reviewStatus: "approved",
           evidence: { none: {} },
         },
-      }).catch(() => 0),
+      }).catch(onLoadFailure(() => 0)),
       prisma.activityRecord.count({
         where: {
           organizationId: orgId,
           reviewStatus: { in: ["in_review", "draft"] },
         },
-      }).catch(() => 0),
+      }).catch(onLoadFailure(() => 0)),
       latestSucceededRun?.finishedAt && latestSucceededRun.reportingPeriodId
         ? prisma.activityRecord.count({
             where: {
@@ -518,7 +535,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               reportingPeriodId: latestSucceededRun.reportingPeriodId,
               createdAt: { gt: latestSucceededRun.finishedAt },
             },
-          }).catch(() => 0)
+          }).catch(onLoadFailure(() => 0))
         : Promise.resolve(0),
       latestSucceededRun
         ? prisma.emissionCalculation.aggregate({
@@ -528,7 +545,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               selectionReason: { contains: "fallback", mode: "insensitive" },
             },
             _sum: { totalCo2e: true },
-          }).catch(() => ({ _sum: { totalCo2e: null } }))
+          }).catch(onLoadFailure(() => ({ _sum: { totalCo2e: null } })))
         : Promise.resolve({ _sum: { totalCo2e: null } }),
       prisma.fieldSubmission.findMany({
         where: {
@@ -540,7 +557,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         select: { ocrExtractedData: true, formData: true },
         take: 200,
         orderBy: { createdAt: "desc" },
-      }).catch(() => []),
+      }).catch(onLoadFailure(() => [])),
     ] as const),
     // Prior period scope-level aggregates for year-on-year comparison
     priorPeriod
@@ -558,7 +575,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           },
           _sum: { totalCo2e: true, recordCount: true },
           orderBy: { scope: "asc" },
-        }).catch(() => [])
+        }).catch(onLoadFailure(() => []))
       : Promise.resolve([] as { scope: number; _sum: { totalCo2e: string | null; recordCount: number | null } }[]),
   ]);
 
@@ -691,7 +708,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             where: { organizationId: orgId },
             _sum: { totalKgCo2e: true },
             _count: { _all: true },
-          }).catch(() => ({ _sum: { totalKgCo2e: null }, _count: { _all: 0 } })),
+          }).catch(onLoadFailure(() => ({ _sum: { totalKgCo2e: null }, _count: { _all: 0 } }))),
           prisma.embodiedCarbonRecord.groupBy({
             by: ["materialId"],
             where: { organizationId: orgId },
@@ -699,7 +716,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             _count: { _all: true },
             orderBy: { _sum: { totalKgCo2e: "desc" } },
             take: 5,
-          }).catch(() => [] as { materialId: string; _sum: { totalKgCo2e: string | null }; _count: { _all: number } }[]),
+          }).catch(onLoadFailure(() => [] as { materialId: string; _sum: { totalKgCo2e: string | null }; _count: { _all: number } }[])),
         ]);
         return {
           type: "construction" as const,
@@ -719,7 +736,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             facilityId: null,
           },
           _sum: { totalCo2e: true, recordCount: true },
-        }).catch(() => ({ _sum: { totalCo2e: null, recordCount: null } }));
+        }).catch(onLoadFailure(() => ({ _sum: { totalCo2e: null, recordCount: null } })));
         return {
           type: "logistics" as const,
           transportKgCo2e: Number(transportAgg._sum.totalCo2e ?? 0),
@@ -730,7 +747,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         const electricityCategory = await prisma.emissionCategory.findFirst({
           where: { code: { in: ["s2-electricity-lb", "s2-electricity-mb"] } },
           select: { id: true },
-        }).catch(() => null);
+        }).catch(onLoadFailure(() => null));
         const energyAgg = electricityCategory
           ? await prisma.dashboardAggregate.aggregate({
               where: {
@@ -743,7 +760,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 ...PRIMARY_SCOPE2_METHOD,
               },
               _sum: { totalCo2e: true, recordCount: true },
-            }).catch(() => ({ _sum: { totalCo2e: null, recordCount: null } }))
+            }).catch(onLoadFailure(() => ({ _sum: { totalCo2e: null, recordCount: null } })))
           : { _sum: { totalCo2e: null, recordCount: null } };
         return {
           type: "facilities_management" as const,
@@ -756,7 +773,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           where: { organizationId: orgId, type: "ppn_006_crp" },
           orderBy: { createdAt: "desc" },
           select: { id: true, status: true, createdAt: true },
-        }).catch(() => null);
+        }).catch(onLoadFailure(() => null));
         return {
           type: "public_procurement" as const,
           crpStatus: latestCrp?.status ?? null,
@@ -775,7 +792,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         by: ["metricType"],
         where: { organizationId: orgId, reportingPeriodId: currentPeriod.id, snapshotId: null },
         _sum: { totalValue: true },
-      }).catch(() => [])
+      }).catch(onLoadFailure(() => []))
     : [];
   const environmentalTotals = Object.fromEntries(
     environmentalAggregates.map((row) => [row.metricType, Number(row._sum.totalValue ?? 0)]),
@@ -789,7 +806,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     by: ["reportingPeriodId"],
     where: { organizationId: orgId, reviewStatus: "approved" },
     _count: { _all: true },
-  }).catch(() => []);
+  }).catch(onLoadFailure(() => []));
   const approvedCountByPeriod: Record<string, number> = Object.fromEntries(
     approvedCountsByPeriod.map((row) => [row.reportingPeriodId, row._count._all]),
   );
@@ -933,7 +950,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         organizationId: orgId,
         type: task.type,
         targetId: task.targetId,
-      }).catch(() => null),
+      }).catch(onLoadFailure(() => null)),
     ),
   );
   const reviewTasks = myReviewTasks.flatMap((task, index) => {
@@ -1820,6 +1837,16 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
           {/* Deeper signals */}
           <div className="mt-4 flex flex-col gap-2">
+            {failedFigureCount > 0 && (
+              <div className="rounded-[14px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                {failedFigureCount} figure{failedFigureCount !== 1 ? "s" : ""} on this
+                page could not be loaded and {failedFigureCount !== 1 ? "are" : "is"}{" "}
+                shown as empty. {failedFigureCount !== 1 ? "These are" : "This is"} not
+                a reading of zero. Refresh, and if it persists the database is
+                unreachable rather than the data missing.
+              </div>
+            )}
             {snapshotDiverges && latestSnapshot && (
               <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />

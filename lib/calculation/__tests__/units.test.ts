@@ -132,6 +132,31 @@ describe("gasVolumeM3ToKwh", () => {
   });
 });
 
+describe("FX provenance", () => {
+  it("reports the fallback rate and source for a non-GBP currency", () => {
+    const result = normalizeUnit(100, "USD");
+    expect(result.unit).toBe("GBP");
+    expect(result.fx).toBeDefined();
+    expect(result.fx?.currency).toBe("USD");
+    expect(result.fx?.source).toBe("fallback");
+    // No live rates fetched in this test, so the amount must come from the
+    // hardcoded rate the provenance names.
+    expect(result.amount).toBeCloseTo(100 * (result.fx?.rate ?? 0));
+  });
+
+  it("marks GBP itself as a rate of 1", () => {
+    const result = normalizeUnit(50, "GBP");
+    expect(result).toMatchObject({ amount: 50, unit: "GBP" });
+    expect(result.fx?.rate).toBe(1);
+  });
+
+  it("omits fx for non-currency units, so nothing implies a conversion", () => {
+    expect(normalizeUnit(10, "kWh").fx).toBeUndefined();
+    expect(normalizeUnit(10, "tonnes").fx).toBeUndefined();
+    expect(normalizeUnit(10, "m³").fx).toBeUndefined();
+  });
+});
+
 describe("cubic metre unit aliases", () => {
   it("normalizes every spelling a gas bill uses to litres", () => {
     for (const unit of CUBIC_METRE_UNITS) {

@@ -114,17 +114,58 @@ const registry: Record<string, UnitConversion> = {
   "passenger-km": { toCanonical: 1, canonical: "pkm" },
 };
 
-export type NormalizedUnit = { amount: number; unit: string };
+/// Which exchange rate a currency conversion actually used. Spend-based Scope 3
+/// is not reproducible without it: the same record recalculated on another day
+/// gives a different answer, and nothing on the row would say why.
+export type FxProvenance = {
+  currency: string;
+  /// GBP per 1 unit of `currency`.
+  rate: number;
+  /// "live" is the ECB rate fetched this run. "fallback" is the hardcoded rate
+  /// in this file, used when Frankfurter could not be reached.
+  source: "live" | "fallback";
+  fetchedAt: Date | null;
+};
+
+export type NormalizedUnit = {
+  amount: number;
+  unit: string;
+  /// Set only when the input unit was a currency.
+  fx?: FxProvenance;
+};
 
 export function normalizeUnit(amount: number, unit: string): NormalizedUnit {
   const upper = unit.toUpperCase().trim();
   // Check live FX cache first for currency conversions
   if (liveFxRates[upper] !== undefined) {
-    return { amount: amount * liveFxRates[upper], unit: "GBP" };
+    const rate = liveFxRates[upper];
+    return {
+      amount: amount * rate,
+      unit: "GBP",
+      fx: {
+        currency: upper,
+        rate,
+        source: "live",
+        fetchedAt: liveFxFetchedAt ? new Date(liveFxFetchedAt) : null,
+      },
+    };
   }
   const entry = registry[unit.toLowerCase().trim()];
   if (!entry) throw new UnitError(`Unsupported unit: ${unit}`);
-  return { amount: amount * entry.toCanonical, unit: entry.canonical };
+  return {
+    amount: amount * entry.toCanonical,
+    unit: entry.canonical,
+    ...(entry.canonical === "GBP"
+      ? {
+          fx: {
+            currency: upper,
+            rate: entry.toCanonical,
+            source: "fallback" as const,
+            fetchedAt: null,
+          },
+        }
+      : {}),
+  };
 }
 
 export function areUnitsCompatible(unitA: string, unitB: string): boolean {
