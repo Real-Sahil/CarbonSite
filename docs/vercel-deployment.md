@@ -37,7 +37,7 @@ Set these variables for Production, Preview, and Development as appropriate:
 
 Use `STORAGE_DRIVER=r2` in production. Use `EMAIL_DRIVER=resend` when transactional email is configured. Use `JOB_PROCESSING_MODE=inline` for a Vercel-only deployment. Use `JOB_PROCESSING_MODE=worker` only after a separate `pnpm worker` process is deployed with the same database and storage secrets. Set `BETTER_AUTH_REQUIRE_EMAIL_VERIFICATION=false` unless you are ready for email-verification-gated sign-in; when set to `true`, verification links are sent through the configured transactional email driver.
 
-For the current Vercel domain, `Import.env` is prepared for `https://metricora-rosy.vercel.app`. Replace every `__REPLACE__` value with real Resend and R2 credentials before importing. If you have a Vercel API token and project id, you can apply the file without using the dashboard:
+For the current Vercel domain, `Import.env` is prepared for `https://www.metricora.co.uk`. Replace every `__REPLACE__` value with real Resend and R2 credentials before importing. If you have a Vercel API token and project id, you can apply the file without using the dashboard:
 
 ```bash
 VERCEL_TOKEN=<vercel-token> VERCEL_PROJECT_ID=<project-id> pnpm vercel:env Import.env production

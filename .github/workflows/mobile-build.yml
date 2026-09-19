@@ -18,7 +18,7 @@ on:
       api_base_url:
         description: Production MetricOra web URL used by the mobile app.
         required: true
-        default: https://metricora-rosy.vercel.app
+        default: https://www.metricora.co.uk
       build_android:
         description: Build Android APK and app bundle artifacts.
         type: boolean
@@ -41,7 +41,7 @@ on:
           - enterprise
 
 env:
-  METRICORA_API_BASE_URL: ${{ inputs.api_base_url || vars.METRICORA_API_BASE_URL || 'https://metricora-rosy.vercel.app' }}
+  METRICORA_API_BASE_URL: ${{ inputs.api_base_url || vars.METRICORA_API_BASE_URL || 'https://www.metricora.co.uk' }}
 
 jobs:
   android:

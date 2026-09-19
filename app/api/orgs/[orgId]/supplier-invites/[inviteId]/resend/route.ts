@@ -68,7 +68,7 @@ export async function POST(
     // Send the invite email with branding
     await sendSupplierInviteEmail({
       supplierEmail: invite.email,
-      inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://metricora-rosy.vercel.app"}/supplier-invite/${invite.token}`,
+      inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://www.metricora.co.uk"}/supplier-invite/${invite.token}`,
       invitedByName: session.user.name || session.user.email || "A team member",
       organizationName: invite.organization.name || "MetricOra",
       companyName: invite.companyName,

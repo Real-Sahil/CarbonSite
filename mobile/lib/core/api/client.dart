@@ -5,8 +5,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 const _storage = FlutterSecureStorage();
 const _configuredBaseUrl = String.fromEnvironment(
-  'CARBONSITE_API_BASE_URL',
-  defaultValue: 'https://metricora-rosy.vercel.app',
+  'METRICORA_API_BASE_URL',
+  defaultValue: 'https://www.metricora.co.uk',
 );
 
 // ---------------------------------------------------------------------------
