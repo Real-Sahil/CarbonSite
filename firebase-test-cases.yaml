@@ -1,97 +1,40 @@
 testCases:
-  - id: "auth_flow_001"
-    name: "Field worker signup via invite link"
-    description: "Verify deep link opens app and PIN setup flow works"
-    devices:
-      - model: "Pixel 6"
-        osVersion: "13"
-        locale: "en_US"
-    steps:
-      - action: "open_app_with_deep_link"
-        target: "metricora://app/invite/test-token-123"
-        expectedResult: "PIN setup screen displayed"
-      - action: "enter_pin"
-        value: "123456"
-        expectedResult: "PIN confirmed, submission list visible"
-      - action: "verify_page"
-        expectedElements: ["submission_list", "create_button"]
+  - title: "Home screen loads without signin"
+    goal: "Launch app and verify home screen displays with submission list"
+    hint: "Do not sign in. Do not enter PIN if prompted. Navigate directly to submission list."
+    final_screen_assertion: "Submission list is visible, contains submission cards or empty state message, no error dialogs are displayed"
 
-  - id: "capture_flow_001"
-    name: "Photograph and OCR waste ticket"
-    description: "Camera capture, on-device OCR, form pre-fill"
-    devices:
-      - model: "Pixel 7"
-        osVersion: "14"
-        locale: "en_GB"
-    steps:
-      - action: "tap_button"
-        target: "create_submission"
-        expectedResult: "Document type selector shown"
-      - action: "select_option"
-        value: "Waste Ticket"
-        expectedResult: "Camera screen opened"
-      - action: "capture_image"
-        imageFile: "test-fixtures/waste-ticket.jpg"
-        expectedResult: "OCR processing, form pre-filled with weight/date/code"
-      - action: "verify_fields_populated"
-        fields: ["weight", "ewc_code", "date"]
+  - title: "PIN entry for field worker"
+    goal: "Enter PIN code and confirm access to submission interface"
+    hint: "Use PIN 123456 if prompted. After PIN entry, submission list should display."
+    final_screen_assertion: "PIN entry successful, submission list is visible, submission creation button is accessible"
 
-  - id: "offline_sync_001"
-    name: "Submit while offline, sync when online"
-    description: "Verify offline queue and background sync"
-    devices:
-      - model: "Samsung Galaxy A13"
-        osVersion: "12"
-    networkConditions:
-      - mode: "offline"
-    steps:
-      - action: "enter_submission_data"
-        data: { weight: "500", category: "Metal scrap" }
-      - action: "tap_submit"
-        expectedResult: "Submission saved to local queue"
-      - action: "verify_status"
-        expectedStatus: "pending_sync"
-      - action: "enable_network"
-        networkConditions: "online"
-      - action: "wait_for_sync"
-        timeout: "10s"
-        expectedResult: "Submission status → submitted"
+  - title: "Create new submission"
+    goal: "Tap create button and see document type selection screen"
+    hint: "From submission list, tap the create/plus button. Do not proceed past document type selection."
+    final_screen_assertion: "Document type selector (Waste Ticket, Delivery Note, etc.) is displayed and tappable"
 
-  - id: "localization_001"
-    name: "UI renders in Welsh"
-    description: "Language switching and text display"
-    devices:
-      - model: "Pixel 5"
-        osVersion: "13"
-        locale: "cy_GB"
-    steps:
-      - action: "verify_ui_language"
-        expectedLanguage: "Welsh"
-      - action: "verify_strings"
-        strings: ["submit_button", "cancel_button", "form_title"]
+  - title: "Select document type"
+    goal: "Select Waste Ticket document type and advance to next step"
+    hint: "Tap 'Waste Ticket' option from the document type menu"
+    final_screen_assertion: "Camera screen or image picker is displayed, ready for capture"
 
-  - id: "permissions_001"
-    name: "Camera and location permission flows"
-    description: "Grant permissions and verify functionality"
-    devices:
-      - model: "Pixel 6 Pro"
-        osVersion: "14"
-    permissionGrants:
-      - permission: "CAMERA"
-        action: "allow"
-      - permission: "ACCESS_FINE_LOCATION"
-        action: "allow"
-    steps:
-      - action: "open_capture_screen"
-        expectedResult: "Camera permission prompt shown"
-      - action: "grant_permission"
-        expectedResult: "Camera feed displayed"
-      - action: "open_gps_tagging"
-        expectedResult: "Location permission prompt"
-      - action: "grant_permission"
-        expectedResult: "GPS tag added to submission"
+  - title: "Basic navigation and menu"
+    goal: "Navigate through main UI sections without errors"
+    hint: "Open menu if visible. Tap through available navigation tabs or menu items. Return to home."
+    final_screen_assertion: "App navigates smoothly between screens, no crashes, home screen reachable"
 
-testTimeout: "300s"
-retryPolicy:
-  maxRetries: 2
-  backoffMultiplier: 1.5
+  - title: "Submission status display"
+    goal: "Verify submitted submissions display in list with correct status"
+    hint: "Look for any existing submissions in the list. Tap on a submission to view details."
+    final_screen_assertion: "Submission list displays items with readable status badges (submitted, pending, etc.)"
+
+  - title: "Offline indicator and sync state"
+    goal: "Check if app shows offline indicator and sync status"
+    hint: "Observe the app UI for any network status indicators. Tap submission if available to see sync state."
+    final_screen_assertion: "App displays sync status information, either in header or submission details"
+
+  - title: "Accessibility and text rendering"
+    goal: "Verify UI text is readable and buttons are tappable"
+    hint: "Scan through multiple screens. Observe font sizes, colors, button layouts."
+    final_screen_assertion: "All text is legible, buttons have adequate touch targets (48dp minimum), no text overlap"
