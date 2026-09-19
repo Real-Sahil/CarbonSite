@@ -62,7 +62,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   # Wide ranges so pub can upgrade to the latest major that bundles an
   # analyzer version compatible with the installed Dart SDK.
   build_runner: ">=2.4.13 <6.0.0"
