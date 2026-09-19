@@ -237,17 +237,22 @@ describe("generateAuditNarrative() timeout", () => {
     vi.useFakeTimers();
   });
 
-  it("throws timeout error when LLM hangs beyond 30s", async () => {
+  it("rejects when the LLM hangs past the 20s cap", async () => {
     mocks.llmComplete.mockImplementation(() => new Promise(() => {})); // hangs forever
 
     const promise = generateAuditNarrative(BASE_REPORT_DATA);
+    // Assert on the rejection before advancing, so the rejection is never
+    // momentarily unhandled.
+    const assertion = expect(promise).rejects.toThrow(
+      "LLM narrative timeout after 20000ms",
+    );
 
-    vi.advanceTimersByTime(31_000);
+    vi.advanceTimersByTime(21_000);
 
-    // The error is caught inside generateAuditNarrative and returns a degraded narrative
-    const result = await promise;
-    expect(result.executive_summary).toContain("LLM narrative timeout after 20000ms");
-    expect(result.key_findings).toHaveLength(0);
+    // generateAuditNarrative rethrows deliberately: the caller in
+    // lib/reports/worker.ts catches it and publishes the report without a
+    // narrative, so the timeout text never reaches a customer's PDF.
+    await assertion;
     vi.useRealTimers();
   });
 

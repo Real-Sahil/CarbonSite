@@ -70,8 +70,16 @@ export async function POST(
             emissionCategoryId: row.emissionCategoryId,
             facilityId: row.facilityId,
             businessUnitId: row.businessUnitId,
+            // Must be carried over. Dropping it collapses the location-based
+            // and market-based Scope 2 rows into two indistinguishable
+            // method-less rows, which then sum and destroy dual reporting in
+            // the published snapshot the reports are built from.
+            scope2Method: row.scope2Method,
             totalCo2e: row.totalCo2e,
             recordCount: row.recordCount,
+            intensityPerRevenueUnit: row.intensityPerRevenueUnit,
+            intensityPerFte: row.intensityPerFte,
+            intensityPerM2: row.intensityPerM2,
           })),
         });
       }

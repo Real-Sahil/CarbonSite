@@ -68,6 +68,13 @@ const registry: Record<string, UnitConversion> = {
   "us gallon": { toCanonical: 3.78541, canonical: "litre" },
   "us gallons": { toCanonical: 3.78541, canonical: "litre" },
   m3: { toCanonical: 1000, canonical: "litre" },
+  // UK gas bills state volume as m³ in several spellings. Without these the
+  // record throws UnitError before it can reach the calorific conversion.
+  "m³": { toCanonical: 1000, canonical: "litre" },
+  "cubic metre": { toCanonical: 1000, canonical: "litre" },
+  "cubic metres": { toCanonical: 1000, canonical: "litre" },
+  "cubic meter": { toCanonical: 1000, canonical: "litre" },
+  "cubic meters": { toCanonical: 1000, canonical: "litre" },
 
   // Discrete count (delivery notes) - canonical: unit
   unit: { toCanonical: 1, canonical: "unit" },
@@ -138,6 +145,37 @@ export function convertBetween(
   const to = registry[toUnit.toLowerCase().trim()];
   if (!from || !to || from.canonical !== to.canonical) return null;
   return (amount * from.toCanonical) / to.toCanonical;
+}
+
+/// Units that express a gas volume in cubic metres. Gas meters read in m³ but
+/// natural gas emission factors are published per kWh, so a record in these
+/// units needs the calorific conversion below rather than a volume conversion.
+export const CUBIC_METRE_UNITS = new Set([
+  "m3",
+  "m³",
+  "cubic metre",
+  "cubic metres",
+  "cubic meter",
+  "cubic meters",
+]);
+
+/// Volume correction factor applied by UK gas suppliers to convert metered
+/// volume to standard temperature and pressure. Fixed by Ofgem.
+export const GAS_VOLUME_CORRECTION = 1.02264;
+
+/// Gross calorific value of UK mains natural gas, MJ/m³. Suppliers state the
+/// actual CV on each bill and it varies by region and season (roughly
+/// 37.5–43.0), so pass the bill's own figure when the record carries it.
+export const GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3 = 39.5;
+
+/// Converts a metered gas volume in m³ to kWh using the UK billing formula:
+///   kWh = m³ × volume correction × calorific value (MJ/m³) ÷ 3.6
+/// At the default CV this is ~11.22 kWh per m³.
+export function gasVolumeM3ToKwh(
+  cubicMetres: number,
+  calorificValueMjPerM3: number = GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3,
+): number {
+  return (cubicMetres * GAS_VOLUME_CORRECTION * calorificValueMjPerM3) / 3.6;
 }
 
 export class UnitError extends Error {}

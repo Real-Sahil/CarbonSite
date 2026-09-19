@@ -32,6 +32,10 @@ import {
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { requireOrgMember, AuthError, ROLE_GROUPS } from "@/lib/auth/session";
+import {
+  PRIMARY_SCOPE2_METHOD,
+  SCOPE_ROLLUP_DIMENSIONS,
+} from "@/lib/calculation/aggregate-filters";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import {
@@ -81,6 +85,7 @@ function formatPercent(complete: number, total: number): string {
   if (total === 0) return "0%";
   return `${Math.round((complete / total) * 100)}%`;
 }
+
 
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
@@ -180,6 +185,73 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     select: { id: true, finishedAt: true, reportingPeriodId: true },
   }).catch(() => null);
 
+  // Records the run processed but that contributed no emissions: a unit the
+  // factor could not consume, no matching factor, or a zero input amount. Their
+  // CO2e is genuinely 0, so the headline total is silently short by however many
+  // of these there are unless the count is on the page.
+  const [[zeroCo2eCalcCount, latestRunCalcCount], latestSnapshot] = await Promise.all([
+    latestSucceededRun
+      ? Promise.all([
+          prisma.emissionCalculation.count({
+            where: {
+              organizationId: orgId,
+              calculationRunId: latestSucceededRun.id,
+              totalCo2e: 0,
+            },
+          }).catch(() => 0),
+          prisma.emissionCalculation.count({
+            where: { organizationId: orgId, calculationRunId: latestSucceededRun.id },
+          }).catch(() => 0),
+        ])
+      : Promise.resolve([0, 0] as [number, number]),
+    // Reports are built from a PublishedSnapshot, but every figure on this page
+    // is the live aggregate. A recalculation that has not been published makes
+    // the two diverge, so the page has to say so rather than let the customer
+    // assume their PDF will match.
+    currentPeriod
+      ? prisma.publishedSnapshot.findFirst({
+          where: { organizationId: orgId, reportingPeriodId: currentPeriod.id },
+          orderBy: { version: "desc" },
+          select: { id: true, version: true, publishedAt: true },
+        }).catch(() => null)
+      : Promise.resolve(null),
+  ]);
+
+  const snapshotRollupWhere = {
+    organizationId: orgId,
+    ...SCOPE_ROLLUP_DIMENSIONS,
+    facilityId: null,
+  };
+
+  const [liveTotalAgg, snapshotTotalAgg] = currentPeriod
+    ? await Promise.all([
+        prisma.dashboardAggregate.aggregate({
+          where: {
+            ...snapshotRollupWhere,
+            reportingPeriodId: currentPeriod.id,
+            snapshotId: null,
+          },
+          _sum: { totalCo2e: true },
+        }).catch(() => ({ _sum: { totalCo2e: null } })),
+        latestSnapshot
+          ? prisma.dashboardAggregate.aggregate({
+              where: {
+                ...snapshotRollupWhere,
+                reportingPeriodId: currentPeriod.id,
+                snapshotId: latestSnapshot.id,
+              },
+              _sum: { totalCo2e: true },
+            }).catch(() => ({ _sum: { totalCo2e: null } }))
+          : Promise.resolve({ _sum: { totalCo2e: null } }),
+      ])
+    : [{ _sum: { totalCo2e: null } }, { _sum: { totalCo2e: null } }];
+
+  const liveTotalCo2e = Number(liveTotalAgg._sum.totalCo2e ?? 0);
+  const snapshotTotalCo2e = Number(snapshotTotalAgg._sum.totalCo2e ?? 0);
+  // 0.5 kg absorbs Decimal rounding without masking a real restatement.
+  const snapshotDiverges =
+    latestSnapshot != null && Math.abs(liveTotalCo2e - snapshotTotalCo2e) > 0.5;
+
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
   const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch, priorScopeAggregates] = await Promise.all([
     Promise.all([
@@ -190,9 +262,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               organizationId: orgId,
               reportingPeriodId: currentPeriod.id,
               snapshotId: null,
-              ...(contractFacilityIds !== null
-                ? { facilityId: { in: contractFacilityIds } }
-                : {}),
+              // DashboardAggregate holds one row per breakdown dimension
+              // (scope rollup, by category, by facility, by business unit) for
+              // the same underlying calculations. Every read must pin the
+              // dimensions it wants or the same CO2e is summed 2-4 times.
+              ...SCOPE_ROLLUP_DIMENSIONS,
+              // Contract scope is expressed through facility rows; org-wide
+              // totals come from the facility-agnostic rollup rows.
+              facilityId:
+                contractFacilityIds !== null ? { in: contractFacilityIds } : null,
             },
             _sum: { totalCo2e: true, recordCount: true },
             orderBy: { scope: "asc" },
@@ -330,6 +408,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               reportingPeriodId: currentPeriod.id,
               snapshotId: null,
               emissionCategoryId: { not: null },
+              facilityId: null,
+              businessUnitId: null,
+              // A Scope 2 category has one row per reporting method, so
+              // without this filter it occupies two of the five slots and its
+              // CO2e is presented twice.
+              ...PRIMARY_SCOPE2_METHOD,
             },
             include: {
               emissionCategory: { select: { name: true, scope: true } },
@@ -362,6 +446,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         emissionCategoryId: null,
         facilityId: null,
         businessUnitId: null,
+        ...PRIMARY_SCOPE2_METHOD,
       },
       select: {
         scope: true,
@@ -379,6 +464,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             emissionCategoryId: null,
             businessUnitId: null,
             facilityId: { not: null },
+            ...PRIMARY_SCOPE2_METHOD,
           },
           include: {
             facility: { select: { id: true, name: true } },
@@ -464,6 +550,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             organizationId: orgId,
             reportingPeriodId: priorPeriod.id,
             snapshotId: null,
+            // Must mirror the current-period query exactly, or the
+            // period-on-period change compares differently-scoped totals.
+            ...SCOPE_ROLLUP_DIMENSIONS,
+            facilityId:
+              contractFacilityIds !== null ? { in: contractFacilityIds } : null,
           },
           _sum: { totalCo2e: true, recordCount: true },
           orderBy: { scope: "asc" },
@@ -624,6 +715,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             scope: 3,
             snapshotId: null,
             ...(currentPeriod ? { reportingPeriodId: currentPeriod.id } : {}),
+            ...SCOPE_ROLLUP_DIMENSIONS,
+            facilityId: null,
           },
           _sum: { totalCo2e: true, recordCount: true },
         }).catch(() => ({ _sum: { totalCo2e: null, recordCount: null } }));
@@ -645,6 +738,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 emissionCategoryId: electricityCategory.id,
                 snapshotId: null,
                 ...(currentPeriod ? { reportingPeriodId: currentPeriod.id } : {}),
+                facilityId: null,
+                businessUnitId: null,
+                ...PRIMARY_SCOPE2_METHOD,
               },
               _sum: { totalCo2e: true, recordCount: true },
             }).catch(() => ({ _sum: { totalCo2e: null, recordCount: null } }))
@@ -1724,6 +1820,25 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
           {/* Deeper signals */}
           <div className="mt-4 flex flex-col gap-2">
+            {snapshotDiverges && latestSnapshot && (
+              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                These are live figures ({formatKgCo2e(liveTotalCo2e)}). Reports are
+                generated from published snapshot v{latestSnapshot.version}, which
+                totals {formatKgCo2e(snapshotTotalCo2e)}. Publish a new snapshot to
+                make reports match what you see here.
+              </div>
+            )}
+            {zeroCo2eCalcCount > 0 && (
+              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                {zeroCo2eCalcCount} of {latestRunCalcCount} calculated record
+                {latestRunCalcCount !== 1 ? "s" : ""} contributed 0 kg CO2e, so the
+                totals above exclude them. Usual causes: the record&apos;s unit does not
+                match the factor, no factor matched the category, or the input amount
+                was zero. Open the calculation run to see the per record reason.
+              </div>
+            )}
             {staleRecordCount > 0 && (
               <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />

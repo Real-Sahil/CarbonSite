@@ -2,15 +2,10 @@
 // No external services, embedded factors, fully self-contained
 // Reference: https://ghgprotocol.org (Corporate Accounting & Reporting Standard)
 
-// AR6 GWP Constants (IPCC 2021, 100-year horizon)
-export const GWP_AR6 = {
-  CH4: 27.9,
-  N2O: 273,
-  CF4: 6630,
-  C2F6: 11100,
-  HFC134a: 1526,
-  SF6: 25200,
-} as const;
+// GWP values live in ./gwp so this engine and lib/calculation/engine.ts cannot
+// drift apart. See that file for the AR6 citation and the CH4 blend rationale.
+export { GWP_AR6 } from "./gwp";
+import { GWP_AR6 } from "./gwp";
 
 // Common Units (normalize all to kg)
 export const UNIT_CONVERSION = {

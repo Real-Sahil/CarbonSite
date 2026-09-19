@@ -3,9 +3,9 @@
 // For gas-specific: CO2e = CO2 + (CH4 × CH4_GWP) + (N2O × N2O_GWP)
 
 import { Decimal } from "@prisma/client/runtime/library";
+import { GWP_AR6 } from "./gwp";
 
-// AR6 GWP values (100-year)
-const GWP = { CH4: 27.9, N2O: 273 };
+const GWP = GWP_AR6;
 
 export type GasValues = {
   co2?: number | null;

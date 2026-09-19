@@ -2,7 +2,16 @@ import { prisma } from "@/lib/db";
 import { calculationLogger } from "@/lib/logger";
 import { triggerFacilityRiskFlag } from "@/lib/automation/n8n-client";
 import { broadcastDashboardUpdate } from "@/lib/realtime/dashboard-broadcaster";
-import { normalizeUnit, convertBetween, UnitError, refreshFxRates } from "./units";
+import {
+  normalizeUnit,
+  convertBetween,
+  UnitError,
+  refreshFxRates,
+  gasVolumeM3ToKwh,
+  CUBIC_METRE_UNITS,
+  GAS_VOLUME_CORRECTION,
+  GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3,
+} from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
@@ -286,12 +295,37 @@ async function processOneChunk(calculationRunId: string, orgId: string): Promise
             `Converted ${normalized.amount} ${normalized.unit} to ${converted} ${factor.inputUnit} to match the factor.`,
           );
         } else {
+          // Gas meters read in m³ but natural gas factors are published per
+          // kWh. Volume → energy needs the fuel's calorific value, which
+          // convertBetween cannot express, so handle it explicitly before
+          // giving up. Gated on the record's own unit being cubic metres: a
+          // litre record (diesel, LPG) must never take this path.
+          let gasResolved = false;
+          if (
+            factor.inputUnit.toLowerCase().trim() === "kwh" &&
+            CUBIC_METRE_UNITS.has(record.unit.toLowerCase().trim())
+          ) {
+            const cubicMetres = convertBetween(normalized.amount, normalized.unit, "m3");
+            if (cubicMetres != null) {
+              amountForFactor = gasVolumeM3ToKwh(cubicMetres);
+              unitWasConverted = true;
+              unitConversionWasComplex = true;
+              unitWarnings.push(
+                `Converted ${cubicMetres.toFixed(4)} m³ to ${amountForFactor.toFixed(4)} kWh ` +
+                  `(volume correction ${GAS_VOLUME_CORRECTION}, calorific value ` +
+                  `${GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3} MJ/m³). This is the UK default CV — ` +
+                  `confirm against the calorific value stated on the bill.`,
+              );
+              gasResolved = true;
+            }
+          }
+
           // Primary unit conversion failed. For transport records that carry a
           // route distance (from postcode OSRM routing), attempt to derive the
           // factor-compatible amount from distanceAmount before giving up.
           let distanceResolved = false;
 
-          if (record.distanceAmount != null && Number(record.distanceAmount) > 0) {
+          if (!gasResolved && record.distanceAmount != null && Number(record.distanceAmount) > 0) {
             const distKm = Number(record.distanceAmount);
             const distInputUnit = record.distanceUnit ?? "km";
 
@@ -327,7 +361,7 @@ async function processOneChunk(calculationRunId: string, orgId: string): Promise
             }
           }
 
-          if (!distanceResolved) {
+          if (!gasResolved && !distanceResolved) {
             // Cannot match the factor's unit — record zero CO2e with a warning
             // so the run completes rather than aborting on one bad record.
             const qualityScore = calculateDataQualityScore({

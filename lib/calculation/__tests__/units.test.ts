@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { normalizeUnit, areUnitsCompatible, convertBetween, UnitError } from "../units";
+import {
+  normalizeUnit,
+  areUnitsCompatible,
+  convertBetween,
+  UnitError,
+  gasVolumeM3ToKwh,
+  CUBIC_METRE_UNITS,
+} from "../units";
 
 describe("normalizeUnit", () => {
   it("returns same value for canonical units", () => {
@@ -102,5 +109,40 @@ describe("convertBetween", () => {
 
   it("returns null for unknown units", () => {
     expect(convertBetween(1, "bananas", "kg")).toBeNull();
+  });
+});
+
+describe("gasVolumeM3ToKwh", () => {
+  it("converts m³ to kWh at the UK default calorific value", () => {
+    // 1 × 1.02264 × 39.5 / 3.6
+    expect(gasVolumeM3ToKwh(1)).toBeCloseTo(11.2206, 4);
+  });
+
+  it("scales linearly with volume", () => {
+    expect(gasVolumeM3ToKwh(250)).toBeCloseTo(gasVolumeM3ToKwh(1) * 250, 4);
+  });
+
+  it("honours a bill-specific calorific value", () => {
+    expect(gasVolumeM3ToKwh(1, 37.5)).toBeCloseTo((1.02264 * 37.5) / 3.6, 6);
+    expect(gasVolumeM3ToKwh(1, 43.0)).toBeCloseTo((1.02264 * 43.0) / 3.6, 6);
+  });
+
+  it("is zero for zero volume", () => {
+    expect(gasVolumeM3ToKwh(0)).toBe(0);
+  });
+});
+
+describe("cubic metre unit aliases", () => {
+  it("normalizes every spelling a gas bill uses to litres", () => {
+    for (const unit of CUBIC_METRE_UNITS) {
+      const result = normalizeUnit(1, unit);
+      expect(result.unit).toBe("litre");
+      expect(result.amount).toBeCloseTo(1000);
+    }
+  });
+
+  it("round-trips litres back to m³ so the calorific path gets the right volume", () => {
+    const normalized = normalizeUnit(120, "m³");
+    expect(convertBetween(normalized.amount, normalized.unit, "m3")).toBeCloseTo(120);
   });
 });

@@ -6,6 +6,11 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import {
+  SCOPE_ROLLUP_DIMENSIONS,
+  CATEGORY_BREAKDOWN_DIMENSIONS,
+  FACILITY_BREAKDOWN_DIMENSIONS,
+} from "@/lib/calculation/aggregate-filters";
 
 const QuerySchema = z.object({
   periodId: z.string().optional(),
@@ -75,21 +80,21 @@ export async function GET(
         // Scope totals
         prisma.dashboardAggregate.groupBy({
           by: ["scope"],
-          where: { ...aggWhere, emissionCategoryId: null, facilityId: null, businessUnitId: null },
+          where: { ...aggWhere, ...SCOPE_ROLLUP_DIMENSIONS, facilityId: null },
           _sum: { totalCo2e: true, recordCount: true },
           orderBy: { scope: "asc" },
         }),
 
         // Category breakdown
         prisma.dashboardAggregate.findMany({
-          where: { ...aggWhere, emissionCategoryId: { not: null }, facilityId: null, businessUnitId: null },
+          where: { ...aggWhere, ...CATEGORY_BREAKDOWN_DIMENSIONS },
           include: { emissionCategory: { select: { code: true, name: true, scope: true } } },
           orderBy: { totalCo2e: "desc" },
         }),
 
         // Facility breakdown
         prisma.dashboardAggregate.findMany({
-          where: { ...aggWhere, facilityId: { not: null }, emissionCategoryId: null, businessUnitId: null },
+          where: { ...aggWhere, ...FACILITY_BREAKDOWN_DIMENSIONS },
           include: { facility: { select: { name: true } } },
           orderBy: { totalCo2e: "desc" },
         }),
