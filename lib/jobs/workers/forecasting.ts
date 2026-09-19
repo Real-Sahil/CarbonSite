@@ -5,6 +5,7 @@
  */
 
 import { prisma } from "@/lib/db";
+import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import type { Prisma } from "@prisma/client";
 import { autoForecast } from "@/lib/forecasting/engine";
 import { explainForecast } from "@/lib/explainability/forecast-explainer";
@@ -245,6 +246,9 @@ export async function getEmissionsHistory(
           gte: startDate,
         },
       },
+      snapshotId: null,
+      ...SCOPE_ROLLUP_DIMENSIONS,
+      facilityId: null,
     },
     select: {
       reportingPeriod: {

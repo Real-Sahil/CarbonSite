@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
 
 export interface DigestTemplate {
@@ -284,7 +285,12 @@ export async function compileDigestData(
   // Get emissions summary — live aggregates only (snapshotId null)
   const scopeGroups = await prisma.dashboardAggregate.groupBy({
     by: ["scope"],
-    where: { organizationId, snapshotId: null },
+    where: {
+      organizationId,
+      snapshotId: null,
+      ...SCOPE_ROLLUP_DIMENSIONS,
+      facilityId: null,
+    },
     _sum: { totalCo2e: true },
   });
 

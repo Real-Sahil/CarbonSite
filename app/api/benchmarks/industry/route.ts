@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
+import { PRIMARY_SCOPE2_METHOD } from "@/lib/calculation/aggregate-filters";
+
+// Cross-organization statistics. Below this cohort size the mean, median, min
+// and max all approximate a single tenant's exact emissions, so nothing is
+// returned. Narrowing industry and country is otherwise enough to isolate one
+// organization and read its inventory straight out of the statistics.
+const MIN_COHORT = 5;
+const MAX_ORGS = 500;
 
 const querySchema = z.object({
   industry: z.string().optional(),
@@ -10,6 +19,10 @@ const querySchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    // This endpoint previously had no authentication at all, which made every
+    // customer's emissions readable by anyone who could reach the URL.
+    await requireSession();
+
     const query = querySchema.parse({
       industry: request.nextUrl.searchParams.get("industry") ?? undefined,
       country: request.nextUrl.searchParams.get("country") ?? undefined,
@@ -22,6 +35,7 @@ export async function GET(request: NextRequest) {
         ...(query.country && { hqCountry: query.country }),
       },
       select: { id: true },
+      take: MAX_ORGS,
     });
 
     if (orgs.length === 0) {
@@ -35,20 +49,53 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get total emissions by organization
-    const emissionsByOrg = await prisma.dashboardAggregate.groupBy({
-      by: ["organizationId"],
-      where: {
-        organizationId: { in: orgs.map((o) => o.id) },
-      },
-      _sum: {
-        totalCo2e: true,
-      },
+    // Each organization is measured on its own latest reporting period. Summing
+    // DashboardAggregate by organizationId alone adds every period, every
+    // published snapshot copy and every breakdown dimension together.
+    const latestPeriods = await prisma.reportingPeriod.findMany({
+      where: { organizationId: { in: orgs.map((o) => o.id) } },
+      orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      select: { id: true, organizationId: true },
     });
+    const periodByOrg = new Map<string, string>();
+    for (const period of latestPeriods) {
+      if (!periodByOrg.has(period.organizationId)) {
+        periodByOrg.set(period.organizationId, period.id);
+      }
+    }
+    const orgScope = Array.from(periodByOrg.entries()).map(
+      ([organizationId, reportingPeriodId]) => ({ organizationId, reportingPeriodId }),
+    );
+
+    const emissionsByOrg = orgScope.length
+      ? await prisma.dashboardAggregate.groupBy({
+          by: ["organizationId"],
+          where: {
+            // Both fragments are OR-shaped, so nest them under AND.
+            AND: [{ OR: orgScope }, PRIMARY_SCOPE2_METHOD],
+            snapshotId: null,
+            emissionCategoryId: null,
+            businessUnitId: null,
+            facilityId: null,
+          },
+          _sum: { totalCo2e: true },
+        })
+      : [];
 
     const emissionValues = emissionsByOrg
       .map((e) => Number(e._sum.totalCo2e ?? 0))
       .sort((a, b) => a - b);
+
+    if (emissionValues.length < MIN_COHORT) {
+      return NextResponse.json({
+        criteria: { industry: query.industry, country: query.country },
+        stats: {
+          organizationCount: emissionValues.length,
+          message: `Industry statistics need at least ${MIN_COHORT} organisations with a calculated inventory. ${emissionValues.length} found.`,
+        },
+        distribution: null,
+      });
+    }
 
     // Calculate statistics
     const sum = emissionValues.reduce((a, b) => a + b, 0);
@@ -71,41 +118,6 @@ export async function GET(request: NextRequest) {
       q3: emissionValues[Math.floor(emissionValues.length * 0.75)],
     };
 
-    // Get top and bottom performers
-    const topEmitters = emissionsByOrg
-      .sort((a, b) => (Number(b._sum.totalCo2e ?? 0) - Number(a._sum.totalCo2e ?? 0)))
-      .slice(0, 5)
-      .map((e) => ({
-        organizationId: e.organizationId,
-        emissions: Math.round(Number(e._sum.totalCo2e ?? 0)),
-      }));
-
-    const topReducers = await Promise.all(
-      emissionsByOrg.slice(0, 10).map(async (e) => {
-        const twoYearsAgo = new Date();
-        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-
-        const past = await prisma.dashboardAggregate.aggregate({
-          where: {
-            organizationId: e.organizationId,
-            reportingPeriod: { startDate: { lte: twoYearsAgo } },
-          },
-          orderBy: { reportingPeriod: { startDate: "desc" } },
-          take: 1,
-          _sum: { totalCo2e: true },
-        });
-
-        const current = Number(e._sum.totalCo2e ?? 0);
-        const oldEmissions = Number(past._sum.totalCo2e ?? 0);
-        const reductionRate = oldEmissions > 0 ? ((oldEmissions - current) / oldEmissions) * 100 : 0;
-
-        return {
-          organizationId: e.organizationId,
-          reductionRate: Math.round(reductionRate * 10) / 10,
-        };
-      })
-    );
-
     return NextResponse.json({
       criteria: {
         industry: query.industry,
@@ -125,10 +137,10 @@ export async function GET(request: NextRequest) {
         q2: Math.round(quartiles.q2),
         q3: Math.round(quartiles.q3),
       },
-      topEmitters,
-      topReducers: topReducers
-        .sort((a, b) => b.reductionRate - a.reductionRate)
-        .slice(0, 5),
+      // topEmitters and topReducers used to be returned here, each carrying a
+      // raw organizationId alongside that organization's exact emissions. That
+      // identified other tenants, so the distribution statistics above are now
+      // the whole answer.
     });
   } catch (error) {
     return handleRouteError(error);

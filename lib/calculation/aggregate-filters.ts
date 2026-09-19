@@ -1,3 +1,5 @@
+import { prisma } from "@/lib/db";
+
 // Shared Prisma where-fragments for reading DashboardAggregate.
 //
 // rebuildDashboardAggregates() in run-worker.ts writes the SAME calculations
@@ -44,3 +46,47 @@ export const FACILITY_BREAKDOWN_DIMENSIONS = {
   facilityId: { not: null },
   ...PRIMARY_SCOPE2_METHOD,
 };
+
+/// Total live CO2e (kg) for one organization and one reporting period, with the
+/// breakdown dimensions pinned and published-snapshot copies excluded.
+///
+/// Anything comparing organizations or periods must go through this. Summing
+/// DashboardAggregate with only an organizationId adds every dimension row,
+/// every reporting period and every published snapshot's frozen copy together,
+/// which overstates by a multiple that grows each time a snapshot is published.
+export async function periodLiveCo2e(
+  organizationId: string,
+  reportingPeriodId: string,
+): Promise<number> {
+  const agg = await prisma.dashboardAggregate.aggregate({
+    where: {
+      organizationId,
+      reportingPeriodId,
+      snapshotId: null,
+      ...SCOPE_ROLLUP_DIMENSIONS,
+      facilityId: null,
+    },
+    _sum: { totalCo2e: true },
+  });
+  return Number(agg._sum.totalCo2e ?? 0);
+}
+
+/// Total live CO2e (kg) for an organization's most recent reporting period that
+/// starts on or before `onOrBefore` (defaults to the latest period outright).
+/// Returns null when the organization has no such period, which callers must
+/// treat as "no comparable figure" rather than zero emissions.
+export async function latestPeriodLiveCo2e(
+  organizationId: string,
+  onOrBefore?: Date,
+): Promise<number | null> {
+  const period = await prisma.reportingPeriod.findFirst({
+    where: {
+      organizationId,
+      ...(onOrBefore ? { startDate: { lte: onOrBefore } } : {}),
+    },
+    orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+    select: { id: true },
+  });
+  if (!period) return null;
+  return periodLiveCo2e(organizationId, period.id);
+}

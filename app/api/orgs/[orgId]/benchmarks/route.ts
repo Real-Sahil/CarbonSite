@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
+import { latestPeriodLiveCo2e } from "@/lib/calculation/aggregate-filters";
+
+// Peer figures are only ever returned in aggregate. Naming another tenant, or
+// returning a figure a single tenant can be identified from, would disclose one
+// customer's emissions to another.
+const MIN_PEER_COHORT = 3;
+// Caps the per-peer queries below; a cohort larger than this is still
+// statistically ample for percentile comparison.
+const MAX_PEERS = 50;
 
 export async function GET(
   request: NextRequest,
@@ -25,95 +34,62 @@ export async function GET(
       return apiError("ORG_NOT_FOUND", "Organization not found", 404);
     }
 
-    // Get current organization's emissions
-    const currentOrgEmissions = await prisma.dashboardAggregate.aggregate({
-      where: {
-        organizationId: orgId,
-      },
-      _sum: {
-        totalCo2e: true,
-      },
-    });
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
 
-    const orgEmissions = Number(currentOrgEmissions._sum.totalCo2e ?? 0);
+    const orgEmissions = (await latestPeriodLiveCo2e(orgId)) ?? 0;
+    const orgOldEmissions = await latestPeriodLiveCo2e(orgId, twoYearsAgo);
+    const orgReductionRate =
+      orgOldEmissions != null && orgOldEmissions > 0
+        ? ((orgOldEmissions - orgEmissions) / orgOldEmissions) * 100
+        : 0;
 
-    // Find peer organizations (same industry and country)
+    // Find peer organizations (same industry and country). Ids are used to query
+    // their totals and are never returned.
     const peers = await prisma.organization.findMany({
       where: {
         id: { not: orgId },
         industry: org.industry,
         hqCountry: org.hqCountry,
       },
-      select: {
-        id: true,
-        name: true,
-        industry: true,
-        hqCountry: true,
-      },
+      select: { id: true },
+      take: MAX_PEERS,
     });
 
-    // Get emissions for all peers
-    const peerEmissions: Array<{
-      id: string;
-      name: string;
-      emissions: number;
-      reductionRate: number;
-    }> = [];
+    const peerEmissions: Array<{ emissions: number; reductionRate: number }> = [];
 
     for (const peer of peers) {
-      const emissions = await prisma.dashboardAggregate.aggregate({
-        where: { organizationId: peer.id },
-        _sum: { totalCo2e: true },
-      });
+      const currentEmissions = await latestPeriodLiveCo2e(peer.id);
+      // A peer with no calculated inventory is not a data point. Treating it as
+      // zero would drag every average and percentile toward zero.
+      if (currentEmissions == null) continue;
 
-      // Calculate reduction rate (emissions change over 2 years)
-      const twoYearsAgo = new Date();
-      twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-
-      const pastEmissions = await prisma.dashboardAggregate.aggregate({
-        where: {
-          organizationId: peer.id,
-          reportingPeriod: {
-            startDate: { lte: twoYearsAgo },
-          },
-        },
-        orderBy: { reportingPeriod: { startDate: "desc" } },
-        take: 1,
-        _sum: { totalCo2e: true },
-      });
-
-      const currentEmissions = Number(emissions._sum.totalCo2e ?? 0);
-      const oldEmissions = Number(pastEmissions._sum.totalCo2e ?? 0);
+      const oldEmissions = await latestPeriodLiveCo2e(peer.id, twoYearsAgo);
       const reductionRate =
-        oldEmissions > 0 ? ((oldEmissions - currentEmissions) / oldEmissions) * 100 : 0;
+        oldEmissions != null && oldEmissions > 0
+          ? ((oldEmissions - currentEmissions) / oldEmissions) * 100
+          : 0;
 
-      peerEmissions.push({
-        id: peer.id,
-        name: peer.name,
-        emissions: currentEmissions,
-        reductionRate,
-      });
+      peerEmissions.push({ emissions: currentEmissions, reductionRate });
     }
 
-    // Calculate organization's reduction rate
-    const orgTwoYearsAgo = new Date();
-    orgTwoYearsAgo.setFullYear(orgTwoYearsAgo.getFullYear() - 2);
-
-    const orgPastEmissions = await prisma.dashboardAggregate.aggregate({
-      where: {
-        organizationId: orgId,
-        reportingPeriod: {
-          startDate: { lte: orgTwoYearsAgo },
+    // Below the cohort floor an individual peer's emissions can be backed out of
+    // the average, so no comparison is returned at all.
+    if (peerEmissions.length < MIN_PEER_COHORT) {
+      return NextResponse.json({
+        organization: {
+          id: org.id,
+          name: org.name,
+          industry: org.industry,
+          country: org.hqCountry,
+          emissions: Math.round(orgEmissions),
+          reductionRate: Math.round(orgReductionRate * 10) / 10,
         },
-      },
-      orderBy: { reportingPeriod: { startDate: "desc" } },
-      take: 1,
-      _sum: { totalCo2e: true },
-    });
-
-    const orgOldEmissions = Number(orgPastEmissions._sum.totalCo2e ?? 0);
-    const orgReductionRate =
-      orgOldEmissions > 0 ? ((orgOldEmissions - orgEmissions) / orgOldEmissions) * 100 : 0;
+        benchmarks: null,
+        peerCount: peerEmissions.length,
+        message: `Benchmarking needs at least ${MIN_PEER_COHORT} comparable organisations with a calculated inventory. ${peerEmissions.length} found.`,
+      });
+    }
 
     // Calculate percentiles
     const allEmissions = [orgEmissions, ...peerEmissions.map((p) => p.emissions)].sort(
@@ -128,13 +104,13 @@ export async function GET(
     const reductionPercentile =
       (allReductionRates.indexOf(orgReductionRate) / allReductionRates.length) * 100;
 
-    // Identify best performers
-    const bestByEmissions = peerEmissions.reduce((prev, current) =>
-      prev.emissions < current.emissions ? prev : current
-    );
-
-    const bestByReduction = peerEmissions.reduce((prev, current) =>
-      prev.reductionRate > current.reductionRate ? prev : current
+    // Best and worst of the cohort as bare figures. The previous version
+    // returned the peer's name, which disclosed one tenant's emissions to
+    // another, and used reduce() with no initial value, so it threw
+    // "Reduce of empty array with no initial value" for any org without peers.
+    const lowestPeerEmissions = Math.min(...peerEmissions.map((p) => p.emissions));
+    const highestPeerReductionRate = Math.max(
+      ...peerEmissions.map((p) => p.reductionRate),
     );
 
     return NextResponse.json({
@@ -149,33 +125,17 @@ export async function GET(
       benchmarks: {
         emissionsPercentile: Math.round(emissionsPercentile),
         reductionPercentile: Math.round(reductionPercentile),
-        peerCount: peers.length,
+        peerCount: peerEmissions.length,
         avgEmissions: Math.round(
           peerEmissions.reduce((sum, p) => sum + p.emissions, 0) / peerEmissions.length
         ),
         avgReductionRate: Math.round(
           (peerEmissions.reduce((sum, p) => sum + p.reductionRate, 0) / peerEmissions.length) * 10
         ) / 10,
-      },
-      peers: peerEmissions.map((p) => ({
-        id: p.id,
-        name: p.name,
-        emissions: Math.round(p.emissions),
-        reductionRate: Math.round(p.reductionRate * 10) / 10,
-      })),
-      topPerformers: {
-        lowestEmissions: bestByEmissions
-          ? {
-              name: bestByEmissions.name,
-              emissions: Math.round(bestByEmissions.emissions),
-            }
-          : null,
-        highestReductionRate: bestByReduction
-          ? {
-              name: bestByReduction.name,
-              reductionRate: Math.round(bestByReduction.reductionRate * 10) / 10,
-            }
-          : null,
+        // Cohort extremes only. Which organisation they belong to is not
+        // disclosed.
+        lowestPeerEmissions: Math.round(lowestPeerEmissions),
+        highestPeerReductionRate: Math.round(highestPeerReductionRate * 10) / 10,
       },
       recommendations:
         emissionsPercentile > 75

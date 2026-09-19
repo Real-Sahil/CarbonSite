@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { PRIMARY_SCOPE2_METHOD } from "@/lib/calculation/aggregate-filters";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import {
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest, { params }: Params) {
             emissionCategoryId: null,
             facilityId: null,
             businessUnitId: null,
+            ...PRIMARY_SCOPE2_METHOD,
           },
           select: { scope: true, totalCo2e: true, recordCount: true },
         }),

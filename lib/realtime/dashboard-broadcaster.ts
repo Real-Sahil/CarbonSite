@@ -5,6 +5,7 @@
 
 import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from "@/lib/db";
+import { CATEGORY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import { broadcastDashboardUpdate as broadcast, type DashboardUpdate } from "@/lib/realtime/subscription-manager";
 
 /**
@@ -26,9 +27,16 @@ export async function broadcastDashboardUpdate(
 ): Promise<void> {
   try {
     // Fetch updated dashboard aggregates
-    const where: { organizationId: string; reportingPeriodId?: string } = {
+    // Category rows only. They cover every calculation exactly once, so they
+    // give both the scope totals and the per-category map from one query. The
+    // unfiltered table also holds a scope rollup row, per-facility and
+    // per-business-unit rows for the same emissions, plus a frozen copy under
+    // every published snapshot, so summing it raw overstates several times over.
+    const where = {
       organizationId: orgId,
       ...(reportingPeriodId ? { reportingPeriodId } : {}),
+      snapshotId: null,
+      ...CATEGORY_BREAKDOWN_DIMENSIONS,
     };
 
     const aggregates = await prisma.dashboardAggregate.findMany({
@@ -100,9 +108,16 @@ export async function getDashboardSnapshot(
   reportingPeriodId?: string
 ): Promise<{ aggregates: { totalCo2e: number; scope1: number; scope2: number; scope3: number; byCategory: Record<string, number> }; timestamp: string } | null> {
   try {
-    const where: { organizationId: string; reportingPeriodId?: string } = {
+    // Category rows only. They cover every calculation exactly once, so they
+    // give both the scope totals and the per-category map from one query. The
+    // unfiltered table also holds a scope rollup row, per-facility and
+    // per-business-unit rows for the same emissions, plus a frozen copy under
+    // every published snapshot, so summing it raw overstates several times over.
+    const where = {
       organizationId: orgId,
       ...(reportingPeriodId ? { reportingPeriodId } : {}),
+      snapshotId: null,
+      ...CATEGORY_BREAKDOWN_DIMENSIONS,
     };
 
     const aggregates = await prisma.dashboardAggregate.findMany({

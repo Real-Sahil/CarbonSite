@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { CATEGORY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import { validateApiKey } from "@/lib/auth/api-key";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
@@ -81,6 +82,10 @@ export async function GET(
       where: {
         organizationId: orgId,
         snapshotId,
+        // scopeTotals below sums these rows. Without pinning the dimensions the
+        // same emissions are counted once per breakdown, overstating every
+        // scope in a regulatory filing.
+        ...CATEGORY_BREAKDOWN_DIMENSIONS,
       },
       select: {
         scope: true,

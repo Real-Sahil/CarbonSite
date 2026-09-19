@@ -5,6 +5,7 @@
 // into two slightly different implementations.
 
 import { prisma } from "@/lib/db";
+import { PRIMARY_SCOPE2_METHOD } from "./aggregate-filters";
 import {
   buildSbtiAlerts,
   buildSbtiTrajectory,
@@ -58,6 +59,9 @@ export async function actualTco2eByYear(
       emissionCategoryId: { not: null },
       facilityId: null,
       businessUnitId: null,
+      // A Scope 2 category has one row per reporting method; without this the
+      // SBTi actual for every year double counts Scope 2.
+      ...PRIMARY_SCOPE2_METHOD,
     },
     select: { reportingPeriodId: true, snapshotId: true, totalCo2e: true },
   });

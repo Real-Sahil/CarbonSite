@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError } from "@/lib/validation/api";
@@ -240,6 +241,9 @@ export async function POST(
         where: {
           organizationId: orgId,
           reportingPeriodId: query.comparisonPeriodId,
+          snapshotId: null,
+          ...SCOPE_ROLLUP_DIMENSIONS,
+          facilityId: null,
         },
         _sum: { totalCo2e: true },
       });
@@ -248,6 +252,13 @@ export async function POST(
         where: {
           organizationId: orgId,
           reportingPeriodId: activePeriod.id,
+          // Identical scoping to the comparison above. The two periods can have
+          // different facility and business-unit coverage, so unpinned
+          // dimensions inflate each by a different multiple and the
+          // period-on-period delta is wrong in both size and direction.
+          snapshotId: null,
+          ...SCOPE_ROLLUP_DIMENSIONS,
+          facilityId: null,
         },
         _sum: { totalCo2e: true },
       });

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 
 export interface EmissionAnomaly {
   recordId: string;
@@ -248,6 +249,9 @@ async function getMonthlyEmissions(
           startDate: { gte: monthStart },
           endDate: { lte: monthEnd },
         },
+        snapshotId: null,
+        ...SCOPE_ROLLUP_DIMENSIONS,
+        facilityId: null,
       },
       _sum: {
         totalCo2e: true,

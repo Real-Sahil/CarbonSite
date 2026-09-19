@@ -3,6 +3,15 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { z } from "zod";
+import {
+  PRIMARY_SCOPE2_METHOD,
+  SCOPE_ROLLUP_DIMENSIONS,
+  latestPeriodLiveCo2e,
+} from "@/lib/calculation/aggregate-filters";
+
+// A peer average computed over fewer organizations than this is effectively one
+// tenant's exact emissions.
+const MIN_PEER_COHORT = 3;
 
 const querySchema = z.object({
   type: z.enum(["sbti", "benchmark", "compliance", "all"]).default("all"),
@@ -64,6 +73,11 @@ export async function GET(
               startDate: { gte: yearStart },
               endDate: { lte: yearEnd },
             },
+            // Without these the actual is inflated two to four times and every
+            // target looks breached.
+            snapshotId: null,
+            ...SCOPE_ROLLUP_DIMENSIONS,
+            facilityId: null,
           },
           _sum: {
             totalCo2e: true,
@@ -137,29 +151,52 @@ export async function GET(
         });
 
         if (peers.length > 0) {
-          const orgEmissions = await prisma.dashboardAggregate.aggregate({
-            where: { organizationId: orgId },
-            _sum: { totalCo2e: true },
-          });
+          const orgValue = (await latestPeriodLiveCo2e(orgId)) ?? 0;
 
-          const peerEmissions = await prisma.dashboardAggregate.groupBy({
-            by: ["organizationId"],
-            where: {
-              organizationId: { in: peers.map((p) => p.id) },
-            },
-            _sum: {
-              totalCo2e: true,
-            },
+          // Each peer on its own latest period, live rows only, dimensions
+          // pinned. Summing by organizationId alone adds every period, every
+          // published snapshot copy and every breakdown dimension together,
+          // which inflates the peer average and fires false benchmark alerts.
+          const peerLatestPeriods = await prisma.reportingPeriod.findMany({
+            where: { organizationId: { in: peers.map((p) => p.id) } },
+            orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+            select: { id: true, organizationId: true },
           });
+          const peerPeriodByOrg = new Map<string, string>();
+          for (const period of peerLatestPeriods) {
+            if (!peerPeriodByOrg.has(period.organizationId)) {
+              peerPeriodByOrg.set(period.organizationId, period.id);
+            }
+          }
+          const peerScope = Array.from(peerPeriodByOrg.entries()).map(
+            ([organizationId, reportingPeriodId]) => ({ organizationId, reportingPeriodId }),
+          );
+
+          const peerEmissions = peerScope.length
+            ? await prisma.dashboardAggregate.groupBy({
+                by: ["organizationId"],
+                where: {
+                  AND: [{ OR: peerScope }, PRIMARY_SCOPE2_METHOD],
+                  snapshotId: null,
+                  emissionCategoryId: null,
+                  businessUnitId: null,
+                  facilityId: null,
+                },
+                _sum: { totalCo2e: true },
+              })
+            : [];
 
           const peerValues = peerEmissions
             .map((p) => Number(p._sum.totalCo2e ?? 0))
             .sort((a, b) => a - b);
           const avgPeerEmissions =
-            peerValues.reduce((a, b) => a + b, 0) / peerValues.length;
-          const orgValue = Number(orgEmissions._sum.totalCo2e ?? 0);
+            peerValues.length > 0
+              ? peerValues.reduce((a, b) => a + b, 0) / peerValues.length
+              : 0;
 
-          if (orgValue > avgPeerEmissions * 1.5) {
+          // Below the cohort floor peerAvg is effectively one tenant's exact
+          // emissions, so no benchmark alert is raised at all.
+          if (peerValues.length >= MIN_PEER_COHORT && orgValue > avgPeerEmissions * 1.5) {
             const severity = orgValue > avgPeerEmissions * 2 ? "critical" : "warning";
             if (!query.severity || query.severity === severity) {
               alerts.push({
@@ -174,7 +211,7 @@ export async function GET(
                 data: {
                   orgEmissions: Math.round(orgValue),
                   peerAvg: Math.round(avgPeerEmissions),
-                  peerCount: peers.length,
+                  peerCount: peerValues.length,
                 },
               });
             }

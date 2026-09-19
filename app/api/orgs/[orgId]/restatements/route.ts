@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
+import { PRIMARY_SCOPE2_METHOD } from "@/lib/calculation/aggregate-filters";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
@@ -168,6 +169,7 @@ async function snapshotTotal(
       emissionCategoryId: { not: null },
       facilityId: null,
       businessUnitId: null,
+      ...PRIMARY_SCOPE2_METHOD,
     },
     _sum: { totalCo2e: true },
   });

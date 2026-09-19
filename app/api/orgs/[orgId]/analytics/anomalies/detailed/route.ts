@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { FACILITY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError } from "@/lib/validation/api";
@@ -88,6 +89,12 @@ export async function GET(
       where: {
         organizationId: orgId,
         reportingPeriodId: activePeriod.id,
+        // Grouping by facilityId without pinning the other dimensions puts the
+        // scope rollup, per-category and per-business-unit rows into one
+        // facilityId: null bucket, so the avg, min and max describe a mix of
+        // unrelated row types rather than facilities.
+        snapshotId: null,
+        ...FACILITY_BREAKDOWN_DIMENSIONS,
       },
       _avg: { totalCo2e: true },
       _min: { totalCo2e: true },

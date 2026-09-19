@@ -11,6 +11,7 @@
 // changes, and discovery of material errors. Organic growth and decline do not.
 
 import { prisma } from "@/lib/db";
+import { PRIMARY_SCOPE2_METHOD } from "@/lib/calculation/aggregate-filters";
 import type { PrismaClient, StructuralChangeType } from "@prisma/client";
 
 /** Changes that oblige recalculation. Organic change never appears here. */
@@ -69,6 +70,9 @@ export async function computePeriodTotals(
       emissionCategoryId: { not: null },
       facilityId: null,
       businessUnitId: null,
+      // Scope 2 carries one row per reporting method. Counting both would
+      // inflate the base year that every target is measured against.
+      ...PRIMARY_SCOPE2_METHOD,
       ...(snapshot ? { snapshotId: snapshot.id } : {}),
     },
     _sum: { totalCo2e: true },

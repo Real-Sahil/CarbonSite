@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { CATEGORY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { generateComplianceReportWorkbook } from "@/lib/export/excel";
@@ -96,11 +97,23 @@ export async function GET(
           : 0,
     }));
 
+    // The run the category breakdown below is measured on. Null when the period
+    // has never been calculated, which makes the join match nothing and the
+    // breakdown legitimately zero.
+    const latestRun = await prisma.calculationRun.findFirst({
+      where: { organizationId: orgId, reportingPeriodId: period.id, status: "succeeded" },
+      orderBy: { createdAt: "desc" },
+      select: { id: true },
+    });
+    const latestRunId = latestRun?.id ?? null;
+
     // Get dashboard aggregates
     const dashboardData = await prisma.dashboardAggregate.findMany({
       where: {
         organizationId: orgId,
         reportingPeriodId: period.id,
+        snapshotId: null,
+        ...CATEGORY_BREAKDOWN_DIMENSIONS,
       },
       include: {
         reportingPeriod: true,
@@ -118,7 +131,12 @@ export async function GET(
         COALESCE(SUM(ec.total_co2e), 0) as total_co2e,
         COUNT(DISTINCT ar.id) as record_count
       FROM activity_records ar
-      LEFT JOIN emission_calculations ec ON ar.id = ec.activity_record_id
+      LEFT JOIN emission_calculations ec
+        ON ar.id = ec.activity_record_id
+        -- Every record has one immutable EmissionCalculation row per run it was
+        -- included in. Without pinning the run, an org that has recalculated
+        -- three times gets three times its real emissions in this export.
+        AND ec.calculation_run_id = ${latestRunId}
       WHERE ar.organization_id = ${orgId}
         AND ar.reporting_period_id = ${period.id}
       GROUP BY ar.emission_category_id

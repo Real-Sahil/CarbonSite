@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import { redirect } from "next/navigation";
 import type { OrgRole } from "@prisma/client";
 import {
@@ -112,7 +113,13 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
   const aggregateRows =
     periodIds.length > 0
       ? await prisma.dashboardAggregate.findMany({
-          where: { organizationId: orgId, reportingPeriodId: { in: periodIds } },
+          where: {
+            organizationId: orgId,
+            reportingPeriodId: { in: periodIds },
+            snapshotId: null,
+            ...SCOPE_ROLLUP_DIMENSIONS,
+            facilityId: null,
+          },
           select: { reportingPeriodId: true, totalCo2e: true },
         })
       : [];
