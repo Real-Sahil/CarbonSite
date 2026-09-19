@@ -1,0 +1,4 @@
+- title: "Home loads"
+  goal: "Load home screen"
+  hint: "Open app"
+  final_screen_assertion: "Home screen visible"
