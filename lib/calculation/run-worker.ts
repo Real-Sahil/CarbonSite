@@ -82,8 +82,10 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 
   try {
     const overallDeadline = Date.now() + REQUEST_TIME_BUDGET_MS;
+    let cachedFactors: import("./factor-selector").FactorCache | undefined;
     for (;;) {
-      const result = await processOneChunk(calculationRunId, orgId);
+      const result = await processOneChunk(calculationRunId, orgId, cachedFactors);
+      if (result.factorCache) cachedFactors = result.factorCache;
       if (result.done) return { done: true };
       if (Date.now() >= overallDeadline) {
         // More work remains but this invocation is out of budget. Refresh
@@ -119,7 +121,7 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 // record already has an EmissionCalculation row for this run — from an
 // earlier chunk — is never reprocessed), persists progress, and runs the
 // once-only finalization steps when nothing remains.
-async function processOneChunk(calculationRunId: string, orgId: string): Promise<ChunkResult> {
+async function processOneChunk(calculationRunId: string, orgId: string, sharedFactorCache?: import("./factor-selector").FactorCache): Promise<ChunkResult & { factorCache?: import("./factor-selector").FactorCache }> {
   const run = await prisma.calculationRun.findUniqueOrThrow({
     where: { id: calculationRunId },
     include: {
@@ -176,9 +178,10 @@ async function processOneChunk(calculationRunId: string, orgId: string): Promise
   const factorLibraryVersion = `${run.factorLibrary.name} ${run.factorLibrary.version}`;
   const methodologyVersionName = run.methodologyVersion.name;
 
-  // Pre-load all emission factors for this library into memory.
-  // This converts ~100k per-record DB queries into a single bulk fetch.
-  const factorCache = await buildFactorCache(run.factorLibraryId);
+  // Pre-load all emission factors for this library into memory once per run.
+  // Passed in from processCalculationRun on subsequent chunks so multi-chunk
+  // runs never re-fetch the entire factor table from the DB.
+  const factorCache = sharedFactorCache ?? await buildFactorCache(run.factorLibraryId);
 
   const chunkDeadline = Date.now() + CHUNK_TIME_BUDGET_MS;
 
@@ -199,6 +202,11 @@ async function processOneChunk(calculationRunId: string, orgId: string): Promise
 
       let normalized: ReturnType<typeof normalizeUnit>;
       const unitWarnings: string[] = [];
+      if (record.activityDate == null && record.startDate == null) {
+        unitWarnings.push(
+          "No activity date on this record — today's date was used for factor version selection. Add a date to ensure the correct factor version is applied.",
+        );
+      }
       try {
         normalized = normalizeUnit(Number(record.amount), record.unit);
       } catch (err) {
@@ -537,7 +545,7 @@ async function processOneChunk(calculationRunId: string, orgId: string): Promise
       // Chunk budget spent but a full page was still available — more
       // records remain. Yield; the caller decides whether to keep looping
       // (still within its own overall budget) or return for now.
-      return { done: false };
+      return { done: false, factorCache };
     }
   }
 

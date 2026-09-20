@@ -199,5 +199,11 @@ export async function selectFactor(
     );
   }
 
-  return { factor: best.factor, selectionReason: best.reason, warnings: finalWarnings };
+  if (best.score === 0) {
+    finalWarnings.push(
+      `No strong factor match (score 0) — selected "${best.factor.externalId ?? best.factor.id}" by ID tie-break only. Verify this factor is appropriate for the record's unit, geography, and fuel type.`,
+    );
+  }
+
+  return { factor: best.factor, selectionReason: best.reason || "tie-break (score 0)", warnings: finalWarnings };
 }
