@@ -46,6 +46,7 @@ model User {
   ownedInitiatives                  ReductionInitiative[]        @relation("InitiativeOwner")
   createdInitiatives                ReductionInitiative[]        @relation("InitiativeCreator")
   fieldSubmissions                  FieldSubmission[]
+  claimedFieldSubmissions           FieldSubmission[]            @relation("FieldSubmissionClaim")
   fieldWorkerAssignments            FieldWorkerAssignment[]      @relation("AssignedFieldWorker")
   createdFieldWorkerAssignments     FieldWorkerAssignment[]      @relation("FieldWorkerAssignmentCreator")
   fieldWorkerSiteAssignments        FieldWorkerSiteAssignment[]  @relation("AssignedFieldWorkerSite")
@@ -180,6 +181,9 @@ model Organization {
   isPilot                      Boolean  @default(false) @map("is_pilot")
   supplierPasswordRotationDays Int?     @map("supplier_password_rotation_days")
   supplierAccountExpiryDays    Int?     @map("supplier_account_expiry_days")
+  /// How long (in days) to keep field submission evidence files. NULL = keep forever.
+  evidenceRetentionDays        Int?     @map("evidence_retention_days")
+  evidenceRetentionNotifiedAt  DateTime? @map("evidence_retention_notified_at")
   createdAt                    DateTime @default(now()) @map("created_at")
   updatedAt                    DateTime @updatedAt @map("updated_at")
 
@@ -1021,6 +1025,10 @@ model FieldSubmission {
   requestedByDeadline       DateTime?             @map("requested_by_deadline")
   submittedAt               DateTime?             @map("submitted_at")
   idempotencyKey            String?               @map("idempotency_key")
+  /// Reviewer who has claimed this submission for exclusive review. Cleared after 5 min inactivity.
+  reviewClaimedByUserId     String?               @map("review_claimed_by_user_id")
+  /// Timestamp when the current claim was acquired. Used to detect stale claims.
+  reviewClaimedAt           DateTime?             @map("review_claimed_at")
   createdAt                 DateTime              @default(now()) @map("created_at")
   updatedAt                 DateTime              @updatedAt @map("updated_at")
 
@@ -1031,6 +1039,7 @@ model FieldSubmission {
   site             Site?                 @relation("FieldSubmissionSite", fields: [siteId], references: [id], onDelete: SetNull)
   contract         Contract?             @relation("FieldSubmissionContracts", fields: [contractId], references: [id], onDelete: SetNull)
   submittedBy      User                  @relation(fields: [submittedByUserId], references: [id])
+  reviewClaimedBy  User?                 @relation("FieldSubmissionClaim", fields: [reviewClaimedByUserId], references: [id])
   resubmittedFrom  FieldSubmission?      @relation("FieldSubmissionResubmit", fields: [resubmittedFromId], references: [id])
   resubmissions    FieldSubmission[]     @relation("FieldSubmissionResubmit")
   files            FieldSubmissionFile[]
@@ -1325,6 +1334,9 @@ model PublishedSnapshot {
   verificationStatus SnapshotVerificationStatus @default(pending_review) @map("verification_status")
   verifiedByUserId   String?                    @map("verified_by_user_id")
   verifiedAt         DateTime?                  @map("verified_at")
+  /// Time-limited token for unauthenticated read-only access. NULL = not shared.
+  shareToken         String?                    @unique @map("share_token")
+  shareTokenExpiresAt DateTime?                 @map("share_token_expires_at")
 
   organization    Organization         @relation(fields: [organizationId], references: [id])
   reportingPeriod ReportingPeriod      @relation(fields: [reportingPeriodId], references: [id])

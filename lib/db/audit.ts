@@ -238,7 +238,12 @@ export type AuditAction =
   | "report.signature_request_created"
   | "report.signature_signed"
   | "report.signature_declined"
-  | "report.signature_expired";
+  | "report.signature_expired"
+  | "field_submission.review_claimed"
+  | "field_submission.review_claim_released"
+  | "settings.data_retention_updated"
+  | "snapshot.share_link_created"
+  | "snapshot.share_link_revoked";
 
 export async function writeAuditLog(params: {
   organizationId: string;

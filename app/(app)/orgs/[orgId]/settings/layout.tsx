@@ -12,7 +12,8 @@ const TABS = [
   { label: "Suppliers",  segment: "suppliers" },
   { label: "API Keys",   segment: "api-keys" },
   { label: "Webhooks",   segment: "webhooks" },
-  { label: "Billing",    segment: "billing" },
+  { label: "Billing",        segment: "billing" },
+  { label: "Data Retention", segment: "data-retention" },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

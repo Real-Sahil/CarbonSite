@@ -54,6 +54,7 @@ export default async function SubmissionsPage({
   let statusCounts = new Map<string, number>();
   let hasMore = false;
   let total = 0;
+  let slaOverdueCount = 0;
 
   try {
     await requireOrgMember(orgId, "admin", "editor", "reviewer");
@@ -63,7 +64,10 @@ export default async function SubmissionsPage({
       ...(statusFilter !== "all" ? { status: statusFilter } : {}),
     };
 
-    const [memberships, submissions, countRows] = await Promise.all([
+    const SLA_HOURS = 48;
+    const slaCutoff = new Date(Date.now() - SLA_HOURS * 3_600_000);
+
+    const [memberships, submissions, countRows, overdueCount] = await Promise.all([
       prisma.organizationMembership.findMany({
         where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
         include: { user: { select: { id: true, name: true, email: true } } },
@@ -85,10 +89,18 @@ export default async function SubmissionsPage({
         _count: { _all: true },
         orderBy: { status: "asc" },
       }),
+      prisma.fieldSubmission.count({
+        where: {
+          organizationId: orgId,
+          status: { in: ["submitted", "under_review"] },
+          submittedAt: { lt: slaCutoff },
+        },
+      }),
     ]);
 
     statusCounts = new Map(countRows.map((row) => [row.status, row._count._all]));
     total = countRows.reduce((sum, row) => sum + row._count._all, 0);
+    slaOverdueCount = overdueCount;
     hasMore = submissions.length > limit;
     const page = hasMore ? submissions.slice(0, limit) : submissions;
 
@@ -175,6 +187,26 @@ export default async function SubmissionsPage({
           </div>
         </div>
       </div>
+
+      {/* SLA overdue banner */}
+      {slaOverdueCount > 0 && (
+        <div className="max-w-[1200px] mx-auto px-8 pt-6">
+          <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-5 py-3 flex items-center justify-between gap-4">
+            <p className="text-sm text-amber-900 tracking-[-0.42px]">
+              <span className="font-medium">
+                {slaOverdueCount} submission{slaOverdueCount !== 1 ? "s" : ""}
+              </span>{" "}
+              pending review for more than 48 hours.
+            </p>
+            <Link
+              href={filterHref("submitted")}
+              className="shrink-0 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-50 transition-colors"
+            >
+              View pending
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-8 py-8">

@@ -17,6 +17,7 @@ import { SubmissionReviewActions } from "../review-actions";
 import { SubmissionEditActions } from "../edit-actions";
 import { SubmissionEvidenceDownloads } from "../evidence-download-actions";
 import { SubmissionCommentActions } from "../comment-actions";
+import { SubmissionClaimBanner } from "../claim-banner";
 
 interface SubmissionDetailPageProps {
   params: Promise<{ orgId: string; id: string }>;
@@ -88,6 +89,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           orderBy: { createdAt: "desc" },
           take: 1,
         },
+        reviewClaimedBy: { select: { id: true, name: true, email: true } },
         files: {
           include: {
             evidenceFile: {
@@ -265,6 +267,15 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           )}
         </div>
       </div>
+
+      {!isResolved && (
+        <SubmissionClaimBanner
+          orgId={orgId}
+          submissionId={id}
+          claimedBy={submission.reviewClaimedBy}
+          claimedAt={submission.reviewClaimedAt?.toISOString() ?? null}
+        />
+      )}
 
       {preApprovalIssue && (
         <div className="mb-[21px] rounded-[14px] border border-amber-200 bg-amber-50 px-5 py-4">
