@@ -45,15 +45,14 @@ export function computeCo2e(
   const biogenicCo2e =
     factor.biogenicCo2 != null ? normalizedAmount * Number(factor.biogenicCo2) : null;
 
-  // Use the per-gas branch when any individual gas value is present, UNLESS
-  // co2e is also populated and the gas set is incomplete. In that case, co2e
-  // is the authoritative GWP-weighted total (it already includes the
-  // contributions of gases not individually broken out), so the scalar path
-  // is more accurate. Example: co2=2.02, co2e=2.23 — the 0.21 difference is
-  // the embedded CH4+N2O GWP; entering the gas branch would discard it.
+  // co2e scalar takes precedence whenever it is set: the factor publisher's
+  // pre-computed CO2e already applies the correct GWP for that library
+  // (DEFRA 2025 uses AR5; EPA uses AR4/AR5). Computing CO2e ourselves from
+  // per-gas values would apply the *code's* GWP (AR6) and diverge from the
+  // published figure. Per-gas path is only taken when co2e is absent — i.e.
+  // the library only provides gas-level values and we must derive CO2e.
   const hasAnyGas = factor.co2 != null || factor.ch4 != null || factor.n2o != null;
-  const hasAllGases = factor.co2 != null && factor.ch4 != null && factor.n2o != null;
-  if (hasAnyGas && (hasAllGases || factor.co2e == null)) {
+  if (hasAnyGas && factor.co2e == null) {
     const co2 = factor.co2 != null ? normalizedAmount * Number(factor.co2) : null;
     const ch4 = factor.ch4 != null ? normalizedAmount * Number(factor.ch4) : null;
     const n2o = factor.n2o != null ? normalizedAmount * Number(factor.n2o) : null;
