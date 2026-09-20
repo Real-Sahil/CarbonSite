@@ -68,7 +68,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   DocumentType? _documentType;
   String? _photoPath;
   bool _processingPhoto = false;
-  bool _gpsEnabled = true;
+  // GPS is always enabled — required for lone-worker safety compliance.
+  // A submit-time dialog lets the worker override if GPS is unavailable.
   bool _submitting = false;
 
   /// Site the submission is filed against. Server-side siteId is REQUIRED
@@ -310,13 +311,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     // Compute photo hash before OCR so it's available for submit verification.
     _photoHash = await _computePhotoHash(savedPath);
 
-    // Pre-fetch GPS for the map preview on the review form (best-effort).
-    if (_gpsEnabled) {
-      final pos = await _tryGetPosition();
-      if (pos != null) {
-        _capturedLat = pos.latitude;
-        _capturedLng = pos.longitude;
-      }
+    // Pre-fetch GPS for the map preview on the review form.
+    final pos = await _tryGetPosition();
+    if (pos != null) {
+      _capturedLat = pos.latitude;
+      _capturedLng = pos.longitude;
     }
 
     await _runOcr(savedPath);
@@ -465,10 +464,41 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
     double? gpsLat;
     double? gpsLng;
-    if (_gpsEnabled) {
-      final position = await _tryGetPosition();
-      gpsLat = position?.latitude;
-      gpsLng = position?.longitude;
+    final position = await _tryGetPosition();
+    gpsLat = position?.latitude;
+    gpsLng = position?.longitude;
+
+    if (gpsLat == null) {
+      // GPS is required for lone-worker safety compliance. Warn the worker and
+      // give them the option to submit anyway (e.g. underground, indoor site).
+      if (!mounted) return;
+      final proceed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('GPS unavailable'),
+          content: const Text(
+            'Your location could not be determined. GPS tagging is required '
+            'for lone-worker safety compliance.\n\n'
+            'Move to an area with a clear sky view and try again, or submit '
+            'without a location if this site is indoors or underground.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Try again'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Submit without GPS'),
+            ),
+          ],
+        ),
+      );
+      if (proceed != true) {
+        setState(() => _submitting = false);
+        return;
+      }
     }
 
     final formData = <String, dynamic>{};
@@ -838,19 +868,16 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
               fieldConfidence: _fieldConfidence,
               autoFilledFields: _autoFilled,
             ),
-            SwitchListTile(
-              value: _gpsEnabled,
-              onChanged: _submitting
-                  ? null
-                  : (v) => setState(() => _gpsEnabled = v),
-              title: const Text('Attach GPS location'),
-              subtitle: const Text('Tags the submission with this site'),
-              secondary: const Icon(Icons.location_on_outlined),
-              contentPadding: EdgeInsets.zero,
-            ),
-            if (_gpsEnabled && _capturedLat != null && _capturedLng != null) ...[
+            if (_capturedLat != null && _capturedLng != null) ...[
               const SizedBox(height: 8),
               GpsLocationMap(lat: _capturedLat!, lng: _capturedLng!),
+            ] else ...[
+              const ListTile(
+                leading: Icon(Icons.location_off_outlined),
+                title: Text('GPS not yet acquired'),
+                subtitle: Text('Location will be captured on submit'),
+                contentPadding: EdgeInsets.zero,
+              ),
             ],
             const SizedBox(height: 16),
             FilledButton.icon(

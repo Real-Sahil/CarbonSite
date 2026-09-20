@@ -14,6 +14,8 @@ import type {
   QuickBooksSyncJobData,
   SageSyncJobData,
   InvoiceAnomalyJobData,
+  SubmissionSlaMonitoringJobData,
+  PermitExpiryMonitoringJobData,
 } from "@/lib/jobs/queues/index";
 import { enqueueInvoiceAnomalyDetection } from "@/lib/jobs/queues/index";
 import { processImportBatch } from "@/lib/imports/worker";
@@ -28,6 +30,8 @@ import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-pe
 import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
 import type { ForecastingJobData } from "@/lib/jobs/workers/forecasting";
 import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
+import { processSubmissionSlaMonitoring } from "@/workers/submission-sla-monitoring";
+import { processPermitExpiryMonitoring } from "@/workers/permit-expiry-monitoring";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
 import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
 import { syncSageInvoices } from "@/lib/integrations/sage";
@@ -283,11 +287,38 @@ async function start() {
     },
   );
 
+  // ── Submission SLA Monitoring ─────────────────────────────────────────────
+  const submissionSlaLogger = getLogger("submission-sla-monitoring");
+  await boss.work<SubmissionSlaMonitoringJobData>(
+    "submission-sla-monitoring",
+    { localConcurrency: 1 },
+    async (_jobs: Job<SubmissionSlaMonitoringJobData>[]) => {
+      submissionSlaLogger.info("running submission SLA check");
+      await processSubmissionSlaMonitoring();
+      submissionSlaLogger.info("finished submission SLA check");
+    },
+  );
+  await boss.schedule("submission-sla-monitoring", "0 6 * * *", {});
+
+  // ── Permit Expiry Monitoring ──────────────────────────────────────────────
+  const permitExpiryLogger = getLogger("permit-expiry-monitoring");
+  await boss.work<PermitExpiryMonitoringJobData>(
+    "permit-expiry-monitoring",
+    { localConcurrency: 1 },
+    async (_jobs: Job<PermitExpiryMonitoringJobData>[]) => {
+      permitExpiryLogger.info("running permit expiry check");
+      await processPermitExpiryMonitoring();
+      permitExpiryLogger.info("finished permit expiry check");
+    },
+  );
+  await boss.schedule("permit-expiry-monitoring", "0 7 * * *", {});
+
   workerLogger.info("pg-boss workers started", {
     queues: [
       "imports", "calculations", "reports", "notifications",
       "dbt-transform", "invoice-anomaly", "xero-sync", "quickbooks-sync",
       "sage-sync", "supplier-performance", "forecasting", "causal-analysis",
+      "submission-sla-monitoring", "permit-expiry-monitoring",
     ],
   });
 }

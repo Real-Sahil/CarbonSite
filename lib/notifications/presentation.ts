@@ -106,5 +106,31 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
         link: `${orgBase}/settings/security`,
       };
     }
+    case "submission_sla_overdue": {
+      const count = num(data.metadata?.overdueCount, 1);
+      return {
+        title: "Submissions overdue for review",
+        body: `${count} submission${count !== 1 ? "s have" : " has"} been pending review for more than 48 hours.`,
+        link: `${orgBase}/submissions?status=submitted`,
+      };
+    }
+    case "permit_expiry_warning": {
+      const permitRef = str(data.metadata?.permitRef, "a permit");
+      const days = num(data.metadata?.daysUntilExpiry, 30);
+      return {
+        title: `Permit expiring in ${days}d`,
+        body: `Permit ${permitRef} expires in ${days} day${days !== 1 ? "s" : ""}. Renew before the deadline.`,
+        link: `${orgBase}/compliance/permits/${data.resourceId}`,
+      };
+    }
+    case "permit_condition_due": {
+      const conditionRef = str(data.metadata?.conditionRef, "a condition");
+      const days = num(data.metadata?.daysUntilDue, 7);
+      return {
+        title: `Permit condition due in ${days}d`,
+        body: `Condition ${conditionRef} is due for compliance assessment in ${days} day${days !== 1 ? "s" : ""}.`,
+        link: `${orgBase}/compliance/permits/${data.resourceId}`,
+      };
+    }
   }
 }

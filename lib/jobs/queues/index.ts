@@ -20,7 +20,10 @@ export type NotificationJobData = {
     | "supplier_account_terminated"
     | "supplier_account_expiring"
     | "dsar_sla_alert"
-    | "security_alert";
+    | "security_alert"
+    | "submission_sla_overdue"
+    | "permit_expiry_warning"
+    | "permit_condition_due";
   recipientUserId: string;
   orgId: string;
   resourceId: string;
@@ -109,7 +112,20 @@ export async function enqueueCausalAnalysis(data: CausalAnalysisJobData) {
   await boss.send("causal-analysis", data, retry);
 }
 
+export type SubmissionSlaMonitoringJobData = Record<string, never>;
+export type PermitExpiryMonitoringJobData  = Record<string, never>;
+
 export async function enqueueForecasting(data: ForecastingJobData) {
   await ensureBossStarted();
   await boss.send("forecasting", data, retry);
+}
+
+export async function enqueueSubmissionSlaMonitoring(data: SubmissionSlaMonitoringJobData) {
+  await ensureBossStarted();
+  await boss.send("submission-sla-monitoring", data, retry);
+}
+
+export async function enqueuePermitExpiryMonitoring(data: PermitExpiryMonitoringJobData) {
+  await ensureBossStarted();
+  await boss.send("permit-expiry-monitoring", data, retry);
 }
