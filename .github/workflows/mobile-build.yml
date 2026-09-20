@@ -156,17 +156,28 @@ jobs:
           xcodebuild -version
       - name: Install iOS 26 platform support
         run: |
-          # -runFirstLaunch registers Xcode toolchain components and the bundled SDK.
+          # Register Xcode toolchain components.
           sudo xcodebuild -runFirstLaunch 2>&1 | tail -5 || true
-          # Attempt to download the iOS device platform component.
-          # Fails with exit 70 when CoreSimulatorService isn't running headlessly,
-          # but the download itself may still succeed — ignore the exit code.
-          sudo xcodebuild -downloadPlatform iOS 2>&1 | tail -5 || true
-          # xcrun simctl list initialises CoreSimulatorService (needed even for
-          # generic/platform=iOS device builds with no simulator).
+
+          # Download the iOS device platform SDK.
+          # Exit 70 (CoreSimulatorService not running headlessly) is expected and non-fatal;
+          # the download usually completes despite the exit code. Capture output for diagnostics.
+          sudo xcodebuild -downloadPlatform iOS 2>&1 | tee /tmp/xcode_platform_install.log | tail -10 || true
+
+          # CoreSimulatorService init (needed even for generic/platform=iOS device builds).
           xcrun simctl list >/dev/null 2>&1 || true
-          echo "iOS SDK path: $(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo 'not found')"
-          echo "iOS 26 platform support initialised"
+
+          # Hard-fail if the iphoneos SDK is still missing after the download attempt —
+          # a silent failure here causes a cryptic "destination not found" error during build.
+          SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo '')"
+          if [ -z "$SDK_PATH" ]; then
+            echo "::error::iOS device SDK not available after platform install. Last 30 lines:"
+            tail -30 /tmp/xcode_platform_install.log || true
+            echo "Available Xcode platforms:"
+            xcodebuild -showsdks 2>/dev/null || true
+            exit 1
+          fi
+          echo "iOS device SDK ready: $SDK_PATH"
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.44.0"

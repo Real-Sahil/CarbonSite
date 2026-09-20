@@ -38,6 +38,7 @@ export function InviteLinkGenerator({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sites, setSites] = useState<SiteOption[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState("");
+  const [expiresInDays, setExpiresInDays] = useState(30);
   const [emailInput, setEmailInput] = useState("");
   const [emailSent, setEmailSent] = useState<string | null>(null);
 
@@ -77,7 +78,7 @@ export function InviteLinkGenerator({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role: "field_worker",
-          expiresInDays: 30,
+          expiresInDays,
           ...(selectedSiteId ? { siteId: selectedSiteId } : {}),
           ...(trimmedEmail ? { email: trimmedEmail } : {}),
         }),
@@ -161,6 +162,26 @@ export function InviteLinkGenerator({
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap mt-1">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="invite-expires" className="text-xs text-[#555555]">
+              Link expires after
+            </label>
+            <select
+              id="invite-expires"
+              value={expiresInDays}
+              onChange={(e) => setExpiresInDays(Number(e.target.value))}
+              disabled={loading}
+              className="h-9 rounded-md border border-[#E5E7EB] bg-white px-3 text-sm"
+            >
+              <option value={7}>7 days</option>
+              <option value={30}>30 days</option>
+              <option value={90}>90 days</option>
+              <option value={365}>1 year (Play Store / App Store review)</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap mt-1">
