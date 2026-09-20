@@ -136,48 +136,82 @@ jobs:
         working-directory: mobile
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 26 (iOS 26 SDK required)
+      - name: Select Xcode for iOS builds
         run: |
-          # Apple requires iOS 26 SDK (Xcode 26) for App Store submissions.
-          # Try Xcode 26.0 first, then any Xcode_26.x available.
-          if sudo xcode-select -s /Applications/Xcode_26.0.app/Contents/Developer 2>/dev/null; then
-            echo "Selected Xcode 26.0"
+          # Prefer Xcode 26 (iOS 26 SDK). Fall back to latest available Xcode.
+          select_xcode() {
+            sudo xcode-select -s "$1/Contents/Developer" 2>/dev/null || return 1
+            xcodebuild -version
+            return 0
+          }
+          if select_xcode /Applications/Xcode_26.0.app; then
+            echo "XCODE_SELECTED=26.0" >> "$GITHUB_ENV"
           else
-            XCODE26=$(ls /Applications/ | grep -E '^Xcode_26' | sort -V | tail -1)
-            if [ -n "$XCODE26" ]; then
-              sudo xcode-select -s "/Applications/$XCODE26/Contents/Developer"
-              echo "Selected $XCODE26"
+            XCODE26=$(ls /Applications/ 2>/dev/null | grep -E '^Xcode_26' | sort -V | tail -1)
+            if [ -n "$XCODE26" ] && select_xcode "/Applications/$XCODE26"; then
+              echo "XCODE_SELECTED=26.x" >> "$GITHUB_ENV"
             else
-              echo "::error::Xcode 26 not found. Available Xcode installs:"
-              ls /Applications/ | grep -i xcode || echo "(none)"
-              exit 1
+              # Fall back to latest Xcode (any version) — iOS 18 SDK is still App Store valid
+              BEST=$(ls /Applications/ 2>/dev/null | grep -E '^Xcode_[0-9]' | sort -V | tail -1)
+              if [ -n "$BEST" ] && select_xcode "/Applications/$BEST"; then
+                echo "::warning::Xcode 26 not found, using $BEST. iOS 26 SDK unavailable; will use bundled SDK."
+                echo "XCODE_SELECTED=$BEST" >> "$GITHUB_ENV"
+              else
+                echo "::error::No usable Xcode found. Checked: Xcode_26, $BEST"
+                ls /Applications/ | grep -i xcode || true
+                exit 1
+              fi
             fi
           fi
-          xcodebuild -version
-      - name: Install iOS 26 platform support
+      - name: Install iOS device platform support
         run: |
-          # Register Xcode toolchain components.
           sudo xcodebuild -runFirstLaunch 2>&1 | tail -5 || true
 
-          # Download the iOS device platform SDK.
-          # Exit 70 (CoreSimulatorService not running headlessly) is expected and non-fatal;
-          # the download usually completes despite the exit code. Capture output for diagnostics.
+          # Download iOS device platform SDK. Exit 70 (CoreSimulatorService) is expected non-fatal.
+          echo "--- attempt 1 ---"
           sudo xcodebuild -downloadPlatform iOS 2>&1 | tee /tmp/xcode_platform_install.log | tail -10 || true
-
-          # CoreSimulatorService init (needed even for generic/platform=iOS device builds).
           xcrun simctl list >/dev/null 2>&1 || true
 
-          # Hard-fail if the iphoneos SDK is still missing after the download attempt —
-          # a silent failure here causes a cryptic "destination not found" error during build.
+          # Check SDK — verify version matches selected Xcode (not just any iphoneos SDK from another Xcode).
           SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo '')"
+          SDK_VER="$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || echo '')"
+          echo "After attempt 1: SDK=$SDK_PATH  version=$SDK_VER"
+
+          # If Xcode 26 selected but SDK isn't 26.x, retry download once.
+          if [[ "$XCODE_SELECTED" == 26* ]] && [[ "$SDK_VER" != "26"* ]]; then
+            echo "--- attempt 2 (iOS 26 SDK not yet available, retrying download) ---"
+            sudo xcodebuild -downloadPlatform iOS 2>&1 | tee -a /tmp/xcode_platform_install.log | tail -10 || true
+            xcrun simctl list >/dev/null 2>&1 || true
+            SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo '')"
+            SDK_VER="$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || echo '')"
+            echo "After attempt 2: SDK=$SDK_PATH  version=$SDK_VER"
+          fi
+
           if [ -z "$SDK_PATH" ]; then
             echo "::error::iOS device SDK not available after platform install. Last 30 lines:"
             tail -30 /tmp/xcode_platform_install.log || true
-            echo "Available Xcode platforms:"
             xcodebuild -showsdks 2>/dev/null || true
             exit 1
           fi
-          echo "iOS device SDK ready: $SDK_PATH"
+
+          # Warn if Xcode 26 is selected but iOS 26 SDK still not present.
+          if [[ "$XCODE_SELECTED" == 26* ]] && [[ "$SDK_VER" != "26"* ]]; then
+            echo "::warning::Xcode 26 selected but iOS $SDK_VER SDK found (not 26.x). Build may fail with 'iOS 26.0 is not installed'."
+            echo "Falling back: switching to highest non-26 Xcode to match available SDK."
+            FALLBACK=$(ls /Applications/ 2>/dev/null | grep -E '^Xcode_[0-9]' | grep -v '^Xcode_26' | sort -V | tail -1)
+            if [ -n "$FALLBACK" ]; then
+              sudo xcode-select -s "/Applications/$FALLBACK/Contents/Developer"
+              xcodebuild -version
+              SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo '')"
+              SDK_VER="$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || echo '')"
+              echo "Switched to $FALLBACK — iOS $SDK_VER SDK at $SDK_PATH"
+              echo "XCODE_SELECTED=$FALLBACK" >> "$GITHUB_ENV"
+            else
+              echo "::error::No fallback Xcode available. Build will likely fail."
+            fi
+          fi
+
+          echo "iOS device SDK ready: iOS $SDK_VER at $SDK_PATH"
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.44.0"
