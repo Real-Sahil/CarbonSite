@@ -113,6 +113,19 @@ model User {
   datapointStatusesRecorded OrganizationDatapointStatus[] @relation("DatapointStatusRecorder")
   tcfdScenariosCreated      TcfdScenario[]               @relation("TcfdScenarioCreator")
   tcfdRisksOwned            TcfdRiskAssessment[]         @relation("TcfdRiskOwner")
+  hsIncidentsReported       HsIncidentReport[]           @relation("HsIncidentReporter")
+  hsIncidentsOwned          HsIncidentReport[]           @relation("HsIncidentOwner")
+  methodStatementsCreated   MethodStatement[]            @relation("MethodStatementCreator")
+  methodStatementsSignedOff MethodStatement[]            @relation("MethodStatementSignedOff")
+  workerSessionsCreated     WorkerSession[]              @relation("WorkerSessionUser")
+  tnfdScenariosCreated      TnfdScenario[]               @relation("TnfdScenarioCreator")
+  materialityTopicsOwned    MaterialityTopic[]           @relation("MaterialityTopicOwner")
+  materialityCreated        MaterialityAssessment[]      @relation("MaterialityCreator")
+  enforcementNoticesOwned   EnforcementNotice[]          @relation("EnforcementNoticeOwner")
+  enforcementNoticesCreated EnforcementNotice[]          @relation("EnforcementNoticeCreator")
+  dischargeReadingsCreated  DischargeReading[]           @relation("DischargeReadingCreator")
+  programmesManagedBy       Programme[]                  @relation("ProgrammeManager")
+  programmesCreated         Programme[]                  @relation("ProgrammeCreator")
 
   // Better Auth session tables
   sessions Session[]
@@ -313,6 +326,16 @@ model Organization {
   onboardingProgress            OnboardingProgress?
   tcfdScenarios                 TcfdScenario[]       @relation("OrgTcfdScenarios")
   tcfdRiskAssessments           TcfdRiskAssessment[] @relation("OrgTcfdRisks")
+  hsIncidents                   HsIncidentReport[]   @relation("OrgHsIncidents")
+  methodStatements              MethodStatement[]    @relation("OrgMethodStatements")
+  workerSessions                WorkerSession[]      @relation("OrgWorkerSessions")
+  tnfdScenarios                 TnfdScenario[]       @relation("OrgTnfdScenarios")
+  materialityAssessments        MaterialityAssessment[] @relation("OrgMaterialityAssessments")
+  enforcementNotices            EnforcementNotice[]  @relation("OrgEnforcementNotices")
+  dischargeReadings             DischargeReading[]   @relation("OrgDischargeReadings")
+  programmes                    Programme[]          @relation("OrgProgrammes")
+  supplierProfiles              SupplierProfile[]    @relation("OrgSupplierProfiles")
+  evidenceAccessLogs            EvidenceAccessLog[]  @relation("OrgEvidenceAccessLogs")
 
   @@map("organizations")
 }
@@ -343,6 +366,8 @@ enum OrgRole {
   reviewer
   viewer
   auditor
+  // External assurance
+  verifier
   // Contract / project / site hierarchy
   contract_manager
   project_manager
@@ -561,6 +586,8 @@ model Facility {
   waterRecords             WaterRecord[]
   wasteRecords             WasteRecord[]
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
+  hsIncidents              HsIncidentReport[]   @relation("FacilityHsIncidents")
+  enforcementNotices       EnforcementNotice[]  @relation("FacilityEnforcementNotices")
 
   @@index([organizationId])
   @@index([organizationId, legalEntityId])
@@ -638,6 +665,7 @@ model ReportingPeriod {
   waterRecords              WaterRecord[]
   wasteRecords              WasteRecord[]
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
+  materialityAssessments    MaterialityAssessment[]     @relation("PeriodMaterialityAssessments")
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -1035,6 +1063,12 @@ model FieldSubmission {
   reviewClaimedAt           DateTime?             @map("review_claimed_at")
   /// Set when the SLA overdue notification has been fired for this submission.
   slaNotifiedAt             DateTime?             @map("sla_notified_at")
+  /// Field worker confirmed PPE worn at time of capture.
+  ppeVerified               Boolean?              @map("ppe_verified")
+  /// Timestamp of most recent toolbox talk completion before this submission.
+  toolboxTalkCompletedAt    DateTime?             @map("toolbox_talk_completed_at")
+  /// Training/apprenticeship hours logged alongside this submission.
+  trainingHoursLogged       Decimal?              @map("training_hours_logged") @db.Decimal(8, 2)
   createdAt                 DateTime              @default(now()) @map("created_at")
   updatedAt                 DateTime              @updatedAt @map("updated_at")
 
@@ -1632,6 +1666,8 @@ enum ReportType {
   cbam
   ecology_survey
   ecology_scan
+  social_value
+  snapshot_export
 
   @@map("report_type")
 }
@@ -1964,6 +2000,11 @@ model Project {
   biodiversityAssessments BiodiversityAssessment[] @relation("ProjectBiodiversity")
   speciesRecords        ProtectedSpeciesRecord[]  @relation("ProjectSpeciesRecords")
   ecologicalScans       EcologicalScan[]          @relation("ProjectEcologicalScans")
+  hsIncidents           HsIncidentReport[]        @relation("ProjectHsIncidents")
+  methodStatements      MethodStatement[]         @relation("ProjectMethodStatements")
+  workerSessions        WorkerSession[]           @relation("ProjectWorkerSessions")
+  programme             Programme?               @relation("ProgrammeProjects", fields: [programmeId], references: [id], onDelete: SetNull)
+  programmeId           String?                  @map("programme_id")
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -1992,6 +2033,10 @@ model Site {
   incidents         EnvironmentalIncident[]     @relation("SiteIncidents")
   biodiversityAssessments BiodiversityAssessment[] @relation("SiteBiodiversity")
   speciesRecords    ProtectedSpeciesRecord[]    @relation("SiteSpeciesRecords")
+  hsIncidents       HsIncidentReport[]          @relation("SiteHsIncidents")
+  methodStatements  MethodStatement[]           @relation("SiteMethodStatements")
+  workerSessions    WorkerSession[]             @relation("SiteWorkerSessions")
+  enforcementNotices EnforcementNotice[]        @relation("SiteEnforcementNotices")
 
   @@index([organizationId, projectId])
   @@map("sites")
@@ -4565,13 +4610,14 @@ model EnvironmentalPermit {
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
 
-  organization Organization      @relation("OrgPermits", fields: [organizationId], references: [id], onDelete: Cascade)
-  facility     Facility?         @relation("FacilityPermits", fields: [facilityId], references: [id], onDelete: SetNull)
-  site         Site?             @relation("SitePermits", fields: [siteId], references: [id], onDelete: SetNull)
-  owner        User?             @relation("PermitOwner", fields: [ownerUserId], references: [id])
-  createdBy    User              @relation("PermitCreator", fields: [createdByUserId], references: [id])
-  conditions   PermitCondition[] @relation("PermitConditions")
-  incidents    EnvironmentalIncident[] @relation("IncidentPermit")
+  organization        Organization        @relation("OrgPermits", fields: [organizationId], references: [id], onDelete: Cascade)
+  facility            Facility?           @relation("FacilityPermits", fields: [facilityId], references: [id], onDelete: SetNull)
+  site                Site?               @relation("SitePermits", fields: [siteId], references: [id], onDelete: SetNull)
+  owner               User?               @relation("PermitOwner", fields: [ownerUserId], references: [id])
+  createdBy           User                @relation("PermitCreator", fields: [createdByUserId], references: [id])
+  conditions          PermitCondition[]   @relation("PermitConditions")
+  incidents           EnvironmentalIncident[] @relation("IncidentPermit")
+  enforcementNotices  EnforcementNotice[] @relation("PermitEnforcementNotices")
 
   @@unique([organizationId, reference])
   @@index([organizationId, status, expiresOn])
@@ -4601,8 +4647,9 @@ model PermitCondition {
   createdAt     DateTime         @default(now()) @map("created_at")
   updatedAt     DateTime         @updatedAt @map("updated_at")
 
-  organization Organization        @relation("OrgPermitConditions", fields: [organizationId], references: [id], onDelete: Cascade)
-  permit       EnvironmentalPermit @relation("PermitConditions", fields: [permitId], references: [id], onDelete: Cascade)
+  organization      Organization      @relation("OrgPermitConditions", fields: [organizationId], references: [id], onDelete: Cascade)
+  permit            EnvironmentalPermit @relation("PermitConditions", fields: [permitId], references: [id], onDelete: Cascade)
+  dischargeReadings DischargeReading[] @relation("ConditionReadings")
 
   @@index([organizationId, permitId])
   @@index([organizationId, complianceStatus, nextDueOn])
@@ -5524,4 +5571,471 @@ model TcfdRiskAssessment {
 
   @@index([organizationId, scenarioId])
   @@map("tcfd_risk_assessments")
+}
+
+// ─── Health & Safety Module ───────────────────────────────────────────────────
+
+enum HsIncidentType {
+  near_miss
+  first_aid
+  medical_treatment
+  lost_time_injury
+  riddor_reportable
+  dangerous_occurrence
+  occupational_disease
+  fatality
+}
+
+enum HsBodyPart {
+  head
+  neck
+  back
+  shoulder
+  arm
+  hand
+  finger
+  leg
+  knee
+  foot
+  toe
+  multiple
+  other
+}
+
+enum HsIncidentStatus {
+  reported
+  investigating
+  action_required
+  closed
+}
+
+/// Health & Safety incident report — separate from EnvironmentalIncident.
+/// Covers personal injury, near-miss, RIDDOR-reportable occurrences.
+model HsIncidentReport {
+  id                   String           @id @default(cuid())
+  organizationId       String           @map("organization_id")
+  reference            String
+  incidentType         HsIncidentType   @map("incident_type")
+  status               HsIncidentStatus @default(reported) @map("status")
+  occurredAt           DateTime         @map("occurred_at")
+  facilityId           String?          @map("facility_id")
+  siteId               String?          @map("site_id")
+  projectId            String?          @map("project_id")
+  fieldSubmissionId    String?          @map("field_submission_id")
+  /// Person injured (free text — may be a subcontractor not on the platform).
+  injuredPartyName     String?          @map("injured_party_name")
+  bodyPartAffected     HsBodyPart?      @map("body_part_affected")
+  description          String
+  immediateAction      String?          @map("immediate_action")
+  rootCause            String?          @map("root_cause")
+  ppeWorn              Boolean          @default(true) @map("ppe_worn")
+  toolboxTalkEvidence  String?          @map("toolbox_talk_evidence")
+  methodStatementId    String?          @map("method_statement_id")
+  /// Lost time days (0 for near-miss / first-aid).
+  lostTimeDays         Int              @default(0) @map("lost_time_days")
+  /// RIDDOR: set when HSE must be notified (7-day LTI, dangerous occurrence, etc.).
+  riddorReportable     Boolean          @default(false) @map("riddor_reportable")
+  riddorReferenceNo    String?          @map("riddor_reference_no")
+  riddorNotifiedAt     DateTime?        @map("riddor_notified_at")
+  witnessNames         String?          @map("witness_names")
+  reportedByUserId     String?          @map("reported_by_user_id")
+  ownerUserId          String?          @map("owner_user_id")
+  closedAt             DateTime?        @map("closed_at")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  organization     Organization       @relation("OrgHsIncidents", fields: [organizationId], references: [id], onDelete: Cascade)
+  facility         Facility?          @relation("FacilityHsIncidents", fields: [facilityId], references: [id], onDelete: SetNull)
+  site             Site?              @relation("SiteHsIncidents", fields: [siteId], references: [id], onDelete: SetNull)
+  project          Project?           @relation("ProjectHsIncidents", fields: [projectId], references: [id], onDelete: SetNull)
+  methodStatement  MethodStatement?   @relation("IncidentMethodStatement", fields: [methodStatementId], references: [id], onDelete: SetNull)
+  reportedBy       User?              @relation("HsIncidentReporter", fields: [reportedByUserId], references: [id])
+  owner            User?              @relation("HsIncidentOwner", fields: [ownerUserId], references: [id])
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status, occurredAt])
+  @@index([organizationId, incidentType])
+  @@map("hs_incident_reports")
+}
+
+enum MethodStatementStatus {
+  draft
+  issued
+  signed_off
+  superseded
+}
+
+/// Risk Assessment and Method Statement (RAMS). Field workers must sign off
+/// before their first submission on a project in the current period.
+model MethodStatement {
+  id                 String                @id @default(cuid())
+  organizationId     String                @map("organization_id")
+  projectId          String?               @map("project_id")
+  siteId             String?               @map("site_id")
+  title              String
+  version            String                @default("1.0")
+  status             MethodStatementStatus @default(draft)
+  riskAssessmentText String?               @map("risk_assessment_text")
+  methodText         String?               @map("method_text")
+  ppeRequired        String?               @map("ppe_required")
+  issuedAt           DateTime?             @map("issued_at") @db.Date
+  expiresAt          DateTime?             @map("expires_at") @db.Date
+  evidenceFileId     String?               @map("evidence_file_id")
+  createdByUserId    String                @map("created_by_user_id")
+  signedOffByUserId  String?               @map("signed_off_by_user_id")
+  signedOffAt        DateTime?             @map("signed_off_at")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+
+  organization  Organization      @relation("OrgMethodStatements", fields: [organizationId], references: [id], onDelete: Cascade)
+  project       Project?          @relation("ProjectMethodStatements", fields: [projectId], references: [id], onDelete: SetNull)
+  site          Site?             @relation("SiteMethodStatements", fields: [siteId], references: [id], onDelete: SetNull)
+  createdBy     User              @relation("MethodStatementCreator", fields: [createdByUserId], references: [id])
+  signedOffBy   User?             @relation("MethodStatementSignedOff", fields: [signedOffByUserId], references: [id])
+  hsIncidents   HsIncidentReport[] @relation("IncidentMethodStatement")
+
+  @@index([organizationId, status])
+  @@index([organizationId, projectId])
+  @@map("method_statements")
+}
+
+/// Tracks a field worker's active session with periodic GPS pings for lone-worker welfare.
+model WorkerSession {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  userId         String    @map("user_id")
+  projectId      String?   @map("project_id")
+  siteId         String?   @map("site_id")
+  startedAt      DateTime  @default(now()) @map("started_at")
+  endedAt        DateTime? @map("ended_at")
+  /// Last GPS ping received from device.
+  lastPingAt     DateTime? @map("last_ping_at")
+  lastPingLat    Decimal?  @map("last_ping_lat") @db.Decimal(10, 7)
+  lastPingLng    Decimal?  @map("last_ping_lng") @db.Decimal(10, 7)
+  /// True when no ping received within the welfare check window (default 30 min).
+  overdueAlert   Boolean   @default(false) @map("overdue_alert")
+  overdueAlertAt DateTime? @map("overdue_alert_at")
+  deviceInfo     String?   @map("device_info")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation("OrgWorkerSessions", fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("WorkerSessionUser", fields: [userId], references: [id])
+  project      Project?     @relation("ProjectWorkerSessions", fields: [projectId], references: [id], onDelete: SetNull)
+  site         Site?        @relation("SiteWorkerSessions", fields: [siteId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, userId, startedAt])
+  @@index([organizationId, overdueAlert])
+  @@map("worker_sessions")
+}
+
+// ─── Programme (roll-up above Project) ────────────────────────────────────────
+
+enum ProgrammeStatus {
+  active
+  on_hold
+  completed
+  cancelled
+}
+
+/// A programme groups multiple projects under one carbon budget and reporting view.
+model Programme {
+  id              String          @id @default(cuid())
+  organizationId  String          @map("organization_id")
+  name            String
+  description     String?
+  status          ProgrammeStatus @default(active)
+  clientName      String?         @map("client_name")
+  programmeManagerUserId String?  @map("programme_manager_user_id")
+  startDate       DateTime?       @map("start_date") @db.Date
+  endDate         DateTime?       @map("end_date") @db.Date
+  budgetTco2e     Decimal?        @map("budget_tco2e") @db.Decimal(18, 4)
+  createdByUserId String          @map("created_by_user_id")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  organization     Organization @relation("OrgProgrammes", fields: [organizationId], references: [id], onDelete: Cascade)
+  programmeManager User?        @relation("ProgrammeManager", fields: [programmeManagerUserId], references: [id])
+  createdBy        User         @relation("ProgrammeCreator", fields: [createdByUserId], references: [id])
+  projects         Project[]    @relation("ProgrammeProjects")
+
+  @@unique([organizationId, name])
+  @@index([organizationId, status])
+  @@map("programmes")
+}
+
+// ─── Environmental Agency: Enforcement & Discharge ───────────────────────────
+
+enum EnforcementNoticeType {
+  improvement_notice
+  prohibition_notice
+  enforcement_notice
+  stop_notice
+  remediation_notice
+  warning_letter
+  statutory_notice
+}
+
+enum EnforcementNoticeStatus {
+  open
+  appealed
+  complied
+  extended
+  withdrawn
+  overdue
+}
+
+/// An enforcement or regulatory notice issued by the EA, HSE, local authority, etc.
+model EnforcementNotice {
+  id                  String                  @id @default(cuid())
+  organizationId      String                  @map("organization_id")
+  reference           String
+  issuingBody         String                  @map("issuing_body")
+  noticeType          EnforcementNoticeType   @map("notice_type")
+  status              EnforcementNoticeStatus @default(open)
+  issuedAt            DateTime                @map("issued_at") @db.Date
+  complianceDeadline  DateTime?               @map("compliance_deadline") @db.Date
+  compliedAt          DateTime?               @map("complied_at") @db.Date
+  facilityId          String?                 @map("facility_id")
+  siteId              String?                 @map("site_id")
+  permitId            String?                 @map("permit_id")
+  subject             String
+  requirements        String?
+  appealed            Boolean                 @default(false)
+  appealOutcome       String?                 @map("appeal_outcome")
+  regulatorContact    String?                 @map("regulator_contact")
+  evidenceFileId      String?                 @map("evidence_file_id")
+  ownerUserId         String?                 @map("owner_user_id")
+  createdByUserId     String                  @map("created_by_user_id")
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+
+  organization Organization        @relation("OrgEnforcementNotices", fields: [organizationId], references: [id], onDelete: Cascade)
+  facility     Facility?           @relation("FacilityEnforcementNotices", fields: [facilityId], references: [id], onDelete: SetNull)
+  site         Site?               @relation("SiteEnforcementNotices", fields: [siteId], references: [id], onDelete: SetNull)
+  permit       EnvironmentalPermit? @relation("PermitEnforcementNotices", fields: [permitId], references: [id], onDelete: SetNull)
+  owner        User?               @relation("EnforcementNoticeOwner", fields: [ownerUserId], references: [id])
+  createdBy    User                @relation("EnforcementNoticeCreator", fields: [createdByUserId], references: [id])
+
+  @@unique([organizationId, reference])
+  @@index([organizationId, status, complianceDeadline])
+  @@index([organizationId, permitId])
+  @@map("enforcement_notices")
+}
+
+/// Actual discharge or emission reading against a permitted limit on a PermitCondition.
+model DischargeReading {
+  id                 String    @id @default(cuid())
+  organizationId     String    @map("organization_id")
+  permitConditionId  String    @map("permit_condition_id")
+  readingDate        DateTime  @map("reading_date") @db.Date
+  parameter          String
+  unit               String
+  limitValue         Decimal?  @map("limit_value") @db.Decimal(18, 6)
+  actualValue        Decimal   @map("actual_value") @db.Decimal(18, 6)
+  /// True when actualValue exceeds limitValue.
+  exceedance         Boolean   @default(false)
+  monitoringMethod   String?   @map("monitoring_method")
+  notes              String?
+  evidenceFileId     String?   @map("evidence_file_id")
+  createdByUserId    String    @map("created_by_user_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  organization    Organization    @relation("OrgDischargeReadings", fields: [organizationId], references: [id], onDelete: Cascade)
+  permitCondition PermitCondition @relation("ConditionReadings", fields: [permitConditionId], references: [id], onDelete: Cascade)
+  createdBy       User            @relation("DischargeReadingCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, permitConditionId, readingDate])
+  @@index([organizationId, exceedance])
+  @@map("discharge_readings")
+}
+
+// ─── Supplier Compliance Profile ─────────────────────────────────────────────
+
+/// Compliance profile for a supplier email address within an org.
+/// Stores accreditations, certifications and statutory compliance declarations.
+model SupplierProfile {
+  id                             String    @id @default(cuid())
+  organizationId                 String    @map("organization_id")
+  supplierEmail                  String    @map("supplier_email")
+  supplierName                   String?   @map("supplier_name")
+  companyNumber                  String?   @map("company_number")
+  /// UK Living Wage Foundation accreditation.
+  livingWageDeclared             Boolean   @default(false) @map("living_wage_declared")
+  livingWageDeclaredAt           DateTime? @map("living_wage_declared_at") @db.Date
+  livingWageExpiresAt            DateTime? @map("living_wage_expires_at") @db.Date
+  /// Environment Agency waste carrier/broker/dealer registration.
+  wasteCarrierRegistration       String?   @map("waste_carrier_registration")
+  wasteCarrierExpiresAt          DateTime? @map("waste_carrier_expires_at") @db.Date
+  /// ISO 14001 environmental management system certification.
+  iso14001Certified              Boolean   @default(false) @map("iso14001_certified")
+  iso14001ExpiresAt              DateTime? @map("iso14001_expires_at") @db.Date
+  /// ISO 45001 occupational health & safety certification.
+  iso45001Certified              Boolean   @default(false) @map("iso45001_certified")
+  iso45001ExpiresAt              DateTime? @map("iso45001_expires_at") @db.Date
+  /// Modern slavery statement published this year.
+  modernSlaveryStatement         Boolean   @default(false) @map("modern_slavery_statement")
+  modernSlaveryStatementYear     Int?      @map("modern_slavery_statement_year")
+  /// Constructionline/SafeContractor/CHAS or equivalent SSIP.
+  ssipAccreditation              String?   @map("ssip_accreditation")
+  ssipExpiresAt                  DateTime? @map("ssip_expires_at") @db.Date
+  notes                          String?
+  createdAt                      DateTime  @default(now()) @map("created_at")
+  updatedAt                      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation("OrgSupplierProfiles", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, supplierEmail])
+  @@index([organizationId, livingWageDeclared])
+  @@index([organizationId, wasteCarrierExpiresAt])
+  @@map("supplier_profiles")
+}
+
+// ─── Materiality Assessment (CSRD/ESRS double materiality) ───────────────────
+
+enum MaterialityAssessmentStatus {
+  draft
+  stakeholder_review
+  approved
+  published
+}
+
+enum MaterialityIroType {
+  impact
+  risk
+  opportunity
+}
+
+/// A double materiality assessment for CSRD/ESRS IRO-1 compliance.
+model MaterialityAssessment {
+  id                  String                      @id @default(cuid())
+  organizationId      String                      @map("organization_id")
+  reportingPeriodId   String?                     @map("reporting_period_id")
+  name                String
+  status              MaterialityAssessmentStatus @default(draft)
+  /// ESRS-based scope: all topics or a specific standard.
+  esrsScope           String?                     @map("esrs_scope")
+  methodologyNotes    String?                     @map("methodology_notes")
+  stakeholderInput    String?                     @map("stakeholder_input")
+  approvedAt          DateTime?                   @map("approved_at") @db.Date
+  publishedAt         DateTime?                   @map("published_at")
+  createdByUserId     String                      @map("created_by_user_id")
+  createdAt           DateTime                    @default(now()) @map("created_at")
+  updatedAt           DateTime                    @updatedAt @map("updated_at")
+
+  organization    Organization      @relation("OrgMaterialityAssessments", fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod?  @relation("PeriodMaterialityAssessments", fields: [reportingPeriodId], references: [id], onDelete: SetNull)
+  createdBy       User              @relation("MaterialityCreator", fields: [createdByUserId], references: [id])
+  topics          MaterialityTopic[]
+
+  @@index([organizationId, status])
+  @@map("materiality_assessments")
+}
+
+/// A single IRO (Impact, Risk or Opportunity) topic row in a materiality assessment.
+model MaterialityTopic {
+  id                    String              @id @default(cuid())
+  assessmentId          String              @map("assessment_id")
+  organizationId        String              @map("organization_id")
+  /// ESRS standard code, e.g. "E1", "S1", "G1".
+  esrsCode              String?             @map("esrs_code")
+  topicName             String              @map("topic_name")
+  iroType               MaterialityIroType  @map("iro_type")
+  /// Scale 1-5: how significant the impact/risk/opportunity is on the environment/society.
+  impactScore           Int?                @map("impact_score")
+  /// Scale 1-5: financial materiality for the organisation.
+  financialScore        Int?                @map("financial_score")
+  /// Composite double-materiality score = max(impactScore, financialScore).
+  doubleMaterialityScore Int?               @map("double_materiality_score")
+  /// Whether this topic is considered material and must be disclosed.
+  isMaterial            Boolean             @default(false) @map("is_material")
+  rationale             String?
+  ownerUserId           String?             @map("owner_user_id")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  assessment  MaterialityAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  owner       User?                 @relation("MaterialityTopicOwner", fields: [ownerUserId], references: [id])
+
+  @@index([assessmentId])
+  @@index([organizationId, esrsCode])
+  @@map("materiality_topics")
+}
+
+// ─── TNFD (Taskforce on Nature-related Financial Disclosures) ─────────────────
+
+enum TnfdLeapPhase {
+  locate
+  evaluate
+  assess
+  prepare
+}
+
+enum TnfdDependencyType {
+  provisioning
+  regulating
+  cultural
+}
+
+/// A TNFD scenario analysis record using the LEAP framework.
+model TnfdScenario {
+  id                    String    @id @default(cuid())
+  organizationId        String    @map("organization_id")
+  name                  String
+  description           String?
+  /// GBF (Global Biodiversity Framework) target alignment.
+  gbfTarget             String?   @map("gbf_target")
+  timeHorizon           String?   @map("time_horizon")
+  /// TNFD sector/biome scope.
+  sectorScope           String?   @map("sector_scope")
+  /// Overall nature-related risk rating: low/medium/high/critical.
+  riskRating            String?   @map("risk_rating")
+  /// LOCATE: sites and assets in or near nature-sensitive areas.
+  locateNotes           String?   @map("locate_notes")
+  /// EVALUATE: dependencies and impacts on nature.
+  evaluateNotes         String?   @map("evaluate_notes")
+  /// ASSESS: risks and opportunities arising.
+  assessNotes           String?   @map("assess_notes")
+  /// PREPARE: strategy and target-setting.
+  prepareNotes          String?   @map("prepare_notes")
+  financialImpactLow    Decimal?  @map("financial_impact_low")  @db.Decimal(18, 2)
+  financialImpactHigh   Decimal?  @map("financial_impact_high") @db.Decimal(18, 2)
+  createdByUserId       String?   @map("created_by_user_id")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation("OrgTnfdScenarios", fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?        @relation("TnfdScenarioCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, riskRating])
+  @@map("tnfd_scenarios")
+}
+
+// ─── Evidence Access Log ──────────────────────────────────────────────────────
+
+/// Append-only log of every presigned-URL generation for evidence files.
+/// Supports chain-of-custody assertions in third-party assurance engagements.
+model EvidenceAccessLog {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  evidenceFileId String   @map("evidence_file_id")
+  accessedByUserId String? @map("accessed_by_user_id")
+  /// IP address of the requester (server-side, from request headers).
+  ipAddress      String?  @map("ip_address")
+  /// User-Agent header.
+  userAgent      String?  @map("user_agent")
+  /// Purpose: download, assurance_review, admin, api.
+  accessPurpose  String?  @map("access_purpose")
+  /// Storage key of the file accessed.
+  storageKey     String   @map("storage_key")
+  /// Signed URL expiry duration in seconds.
+  expirySeconds  Int?     @map("expiry_seconds")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation("OrgEvidenceAccessLogs", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, evidenceFileId, createdAt])
+  @@index([organizationId, accessedByUserId, createdAt])
+  @@map("evidence_access_logs")
 }

@@ -11,7 +11,7 @@ import {
   Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
-  TrendingUp, Droplets, Leaf, CloudSun,
+  TrendingUp, Droplets, Leaf, CloudSun, AlertTriangle, ClipboardList, Gavel, BarChart3, FolderKanban,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -78,6 +78,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Supplier Reports", href: `/orgs/${orgId}/supplier-reports`,  icon: PackageSearch, roles: ["admin", "editor", "reviewer", "auditor"] },
         { label: "Tasks",            href: `/orgs/${orgId}/tasks`,             icon: ListChecks },
         { label: "Contracts",        href: `/orgs/${orgId}/contracts`,         icon: Briefcase,     roles: EXTENDED_VIEW_ROLES },
+        { label: "Programmes",       href: `/orgs/${orgId}/programmes`,        icon: FolderKanban,  roles: EXTENDED_VIEW_ROLES },
       ]},
       { label: "Calculations", items: [
         { label: "Analytics",       href: `/orgs/${orgId}/analytics`,       icon: LineChart,  roles: CORE_ROLES },
@@ -99,7 +100,12 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Biodiversity",   href: `/orgs/${orgId}/biodiversity`,               icon: Sprout,      roles: EXTENDED_VIEW_ROLES },
         { label: "Ecology Scans", href: `/orgs/${orgId}/ecology`,                     icon: Leaf,        roles: EXTENDED_VIEW_ROLES },
         { label: "Water",         href: `/orgs/${orgId}/water`,                       icon: Droplets,    roles: EXTENDED_VIEW_ROLES },
-        { label: "Waste",         href: `/orgs/${orgId}/waste`,                       icon: Trash2,      roles: EXTENDED_VIEW_ROLES },
+        { label: "Waste",                href: `/orgs/${orgId}/waste`,              icon: Trash2,       roles: EXTENDED_VIEW_ROLES },
+        { label: "Enforcement Notices",  href: `/orgs/${orgId}/enforcement-notices`, icon: Gavel,        roles: EXTENDED_VIEW_ROLES },
+      ]},
+      { label: "H&S", items: [
+        { label: "H&S Incidents",    href: `/orgs/${orgId}/hs-incidents`,      icon: AlertTriangle, roles: EXTENDED_VIEW_ROLES },
+        { label: "Method Statements", href: `/orgs/${orgId}/method-statements`, icon: ClipboardList, roles: EXTENDED_VIEW_ROLES },
       ]},
     ]},
     { label: "Social Value", icon: Heart, sections: [
@@ -119,6 +125,8 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Framework Crosswalk", href: `/orgs/${orgId}/compliance/crosswalk`,             icon: Network,        roles: EXTENDED_VIEW_ROLES },
         { label: "Assurance Engagements", href: `/orgs/${orgId}/assurance`,                      icon: ClipboardCheck, roles: ["admin", "sustainability_director", "auditor", "sustainability_manager"] },
         { label: "TCFD Scenarios",         href: `/orgs/${orgId}/tcfd`,                           icon: CloudSun,       roles: CORE_ROLES },
+        { label: "Materiality",            href: `/orgs/${orgId}/materiality`,                    icon: BarChart3,      roles: CORE_ROLES },
+        { label: "TNFD Scenarios",         href: `/orgs/${orgId}/tnfd`,                           icon: Leaf,           roles: CORE_ROLES },
       ]},
       { label: "Audit", items: [
         { label: "Audit Trail",    href: `/orgs/${orgId}/audit`,             icon: Clock, roles: CORE_ROLES },

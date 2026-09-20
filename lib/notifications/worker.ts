@@ -323,6 +323,46 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       });
     })
 
+    .with({ type: "worker_session_overdue" }, async (d) => {
+      const workerName = (d.metadata?.workerName as string) ?? "A worker";
+      const minutes = (d.metadata?.minutesSinceLastPing as number) ?? 30;
+      await sendPushToUser(d.recipientUserId, {
+        title: "Worker welfare check overdue",
+        body: `${workerName} has not responded in ${minutes} minutes. Check their status immediately.`,
+        data: { type: "worker_session_overdue", sessionId: d.resourceId, orgId: d.orgId },
+      });
+    })
+
+    .with({ type: "enforcement_notice_overdue" }, async (d) => {
+      const ref = (d.metadata?.noticeRef as string) ?? "an enforcement notice";
+      await sendPushToUser(d.recipientUserId, {
+        title: "Enforcement notice overdue",
+        body: `Compliance deadline for notice ${ref} has passed. Immediate action required.`,
+        data: { type: "enforcement_notice_overdue", noticeId: d.resourceId, orgId: d.orgId },
+      });
+    })
+
+    .with({ type: "discharge_reading_exceedance" }, async (d) => {
+      const parameter = (d.metadata?.parameter as string) ?? "a parameter";
+      const permitRef = (d.metadata?.permitRef as string) ?? "permit";
+      await sendPushToUser(d.recipientUserId, {
+        title: "Discharge limit exceeded",
+        body: `${parameter} exceeded the consented limit on ${permitRef}. Regulatory notification may be required.`,
+        data: { type: "discharge_reading_exceedance", readingId: d.resourceId, orgId: d.orgId },
+      });
+    })
+
+    .with({ type: "supplier_certification_expiring" }, async (d) => {
+      const cert = (d.metadata?.certType as string) ?? "certification";
+      const supplierName = (d.metadata?.supplierName as string) ?? "a supplier";
+      const days = (d.metadata?.daysRemaining as number) ?? 30;
+      await sendPushToUser(d.recipientUserId, {
+        title: `Supplier ${cert} expiring`,
+        body: `${supplierName}'s ${cert} expires in ${days} day${days !== 1 ? "s" : ""}.`,
+        data: { type: "supplier_certification_expiring", profileId: d.resourceId, orgId: d.orgId },
+      });
+    })
+
     .exhaustive();
 
   notificationLogger.info("Notification processed", {

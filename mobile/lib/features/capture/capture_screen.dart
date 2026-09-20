@@ -101,6 +101,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   double? _capturedLat;
   double? _capturedLng;
 
+  // H&S compliance fields
+  bool _ppeVerified = false;
+  DateTime? _toolboxTalkCompletedAt;
+  final _trainingHoursController = TextEditingController();
+
   /// Debounce timer for real-time field format validation.
   Timer? _validationDebounce;
 
@@ -164,6 +169,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     for (final c in _controllers.values) {
       c.dispose();
     }
+    _trainingHoursController.dispose();
     super.dispose();
   }
 
@@ -507,6 +513,14 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       if (value.isNotEmpty) formData[key] = value;
     });
     formData['autoExtracted'] = _autoFilled.toList();
+
+    // H&S compliance fields
+    formData['ppeVerified'] = _ppeVerified;
+    if (_toolboxTalkCompletedAt != null) {
+      formData['toolboxTalkCompletedAt'] = _toolboxTalkCompletedAt!.toIso8601String();
+    }
+    final trainingHours = double.tryParse(_trainingHoursController.text.trim());
+    if (trainingHours != null) formData['trainingHoursLogged'] = trainingHours;
 
     // Embed the raw OCR snapshot so the server can split it into ocrExtractedData.
     // Using a namespaced key avoids colliding with real form fields.
@@ -864,6 +878,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             ],
             ..._fieldsForType(type),
             const SizedBox(height: 12),
+            _buildHsSection(colorScheme, textTheme),
+            const SizedBox(height: 12),
             OcrValidationPanel(
               fieldConfidence: _fieldConfidence,
               autoFilledFields: _autoFilled,
@@ -904,6 +920,108 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHsSection(ColorScheme colorScheme, TextTheme textTheme) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.health_and_safety_outlined, size: 18, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              Text('Site Safety', style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // PPE verified
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: _submitting ? null : () => setState(() => _ppeVerified = !_ppeVerified),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: _ppeVerified,
+                    onChanged: _submitting ? null : (v) => setState(() => _ppeVerified = v ?? false),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      'PPE verified (hard hat, hi-vis, steel toe-caps)',
+                      style: textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Toolbox talk
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _toolboxTalkCompletedAt == null
+                      ? 'Toolbox talk: not recorded'
+                      : 'Toolbox talk: ${_toolboxTalkCompletedAt!.day.toString().padLeft(2, '0')}/${_toolboxTalkCompletedAt!.month.toString().padLeft(2, '0')}/${_toolboxTalkCompletedAt!.year} ${_toolboxTalkCompletedAt!.hour.toString().padLeft(2, '0')}:${_toolboxTalkCompletedAt!.minute.toString().padLeft(2, '0')}',
+                  style: textTheme.bodyMedium,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _submitting
+                    ? null
+                    : () async {
+                        final now = DateTime.now();
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: now,
+                          firstDate: DateTime(now.year - 1),
+                          lastDate: now,
+                        );
+                        if (!mounted || date == null) return;
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(now),
+                        );
+                        if (!mounted) return;
+                        setState(() {
+                          _toolboxTalkCompletedAt = DateTime(
+                            date.year, date.month, date.day,
+                            time?.hour ?? now.hour, time?.minute ?? now.minute,
+                          );
+                        });
+                      },
+                icon: const Icon(Icons.edit_calendar_outlined, size: 16),
+                label: Text(_toolboxTalkCompletedAt == null ? 'Record' : 'Change'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Training hours
+          TextFormField(
+            controller: _trainingHoursController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            enabled: !_submitting,
+            decoration: const InputDecoration(
+              labelText: 'Training hours logged today',
+              hintText: 'e.g. 0.5',
+              prefixIcon: Icon(Icons.school_outlined),
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+          ),
+        ],
       ),
     );
   }

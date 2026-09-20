@@ -132,5 +132,41 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
         link: `${orgBase}/compliance/permits/${data.resourceId}`,
       };
     }
+    case "worker_session_overdue": {
+      const workerName = str(data.metadata?.workerName, "A worker");
+      const minutes = num(data.metadata?.minutesSinceLastPing, 30);
+      return {
+        title: "Worker welfare check overdue",
+        body: `${workerName} has not responded to a welfare ping in ${minutes} minutes. Check their status.`,
+        link: `${orgBase}/hs/worker-sessions/${data.resourceId}`,
+      };
+    }
+    case "enforcement_notice_overdue": {
+      const ref = str(data.metadata?.noticeRef, "an enforcement notice");
+      return {
+        title: "Enforcement notice compliance overdue",
+        body: `Compliance deadline for notice ${ref} has passed without a recorded compliance date.`,
+        link: `${orgBase}/compliance/enforcement-notices/${data.resourceId}`,
+      };
+    }
+    case "discharge_reading_exceedance": {
+      const parameter = str(data.metadata?.parameter, "a parameter");
+      const permitRef = str(data.metadata?.permitRef, "permit");
+      return {
+        title: "Discharge limit exceeded",
+        body: `${parameter} exceeded its consented limit on ${permitRef}. Regulatory notification may be required.`,
+        link: `${orgBase}/compliance/permits/${data.resourceId}`,
+      };
+    }
+    case "supplier_certification_expiring": {
+      const cert = str(data.metadata?.certType, "certification");
+      const supplierName = str(data.metadata?.supplierName, "a supplier");
+      const days = num(data.metadata?.daysRemaining, 30);
+      return {
+        title: `Supplier ${cert} expiring`,
+        body: `${supplierName}'s ${cert} expires in ${days} day${days !== 1 ? "s" : ""}.`,
+        link: `${orgBase}/supply-chain/suppliers/${data.resourceId}`,
+      };
+    }
   }
 }
