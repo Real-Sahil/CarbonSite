@@ -12,7 +12,7 @@ type Params = { params: Promise<{ orgId: string; evidenceId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, evidenceId } = await params;
-    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "reviewer", "auditor");
 
     const evidence = await prisma.evidenceFile.findUnique({
       where: { id: evidenceId },
@@ -49,13 +49,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       },
     });
 
-    return NextResponse.json({
-      id: evidenceId,
-      fileName: evidence.filename,
-      downloadUrl,
-      virusScanStatus: evidence.virusScanStatus,
-      expiresAt: new Date(Date.now() + 3600_000).toISOString(),
-    });
+    return NextResponse.redirect(downloadUrl);
   } catch (err) {
     return handleRouteError(err);
   }
