@@ -12,6 +12,8 @@ import {
   enqueueSupplierPerformanceUpdate,
   enqueueCausalAnalysis,
   enqueueAccountPoliciesCheck,
+  enqueueSubmissionSlaMonitoring,
+  enqueuePermitExpiryMonitoring,
   type CalculationJobData,
   type DsarJobData,
   type ForecastingJobData,
@@ -37,6 +39,8 @@ import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-pe
 import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
 import { runDbtTransformation, type DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
 import { processAccountPolicies } from "@/workers/account-policies";
+import { processSubmissionSlaMonitoring } from "@/workers/submission-sla-monitoring";
+import { processPermitExpiryMonitoring } from "@/workers/permit-expiry-monitoring";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
 import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
 import { hasFeature, type Plan } from "@/lib/billing/limits";
@@ -216,5 +220,25 @@ export async function dispatchAccountPolicies(_data: AccountPoliciesJobData) {
   }
 
   await processAccountPolicies();
+  return "processed" as const;
+}
+
+export async function dispatchSubmissionSlaMonitoring() {
+  if (mode === "worker") {
+    await enqueueSubmissionSlaMonitoring({});
+    return "queued" as const;
+  }
+
+  await processSubmissionSlaMonitoring();
+  return "processed" as const;
+}
+
+export async function dispatchPermitExpiryMonitoring() {
+  if (mode === "worker") {
+    await enqueuePermitExpiryMonitoring({});
+    return "queued" as const;
+  }
+
+  await processPermitExpiryMonitoring();
   return "processed" as const;
 }

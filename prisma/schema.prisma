@@ -111,6 +111,8 @@ model User {
   findingsRaised           AssuranceFinding[]       @relation("FindingRaiser")
   findingsResponded        AssuranceFinding[]       @relation("FindingResponder")
   datapointStatusesRecorded OrganizationDatapointStatus[] @relation("DatapointStatusRecorder")
+  tcfdScenariosCreated      TcfdScenario[]               @relation("TcfdScenarioCreator")
+  tcfdRisksOwned            TcfdRiskAssessment[]         @relation("TcfdRiskOwner")
 
   // Better Auth session tables
   sessions Session[]
@@ -309,6 +311,8 @@ model Organization {
   datapointStatuses           OrganizationDatapointStatus[] @relation("OrgDatapointStatuses")
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
   onboardingProgress            OnboardingProgress?
+  tcfdScenarios                 TcfdScenario[]       @relation("OrgTcfdScenarios")
+  tcfdRiskAssessments           TcfdRiskAssessment[] @relation("OrgTcfdRisks")
 
   @@map("organizations")
 }
@@ -1029,6 +1033,8 @@ model FieldSubmission {
   reviewClaimedByUserId     String?               @map("review_claimed_by_user_id")
   /// Timestamp when the current claim was acquired. Used to detect stale claims.
   reviewClaimedAt           DateTime?             @map("review_claimed_at")
+  /// Set when the SLA overdue notification has been fired for this submission.
+  slaNotifiedAt             DateTime?             @map("sla_notified_at")
   createdAt                 DateTime              @default(now()) @map("created_at")
   updatedAt                 DateTime              @updatedAt @map("updated_at")
 
@@ -4552,7 +4558,9 @@ model EnvironmentalPermit {
   /// Set when this permit has been cross-referenced against the EA register.
   eaRegisterRef  String?   @map("ea_register_ref")
   /// When the EA public register was last queried for this permit.
-  eaLastSyncAt   DateTime? @map("ea_last_sync_at")
+  eaLastSyncAt      DateTime? @map("ea_last_sync_at")
+  /// When the expiry warning notification was last sent. Prevents duplicate alerts.
+  expiryAlertSentAt DateTime? @map("expiry_alert_sent_at")
   createdByUserId String      @map("created_by_user_id")
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
@@ -4586,8 +4594,10 @@ model PermitCondition {
   monitoringFrequency String?    @map("monitoring_frequency")
   complianceStatus ComplianceStatus @default(not_assessed) @map("compliance_status")
   lastAssessedOn DateTime?       @map("last_assessed_on") @db.Date
-  nextDueOn     DateTime?        @map("next_due_on") @db.Date
-  notes         String?
+  nextDueOn              DateTime? @map("next_due_on") @db.Date
+  notes                  String?
+  /// When the due-date warning notification was last sent for this condition.
+  conditionAlertSentAt   DateTime? @map("condition_alert_sent_at")
   createdAt     DateTime         @default(now()) @map("created_at")
   updatedAt     DateTime         @updatedAt @map("updated_at")
 
@@ -5444,4 +5454,74 @@ model EcologicalScan {
 
   @@index([organizationId, projectId, createdAt])
   @@map("ecological_scans")
+}
+
+// ─── TCFD Climate Risk ────────────────────────────────────────────────────────
+
+enum TcfdScenarioType {
+  physical
+  transition
+}
+
+enum TcfdTimeHorizon {
+  /// Up to 3 years
+  short
+  /// 3–10 years
+  medium
+  /// Beyond 10 years
+  long
+}
+
+/// A TCFD climate scenario (physical or transition) against which risks are assessed.
+model TcfdScenario {
+  id                     String           @id @default(cuid())
+  organizationId         String           @map("organization_id")
+  scenarioType           TcfdScenarioType @map("scenario_type")
+  name                   String
+  /// e.g. "1.5°C", "2°C", "4°C", "Net Zero 2050"
+  temperaturePathway     String?          @map("temperature_pathway")
+  timeHorizon            TcfdTimeHorizon  @default(medium) @map("time_horizon")
+  description            String?
+  grossValueAtRiskLow    Decimal?         @map("gross_value_at_risk_low")  @db.Decimal(18, 2)
+  grossValueAtRiskHigh   Decimal?         @map("gross_value_at_risk_high") @db.Decimal(18, 2)
+  createdByUserId        String?          @map("created_by_user_id")
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+
+  organization  Organization        @relation("OrgTcfdScenarios", fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy     User?               @relation("TcfdScenarioCreator", fields: [createdByUserId], references: [id])
+  riskAssessments TcfdRiskAssessment[] @relation("ScenarioRisks")
+
+  @@index([organizationId, scenarioType])
+  @@map("tcfd_scenarios")
+}
+
+/// A single climate risk assessed against a TCFD scenario.
+model TcfdRiskAssessment {
+  id                  String       @id @default(cuid())
+  organizationId      String       @map("organization_id")
+  scenarioId          String       @map("scenario_id")
+  /// e.g. "Policy & Legal", "Technology", "Market", "Reputation", "Acute Physical", "Chronic Physical"
+  riskCategory        String       @map("risk_category")
+  description         String
+  /// 1 (very low) – 5 (very high)
+  likelihood          Int
+  /// 1 (very low) – 5 (very high)
+  impact              Int
+  financialImpactLow  Decimal?     @map("financial_impact_low")  @db.Decimal(18, 2)
+  financialImpactHigh Decimal?     @map("financial_impact_high") @db.Decimal(18, 2)
+  adaptationActions   String?      @map("adaptation_actions")
+  residualLikelihood  Int?         @map("residual_likelihood")
+  residualImpact      Int?         @map("residual_impact")
+  reviewDate          DateTime?    @map("review_date") @db.Date
+  ownerUserId         String?      @map("owner_user_id")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+
+  organization Organization @relation("OrgTcfdRisks", fields: [organizationId], references: [id], onDelete: Cascade)
+  scenario     TcfdScenario @relation("ScenarioRisks", fields: [scenarioId], references: [id], onDelete: Cascade)
+  owner        User?        @relation("TcfdRiskOwner", fields: [ownerUserId], references: [id])
+
+  @@index([organizationId, scenarioId])
+  @@map("tcfd_risk_assessments")
 }

@@ -243,7 +243,15 @@ export type AuditAction =
   | "field_submission.review_claim_released"
   | "settings.data_retention_updated"
   | "snapshot.share_link_created"
-  | "snapshot.share_link_revoked";
+  | "snapshot.share_link_revoked"
+  | "permit.expiry_alert_sent"
+  | "permit.condition_due_alert_sent"
+  | "tcfd.scenario_created"
+  | "tcfd.scenario_updated"
+  | "tcfd.scenario_deleted"
+  | "tcfd.risk_created"
+  | "tcfd.risk_updated"
+  | "tcfd.risk_deleted";
 
 export async function writeAuditLog(params: {
   organizationId: string;

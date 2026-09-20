@@ -294,6 +294,35 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       ]);
     })
 
+    .with({ type: "submission_sla_overdue" }, async (d) => {
+      const overdueCount = (d.metadata?.overdueCount as number) ?? 1;
+      await sendPushToUser(d.recipientUserId, {
+        title: "Submissions overdue for review",
+        body: `${overdueCount} submission${overdueCount !== 1 ? "s have" : " has"} been pending review for more than 48 hours.`,
+        data: { type: "submission_sla_overdue", orgId: d.orgId },
+      });
+    })
+
+    .with({ type: "permit_expiry_warning" }, async (d) => {
+      const permitRef = (d.metadata?.permitRef as string) ?? "a permit";
+      const days = (d.metadata?.daysUntilExpiry as number) ?? 30;
+      await sendPushToUser(d.recipientUserId, {
+        title: `Permit expiring in ${days}d`,
+        body: `Permit ${permitRef} expires in ${days} day${days !== 1 ? "s" : ""}. Renew before the deadline.`,
+        data: { type: "permit_expiry_warning", permitId: d.resourceId, orgId: d.orgId },
+      });
+    })
+
+    .with({ type: "permit_condition_due" }, async (d) => {
+      const conditionRef = (d.metadata?.conditionRef as string) ?? "a permit condition";
+      const days = (d.metadata?.daysUntilDue as number) ?? 7;
+      await sendPushToUser(d.recipientUserId, {
+        title: `Permit condition due in ${days}d`,
+        body: `Condition ${conditionRef} is due for compliance assessment in ${days} day${days !== 1 ? "s" : ""}.`,
+        data: { type: "permit_condition_due", permitId: d.resourceId, orgId: d.orgId },
+      });
+    })
+
     .exhaustive();
 
   notificationLogger.info("Notification processed", {

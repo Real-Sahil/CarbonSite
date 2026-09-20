@@ -11,7 +11,7 @@ import {
   Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
-  TrendingUp, Droplets, Leaf,
+  TrendingUp, Droplets, Leaf, CloudSun,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -118,6 +118,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "ESRS E1 Gap",        href: `/orgs/${orgId}/compliance/esrs-e1`,                icon: BookOpen,       roles: CORE_ROLES },
         { label: "Framework Crosswalk", href: `/orgs/${orgId}/compliance/crosswalk`,             icon: Network,        roles: EXTENDED_VIEW_ROLES },
         { label: "Assurance Engagements", href: `/orgs/${orgId}/assurance`,                      icon: ClipboardCheck, roles: ["admin", "sustainability_director", "auditor", "sustainability_manager"] },
+        { label: "TCFD Scenarios",         href: `/orgs/${orgId}/tcfd`,                           icon: CloudSun,       roles: CORE_ROLES },
       ]},
       { label: "Audit", items: [
         { label: "Audit Trail",    href: `/orgs/${orgId}/audit`,             icon: Clock, roles: CORE_ROLES },
