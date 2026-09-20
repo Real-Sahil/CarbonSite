@@ -1,13 +1,18 @@
 name: Apply DB migrations
 
-# Manual-trigger only. Vercel's own vercel-build script already runs
-# `prisma migrate deploy` on every production deployment (see package.json) —
-# this workflow used to also auto-run on every push to main, meaning two
-# independent processes applied migrations against the same database on
-# every push. That's redundant at best and a race condition at worst.
-# Keep this as a manual break-glass tool (e.g. to apply migrations ahead of
-# a deploy, or re-run one that failed) rather than a second automatic path.
+# Runs on every push to main AND can be triggered manually.
+# vercel-build only runs `prisma generate` — it does NOT run `prisma migrate deploy`.
+# This workflow is therefore the primary path that applies schema changes to production.
+# REQUIRED secrets:
+#   MIGRATION_DATABASE_URL  — Supabase session-mode pooler URL (Settings -> Database ->
+#                             Connection Pooling -> Session mode, port 5432).
+#                             Falls back to DATABASE_URL when absent.
+#   Both DATABASE_URL and DIRECT_URL are set to the same session-mode pooler URL so
+#   Prisma schema validation (which requires DIRECT_URL) succeeds without needing a
+#   separate direct-connection secret in GitHub Actions.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -19,6 +24,10 @@ jobs:
       # when the direct connection is blocked from GitHub Actions (IPv4 restriction on Supabase free tier).
       # Falls back to DATABASE_URL if MIGRATION_DATABASE_URL is not set.
       DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL || secrets.DATABASE_URL }}
+      # DIRECT_URL must be set (schema.prisma declares directUrl = env("DIRECT_URL")).
+      # For migrations we use the same session-mode pooler URL as DATABASE_URL — it
+      # supports DDL and bypasses pgBouncer transaction-mode limitations.
+      DIRECT_URL: ${{ secrets.MIGRATION_DATABASE_URL || secrets.DATABASE_URL }}
       NO_COLOR: "1"
     steps:
       - name: Validate MIGRATION_DATABASE_URL secret
