@@ -267,7 +267,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     latestSnapshot != null && Math.abs(liveTotalCo2e - snapshotTotalCo2e) > 0.5;
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
-  const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch, priorScopeAggregates] = await Promise.all([
+  const [batchA, batchB, trendAggregates, facilityAggregates, dataQualityBatch, priorScopeAggregates, environmentalAggregatesRaw, approvedCountsRows, pilotRecentGeneration, industryData] = await Promise.all([
     Promise.all([
       currentPeriod
         ? prisma.dashboardAggregate.groupBy({
@@ -577,131 +577,29 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           orderBy: { scope: "asc" },
         }).catch(onLoadFailure(() => []))
       : Promise.resolve([] as { scope: number; _sum: { totalCo2e: string | null; recordCount: number | null } }[]),
-  ]);
-
-  const [
-    scopeAggregates,
-    recordCount,
-    approvedRecordCount,
-    pendingSubmissionCount,
-    importCount,
-    failedImportCount,
-    reportCount,
-    readyReportCount,
-    failedReportCount,
-    failedCalculationCount,
-    openReviewTaskCount,
-    myReviewTasks,
-    reviewImports,
-    reviewRecords,
-    reviewReports,
-  ] = batchA;
-
-  const [
-    reviewAssignees,
-    recentAuditLogs,
-    targetCount,
-    initiativeCount,
-    reportingPeriods,
-    methodologies,
-    factorLibraries,
-    calculationRuns,
-    evidenceFileCount,
-    submissionStatusRows,
-    submissionDocumentRows,
-    initiativeStatusRows,
-    targetReductionStats,
-    topCategoryAggregates,
-    reportStatusRows,
-    socialValueStats,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _siteCount,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _fieldWorkerCount,
-  ] = batchB;
-
-  const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
-    dataQualityBatch;
-
-  // Fetch pilot kit documents directly from database
-  type PilotDoc = { name: string; audience: string; storageKey: string; downloadUrl: string | null; error?: string };
-  type PilotKitData = { code: string; data: { generatedAt: string; documents: PilotDoc[]; context: Record<string, unknown> | null } };
-  let pilotKitData: PilotKitData | null = null;
-  let pilotKitDocuments: PilotDoc[] = [];
-
-  try {
-    const recentGeneration = await prisma.auditLog.findFirst({
-      where: {
-        organizationId: orgId,
-        action: "pilot.kit_generated",
-      },
+    // Environmental (water/waste) metric aggregates — ESRS E3/E5
+    currentPeriod
+      ? prisma.environmentalMetricAggregate.groupBy({
+          by: ["metricType"],
+          where: { organizationId: orgId, reportingPeriodId: currentPeriod.id, snapshotId: null },
+          _sum: { totalValue: true },
+        }).catch(onLoadFailure(() => []))
+      : Promise.resolve([] as { metricType: string; _sum: { totalValue: string | null } }[]),
+    // Approved record counts per period — progress bars across periods
+    prisma.activityRecord.groupBy({
+      by: ["reportingPeriodId"],
+      where: { organizationId: orgId, reviewStatus: "approved" },
+      _count: { _all: true },
+    }).catch(onLoadFailure(() => [])),
+    // Pilot kit — most-recent generation audit log entry
+    prisma.auditLog.findFirst({
+      where: { organizationId: orgId, action: "pilot.kit_generated" },
       orderBy: { createdAt: "desc" },
-      select: {
-        createdAt: true,
-        metadata: true,
-      },
-    });
-
-    if (recentGeneration) {
-      const metadata = typeof recentGeneration.metadata === "object" && recentGeneration.metadata !== null
-        ? recentGeneration.metadata
-        : {};
-      const meta = metadata as Record<string, unknown>;
-      const timestamp = (meta.timestamp as string | undefined) || recentGeneration.createdAt.toISOString().split("T")[0];
-
-      // Generate presigned URLs for documents
-      const { presignDownload, keys } = await import("@/lib/storage");
-
-      const documents = [
-        { name: "Executive Summary", audience: "Executive Stakeholders", key: `org/${orgId}/pilot-kit/01-executive-summary-${timestamp}.pdf` },
-        { name: "Sustainability Manager Guide", audience: "Sustainability Lead", key: `org/${orgId}/pilot-kit/02-sustainability-manager-${timestamp}.pdf` },
-        { name: "Finance Lead Guide", audience: "Finance Lead", key: `org/${orgId}/pilot-kit/03-finance-lead-${timestamp}.pdf` },
-        { name: "Field Worker Guide", audience: "Field Workers", key: `org/${orgId}/pilot-kit/04-field-worker-${timestamp}.pdf` },
-        { name: "Technical Integration Guide", audience: "IT Administrator", key: `org/${orgId}/pilot-kit/05-technical-integration-${timestamp}.pdf` },
-        { name: "Compliance Guide", audience: "Compliance & Audit", key: `org/${orgId}/pilot-kit/06-compliance-guide-${timestamp}.pdf` },
-      ];
-
-      const documentsWithUrls = await Promise.all(
-        documents.map(async (doc) => {
-          try {
-            const downloadUrl = await presignDownload(doc.key);
-            return {
-              name: doc.name,
-              audience: doc.audience,
-              storageKey: doc.key,
-              downloadUrl,
-            };
-          } catch (err) {
-            console.error(`Failed to presign download for ${doc.key}:`, err);
-            return {
-              name: doc.name,
-              audience: doc.audience,
-              storageKey: doc.key,
-              downloadUrl: null,
-              error: "Failed to generate download link",
-            };
-          }
-        })
-      );
-
-      pilotKitData = {
-        code: "OK",
-        data: {
-          generatedAt: recentGeneration.createdAt.toISOString(),
-          documents: documentsWithUrls,
-          context: (meta.context as Record<string, unknown> | undefined) ?? null,
-        },
-      };
-      pilotKitDocuments = documentsWithUrls;
-    }
-  } catch (err) {
-    console.error("Failed to fetch pilot kit documents:", err);
-  }
-
-  // Industry-specific data
-  const industry = organization.industry ?? null;
-  const [industryData] = await Promise.all([
+      select: { createdAt: true, metadata: true },
+    }).catch(onLoadFailure(() => null)),
+    // Industry-specific data
     (async () => {
+      const industry = organization.industry ?? null;
       if (industry === "construction") {
         const [agg, byCategory] = await Promise.all([
           prisma.embodiedCarbonRecord.aggregate({
@@ -784,31 +682,112 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     })(),
   ]);
 
-  // Water & waste (ESRS E3/E5) — reads the pre-computed
-  // EnvironmentalMetricAggregate rollup, never raw-aggregates
-  // WaterRecord/WasteRecord at request time, same rule as the scope cards.
-  const environmentalAggregates = currentPeriod
-    ? await prisma.environmentalMetricAggregate.groupBy({
-        by: ["metricType"],
-        where: { organizationId: orgId, reportingPeriodId: currentPeriod.id, snapshotId: null },
-        _sum: { totalValue: true },
-      }).catch(onLoadFailure(() => []))
-    : [];
+  const [
+    scopeAggregates,
+    recordCount,
+    approvedRecordCount,
+    pendingSubmissionCount,
+    importCount,
+    failedImportCount,
+    reportCount,
+    readyReportCount,
+    failedReportCount,
+    failedCalculationCount,
+    openReviewTaskCount,
+    myReviewTasks,
+    reviewImports,
+    reviewRecords,
+    reviewReports,
+  ] = batchA;
+
+  const [
+    reviewAssignees,
+    recentAuditLogs,
+    targetCount,
+    initiativeCount,
+    reportingPeriods,
+    methodologies,
+    factorLibraries,
+    calculationRuns,
+    evidenceFileCount,
+    submissionStatusRows,
+    submissionDocumentRows,
+    initiativeStatusRows,
+    targetReductionStats,
+    topCategoryAggregates,
+    reportStatusRows,
+    socialValueStats,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _siteCount,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _fieldWorkerCount,
+  ] = batchB;
+
+  const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
+    dataQualityBatch;
+
+  // Pilot kit — presign R2 URLs for the generation fetched in the main batch
+  type PilotDoc = { name: string; audience: string; storageKey: string; downloadUrl: string | null; error?: string };
+  type PilotKitData = { code: string; data: { generatedAt: string; documents: PilotDoc[]; context: Record<string, unknown> | null } };
+  let pilotKitData: PilotKitData | null = null;
+  let pilotKitDocuments: PilotDoc[] = [];
+
+  try {
+    if (pilotRecentGeneration) {
+      const metadata = typeof pilotRecentGeneration.metadata === "object" && pilotRecentGeneration.metadata !== null
+        ? pilotRecentGeneration.metadata
+        : {};
+      const meta = metadata as Record<string, unknown>;
+      const timestamp = (meta.timestamp as string | undefined) || pilotRecentGeneration.createdAt.toISOString().split("T")[0];
+
+      const { presignDownload } = await import("@/lib/storage");
+
+      const documents = [
+        { name: "Executive Summary", audience: "Executive Stakeholders", key: `org/${orgId}/pilot-kit/01-executive-summary-${timestamp}.pdf` },
+        { name: "Sustainability Manager Guide", audience: "Sustainability Lead", key: `org/${orgId}/pilot-kit/02-sustainability-manager-${timestamp}.pdf` },
+        { name: "Finance Lead Guide", audience: "Finance Lead", key: `org/${orgId}/pilot-kit/03-finance-lead-${timestamp}.pdf` },
+        { name: "Field Worker Guide", audience: "Field Workers", key: `org/${orgId}/pilot-kit/04-field-worker-${timestamp}.pdf` },
+        { name: "Technical Integration Guide", audience: "IT Administrator", key: `org/${orgId}/pilot-kit/05-technical-integration-${timestamp}.pdf` },
+        { name: "Compliance Guide", audience: "Compliance & Audit", key: `org/${orgId}/pilot-kit/06-compliance-guide-${timestamp}.pdf` },
+      ];
+
+      const documentsWithUrls = await Promise.all(
+        documents.map(async (doc) => {
+          try {
+            const downloadUrl = await presignDownload(doc.key);
+            return { name: doc.name, audience: doc.audience, storageKey: doc.key, downloadUrl };
+          } catch (err) {
+            console.error(`Failed to presign download for ${doc.key}:`, err);
+            return { name: doc.name, audience: doc.audience, storageKey: doc.key, downloadUrl: null, error: "Failed to generate download link" };
+          }
+        })
+      );
+
+      pilotKitData = {
+        code: "OK",
+        data: {
+          generatedAt: pilotRecentGeneration.createdAt.toISOString(),
+          documents: documentsWithUrls,
+          context: (meta.context as Record<string, unknown> | undefined) ?? null,
+        },
+      };
+      pilotKitDocuments = documentsWithUrls;
+    }
+  } catch (err) {
+    console.error("Failed to fetch pilot kit documents:", err);
+  }
+
+  // Water & waste (ESRS E3/E5) — derived from the pre-fetched batch result
   const environmentalTotals = Object.fromEntries(
-    environmentalAggregates.map((row) => [row.metricType, Number(row._sum.totalValue ?? 0)]),
+    environmentalAggregatesRaw.map((row) => [row.metricType, Number(row._sum.totalValue ?? 0)]),
   ) as Record<string, number>;
-  const hasEnvironmentalData = environmentalAggregates.length > 0;
+  const hasEnvironmentalData = environmentalAggregatesRaw.length > 0;
   const wasteDiversionPct = environmentalTotals.waste_generated
     ? Math.round(((environmentalTotals.waste_diverted ?? 0) / environmentalTotals.waste_generated) * 100)
     : null;
 
-  const approvedCountsByPeriod = await prisma.activityRecord.groupBy({
-    by: ["reportingPeriodId"],
-    where: { organizationId: orgId, reviewStatus: "approved" },
-    _count: { _all: true },
-  }).catch(onLoadFailure(() => []));
   const approvedCountByPeriod: Record<string, number> = Object.fromEntries(
-    approvedCountsByPeriod.map((row) => [row.reportingPeriodId, row._count._all]),
+    approvedCountsRows.map((row) => [row.reportingPeriodId, row._count._all]),
   );
 
   const totalCalcCo2e = Number(totalCo2eAgg._sum.totalCo2e ?? 0);

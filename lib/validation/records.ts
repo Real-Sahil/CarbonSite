@@ -109,8 +109,10 @@ export const updateInitiativeSchema = createInitiativeSchema.partial();
 
 export const createFieldSubmissionSchema = z
   .object({
-    // Either a siteId (preferred — server resolves the reporting period by
-    // date) or an explicit reportingPeriodId must be provided.
+    // siteId preferred — server resolves the reporting period by date.
+    // reportingPeriodId accepted as an alternative. Both are optional:
+    // if neither is supplied the server falls back to the most-recent
+    // open reporting period for the org (handled in the route, not here).
     siteId: z.string().min(1).optional(),
     reportingPeriodId: z.string().min(1).optional(),
     documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "water_meter_reading", "other"]),
@@ -135,10 +137,6 @@ export const createFieldSubmissionSchema = z
     deviceSubmittedAt: z.string().datetime().optional(),
     idempotencyKey: z.string().max(128).optional(),
     evidenceIds: z.array(z.string()).optional(),
-  })
-  .refine((data) => Boolean(data.siteId) || Boolean(data.reportingPeriodId), {
-    message: "Either siteId or reportingPeriodId is required.",
-    path: ["siteId"],
   });
 
 // Admin/reviewer edit of a pending or needs_info submission.
