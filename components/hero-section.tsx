@@ -25,7 +25,7 @@ export function HeroSection() {
       : { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } };
 
   return (
-    <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#12101F]">
+    <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#0B3B38]">
 
       {/* ── CSS animated background ─────────────────────────────────────────── */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
@@ -34,29 +34,29 @@ export function HeroSection() {
           style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")", backgroundRepeat: "repeat", backgroundSize: "128px 128px" }}
         />
 
-        {/* Large warm orb — top centre */}
+        {/* Large teal orb — top centre */}
         <div
           className="absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(251,146,60,0.18) 0%, rgba(245,158,11,0.10) 35%, transparent 70%)",
+            background: "radial-gradient(ellipse at center, rgba(15,118,110,0.35) 0%, rgba(21,128,61,0.15) 35%, transparent 70%)",
             animation: reduced ? "none" : "hero-orb1 12s ease-in-out infinite",
           }}
         />
 
-        {/* Medium amber orb — bottom left */}
+        {/* Medium blue orb — bottom left */}
         <div
           className="absolute bottom-0 -left-32 w-[500px] h-[500px] rounded-full"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(234,88,12,0.12) 0%, rgba(249,115,22,0.06) 50%, transparent 70%)",
+            background: "radial-gradient(ellipse at center, rgba(29,78,216,0.18) 0%, rgba(15,118,110,0.10) 50%, transparent 70%)",
             animation: reduced ? "none" : "hero-orb2 16s ease-in-out infinite 3s",
           }}
         />
 
-        {/* Small cool orb — top right */}
+        {/* Small lime orb — top right */}
         <div
           className="absolute -top-16 -right-16 w-[320px] h-[320px] rounded-full"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(99,102,241,0.10) 0%, rgba(139,92,246,0.05) 50%, transparent 70%)",
+            background: "radial-gradient(ellipse at center, rgba(132,204,22,0.12) 0%, rgba(21,128,61,0.06) 50%, transparent 70%)",
             animation: reduced ? "none" : "hero-orb3 20s ease-in-out infinite 6s",
           }}
         />
@@ -67,12 +67,12 @@ export function HeroSection() {
           style={{
             top: "40%",
             height: "1px",
-            background: "linear-gradient(90deg, transparent 0%, rgba(245,158,11,0.12) 30%, rgba(251,146,60,0.20) 50%, rgba(245,158,11,0.12) 70%, transparent 100%)",
+            background: "linear-gradient(90deg, transparent 0%, rgba(15,118,110,0.20) 30%, rgba(21,128,61,0.30) 50%, rgba(15,118,110,0.20) 70%, transparent 100%)",
           }}
         />
 
         {/* Bottom fade into page */}
-        <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-[#12101F] to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-[#0B3B38] to-transparent" />
       </div>
 
       <style>{`
@@ -109,7 +109,7 @@ export function HeroSection() {
         >
           Track emissions.{" "}
           <br className="hidden sm:block" />
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 via-emerald-300 to-lime-300">
             Prove the numbers.
           </span>
         </motion.h1>
@@ -126,7 +126,7 @@ export function HeroSection() {
         <motion.div {...fade(0.23)} className="flex flex-wrap items-center justify-center gap-3 mb-16">
           <Link
             href="/sign-up"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-[0_0_40px_rgba(245,158,11,0.55)] hover:shadow-[0_0_56px_rgba(245,158,11,0.7)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-semibold shadow-[0_0_32px_rgba(15,118,110,0.45)] hover:shadow-[0_0_48px_rgba(15,118,110,0.6)] transition-all active:scale-[0.97]"
           >
             Start free
             <ArrowUpRight className="h-3.5 w-3.5" />

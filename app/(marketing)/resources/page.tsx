@@ -89,26 +89,27 @@ const EXT_LINKS = [
 
 export default function ResourcesPage() {
   return (
-    <main className="min-h-[100dvh] bg-white">
+    <main className="min-h-[100dvh] bg-[#FAFBF8]">
       <SiteNav theme="dark" />
 
       {/* Hero */}
-      <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800">
+      <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0B3B38]">
         <VideoBackground
           src="/videos/hero-resources.mp4"
-          fallbackGradient="linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+          fallbackGradient="linear-gradient(135deg, #0B3B38 0%, #0D4A40 100%)"
           overlayOpacity={0.25}
         />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B3B38] to-transparent pointer-events-none" />
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-cyan-400" />
-              <span className="text-xs text-cyan-400 tracking-[0.12em] font-medium">Resources</span>
+              <div className="w-6 h-px bg-teal-400" />
+              <span className="text-xs text-teal-300 tracking-[0.12em] font-medium">Resources</span>
             </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-white mb-6 max-w-[20ch]">
+            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[20ch]">
               Guidance for getting started.
             </h1>
-            <p className="text-base text-slate-300 leading-relaxed max-w-[50ch]">
+            <p className="text-base text-[#A8C4C2] leading-relaxed max-w-[50ch]">
               Pilot planning, evidence standards, emission factor notes, and methodology references. Grounded in DEFRA 2025, EPA 2025, and GHG Protocol Corporate Standard.
             </p>
           </AnimateIn>
@@ -116,19 +117,19 @@ export default function ResourcesPage() {
       </section>
 
       {/* Guides */}
-      <section className="bg-white">
+      <section className="bg-[#FAFBF8]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 space-y-20">
           {GUIDES.map((section) => (
             <AnimateIn key={section.category}>
               <div>
-                <div className="text-[10px] font-medium text-[#94A3B8] uppercase tracking-[0.12em] mb-8">
+                <div className="text-[10px] font-medium text-teal-700 uppercase tracking-[0.12em] mb-8">
                   {section.category}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2E8F0]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2ECEA]">
                   {section.items.map((item) => (
-                    <div key={item.title} className="bg-white p-8 hover:bg-white transition-colors">
-                      <h3 className="text-base font-semibold text-[#0F172A] tracking-[-0.02em] mb-3">{item.title}</h3>
-                      <p className="text-sm text-[#64748B] leading-relaxed">{item.text}</p>
+                    <div key={item.title} className="bg-white p-8 hover:bg-[#F4F8F7] transition-colors">
+                      <h3 className="text-base font-semibold text-[#111827] tracking-[-0.02em] mb-3">{item.title}</h3>
+                      <p className="text-sm text-[#6B7280] leading-relaxed">{item.text}</p>
                     </div>
                   ))}
                 </div>
@@ -139,31 +140,31 @@ export default function ResourcesPage() {
       </section>
 
       {/* External references */}
-      <section className="bg-white">
+      <section className="bg-[#F2F4EF] border-t border-[#E5E7EB]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-[#06B6D4]" />
-              <span className="text-xs text-[#64748B] tracking-[0.1em]">Primary references</span>
+              <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
+              <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">Primary references</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-12">
               Original sources and standards.
             </h2>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#1E293B]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2ECEA]">
             {EXT_LINKS.map((link, i) => (
               <AnimateIn key={link.label} delay={i * 0.04}>
                 <a
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white p-8 hover:bg-[#111110] transition-colors flex flex-col justify-between group"
+                  className="bg-white p-8 hover:bg-[#F4F8F7] transition-colors flex flex-col justify-between group"
                 >
                   <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-[#111827] tracking-[-0.02em] mb-2 group-hover:text-[#0891B2] transition-colors">{link.label}</h3>
-                    <p className="text-xs text-[#64748B]">{link.org}</p>
+                    <h3 className="text-sm font-semibold text-[#111827] tracking-[-0.02em] mb-2 group-hover:text-teal-700 transition-colors">{link.label}</h3>
+                    <p className="text-xs text-[#6B7280]">{link.org}</p>
                   </div>
-                  <div className="text-[#06B6D4] group-hover:text-[#0891B2] transition-colors mt-4 h-5 w-5">
+                  <div className="text-teal-600 group-hover:text-teal-700 transition-colors mt-4 h-5 w-5">
                     <ArrowUpRight className="h-4 w-4" />
                   </div>
                 </a>
@@ -174,15 +175,15 @@ export default function ResourcesPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-white border-t border-gray-200">
+      <section className="bg-[#FAFBF8] border-t border-[#E5E7EB]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#0F172A] mb-4">
+            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
               Ready to run your first calculation?
             </h2>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#111827] text-sm font-medium hover:bg-[#1A1A18] transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.30)] transition-all active:scale-[0.97]"
             >
               Create organisation
               <ArrowUpRight className="h-3.5 w-3.5" />

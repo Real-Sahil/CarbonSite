@@ -17,7 +17,7 @@ export function CapabilitiesBg() {
     <ConstellationField
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={25}
+      hue={168}
       saturation={0.65}
       brightness={0.45}
       speed={0.3}
@@ -44,15 +44,15 @@ export function HowItWorksBg() {
   );
 }
 
-// Home — CTA section (Refero RisingLines — warm burnt-orange rising particles)
+// Home — CTA section (Refero RisingLines — teal rising particles on deep teal)
 export function CtaBg() {
   return (
     <div className="absolute inset-0 overflow-hidden">
       <RisingLines
         particles={380}
-        color="#f97316"
-        backgroundColor="#0A1628"
-        horizonColor="#e76f51"
+        color="#0F766E"
+        backgroundColor="#0B3B38"
+        horizonColor="#15803D"
         riseSpeed={18}
         opacity={72}
         horizonOpacity={52}
@@ -69,7 +69,7 @@ export function SecurityHeroBg() {
     <DefenseLines
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={20}
+      hue={168}
       saturation={0.6}
       brightness={0.45}
       speed={0.3}
@@ -83,7 +83,7 @@ export function SecurityCtaBg() {
   return (
     <StreamConvergenceBackground
       className="absolute inset-0 w-full h-full"
-      hue={15}
+      hue={168}
       saturation={0.7}
       brightness={0.45}
       speed={0.4}
@@ -98,7 +98,7 @@ export function ProductHeroBg() {
     <TopoField
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={30}
+      hue={168}
       saturation={0.65}
       brightness={0.45}
       speed={0.25}
@@ -113,7 +113,7 @@ export function ProductRolesBg() {
     <ConstellationField
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={25}
+      hue={168}
       saturation={0.5}
       brightness={0.3}
       speed={0.2}
@@ -127,7 +127,7 @@ export function ProductCtaBg() {
   return (
     <StreamConvergenceBackground
       className="absolute inset-0 w-full h-full"
-      hue={15}
+      hue={168}
       saturation={0.75}
       brightness={0.5}
       speed={0.45}
@@ -142,7 +142,7 @@ export function FieldAppHeroBg() {
     <GatewayFlow
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={35}
+      hue={165}
       saturation={0.7}
       brightness={0.5}
       speed={0.35}
@@ -157,7 +157,7 @@ export function FieldAppOcrBg() {
     <ParticleNetwork
       className="absolute inset-0 w-full h-full"
       mode="dark"
-      hue={30}
+      hue={165}
       saturation={0.5}
       brightness={0.3}
       speed={0.2}
@@ -171,7 +171,7 @@ export function FieldAppCtaBg() {
   return (
     <StreamConvergenceBackground
       className="absolute inset-0 w-full h-full"
-      hue={15}
+      hue={165}
       saturation={0.7}
       brightness={0.45}
       speed={0.4}

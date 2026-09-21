@@ -31,28 +31,28 @@ export default function FieldAppPage() {
     <main className="min-h-[100dvh] bg-[#FAFBF8]">
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[70vh] flex items-end overflow-hidden bg-[#0A1628]">
+      <section className="relative min-h-[70vh] flex items-end overflow-hidden bg-[#0B3B38]">
         <VideoBackground src="/videos/hero-field-app.mp4" overlayOpacity={0.30} />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0A1628] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B3B38] to-transparent pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/8 mb-8">
-              <Smartphone className="h-3.5 w-3.5 text-amber-400" />
-              <span className="text-xs text-amber-400 tracking-[0.1em] font-medium">Mobile field app</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-400/20 bg-teal-400/8 mb-8">
+              <Smartphone className="h-3.5 w-3.5 text-teal-300" />
+              <span className="text-xs text-teal-300 tracking-[0.1em] font-medium">Mobile field app</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[22ch]">
               Evidence captured at the{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-emerald-300">
                 point of activity.
               </span>
             </h1>
-            <p className="text-base text-[#94A3B8] leading-relaxed max-w-[48ch] mb-8">
+            <p className="text-base text-[#A8C4C2] leading-relaxed max-w-[48ch] mb-8">
               Field workers photograph documents on the job site. The app automatically reads the important numbers.
               Works without internet. Syncs automatically when you're back online.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/sign-up" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-[0_0_28px_rgba(245,158,11,0.4)] hover:shadow-[0_0_40px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]">
+              <Link href="/sign-up" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-semibold shadow-[0_0_28px_rgba(15,118,110,0.40)] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]">
                 Invite a field worker
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
@@ -74,7 +74,7 @@ export default function FieldAppPage() {
               { stat: "Smart extraction", label: "Reads documents", note: "The app reads weight, dates, and names from photos automatically" },
             ].map((item) => (
               <div key={item.stat} className="px-0 md:px-8 py-8 md:py-4 first:pl-0 last:pr-0">
-                <div className="text-xl font-semibold text-amber-600 mb-1">{item.stat}</div>
+                <div className="text-xl font-semibold text-teal-700 mb-1">{item.stat}</div>
                 <div className="text-sm font-medium text-[#374151] mb-1">{item.label}</div>
                 <div className="text-xs text-[#6B7280]">{item.note}</div>
               </div>
@@ -88,8 +88,8 @@ export default function FieldAppPage() {
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">How it works</span>
+              <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
+              <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">How it works</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-16">
               From first launch to first submission.
@@ -98,8 +98,8 @@ export default function FieldAppPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {CAPTURE_STEPS.map((step, i) => (
               <AnimateIn key={step.n} delay={i * 0.05}>
-                <div className="rounded-2xl border border-[#E5E7EB] bg-white p-8 hover:border-amber-500/40 hover:bg-[#FFF7ED] transition-all duration-300">
-                  <div className="text-[10px] font-mono text-amber-600 mb-6 tracking-widest">{step.n}</div>
+                <div className="rounded-2xl border border-[#E2ECEA] bg-white p-8 hover:border-teal-500/40 hover:bg-[#F4F8F7] transition-all duration-300">
+                  <div className="text-[10px] font-mono text-teal-700 mb-6 tracking-widest">{step.n}</div>
                   <h3 className="text-base font-semibold text-[#111827] tracking-[-0.02em] mb-3">{step.title}</h3>
                   <p className="text-sm text-[#6B7280] leading-relaxed">{step.text}</p>
                 </div>
@@ -114,8 +114,8 @@ export default function FieldAppPage() {
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">Data extraction</span>
+              <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
+              <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">Data extraction</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
               What the app reads.
@@ -156,7 +156,7 @@ export default function FieldAppPage() {
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0A1628]">
+      <section className="relative overflow-hidden bg-[#0B3B38]">
         <FieldAppCtaBg />
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
@@ -165,7 +165,7 @@ export default function FieldAppPage() {
             </h2>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_32px_rgba(245,158,11,0.45)] hover:shadow-[0_0_48px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_32px_rgba(15,118,110,0.40)] hover:shadow-[0_0_48px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
             >
               Create organisation and send first invite
               <ArrowUpRight className="h-3.5 w-3.5" />

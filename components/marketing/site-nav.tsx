@@ -46,7 +46,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className={`pointer-events-auto w-full max-w-5xl flex items-center justify-between px-4 h-12 rounded-full border transition-all duration-300 ${
             scrolled || isDark
-              ? "bg-[#0A1628]/90 backdrop-blur-xl border-white/10 shadow-[0_4px_32px_rgba(10,22,40,0.45)]"
+              ? "bg-[#0B3B38]/92 backdrop-blur-xl border-white/10 shadow-[0_4px_32px_rgba(11,59,56,0.45)]"
               : "bg-white/80 backdrop-blur-xl border-black/6 shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
           }`}
         >
@@ -90,7 +90,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
             </Link>
             <Link
               href="/sign-up"
-              className="px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-[13px] font-medium shadow-[0_0_16px_rgba(249,115,22,0.35)] hover:shadow-[0_0_24px_rgba(249,115,22,0.5)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
+              className="px-4 py-1.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-[13px] font-medium shadow-[0_0_16px_rgba(15,118,110,0.30)] hover:shadow-[0_0_24px_rgba(15,118,110,0.45)] transition-all active:scale-[0.97]"
             >
               Start free
             </Link>
@@ -117,10 +117,10 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? {} : { opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed inset-x-4 top-20 z-40 rounded-2xl border border-white/10 bg-[#0A1628]/97 backdrop-blur-2xl shadow-[0_8px_48px_rgba(10,22,40,0.5)] overflow-hidden md:hidden"
+            className="fixed inset-x-4 top-20 z-40 rounded-2xl border border-white/10 bg-[#0B3B38]/97 backdrop-blur-2xl shadow-[0_8px_48px_rgba(11,59,56,0.5)] overflow-hidden md:hidden"
           >
             {/* Mesh blob inside drawer */}
-            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,0.15)_0%,transparent_70%)] pointer-events-none" />
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(15,118,110,0.20)_0%,transparent_70%)] pointer-events-none" />
 
             <nav className="relative flex flex-col gap-0.5 p-3">
               {NAV_LINKS.map((link) => (
@@ -138,7 +138,7 @@ export function SiteNav({ theme = "light" }: { theme?: "light" | "dark" }) {
               <Link href="/sign-in" className="px-4 py-2.5 rounded-xl text-sm text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-white/5 transition-colors">
                 Sign in
               </Link>
-              <Link href="/sign-up" className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium text-center shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+              <Link href="/sign-up" className="px-4 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium text-center shadow-[0_0_20px_rgba(15,118,110,0.25)] transition-colors">
                 Start free
               </Link>
             </div>

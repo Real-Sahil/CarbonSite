@@ -3,103 +3,101 @@
 @source "../app" "../components";
 
 @theme {
-  /* ── CarbonSite design tokens v4 — vibrant gradient brand ─────────────── */
+  /* ── MetricOra design tokens — Direction 3: Data Field ────────────────── */
+  /* Teal + Blue dual system — analytical, clean, enterprise BI */
 
-  /* Vibrant gradient: yellow → orange → red */
-  /* https://grabient.com/_fuAeSTf4rgh8h8xgTKgBlgBhgBfgOxgPlgBThdwOtqgQ */
-  --gradient-y1:          #ffffa8;
-  --gradient-y2:          #ffff8d;
-  --gradient-o1:          #ffdc6e;
-  --gradient-o2:          #ff6b4c;
-  --gradient-r1:          #ff0027;
+  /* Primary: teal brand */
+  --color-primary:        #0F766E;
+  --color-primary-hover:  #0B5F59;
+  --color-primary-light:  #E6F4F1;
+  --color-primary-border: #A7D4CF;
+  --color-primary-dark:   #0B3B38;
+  --color-primary-mid:    #F4F8F7;
 
-  /* Primary: vibrant yellow-orange from gradient */
-  --color-primary:        #ffdc6e;
-  --color-primary-hover:  #ff6b4c;
-  --color-primary-light:  #ffffa8;
-  --color-primary-border: #ffff8d;
-  --color-primary-dark:   #ff0027;
-  --color-primary-mid:    #fffbf0;
+  /* Info: blue */
+  --color-info:           #1D4ED8;
+  --color-info-hover:     #1E3FAA;
+  --color-info-light:     #EAF1FF;
+  --color-info-border:    #BFDBFE;
 
-  /* Eco: vibrant coral-red for impact & signals */
-  --color-eco:            #ff6b4c;
-  --color-eco-hover:      #ff0027;
-  --color-eco-light:      #fff5f2;
-  --color-eco-border:     #ffb8a3;
-  --color-eco-muted:      #ff8f6e;
+  /* Eco: green sustainability signal */
+  --color-eco:            #15803D;
+  --color-eco-hover:      #166534;
+  --color-eco-light:      #EAF7EE;
+  --color-eco-border:     #A7F3D0;
+  --color-eco-muted:      #4ADE80;
 
-  /* CTA accent: deep vibrant red for key call-to-actions */
-  --color-cta:            #ff0027;
-  --color-cta-hover:      #d40021;
-  --color-cta-light:      #fff0f2;
+  /* Lime: selective environmental highlights */
+  --color-lime:           #84CC16;
+  --color-lime-light:     #F2FBD9;
 
-  /* Secondary accents */
-  --color-warning:        #FBBF24;
-  --color-warning-light:  #FFFBEB;
-  --color-coral:          #FF6B6B;
-  --color-coral-light:    #FFF1F1;
+  /* Semantic */
+  --color-warning:        #D97706;
+  --color-warning-light:  #FFF4DE;
+  --color-coral:          #DC2626;
+  --color-coral-light:    #FDECEC;
 
   /* Surfaces */
   --color-surface:        #FFFFFF;
-  --color-surface-subtle: #F9FAFB;
-  --color-surface-muted:  #F3F4F6;
+  --color-surface-subtle: #FAFCFB;
+  --color-surface-muted:  #F4F8F7;
 
   /* Borders */
-  --color-border:         #E5E7EB;
-  --color-border-strong:  #D1D5DB;
+  --color-border:         #E2ECEA;
+  --color-border-strong:  #C9D8D5;
 
   /* Text */
-  --color-text-primary:   #111827;
-  --color-text-secondary: #374151;
-  --color-text-muted:     #9CA3AF;
+  --color-text-primary:   #17201D;
+  --color-text-secondary: #5F6F68;
+  --color-text-muted:     #87958F;
 
   /* Sidebar */
   --color-sidebar-bg:           #FFFFFF;
-  --color-sidebar-border:       #E5E7EB;
-  --color-sidebar-text:         #6B7280;
-  --color-sidebar-text-active:  #f97316;
-  --color-sidebar-bg-active:    #fff7ed;
-  --color-sidebar-label:        #9CA3AF;
+  --color-sidebar-border:       #E2ECEA;
+  --color-sidebar-text:         #5F6F68;
+  --color-sidebar-text-active:  #0F766E;
+  --color-sidebar-bg-active:    #E6F4F1;
+  --color-sidebar-label:        #87958F;
 
-  /* Scope colours (GHG Protocol convention) */
-  --color-scope-1: #e76f51;
-  --color-scope-2: #f4a261;
-  --color-scope-3: #e9c46a;
+  /* Scope colours — GHG Protocol scopes mapped to Direction 3 palette */
+  --color-scope-1: #0F766E;
+  --color-scope-2: #15803D;
+  --color-scope-3: #1D4ED8;
 
   /* Legacy aliases (keeps old var() references working) */
-  --color-forest-ink:    #f97316;
-  --color-sage-wash:     #fed7aa;
-  --color-mist-blue:     #fde68a;
-  --color-mint-veil:     #fef3c7;
-  --color-linen:         #fff7ed;
+  --color-forest-ink:    #0F766E;
+  --color-sage-wash:     #E6F4F1;
+  --color-mist-blue:     #EAF1FF;
+  --color-mint-veil:     #EAF7EE;
+  --color-linen:         #F4F8F7;
   --color-linen-white:   #FFFFFF;
-  --color-hairline-gray: #E5E7EB;
-  --color-charcoal:      #1F2937;
-  --color-graphite:      #374151;
-  --color-brand-primary: #f97316;
-  --color-brand-accent:  #f4a261;
+  --color-hairline-gray: #E2ECEA;
+  --color-charcoal:      #17201D;
+  --color-graphite:      #5F6F68;
+  --color-brand-primary: #0F766E;
+  --color-brand-accent:  #15803D;
 
   /* Brand palette */
-  --color-brand-forest: #f4a261;
-  --color-sky-blue:     #f97316;
-  --color-sky-light:    #fff7ed;
-  --color-cta-orange:   #F97316;
-  --color-surface-var:  #F9FAFB;
+  --color-brand-forest: #15803D;
+  --color-sky-blue:     #1D4ED8;
+  --color-sky-light:    #EAF1FF;
+  --color-cta-orange:   #0F766E;
+  --color-surface-var:  #F4F8F7;
 
   /* Font */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   /* Marketing design tokens */
-  --color-mk-bg:        #0F172A;
-  --color-mk-surface:   #F5F4F0;
-  --color-mk-accent:    #f97316;
-  --color-mk-accent-hi: #ea580c;
-  --color-mk-text:      #0F172A;
-  --color-mk-muted:     #64748B;
-  --color-mk-faint:     #94A3B8;
-  --color-mk-border:    #E2E8F0;
-  --color-mk-line:      #1E293B;
+  --color-mk-bg:        #0B3B38;
+  --color-mk-surface:   #F4F8F7;
+  --color-mk-accent:    #0F766E;
+  --color-mk-accent-hi: #0B5F59;
+  --color-mk-text:      #17201D;
+  --color-mk-muted:     #5F6F68;
+  --color-mk-faint:     #87958F;
+  --color-mk-border:    #E2ECEA;
+  --color-mk-line:      #E2ECEA;
 
   /* Border radius system (soft) */
   --radius-nav:    8px;
@@ -115,8 +113,8 @@
   }
 
   html, body {
-    background-color: #EEECEA;
-    color: #111827;
+    background-color: #FAFCFB;
+    color: #17201D;
     font-family: var(--font-sans);
     font-weight: 400;
     letter-spacing: -0.02em;
@@ -286,7 +284,7 @@
 /* ── Button & interaction utilities ──────────────────────────────────────── */
 .btn-primary {
   @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
-  background-color: #ff0027;
+  background-color: #0F766E;
   color: #ffffff;
   font-weight: 500;
   font-size: 0.875rem;
@@ -295,9 +293,9 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #d40021;
+  background-color: #0B5F59;
   transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(255, 0, 39, 0.2);
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.25);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -311,17 +309,17 @@
 
 .btn-secondary {
   @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
-  background-color: #e0f7ff;
-  color: #0284c7;
+  background-color: #EAF1FF;
+  color: #1D4ED8;
   font-weight: 500;
   font-size: 0.875rem;
-  border: 1px solid #bae6fd;
+  border: 1px solid #BFDBFE;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #0284c7;
+  background-color: #1D4ED8;
   color: #ffffff;
   transform: translateY(-2px);
 }
@@ -329,16 +327,16 @@
 .btn-tertiary {
   @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
   background-color: transparent;
-  color: #ff6b4c;
+  color: #0F766E;
   font-weight: 500;
   font-size: 0.875rem;
-  border: 2px solid #ff6b4c;
+  border: 2px solid #0F766E;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
 
 .btn-tertiary:hover:not(:disabled) {
-  background-color: #ff6b4c;
+  background-color: #0F766E;
   color: #ffffff;
   transform: scale(1.05);
 }
@@ -382,7 +380,7 @@
 }
 
 .gradient-accent {
-  background: linear-gradient(135deg, #ffffa8 0%, #ffdc6e 50%, #ff6b4c 100%);
+  background: linear-gradient(135deg, #0F766E 0%, #15803D 50%, #84CC16 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

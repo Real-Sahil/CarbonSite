@@ -44,7 +44,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                   className={cn(
                     "px-3 sm:px-4 py-2 text-xs sm:text-sm font-normal tracking-[-0.42px] border-b-2 -mb-px transition-colors whitespace-nowrap",
                     isActive
-                      ? "border-orange-500 text-orange-600"
+                      ? "border-teal-600 text-teal-700"
                       : "border-transparent text-[#6B7280] hover:text-[#374151]",
                   )}
                 >

@@ -46,9 +46,9 @@ export function ContactForm() {
   if (state === "success") {
     return (
       <div className="flex flex-col items-center gap-4 py-12 text-center">
-        <CheckCircle className="h-10 w-10 text-cyan-500" />
-        <h3 className="text-lg font-semibold text-[#0F172A] tracking-tight">Request received</h3>
-        <p className="text-sm text-[#64748B] max-w-[40ch] leading-relaxed">
+        <CheckCircle className="h-10 w-10 text-teal-600" />
+        <h3 className="text-lg font-semibold text-[#111827] tracking-tight">Request received</h3>
+        <p className="text-sm text-[#6B7280] max-w-[40ch] leading-relaxed">
           We'll be in touch shortly. Check your inbox for a confirmation.
         </p>
       </div>
@@ -72,7 +72,7 @@ export function ContactForm() {
             autoComplete="name"
             placeholder="Jane Smith"
             disabled={isSubmitting}
-            className="w-full h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full h-10 rounded-md border border-[#E2ECEA] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
         </div>
         <div>
@@ -87,7 +87,7 @@ export function ContactForm() {
             autoComplete="email"
             placeholder="jane@company.com"
             disabled={isSubmitting}
-            className="w-full h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full h-10 rounded-md border border-[#E2ECEA] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
         </div>
       </div>
@@ -104,7 +104,7 @@ export function ContactForm() {
           autoComplete="organization"
           placeholder="Acme Construction Ltd"
           disabled={isSubmitting}
-          className="w-full h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full h-10 rounded-md border border-[#E2ECEA] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         />
       </div>
 
@@ -120,7 +120,7 @@ export function ContactForm() {
           minLength={10}
           placeholder="Briefly describe your project, reporting period, and what you want to measure."
           disabled={isSubmitting}
-          className="w-full rounded-md border border-[#E2E8F0] bg-white px-3 py-2.5 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed resize-y transition-colors leading-relaxed"
+          className="w-full rounded-md border border-[#E2ECEA] bg-white px-3 py-2.5 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed resize-y transition-colors leading-relaxed"
         />
       </div>
 
@@ -133,7 +133,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F172A] text-white text-sm font-medium hover:bg-[#1e293b] disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.97]"
+        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F766E] text-white text-sm font-medium hover:bg-[#0B5F59] disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.97]"
       >
         {isSubmitting ? (
           <>

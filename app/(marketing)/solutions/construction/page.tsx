@@ -44,8 +44,8 @@ export default function ConstructionPage() {
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-xs text-amber-400 tracking-[0.12em] font-medium">Construction</span>
+              <div className="w-6 h-px bg-gradient-to-r from-teal-400 to-emerald-400" />
+              <span className="text-xs text-teal-300 tracking-[0.12em] font-medium">Construction</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[22ch]">
               Carbon tracking that fits the way construction works.
@@ -55,7 +55,7 @@ export default function ConstructionPage() {
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_24px_rgba(245,158,11,0.4)] hover:shadow-[0_0_36px_rgba(245,158,11,0.6)] transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.40)] hover:shadow-[0_0_36px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
             >
               Start free
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -84,7 +84,7 @@ export default function ConstructionPage() {
                     <p className="text-sm text-[#111827] leading-relaxed">{p.problem}</p>
                   </div>
                   <div className="px-8 py-7">
-                    <div className="text-[10px] text-amber-600 uppercase tracking-[0.12em] mb-3">MetricOra</div>
+                    <div className="text-[10px] text-teal-600 uppercase tracking-[0.12em] mb-3">MetricOra</div>
                     <p className="text-sm text-[#6B7280] leading-relaxed">{p.solution}</p>
                   </div>
                 </div>
@@ -105,12 +105,12 @@ export default function ConstructionPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#E5E7EB]">
             {SCOPE_CATS.map((s, i) => (
               <AnimateIn key={s.label} delay={i * 0.06}>
-                <div className="bg-white p-8 hover:bg-[#FFF7ED] transition-colors">
-                  <div className="text-[10px] font-medium text-amber-600 tracking-[0.12em] mb-6">{s.label}</div>
+                <div className="bg-white p-8 hover:bg-[#F4F8F7] transition-colors">
+                  <div className="text-[10px] font-medium text-teal-700 tracking-[0.12em] mb-6">{s.label}</div>
                   <ul className="space-y-3">
                     {s.cats.map((cat) => (
                       <li key={cat} className="flex items-start gap-3 text-sm text-[#6B7280]">
-                        <span className="mt-1.5 w-1 h-1 rounded-full bg-amber-400 shrink-0" />
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-teal-500 shrink-0" />
                         {cat}
                       </li>
                     ))}
@@ -132,7 +132,7 @@ export default function ConstructionPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_24px_rgba(245,158,11,0.4)] hover:shadow-[0_0_36px_rgba(245,158,11,0.6)] transition-all active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.30)] transition-all active:scale-[0.97]"
               >
                 Create organisation
                 <ArrowUpRight className="h-3.5 w-3.5" />

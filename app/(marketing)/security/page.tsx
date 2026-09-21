@@ -63,20 +63,20 @@ export default function SecurityPage() {
     <main className="min-h-[100dvh] bg-[#FAFBF8]">
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0A1628]">
+      <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0B3B38]">
         <SecurityHeroBg />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0A1628] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B3B38] to-transparent pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/8 mb-8">
-              <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
-              <span className="text-xs text-amber-400 tracking-[0.1em] font-medium">Security</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-400/20 bg-teal-400/8 mb-8">
+              <ShieldCheck className="h-3.5 w-3.5 text-teal-300" />
+              <span className="text-xs text-teal-300 tracking-[0.1em] font-medium">Security</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[18ch]">
               Designed to be audited.
             </h1>
-            <p className="text-base text-[#94A3B8] leading-relaxed max-w-[50ch]">
+            <p className="text-base text-[#A8C4C2] leading-relaxed max-w-[50ch]">
               Multi-tenant isolation, role-based access control, append-only audit logs, and immutable snapshots. Every control is enforced server-side.
             </p>
           </AnimateIn>
@@ -118,7 +118,7 @@ export default function SecurityPage() {
 
       {/* ── Architecture note ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#FAFBF8] border-t border-[#E5E7EB]">
-        <div className="absolute top-0 right-0 w-[500px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.07)_0%,transparent_70%)] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[500px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(15,118,110,0.07)_0%,transparent_70%)] pointer-events-none" />
 
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
@@ -142,7 +142,7 @@ export default function SecurityPage() {
                   "Field worker scope is zero, no org data, no other users.",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white px-5 py-4">
-                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.4)] shrink-0" />
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-600 shadow-[0_0_6px_rgba(15,118,110,0.35)] shrink-0" />
                     <p className="text-sm text-[#374151] leading-relaxed">{point}</p>
                   </div>
                 ))}
@@ -153,19 +153,19 @@ export default function SecurityPage() {
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0A1628]">
+      <section className="relative overflow-hidden bg-[#0B3B38]">
         <SecurityCtaBg />
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#F8FAFC] mb-4">
               Security questions? Talk to the team.
             </h2>
-            <p className="text-sm text-[#94A3B8] mb-8 max-w-[45ch]">
+            <p className="text-sm text-[#A8C4C2] mb-8 max-w-[45ch]">
               We&apos;re happy to walk through the controls architecture, data residency, and compliance positioning.
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_32px_rgba(245,158,11,0.45)] hover:shadow-[0_0_48px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_32px_rgba(15,118,110,0.40)] hover:shadow-[0_0_48px_rgba(15,118,110,0.55)] transition-all active:scale-[0.97]"
             >
               Get in touch
               <ArrowUpRight className="h-3.5 w-3.5" />
