@@ -24,7 +24,7 @@ function buildDatabaseUrl(): string {
   // Detect transaction-mode pooler by URL containing "pooler" or using port 6543.
   const isPooler = base.includes("pooler") || /:6543[/?]/.test(base) || base.endsWith(":6543");
   if (!base.includes("connection_limit")) params.push("connection_limit=1");
-  if (!base.includes("pool_timeout")) params.push("pool_timeout=15");
+  if (!base.includes("pool_timeout")) params.push("pool_timeout=30");
   if (isPooler && !base.includes("pgbouncer")) params.push("pgbouncer=true");
   if (params.length === 0) return base;
   return base + (base.includes("?") ? "&" : "?") + params.join("&");
