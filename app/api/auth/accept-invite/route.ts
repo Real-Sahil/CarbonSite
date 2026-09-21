@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (existingMembership) {
+    if (existingMembership && !invite.reusable) {
       return apiError(
         "ALREADY_MEMBER",
         "This user is already a member of the organization.",
@@ -121,45 +121,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 5. Create membership, mark invite used, create session — all in a transaction
+    // 5. Create membership (if needed), mark invite used (if not reusable),
+    //    create session — all in a transaction
     const sessionToken = randomUUID();
     const sessionId = randomUUID();
     const sessionExpiresAt = new Date(now.getTime() + 30 * 86_400_000); // 30 days
 
     const membership = await prisma.$transaction(async (tx) => {
-      const mem = await tx.organizationMembership.create({
-        data: {
-          organizationId: invite.organizationId,
-          userId: user!.id,
-          role: invite.role,
-        },
-      });
+      let mem = existingMembership;
 
-      // Site-scoped invite: auto-assign the worker to the site so they land
-      // straight on their assigned project — no manual admin step required.
-      if (invite.siteId) {
-        await tx.fieldWorkerSiteAssignment.upsert({
-          where: {
-            organizationId_userId_siteId: {
+      if (!mem) {
+        mem = await tx.organizationMembership.create({
+          data: {
+            organizationId: invite.organizationId,
+            userId: user!.id,
+            role: invite.role,
+          },
+        });
+
+        // Site-scoped invite: auto-assign the worker to the site so they land
+        // straight on their assigned project — no manual admin step required.
+        if (invite.siteId) {
+          await tx.fieldWorkerSiteAssignment.upsert({
+            where: {
+              organizationId_userId_siteId: {
+                organizationId: invite.organizationId,
+                userId: user!.id,
+                siteId: invite.siteId,
+              },
+            },
+            update: {},
+            create: {
               organizationId: invite.organizationId,
               userId: user!.id,
               siteId: invite.siteId,
+              assignedByUserId: invite.usedByUserId ?? user!.id,
             },
-          },
-          update: {},
-          create: {
-            organizationId: invite.organizationId,
-            userId: user!.id,
-            siteId: invite.siteId,
-            assignedByUserId: invite.usedByUserId ?? user!.id,
-          },
-        });
+          });
+        }
       }
 
-      await tx.inviteLink.update({
-        where: { id: invite.id },
-        data: { usedAt: now, usedByUserId: user!.id },
-      });
+      if (!invite.reusable) {
+        await tx.inviteLink.update({
+          where: { id: invite.id },
+          data: { usedAt: now, usedByUserId: user!.id },
+        });
+      }
 
       await tx.session.create({
         data: {

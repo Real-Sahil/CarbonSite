@@ -457,6 +457,7 @@ model InviteLink {
   expiresAt      DateTime  @map("expires_at")
   usedAt         DateTime? @map("used_at")
   usedByUserId   String?   @map("used_by_user_id")
+  reusable       Boolean   @default(false)
   createdAt      DateTime  @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)

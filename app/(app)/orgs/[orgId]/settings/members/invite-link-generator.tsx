@@ -18,6 +18,7 @@ interface ActiveInviteLink {
   token: string;
   expiresAt: Date | string;
   role: string;
+  reusable?: boolean;
   site?: { id: string; name: string; project: { name: string } | null } | null;
 }
 
@@ -39,6 +40,7 @@ export function InviteLinkGenerator({
   const [sites, setSites] = useState<SiteOption[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState("");
   const [expiresInDays, setExpiresInDays] = useState(30);
+  const [reusable, setReusable] = useState(false);
   const [emailInput, setEmailInput] = useState("");
   const [emailSent, setEmailSent] = useState<string | null>(null);
 
@@ -79,6 +81,7 @@ export function InviteLinkGenerator({
         body: JSON.stringify({
           role: "field_worker",
           expiresInDays,
+          reusable,
           ...(selectedSiteId ? { siteId: selectedSiteId } : {}),
           ...(trimmedEmail ? { email: trimmedEmail } : {}),
         }),
@@ -173,14 +176,31 @@ export function InviteLinkGenerator({
               id="invite-expires"
               value={expiresInDays}
               onChange={(e) => setExpiresInDays(Number(e.target.value))}
-              disabled={loading}
-              className="h-9 rounded-md border border-[#E5E7EB] bg-white px-3 text-sm"
+              disabled={loading || reusable}
+              className="h-9 rounded-md border border-[#E5E7EB] bg-white px-3 text-sm disabled:opacity-50"
             >
               <option value={7}>7 days</option>
               <option value={30}>30 days</option>
               <option value={90}>90 days</option>
-              <option value={365}>1 year (Play Store / App Store review)</option>
+              <option value={365}>1 year</option>
             </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-[#555555]">Reusable</span>
+            <label className="flex items-center gap-2 h-9 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                id="invite-reusable"
+                checked={reusable}
+                onChange={(e) => setReusable(e.target.checked)}
+                disabled={loading}
+                className="h-4 w-4 rounded border-[#E5E7EB] accent-blue-600"
+              />
+              <span className="text-xs text-[#374151]">
+                Never expires, multi-use
+                <span className="ml-1 text-[10px] text-[#6B7280]">(App Store / Play Store review)</span>
+              </span>
+            </label>
           </div>
         </div>
 
@@ -259,6 +279,11 @@ export function InviteLinkGenerator({
                 key={link.id}
                 className="flex items-center gap-2 p-[9px] rounded-[7px] border border-[#E5E7EB] bg-[#F0F9FF]"
               >
+                {link.reusable && (
+                  <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#dbeafe] px-2 py-1 text-xs text-[#1d4ed8] whitespace-nowrap font-medium">
+                    Reusable
+                  </span>
+                )}
                 {link.site && (
                   <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#cfe7d3] px-2 py-1 text-xs text-[#111827] whitespace-nowrap">
                     <MapPin className="h-3 w-3" />
@@ -286,11 +311,9 @@ export function InviteLinkGenerator({
                   )}
                 </Button>
                 <span className="text-xs text-[#374151] shrink-0 whitespace-nowrap tracking-[-0.36px]">
-                  Expires{" "}
-                  {expiresAt.toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                  })}
+                  {link.reusable
+                    ? "Never expires"
+                    : `Expires ${expiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}
                 </span>
                 <Button
                   size="icon"
