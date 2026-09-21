@@ -58,9 +58,12 @@ class _InviteScreenState extends State<InviteScreen> {
       if (!mounted) return;
       context.go('/pin-setup');
     } catch (e) {
+      // Reset loading state before the mounted check so the button is never
+      // permanently disabled if the widget is rebuilt or re-entered.
+      final msg = _friendlyError(e);
       if (!mounted) return;
       setState(() {
-        _errorMessage = _friendlyError(e);
+        _errorMessage = msg;
         _loading = false;
       });
     }

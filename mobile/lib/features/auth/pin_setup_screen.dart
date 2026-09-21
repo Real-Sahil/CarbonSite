@@ -25,6 +25,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   bool _checkingSession = true;
   bool _hasSession = false;
   bool _saving = false;
+  bool _submittingInvite = false;
 
   @override
   void initState() {
@@ -115,6 +116,8 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   }
 
   Future<void> _continueWithInvite() async {
+    if (_submittingInvite) return;
+
     final parsed = _parseInviteInput(_inviteController.text);
     if (parsed == null) {
       setState(() {
@@ -123,15 +126,21 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
       return;
     }
 
-    // Save the server URL BEFORE navigating so the invite screen
-    // connects to the right server without asking the worker.
-    if (parsed.serverUrl != null) {
-      await _storage.write(key: 'api_base_url', value: parsed.serverUrl!);
-      invalidateClient();
-    }
+    setState(() => _submittingInvite = true);
 
-    if (!mounted) return;
-    context.go('/invite/${parsed.token}');
+    try {
+      // Save the server URL BEFORE navigating so the invite screen
+      // connects to the right server without asking the worker.
+      if (parsed.serverUrl != null) {
+        await _storage.write(key: 'api_base_url', value: parsed.serverUrl!);
+        invalidateClient();
+      }
+
+      if (!mounted) return;
+      context.go('/invite/${parsed.token}');
+    } finally {
+      if (mounted) setState(() => _submittingInvite = false);
+    }
   }
 
   /// Extracts the invite token AND the server URL from whatever the user pastes.
@@ -378,14 +387,21 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
               ],
               const SizedBox(height: 20),
               FilledButton(
-                onPressed: _continueWithInvite,
+                onPressed: _submittingInvite ? null : _continueWithInvite,
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Continue', style: TextStyle(fontSize: 16)),
+                child: _submittingInvite
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2.5, color: Colors.white),
+                      )
+                    : const Text('Continue', style: TextStyle(fontSize: 16)),
               ),
               const SizedBox(height: 16),
               Text(
