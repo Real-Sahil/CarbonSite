@@ -164,6 +164,10 @@ Future<AcceptInviteResponse> acceptInvite({
       'name': name,
       if (email != null && email.isNotEmpty) 'email': email,
     },
+    options: Options(
+      sendTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 20),
+    ),
   );
   return AcceptInviteResponse.fromJson(
     response.data as Map<String, dynamic>,
