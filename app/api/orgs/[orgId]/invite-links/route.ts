@@ -25,8 +25,12 @@ export async function GET(
         organizationId: orgId,
         email: null,
         role: "field_worker",
-        expiresAt: { gt: now },
-        usedAt: null,
+        OR: [
+          // Non-reusable: must be unused and not yet expired
+          { reusable: false, usedAt: null, expiresAt: { gt: now } },
+          // Reusable: always show regardless of usedAt / expiry
+          { reusable: true },
+        ],
       },
       include: {
         site: { select: { id: true, name: true, project: { select: { name: true } } } },
@@ -67,7 +71,10 @@ export async function POST(
     }
 
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + body.expiresInDays * 86_400_000);
+    // Reusable links get a 10-year expiry so they never need renewing.
+    const expiresAt = body.reusable
+      ? new Date(now.getTime() + 10 * 365 * 86_400_000)
+      : new Date(now.getTime() + body.expiresInDays * 86_400_000);
     const token = randomUUID();
 
     const [org, branding] = await Promise.all([
@@ -81,6 +88,7 @@ export async function POST(
         role: body.role,
         token,
         expiresAt,
+        reusable: body.reusable,
         siteId: body.siteId,
       },
       include: {
