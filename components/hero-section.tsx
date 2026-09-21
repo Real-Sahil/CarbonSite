@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight, Leaf } from "lucide-react";
-import { PredictiveArcCanvas } from "@designcodeio/threeui";
-import { VideoBackground } from "@/components/ui/video-background";
 
 const TRUST = [
   "DEFRA 2025 factors",
@@ -27,28 +25,71 @@ export function HeroSection() {
       : { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } };
 
   return (
-    <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#1C1A2E]">
+    <section className="relative min-h-[100dvh] flex flex-col overflow-hidden bg-[#12101F]">
 
-      {/* ── Video background ────────────────────────────────────────────────── */}
-      <VideoBackground src="/videos/hero-main.mp4" overlayOpacity={0.65} />
+      {/* ── CSS animated background ─────────────────────────────────────────── */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        {/* Noise texture overlay */}
+        <div className="absolute inset-0 opacity-[0.025]"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")", backgroundRepeat: "repeat", backgroundSize: "128px 128px" }}
+        />
 
-      {/* ── ThreeUI predictive arc background ───────────────────────────────── */}
-      <PredictiveArcCanvas
-        className="absolute inset-0 w-full h-full z-0"
-        mode="dark"
-        hue={25}
-        saturation={0.75}
-        brightness={0.6}
-        speed={0.4}
-        spacing={48}
-        dotSize={1.8}
-        archHeight={0.38}
-        thickness={1.4}
-      />
+        {/* Large warm orb — top centre */}
+        <div
+          className="absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(251,146,60,0.18) 0%, rgba(245,158,11,0.10) 35%, transparent 70%)",
+            animation: reduced ? "none" : "hero-orb1 12s ease-in-out infinite",
+          }}
+        />
 
-      {/* Vignette to blend into page */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,transparent_40%,rgba(6,6,18,0.65)_100%)]" />
-      <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-[#1C1A2E] to-transparent pointer-events-none" />
+        {/* Medium amber orb — bottom left */}
+        <div
+          className="absolute bottom-0 -left-32 w-[500px] h-[500px] rounded-full"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(234,88,12,0.12) 0%, rgba(249,115,22,0.06) 50%, transparent 70%)",
+            animation: reduced ? "none" : "hero-orb2 16s ease-in-out infinite 3s",
+          }}
+        />
+
+        {/* Small cool orb — top right */}
+        <div
+          className="absolute -top-16 -right-16 w-[320px] h-[320px] rounded-full"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(99,102,241,0.10) 0%, rgba(139,92,246,0.05) 50%, transparent 70%)",
+            animation: reduced ? "none" : "hero-orb3 20s ease-in-out infinite 6s",
+          }}
+        />
+
+        {/* Horizon line glow */}
+        <div
+          className="absolute left-0 right-0"
+          style={{
+            top: "40%",
+            height: "1px",
+            background: "linear-gradient(90deg, transparent 0%, rgba(245,158,11,0.12) 30%, rgba(251,146,60,0.20) 50%, rgba(245,158,11,0.12) 70%, transparent 100%)",
+          }}
+        />
+
+        {/* Bottom fade into page */}
+        <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-[#12101F] to-transparent" />
+      </div>
+
+      <style>{`
+        @keyframes hero-orb1 {
+          0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+          50% { transform: translateX(-50%) scale(1.12); opacity: 0.75; }
+        }
+        @keyframes hero-orb2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(40px, -30px) scale(1.08); }
+          66% { transform: translate(-20px, 20px) scale(0.96); }
+        }
+        @keyframes hero-orb3 {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(-30px, 30px); }
+        }
+      `}</style>
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-28 pb-20 text-center">
@@ -64,9 +105,10 @@ export function HeroSection() {
         {/* Headline */}
         <motion.h1
           {...fade(0.08)}
-          className="text-[clamp(2.6rem,7.5vw,5.8rem)] font-semibold tracking-[-0.04em] leading-[1] text-white max-w-[18ch] mb-6"
+          className="text-[clamp(2.6rem,7.5vw,5.8rem)] font-semibold tracking-[-0.04em] leading-[1.05] text-white max-w-[18ch] mb-6"
         >
           Track emissions.{" "}
+          <br className="hidden sm:block" />
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200">
             Prove the numbers.
           </span>
@@ -74,24 +116,24 @@ export function HeroSection() {
 
         <motion.p
           {...fade(0.16)}
-          className="text-[1.05rem] text-white/50 leading-relaxed max-w-[46ch] mb-10"
+          className="text-[1.05rem] text-white/60 leading-relaxed max-w-[46ch] mb-10"
         >
           Field evidence capture, DEFRA 2025 calculations, immutable snapshots,
-          and audit-ready reports — built for construction, waste haulage, and supply chains.
+          and audit-ready reports built for construction, waste haulage, and supply chains.
         </motion.p>
 
         {/* CTA row */}
         <motion.div {...fade(0.23)} className="flex flex-wrap items-center justify-center gap-3 mb-16">
           <Link
             href="/sign-up"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-[0_0_32px_rgba(245,158,11,0.45)] hover:shadow-[0_0_40px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-semibold shadow-[0_0_40px_rgba(245,158,11,0.55)] hover:shadow-[0_0_56px_rgba(245,158,11,0.7)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
           >
             Start free
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
           <Link
             href="/product"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-white/12 bg-white/5 backdrop-blur-sm text-white/80 text-sm font-medium hover:border-white/25 hover:bg-white/8 hover:text-white transition-all active:scale-[0.97]"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-white/15 bg-white/5 backdrop-blur-sm text-white/85 text-sm font-medium hover:border-white/30 hover:bg-white/8 hover:text-white transition-all active:scale-[0.97]"
           >
             See how it works
           </Link>
@@ -102,7 +144,7 @@ export function HeroSection() {
           {STATS.map((s) => (
             <div key={s.label} className="text-center">
               <p className="text-2xl font-semibold text-white tracking-tight">{s.value}</p>
-              <p className="text-xs text-white/35 mt-0.5">{s.label}</p>
+              <p className="text-xs text-white/45 mt-0.5">{s.label}</p>
             </div>
           ))}
         </motion.div>
@@ -115,7 +157,7 @@ export function HeroSection() {
           {TRUST.map((t) => (
             <span
               key={t}
-              className="px-3 py-1 rounded-full border border-white/8 bg-white/4 text-[11px] text-white/35 tracking-wide"
+              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[11px] text-white/50 tracking-wide"
             >
               {t}
             </span>
