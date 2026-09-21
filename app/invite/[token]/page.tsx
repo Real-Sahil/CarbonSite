@@ -37,7 +37,7 @@ export default async function InvitePage({ params, searchParams }: InvitePagePro
     <main className="min-h-screen bg-slate-50 px-4 py-10">
       <div className="mx-auto flex max-w-md flex-col gap-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-green-700">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#0F766E]">
             MetricOra invite
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-950">
