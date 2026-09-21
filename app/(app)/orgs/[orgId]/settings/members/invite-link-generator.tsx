@@ -293,7 +293,7 @@ export function InviteLinkGenerator({
                 <Input
                   readOnly
                   value={url}
-                  className="text-xs h-7 bg-white text-[#374151] font-mono border-[#E5E7EB]"
+                  className="text-xs h-7 min-w-0 bg-white text-[#374151] font-mono border-[#E5E7EB]"
                   onFocus={(e) => e.target.select()}
                 />
                 <Button

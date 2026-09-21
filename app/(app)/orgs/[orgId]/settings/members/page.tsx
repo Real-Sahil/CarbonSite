@@ -203,7 +203,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
             organisation.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0 pb-2">
+        <CardContent className="p-0 pb-2 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -224,7 +224,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
                       <span className="ml-2 text-xs text-[#9CA3AF]">(you)</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-[#374151]">
+                  <TableCell className="text-[#374151] max-w-[160px] truncate">
                     {m.user.email}
                   </TableCell>
                   <TableCell>

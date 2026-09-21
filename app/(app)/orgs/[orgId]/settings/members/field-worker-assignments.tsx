@@ -175,7 +175,7 @@ export function FieldWorkerAssignments({
                 value={workerId}
                 onChange={(event) => setWorkerId(event.target.value)}
                 disabled={isPending || !assignmentsAvailable || workers.length === 0}
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
+                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
               >
                 {workers.length === 0 ? (
                   <option value="">No field workers yet</option>
@@ -196,7 +196,7 @@ export function FieldWorkerAssignments({
                 value={siteId}
                 onChange={(event) => setSiteId(event.target.value)}
                 disabled={isPending || !assignmentsAvailable || sites.length === 0}
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
+                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
               >
                 {sites.length === 0 ? (
                   <option value="">No sites yet — create one below</option>
