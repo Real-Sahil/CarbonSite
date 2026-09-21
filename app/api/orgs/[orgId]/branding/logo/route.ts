@@ -92,11 +92,11 @@ export async function POST(
       action: "branding.logo_uploaded",
       resourceType: "tenant_branding",
       resourceId: orgId,
-      metadata: { key, bytes: file.size, mime, hasPublicUrl: Boolean(publicUrl) },
+      metadata: { key, bytes: file.size, mime, hasPublicUrl: Boolean(stableUrl) },
     });
 
     const url = await presignDownload(key);
-    return NextResponse.json({ key, url, publicUrl }, { status: 201 });
+    return NextResponse.json({ key, url, publicUrl: stableUrl }, { status: 201 });
   } catch (err) {
     return handleRouteError(err);
   }
