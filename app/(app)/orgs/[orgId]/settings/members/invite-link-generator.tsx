@@ -198,7 +198,6 @@ export function InviteLinkGenerator({
               />
               <span className="text-xs text-[#374151]">
                 Never expires, multi-use
-                <span className="ml-1 text-[10px] text-[#6B7280]">(App Store / Play Store review)</span>
               </span>
             </label>
           </div>
