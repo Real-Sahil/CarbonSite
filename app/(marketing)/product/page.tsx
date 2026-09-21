@@ -59,23 +59,23 @@ export default function ProductPage() {
     <main className="min-h-[100dvh] bg-[#FAFBF8]">
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[60vh] flex items-end overflow-hidden bg-[#0A1628]">
+      <section className="relative min-h-[60vh] flex items-end overflow-hidden bg-[#0B3B38]">
         <VideoBackground src="/videos/hero-product.mp4" overlayOpacity={0.30} />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0A1628] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B3B38] to-transparent pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/8 mb-8">
-              <Layers className="h-3.5 w-3.5 text-amber-400" />
-              <span className="text-xs text-amber-400 tracking-[0.1em] font-medium">Platform overview</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-400/20 bg-teal-400/8 mb-8">
+              <Layers className="h-3.5 w-3.5 text-teal-300" />
+              <span className="text-xs text-teal-300 tracking-[0.1em] font-medium">Platform overview</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[20ch]">
               One platform,{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-emerald-300">
                 end to end.
               </span>
             </h1>
-            <p className="text-base text-[#94A3B8] leading-relaxed max-w-[50ch]">
+            <p className="text-base text-[#A8C4C2] leading-relaxed max-w-[50ch]">
               Five stages from field evidence to audit-ready report. Each stage is purpose-built, traceable, and role-controlled.
             </p>
           </AnimateIn>
@@ -89,7 +89,7 @@ export default function ProductPage() {
             {STAGES.map((stage, i) => (
               <ScrollReveal key={stage.num} direction="up" delay={i * 0.08} duration={0.7}>
                 <div className="bg-white hover:bg-[#FAFBF8] transition-colors p-8 md:p-10 grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6">
-                  <div className="text-[2.5rem] font-semibold bg-clip-text text-transparent bg-gradient-to-br from-amber-500/40 to-amber-500/10 tracking-[-0.05em] leading-none font-mono">
+                  <div className="text-[2.5rem] font-semibold bg-clip-text text-transparent bg-gradient-to-br from-teal-600/40 to-teal-600/10 tracking-[-0.05em] leading-none font-mono">
                     {stage.num}
                   </div>
                   <div>
@@ -97,7 +97,7 @@ export default function ProductPage() {
                     <p className="text-sm text-[#6B7280] leading-relaxed mb-5 max-w-[65ch]">{stage.text}</p>
                     <div className="flex flex-wrap gap-2">
                       {stage.tags.map((tag) => (
-                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-amber-500/20 text-amber-600 bg-amber-50 tracking-wide">
+                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-teal-500/20 text-teal-700 bg-teal-50 tracking-wide">
                           {tag}
                         </span>
                       ))}
@@ -115,8 +115,8 @@ export default function ProductPage() {
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-[10px] font-mono text-amber-600 uppercase tracking-[0.14em]">Access control</span>
+              <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
+              <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">Access control</span>
             </div>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
               Six roles, enforced server-side.
@@ -129,7 +129,7 @@ export default function ProductPage() {
             {ROLES.map((r) => (
               <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-[#F9FAFB] transition-colors">
                 <div className="px-6 py-4 border-r border-[#E5E7EB]">
-                  <code className="text-xs font-mono text-amber-600">{r.role}</code>
+                  <code className="text-xs font-mono text-teal-700">{r.role}</code>
                 </div>
                 <div className="px-6 py-4">
                   <p className="text-sm text-[#6B7280]">{r.can}</p>
@@ -148,19 +148,19 @@ export default function ProductPage() {
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0A1628]">
+      <section className="relative overflow-hidden bg-[#0B3B38]">
         <ProductCtaBg />
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#F8FAFC] mb-4">
               Start your first reporting period.
             </h2>
-            <p className="text-base text-[#94A3B8] mb-8 max-w-[45ch]">
+            <p className="text-base text-[#A8C4C2] mb-8 max-w-[45ch]">
               Create an organisation, add facilities, invite your team. First calculation in under an hour.
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_32px_rgba(245,158,11,0.45)] hover:shadow-[0_0_48px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_32px_rgba(15,118,110,0.40)] hover:shadow-[0_0_48px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
             >
               Create organisation
               <ArrowUpRight className="h-3.5 w-3.5" />

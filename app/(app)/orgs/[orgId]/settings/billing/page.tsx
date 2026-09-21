@@ -56,7 +56,7 @@ function formatLimit(n: number): string {
 function MeterBar({ used, limit, label, icon: Icon }: { used: number; limit: number; label: string; icon: React.ElementType }) {
   const pct = usagePercent(used, limit);
   const isUnlimited = !isFinite(limit);
-  const color = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-orange-400" : "bg-[#f97316]";
+  const color = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-amber-500" : "bg-teal-600";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -132,7 +132,7 @@ export default function BillingPage() {
                 {PLAN_LABELS[plan] ?? plan}
               </span>
               {plan === "trial" && trialDaysLeft !== null && (
-                <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                   {trialDaysLeft}d left
                 </span>
               )}

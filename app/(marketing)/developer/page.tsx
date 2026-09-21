@@ -64,49 +64,49 @@ const ENDPOINTS = [
 ];
 
 const METHOD_COLORS: Record<string, string> = {
-  GET: "text-[#0891B2] bg-[#06B6D4]/10 border border-[#06B6D4]/20",
-  POST: "text-[#0891B2] bg-[#06B6D4]/10 border border-[#06B6D4]/20",
-  PATCH: "text-[#E89B6F] bg-[#E89B6F]/10 border border-[#E89B6F]/20",
-  DELETE: "text-[#E05A5A] bg-[#E05A5A]/10 border border-[#E05A5A]/20",
+  GET: "text-teal-700 bg-teal-50 border border-teal-200",
+  POST: "text-teal-700 bg-teal-50 border border-teal-200",
+  PATCH: "text-amber-700 bg-amber-50 border border-amber-200",
+  DELETE: "text-red-600 bg-red-50 border border-red-200",
 };
 
 export default function DeveloperPage() {
   return (
-    <main className="min-h-[100dvh] bg-white">
+    <main className="min-h-[100dvh] bg-[#FAFBF8]">
       <SiteNav theme="dark" />
 
       {/* Hero */}
       <section className="mx-auto max-w-7xl px-6 md:px-10 py-24">
         <AnimateIn>
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-6 h-px bg-[#06B6D4]" />
-            <span className="text-xs text-[#06B6D4] tracking-[0.12em] font-medium">REST API v1</span>
+            <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
+            <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">REST API v1</span>
           </div>
           <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#111827] mb-4 max-w-[24ch]">
             Integrate MetricOra into your workflows.
           </h1>
-          <p className="text-base text-[#111827]/55 leading-relaxed max-w-[50ch]">
+          <p className="text-base text-[#6B7280] leading-relaxed max-w-[50ch]">
             Build carbon accounting data into your ERP, dashboards, and workflows. All endpoints return JSON and require a bearer token.
           </p>
         </AnimateIn>
       </section>
 
       {/* Quick start */}
-      <section className="bg-[#F5F4F0] border-y border-[#E2E8F0]">
+      <section className="bg-[#F2F4EF] border-y border-[#E5E7EB]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-20">
           <AnimateIn>
-            <h2 className="text-lg font-semibold text-[#0F172A] tracking-[-0.02em] mb-10">Getting started</h2>
+            <h2 className="text-lg font-semibold text-[#111827] tracking-[-0.02em] mb-10">Getting started</h2>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#E2E8F0]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#E2ECEA]">
             {[
               { icon: Key, title: "API Keys", desc: "Generate keys in Settings > API Keys. Keys are prefixed csk_ and shown once." },
               { icon: Lock, title: "Authentication", desc: "Pass Authorization: Bearer csk_... on every request. Keys are org-scoped." },
               { icon: Zap, title: "Rate limits", desc: "Read: 300 req/min. Mutations: 60 req/min. Uploads: 10 req/min per IP." },
             ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="bg-[#F5F4F0] p-8 hover:bg-white transition-colors">
-                <Icon className="h-6 w-6 text-[#06B6D4] mb-4" />
-                <h3 className="text-sm font-semibold text-[#0F172A] tracking-[-0.02em] mb-2">{title}</h3>
-                <p className="text-sm text-[#64748B] leading-relaxed">{desc}</p>
+              <div key={title} className="bg-white p-8 hover:bg-[#F4F8F7] transition-colors">
+                <Icon className="h-6 w-6 text-teal-600 mb-4" />
+                <h3 className="text-sm font-semibold text-[#111827] tracking-[-0.02em] mb-2">{title}</h3>
+                <p className="text-sm text-[#6B7280] leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -116,22 +116,22 @@ export default function DeveloperPage() {
       {/* Base URL */}
       <section className="mx-auto max-w-7xl px-6 md:px-10 py-20">
         <AnimateIn>
-          <div className="rounded-lg border border-gray-200 bg-[#111110] p-6 mb-12">
-            <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-3">Base URL</p>
-            <p className="font-mono text-base text-[#0891B2]">https://app.metricora.co.uk</p>
+          <div className="rounded-lg border border-[#E2ECEA] bg-[#1A3330] p-6 mb-12">
+            <p className="text-[10px] text-teal-400/60 uppercase tracking-[0.1em] mb-3">Base URL</p>
+            <p className="font-mono text-base text-teal-300">https://app.metricora.co.uk</p>
           </div>
 
           {/* Example request */}
-          <div className="rounded-lg border border-gray-200 bg-[#111110] p-6 mb-16 overflow-x-auto">
-            <p className="text-[10px] text-[#64748B] uppercase tracking-[0.1em] mb-4">Example request</p>
-            <pre className="font-mono text-xs text-[#64748B] whitespace-pre">{`curl -X GET "https://app.metricora.co.uk/api/orgs/{orgId}/activity-records" \\
+          <div className="rounded-lg border border-[#E2ECEA] bg-[#1A3330] p-6 mb-16 overflow-x-auto">
+            <p className="text-[10px] text-teal-400/60 uppercase tracking-[0.1em] mb-4">Example request</p>
+            <pre className="font-mono text-xs text-teal-200/70 whitespace-pre">{`curl -X GET "https://app.metricora.co.uk/api/orgs/{orgId}/activity-records" \\
   -H "Authorization: Bearer csk_your_api_key_here" \\
   -H "Content-Type: application/json"`}</pre>
           </div>
 
           {/* Endpoint reference */}
           <div className="flex items-center gap-3 mb-8">
-            <BookOpen className="h-5 w-5 text-[#64748B]" />
+            <BookOpen className="h-5 w-5 text-teal-600" />
             <h2 className="text-lg font-semibold text-[#111827] tracking-[-0.02em]">Endpoint reference</h2>
           </div>
         </AnimateIn>
@@ -140,18 +140,18 @@ export default function DeveloperPage() {
           {ENDPOINTS.map((group) => (
             <div key={group.group}>
               <AnimateIn>
-                <div className="text-[10px] font-medium text-[#64748B] uppercase tracking-[0.12em] mb-4">{group.group}</div>
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="divide-y divide-[#1E293B]">
+                <div className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em] mb-4">{group.group}</div>
+                <div className="border border-[#E5E7EB] rounded-2xl overflow-hidden">
+                  <div className="divide-y divide-[#E5E7EB]">
                     {group.endpoints.map((ep) => (
-                      <div key={ep.path + ep.method} className="grid grid-cols-1 md:grid-cols-[80px_220px_1fr] hover:bg-[#111110] transition-colors">
-                        <div className="px-6 py-4 border-r border-gray-200">
-                          <span className={`inline-block text-xs font-mono font-semibold px-2.5 py-1 rounded ${METHOD_COLORS[ep.method] ?? "text-[#64748B] bg-[#1A1A18] border border-gray-200"}`}>
+                      <div key={ep.path + ep.method} className="grid grid-cols-1 md:grid-cols-[80px_220px_1fr] bg-white hover:bg-[#F4F8F7] transition-colors">
+                        <div className="px-6 py-4 border-r border-[#E5E7EB]">
+                          <span className={`inline-block text-xs font-mono font-semibold px-2.5 py-1 rounded ${METHOD_COLORS[ep.method] ?? "text-[#6B7280] bg-[#F2F4EF] border border-[#E5E7EB]"}`}>
                             {ep.method}
                           </span>
                         </div>
-                        <div className="px-6 py-4 border-r border-gray-200 font-mono text-xs text-[#0891B2] whitespace-nowrap overflow-x-auto">{ep.path}</div>
-                        <div className="px-6 py-4 text-xs text-[#64748B]">{ep.desc}</div>
+                        <div className="px-6 py-4 border-r border-[#E5E7EB] font-mono text-xs text-teal-700 whitespace-nowrap overflow-x-auto">{ep.path}</div>
+                        <div className="px-6 py-4 text-xs text-[#6B7280]">{ep.desc}</div>
                       </div>
                     ))}
                   </div>
@@ -163,21 +163,21 @@ export default function DeveloperPage() {
       </section>
 
       {/* Response format */}
-      <section className="bg-[#F5F4F0] border-t border-[#E2E8F0]">
+      <section className="bg-[#F2F4EF] border-t border-[#E5E7EB]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-20">
           <AnimateIn>
-            <h2 className="text-lg font-semibold text-[#0F172A] tracking-[-0.02em] mb-8">Response format</h2>
+            <h2 className="text-lg font-semibold text-[#111827] tracking-[-0.02em] mb-8">Response format</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="rounded-lg border border-[#E2E8F0] bg-white p-6">
-                <p className="text-xs text-[#64748B] uppercase tracking-[0.1em] mb-4">Success (paginated list)</p>
-                <pre className="text-xs text-[#0F172A] bg-[#F5F4F0] rounded p-4 overflow-x-auto font-mono">{`{
+              <div className="rounded-xl border border-[#E5E7EB] bg-white p-6">
+                <p className="text-[10px] text-teal-700 uppercase tracking-[0.1em] mb-4">Success (paginated list)</p>
+                <pre className="text-xs text-[#374151] bg-[#F4F8F7] rounded-lg p-4 overflow-x-auto font-mono">{`{
   "data": [...],
   "nextCursor": "2026-08-01T00:00:00.000Z"
 }`}</pre>
               </div>
-              <div className="rounded-lg border border-[#E2E8F0] bg-white p-6">
-                <p className="text-xs text-[#64748B] uppercase tracking-[0.1em] mb-4">Error</p>
-                <pre className="text-xs text-[#0F172A] bg-[#F5F4F0] rounded p-4 overflow-x-auto font-mono">{`{
+              <div className="rounded-xl border border-[#E5E7EB] bg-white p-6">
+                <p className="text-[10px] text-teal-700 uppercase tracking-[0.1em] mb-4">Error</p>
+                <pre className="text-xs text-[#374151] bg-[#F4F8F7] rounded-lg p-4 overflow-x-auto font-mono">{`{
   "code": "VALIDATION_ERROR",
   "message": "Invalid query parameters",
   "details": { ... }
@@ -189,7 +189,7 @@ export default function DeveloperPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-white">
+      <section className="bg-[#FAFBF8]">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
           <AnimateIn>
             <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
@@ -197,7 +197,7 @@ export default function DeveloperPage() {
             </h2>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#0F172A] text-sm font-medium hover:bg-white/90 transition-colors active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.30)] transition-all active:scale-[0.97]"
             >
               Get API key
               <ArrowUpRight className="h-3.5 w-3.5" />

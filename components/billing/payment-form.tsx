@@ -102,7 +102,7 @@ export function PaymentForm({
             style: {
               base: {
                 fontSize: '14px',
-                color: '#1e293b',
+                color: '#17201D',
                 '::placeholder': {
                   color: '#cbd5e1',
                 },

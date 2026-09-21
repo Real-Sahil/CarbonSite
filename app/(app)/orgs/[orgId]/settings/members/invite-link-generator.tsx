@@ -276,7 +276,7 @@ export function InviteLinkGenerator({
             return (
               <div
                 key={link.id}
-                className="flex items-center gap-2 p-[9px] rounded-[7px] border border-[#E5E7EB] bg-[#FFF7ED]"
+                className="flex items-center gap-2 p-[9px] rounded-[7px] border border-[#E5E7EB] bg-[#F0FDFA]"
               >
                 {link.reusable && (
                   <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#dbeafe] px-2 py-1 text-xs text-[#1d4ed8] whitespace-nowrap font-medium">

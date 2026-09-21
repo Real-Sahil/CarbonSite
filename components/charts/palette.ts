@@ -4,9 +4,9 @@
 
 /** Hardcoded hex fallbacks — used on SSR and when CSS vars are unavailable. */
 export const SCOPE_COLORS: Record<number, string> = {
-  1: "#e76f51", // burnt orange — matches --color-scope-1
-  2: "#f4a261", // coral orange — matches --color-scope-2
-  3: "#e9c46a", // warm sand   — matches --color-scope-3
+  1: "#0F766E", // teal  — matches --color-scope-1
+  2: "#15803D", // green — matches --color-scope-2
+  3: "#1D4ED8", // blue  — matches --color-scope-3
 };
 
 /** CSS custom property names for scope colours (defined in globals.css @theme). */
@@ -33,7 +33,7 @@ export function getScopeColor(scope: 1 | 2 | 3): string {
   return SCOPE_COLORS[scope];
 }
 
-export const DEFAULT_SERIES_COLOR = "#e76f51";
+export const DEFAULT_SERIES_COLOR = "#0F766E";
 
 export const AXIS_TICK = { fill: "#64748b", fontSize: 12 } as const;
 

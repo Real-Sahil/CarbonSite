@@ -63,22 +63,26 @@ export async function POST(
     const key = keys.brandingLogo(orgId, `logo-${randomUUID()}.${ext}`);
     await putObject(key, buffer, mime);
 
-    // If the bucket has a public domain configured, persist the stable URL so
-    // it can be embedded in email templates without expiry concerns.
-    const publicUrl = getPublicUrl(key);
+    // Always save a stable logoPublicUrl pointing to our public proxy route so
+    // email templates can embed the logo without presigned URL expiry issues.
+    // Falls back to a direct R2 public URL if NEXT_PUBLIC_APP_URL is not set.
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/+$/, "");
+    const stableUrl = appUrl
+      ? `${appUrl}/api/public/orgs/${orgId}/branding/logo`
+      : getPublicUrl(key);
     await prisma.tenantBranding.upsert({
       where: { organizationId: orgId },
       update: {
         logoStorageKey: key,
         reportHeaderLogoKey: key,
-        ...(publicUrl ? { logoPublicUrl: publicUrl } : {}),
+        ...(stableUrl ? { logoPublicUrl: stableUrl } : {}),
       },
       create: {
         organizationId: orgId,
         subdomain: orgId,
         logoStorageKey: key,
         reportHeaderLogoKey: key,
-        ...(publicUrl ? { logoPublicUrl: publicUrl } : {}),
+        ...(stableUrl ? { logoPublicUrl: stableUrl } : {}),
       },
     });
 

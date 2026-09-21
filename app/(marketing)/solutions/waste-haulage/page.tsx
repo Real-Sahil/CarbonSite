@@ -53,8 +53,8 @@ export default function WasteHaulagePage() {
         <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
           <AnimateIn>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-gradient-to-r from-orange-500 to-amber-400" />
-              <span className="text-xs text-amber-400 tracking-[0.12em] font-medium">Waste and haulage</span>
+              <div className="w-6 h-px bg-gradient-to-r from-teal-400 to-emerald-400" />
+              <span className="text-xs text-teal-300 tracking-[0.12em] font-medium">Waste and haulage</span>
             </div>
             <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[20ch]">
               From waste ticket to Scope 3 calculation.
@@ -64,7 +64,7 @@ export default function WasteHaulagePage() {
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_24px_rgba(245,158,11,0.4)] hover:shadow-[0_0_36px_rgba(245,158,11,0.6)] transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.40)] hover:shadow-[0_0_36px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
             >
               Start free
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -91,13 +91,13 @@ export default function WasteHaulagePage() {
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="text-sm font-semibold text-[#111827] tracking-[-0.02em]">{doc.type}</h3>
                     {doc.ocr && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-300 text-amber-700 bg-amber-50 tracking-wide">OCR</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-teal-300 text-teal-700 bg-teal-50 tracking-wide">OCR</span>
                     )}
                   </div>
                   <ul className="space-y-2">
                     {doc.fields.map((field) => (
                       <li key={field} className="flex items-start gap-2.5 text-xs text-[#6B7280]">
-                        <span className="mt-1.5 w-1 h-1 rounded-full bg-amber-300 shrink-0" />
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-teal-400 shrink-0" />
                         {field}
                       </li>
                     ))}
@@ -123,8 +123,8 @@ export default function WasteHaulagePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#E5E7EB]">
             {EWC_EXAMPLES.map((e, i) => (
               <AnimateIn key={e.code} delay={i * 0.04}>
-                <div className="bg-white p-5 hover:bg-[#FFF7ED] transition-colors">
-                  <code className="text-sm font-mono font-semibold text-amber-600">{e.code}</code>
+                <div className="bg-white p-5 hover:bg-[#F4F8F7] transition-colors">
+                  <code className="text-sm font-mono font-semibold text-teal-700">{e.code}</code>
                   <p className="text-xs text-[#6B7280] mt-1.5 leading-snug">{e.desc}</p>
                 </div>
               </AnimateIn>
@@ -182,7 +182,7 @@ export default function WasteHaulagePage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_24px_rgba(245,158,11,0.4)] hover:shadow-[0_0_36px_rgba(245,158,11,0.6)] transition-all active:scale-[0.97]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.30)] transition-all active:scale-[0.97]"
               >
                 Create organisation
                 <ArrowUpRight className="h-3.5 w-3.5" />

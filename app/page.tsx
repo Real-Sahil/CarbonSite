@@ -249,35 +249,35 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* ── CTA ── dark cobalt section ────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0A1628]">
+      {/* ── CTA ── deep teal section ─────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-[#0B3B38]">
         <CtaBg />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-32">
           <AnimateIn>
             <div className="max-w-[40rem]">
-              <p className="text-[10px] font-mono text-amber-400 uppercase tracking-[0.14em] mb-5">Get started today</p>
+              <p className="text-[10px] font-mono text-teal-400 uppercase tracking-[0.14em] mb-5">Get started today</p>
               <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-[-0.04em] leading-[1.05] text-[#F8FAFC] mb-6">
                 Start tracking emissions{" "}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-emerald-300">
                   correctly.
                 </span>
               </h2>
-              <p className="text-base text-[#94A3B8] leading-relaxed mb-10">
+              <p className="text-base text-[#A8C4C2] leading-relaxed mb-10">
                 Create a free organisation. Run your first calculation in under an hour.
                 No spreadsheet engineering, no paid APIs.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/sign-up"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-white text-sm font-medium shadow-[0_0_32px_rgba(245,158,11,0.45)] hover:shadow-[0_0_48px_rgba(245,158,11,0.6)] hover:from-orange-400 hover:to-amber-300 transition-all active:scale-[0.97]"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_32px_rgba(15,118,110,0.45)] hover:shadow-[0_0_48px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
                 >
                   Create organisation
                   <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-[#94A3B8]/40 text-[#F8FAFC] text-sm font-medium hover:border-[#94A3B8]/70 hover:text-white transition-all active:scale-[0.97]"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-[#A8C4C2]/40 text-[#F8FAFC] text-sm font-medium hover:border-[#A8C4C2]/70 hover:text-white transition-all active:scale-[0.97]"
                 >
                   Talk to us
                 </Link>

@@ -22,14 +22,14 @@ export function StandardsMarquee() {
   const items = [...STANDARDS, ...STANDARDS];
 
   return (
-    <div className="overflow-hidden border-y border-[#1E293B] bg-[#111110] py-3.5">
+    <div className="overflow-hidden border-y border-[#E2ECEA] bg-[#F4F8F7] py-3.5">
       <div
         className="flex gap-10 whitespace-nowrap"
         style={prefersReduced ? {} : { animation: "marquee 50s linear infinite" }}
       >
         {items.map((s, i) => (
-          <span key={i} className="flex items-center gap-3 text-[11px] text-amber-500/70 tracking-[0.06em] shrink-0">
-            <span className="w-1 h-1 rounded-full bg-amber-500/70 inline-block shrink-0" />
+          <span key={i} className="flex items-center gap-3 text-[11px] text-teal-700/70 tracking-[0.06em] shrink-0">
+            <span className="w-1 h-1 rounded-full bg-teal-600/60 inline-block shrink-0" />
             {s}
           </span>
         ))}
