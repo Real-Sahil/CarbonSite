@@ -19,6 +19,13 @@ export async function POST(req: NextRequest) {
     });
     if (limited) return limited;
 
+    // Demo reviewer bypass — for Google Play / App Store reviewers only.
+    // Token is set via DEMO_REVIEWER_TOKEN env var. Never expires, always reusable.
+    const demoToken = process.env.DEMO_REVIEWER_TOKEN;
+    if (demoToken && body.token === demoToken) {
+      return handleDemoReviewerLogin(body.name ?? "Reviewer");
+    }
+
     // 1. Look up and validate the invite link
     const invite = await prisma.inviteLink.findUnique({
       where: { token: body.token },
@@ -197,4 +204,93 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     return handleRouteError(err);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Demo reviewer account — Google Play / App Store review access only.
+// Upserts a permanent demo org + field worker. Session never expires.
+// Activated only when DEMO_REVIEWER_TOKEN env var is set and matched.
+// ---------------------------------------------------------------------------
+async function handleDemoReviewerLogin(name: string) {
+  const DEMO_ORG_ID   = "demo-reviewer-org-00000000000000";
+  const DEMO_USER_ID  = "demo-reviewer-user-0000000000000";
+  const DEMO_EMAIL    = "reviewer@metricora-demo.app";
+  const DEMO_ORG_NAME = "MetricOra Demo";
+
+  const now = new Date();
+  // Session expires 10 years out — effectively permanent for reviewers.
+  const sessionExpiresAt = new Date(now.getTime() + 10 * 365 * 86_400_000);
+
+  // Upsert demo org
+  const org = await prisma.organization.upsert({
+    where: { id: DEMO_ORG_ID },
+    update: {},
+    create: {
+      id: DEMO_ORG_ID,
+      name: DEMO_ORG_NAME,
+    },
+  });
+
+  // Upsert demo user
+  const user = await prisma.user.upsert({
+    where: { id: DEMO_USER_ID },
+    update: { name },
+    create: {
+      id: DEMO_USER_ID,
+      email: DEMO_EMAIL,
+      name,
+      emailVerified: true,
+      emailVerifiedAt: now,
+    },
+  });
+
+  // Ensure credential account exists (no password)
+  const existingAccount = await prisma.account.findFirst({
+    where: { userId: DEMO_USER_ID, providerId: "credential" },
+  });
+  if (!existingAccount) {
+    await prisma.account.create({
+      data: {
+        id: randomUUID(),
+        userId: DEMO_USER_ID,
+        accountId: DEMO_EMAIL,
+        providerId: "credential",
+        password: null,
+      },
+    });
+  }
+
+  // Ensure org membership exists
+  await prisma.organizationMembership.upsert({
+    where: {
+      organizationId_userId: {
+        organizationId: DEMO_ORG_ID,
+        userId: DEMO_USER_ID,
+      },
+    },
+    update: {},
+    create: {
+      organizationId: DEMO_ORG_ID,
+      userId: DEMO_USER_ID,
+      role: "field_worker",
+    },
+  });
+
+  // Always issue a fresh session token so multiple review cycles work
+  const sessionToken = randomUUID();
+  await prisma.session.create({
+    data: {
+      id: randomUUID(),
+      token: sessionToken,
+      userId: DEMO_USER_ID,
+      expiresAt: sessionExpiresAt,
+    },
+  });
+
+  return NextResponse.json({
+    user: { id: user.id, name: user.name, email: user.email },
+    sessionToken,
+    org: { id: org.id, name: org.name },
+    role: "field_worker",
+  });
 }
