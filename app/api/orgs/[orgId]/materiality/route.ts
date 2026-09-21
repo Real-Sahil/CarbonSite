@@ -31,7 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orgI
       select: {
         id: true, name: true, status: true, esrsScope: true,
         approvedAt: true, publishedAt: true, createdAt: true,
-        reportingPeriod: { select: { id: true, name: true } },
+        reportingPeriod: { select: { id: true, label: true } },
         createdBy: { select: { name: true } },
         _count: { select: { topics: true } },
       },

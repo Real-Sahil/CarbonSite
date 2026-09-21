@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
       where: { id: assessmentId },
       include: {
         createdBy: { select: { id: true, name: true } },
-        reportingPeriod: { select: { id: true, name: true } },
+        reportingPeriod: { select: { id: true, label: true } },
         topics: {
           orderBy: [{ iroType: "asc" }, { doubleMaterialityScore: "desc" }],
           include: { owner: { select: { id: true, name: true } } },
