@@ -416,11 +416,13 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       )}
 
       {/* ── Desktop sidebar ───────────────────────────────────────────────────── */}
-      <aside className={cn("relative hidden md:flex flex-col min-h-screen bg-white border-r border-slate-200 shrink-0 transition-[width] duration-200 overflow-hidden", collapsed ? "w-[56px]" : "w-56")}>
-        <div className="relative z-10 flex flex-col flex-1">
-          <SidebarInner />
-        </div>
-        {/* Collapse toggle */}
+      <div className="relative hidden md:flex shrink-0">
+        <aside className={cn("flex flex-col min-h-screen bg-white border-r border-slate-200 transition-[width] duration-200 overflow-hidden", collapsed ? "w-[56px]" : "w-56")}>
+          <div className="relative z-10 flex flex-col flex-1">
+            <SidebarInner />
+          </div>
+        </aside>
+        {/* Collapse toggle — outside overflow-hidden so it renders past the sidebar edge */}
         <button
           onClick={toggleCollapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -428,7 +430,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         >
           {collapsed ? <ChevronRight className="h-3 w-3 text-slate-500" /> : <ChevronLeft className="h-3 w-3 text-slate-500" />}
         </button>
-      </aside>
+      </div>
     </TooltipProvider>
   );
 }

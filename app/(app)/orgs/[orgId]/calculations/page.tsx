@@ -48,7 +48,7 @@ function statusConfig(status: string) {
     case "succeeded":
       return {
         label: "Succeeded",
-        className: "bg-[#F0F9FF] text-[#111827] border-transparent",
+        className: "bg-[#FFF7ED] text-[#111827] border-transparent",
         icon: CheckCircle2,
       };
     case "failed":
@@ -174,9 +174,9 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
 
       {/* Page header */}
       <div className="bg-white border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
               <Calculator className="h-4 w-4 text-[#111827]" />
             </div>
             <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
@@ -207,7 +207,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
       </div>
 
       {/* Content */}
-      <div className="max-w-[1200px] mx-auto px-8 py-8 space-y-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 space-y-6">
 
         {/* Run a calculation card — visible to admins and editors */}
         {canRunCalculations && (
@@ -241,7 +241,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
         {runs.length === 0 ? (
           !canRunCalculations ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFF7ED] mb-5">
                 <Calculator className="h-7 w-7 text-[#111827]" />
               </div>
               <h3 className="text-base font-semibold text-[#111827] mb-2">No calculation runs yet</h3>
@@ -392,7 +392,7 @@ function StatPill({
   pulse?: boolean;
 }) {
   const colors = {
-    green: "bg-[#F0F9FF] text-[#111827]",
+    green: "bg-[#FFF7ED] text-[#111827]",
     blue: "bg-blue-50 text-blue-700",
     red: "bg-red-50 text-red-700",
   };

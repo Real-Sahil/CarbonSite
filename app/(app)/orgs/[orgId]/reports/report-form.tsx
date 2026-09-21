@@ -449,7 +449,7 @@ function ValidationResults({
     <div
       className={`rounded-[14px] border p-4 ${
         result.valid
-          ? "border-[#BAE6FD] bg-[#F0F9FF]"
+          ? "border-[#FED7AA] bg-[#FFF7ED]"
           : "border-red-200 bg-red-50"
       }`}
     >

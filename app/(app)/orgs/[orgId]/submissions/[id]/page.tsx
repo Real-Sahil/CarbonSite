@@ -33,12 +33,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  pending: "border-[#E5E7EB] bg-[#F0F9FF] text-[#111827]",
-  submitted: "border-[#BAE6FD] bg-[#F0F9FF]/30 text-[#111827]",
-  under_review: "border-[#BAE6FD] bg-[#F0F9FF]/50 text-[#111827]",
-  approved: "border-[#BAE6FD] bg-[#cfe7d3] text-[#111827]",
+  pending: "border-[#E5E7EB] bg-[#FFF7ED] text-[#111827]",
+  submitted: "border-[#FED7AA] bg-[#FFF7ED]/30 text-[#111827]",
+  under_review: "border-[#FED7AA] bg-[#FFF7ED]/50 text-[#111827]",
+  approved: "border-[#FED7AA] bg-[#cfe7d3] text-[#111827]",
   rejected: "border-[#E5E7EB] bg-[#e5e7eb] text-[#374151]",
-  needs_info: "border-[#BAE6FD] bg-[#F0F9FF]/20 text-[#111827]",
+  needs_info: "border-[#FED7AA] bg-[#FFF7ED]/20 text-[#111827]",
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -236,7 +236,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to submissions
         </Link>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#FFF7ED] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
           Review
         </p>
         <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
@@ -246,7 +246,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           <span
             className={cn(
               "inline-flex items-center rounded-full border px-[14px] py-[7px] text-xs font-normal tracking-[-0.36px]",
-              STATUS_CLASSES[submission.status] ?? "border-[#E5E7EB] bg-[#F0F9FF] text-[#374151]",
+              STATUS_CLASSES[submission.status] ?? "border-[#E5E7EB] bg-[#FFF7ED] text-[#374151]",
             )}
           >
             {STATUS_LABELS[submission.status] ?? submission.status}
@@ -574,7 +574,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                       const scoreColor =
                         score >= 80 ? "text-[#111827]" : score >= 50 ? "text-amber-700" : "text-red-600";
                       const scoreBg =
-                        score >= 80 ? "bg-[#F0F9FF]" : score >= 50 ? "bg-amber-50" : "bg-red-50";
+                        score >= 80 ? "bg-[#FFF7ED]" : score >= 50 ? "bg-amber-50" : "bg-red-50";
                       return (
                         <div key={file.evidenceFile.id} className="flex items-center justify-between px-3 py-2.5 gap-3">
                           <p className="text-xs text-[#374151] tracking-[-0.36px] truncate flex-1">
@@ -608,7 +608,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
-                <code className="text-xs bg-[#F0F9FF] text-[#111827] px-2 py-1 rounded-[7px]">
+                <code className="text-xs bg-[#FFF7ED] text-[#111827] px-2 py-1 rounded-[7px]">
                   {submission.activityRecordId}
                 </code>
                 <Link

@@ -124,9 +124,9 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFB]">
       <div className="bg-white border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
               <Compass className="h-4 w-4 text-[#111827]" />
             </div>
             <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Strategy</span>
@@ -139,7 +139,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {/* SBTi target trajectory */}
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB] flex-row items-center justify-between space-y-0">
@@ -238,7 +238,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
           <CardContent className="p-6">
             {!completenessSummary || completenessSummary.totalRequired === 0 ? (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F0F9FF]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF7ED]">
                   <Grid3x3 className="h-6 w-6 text-[#111827]" />
                 </div>
                 <p className="text-sm text-[#374151] max-w-sm">

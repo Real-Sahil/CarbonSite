@@ -21,7 +21,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
   const nextStep = steps.find((s) => !s.done);
 
   return (
-    <div className="mb-8 rounded-[14px] border border-[#BAE6FD] bg-[#f0faf0] p-5">
+    <div className="mb-8 rounded-[14px] border border-[#FED7AA] bg-[#f0faf0] p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2
@@ -45,7 +45,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
           {steps.map((step, i) => (
             <div
               key={i}
-              className={`h-1.5 w-6 rounded-full transition-colors ${step.done ? "bg-[#f97316]" : "bg-[#F0F9FF]"}`}
+              className={`h-1.5 w-6 rounded-full transition-colors ${step.done ? "bg-[#f97316]" : "bg-[#FFF7ED]"}`}
             />
           ))}
         </div>
@@ -58,7 +58,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
             className={`flex items-start gap-2.5 rounded-[10px] px-3 py-2.5 text-left transition-colors ${
               step.done
                 ? "cursor-default opacity-60"
-                : "hover:bg-[#F0F9FF] bg-white border border-[#d0ecce]"
+                : "hover:bg-[#FFF7ED] bg-white border border-[#d0ecce]"
             }`}
             tabIndex={step.done ? -1 : undefined}
             aria-disabled={step.done}

@@ -87,11 +87,11 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
     <div className="min-h-[100dvh] bg-[#F9FAFB]">
       {/* Page header */}
       <div className="bg-white border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
                   <FileText className="h-4 w-4 text-[#111827]" />
                 </div>
                 <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
@@ -120,7 +120,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
       </div>
 
       {/* Content */}
-      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {canManageRecords && (
           <BulkRecordActions
             orgId={orgId}
@@ -202,7 +202,7 @@ function StatPill({
   accent?: "green" | "amber" | "red";
 }) {
   const colors = {
-    green: "bg-[#F0F9FF] text-[#111827]",
+    green: "bg-[#FFF7ED] text-[#111827]",
     amber: "bg-amber-50 text-amber-700",
     red: "bg-red-50 text-red-700",
   };

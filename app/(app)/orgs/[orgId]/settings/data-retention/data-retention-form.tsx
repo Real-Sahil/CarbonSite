@@ -124,7 +124,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
                 className={`rounded-full px-3 py-1 text-xs transition-colors border ${
                   days === String(opt.value)
                     ? "bg-[#f97316] text-white border-[#f97316]"
-                    : "border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#fff7ed]"
+                    : "border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
                 }`}
               >
                 {opt.label}

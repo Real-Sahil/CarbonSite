@@ -250,7 +250,7 @@ export function FieldWorkerAssignments({
             </div>
           </div>
           {!assignmentsAvailable && (
-            <p className="mt-3 rounded-[7px] border border-[#E5E7EB] bg-[#F0F9FF] px-3 py-2 text-sm text-[#111827] tracking-[-0.42px]">
+            <p className="mt-3 rounded-[7px] border border-[#E5E7EB] bg-[#FFF7ED] px-3 py-2 text-sm text-[#111827] tracking-[-0.42px]">
               Mobile assignment setup is incomplete. Contact your administrator
               to apply the latest database update, then refresh this page.
             </p>

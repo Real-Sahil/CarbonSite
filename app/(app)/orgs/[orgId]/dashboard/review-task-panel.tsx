@@ -155,7 +155,7 @@ export function ReviewTaskPanel({
       {error && <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
 
       {visibleTasks.length === 0 ? (
-        <div className="rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[21px]">
+        <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px]">
           <p className="font-normal text-[#111827] tracking-[-0.42px]">No open review tasks</p>
           <p className="mt-1 text-sm text-[#374151] tracking-[-0.42px]">
             Assign items above to create tasks for reviewers.

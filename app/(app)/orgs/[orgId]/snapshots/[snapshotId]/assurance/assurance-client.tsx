@@ -131,7 +131,7 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
       <div className="bg-white border-b border-[#E5E7EB]">
         <div className="max-w-[900px] mx-auto px-8 py-8">
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF] shrink-0 mt-0.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] shrink-0 mt-0.5">
               <Shield className="h-4 w-4 text-[#111827]" />
             </div>
             <div>

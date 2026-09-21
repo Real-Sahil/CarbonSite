@@ -28,8 +28,8 @@ export function StandardsMarquee() {
         style={prefersReduced ? {} : { animation: "marquee 50s linear infinite" }}
       >
         {items.map((s, i) => (
-          <span key={i} className="flex items-center gap-3 text-[11px] text-[#06B6D4] tracking-[0.06em] shrink-0">
-            <span className="w-1 h-1 rounded-full bg-[#06B6D4] inline-block shrink-0" />
+          <span key={i} className="flex items-center gap-3 text-[11px] text-amber-500/70 tracking-[0.06em] shrink-0">
+            <span className="w-1 h-1 rounded-full bg-amber-500/70 inline-block shrink-0" />
             {s}
           </span>
         ))}

@@ -54,7 +54,7 @@ export default function OrgError({
           </button>
           <button
             onClick={() => { window.location.href = "/"; }}
-            className="px-5 py-2.5 bg-[#fff7ed] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#E0F2FE] transition-colors"
+            className="px-5 py-2.5 bg-[#fff7ed] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#FFEDD5] transition-colors"
           >
             Go home
           </button>

@@ -50,12 +50,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  pending: "border-[#E5E7EB] bg-[#F0F9FF] text-[#111827]",
-  submitted: "border-[#BAE6FD] bg-[#F0F9FF]/30 text-[#111827]",
-  under_review: "border-[#BAE6FD] bg-[#F0F9FF]/50 text-[#111827]",
-  approved: "border-[#BAE6FD] bg-[#cfe7d3] text-[#111827]",
+  pending: "border-[#E5E7EB] bg-[#FFF7ED] text-[#111827]",
+  submitted: "border-[#FED7AA] bg-[#FFF7ED]/30 text-[#111827]",
+  under_review: "border-[#FED7AA] bg-[#FFF7ED]/50 text-[#111827]",
+  approved: "border-[#FED7AA] bg-[#cfe7d3] text-[#111827]",
   rejected: "border-[#E5E7EB] bg-[#e5e7eb] text-[#374151]",
-  needs_info: "border-[#BAE6FD] bg-[#F0F9FF]/20 text-[#111827]",
+  needs_info: "border-[#FED7AA] bg-[#FFF7ED]/20 text-[#111827]",
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -256,7 +256,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
           className={cn(
             "inline-flex items-center rounded-full border px-[14px] py-[7px] text-xs font-normal tracking-[-0.36px]",
             STATUS_CLASSES[row.original.status] ??
-              "border-[#E5E7EB] bg-[#F0F9FF] text-[#374151]",
+              "border-[#E5E7EB] bg-[#FFF7ED] text-[#374151]",
           )}
         >
           {STATUS_LABELS[row.original.status] ?? row.original.status}
@@ -340,7 +340,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
         </CardHeader>
         <CardContent className="pb-8">
           <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F0F9FF]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF7ED]">
               <Inbox aria-hidden="true" className="h-7 w-7 text-[#111827]" />
             </div>
             <div>

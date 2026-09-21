@@ -989,11 +989,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     <div className="min-h-[100dvh] bg-[#F9FAFB]">
       {/* Page header */}
       <div className="bg-white border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
                   <LayoutDashboard className="h-4 w-4 text-[#111827]" />
                 </div>
                 <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
@@ -1017,7 +1017,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-8 py-8">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
       {/* Onboarding checklist — shown to admins until all setup steps are complete */}
       {role === "admin" && onboardingProgress && !onboardingProgress.isComplete && (() => {
         const completedSteps = new Set(onboardingProgress.completedSteps);
@@ -1124,7 +1124,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       {activeContracts.length > 0 && (
         <div className="flex flex-col gap-3">
           {selectedContract && (
-            <div className="flex items-center gap-2 rounded-[14px] border border-[#BAE6FD] bg-[#F0F9FF]/20 px-4 py-3">
+            <div className="flex items-center gap-2 rounded-[14px] border border-[#FED7AA] bg-[#FFF7ED]/20 px-4 py-3">
               <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
                 Filtering by contract: <strong>{selectedContract.name}</strong>
               </span>
@@ -1223,7 +1223,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         ) : (
           <Link
             href={`/orgs/${orgId}/targets`}
-            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[21px] transition-colors hover:bg-[#E0F2FE]"
+            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
           >
             <div className="flex items-center gap-2">
               <Target aria-hidden="true" className="h-4 w-4 text-[#111827]" />
@@ -1302,7 +1302,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/records?scope=3`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[21px] transition-colors hover:bg-[#E0F2FE]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <Scale aria-hidden="true" className="h-4 w-4 text-[#111827]" />
@@ -1329,7 +1329,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/records?scope=2`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[21px] transition-colors hover:bg-[#E0F2FE]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <LineChart aria-hidden="true" className="h-4 w-4 text-[#111827]" />
@@ -1356,7 +1356,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/reports`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[21px] transition-colors hover:bg-[#E0F2FE]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <Handshake aria-hidden="true" className="h-4 w-4 text-[#111827]" />
@@ -1564,7 +1564,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                       <tr
                         key={fac.id}
                         className={
-                          selectedFacilityId === fac.id ? "bg-[#F0F9FF]/60" : "hover:bg-[#f9fafb]"
+                          selectedFacilityId === fac.id ? "bg-[#FFF7ED]/60" : "hover:bg-[#f9fafb]"
                         }
                       >
                         <td className="px-4 py-3 font-normal text-[#111827] tracking-[-0.42px]">
@@ -1575,7 +1575,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#F0F9FF]">
+                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#FFF7ED]">
                               <div
                                 className="h-full rounded-full bg-[#f97316]"
                                 style={{ width: `${share}%` }}
@@ -2048,7 +2048,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   Track decarbonisation work, route-efficiency signals, and target ambition from live records.
                 </CardDescription>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#F0F9FF] text-[#111827]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#FFF7ED] text-[#111827]">
                 <Handshake aria-hidden="true" className="h-5 w-5" />
               </div>
             </div>
@@ -2168,7 +2168,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     />
                   ))
                 ) : (
-                  <div className="rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-5 text-sm text-[#374151] tracking-[-0.42px]">
+                  <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-5 text-sm text-[#374151] tracking-[-0.42px]">
                     Document type analytics appear when field submissions are received.
                   </div>
                 )}
@@ -2388,7 +2388,7 @@ function InsightCard({
           <p className="mt-2 text-xl font-normal tracking-[-0.4px] text-[#111827]">{value}</p>
           <p className="mt-1 text-xs leading-5 text-[#374151] tracking-[-0.36px]">{detail}</p>
         </div>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-[#F0F9FF] text-[#111827]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-[#FFF7ED] text-[#111827]">
           <Icon aria-hidden="true" className="h-4 w-4" />
         </div>
       </div>
@@ -2417,7 +2417,7 @@ function ProgressRow({
         </div>
         <p className="shrink-0 text-sm font-normal text-[#111827] tracking-[-0.42px]">{value}</p>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#F0F9FF]">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#FFF7ED]">
         <div className="h-full rounded-full bg-[#f97316]" style={{ width }} />
       </div>
     </div>
@@ -2441,7 +2441,7 @@ function PipelineRow({
         <span className="text-sm font-normal capitalize text-[#374151] tracking-[-0.42px]">{label}</span>
         <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">{count.toLocaleString("en-GB")}</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#F0F9FF]">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#FFF7ED]">
         <div className="h-full rounded-full bg-[#f97316]" style={{ width }} />
       </div>
     </div>
@@ -2461,7 +2461,7 @@ function HealthSignal({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-[14px] border border-[#E5E7EB] p-[21px] transition-colors hover:bg-[#F0F9FF]"
+      className="flex items-center justify-between rounded-[14px] border border-[#E5E7EB] p-[21px] transition-colors hover:bg-[#FFF7ED]"
     >
       <div>
         <p className="text-sm font-normal text-[#374151] tracking-[-0.42px]">{label}</p>
@@ -2503,7 +2503,7 @@ function MetricCard({
             <p className={`mt-2 text-3xl font-normal tracking-[-0.4px] ${valueColor}`}>{value}</p>
             <p className="mt-1 text-xs text-[#374151] tracking-[-0.36px]">{detail}</p>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#F0F9FF] text-[#111827]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#FFF7ED] text-[#111827]">
             <Icon aria-hidden="true" className="h-5 w-5" />
           </div>
         </div>
@@ -2546,7 +2546,7 @@ function EmptyPanel({
   action: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[21px]">
+    <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px]">
       <p className="font-normal text-[#111827] tracking-[-0.42px]">{title}</p>
       <p className="mt-1 max-w-xl text-sm text-[#374151] tracking-[-0.42px]">{description}</p>
       <Button asChild size="sm" className="mt-4">
@@ -2567,7 +2567,7 @@ function ActionCard({
 }) {
   return (
     <Link href={href} className="group block">
-      <Card className="h-full transition-colors group-hover:border-[#BAE6FD] group-hover:bg-[#F0F9FF]">
+      <Card className="h-full transition-colors group-hover:border-[#FED7AA] group-hover:bg-[#FFF7ED]">
         <CardHeader>
           <CardTitle className="text-base">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>

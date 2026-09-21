@@ -86,7 +86,7 @@ export function PendingInviteActions({
           type="button"
           size="icon"
           variant="ghost"
-          className="h-7 w-7 text-[#374151] hover:text-[#111827] hover:bg-[#F0F9FF]"
+          className="h-7 w-7 text-[#374151] hover:text-[#111827] hover:bg-[#FFF7ED]"
           title="Copy invite link"
           disabled={isPending}
           onClick={copyLink}
@@ -102,7 +102,7 @@ export function PendingInviteActions({
         type="button"
         size="icon"
         variant="ghost"
-        className="h-7 w-7 text-[#374151] hover:text-[#111827] hover:bg-[#F0F9FF]"
+        className="h-7 w-7 text-[#374151] hover:text-[#111827] hover:bg-[#FFF7ED]"
         title="Resend invite email"
         disabled={isPending}
         onClick={resend}

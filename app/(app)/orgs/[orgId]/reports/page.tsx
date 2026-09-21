@@ -57,7 +57,7 @@ function statusConfig(status: string) {
     case "generating":
       return { label: "Generating", className: "bg-blue-50 text-blue-700 border-transparent animate-pulse", icon: Loader2 };
     case "ready":
-      return { label: "Ready", className: "bg-[#F0F9FF] text-[#111827] border-transparent", icon: CheckCircle2 };
+      return { label: "Ready", className: "bg-[#FFF7ED] text-[#111827] border-transparent", icon: CheckCircle2 };
     case "failed":
       return { label: "Failed", className: "bg-red-50 text-red-700 border-transparent", icon: AlertTriangle };
     default:
@@ -155,9 +155,9 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
 
       {/* Page header */}
       <div className="bg-white border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-start gap-3 mb-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF] shrink-0 mt-0.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] shrink-0 mt-0.5">
               <FileText className="h-4 w-4 text-[#111827]" />
             </div>
             <div>
@@ -184,7 +184,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
       </div>
 
       {/* Content */}
-      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {/* Snapshots */}
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
@@ -389,7 +389,7 @@ function StatPill({
   pulse?: boolean;
 }) {
   const colors = {
-    green: "bg-[#F0F9FF] text-[#111827]",
+    green: "bg-[#FFF7ED] text-[#111827]",
     blue: "bg-blue-50 text-blue-700",
   };
   const base = accent ? colors[accent] : "bg-white text-[#374151] border border-[#E5E7EB]";
@@ -412,7 +412,7 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-4">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF7ED] mb-4">
         <Icon className="h-6 w-6 text-[#111827]" />
       </div>
       <h3 className="text-sm font-semibold text-[#111827] mb-1">{title}</h3>

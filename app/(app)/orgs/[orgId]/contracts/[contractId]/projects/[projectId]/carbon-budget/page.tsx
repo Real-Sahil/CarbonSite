@@ -444,7 +444,7 @@ export default function CarbonBudgetPage() {
         </div>
       ) : !budget ? (
         <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
-          <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#F0F9FF] flex items-center justify-center">
+          <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
             <Target className="h-5 w-5 text-[#f97316]" />
           </div>
           <p className="text-sm font-medium text-gray-700">No carbon budget set</p>

@@ -114,7 +114,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to records
         </Link>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#FFF7ED] rounded-full px-[14px] py-[7px] inline-flex mb-[14px] ml-3">
           Records
         </p>
         <h1

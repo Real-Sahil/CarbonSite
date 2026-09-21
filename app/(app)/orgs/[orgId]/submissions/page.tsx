@@ -145,7 +145,7 @@ export default async function SubmissionsPage({
     <div className="min-h-[100dvh] bg-[#F9FAFB]">
       {/* Page header */}
       <div className="bg-white border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#fff7ed]">
               <ClipboardList className="h-4 w-4 text-[#111827]" />
@@ -174,11 +174,11 @@ export default async function SubmissionsPage({
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     active
                       ? "bg-[#f97316] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#BAE6FD] hover:bg-[#fff7ed]"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
                   }`}
                 >
                   {filter.label}
-                  <span className={`ml-1.5 ${active ? "text-[#BAE6FD]" : "text-[#9CA3AF]"}`}>
+                  <span className={`ml-1.5 ${active ? "text-[#FED7AA]" : "text-[#9CA3AF]"}`}>
                     {count.toLocaleString("en-GB")}
                   </span>
                 </Link>
@@ -190,7 +190,7 @@ export default async function SubmissionsPage({
 
       {/* SLA overdue banner */}
       {slaOverdueCount > 0 && (
-        <div className="max-w-[1200px] mx-auto px-8 pt-6">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 pt-6">
           <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-5 py-3 flex items-center justify-between gap-4">
             <p className="text-sm text-amber-900 tracking-[-0.42px]">
               <span className="font-medium">
@@ -209,14 +209,14 @@ export default async function SubmissionsPage({
       )}
 
       {/* Content */}
-      <div className="max-w-[1200px] mx-auto px-8 py-8">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
         <SubmissionsTable orgId={orgId} members={members} initialSubmissions={initialSubmissions} />
 
         {hasMore && (
           <div className="mt-4 flex justify-center">
             <Link
               href={filterHref(statusFilter, limit + PAGE_SIZE)}
-              className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#BAE6FD] hover:bg-[#fff7ed] transition-colors"
+              className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed] transition-colors"
             >
               Show more ({initialSubmissions.length.toLocaleString("en-GB")} of{" "}
               {(statusFilter === "all"

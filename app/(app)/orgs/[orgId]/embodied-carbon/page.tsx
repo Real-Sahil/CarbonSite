@@ -106,9 +106,9 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
     <div className="min-h-[100dvh] bg-[#f9fafb]">
       {/* Header */}
       <div className="bg-white border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-8 py-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-start gap-3 mb-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F9FF] shrink-0 mt-0.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] shrink-0 mt-0.5">
               <Layers className="h-4 w-4 text-[#111827]" />
             </div>
             <div>
@@ -131,7 +131,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
 
         {/* Category breakdown */}
         {categoryBreakdown.length > 0 && (
@@ -204,7 +204,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
           <CardContent className="p-0">
             {records.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F0F9FF] mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF7ED] mb-4">
                   <Package className="h-6 w-6 text-[#111827]" />
                 </div>
                 <h3 className="text-sm font-semibold text-zinc-900 mb-1">No embodied carbon records yet</h3>
@@ -281,7 +281,7 @@ function StatPill({
   value: string;
   accent?: "green";
 }) {
-  const colors = { green: "bg-[#F0F9FF] text-[#111827]" };
+  const colors = { green: "bg-[#FFF7ED] text-[#111827]" };
   const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E5E7EB]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>

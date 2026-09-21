@@ -79,7 +79,7 @@ export function SubmissionClaimBanner({ orgId, submissionId, claimedBy, claimedA
 
   if (claimed) {
     return (
-      <div className="mb-[21px] rounded-[14px] border border-[#BAE6FD] bg-[#F0F9FF] px-5 py-3 flex items-center justify-between gap-4">
+      <div className="mb-[21px] rounded-[14px] border border-[#FED7AA] bg-[#FFF7ED] px-5 py-3 flex items-center justify-between gap-4">
         <p className="text-xs text-[#374151] tracking-[-0.36px]">
           You have claimed this submission for review.
         </p>

@@ -205,7 +205,7 @@ export default async function ContractDetailPage({ params }: Props) {
 
       {/* Header */}
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#FFF7ED] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Contracts
         </p>
         <h1
@@ -424,7 +424,7 @@ function AccessDenied() {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#BAE6FD] bg-[#F0F9FF] p-[42px] text-center">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[42px] text-center">
       <Building2 className="h-8 w-8 text-[#111827] opacity-40" />
       <p className="text-sm text-[#374151] tracking-[-0.42px]">{message}</p>
     </div>

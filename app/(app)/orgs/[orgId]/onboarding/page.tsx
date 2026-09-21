@@ -236,7 +236,7 @@ export default function OnboardingPage() {
                   done
                     ? "border-[#D1FAE5] bg-white opacity-60"
                     : isActive
-                    ? "border-[#BAE6FD] bg-white shadow-sm"
+                    ? "border-[#FED7AA] bg-white shadow-sm"
                     : "border-[#E5E7EB] bg-white"
                 }`}
               >
