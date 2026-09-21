@@ -13,21 +13,37 @@ export async function GET(
     const { orgId } = await params;
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
-    const rows = await prisma.$queryRaw<
-      { name: string; code: string; scope: number; value: number }[]
-    >`
-      SELECT
-        ec.name,
-        ec.code,
-        ec.scope,
-        COALESCE(SUM(calc.total_co2e), 0)::float AS value
-      FROM emission_calculations calc
-      JOIN activity_records ar ON ar.id = calc.activity_record_id
-      JOIN emission_categories ec ON ec.id = ar.emission_category_id
-      WHERE calc.organization_id = ${orgId}
-      GROUP BY ec.id, ec.name, ec.code, ec.scope
-      ORDER BY value DESC
-    `;
+    const latestSnapshot = await prisma.publishedSnapshot.findFirst({
+      where: { organizationId: orgId },
+      orderBy: { publishedAt: "desc" },
+      select: { id: true },
+    });
+
+    const aggregates = await prisma.dashboardAggregate.findMany({
+      where: {
+        organizationId: orgId,
+        ...(latestSnapshot ? { snapshotId: latestSnapshot.id } : {}),
+        emissionCategoryId: { not: null },
+        facilityId: null,
+        businessUnitId: null,
+      },
+      select: {
+        scope: true,
+        totalCo2e: true,
+        emissionCategory: { select: { name: true, code: true, scope: true } },
+      },
+      orderBy: { totalCo2e: "desc" },
+    });
+
+    const rows = aggregates
+      .filter((a) => a.emissionCategory)
+      .map((a) => ({
+        name: a.emissionCategory!.name,
+        code: a.emissionCategory!.code,
+        scope: a.scope,
+        // totalCo2e in kg — UI divides by 1000 for tCO2e
+        value: Number(a.totalCo2e),
+      }));
 
     return NextResponse.json({ data: rows });
   } catch (err) {

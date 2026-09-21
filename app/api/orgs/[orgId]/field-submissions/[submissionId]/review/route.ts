@@ -164,7 +164,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     // Update supplier performance metrics after review
     const submitterMembership = await prisma.organizationMembership.findFirst({
-      where: { userId: submission.submittedByUserId },
+      where: { userId: submission.submittedByUserId, organizationId: orgId },
       select: { organizationId: true },
     });
 

@@ -34,8 +34,8 @@ interface OrgLayoutProps {
 export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const { orgId } = await params;
 
-  let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
-  let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
+  let session: Awaited<ReturnType<typeof requireOrgMember>>["session"] | undefined;
+  let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"] | undefined;
   let layoutAuthErr: AuthError | null = null;
   let layoutDbErr = false;
 
@@ -75,6 +75,12 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
         </div>
       </div>
     );
+  }
+
+  // Field workers and supplier accounts have no access to the org portal — redirect
+  // them to their own submissions view instead of showing a generic access-denied page.
+  if (membership && (membership.role === "field_worker" || membership.role === "supplier")) {
+    redirect(`/orgs/${orgId}/submissions`);
   }
 
   if (layoutDbErr) {

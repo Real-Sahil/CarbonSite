@@ -35,31 +35,34 @@ export function AnalyticsSummary({ orgId }: { orgId: string }) {
   const scopeItems: Array<{ name: string; value: number; scope: number }> = scopeData?.data || [];
   const trendItems: Array<{ date: string; totalCo2e: number }> = trendData?.data || [];
 
+  // API returns kgCO2e — convert to tCO2e for display
+  const kgToT = (kg: number) => kg / 1000;
+
   const totalEmissions =
     scopeItems.reduce((sum: number, item: typeof scopeItems[0]) => sum + (item.value || 0), 0) || 0;
 
-  const lastWeekEnd = trendItems.slice(-1)[0]?.totalCo2e || 0;
-  const lastWeekStart = trendItems.slice(-8, -1)[0]?.totalCo2e || 0;
+  const lastWeekEnd = kgToT(trendItems.slice(-1)[0]?.totalCo2e || 0);
+  const lastWeekStart = kgToT(trendItems.slice(-8, -1)[0]?.totalCo2e || 0);
   const weekChange = lastWeekStart ? ((lastWeekEnd - lastWeekStart) / lastWeekStart) * 100 : 0;
 
   const metrics: SummaryMetric[] = [
     {
       label: "Total Emissions",
-      value: `${totalEmissions.toFixed(2)} tCO2e`,
+      value: `${kgToT(totalEmissions).toFixed(2)} tCO2e`,
       change: weekChange,
       trend: weekChange > 0 ? "up" : "down",
     },
     {
       label: "Scope 1",
-      value: `${(scopeItems.find(s => s.scope === 1)?.value || 0).toFixed(2)} tCO2e`,
+      value: `${kgToT(scopeItems.find(s => s.scope === 1)?.value || 0).toFixed(2)} tCO2e`,
     },
     {
       label: "Scope 2",
-      value: `${(scopeItems.find(s => s.scope === 2)?.value || 0).toFixed(2)} tCO2e`,
+      value: `${kgToT(scopeItems.find(s => s.scope === 2)?.value || 0).toFixed(2)} tCO2e`,
     },
     {
       label: "Scope 3",
-      value: `${(scopeItems.find(s => s.scope === 3)?.value || 0).toFixed(2)} tCO2e`,
+      value: `${kgToT(scopeItems.find(s => s.scope === 3)?.value || 0).toFixed(2)} tCO2e`,
     },
   ];
 

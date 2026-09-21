@@ -18,22 +18,36 @@ export async function GET(
       50
     );
 
-    const rows = await prisma.$queryRaw<
-      { id: string; name: string; totalCo2e: number }[]
-    >`
-      SELECT
-        f.id,
-        f.name,
-        COALESCE(SUM(calc.total_co2e), 0)::float AS "totalCo2e"
-      FROM emission_calculations calc
-      JOIN activity_records ar ON ar.id = calc.activity_record_id
-      JOIN facilities f ON f.id = ar.facility_id
-      WHERE calc.organization_id = ${orgId}
-        AND ar.facility_id IS NOT NULL
-      GROUP BY f.id, f.name
-      ORDER BY "totalCo2e" DESC
-      LIMIT ${limit}
-    `;
+    const latestSnapshot = await prisma.publishedSnapshot.findFirst({
+      where: { organizationId: orgId },
+      orderBy: { publishedAt: "desc" },
+      select: { id: true },
+    });
+
+    const aggregates = await prisma.dashboardAggregate.findMany({
+      where: {
+        organizationId: orgId,
+        ...(latestSnapshot ? { snapshotId: latestSnapshot.id } : {}),
+        facilityId: { not: null },
+        emissionCategoryId: null,
+        businessUnitId: null,
+      },
+      select: {
+        totalCo2e: true,
+        facility: { select: { id: true, name: true } },
+      },
+      orderBy: { totalCo2e: "desc" },
+      take: limit,
+    });
+
+    const rows = aggregates
+      .filter((a) => a.facility)
+      .map((a) => ({
+        id: a.facility!.id,
+        name: a.facility!.name,
+        // totalCo2e in kg — UI divides by 1000 for tCO2e
+        totalCo2e: Number(a.totalCo2e),
+      }));
 
     return NextResponse.json({ data: rows });
   } catch (err) {
