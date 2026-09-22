@@ -126,6 +126,10 @@ model User {
   dischargeReadingsCreated  DischargeReading[]           @relation("DischargeReadingCreator")
   programmesManagedBy       Programme[]                  @relation("ProgrammeManager")
   programmesCreated         Programme[]                  @relation("ProgrammeCreator")
+  svActivitiesSubmitted     SvActivity[]                 @relation("SvActivitySubmittedBy")
+  svActivitiesApproved      SvActivity[]                 @relation("SvActivityApprovedBy")
+  svCommitmentsOwned        SvCommitment[]               @relation("SvCommitmentOwner")
+  impactAlertsResolved      ImpactAlert[]                @relation("ImpactAlertResolver")
 
   // Better Auth session tables
   sessions Session[]
@@ -336,6 +340,13 @@ model Organization {
   programmes                    Programme[]          @relation("OrgProgrammes")
   supplierProfiles              SupplierProfile[]    @relation("OrgSupplierProfiles")
   evidenceAccessLogs            EvidenceAccessLog[]  @relation("OrgEvidenceAccessLogs")
+  svFrameworks                  SvFramework[]        @relation("OrgSvFrameworks")
+  svCommitments                 SvCommitment[]       @relation("OrgSvCommitments")
+  svActivities                  SvActivity[]         @relation("OrgSvActivities")
+  carbonSignals                 CarbonSignal[]       @relation("OrgCarbonSignals")
+  impactAlerts                  ImpactAlert[]        @relation("OrgImpactAlerts")
+  geographicImpacts             GeographicImpact[]   @relation("OrgGeographicImpacts")
+  externalApiCredentials        ExternalApiCredential[] @relation("OrgExternalApiCredentials")
 
   @@map("organizations")
 }
@@ -589,6 +600,7 @@ model Facility {
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
   hsIncidents              HsIncidentReport[]   @relation("FacilityHsIncidents")
   enforcementNotices       EnforcementNotice[]  @relation("FacilityEnforcementNotices")
+  svActivities             SvActivity[]         @relation("SvActivityFacility")
 
   @@index([organizationId])
   @@index([organizationId, legalEntityId])
@@ -667,6 +679,8 @@ model ReportingPeriod {
   wasteRecords              WasteRecord[]
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
   materialityAssessments    MaterialityAssessment[]     @relation("PeriodMaterialityAssessments")
+  svActivities             SvActivity[]               @relation("SvActivityPeriod")
+  svCommitments            SvCommitment[]             @relation("PeriodSvCommitments")
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -1947,19 +1961,25 @@ model Contract {
   breeamRequired       Boolean        @default(false) @map("breeam_required")
   status               ContractStatus @default(active)
   notes                String?
+  // Tender / procurement fields
+  tenderReference      String?        @map("tender_reference")
+  procuringAuthority   String?        @map("procuring_authority")
+  socialValueWeighting Decimal?       @map("social_value_weighting") @db.Decimal(5, 2)
+  svToolkitTheme       String?        @map("sv_toolkit_theme")
   createdByUserId      String         @map("created_by_user_id")
   createdAt            DateTime       @default(now()) @map("created_at")
   updatedAt            DateTime       @updatedAt @map("updated_at")
 
-  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  businessUnit       BusinessUnit?       @relation(fields: [businessUnitId], references: [id], onDelete: SetNull)
-  createdBy          User                @relation("ContractCreator", fields: [createdByUserId], references: [id])
-  projects           Project[]
-  socialValueRecords SocialValueRecord[]
-  socialValueTargets SocialValueTarget[]
-  reports            Report[]            @relation("ContractReports")
-  fieldSubmissions   FieldSubmission[]   @relation("FieldSubmissionContracts")
+  organization         Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  businessUnit         BusinessUnit?       @relation(fields: [businessUnitId], references: [id], onDelete: SetNull)
+  createdBy            User                @relation("ContractCreator", fields: [createdByUserId], references: [id])
+  projects             Project[]
+  socialValueRecords   SocialValueRecord[]
+  socialValueTargets   SocialValueTarget[]
+  reports              Report[]            @relation("ContractReports")
+  fieldSubmissions     FieldSubmission[]   @relation("FieldSubmissionContracts")
   subcontractorSubmissions SubcontractorCarbonSubmission[]
+  svCommitments        SvCommitment[]      @relation("ContractSvCommitments")
 
   @@index([organizationId, status])
   @@index([organizationId, businessUnitId])
@@ -6039,4 +6059,274 @@ model EvidenceAccessLog {
   @@index([organizationId, evidenceFileId, createdAt])
   @@index([organizationId, accessedByUserId, createdAt])
   @@map("evidence_access_logs")
+}
+
+// ─── Social Value Foundation (Phase 1) ───────────────────────────────────────
+
+enum SvCommitmentStatus {
+  draft
+  active
+  in_progress
+  completed
+  cancelled
+
+  @@map("sv_commitment_status")
+}
+
+enum SvActivityStatus {
+  draft
+  submitted
+  under_review
+  approved
+  rejected
+
+  @@map("sv_activity_status")
+}
+
+/// Social value framework (e.g. TOMs, PPN 06/21, SVTM) scoped to an org.
+model SvFramework {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  slug           String
+  version        String?
+  description    String?
+  isDefault      Boolean  @default(false) @map("is_default")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation("OrgSvFrameworks", fields: [organizationId], references: [id], onDelete: Cascade)
+  themes       SvTheme[]    @relation("FrameworkThemes")
+  commitments  SvCommitment[] @relation("FrameworkCommitments")
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("sv_frameworks")
+}
+
+/// Theme / pillar within a social value framework (e.g. Jobs, Growth, Net Zero).
+model SvTheme {
+  id          String   @id @default(cuid())
+  frameworkId String   @map("framework_id")
+  name        String
+  code        String
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  framework SvFramework  @relation("FrameworkThemes", fields: [frameworkId], references: [id], onDelete: Cascade)
+  outcomes  SvOutcome[]  @relation("ThemeOutcomes")
+
+  @@unique([frameworkId, code])
+  @@index([frameworkId])
+  @@map("sv_themes")
+}
+
+/// Measurable outcome within a theme (e.g. "Local jobs created").
+model SvOutcome {
+  id          String   @id @default(cuid())
+  themeId     String   @map("theme_id")
+  name        String
+  code        String
+  description String?
+  unit        String?
+  valuePerUnit Decimal? @map("value_per_unit") @db.Decimal(18, 2)
+  currency    String   @default("GBP")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  theme      SvTheme       @relation("ThemeOutcomes", fields: [themeId], references: [id], onDelete: Cascade)
+  indicators SvIndicator[] @relation("OutcomeIndicators")
+  measures   SvMeasure[]   @relation("OutcomeMeasures")
+
+  @@unique([themeId, code])
+  @@index([themeId])
+  @@map("sv_outcomes")
+}
+
+/// Quantitative measure (metric) for an outcome.
+model SvMeasure {
+  id          String   @id @default(cuid())
+  outcomeId   String   @map("outcome_id")
+  name        String
+  unit        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  outcome    SvOutcome    @relation("OutcomeMeasures", fields: [outcomeId], references: [id], onDelete: Cascade)
+  activities SvActivity[] @relation("ActivityMeasure")
+
+  @@index([outcomeId])
+  @@map("sv_measures")
+}
+
+/// Qualitative indicator for an outcome.
+model SvIndicator {
+  id          String   @id @default(cuid())
+  outcomeId   String   @map("outcome_id")
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  outcome SvOutcome @relation("OutcomeIndicators", fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  @@index([outcomeId])
+  @@map("sv_indicators")
+}
+
+/// A social value commitment on a contract (what was promised to the client).
+model SvCommitment {
+  id               String               @id @default(cuid())
+  organizationId   String               @map("organization_id")
+  contractId       String?              @map("contract_id")
+  frameworkId      String?              @map("framework_id")
+  ownerUserId      String?              @map("owner_user_id")
+  title            String
+  description      String?
+  targetValue      Decimal?             @map("target_value") @db.Decimal(18, 2)
+  targetUnit       String?              @map("target_unit")
+  targetDate       DateTime?            @map("target_date") @db.Date
+  reportingPeriodId String?             @map("reporting_period_id")
+  status           SvCommitmentStatus   @default(draft)
+  monetisedValue   Decimal?             @map("monetised_value") @db.Decimal(18, 2)
+  currency         String               @default("GBP")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  organization   Organization    @relation("OrgSvCommitments", fields: [organizationId], references: [id], onDelete: Cascade)
+  contract       Contract?       @relation("ContractSvCommitments", fields: [contractId], references: [id], onDelete: SetNull)
+  framework      SvFramework?    @relation("FrameworkCommitments", fields: [frameworkId], references: [id], onDelete: SetNull)
+  owner          User?           @relation("SvCommitmentOwner", fields: [ownerUserId], references: [id])
+  reportingPeriod ReportingPeriod? @relation("PeriodSvCommitments", fields: [reportingPeriodId], references: [id])
+  activities     SvActivity[]    @relation("CommitmentActivities")
+
+  @@index([organizationId, status])
+  @@index([organizationId, contractId])
+  @@map("sv_commitments")
+}
+
+/// A delivered social value activity (evidence record).
+model SvActivity {
+  id               String           @id @default(cuid())
+  organizationId   String           @map("organization_id")
+  commitmentId     String?          @map("commitment_id")
+  measureId        String?          @map("measure_id")
+  facilityId       String?          @map("facility_id")
+  reportingPeriodId String?         @map("reporting_period_id")
+  submittedByUserId String?         @map("submitted_by_user_id")
+  approvedByUserId  String?         @map("approved_by_user_id")
+  title            String
+  description      String?
+  activityDate     DateTime         @map("activity_date") @db.Date
+  quantityValue    Decimal?         @map("quantity_value") @db.Decimal(18, 4)
+  quantityUnit     String?          @map("quantity_unit")
+  monetisedValue   Decimal?         @map("monetised_value") @db.Decimal(18, 2)
+  currency         String           @default("GBP")
+  status           SvActivityStatus @default(draft)
+  reviewNotes      String?          @map("review_notes")
+  evidenceUrls     String[]         @map("evidence_urls")
+  // NVIDIA NIM AI extraction metadata
+  aiExtracted      Boolean          @default(false) @map("ai_extracted")
+  aiConfidence     Decimal?         @map("ai_confidence") @db.Decimal(5, 4)
+  aiRawResponse    Json?            @map("ai_raw_response")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  organization    Organization     @relation("OrgSvActivities", fields: [organizationId], references: [id], onDelete: Cascade)
+  commitment      SvCommitment?    @relation("CommitmentActivities", fields: [commitmentId], references: [id], onDelete: SetNull)
+  measure         SvMeasure?       @relation("ActivityMeasure", fields: [measureId], references: [id], onDelete: SetNull)
+  facility        Facility?        @relation("SvActivityFacility", fields: [facilityId], references: [id], onDelete: SetNull)
+  reportingPeriod ReportingPeriod? @relation("SvActivityPeriod", fields: [reportingPeriodId], references: [id])
+  submittedBy     User?            @relation("SvActivitySubmittedBy", fields: [submittedByUserId], references: [id])
+  approvedBy      User?            @relation("SvActivityApprovedBy", fields: [approvedByUserId], references: [id])
+
+  @@index([organizationId, status])
+  @@index([organizationId, commitmentId])
+  @@index([organizationId, activityDate])
+  @@map("sv_activities")
+}
+
+// ─── Carbon Intelligence (Phase 1) ────────────────────────────────────────────
+
+/// Real-time or near-real-time carbon signal pulled from external APIs.
+model CarbonSignal {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  signalType       String   @map("signal_type")
+  source           String
+  region           String?
+  value            Decimal  @db.Decimal(18, 6)
+  unit             String
+  recordedAt       DateTime @map("recorded_at")
+  rawPayload       Json?    @map("raw_payload")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation("OrgCarbonSignals", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, signalType, recordedAt])
+  @@map("carbon_signals")
+}
+
+/// Alert triggered when a carbon/environmental threshold is breached.
+model ImpactAlert {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  alertType      String    @map("alert_type")
+  severity       String    @default("medium")
+  title          String
+  message        String
+  resourceType   String?   @map("resource_type")
+  resourceId     String?   @map("resource_id")
+  resolvedAt     DateTime? @map("resolved_at")
+  resolvedByUserId String? @map("resolved_by_user_id")
+  metadata       Json      @default("{}")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation("OrgImpactAlerts", fields: [organizationId], references: [id], onDelete: Cascade)
+  resolvedBy   User?        @relation("ImpactAlertResolver", fields: [resolvedByUserId], references: [id])
+
+  @@index([organizationId, alertType, createdAt])
+  @@index([organizationId, resolvedAt])
+  @@map("impact_alerts")
+}
+
+/// Geographic footprint of an org's impact (for place-based SV mapping).
+model GeographicImpact {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  impactType     String   @map("impact_type")
+  label          String
+  latitude       Decimal  @db.Decimal(9, 6)
+  longitude      Decimal  @db.Decimal(9, 6)
+  radiusMetres   Int?     @map("radius_metres")
+  value          Decimal? @db.Decimal(18, 4)
+  unit           String?
+  metadata       Json     @default("{}")
+  recordedAt     DateTime @map("recorded_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation("OrgGeographicImpacts", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, impactType, recordedAt])
+  @@map("geographic_impacts")
+}
+
+/// Stores encrypted API credentials for external data source integrations.
+model ExternalApiCredential {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  provider       String
+  label          String?
+  encryptedKey   String   @map("encrypted_key")
+  scopes         String[]
+  lastValidatedAt DateTime? @map("last_validated_at")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation("OrgExternalApiCredentials", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider])
+  @@index([organizationId, isActive])
+  @@map("external_api_credentials")
 }
