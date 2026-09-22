@@ -371,7 +371,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       prisma.reductionInitiative.count({ where: { organizationId: orgId } }).catch(onLoadFailure(() => 0)),
       prisma.reportingPeriod.findMany({
         where: { organizationId: orgId },
-        select: { id: true, label: true },
+        select: { id: true, label: true, endDate: true },
         orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
       }).catch(onLoadFailure(() => [])),
       prisma.methodologyVersion.findMany({
@@ -2301,16 +2301,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <CardContent className="space-y-5">
           <CalculationControls
             orgId={orgId}
-            periods={reportingPeriods}
+            periods={reportingPeriods.map((p) => ({ id: p.id, label: p.label, endDate: p.endDate.toISOString() }))}
             approvedCountByPeriod={approvedCountByPeriod}
             methodologies={methodologies.map((item) => ({
               id: item.id,
               label: `${item.name} (${item.gwpVersion})`,
             }))}
-            factorLibraries={factorLibraries.map((item) => ({
-              id: item.id,
-              label: `${item.name} ${item.version}`,
-            }))}
+            factorLibraries={factorLibraries}
           />
           <CalculationRunsLive orgId={orgId} initialRuns={calculationRuns} />
         </CardContent>

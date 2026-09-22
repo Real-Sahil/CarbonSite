@@ -124,9 +124,9 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
     }).catch(() => null),
     prisma.reportingPeriod.findMany({
       where: { organizationId: orgId },
-      select: { id: true, label: true },
+      select: { id: true, label: true, endDate: true },
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-    }).catch(() => [] as { id: string; label: string }[]),
+    }).catch(() => [] as { id: string; label: string; endDate: Date }[]),
     prisma.methodologyVersion.findMany({
       select: { id: true, name: true, gwpVersion: true },
       orderBy: { createdAt: "desc" },
@@ -222,16 +222,13 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
             <CardContent>
               <CalculationControls
                 orgId={orgId}
-                periods={reportingPeriods}
+                periods={reportingPeriods.map((p) => ({ id: p.id, label: p.label, endDate: p.endDate.toISOString() }))}
                 approvedCountByPeriod={approvedCountByPeriod}
                 methodologies={methodologies.map((item) => ({
                   id: item.id,
                   label: `${item.name} (${item.gwpVersion})`,
                 }))}
-                factorLibraries={factorLibraries.map((item) => ({
-                  id: item.id,
-                  label: `${item.name} ${item.version}`,
-                }))}
+                factorLibraries={factorLibraries}
               />
             </CardContent>
           </Card>

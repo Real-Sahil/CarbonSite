@@ -12,12 +12,18 @@ import {
 } from "@/components/ui/select";
 import { Play, AlertTriangle, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
+import {
+  describeLibrary,
+  libraryMismatch,
+  recommendedLibrary,
+  type LibraryOption,
+} from "@/lib/calculation/library-options";
 
 interface CalculationControlsProps {
   orgId: string;
-  periods: { id: string; label: string }[];
+  periods: { id: string; label: string; endDate: string }[];
   methodologies: { id: string; label: string }[];
-  factorLibraries: { id: string; label: string }[];
+  factorLibraries: LibraryOption[];
   approvedCountByPeriod: Record<string, number>;
 }
 
@@ -37,9 +43,30 @@ export function CalculationControls({
   approvedCountByPeriod,
 }: CalculationControlsProps) {
   const router = useRouter();
+  const periodEnd = (id: string) => {
+    const end = periods.find((p) => p.id === id)?.endDate;
+    return end ? new Date(end) : null;
+  };
+  const recommendedFor = (id: string) => recommendedLibrary(factorLibraries, periodEnd(id));
+
   const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
   const [methodologyId, setMethodologyId] = useState(methodologies[0]?.id ?? "");
-  const [factorLibraryId, setFactorLibraryId] = useState(factorLibraries[0]?.id ?? "");
+  const [factorLibraryId, setFactorLibraryId] = useState(
+    recommendedFor(periods[0]?.id ?? "")?.id ?? factorLibraries[0]?.id ?? "",
+  );
+  const [mismatchConfirmed, setMismatchConfirmed] = useState(false);
+
+  function selectPeriod(id: string) {
+    setPeriodId(id);
+    const rec = recommendedFor(id);
+    if (rec) setFactorLibraryId(rec.id);
+    setMismatchConfirmed(false);
+  }
+
+  function selectLibrary(id: string) {
+    setFactorLibraryId(id);
+    setMismatchConfirmed(false);
+  }
   const [isPending, startTransition] = useTransition();
   const [run, setRun] = useState<RunResult | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -98,7 +125,7 @@ export function CalculationControls({
   }
 
   async function handleRun() {
-    if (!periodId || !methodologyId || !factorLibraryId) return;
+    if (!periodId || !methodologyId || !factorLibraryId || blockedByMismatch) return;
     setRun(null);
     startTransition(async () => {
       try {
@@ -172,6 +199,12 @@ export function CalculationControls({
   }
 
   const approvedCount = periodId ? (approvedCountByPeriod[periodId] ?? 0) : 0;
+  const recommended = recommendedFor(periodId);
+  const selectedPeriodEnd = periodEnd(periodId);
+  const mismatch = selectedPeriodEnd
+    ? libraryMismatch(factorLibraries.find((f) => f.id === factorLibraryId), recommended, selectedPeriodEnd)
+    : null;
+  const blockedByMismatch = mismatch !== null && !mismatchConfirmed;
   const isInFlight = run?.status === "queued" || run?.status === "running";
   const isLoading = isPending || isInFlight;
 
@@ -179,7 +212,7 @@ export function CalculationControls({
     <div className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1">
         <label className="text-xs text-[#374151] tracking-[-0.36px]">Reporting period</label>
-        <Select value={periodId} onValueChange={setPeriodId} disabled={isLoading}>
+        <Select value={periodId} onValueChange={selectPeriod} disabled={isLoading}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Select period" />
           </SelectTrigger>
@@ -205,20 +238,20 @@ export function CalculationControls({
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-[#374151] tracking-[-0.36px]">Factor library</label>
-        <Select value={factorLibraryId} onValueChange={setFactorLibraryId} disabled={isLoading}>
-          <SelectTrigger className="w-48">
+        <Select value={factorLibraryId} onValueChange={selectLibrary} disabled={isLoading}>
+          <SelectTrigger className="w-72">
             <SelectValue placeholder="Select library" />
           </SelectTrigger>
           <SelectContent>
             {factorLibraries.map((f) => (
-              <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>
+              <SelectItem key={f.id} value={f.id}>{describeLibrary(f, recommended?.id ?? null)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
       <Button
         onClick={handleRun}
-        disabled={isLoading || !periodId || !methodologyId || !factorLibraryId}
+        disabled={isLoading || !periodId || !methodologyId || !factorLibraryId || blockedByMismatch}
         size="sm"
         className="gap-1.5"
       >
@@ -229,6 +262,26 @@ export function CalculationControls({
         )}
         {isPending ? "Starting…" : isInFlight ? "Calculating…" : "Run calculation"}
       </Button>
+
+      {/* Factor library does not match the period */}
+      {mismatch && !isInFlight && (
+        <div className="w-full flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" aria-hidden="true" />
+          <div className="space-y-1.5 text-xs text-amber-800 leading-relaxed">
+            <p>{mismatch}</p>
+            <label htmlFor="confirm-library-mismatch" className="flex items-center gap-2 font-medium">
+              <input
+                id="confirm-library-mismatch"
+                type="checkbox"
+                checked={mismatchConfirmed}
+                onChange={(e) => setMismatchConfirmed(e.target.checked)}
+                disabled={isLoading}
+              />
+              Use this library anyway
+            </label>
+          </div>
+        </div>
+      )}
 
       {/* No approved records warning */}
       {periodId && approvedCount === 0 && !run && (
