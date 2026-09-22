@@ -76,5 +76,10 @@ jobs:
           # Mark as rolled-back so next deploy re-applies the corrected SQL.
           pnpm prisma migrate resolve --rolled-back 20260922000001_stakeholder_phase2_retry 2>&1 || true
 
+          # 20260922000000_sv_foundation: failed in production (P3009). CREATE TYPE used
+          # non-idempotent syntax. Mark as rolled-back; 20260922000002_sv_foundation_idempotent
+          # re-applies the same schema changes with full IF NOT EXISTS / DO block guards.
+          pnpm prisma migrate resolve --rolled-back 20260922000000_sv_foundation 2>&1 || true
+
       - name: Apply new migrations
         run: pnpm prisma migrate deploy
