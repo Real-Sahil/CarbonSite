@@ -1,210 +1,44 @@
-"use client";
-
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
-import { Leaf, Plus, Trash2, ExternalLink, X, ShieldCheck, Loader2 } from "lucide-react";
+import { redirect } from "next/navigation";
+import { Leaf, ExternalLink, ShieldCheck } from "lucide-react";
+import { prisma } from "@/lib/db";
+import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { AddOffsetButton, OffsetRowActions, PROJECT_TYPES, STATUS_COLORS } from "./offsets-actions";
 
-interface CarbonOffset {
-  id: string;
-  provider: string;
-  projectName: string;
-  projectType: string;
-  standard: string;
-  vintage: number;
-  quantityTonnes: string;
-  pricePerTonne: string | null;
-  currency: string;
-  purchasedAt: string;
-  retirementRef: string | null;
-  retirementVerified: boolean;
-  retirementVerifiedAt: string | null;
-  notes: string | null;
-}
+export default async function OffsetsPage({ params }: { params: Promise<{ orgId: string }> }) {
+  const { orgId } = await params;
 
-const PROJECT_TYPES = [
-  { value: "forestry",           label: "Forestry / REDD+" },
-  { value: "renewable_energy",   label: "Renewable energy" },
-  { value: "methane_capture",    label: "Methane capture" },
-  { value: "blue_carbon",        label: "Blue carbon" },
-  { value: "soil_carbon",        label: "Soil carbon" },
-  { value: "direct_air_capture", label: "Direct air capture" },
-  { value: "other",              label: "Other" },
-];
+  let canEdit = false;
+  try {
+    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    canEdit = ["admin", "editor"].includes(result.membership.role);
+  } catch (err) {
+    if (err instanceof AuthError) redirect("/sign-in");
+    throw err;
+  }
 
-const STANDARDS = ["VCS", "Gold_Standard", "REDD+", "Plan_Vivo", "ACR", "CAR", "Other"];
-
-const STATUS_COLORS: Record<string, string> = {
-  forestry:           "bg-green-100 text-green-700",
-  renewable_energy:   "bg-[#fff7ed] text-[#f97316]",
-  methane_capture:    "bg-purple-100 text-purple-700",
-  blue_carbon:        "bg-blue-100 text-blue-700",
-  soil_carbon:        "bg-amber-100 text-amber-700",
-  direct_air_capture: "bg-rose-100 text-rose-700",
-  other:              "bg-gray-100 text-gray-600",
-};
-
-function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState({
-    provider: "", projectName: "", projectType: "forestry",
-    standard: "VCS", vintage: new Date().getFullYear() - 1,
-    quantityTonnes: "", pricePerTonne: "", currency: "GBP",
-    purchasedAt: new Date().toISOString().slice(0, 10),
-    retirementRef: "", notes: "",
+  const rawOffsets = await prisma.carbonOffset.findMany({
+    where: { organizationId: orgId },
+    orderBy: { purchasedAt: "desc" },
+    take: 200,
+    select: {
+      id: true, provider: true, projectName: true, projectType: true,
+      standard: true, vintage: true, quantityTonnes: true, pricePerTonne: true,
+      currency: true, purchasedAt: true, retirementRef: true,
+      retirementVerified: true, retirementVerifiedAt: true, notes: true,
+    },
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  function set(k: string, v: string | number) { setForm((f) => ({ ...f, [k]: v })); }
+  const offsets = rawOffsets.map((o) => ({
+    ...o,
+    quantityTonnes: Number(o.quantityTonnes),
+    pricePerTonne: o.pricePerTonne != null ? Number(o.pricePerTonne) : null,
+    purchasedAt: o.purchasedAt.toISOString(),
+    retirementVerifiedAt: o.retirementVerifiedAt ? o.retirementVerifiedAt.toISOString() : null,
+  }));
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/orgs/${orgId}/offsets`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          vintage: Number(form.vintage),
-          quantityTonnes: Number(form.quantityTonnes),
-          pricePerTonne: form.pricePerTonne ? Number(form.pricePerTonne) : undefined,
-          purchasedAt: new Date(form.purchasedAt).toISOString(),
-          retirementRef: form.retirementRef || undefined,
-          notes: form.notes || undefined,
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setError(d.message ?? "Failed to save offset.");
-        return;
-      }
-      onSaved();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
-  const labelCls = "block text-xs font-medium text-gray-600 mb-1";
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Add carbon offset</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className={labelCls}>Project name</label>
-              <input type="text" required value={form.projectName} onChange={(e) => set("projectName", e.target.value)} className={inputCls} placeholder="Acre Amazon REDD+ Project" />
-            </div>
-            <div>
-              <label className={labelCls}>Provider / registry</label>
-              <input type="text" required value={form.provider} onChange={(e) => set("provider", e.target.value)} className={inputCls} placeholder="South Pole, ClimateCare..." />
-            </div>
-            <div>
-              <label className={labelCls}>Standard</label>
-              <select value={form.standard} onChange={(e) => set("standard", e.target.value)} className={inputCls}>
-                {STANDARDS.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>Project type</label>
-              <select value={form.projectType} onChange={(e) => set("projectType", e.target.value)} className={inputCls}>
-                {PROJECT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>Vintage year</label>
-              <input type="number" required min={2000} max={2050} value={form.vintage} onChange={(e) => set("vintage", e.target.value)} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Quantity (tCO2e)</label>
-              <input type="number" required min="0.0001" step="0.0001" value={form.quantityTonnes} onChange={(e) => set("quantityTonnes", e.target.value)} className={inputCls} placeholder="100.0000" />
-            </div>
-            <div>
-              <label className={labelCls}>Price / tonne <span className="text-gray-500">(optional)</span></label>
-              <input type="number" min="0" step="0.01" value={form.pricePerTonne} onChange={(e) => set("pricePerTonne", e.target.value)} className={inputCls} placeholder="15.00" />
-            </div>
-            <div>
-              <label className={labelCls}>Currency</label>
-              <input type="text" maxLength={3} value={form.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Purchase date</label>
-              <input type="date" required value={form.purchasedAt} onChange={(e) => set("purchasedAt", e.target.value)} className={inputCls} />
-            </div>
-            <div className="col-span-2">
-              <label className={labelCls}>Retirement ref <span className="text-gray-500">(optional)</span></label>
-              <input type="text" value={form.retirementRef} onChange={(e) => set("retirementRef", e.target.value)} className={inputCls} placeholder="Gold Standard retirement certificate #..." />
-            </div>
-            <div className="col-span-2">
-              <label className={labelCls}>Notes <span className="text-gray-500">(optional)</span></label>
-              <textarea rows={2} value={form.notes} onChange={(e) => set("notes", e.target.value)} className={`${inputCls} resize-none`} />
-            </div>
-          </div>
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
-            {loading ? "Saving..." : "Save offset"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-export default function OffsetsPage() {
-  const params = useParams<{ orgId: string }>();
-  const orgId = params.orgId;
-  const [offsets, setOffsets] = useState<CarbonOffset[]>([]);
-  const [totalTonnes, setTotalTonnes] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [showAdd, setShowAdd] = useState(false);
-  const [verifying, setVerifying] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    const res = await fetch(`/api/orgs/${orgId}/offsets`);
-    if (res.ok) {
-      const d = await res.json();
-      setOffsets(d.data);
-      setTotalTonnes(d.totalTonnes);
-    }
-    setLoading(false);
-  }, [orgId]);
-
-  useEffect(() => { load(); }, [load]);
-
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this offset record?")) return;
-    await fetch(`/api/orgs/${orgId}/offsets/${id}`, { method: "DELETE" });
-    load();
-  }
-
-  async function handleVerify(id: string, retirementRef: string | null) {
-    if (!retirementRef) {
-      alert("Add a retirement reference before verifying.");
-      return;
-    }
-    setVerifying(id);
-    try {
-      await fetch(`/api/orgs/${orgId}/offsets/${id}/verify-retirement`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: retirementRef }),
-      });
-      load();
-    } finally {
-      setVerifying(null);
-    }
-  }
+  const totalTonnes = offsets.reduce((s, o) => s + o.quantityTonnes, 0);
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -215,16 +49,9 @@ export default function OffsetsPage() {
             Track verified carbon credits purchased to offset residual emissions.
           </p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add offset
-        </button>
+        {canEdit && <AddOffsetButton orgId={orgId} />}
       </div>
 
-      {/* Summary */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Total purchased</div>
@@ -238,11 +65,8 @@ export default function OffsetsPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
-        ) : offsets.length === 0 ? (
+        {offsets.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-green-50 flex items-center justify-center">
               <Leaf className="h-5 w-5 text-green-500" />
@@ -273,11 +97,14 @@ export default function OffsetsPage() {
                   </td>
                   <td className="py-3 px-4 text-gray-600">{o.standard.replace("_", " ")}</td>
                   <td className="py-3 px-4 text-gray-600 tabular-nums">{o.vintage}</td>
-                  <td className="py-3 px-4 text-gray-900 font-medium tabular-nums">{Number(o.quantityTonnes).toFixed(2)}</td>
-                  <td className="py-3 px-4 text-gray-500 tabular-nums">{new Date(o.purchasedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+                  <td className="py-3 px-4 text-gray-900 font-medium tabular-nums">{o.quantityTonnes.toFixed(2)}</td>
+                  <td className="py-3 px-4 text-gray-500 tabular-nums">
+                    {new Date(o.purchasedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  </td>
                   <td className="py-3 px-4">
                     {o.retirementVerified ? (
-                      <span title={`Verified ${o.retirementVerifiedAt ? new Date(o.retirementVerifiedAt).toLocaleDateString("en-GB") : ""}`} className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+                      <span title={`Verified ${o.retirementVerifiedAt ? new Date(o.retirementVerifiedAt).toLocaleDateString("en-GB") : ""}`}
+                        className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
                         <ShieldCheck className="h-3 w-3" /> Verified
                       </span>
                     ) : (
@@ -291,22 +118,14 @@ export default function OffsetsPage() {
                           <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
                         </span>
                       )}
-                      {!o.retirementVerified && (
-                        <button
-                          onClick={() => handleVerify(o.id, o.retirementRef)}
-                          disabled={verifying === o.id}
-                          title="Verify via OffsetsDB"
-                          className="h-7 w-7 rounded-lg hover:bg-green-50 flex items-center justify-center group disabled:opacity-50"
-                        >
-                          {verifying === o.id
-                            ? <Loader2 className="h-3.5 w-3.5 text-gray-400 animate-spin" />
-                            : <ShieldCheck className="h-3.5 w-3.5 text-gray-300 group-hover:text-green-600 transition-colors" />
-                          }
-                        </button>
+                      {canEdit && (
+                        <OffsetRowActions
+                          orgId={orgId}
+                          id={o.id}
+                          retirementRef={o.retirementRef}
+                          retirementVerified={o.retirementVerified}
+                        />
                       )}
-                      <button onClick={() => handleDelete(o.id)} className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center group">
-                        <Trash2 className="h-3.5 w-3.5 text-gray-300 group-hover:text-red-500 transition-colors" />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -315,14 +134,6 @@ export default function OffsetsPage() {
           </table>
         )}
       </div>
-
-      {showAdd && (
-        <AddOffsetModal
-          orgId={orgId}
-          onClose={() => setShowAdd(false)}
-          onSaved={() => { setShowAdd(false); load(); }}
-        />
-      )}
     </div>
   );
 }

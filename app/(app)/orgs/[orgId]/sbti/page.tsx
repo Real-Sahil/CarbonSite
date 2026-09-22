@@ -1,335 +1,65 @@
-"use client";
-
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { TrendingDown, Target, CheckCircle, AlertTriangle, X, Info } from "lucide-react";
+import { redirect } from "next/navigation";
+import { TrendingDown, Target, CheckCircle, AlertTriangle, Info } from "lucide-react";
+import { prisma } from "@/lib/db";
+import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { loadSbtiPathway } from "@/lib/calculation/sbti-actuals";
+import { SbtiSetTargetButton, STATUS_CONFIG, type SbtiTarget } from "./sbti-actions";
 
-interface SbtiTarget {
-  id: string;
-  pathway: string;
-  baseYear: number;
-  baselineScope1Tco2e: string;
-  baselineScope2Tco2e: string;
-  baselineScope3Tco2e: string | null;
-  nearTermYear: number;
-  nearTermReductionPct: string;
-  netZeroYear: number;
-  netZeroReductionPct: string;
-  status: string;
-  notes: string | null;
-}
+export default async function SbtiPage({ params }: { params: Promise<{ orgId: string }> }) {
+  const { orgId } = await params;
 
-interface TrajectoryPoint {
-  year: number;
-  expectedTco2e: number;
-  actualTco2e: number | null;
-  deviationPercent: number | null;
-  milestone: string;
-  status: string;
-}
-
-interface SbtiAlert {
-  severity: "critical" | "warning" | "info";
-  year: number;
-  message: string;
-}
-
-interface PathwaySuggestion {
-  totalReductionPercent: number;
-  annualReductionRate: number;
-  pathwayDescription: string;
-  recommendations: string[];
-}
-
-const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  draft:      { label: "Draft",      cls: "bg-gray-100 text-gray-600" },
-  committed:  { label: "Committed",  cls: "bg-blue-100 text-blue-700" },
-  validated:  { label: "Validated",  cls: "bg-green-100 text-green-700" },
-};
-
-function SetTargetModal({ orgId, existing, onClose, onSaved }: {
-  orgId: string; existing: SbtiTarget | null; onClose: () => void; onSaved: () => void;
-}) {
-  const [form, setForm] = useState({
-    pathway: existing?.pathway ?? "1.5C",
-    baseYear: (existing?.baseYear ?? new Date().getFullYear() - 1).toString(),
-    baselineScope1Tco2e: existing ? Number(existing.baselineScope1Tco2e).toString() : "",
-    baselineScope2Tco2e: existing ? Number(existing.baselineScope2Tco2e).toString() : "",
-    baselineScope3Tco2e: existing?.baselineScope3Tco2e ? Number(existing.baselineScope3Tco2e).toString() : "",
-    nearTermYear: (existing?.nearTermYear ?? 2030).toString(),
-    nearTermReductionPct: existing ? Number(existing.nearTermReductionPct).toString() : "50",
-    netZeroYear: (existing?.netZeroYear ?? 2050).toString(),
-    netZeroReductionPct: existing ? Number(existing.netZeroReductionPct).toString() : "90",
-    status: existing?.status ?? "draft",
-    notes: existing?.notes ?? "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const [calcPathway, setCalcPathway] = useState<"1.5C" | "2C" | "2.5C">("1.5C");
-  const [suggestion, setSuggestion] = useState<PathwaySuggestion | null>(null);
-  const [calculating, setCalculating] = useState(false);
-  const [calcError, setCalcError] = useState("");
-
-  async function calculateSuggestion() {
-    const baselineEmissions =
-      Number(form.baselineScope1Tco2e || 0) +
-      Number(form.baselineScope2Tco2e || 0) +
-      Number(form.baselineScope3Tco2e || 0);
-    if (!form.baseYear || !form.nearTermYear || baselineEmissions <= 0) {
-      setCalcError("Enter a base year, near-term year and at least Scope 1+2 baseline first.");
-      return;
-    }
-    setCalcError("");
-    setCalculating(true);
-    setSuggestion(null);
-    try {
-      const res = await fetch(`/api/orgs/${orgId}/targets/sbti-pathway`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          baselineYear: Number(form.baseYear),
-          baselineEmissions,
-          targetYear: Number(form.nearTermYear),
-          pathway: calcPathway,
-          scope1: Number(form.baselineScope1Tco2e || 0),
-          scope2: Number(form.baselineScope2Tco2e || 0),
-          scope3: Number(form.baselineScope3Tco2e || 0),
-        }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setCalcError(body.message ?? "Could not calculate a suggested pathway.");
-        return;
-      }
-      setSuggestion(body.pathway);
-    } catch {
-      setCalcError("Network error. Try again.");
-    } finally {
-      setCalculating(false);
-    }
+  let canEdit = false;
+  try {
+    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    canEdit = ["admin", "editor"].includes(result.membership.role);
+  } catch (err) {
+    if (err instanceof AuthError) redirect("/sign-in");
+    throw err;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/orgs/${orgId}/sbti`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pathway: form.pathway,
-          baseYear: Number(form.baseYear),
-          baselineScope1Tco2e: Number(form.baselineScope1Tco2e),
-          baselineScope2Tco2e: Number(form.baselineScope2Tco2e),
-          baselineScope3Tco2e: form.baselineScope3Tco2e ? Number(form.baselineScope3Tco2e) : undefined,
-          nearTermYear: Number(form.nearTermYear),
-          nearTermReductionPct: Number(form.nearTermReductionPct),
-          netZeroYear: Number(form.netZeroYear),
-          netZeroReductionPct: Number(form.netZeroReductionPct),
-          status: form.status,
-          notes: form.notes || undefined,
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setError(d.message ?? "Could not save.");
-        return;
+  const [rawTarget, pathwayResult] = await Promise.all([
+    prisma.sbtiTarget.findUnique({
+      where: { organizationId: orgId },
+      select: {
+        pathway: true, baseYear: true,
+        baselineScope1Tco2e: true, baselineScope2Tco2e: true, baselineScope3Tco2e: true,
+        nearTermYear: true, nearTermReductionPct: true,
+        netZeroYear: true, netZeroReductionPct: true,
+        status: true, notes: true,
+      },
+    }),
+    loadSbtiPathway(orgId),
+  ]);
+
+  const target: SbtiTarget | null = rawTarget
+    ? {
+        pathway: rawTarget.pathway,
+        baseYear: rawTarget.baseYear,
+        baselineScope1Tco2e: Number(rawTarget.baselineScope1Tco2e),
+        baselineScope2Tco2e: Number(rawTarget.baselineScope2Tco2e),
+        baselineScope3Tco2e: rawTarget.baselineScope3Tco2e != null ? Number(rawTarget.baselineScope3Tco2e) : null,
+        nearTermYear: rawTarget.nearTermYear,
+        nearTermReductionPct: Number(rawTarget.nearTermReductionPct),
+        netZeroYear: rawTarget.netZeroYear,
+        netZeroReductionPct: Number(rawTarget.netZeroReductionPct),
+        status: rawTarget.status,
+        notes: rawTarget.notes,
       }
-      onSaved();
-    } finally {
-      setLoading(false);
-    }
-  }
+    : null;
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">{existing ? "Edit" : "Set"} SBTi net-zero target</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Pathway</label>
-              <select value={form.pathway} onChange={(e) => setForm((f) => ({ ...f, pathway: e.target.value }))} className={inputCls}>
-                <option value="1.5C">1.5°C pathway</option>
-                <option value="WB2C">Well-below 2°C</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Base year</label>
-              <input type="number" required min={2000} max={2030} value={form.baseYear}
-                onChange={(e) => setForm((f) => ({ ...f, baseYear: e.target.value }))} className={inputCls} />
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3">
-            <p className="text-xs font-medium text-[#f97316] mb-2">Baseline emissions (tCO2e)</p>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { key: "baselineScope1Tco2e", label: "Scope 1" },
-                { key: "baselineScope2Tco2e", label: "Scope 2" },
-                { key: "baselineScope3Tco2e", label: "Scope 3 (opt.)" },
-              ].map(({ key, label }) => (
-                <div key={key}>
-                  <label className="block text-xs text-[#ea580c] mb-1">{label}</label>
-                  <input type="number" min={0} step="0.01" value={form[key as keyof typeof form]}
-                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                    required={key !== "baselineScope3Tco2e"}
-                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-sm text-[#111827] outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20" placeholder="0" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-            <p className="text-xs font-medium text-gray-700 mb-2">
-              Not sure what reduction % to commit to? Calculate what a pathway requires.
-            </p>
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <label className="block text-xs text-gray-500 mb-1">Pathway to model</label>
-                <select value={calcPathway} onChange={(e) => setCalcPathway(e.target.value as typeof calcPathway)}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20">
-                  <option value="1.5C">1.5°C (4.2%/year)</option>
-                  <option value="2C">2°C (3.0%/year)</option>
-                  <option value="2.5C">2.5°C (2.0%/year)</option>
-                </select>
-              </div>
-              <button type="button" onClick={calculateSuggestion} disabled={calculating}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50">
-                {calculating ? "Calculating…" : "Calculate"}
-              </button>
-            </div>
-            {calcError && <p className="text-xs text-red-600 mt-2">{calcError}</p>}
-            {suggestion && (
-              <div className="mt-3 rounded-lg bg-white border border-gray-200 px-3 py-2.5">
-                <p className="text-sm text-gray-900">
-                  Reaching {form.nearTermYear} on this pathway needs{" "}
-                  <span className="font-semibold">{suggestion.totalReductionPercent.toFixed(1)}%</span> total reduction
-                  (~{suggestion.annualReductionRate.toFixed(1)}%/year).
-                </p>
-                {suggestion.recommendations.length > 0 && (
-                  <ul className="mt-1.5 space-y-0.5 text-xs text-gray-500 list-disc list-inside">
-                    {suggestion.recommendations.slice(0, 2).map((rec, i) => <li key={i}>{rec}</li>)}
-                  </ul>
-                )}
-                <button type="button"
-                  onClick={() => setForm((f) => ({ ...f, nearTermReductionPct: suggestion.totalReductionPercent.toFixed(1) }))}
-                  className="mt-2 text-xs font-medium text-[#f97316] hover:text-[#ea580c]">
-                  Use this % for near-term reduction
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Near-term target year</label>
-              <input type="number" required min={2025} max={2040} value={form.nearTermYear}
-                onChange={(e) => setForm((f) => ({ ...f, nearTermYear: e.target.value }))} className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Near-term reduction (%)</label>
-              <input type="number" required min={0} max={100} step="0.1" value={form.nearTermReductionPct}
-                onChange={(e) => setForm((f) => ({ ...f, nearTermReductionPct: e.target.value }))} className={inputCls} placeholder="50" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Net-zero target year</label>
-              <input type="number" required min={2040} max={2100} value={form.netZeroYear}
-                onChange={(e) => setForm((f) => ({ ...f, netZeroYear: e.target.value }))} className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Net-zero reduction (%)</label>
-              <input type="number" required min={0} max={100} step="0.1" value={form.netZeroReductionPct}
-                onChange={(e) => setForm((f) => ({ ...f, netZeroReductionPct: e.target.value }))} className={inputCls} placeholder="90" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
-            <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputCls}>
-              <option value="draft">Draft</option>
-              <option value="committed">Committed</option>
-              <option value="validated">Validated (SBTi approved)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
-            <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-              className={`${inputCls} resize-none`} placeholder="SBTi submission date, validation notes..." />
-          </div>
-
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-
-          <button type="submit" disabled={loading}
-            className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
-            {loading ? "Saving..." : existing ? "Update target" : "Set SBTi target"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-export default function SbtiPage() {
-  const params = useParams<{ orgId: string }>();
-  const orgId = params.orgId;
-  const [target, setTarget] = useState<SbtiTarget | null>(null);
-  const [trajectory, setTrajectory] = useState<TrajectoryPoint[]>([]);
-  const [alerts, setAlerts] = useState<SbtiAlert[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(false);
-
-  async function load() {
-    setLoadError(null);
-    try {
-      const res = await fetch(`/api/orgs/${orgId}/sbti`);
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setLoadError(body.message ?? "Could not load the SBTi target.");
-        return;
-      }
-      const d = await res.json();
-      setTarget(d.target);
-      setTrajectory(d.trajectory);
-      setAlerts(d.alerts ?? []);
-    } catch {
-      setLoadError("Could not reach the server. Check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-   
-  useEffect(() => { load(); }, [orgId]);
+  const trajectory = pathwayResult?.trajectory ?? [];
+  const alerts = pathwayResult?.alerts ?? [];
 
   const baseTotal = target
-    ? Number(target.baselineScope1Tco2e) + Number(target.baselineScope2Tco2e) + Number(target.baselineScope3Tco2e ?? 0)
+    ? target.baselineScope1Tco2e + target.baselineScope2Tco2e + (target.baselineScope3Tco2e ?? 0)
     : 0;
-  const nearTermTarget = baseTotal * (1 - Number(target?.nearTermReductionPct ?? 0) / 100);
-  const netZeroTarget = baseTotal * (1 - Number(target?.netZeroReductionPct ?? 90) / 100);
+  const nearTermTarget = target ? baseTotal * (1 - target.nearTermReductionPct / 100) : 0;
+  const netZeroTarget = target ? baseTotal * (1 - target.netZeroReductionPct / 100) : 0;
 
-  const statusConfig = target ? STATUS_CONFIG[target.status] ?? STATUS_CONFIG.draft : null;
+  const statusConfig = target ? (STATUS_CONFIG[target.status] ?? STATUS_CONFIG.draft) : null;
 
-  // Simple sparkline: use trajectory to build a visual bar chart, scaled to
-  // whichever is larger, expected or actual, so an over-budget year isn't
-  // clipped off the top.
   const maxTco2e = trajectory.reduce(
     (m, p) => Math.max(m, p.expectedTco2e, p.actualTco2e ?? 0),
     0,
@@ -342,24 +72,10 @@ export default function SbtiPage() {
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">SBTi Net-Zero Roadmap</h1>
           <p className="text-sm text-gray-500 mt-1">Science-Based Targets aligned with the 1.5°C pathway.</p>
         </div>
-        <button onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors">
-          <Target className="h-4 w-4" />
-          {target ? "Edit target" : "Set SBTi target"}
-        </button>
+        {canEdit && <SbtiSetTargetButton orgId={orgId} existing={target} />}
       </div>
 
-      {loading ? (
-        <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
-      ) : loadError ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center">
-          <p className="text-sm text-red-700">{loadError}</p>
-          <button onClick={() => { setLoading(true); load(); }}
-            className="mt-3 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50">
-            Retry
-          </button>
-        </div>
-      ) : !target ? (
+      {!target ? (
         <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
             <TrendingDown className="h-5 w-5 text-[#f97316]" />
@@ -371,7 +87,6 @@ export default function SbtiPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Status + pathway */}
           <div className="flex items-center gap-3">
             {statusConfig && (
               <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusConfig.cls}`}>
@@ -384,12 +99,11 @@ export default function SbtiPage() {
             <span className="text-xs text-gray-500">Base year: {target.baseYear}</span>
           </div>
 
-          {/* Summary cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: "Baseline (total)", value: baseTotal.toFixed(1), unit: "tCO2e" },
-              { label: `Near-term target (${target.nearTermYear})`, value: nearTermTarget.toFixed(1), unit: `tCO2e (-${Number(target.nearTermReductionPct).toFixed(0)}%)` },
-              { label: `Net-zero target (${target.netZeroYear})`, value: netZeroTarget.toFixed(1), unit: `tCO2e (-${Number(target.netZeroReductionPct).toFixed(0)}%)` },
+              { label: `Near-term target (${target.nearTermYear})`, value: nearTermTarget.toFixed(1), unit: `tCO2e (-${target.nearTermReductionPct.toFixed(0)}%)` },
+              { label: `Net-zero target (${target.netZeroYear})`, value: netZeroTarget.toFixed(1), unit: `tCO2e (-${target.netZeroReductionPct.toFixed(0)}%)` },
               { label: "Annual reduction needed", value: ((baseTotal - nearTermTarget) / Math.max(target.nearTermYear - target.baseYear, 1)).toFixed(1), unit: "tCO2e/year" },
             ].map(({ label, value, unit }) => (
               <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
@@ -400,15 +114,14 @@ export default function SbtiPage() {
             ))}
           </div>
 
-          {/* Scope breakdown */}
           <div className="rounded-xl border border-gray-200 bg-white p-6">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Baseline emissions by scope</h3>
             <div className="space-y-3">
               {[
-                { label: "Scope 1 (Direct)", value: Number(target.baselineScope1Tco2e), color: "bg-[#f97316]" },
-                { label: "Scope 2 (Electricity)", value: Number(target.baselineScope2Tco2e), color: "bg-emerald-500" },
-                ...(target.baselineScope3Tco2e
-                  ? [{ label: "Scope 3 (Value chain)", value: Number(target.baselineScope3Tco2e), color: "bg-violet-500" }]
+                { label: "Scope 1 (Direct)", value: target.baselineScope1Tco2e, color: "bg-[#f97316]" },
+                { label: "Scope 2 (Electricity)", value: target.baselineScope2Tco2e, color: "bg-emerald-500" },
+                ...(target.baselineScope3Tco2e != null
+                  ? [{ label: "Scope 3 (Value chain)", value: target.baselineScope3Tco2e, color: "bg-violet-500" }]
                   : []),
               ].map(({ label, value, color }) => {
                 const pct = baseTotal > 0 ? (value / baseTotal) * 100 : 0;
@@ -429,7 +142,6 @@ export default function SbtiPage() {
             </div>
           </div>
 
-          {/* Alerts */}
           {alerts.length > 0 && (
             <div className="space-y-2">
               {alerts.map((alert, i) => {
@@ -449,7 +161,6 @@ export default function SbtiPage() {
             </div>
           )}
 
-          {/* Trajectory chart */}
           {trajectory.length > 0 && (
             <div className="rounded-xl border border-gray-200 bg-white p-6">
               <div className="flex items-center justify-between mb-4">
@@ -461,28 +172,30 @@ export default function SbtiPage() {
                 </div>
               </div>
               <div className="flex items-end gap-1.5 h-32 overflow-x-auto pb-2">
-                {trajectory.filter((_, i) => i % 2 === 0 || trajectory.length <= 20).map((point) => {
-                  const expectedPct = maxTco2e > 0 ? (point.expectedTco2e / maxTco2e) * 100 : 0;
-                  const actualPct = point.actualTco2e != null && maxTco2e > 0 ? (point.actualTco2e / maxTco2e) * 100 : null;
-                  const isNearTerm = point.year === target.nearTermYear;
-                  const isNetZero = point.year === target.netZeroYear;
-                  const actualColor = point.status === "behind" ? "bg-red-400" : "bg-emerald-500";
-                  return (
-                    <div key={point.year} className="flex flex-col items-center gap-1 flex-shrink-0" style={{ minWidth: actualPct != null ? "36px" : "24px" }}>
-                      <div className="flex items-end gap-0.5" style={{ height: "100%" }}>
-                        <div className="w-4 rounded-t-sm bg-[#f97316] transition-all"
-                          style={{ height: `${Math.max(expectedPct, 2)}%`, opacity: isNearTerm || isNetZero ? 1 : 0.7 }} />
-                        {actualPct != null && (
-                          <div className={`w-4 rounded-t-sm transition-all ${actualColor}`}
-                            style={{ height: `${Math.max(actualPct, 2)}%` }} />
-                        )}
+                {trajectory
+                  .filter((_, i) => i % 2 === 0 || trajectory.length <= 20)
+                  .map((point) => {
+                    const expectedPct = maxTco2e > 0 ? (point.expectedTco2e / maxTco2e) * 100 : 0;
+                    const actualPct = point.actualTco2e != null && maxTco2e > 0 ? (point.actualTco2e / maxTco2e) * 100 : null;
+                    const isNearTerm = point.year === target.nearTermYear;
+                    const isNetZero = point.year === target.netZeroYear;
+                    const actualColor = point.status === "behind" ? "bg-red-400" : "bg-emerald-500";
+                    return (
+                      <div key={point.year} className="flex flex-col items-center gap-1 flex-shrink-0" style={{ minWidth: actualPct != null ? "36px" : "24px" }}>
+                        <div className="flex items-end gap-0.5" style={{ height: "100%" }}>
+                          <div className="w-4 rounded-t-sm bg-[#f97316] transition-all"
+                            style={{ height: `${Math.max(expectedPct, 2)}%`, opacity: isNearTerm || isNetZero ? 1 : 0.7 }} />
+                          {actualPct != null && (
+                            <div className={`w-4 rounded-t-sm transition-all ${actualColor}`}
+                              style={{ height: `${Math.max(actualPct, 2)}%` }} />
+                          )}
+                        </div>
+                        <span className={`text-[9px] tabular-nums ${isNearTerm || isNetZero ? "text-[#f97316] font-semibold" : "text-gray-300"}`}>
+                          {point.year}
+                        </span>
                       </div>
-                      <span className={`text-[9px] tabular-nums ${isNearTerm || isNetZero ? "text-[#f97316] font-semibold" : "text-gray-300"}`}>
-                        {point.year}
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
               <div className="flex items-center gap-6 mt-3 pt-3 border-t border-gray-100">
                 <div className="flex items-center gap-2">
@@ -497,7 +210,6 @@ export default function SbtiPage() {
             </div>
           )}
 
-          {/* SBTi info box */}
           <div className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-5">
             <div className="flex items-start gap-3">
               <Info className="h-4 w-4 text-[#f97316] mt-0.5 flex-shrink-0" />
@@ -525,14 +237,6 @@ export default function SbtiPage() {
             </div>
           )}
         </div>
-      )}
-
-      {showModal && (
-        <SetTargetModal
-          orgId={orgId} existing={target}
-          onClose={() => setShowModal(false)}
-          onSaved={() => { setShowModal(false); setLoading(true); load(); }}
-        />
       )}
     </div>
   );
