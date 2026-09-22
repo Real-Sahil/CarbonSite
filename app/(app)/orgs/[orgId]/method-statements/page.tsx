@@ -3,13 +3,16 @@ export const dynamic = "force-dynamic";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { NewMethodStatementButton } from "./method-statements-actions";
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-700",
-  issued: "bg-blue-100 text-blue-800",
+  draft:      "bg-gray-100 text-gray-700",
+  review:     "bg-amber-100 text-amber-800",
+  approved:   "bg-blue-100 text-blue-800",
+  issued:     "bg-green-100 text-green-800",
   signed_off: "bg-green-100 text-green-800",
-  superseded: "bg-amber-100 text-amber-800",
+  superseded: "bg-gray-100 text-gray-500",
 };
 
 interface PageProps {
@@ -71,7 +74,9 @@ export default async function MethodStatementsPage({ params }: PageProps) {
             <tbody>
               {items.map((ms) => (
                 <tr key={ms.id} className="border-b last:border-0 hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium">{ms.title}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link href={`/orgs/${orgId}/method-statements/${ms.id}`} className="hover:underline">{ms.title}</Link>
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs">{ms.version}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[ms.status] ?? "bg-gray-100 text-gray-700"}`}>

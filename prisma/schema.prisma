@@ -5681,6 +5681,8 @@ model HsIncidentReport {
 
 enum MethodStatementStatus {
   draft
+  review
+  approved
   issued
   signed_off
   superseded
@@ -5701,6 +5703,9 @@ model MethodStatement {
   ppeRequired        String?               @map("ppe_required")
   issuedAt           DateTime?             @map("issued_at") @db.Date
   expiresAt          DateTime?             @map("expires_at") @db.Date
+  sectionsJson       Json?                 @map("sections_json")
+  lockedAt           DateTime?             @map("locked_at")
+  revisionOf         String?               @map("revision_of")
   evidenceFileId     String?               @map("evidence_file_id")
   createdByUserId    String                @map("created_by_user_id")
   signedOffByUserId  String?               @map("signed_off_by_user_id")

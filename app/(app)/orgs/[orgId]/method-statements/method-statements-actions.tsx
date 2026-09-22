@@ -24,9 +24,10 @@ export function NewMethodStatementButton({ orgId }: { orgId: string }) {
         body: JSON.stringify(form),
       });
       if (res.ok) {
+        const data = await res.json() as { id: string };
         setOpen(false);
         setForm({ title: "", version: "1.0", methodText: "", riskAssessmentText: "", ppeRequired: "" });
-        router.refresh();
+        router.push(`/orgs/${orgId}/method-statements/${data.id}`);
       }
     } finally {
       setSubmitting(false);
