@@ -71,5 +71,10 @@ jobs:
           # Mark as applied (schema state already matches what this migration would do).
           pnpm prisma migrate resolve --applied 20260921000001_reusable_invite_link 2>&1 || true
 
+          # 20260922000001_stakeholder_phase2_retry: failed with 42601 syntax error —
+          # ADD CONSTRAINT IF NOT EXISTS is invalid Postgres syntax. Fixed with DO block.
+          # Mark as rolled-back so next deploy re-applies the corrected SQL.
+          pnpm prisma migrate resolve --rolled-back 20260922000001_stakeholder_phase2_retry 2>&1 || true
+
       - name: Apply new migrations
         run: pnpm prisma migrate deploy

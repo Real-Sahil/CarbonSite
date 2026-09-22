@@ -174,9 +174,13 @@ CREATE INDEX IF NOT EXISTS idx_method_statements_org_status  ON method_statement
 CREATE INDEX IF NOT EXISTS idx_method_statements_org_project ON method_statements (organization_id, project_id);
 
 -- ── Add method_statement_id FK to hs_incident_reports ────────────────────────
-ALTER TABLE hs_incident_reports
-  ADD CONSTRAINT IF NOT EXISTS fk_hs_incident_method_statement
-  FOREIGN KEY (method_statement_id) REFERENCES method_statements(id) ON DELETE SET NULL;
+-- ADD CONSTRAINT does not support IF NOT EXISTS in Postgres; use DO block.
+DO $$ BEGIN
+  ALTER TABLE hs_incident_reports
+    ADD CONSTRAINT fk_hs_incident_method_statement
+    FOREIGN KEY (method_statement_id) REFERENCES method_statements(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ── Worker Sessions ───────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS worker_sessions (
