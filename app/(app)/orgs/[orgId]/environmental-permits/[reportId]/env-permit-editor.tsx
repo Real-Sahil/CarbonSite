@@ -5,57 +5,82 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
 
-interface BatchSection {
-  sourceFile?: string;
-  recordCount?: string;
-  dataType?: string;
-  period?: string;
-  importNotes?: string;
-  validationSummary?: string;
-  errorSummary?: string;
+interface PermitSection {
+  permitNumber?: string;
+  permitType?: string;
+  regulatoryBody?: string;
+  activities?: string;
+  conditions?: string;
+  renewalProcess?: string;
 }
 
-interface BatchData {
+interface PermitData {
   id: string;
   orgId: string;
   title: string;
   version: string;
   status: string;
-  sectionsJson: BatchSection | null;
+  projectId: string | null;
+  siteId: string | null;
+  sectionsJson: PermitSection | null;
+  permitDate: string | null;
+  expiryDate: string | null;
   lockedAt: string | null;
   revisionOf: string | null;
   createdAt: string;
   updatedAt: string;
   createdBy: { id: string; name: string | null } | null;
   signedOffBy: { id: string; name: string | null } | null;
+  project: { id: string; name: string } | null;
+  site: { id: string; name: string } | null;
+}
+
+interface DropdownOption {
+  id: string;
+  name: string;
 }
 
 interface Props {
-  batch: BatchData;
+  permit: PermitData;
+  projects: DropdownOption[];
+  sites: DropdownOption[];
   canEdit: boolean;
   isAdmin: boolean;
 }
 
-export function ImportBatchEditor({
-  batch: initialBatch,
+export function EnvironmentalPermitEditor({
+  permit: initialPermit,
+  projects,
+  sites,
   canEdit,
   isAdmin,
 }: Props) {
   const router = useRouter();
-  const [title, setTitle] = useState(initialBatch.title);
-  const [sections, setSections] = useState<BatchSection>(
-    initialBatch.sectionsJson || {}
+  const [title, setTitle] = useState(initialPermit.title);
+  const [projectId, setProjectId] = useState(initialPermit.projectId || "");
+  const [siteId, setSiteId] = useState(initialPermit.siteId || "");
+  const [permitDate, setPermitDate] = useState(initialPermit.permitDate || "");
+  const [expiryDate, setExpiryDate] = useState(initialPermit.expiryDate || "");
+  const [sections, setSections] = useState<PermitSection>(
+    initialPermit.sectionsJson || {}
   );
-  const [status, setStatus] = useState(initialBatch.status);
+  const [status, setStatus] = useState(initialPermit.status);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState<string | null>(null);
   const lastSavedRef = useRef(JSON.stringify(sections));
 
   const autoSave = useCallback(async () => {
-    if (JSON.stringify(sections) === lastSavedRef.current && status === initialBatch.status) {
+    if (JSON.stringify(sections) === lastSavedRef.current && status === initialPermit.status) {
       return;
     }
 
@@ -64,12 +89,16 @@ export function ImportBatchEditor({
 
     try {
       const res = await fetch(
-        `/api/orgs/${initialBatch.orgId}/import-batches/${initialBatch.id}`,
+        `/api/orgs/${initialPermit.orgId}/environmental-permits/${initialPermit.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title,
+            projectId: projectId || null,
+            siteId: siteId || null,
+            permitDate: permitDate || null,
+            expiryDate: expiryDate || null,
             sectionsJson: sections,
             status,
           }),
@@ -88,7 +117,7 @@ export function ImportBatchEditor({
       setError(err instanceof Error ? err.message : "Save failed");
       setSaveStatus("idle");
     }
-  }, [sections, status, title, initialBatch]);
+  }, [sections, status, title, projectId, siteId, permitDate, expiryDate, initialPermit]);
 
   const debouncedAutoSave = useCallback(() => {
     const timer = setTimeout(autoSave, 1500);
@@ -96,9 +125,9 @@ export function ImportBatchEditor({
   }, [autoSave]);
 
   useEffect(() => {
-    if (!canEdit || initialBatch.lockedAt) return;
+    if (!canEdit || initialPermit.lockedAt) return;
     return debouncedAutoSave();
-  }, [sections, title, debouncedAutoSave, canEdit, initialBatch.lockedAt]);
+  }, [sections, title, projectId, siteId, permitDate, expiryDate, debouncedAutoSave, canEdit, initialPermit.lockedAt]);
 
   const handleStatusChange = async (newStatus: string) => {
     await autoSave();
@@ -106,7 +135,7 @@ export function ImportBatchEditor({
 
     try {
       const res = await fetch(
-        `/api/orgs/${initialBatch.orgId}/import-batches/${initialBatch.id}`,
+        `/api/orgs/${initialPermit.orgId}/environmental-permits/${initialPermit.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -117,28 +146,28 @@ export function ImportBatchEditor({
       if (!res.ok) throw new Error("Status update failed");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Update failed");
-      setStatus(initialBatch.status);
+      setStatus(initialPermit.status);
     }
   };
 
   const handleRevise = async () => {
     try {
       const res = await fetch(
-        `/api/orgs/${initialBatch.orgId}/import-batches/${initialBatch.id}/revise`,
+        `/api/orgs/${initialPermit.orgId}/environmental-permits/${initialPermit.id}/revise`,
         { method: "POST" }
       );
 
       if (!res.ok) throw new Error("Revise failed");
-      const newBatch = await res.json();
+      const newPermit = await res.json();
       router.push(
-        `/orgs/${initialBatch.orgId}/import-batches/${newBatch.id}`
+        `/orgs/${initialPermit.orgId}/environmental-permits/${newPermit.id}`
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Revise failed");
     }
   };
 
-  const disabled = !canEdit || !!initialBatch.lockedAt;
+  const disabled = !canEdit || !!initialPermit.lockedAt;
   const showRevise = ["approved", "issued", "signed_off"].includes(status) && canEdit;
 
   return (
@@ -147,7 +176,7 @@ export function ImportBatchEditor({
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">{title || "Untitled"}</h1>
-            <p className="text-sm text-gray-600">v{initialBatch.version}</p>
+            <p className="text-sm text-gray-600">v{initialPermit.version}</p>
           </div>
           <div className="flex gap-2">
             {saveStatus === "saving" && (
@@ -170,94 +199,142 @@ export function ImportBatchEditor({
         </div>
       )}
 
-      {initialBatch.lockedAt && (
+      {initialPermit.lockedAt && (
         <div className="max-w-4xl mx-auto px-4 py-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
-          Locked at {new Date(initialBatch.lockedAt).toLocaleString()}. Create a new revision to edit.
+          Locked at {new Date(initialPermit.lockedAt).toLocaleString()}. Create a new revision to edit.
         </div>
       )}
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <form className="space-y-6">
           <div className="bg-white p-6 rounded-lg border">
-            <h2 className="text-lg font-semibold mb-4">Import Batch Details</h2>
+            <h2 className="text-lg font-semibold mb-4">Permit Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Batch Title</label>
+                <label className="block text-sm font-medium mb-1">Permit Title</label>
                 <Input
                   disabled={disabled}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Import batch title or description"
+                  placeholder="Permit title"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Source File</label>
-                  <Input
+                  <label className="block text-sm font-medium mb-1">Project</label>
+                  <Select
                     disabled={disabled}
-                    value={sections.sourceFile || ""}
-                    onChange={(e) => setSections({ ...sections, sourceFile: e.target.value })}
-                    placeholder="e.g., emissions_q2_2025.csv"
-                  />
+                    value={projectId}
+                    onValueChange={setProjectId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Record Count</label>
-                  <Input
-                    disabled={disabled}
-                    type="number"
-                    value={sections.recordCount || ""}
-                    onChange={(e) => setSections({ ...sections, recordCount: e.target.value })}
-                    placeholder="Number of records"
-                  />
+                  <label className="block text-sm font-medium mb-1">Site</label>
+                  <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select site" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sites.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Data Type</label>
+                  <label className="block text-sm font-medium mb-1">Permit Date</label>
                   <Input
                     disabled={disabled}
-                    value={sections.dataType || ""}
-                    onChange={(e) => setSections({ ...sections, dataType: e.target.value })}
-                    placeholder="e.g., Emission Records, Facility Data"
+                    type="date"
+                    value={permitDate}
+                    onChange={(e) => setPermitDate(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Reporting Period</label>
+                  <label className="block text-sm font-medium mb-1">Expiry Date</label>
                   <Input
                     disabled={disabled}
-                    value={sections.period || ""}
-                    onChange={(e) => setSections({ ...sections, period: e.target.value })}
-                    placeholder="e.g., 2025-Q2, Jan-Mar 2025"
+                    type="date"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Import Notes</label>
+                <label className="block text-sm font-medium mb-1">Permit Number</label>
+                <Input
+                  disabled={disabled}
+                  value={sections.permitNumber || ""}
+                  onChange={(e) =>
+                    setSections({ ...sections, permitNumber: e.target.value })
+                  }
+                  placeholder="Permit reference number"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Permit Type</label>
+                <Input
+                  disabled={disabled}
+                  value={sections.permitType || ""}
+                  onChange={(e) =>
+                    setSections({ ...sections, permitType: e.target.value })
+                  }
+                  placeholder="e.g., Environmental Permit, Waste Management"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Regulatory Body</label>
+                <Input
+                  disabled={disabled}
+                  value={sections.regulatoryBody || ""}
+                  onChange={(e) =>
+                    setSections({ ...sections, regulatoryBody: e.target.value })
+                  }
+                  placeholder="e.g., Environment Agency"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Permitted Activities</label>
                 <Textarea
                   disabled={disabled}
-                  value={sections.importNotes || ""}
-                  onChange={(e) => setSections({ ...sections, importNotes: e.target.value })}
-                  placeholder="Any notes about the import process, data source, or special handling"
+                  value={sections.activities || ""}
+                  onChange={(e) => setSections({ ...sections, activities: e.target.value })}
+                  placeholder="List all permitted activities"
                   rows={3}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Validation Summary</label>
+                <label className="block text-sm font-medium mb-1">Conditions & Limits</label>
                 <Textarea
                   disabled={disabled}
-                  value={sections.validationSummary || ""}
-                  onChange={(e) => setSections({ ...sections, validationSummary: e.target.value })}
-                  placeholder="Summary of validation checks passed"
+                  value={sections.conditions || ""}
+                  onChange={(e) => setSections({ ...sections, conditions: e.target.value })}
+                  placeholder="Specify conditions and limits"
                   rows={3}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Error Summary</label>
+                <label className="block text-sm font-medium mb-1">Renewal Process</label>
                 <Textarea
                   disabled={disabled}
-                  value={sections.errorSummary || ""}
-                  onChange={(e) => setSections({ ...sections, errorSummary: e.target.value })}
-                  placeholder="Any errors encountered during import, validation issues, or corrections made"
+                  value={sections.renewalProcess || ""}
+                  onChange={(e) => setSections({ ...sections, renewalProcess: e.target.value })}
+                  placeholder="Describe renewal timeline and process"
                   rows={3}
                 />
               </div>

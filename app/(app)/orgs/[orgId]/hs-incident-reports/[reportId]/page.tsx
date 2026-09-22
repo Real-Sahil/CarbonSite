@@ -1,0 +1,79 @@
+export const dynamic = "force-dynamic";
+
+import { redirect } from "next/navigation";
+import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { prisma } from "@/lib/db";
+import { lookupPeople } from "@/lib/structured-forms/people";
+import { HsIncidentReportEditor } from "./hs-incident-report-editor";
+
+interface PageProps {
+  params: Promise<{ orgId: string; reportId: string }>;
+}
+
+export default async function HsIncidentReportDetailPage({ params }: PageProps) {
+  const { orgId, reportId } = await params;
+
+  let canEdit = false;
+  let isAdmin = false;
+  try {
+    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    canEdit = ["admin", "editor"].includes(result.membership.role);
+    isAdmin = result.membership.role === "admin";
+  } catch (err) {
+    if (err instanceof AuthError) redirect("/sign-in");
+    return <div className="p-8 text-sm text-red-600">Access denied.</div>;
+  }
+
+  const report = await prisma.hsIncidentReport.findUnique({
+    where: { id: reportId },
+  });
+
+  if (!report || report.organizationId !== orgId) {
+    return <div className="p-8 text-sm text-red-600">H&S incident report not found.</div>;
+  }
+
+  const [projects, sites] = await Promise.all([
+    prisma.project.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.site.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  const person = await lookupPeople([report.createdByUserId, report.signedOffByUserId]);
+
+  const serialized = {
+    id: report.id,
+    orgId,
+    title: report.title ?? "",
+    version: report.version,
+    status: report.status as string,
+    projectId: report.projectId,
+    siteId: report.siteId,
+    sectionsJson: report.sectionsJson ?? null,
+    incidentDate: report.occurredAt ? report.occurredAt.toISOString().slice(0, 10) : null,
+    lockedAt: report.lockedAt ? report.lockedAt.toISOString() : null,
+    revisionOf: report.revisionOf,
+    createdAt: report.createdAt.toISOString(),
+    updatedAt: report.updatedAt.toISOString(),
+    createdBy: person(report.createdByUserId),
+    signedOffBy: person(report.signedOffByUserId),
+    project: projects.find((p) => p.id === report.projectId) ?? null,
+    site: sites.find((x) => x.id === report.siteId) ?? null,
+  };
+
+  return (
+    <HsIncidentReportEditor
+      report={serialized}
+      projects={projects}
+      sites={sites}
+      canEdit={canEdit}
+      isAdmin={isAdmin}
+    />
+  );
+}
