@@ -59,5 +59,13 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
+      - name: Resolve any blocked failed migration (P3009 recovery)
+        run: |
+          # 20260920000003_stakeholder_phase2 failed due to an FK ordering bug
+          # (programme_id FK referenced programmes before the table was created).
+          # Mark it as rolled-back so migrate deploy can proceed.
+          # A corrected retry migration (20260922000001) re-applies the schema.
+          pnpm prisma migrate resolve --rolled-back 20260920000003_stakeholder_phase2 2>&1 || true
+
       - name: Apply new migrations
         run: pnpm prisma migrate deploy

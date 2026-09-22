@@ -1,4 +1,7 @@
--- Phase 2: stakeholder gap-fill across H&S, Social Values, PM, EA, Sustainability, Audit
+-- Retry of 20260920000003_stakeholder_phase2 with corrected ordering.
+-- The original failed because ALTER TABLE projects ADD COLUMN programme_id
+-- referenced programmes(id) before that table was created in the same script.
+-- This migration is idempotent: all DDL uses IF NOT EXISTS / IF NOT EXISTS guards.
 
 -- ── OrgRole: add verifier ────────────────────────────────────────────────────
 ALTER TYPE "org_role" ADD VALUE IF NOT EXISTS 'verifier';
@@ -172,7 +175,7 @@ CREATE INDEX IF NOT EXISTS idx_method_statements_org_project ON method_statement
 
 -- ── Add method_statement_id FK to hs_incident_reports ────────────────────────
 ALTER TABLE hs_incident_reports
-  ADD CONSTRAINT fk_hs_incident_method_statement
+  ADD CONSTRAINT IF NOT EXISTS fk_hs_incident_method_statement
   FOREIGN KEY (method_statement_id) REFERENCES method_statements(id) ON DELETE SET NULL;
 
 -- ── Worker Sessions ───────────────────────────────────────────────────────────
@@ -246,7 +249,7 @@ CREATE TABLE IF NOT EXISTS discharge_readings (
   updated_at           TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_discharge_readings_condition ON discharge_readings (organization_id, permit_condition_id, reading_date);
+CREATE INDEX IF NOT EXISTS idx_discharge_readings_condition  ON discharge_readings (organization_id, permit_condition_id, reading_date);
 CREATE INDEX IF NOT EXISTS idx_discharge_readings_exceedance ON discharge_readings (organization_id, exceedance);
 
 -- ── Supplier Profiles ─────────────────────────────────────────────────────────
@@ -354,5 +357,5 @@ CREATE TABLE IF NOT EXISTS evidence_access_logs (
   created_at           TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_evidence_access_logs_file    ON evidence_access_logs (organization_id, evidence_file_id, created_at);
-CREATE INDEX IF NOT EXISTS idx_evidence_access_logs_user    ON evidence_access_logs (organization_id, accessed_by_user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_evidence_access_logs_file ON evidence_access_logs (organization_id, evidence_file_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_evidence_access_logs_user ON evidence_access_logs (organization_id, accessed_by_user_id, created_at);
