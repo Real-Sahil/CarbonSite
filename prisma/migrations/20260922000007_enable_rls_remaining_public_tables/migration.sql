@@ -116,13 +116,13 @@ CREATE POLICY "worker_sessions_org_delete" ON "worker_sessions" FOR DELETE USING
 
 -- Child tables of the SV framework with no organization_id of their own.
 ALTER TABLE "sv_indicators" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "sv_indicators_deny_all" ON "sv_indicators" FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+CREATE POLICY "sv_indicators_deny_all" ON "sv_indicators" FOR ALL USING (false) WITH CHECK (false);
 
 ALTER TABLE "sv_measures" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "sv_measures_deny_all" ON "sv_measures" FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+CREATE POLICY "sv_measures_deny_all" ON "sv_measures" FOR ALL USING (false) WITH CHECK (false);
 
 ALTER TABLE "sv_outcomes" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "sv_outcomes_deny_all" ON "sv_outcomes" FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+CREATE POLICY "sv_outcomes_deny_all" ON "sv_outcomes" FOR ALL USING (false) WITH CHECK (false);
 
 ALTER TABLE "sv_themes" ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "sv_themes_deny_all" ON "sv_themes" FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+CREATE POLICY "sv_themes_deny_all" ON "sv_themes" FOR ALL USING (false) WITH CHECK (false);

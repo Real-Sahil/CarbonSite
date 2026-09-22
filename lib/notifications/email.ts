@@ -2,7 +2,7 @@
 // EMAIL_DRIVER=smtp | resend | console (auto-detected when not set)
 
 import { notificationLogger } from "@/lib/logger";
-import { presignDownload } from "@/lib/storage";
+import { brandingLogoUrl, presignDownload } from "@/lib/storage";
 
 /**
  * Resolve the best available logo URL for embedding in email.
@@ -14,9 +14,14 @@ export async function resolveEmailLogoUrl(branding: {
   reportHeaderLogoKey?: string | null;
   logoStorageKey?: string | null;
 }): Promise<string | null> {
-  if (branding.logoPublicUrl) return branding.logoPublicUrl;
+  // Older rows stored a direct storage-bucket URL, which stops working once
+  // the bucket is private. Those fall through to the proxy URL below.
+  const stored = branding.logoPublicUrl;
+  if (stored && !stored.includes("/storage/v1/object/")) return stored;
   const key = branding.reportHeaderLogoKey ?? branding.logoStorageKey;
   if (!key) return null;
+  const [root, orgId] = key.split("/");
+  if (root === "org" && orgId) return brandingLogoUrl(orgId);
   try {
     return await presignDownload(key);
   } catch {

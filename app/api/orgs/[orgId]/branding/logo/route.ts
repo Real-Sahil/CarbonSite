@@ -6,7 +6,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
-import { putObject, presignDownload, getPublicUrl, keys } from "@/lib/storage";
+import { putObject, presignDownload, brandingLogoUrl, keys } from "@/lib/storage";
 import { prisma } from "@/lib/db";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
@@ -63,26 +63,20 @@ export async function POST(
     const key = keys.brandingLogo(orgId, `logo-${randomUUID()}.${ext}`);
     await putObject(key, buffer, mime);
 
-    // Always save a stable logoPublicUrl pointing to our public proxy route so
-    // email templates can embed the logo without presigned URL expiry issues.
-    // Falls back to a direct R2 public URL if NEXT_PUBLIC_APP_URL is not set.
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/+$/, "");
-    const stableUrl = appUrl
-      ? `${appUrl}/api/public/orgs/${orgId}/branding/logo`
-      : getPublicUrl(key);
+    const stableUrl = brandingLogoUrl(orgId);
     await prisma.tenantBranding.upsert({
       where: { organizationId: orgId },
       update: {
         logoStorageKey: key,
         reportHeaderLogoKey: key,
-        ...(stableUrl ? { logoPublicUrl: stableUrl } : {}),
+        logoPublicUrl: stableUrl,
       },
       create: {
         organizationId: orgId,
         subdomain: orgId,
         logoStorageKey: key,
         reportHeaderLogoKey: key,
-        ...(stableUrl ? { logoPublicUrl: stableUrl } : {}),
+        logoPublicUrl: stableUrl,
       },
     });
 
@@ -92,7 +86,7 @@ export async function POST(
       action: "branding.logo_uploaded",
       resourceType: "tenant_branding",
       resourceId: orgId,
-      metadata: { key, bytes: file.size, mime, hasPublicUrl: Boolean(stableUrl) },
+      metadata: { key, bytes: file.size, mime },
     });
 
     const url = await presignDownload(key);

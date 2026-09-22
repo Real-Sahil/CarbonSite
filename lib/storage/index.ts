@@ -332,22 +332,12 @@ export async function getObjectBuffer(key: string): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-// ── Public URL (for email embeds — never expires) ─────────────────────────────
-// Branding objects (org/*/branding/*) have a Supabase storage policy that
-// allows anonymous public read, so they can be served without a signed URL.
-// Supabase public URL format:
-//   {SUPABASE_URL}/storage/v1/object/public/{bucket}/{key}
-// Only works for keys under org/*/branding/ — all other paths stay private.
-export function getPublicUrl(key: string): string | null {
-  assertStorageKey(key);
-  const segments = key.split("/");
-  const isBrandingKey = segments[0] === "org" && segments[2] === "branding";
-  if (!isBrandingKey) return null;
-
-  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl) return null;
-
-  return `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${BUCKET}/${key}`;
+// ── Branding logo URL (for email embeds — never expires) ─────────────────────
+// Emails need a logo URL that outlives a presigned link. It points at the
+// app's public proxy route, which streams the logo server-side, so the storage
+// bucket itself stays private.
+export function brandingLogoUrl(orgId: string): string {
+  return `${appOrigin()}/api/public/orgs/${encodeURIComponent(orgId)}/branding/logo`;
 }
 
 // ── Delete ────────────────────────────────────────────────────────────────────
