@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { lookupPeople } from "@/lib/structured-forms/people";
+import { asSections, lookupPeople } from "@/lib/structured-forms/people";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { HsIncidentReportEditor } from "./hs-incident-report-editor";
 
 interface PageProps {
@@ -24,8 +25,8 @@ export default async function HsIncidentReportDetailPage({ params }: PageProps) 
     return <div className="p-8 text-sm text-red-600">Access denied.</div>;
   }
 
-  const report = await prisma.hsIncidentReport.findUnique({
-    where: { id: reportId },
+  const report = await prisma.hsIncidentReport.findFirst({
+    where: { id: reportId, organizationId: orgId },
   });
 
   if (!report || report.organizationId !== orgId) {
@@ -55,9 +56,9 @@ export default async function HsIncidentReportDetailPage({ params }: PageProps) 
     status: report.status as string,
     projectId: report.projectId,
     siteId: report.siteId,
-    sectionsJson: report.sectionsJson ?? null,
+    sectionsJson: asSections(report.sectionsJson),
     incidentDate: report.occurredAt ? report.occurredAt.toISOString().slice(0, 10) : null,
-    lockedAt: report.lockedAt ? report.lockedAt.toISOString() : null,
+    lockedAt: isLockedStatus("hs-incident-reports", report.status) ? (report.lockedAt ?? report.updatedAt).toISOString() : null,
     revisionOf: report.revisionOf,
     createdAt: report.createdAt.toISOString(),
     updatedAt: report.updatedAt.toISOString(),

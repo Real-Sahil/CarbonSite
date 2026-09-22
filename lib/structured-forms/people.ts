@@ -12,3 +12,8 @@ export async function lookupPeople(
   const byId = new Map(users.map((u) => [u.id, u]));
   return (id) => (id ? byId.get(id) ?? null : null);
 }
+
+/** Stored sections are always a JSON object; anything else (legacy null, bad write) opens as an empty form. */
+export function asSections<T extends object>(value: unknown): T | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? (value as T) : null;
+}

@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { lookupPeople } from "@/lib/structured-forms/people";
+import { asSections, lookupPeople } from "@/lib/structured-forms/people";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { AssuranceEngagementEditor } from "./assurance-engagement-editor";
 
 interface PageProps {
@@ -24,8 +25,8 @@ export default async function AssuranceEngagementDetailPage({ params }: PageProp
     return <div className="p-8 text-sm text-red-600">Access denied.</div>;
   }
 
-  const engagement = await prisma.assuranceEngagement.findUnique({
-    where: { id: reportId },
+  const engagement = await prisma.assuranceEngagement.findFirst({
+    where: { id: reportId, organizationId: orgId },
   });
 
   if (!engagement || engagement.organizationId !== orgId) {
@@ -55,9 +56,9 @@ export default async function AssuranceEngagementDetailPage({ params }: PageProp
     status: engagement.status as string,
     projectId: null as string | null,
     siteId: null as string | null,
-    sectionsJson: engagement.sectionsJson ?? null,
+    sectionsJson: asSections(engagement.sectionsJson),
     engagementDate: engagement.plannedStartDate ? engagement.plannedStartDate.toISOString().slice(0, 10) : null,
-    lockedAt: engagement.lockedAt ? engagement.lockedAt.toISOString() : null,
+    lockedAt: isLockedStatus("assurance-engagements", engagement.status) ? (engagement.lockedAt ?? engagement.updatedAt).toISOString() : null,
     revisionOf: engagement.revisionOf,
     createdAt: engagement.createdAt.toISOString(),
     updatedAt: engagement.updatedAt.toISOString(),

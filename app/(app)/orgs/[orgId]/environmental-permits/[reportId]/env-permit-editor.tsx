@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -12,8 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
+import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 interface PermitSection {
   permitNumber?: string;
@@ -65,7 +64,6 @@ export function EnvironmentalPermitEditor({
   canEdit,
   isAdmin,
 }: Props) {
-  const router = useRouter();
   const [title, setTitle] = useState(initialPermit.title);
   const [projectId, setProjectId] = useState(initialPermit.projectId || "");
   const [siteId, setSiteId] = useState(initialPermit.siteId || "");
@@ -74,15 +72,14 @@ export function EnvironmentalPermitEditor({
   const [sections, setSections] = useState<PermitSection>(
     initialPermit.sectionsJson || {}
   );
-  const [status, setStatus] = useState(initialPermit.status);
+  const status = initialPermit.status;
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState<string | null>(null);
-  const lastSavedRef = useRef(JSON.stringify(sections));
+  const lastSavedRef = useRef(JSON.stringify({ title, projectId: projectId || null, siteId: siteId || null, permitDate: permitDate || null, expiryDate: expiryDate || null, sectionsJson: sections }));
 
   const autoSave = useCallback(async () => {
-    if (JSON.stringify(sections) === lastSavedRef.current && status === initialPermit.status) {
-      return;
-    }
+    const payload = JSON.stringify({ title, projectId: projectId || null, siteId: siteId || null, permitDate: permitDate || null, expiryDate: expiryDate || null, sectionsJson: sections });
+    if (payload === lastSavedRef.current) return;
 
     setSaveStatus("saving");
     setError(null);
@@ -93,15 +90,7 @@ export function EnvironmentalPermitEditor({
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title,
-            projectId: projectId || null,
-            siteId: siteId || null,
-            permitDate: permitDate || null,
-            expiryDate: expiryDate || null,
-            sectionsJson: sections,
-            status,
-          }),
+          body: payload,
         }
       );
 
@@ -110,14 +99,14 @@ export function EnvironmentalPermitEditor({
         throw new Error(data.message || "Save failed");
       }
 
-      lastSavedRef.current = JSON.stringify(sections);
+      lastSavedRef.current = payload;
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
       setSaveStatus("idle");
     }
-  }, [sections, status, title, projectId, siteId, permitDate, expiryDate, initialPermit]);
+  }, [sections, title, projectId, siteId, permitDate, expiryDate, initialPermit]);
 
   const debouncedAutoSave = useCallback(() => {
     const timer = setTimeout(autoSave, 1500);
@@ -125,50 +114,11 @@ export function EnvironmentalPermitEditor({
   }, [autoSave]);
 
   useEffect(() => {
-    if (!canEdit || initialPermit.lockedAt) return;
+    if (!canEdit || isLockedStatus("environmental-permits", status)) return;
     return debouncedAutoSave();
-  }, [sections, title, projectId, siteId, permitDate, expiryDate, debouncedAutoSave, canEdit, initialPermit.lockedAt]);
+  }, [sections, title, projectId, siteId, permitDate, expiryDate, debouncedAutoSave, canEdit, status]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    await autoSave();
-    setStatus(newStatus);
-
-    try {
-      const res = await fetch(
-        `/api/orgs/${initialPermit.orgId}/environmental-permits/${initialPermit.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-
-      if (!res.ok) throw new Error("Status update failed");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed");
-      setStatus(initialPermit.status);
-    }
-  };
-
-  const handleRevise = async () => {
-    try {
-      const res = await fetch(
-        `/api/orgs/${initialPermit.orgId}/environmental-permits/${initialPermit.id}/revise`,
-        { method: "POST" }
-      );
-
-      if (!res.ok) throw new Error("Revise failed");
-      const newPermit = await res.json();
-      router.push(
-        `/orgs/${initialPermit.orgId}/environmental-permits/${newPermit.id}`
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Revise failed");
-    }
-  };
-
-  const disabled = !canEdit || !!initialPermit.lockedAt;
-  const showRevise = ["approved", "issued", "signed_off"].includes(status) && canEdit;
+  const disabled = !canEdit || isLockedStatus("environmental-permits", status);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -187,7 +137,7 @@ export function EnvironmentalPermitEditor({
             {saveStatus === "saved" && (
               <span className="flex items-center gap-1 text-sm text-green-600">✓ Saved</span>
             )}
-            <Badge variant={status === "draft" ? "secondary" : "default"}>{status}</Badge>
+            <StatusBadge form="environmental-permits" status={status} />
           </div>
         </div>
       </div>
@@ -199,11 +149,9 @@ export function EnvironmentalPermitEditor({
         </div>
       )}
 
-      {initialPermit.lockedAt && (
-        <div className="max-w-4xl mx-auto px-4 py-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
-          Locked at {new Date(initialPermit.lockedAt).toLocaleString()}. Create a new revision to edit.
-        </div>
-      )}
+      <div className="max-w-7xl mx-auto px-4 pt-4">
+        <LockNotice form="environmental-permits" status={status} />
+      </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <form className="space-y-6">
@@ -341,50 +289,15 @@ export function EnvironmentalPermitEditor({
             </div>
           </div>
 
-          {/* Status Transitions */}
-          <div className="bg-white p-6 rounded-lg border">
-            <h2 className="text-lg font-semibold mb-4">Status & Actions</h2>
-            <div className="flex flex-wrap gap-2">
-              {status === "draft" && (
-                <Button
-                  onClick={() => handleStatusChange("submitted_for_review")}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Submit for Review
-                </Button>
-              )}
-              {status === "submitted_for_review" && isAdmin && (
-                <>
-                  <Button
-                    onClick={() => handleStatusChange("approved")}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Approve
-                  </Button>
-                  <Button variant="outline" onClick={() => handleStatusChange("draft")}>
-                    Request Changes
-                  </Button>
-                </>
-              )}
-              {status === "approved" && isAdmin && (
-                <Button
-                  onClick={() => handleStatusChange("issued")}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  Issue
-                </Button>
-              )}
-              {showRevise && (
-                <Button
-                  onClick={handleRevise}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" /> Create New Revision
-                </Button>
-              )}
-            </div>
-          </div>
+          <WorkflowBar
+            form="environmental-permits"
+            orgId={initialPermit.orgId}
+            id={initialPermit.id}
+            status={status}
+            canEdit={canEdit}
+            isAdmin={isAdmin}
+            beforeChange={autoSave}
+          />
         </form>
       </div>
     </div>

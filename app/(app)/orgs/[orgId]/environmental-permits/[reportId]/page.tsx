@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { lookupPeople } from "@/lib/structured-forms/people";
+import { asSections, lookupPeople } from "@/lib/structured-forms/people";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { EnvironmentalPermitEditor } from "./env-permit-editor";
 
 interface PageProps {
@@ -24,8 +25,8 @@ export default async function EnvironmentalPermitDetailPage({ params }: PageProp
     return <div className="p-8 text-sm text-red-600">Access denied.</div>;
   }
 
-  const permit = await prisma.environmentalPermit.findUnique({
-    where: { id: reportId },
+  const permit = await prisma.environmentalPermit.findFirst({
+    where: { id: reportId, organizationId: orgId },
   });
 
   if (!permit || permit.organizationId !== orgId) {
@@ -55,10 +56,10 @@ export default async function EnvironmentalPermitDetailPage({ params }: PageProp
     status: permit.status as string,
     projectId: null as string | null,
     siteId: permit.siteId,
-    sectionsJson: permit.sectionsJson ?? null,
+    sectionsJson: asSections(permit.sectionsJson),
     permitDate: permit.issuedOn ? permit.issuedOn.toISOString().slice(0, 10) : null,
     expiryDate: permit.expiresOn ? permit.expiresOn.toISOString().slice(0, 10) : null,
-    lockedAt: permit.lockedAt ? permit.lockedAt.toISOString() : null,
+    lockedAt: isLockedStatus("environmental-permits", permit.status) ? (permit.lockedAt ?? permit.updatedAt).toISOString() : null,
     revisionOf: permit.revisionOf,
     createdAt: permit.createdAt.toISOString(),
     updatedAt: permit.updatedAt.toISOString(),
