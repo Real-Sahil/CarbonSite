@@ -192,16 +192,7 @@ export function SupplierRequestsTable({
   const pendingCount = counts.submitted;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-xl font-semibold text-slate-900">Supplier data requests</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Review emissions data submitted by your suppliers and convert approved
-          submissions into activity records.
-        </p>
-      </div>
-
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       {/* Action banner when there are pending reviews */}
       {pendingCount > 0 && (
         <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm">

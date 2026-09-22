@@ -117,12 +117,7 @@ export default function BillingPage() {
     : null;
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Billing</h1>
-        <p className="text-sm text-gray-500 mt-1">Current plan and usage for this billing period.</p>
-      </div>
-
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       {/* Plan card */}
       <div className="rounded-xl border border-gray-200 bg-white p-6">
         <div className="flex items-start justify-between gap-4">

@@ -184,12 +184,7 @@ export default function SsoSettingsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Single Sign-On (SSO)</h1>
-          <p className="mt-2 text-gray-600">Configure enterprise SSO for your organization</p>
-        </div>
-
+      <div className="flex flex-col gap-[28px] max-w-4xl">
         <Card>
           <CardHeader>
             <CardTitle>Configuration</CardTitle>
@@ -205,14 +200,7 @@ export default function SsoSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Single Sign-On (SSO)</h1>
-        <p className="mt-2 text-gray-600">
-          Enable enterprise SSO for your organization. Users will authenticate through your identity provider.
-        </p>
-      </div>
-
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       <Card>
         <CardHeader>
           <CardTitle>SSO Configuration</CardTitle>

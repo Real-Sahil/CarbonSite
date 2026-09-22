@@ -31,19 +31,7 @@ export default async function ReportingPeriodsPage({ params }: Props) {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
-          <CalendarDays className="h-5 w-5 text-blue-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Reporting Periods</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage the fiscal or calendar periods used for GHG reporting.
-          </p>
-        </div>
-      </div>
-
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       {periods.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
           <CalendarDays className="mx-auto h-10 w-10 text-muted-foreground mb-3" />

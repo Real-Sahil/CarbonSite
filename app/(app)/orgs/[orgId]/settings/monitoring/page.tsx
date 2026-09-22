@@ -16,15 +16,7 @@ export default function MonitoringSettingsPage({
   const [showSetupGuide, setShowSetupGuide] = useState(false);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Monitoring & Alerts</h1>
-        <p className="text-gray-600 mt-2">
-          Real-time operational dashboards and alerting via Grafana Cloud
-        </p>
-      </div>
-
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       {/* Setup Status */}
       <Alert className="border-blue-200 bg-blue-50">
         <AlertTriangle className="h-4 w-4 text-blue-600" />

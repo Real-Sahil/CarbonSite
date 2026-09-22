@@ -94,7 +94,7 @@ export default async function OperationsSettingsPage({
   };
 
   return (
-    <div className="flex flex-col gap-[28px]">
+    <div className="flex flex-col gap-[28px] max-w-4xl">
       <OperationsSetup
         orgId={orgId}
         orgProfile={{
