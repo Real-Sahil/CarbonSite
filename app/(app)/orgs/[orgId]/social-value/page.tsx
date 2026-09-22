@@ -19,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Heart } from "lucide-react";
+import { Heart, ClipboardList, ListChecks, TrendingUp } from "lucide-react";
+import Link from "next/link";
 import {
   CreateSocialValueRecordForm,
   DeleteSocialValueRecordButton,
@@ -87,6 +88,17 @@ export default async function SocialValuePage({ params }: Props) {
   const canEdit = EDIT_ROLES.includes(role);
   const canEditTargets = TARGET_EDIT_ROLES.includes(role);
 
+  // Phase 1: SV commitments/activities summary
+  const svSummary = await prisma.$transaction([
+    prisma.svCommitment.count({ where: { organizationId: orgId, status: { in: ["active", "in_progress"] } } }),
+    prisma.svActivity.aggregate({
+      where: { organizationId: orgId, status: "approved" },
+      _sum: { monetisedValue: true },
+      _count: { _all: true },
+    }),
+    prisma.svActivity.count({ where: { organizationId: orgId, status: { in: ["submitted", "under_review"] } } }),
+  ]).catch(() => null);
+
   const queryResult = await Promise.all([
     prisma.socialValueTheme.findMany({
       orderBy: { code: "asc" },
@@ -141,6 +153,10 @@ export default async function SocialValuePage({ params }: Props) {
   }
 
   const [themes, records, contracts, periods, targets, actualsByKey] = queryResult;
+
+  const [svActiveCommitments, svActivityAgg, svPendingCount] = svSummary ?? [0, { _sum: { monetisedValue: null }, _count: { _all: 0 } }, 0];
+  const svApprovedMonetised = svActivityAgg._sum.monetisedValue ? Number(svActivityAgg._sum.monetisedValue) : 0;
+  const svApprovedCount = svActivityAgg._count._all;
 
   const actualsMap = new Map<string, number>();
   for (const row of actualsByKey) {
@@ -234,6 +250,50 @@ export default async function SocialValuePage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* Phase 1 SV Commitments summary */}
+      {(svActiveCommitments > 0 || svApprovedCount > 0 || (svSummary && svPendingCount > 0)) && (
+        <div className="bg-white border-b border-[#E5E7EB]">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-5">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="h-3.5 w-3.5 text-[#9CA3AF]" />
+              <span className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide">Commitments tracker</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-2xl font-bold text-[#111827] tabular-nums">{svActiveCommitments}</span>
+                <span className="text-xs text-[#9CA3AF]">active commitments</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-2xl font-bold text-[#111827] tabular-nums">{svApprovedCount}</span>
+                <span className="text-xs text-[#9CA3AF]">approved activities</span>
+              </div>
+              {svApprovedMonetised > 0 && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-2xl font-bold text-[#111827] tabular-nums">{formatGbp(svApprovedMonetised)}</span>
+                  <span className="text-xs text-[#9CA3AF]">approved value delivered</span>
+                </div>
+              )}
+              {(svPendingCount as number) > 0 && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-2xl font-bold text-[#f97316] tabular-nums">{svPendingCount as number}</span>
+                  <span className="text-xs text-[#9CA3AF]">activities pending review</span>
+                </div>
+              )}
+            </div>
+            <div className="mt-3 flex items-center gap-4">
+              <Link href={`/orgs/${orgId}/social-value/commitments`} className="flex items-center gap-1.5 text-xs text-[#374151] hover:text-[#111827] hover:underline">
+                <ClipboardList className="h-3.5 w-3.5" />
+                View commitments
+              </Link>
+              <Link href={`/orgs/${orgId}/social-value/activities`} className="flex items-center gap-1.5 text-xs text-[#374151] hover:text-[#111827] hover:underline">
+                <ListChecks className="h-3.5 w-3.5" />
+                View activities
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
