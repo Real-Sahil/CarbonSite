@@ -110,7 +110,10 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     ]},
     { label: "Social Value", icon: Heart, sections: [
       { items: [
-        { label: "Social Value", href: `/orgs/${orgId}/social-value`, icon: Heart, roles: EXTENDED_VIEW_ROLES },
+        { label: "Overview",     href: `/orgs/${orgId}/social-value`,                icon: Heart,         roles: EXTENDED_VIEW_ROLES },
+        { label: "Commitments",  href: `/orgs/${orgId}/social-value/commitments`,    icon: ClipboardList, roles: EXTENDED_VIEW_ROLES },
+        { label: "Activities",   href: `/orgs/${orgId}/social-value/activities`,     icon: ListChecks,    roles: EXTENDED_VIEW_ROLES },
+        { label: "Frameworks",   href: `/orgs/${orgId}/social-value/frameworks`,     icon: Network,       roles: ["admin", "sustainability_director"] },
       ]},
     ]},
     { label: "Impact Reports", icon: BarChart2, sections: [
