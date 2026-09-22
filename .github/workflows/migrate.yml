@@ -59,13 +59,17 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
-      - name: Resolve any blocked failed migration (P3009 recovery)
+      - name: Resolve any blocked failed migrations (P3009/P3018 recovery)
         run: |
-          # 20260920000003_stakeholder_phase2 failed due to an FK ordering bug
-          # (programme_id FK referenced programmes before the table was created).
-          # Mark it as rolled-back so migrate deploy can proceed.
-          # A corrected retry migration (20260922000001) re-applies the schema.
+          # 20260920000003_stakeholder_phase2: failed due to FK ordering bug
+          # (programme_id FK before CREATE TABLE programmes). Marked rolled-back;
+          # 20260922000001_stakeholder_phase2_retry re-applies the corrected SQL.
           pnpm prisma migrate resolve --rolled-back 20260920000003_stakeholder_phase2 2>&1 || true
+
+          # 20260921000001_reusable_invite_link: adds "reusable" column to invite_links.
+          # Column already existed in DB before this migration ran → 42701 duplicate.
+          # Mark as applied (schema state already matches what this migration would do).
+          pnpm prisma migrate resolve --applied 20260921000001_reusable_invite_link 2>&1 || true
 
       - name: Apply new migrations
         run: pnpm prisma migrate deploy
