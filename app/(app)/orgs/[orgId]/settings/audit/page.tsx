@@ -59,24 +59,34 @@ function formatTime(iso: string) {
 export default function AuditLogPage() {
   const { orgId } = useParams<{ orgId: string }>();
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [actionFilter, setActionFilter] = useState("");
   const [search, setSearch] = useState("");
   const [exporting, setExporting] = useState(false);
 
   const fetchLogs = useCallback(
-    async (cursor?: string) => {
+    async (targetPage: number, cursorList: (string | undefined)[]) => {
       setLoading(true);
       try {
+        const cursor = cursorList[targetPage - 1];
         const qs = new URLSearchParams({ limit: "50" });
         if (cursor) qs.set("cursor", cursor);
         if (actionFilter) qs.set("action", actionFilter);
         const res = await fetch(`/api/orgs/${orgId}/audit-logs?${qs}`);
         if (!res.ok) throw new Error("Failed to fetch audit logs");
         const json = await res.json();
-        setLogs((prev) => (cursor ? [...prev, ...json.data] : json.data));
-        setNextCursor(json.nextCursor);
+        setLogs(json.data);
+        setHasNextPage(!!json.nextCursor);
+        if (json.nextCursor && cursorList.length <= targetPage) {
+          setCursors((prev) => {
+            const next = [...prev];
+            next[targetPage] = json.nextCursor;
+            return next;
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -85,8 +95,9 @@ export default function AuditLogPage() {
   );
 
   useEffect(() => {
-     
-    fetchLogs();
+    setPage(1);
+    setCursors([undefined]);
+    fetchLogs(1, [undefined]);
   }, [fetchLogs]);
 
   async function handleExport(format: "csv" | "json") {
@@ -250,18 +261,37 @@ export default function AuditLogPage() {
         </table>
       </div>
 
-      {nextCursor && (
-        <div className="flex justify-center">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-[#9CA3AF]">
+          Page {page} {loading ? "(loading...)" : ""}
+        </p>
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => fetchLogs(nextCursor)}
-            disabled={loading}
+            disabled={page <= 1 || loading}
+            onClick={() => {
+              const prev = page - 1;
+              setPage(prev);
+              fetchLogs(prev, cursors);
+            }}
           >
-            {loading ? "Loading..." : "Load more"}
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!hasNextPage || loading}
+            onClick={() => {
+              const next = page + 1;
+              setPage(next);
+              fetchLogs(next, cursors);
+            }}
+          >
+            Next
           </Button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

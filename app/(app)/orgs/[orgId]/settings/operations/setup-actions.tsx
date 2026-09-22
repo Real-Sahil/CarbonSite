@@ -125,32 +125,22 @@ export function OperationsSetup({
   apiDataSources: ApiDataSourceRow[];
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-2 max-w-5xl">
-      <section className="xl:col-span-2">
-        <OrgProfilePanel orgId={orgId} profile={orgProfile} />
-      </section>
-      <section className="xl:col-span-2">
-        <ReportingPeriodsPanel orgId={orgId} periods={periods} />
-      </section>
-      <FacilitiesPanel orgId={orgId} facilities={facilities} />
-      <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
-      <section className="xl:col-span-2">
-        <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} />
-      </section>
-      <section className="xl:col-span-2">
-        <MaterialImportPanel orgId={orgId} materialLibrary={materialLibrary} />
-      </section>
-      <section className="xl:col-span-2">
-        <ApiDataSourcesPanel orgId={orgId} sources={apiDataSources} />
-      </section>
-      <section className="xl:col-span-2">
-        <PilotKitPanel
-          orgId={orgId}
-          orgName={orgProfile.name}
-          industry={orgProfile.industry}
-          reportingCurrency={orgProfile.reportingCurrency}
-        />
-      </section>
+    <div className="flex flex-col gap-[28px]">
+      <OrgProfilePanel orgId={orgId} profile={orgProfile} />
+      <ReportingPeriodsPanel orgId={orgId} periods={periods} />
+      <div className="grid gap-[28px] md:grid-cols-2">
+        <FacilitiesPanel orgId={orgId} facilities={facilities} />
+        <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
+      </div>
+      <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} />
+      <MaterialImportPanel orgId={orgId} materialLibrary={materialLibrary} />
+      <ApiDataSourcesPanel orgId={orgId} sources={apiDataSources} />
+      <PilotKitPanel
+        orgId={orgId}
+        orgName={orgProfile.name}
+        industry={orgProfile.industry}
+        reportingCurrency={orgProfile.reportingCurrency}
+      />
     </div>
   );
 }
@@ -315,7 +305,7 @@ function FactorImportPanel({
             accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             required
             disabled={!canImport || isPending}
-            className="h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
           />
         </Field>
         <div className="flex items-end">
@@ -406,7 +396,7 @@ function MaterialImportPanel({
             accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             required
             disabled={isPending}
-            className="h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
           />
         </Field>
         <div className="flex items-end">
