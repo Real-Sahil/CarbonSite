@@ -755,9 +755,13 @@ model ImportBatch {
   errorCsvStorageKey    String?     @map("error_csv_storage_key")
   idempotencyKey        String?     @unique @map("idempotency_key")
   lastProcessedRowIndex Int?        @map("last_processed_row_index")
+  title                 String?
+  version               String      @default("1.0")
   sectionsJson          Json?       @map("sections_json")
   lockedAt              DateTime?   @map("locked_at")
   revisionOf            String?     @map("revision_of")
+  signedOffByUserId     String?     @map("signed_off_by_user_id")
+  signedOffAt           DateTime?   @map("signed_off_at")
   createdByUserId       String?     @map("created_by_user_id")
   createdAt             DateTime    @default(now()) @map("created_at")
   updatedAt             DateTime    @updatedAt @map("updated_at")
@@ -4630,9 +4634,12 @@ model EnvironmentalPermit {
   eaLastSyncAt      DateTime? @map("ea_last_sync_at")
   /// When the expiry warning notification was last sent. Prevents duplicate alerts.
   expiryAlertSentAt DateTime? @map("expiry_alert_sent_at")
+  version        String           @default("1.0")
   sectionsJson   Json?            @map("sections_json")
   lockedAt       DateTime?        @map("locked_at")
   revisionOf     String?          @map("revision_of")
+  signedOffByUserId String?       @map("signed_off_by_user_id")
+  signedOffAt    DateTime?        @map("signed_off_at")
   createdByUserId String      @map("created_by_user_id")
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
@@ -4750,9 +4757,13 @@ model EnvironmentalIncident {
   reportedByUserId String?        @map("reported_by_user_id")
   ownerUserId    String?          @map("owner_user_id")
   closedAt       DateTime?        @map("closed_at")
+  title          String?
+  version        String           @default("1.0")
   sectionsJson   Json?            @map("sections_json")
   lockedAt       DateTime?        @map("locked_at")
   revisionOf     String?          @map("revision_of")
+  signedOffByUserId String?       @map("signed_off_by_user_id")
+  signedOffAt    DateTime?        @map("signed_off_at")
   createdByUserId String          @map("created_by_user_id")
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
@@ -4990,9 +5001,13 @@ model BiodiversityAssessment {
   /// Start of the 30 year maintenance and monitoring obligation.
   securedFrom       DateTime?         @map("secured_from") @db.Date
   notes             String?
+  title             String?
+  version           String            @default("1.0")
   sectionsJson      Json?             @map("sections_json")
   lockedAt          DateTime?         @map("locked_at")
   revisionOf        String?           @map("revision_of")
+  signedOffByUserId String?           @map("signed_off_by_user_id")
+  signedOffAt       DateTime?         @map("signed_off_at")
   createdByUserId   String            @map("created_by_user_id")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
@@ -5297,9 +5312,13 @@ model AssuranceEngagement {
   opinionIssuedAt   DateTime?         @map("opinion_issued_at")
   opinionSummary    String?           @map("opinion_summary")
   representationLetterEvidenceId String? @map("representation_letter_evidence_id")
+  title          String?
+  version        String           @default("1.0")
   sectionsJson   Json?            @map("sections_json")
   lockedAt       DateTime?        @map("locked_at")
   revisionOf     String?          @map("revision_of")
+  signedOffByUserId String?       @map("signed_off_by_user_id")
+  signedOffAt    DateTime?        @map("signed_off_at")
   createdByUserId   String            @map("created_by_user_id")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
@@ -5677,9 +5696,14 @@ model HsIncidentReport {
   reportedByUserId     String?          @map("reported_by_user_id")
   ownerUserId          String?          @map("owner_user_id")
   closedAt             DateTime?        @map("closed_at")
+  title                String?
+  version              String           @default("1.0")
   sectionsJson         Json?            @map("sections_json")
   lockedAt             DateTime?        @map("locked_at")
   revisionOf           String?          @map("revision_of")
+  signedOffByUserId    String?          @map("signed_off_by_user_id")
+  signedOffAt          DateTime?        @map("signed_off_at")
+  createdByUserId      String?          @map("created_by_user_id")
   createdAt            DateTime         @default(now()) @map("created_at")
   updatedAt            DateTime         @updatedAt @map("updated_at")
 
