@@ -11,7 +11,7 @@ import {
   Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
-  TrendingUp, Droplets, Leaf, CloudSun, AlertTriangle, ClipboardList, Gavel, BarChart3, FolderKanban,
+  TrendingUp, Droplets, Leaf, CloudSun, AlertTriangle, ClipboardList, Gavel, BarChart3, FolderKanban, Radio,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -114,6 +114,14 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Commitments",  href: `/orgs/${orgId}/social-value/commitments`,    icon: ClipboardList, roles: EXTENDED_VIEW_ROLES },
         { label: "Activities",   href: `/orgs/${orgId}/social-value/activities`,     icon: ListChecks,    roles: EXTENDED_VIEW_ROLES },
         { label: "Frameworks",   href: `/orgs/${orgId}/social-value/frameworks`,     icon: Network,       roles: ["admin", "sustainability_director"] },
+      ]},
+    ]},
+    { label: "Carbon Intelligence", icon: Zap, sections: [
+      { items: [
+        { label: "Overview",      href: `/orgs/${orgId}/carbon-intelligence`,              icon: Zap,           roles: EXTENDED_VIEW_ROLES },
+        { label: "Alerts",        href: `/orgs/${orgId}/carbon-intelligence/alerts`,       icon: AlertTriangle, roles: EXTENDED_VIEW_ROLES },
+        { label: "Signals",       href: `/orgs/${orgId}/carbon-intelligence/signals`,      icon: Radio,         roles: EXTENDED_VIEW_ROLES },
+        { label: "Integrations",  href: `/orgs/${orgId}/carbon-intelligence/integrations`, icon: Plug,          roles: ["admin", "sustainability_director"] },
       ]},
     ]},
     { label: "Impact Reports", icon: BarChart2, sections: [
