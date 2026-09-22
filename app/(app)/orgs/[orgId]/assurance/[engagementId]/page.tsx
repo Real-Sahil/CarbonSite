@@ -81,13 +81,21 @@ export default async function EngagementDetailPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-      <Link
-        href={`/orgs/${orgId}/assurance`}
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        All engagements
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link
+          href={`/orgs/${orgId}/assurance`}
+          className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          All engagements
+        </Link>
+        <Link
+          href={`/orgs/${orgId}/assurance-engagements/${engagementId}`}
+          className="text-sm font-medium text-zinc-700 underline-offset-2 hover:underline"
+        >
+          Open engagement report
+        </Link>
+      </div>
 
       <EngagementWorkspace
         orgId={orgId}

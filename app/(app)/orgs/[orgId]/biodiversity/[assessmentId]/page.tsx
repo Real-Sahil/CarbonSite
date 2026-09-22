@@ -173,6 +173,12 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href={`/orgs/${orgId}/biodiversity-assessments/${assessmentId}`}
+            className="text-sm font-medium text-zinc-700 underline-offset-2 hover:underline"
+          >
+            Open assessment report
+          </Link>
           <Badge variant="outline" className="text-xs capitalize">
             {assessment.status}
           </Badge>

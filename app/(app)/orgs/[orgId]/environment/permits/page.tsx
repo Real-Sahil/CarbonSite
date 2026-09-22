@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { OrgRole } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -148,7 +149,12 @@ export default async function PermitsPage({ params }: PageProps) {
                   return (
                     <TableRow key={p.id}>
                       <TableCell className="pl-4">
-                        <div className="font-medium text-zinc-900">{p.title}</div>
+                        <Link
+                          href={`/orgs/${orgId}/environmental-permits/${p.id}`}
+                          className="block font-medium text-zinc-900 underline-offset-2 hover:underline"
+                        >
+                          {p.title}
+                        </Link>
                         <div className="text-xs text-zinc-500">
                           {PERMIT_TYPE_LABEL[p.type] ?? p.type} · {p.reference}
                         </div>

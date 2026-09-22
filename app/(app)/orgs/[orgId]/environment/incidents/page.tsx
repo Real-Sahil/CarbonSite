@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { OrgRole } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -158,7 +159,12 @@ export default async function IncidentsPage({ params }: PageProps) {
                   return (
                     <TableRow key={i.id} className={i.status === "closed" ? "opacity-60" : undefined}>
                       <TableCell className="pl-4">
-                        <div className="font-medium text-zinc-900">{i.reference}</div>
+                        <Link
+                          href={`/orgs/${orgId}/environmental-incidents/${i.id}`}
+                          className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+                        >
+                          {i.reference}
+                        </Link>
                         <div className="max-w-[32ch] truncate text-xs text-zinc-500">
                           {i.facility?.name ?? "Organisation wide"}
                         </div>

@@ -755,13 +755,6 @@ model ImportBatch {
   errorCsvStorageKey    String?     @map("error_csv_storage_key")
   idempotencyKey        String?     @unique @map("idempotency_key")
   lastProcessedRowIndex Int?        @map("last_processed_row_index")
-  title                 String?
-  version               String      @default("1.0")
-  sectionsJson          Json?       @map("sections_json")
-  lockedAt              DateTime?   @map("locked_at")
-  revisionOf            String?     @map("revision_of")
-  signedOffByUserId     String?     @map("signed_off_by_user_id")
-  signedOffAt           DateTime?   @map("signed_off_at")
   createdByUserId       String?     @map("created_by_user_id")
   createdAt             DateTime    @default(now()) @map("created_at")
   updatedAt             DateTime    @updatedAt @map("updated_at")

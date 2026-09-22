@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,7 +98,11 @@ export default async function HsIncidentsPage({ params }: PageProps) {
             <tbody>
               {incidents.map((inc) => (
                 <tr key={inc.id} className="border-b last:border-0 hover:bg-muted/20">
-                  <td className="px-4 py-3 font-mono text-xs">{inc.reference}</td>
+                  <td className="px-4 py-3 font-mono text-xs">
+                    <Link href={`/orgs/${orgId}/hs-incident-reports/${inc.id}`} className="underline-offset-2 hover:underline">
+                      {inc.reference}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 capitalize">{inc.incidentType.replaceAll("_", " ")}</td>
                   <td className="px-4 py-3">{new Date(inc.occurredAt).toLocaleDateString("en-GB")}</td>
                   <td className="px-4 py-3">

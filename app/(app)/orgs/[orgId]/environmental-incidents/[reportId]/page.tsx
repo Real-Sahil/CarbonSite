@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { asSections, lookupPeople } from "@/lib/structured-forms/people";
@@ -69,12 +71,20 @@ export default async function EnvironmentalIncidentDetailPage({ params }: PagePr
   };
 
   return (
-    <EnvironmentalIncidentEditor
-      report={serialized}
-      projects={projects}
-      sites={sites}
-      canEdit={canEdit}
-      isAdmin={isAdmin}
-    />
+    <>
+      <div className="border-b bg-white px-4 py-2">
+        <Link href={`/orgs/${orgId}/environment/incidents`} className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900">
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          Incident register
+        </Link>
+      </div>
+      <EnvironmentalIncidentEditor
+        report={serialized}
+        projects={projects}
+        sites={sites}
+        canEdit={canEdit}
+        isAdmin={isAdmin}
+      />
+    </>
   );
 }
