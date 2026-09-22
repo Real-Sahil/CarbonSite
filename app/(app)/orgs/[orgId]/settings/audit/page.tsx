@@ -164,7 +164,7 @@ export default function AuditLogPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => fetchLogs()}
+            onClick={() => fetchLogs(page, cursors)}
             disabled={loading}
             aria-label="Refresh"
           >
