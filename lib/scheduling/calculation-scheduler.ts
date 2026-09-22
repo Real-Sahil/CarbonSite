@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { dispatchCalculation } from "@/lib/jobs/dispatch";
 import { writeAuditLog } from "@/lib/db/audit";
 import { createHash } from "crypto";
+import { chooseFactorLibrary } from "@/lib/calculation/library-for-period";
 
 export type ScheduleFrequency = "manual" | "weekly" | "monthly" | "quarterly" | "annually";
 
@@ -143,16 +144,22 @@ export async function triggerSchedule(
 ): Promise<{ calculationRunId: string }> {
   const schedule = await prisma.calculationSchedule.findUnique({
     where: { id: scheduleId },
-    select: { id: true, organizationId: true, reportingPeriodId: true },
+    select: {
+      id: true,
+      organizationId: true,
+      reportingPeriodId: true,
+      reportingPeriod: { select: { endDate: true } },
+    },
   });
   if (!schedule || schedule.organizationId !== organizationId) {
     throw new Error("Schedule not found");
   }
 
-  const [methodology, factorLibrary] = await Promise.all([
+  const [methodology, libraries] = await Promise.all([
     prisma.methodologyVersion.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }),
-    prisma.factorLibrary.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }),
+    prisma.factorLibrary.findMany({ select: { id: true, name: true, version: true } }),
   ]);
+  const factorLibrary = chooseFactorLibrary(libraries, schedule.reportingPeriod.endDate);
   if (!methodology) throw new Error("No methodology version found — run the database seed.");
   if (!factorLibrary) throw new Error("No factor library found — run the database seed.");
 
