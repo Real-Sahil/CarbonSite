@@ -82,14 +82,15 @@ jobs:
         # attempts) that had been silently marked "applied" in production despite
         # never having actually created their tables.
         run: pnpm prisma migrate deploy
-      - name: Report schema.prisma drift from applied migrations (informational)
-        # Deliberately non-blocking for now: reconciling schema.prisma against the
-        # full applied-migration history surfaced ~40 pre-existing column/type/enum
-        # differences unrelated to the migrate-deploy fix above — a genuinely large
-        # separate cleanup, not something to gate every PR on until it's done.
-        # This step keeps the diff visible in CI logs so that backlog doesn't grow
-        # silently; tighten this to `--exit-code` (hard fail) once it's cleared.
-        run: pnpm prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script || true
+      - name: Destructive migrations must be a separate contract step
+        run: node scripts/check-migration-safety.mjs
+      - name: Schema drift must not grow
+        # schema.prisma and the applied migrations differ by a pre-existing
+        # backlog (prisma/drift-baseline.txt). Fail only if a change adds to it;
+        # lower the baseline as the backlog is cleared.
+        run: |
+          pnpm prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script > drift.sql
+          node scripts/check-migration-safety.mjs --drift < drift.sql
       - run: pnpm test
       - run: pnpm build
 

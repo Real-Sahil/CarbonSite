@@ -25,9 +25,10 @@ const UpsertSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgId: string; supplierEmail: string }> }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgId: string; supplierId: string }> }) {
   try {
-    const { orgId, supplierEmail } = await params;
+    // The segment carries the supplier's email address.
+    const { orgId, supplierId: supplierEmail } = await params;
     await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
 
     const email = decodeURIComponent(supplierEmail);
@@ -42,9 +43,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ orgId: string; supplierEmail: string }> }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ orgId: string; supplierId: string }> }) {
   try {
-    const { orgId, supplierEmail } = await params;
+    // The segment carries the supplier's email address.
+    const { orgId, supplierId: supplierEmail } = await params;
     const { session } = await requireOrgMember(orgId, "admin", "editor");
 
     const email = decodeURIComponent(supplierEmail);

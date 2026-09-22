@@ -83,5 +83,10 @@ jobs:
           # idempotent and runs next.
           pnpm prisma migrate resolve --applied 20260922000000_sv_foundation 2>&1 || true
 
+      - name: Refuse destructive migrations that are not a separate contract step
+        # This workflow applies migrations while the previous deploy still serves
+        # traffic, so a drop or rename must never ship with the code change.
+        run: node scripts/check-migration-safety.mjs
+
       - name: Apply new migrations
         run: pnpm prisma migrate deploy

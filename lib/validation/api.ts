@@ -36,13 +36,16 @@ export function handleRouteError(err: unknown): NextResponse {
   }
   // Anything reaching here is unexpected: report it, since returning a 500
   // swallows the error before Sentry's request instrumentation can see it.
-  Sentry.captureException(err);
-  if (err instanceof Error) {
-    console.error("Route error:", err.message, err);
-    return apiError("INTERNAL_ERROR", err.message || "An unexpected error occurred", 500);
-  }
-  console.error("Unknown route error:", err);
-  return apiError("INTERNAL_ERROR", "An unexpected error occurred", 500);
+  // The client gets a generic message and the Sentry event ID, never the raw
+  // error, which can carry database or implementation details.
+  const eventId = Sentry.captureException(err);
+  console.error("Route error:", err);
+  return apiError(
+    "INTERNAL_ERROR",
+    "Something went wrong on our side. Please try again, or quote the reference if it keeps happening.",
+    500,
+    eventId ? { reference: eventId } : undefined,
+  );
 }
 
 function sanitizeStripeErrorMessage(message: string): string {

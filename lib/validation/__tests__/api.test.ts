@@ -18,3 +18,14 @@ describe("handleRouteError", () => {
     expect(body.message).toContain("valid UK postcode");
   });
 });
+
+describe("handleRouteError with unexpected errors", () => {
+  test("never returns the raw error message to the client", async () => {
+    const response = handleRouteError(new Error('relation "secret_table" does not exist'));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.code).toBe("INTERNAL_ERROR");
+    expect(JSON.stringify(body)).not.toContain("secret_table");
+  });
+});
