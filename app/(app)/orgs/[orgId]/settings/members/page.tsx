@@ -203,31 +203,44 @@ export default async function MembersPage({ params }: MembersPageProps) {
             organisation.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0 pb-2 overflow-x-auto">
+        <CardContent className="p-0 pb-2">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead className="hidden sm:table-cell">Email</TableHead>
+                <TableHead className="hidden sm:table-cell">Role</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {members.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell className="font-normal text-[#111827]">
-                    {m.user.name ?? (
-                      <span className="text-[#9CA3AF] italic">No name</span>
-                    )}
-                    {m.user.id === currentUserId && (
-                      <span className="ml-2 text-xs text-[#9CA3AF]">(you)</span>
-                    )}
+                  <TableCell>
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="font-normal text-[#111827] leading-snug">
+                        {m.user.name ?? (
+                          <span className="text-[#9CA3AF] italic">No name</span>
+                        )}
+                        {m.user.id === currentUserId && (
+                          <span className="ml-1 text-xs text-[#9CA3AF]">(you)</span>
+                        )}
+                      </span>
+                      {/* Email + role stacked under name on mobile */}
+                      <span className="sm:hidden text-xs text-[#6B7280] truncate max-w-[180px]">
+                        {m.user.email}
+                      </span>
+                      <span className="sm:hidden mt-0.5">
+                        <Badge variant={ROLE_VARIANT[m.role] ?? "outline"} className="text-[10px] px-1.5 py-0">
+                          {ROLE_LABELS[m.role] ?? m.role}
+                        </Badge>
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell className="text-[#374151] max-w-[160px] truncate">
+                  <TableCell className="hidden sm:table-cell text-[#374151] max-w-[160px] truncate">
                     {m.user.email}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <Badge variant={ROLE_VARIANT[m.role] ?? "outline"}>
                       {ROLE_LABELS[m.role] ?? m.role}
                     </Badge>

@@ -276,54 +276,62 @@ export function InviteLinkGenerator({
             return (
               <div
                 key={link.id}
-                className="flex items-center gap-2 p-[9px] rounded-[7px] border border-[#E5E7EB] bg-[#F0FDFA]"
+                className="flex flex-col gap-2 p-[9px] rounded-[7px] border border-[#E5E7EB] bg-[#F0FDFA]"
               >
-                {link.reusable && (
-                  <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#dbeafe] px-2 py-1 text-xs text-[#1d4ed8] whitespace-nowrap font-medium">
-                    Reusable
-                  </span>
+                {/* Badges row — only rendered when badges exist */}
+                {(link.reusable || link.site) && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {link.reusable && (
+                      <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#dbeafe] px-2 py-1 text-xs text-[#1d4ed8] whitespace-nowrap font-medium">
+                        Reusable
+                      </span>
+                    )}
+                    {link.site && (
+                      <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#cfe7d3] px-2 py-1 text-xs text-[#111827] whitespace-nowrap">
+                        <MapPin className="h-3 w-3" />
+                        {link.site.project ? `${link.site.project.name} · ` : ""}
+                        {link.site.name}
+                      </span>
+                    )}
+                  </div>
                 )}
-                {link.site && (
-                  <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#cfe7d3] px-2 py-1 text-xs text-[#111827] whitespace-nowrap">
-                    <MapPin className="h-3 w-3" />
-                    {link.site.project ? `${link.site.project.name} · ` : ""}
-                    {link.site.name}
+                {/* URL + actions row */}
+                <div className="flex items-center gap-2 min-w-0">
+                  <Input
+                    readOnly
+                    value={url}
+                    className="text-xs h-7 min-w-0 flex-1 bg-white text-[#374151] font-mono border-[#E5E7EB]"
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0"
+                    onClick={() => handleCopy(link.token, link.id)}
+                    title="Copy link"
+                  >
+                    {isCopied ? (
+                      <Check className="h-3.5 w-3.5 text-[#111827]" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  <span className="text-xs text-[#374151] shrink-0 whitespace-nowrap tracking-[-0.36px]">
+                    {link.reusable
+                      ? "Never expires"
+                      : `Expires ${expiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
                   </span>
-                )}
-                <Input
-                  readOnly
-                  value={url}
-                  className="text-xs h-7 min-w-0 bg-white text-[#374151] font-mono border-[#E5E7EB]"
-                  onFocus={(e) => e.target.select()}
-                />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 shrink-0"
-                  onClick={() => handleCopy(link.token, link.id)}
-                  title="Copy link"
-                >
-                  {isCopied ? (
-                    <Check className="h-3.5 w-3.5 text-[#111827]" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5" />
-                  )}
-                </Button>
-                <span className="text-xs text-[#374151] shrink-0 whitespace-nowrap tracking-[-0.36px]">
-                  {link.reusable
-                    ? "Never expires"
-                    : `Expires ${expiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}
-                </span>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                  onClick={() => handleRevoke(link.id)}
-                  disabled={isRevoking}
-                  title="Revoke invite link"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => handleRevoke(link.id)}
+                    disabled={isRevoking}
+                    title="Revoke invite link"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
             );
           })}
