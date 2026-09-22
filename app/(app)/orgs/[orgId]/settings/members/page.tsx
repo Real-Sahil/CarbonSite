@@ -11,19 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { InviteMemberForm } from "./invite-member-form";
 import { InviteLinkGenerator } from "./invite-link-generator";
-import { MemberActions } from "./member-actions";
+import { MemberCards } from "./member-cards";
 import { FieldWorkerAssignments } from "./field-worker-assignments";
 import { PendingInviteActions } from "./pending-invite-actions";
 
@@ -91,18 +82,6 @@ const ROLE_LABELS: Record<string, string> = {
   viewer: "Viewer",
   auditor: "Auditor",
   field_worker: "Field Worker",
-};
-
-const ROLE_VARIANT: Record<
-  string,
-  "default" | "secondary" | "outline" | "destructive"
-> = {
-  admin: "default",
-  editor: "secondary",
-  reviewer: "secondary",
-  viewer: "outline",
-  auditor: "outline",
-  field_worker: "outline",
 };
 
 export default async function MembersPage({ params }: MembersPageProps) {
@@ -194,7 +173,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
         </span>
       </div>
 
-      {/* Members table */}
+      {/* Members cards */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Team members</CardTitle>
@@ -203,62 +182,18 @@ export default async function MembersPage({ params }: MembersPageProps) {
             organisation.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0 pb-2">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden sm:table-cell">Email</TableHead>
-                <TableHead className="hidden sm:table-cell">Role</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {members.map((m) => (
-                <TableRow key={m.id}>
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="font-normal text-[#111827] leading-snug">
-                        {m.user.name ?? (
-                          <span className="text-[#9CA3AF] italic">No name</span>
-                        )}
-                        {m.user.id === currentUserId && (
-                          <span className="ml-1 text-xs text-[#9CA3AF]">(you)</span>
-                        )}
-                      </span>
-                      {/* Email + role stacked under name on mobile */}
-                      <span className="sm:hidden text-xs text-[#6B7280] truncate max-w-[180px]">
-                        {m.user.email}
-                      </span>
-                      <span className="sm:hidden mt-0.5">
-                        <Badge variant={ROLE_VARIANT[m.role] ?? "outline"} className="text-[10px] px-1.5 py-0">
-                          {ROLE_LABELS[m.role] ?? m.role}
-                        </Badge>
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-[#374151] max-w-[160px] truncate">
-                    {m.user.email}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Badge variant={ROLE_VARIANT[m.role] ?? "outline"}>
-                      {ROLE_LABELS[m.role] ?? m.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <MemberActions
-                      orgId={orgId}
-                      memberId={m.id}
-                      memberName={m.user.name ?? m.user.email}
-                      memberEmail={m.user.email}
-                      currentRole={m.role}
-                      isCurrentUser={m.user.id === currentUserId}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent>
+          <MemberCards
+            orgId={orgId}
+            members={members.map((m) => ({
+              id: m.id,
+              userId: m.user.id,
+              name: m.user.name,
+              email: m.user.email,
+              role: m.role,
+            }))}
+            currentUserId={currentUserId}
+          />
         </CardContent>
       </Card>
 

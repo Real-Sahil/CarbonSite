@@ -57,6 +57,7 @@ export function FieldWorkerAssignments({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [siteFilter, setSiteFilter] = useState("all");
 
   function createSite() {
     const name = newSiteName.trim();
@@ -265,7 +266,7 @@ export function FieldWorkerAssignments({
           {success && <p className="mt-3 text-sm text-green-700">{success}</p>}
         </form>
 
-        <div className="rounded-lg border border-slate-200">
+        <div className="rounded-lg border border-slate-200 flex flex-col min-w-0">
           <div className="border-b border-slate-100 px-4 py-3">
             <p className="text-sm font-semibold text-slate-900">Current site access</p>
           </div>
@@ -275,40 +276,89 @@ export function FieldWorkerAssignments({
               access automatically; org-wide invites need a manual assignment here.
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
-              {assignments.map((assignment) => (
-                <div
-                  key={assignment.id}
-                  className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-slate-900">{assignment.workerLabel}</p>
-                      <Badge variant="outline">Mobile</Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-slate-500">{assignment.workerEmail}</p>
-                    <p className="mt-2 text-sm text-slate-700">{assignment.siteLabel}</p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Assigned by {assignment.assignedByLabel} on{" "}
-                      {new Date(assignment.createdAt).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
+            <div className="p-4 flex flex-col gap-3">
+              {/* Site filter chips */}
+              {(() => {
+                const uniqueSites = [...new Map(assignments.map((a) => [a.siteId, a.siteLabel])).entries()];
+                return uniqueSites.length > 1 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={() => setSiteFilter("all")}
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                        siteFilter === "all"
+                          ? "bg-[#0F766E] text-white border-[#0F766E]"
+                          : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      All ({assignments.length})
+                    </button>
+                    {uniqueSites.map(([id, label]) => (
+                      <button
+                        key={id}
+                        onClick={() => setSiteFilter(id)}
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                          siteFilter === id
+                            ? "bg-[#0F766E] text-white border-[#0F766E]"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        {label} ({assignments.filter((a) => a.siteId === id).length})
+                      </button>
+                    ))}
                   </div>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="outline"
-                    title="Remove site access"
-                    disabled={isPending}
-                    onClick={() => removeAssignment(assignment)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                ) : null;
+              })()}
+              {/* Assignment cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {assignments
+                  .filter((a) => siteFilter === "all" || a.siteId === siteFilter)
+                  .map((assignment) => {
+                    const initial = assignment.workerLabel[0]?.toUpperCase() ?? "?";
+                    return (
+                      <div
+                        key={assignment.id}
+                        className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col gap-3 min-w-0"
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="h-9 w-9 rounded-full bg-[#CCFBF1] flex items-center justify-center text-[#0F766E] text-sm font-semibold shrink-0 select-none">
+                            {initial}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                              <p className="text-sm font-medium text-slate-900 truncate">
+                                {assignment.workerLabel}
+                              </p>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">Mobile</Badge>
+                            </div>
+                            <p className="text-xs text-slate-500 truncate">{assignment.workerEmail}</p>
+                            <p className="mt-1 text-xs font-medium text-slate-700 truncate">{assignment.siteLabel}</p>
+                            <p className="mt-0.5 text-[10px] text-slate-400">
+                              by {assignment.assignedByLabel} on{" "}
+                              {new Date(assignment.createdAt).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-slate-100 flex justify-end">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            title="Remove site access"
+                            disabled={isPending}
+                            onClick={() => removeAssignment(assignment)}
+                            className="h-8 w-8"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           )}
         </div>
