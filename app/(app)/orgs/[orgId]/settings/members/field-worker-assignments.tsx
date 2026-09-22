@@ -6,11 +6,13 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MapPinPlus, Trash2, UserRoundCheck } from "lucide-react";
+import { MapPinPlus, Trash2, UserRoundCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+
+const PAGE_SIZE = 10;
 
 interface WorkerOption {
   id: string;
@@ -58,6 +60,7 @@ export function FieldWorkerAssignments({
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
   const [siteFilter, setSiteFilter] = useState("all");
+  const [assignPage, setAssignPage] = useState(0);
 
   function createSite() {
     const name = newSiteName.trim();
@@ -276,90 +279,135 @@ export function FieldWorkerAssignments({
               access automatically; org-wide invites need a manual assignment here.
             </div>
           ) : (
-            <div className="p-4 flex flex-col gap-3">
-              {/* Site filter chips */}
-              {(() => {
-                const uniqueSites = [...new Map(assignments.map((a) => [a.siteId, a.siteLabel])).entries()];
-                return uniqueSites.length > 1 ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      onClick={() => setSiteFilter("all")}
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                        siteFilter === "all"
-                          ? "bg-[#0F766E] text-white border-[#0F766E]"
-                          : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      All ({assignments.length})
-                    </button>
-                    {uniqueSites.map(([id, label]) => (
+            {(() => {
+              const uniqueSites = [...new Map(assignments.map((a) => [a.siteId, a.siteLabel])).entries()];
+              const filtered = assignments.filter((a) => siteFilter === "all" || a.siteId === siteFilter);
+              const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+              const paged = filtered.slice(assignPage * PAGE_SIZE, (assignPage + 1) * PAGE_SIZE);
+              return (
+                <div className="p-4 flex flex-col gap-3">
+                  {/* Site filter dropdown */}
+                  {uniqueSites.length > 1 && (
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="assign-site-filter" className="text-xs text-slate-500 shrink-0">
+                        Filter by site
+                      </label>
+                      <select
+                        id="assign-site-filter"
+                        value={siteFilter}
+                        onChange={(e) => { setSiteFilter(e.target.value); setAssignPage(0); }}
+                        className="h-8 flex-1 max-w-xs rounded-md border border-slate-200 bg-white px-2 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
+                      >
+                        <option value="all">All sites ({assignments.length})</option>
+                        {uniqueSites.map(([id, label]) => (
+                          <option key={id} value={id}>
+                            {label} ({assignments.filter((a) => a.siteId === id).length})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Assignment cards */}
+                  {filtered.length === 0 ? (
+                    <div className="flex flex-col items-center gap-2 py-8 text-center">
+                      <p className="text-sm text-slate-500">No assignments for this site.</p>
                       <button
-                        key={id}
-                        onClick={() => setSiteFilter(id)}
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                          siteFilter === id
-                            ? "bg-[#0F766E] text-white border-[#0F766E]"
-                            : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-                        }`}
+                        onClick={() => { setSiteFilter("all"); setAssignPage(0); }}
+                        className="text-xs text-[#0F766E] hover:underline"
                       >
-                        {label} ({assignments.filter((a) => a.siteId === id).length})
+                        Show all
                       </button>
-                    ))}
-                  </div>
-                ) : null;
-              })()}
-              {/* Assignment cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {assignments
-                  .filter((a) => siteFilter === "all" || a.siteId === siteFilter)
-                  .map((assignment) => {
-                    const initial = assignment.workerLabel[0]?.toUpperCase() ?? "?";
-                    return (
-                      <div
-                        key={assignment.id}
-                        className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col gap-3 min-w-0"
-                      >
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className="h-9 w-9 rounded-full bg-[#CCFBF1] flex items-center justify-center text-[#0F766E] text-sm font-semibold shrink-0 select-none">
-                            {initial}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                              <p className="text-sm font-medium text-slate-900 truncate">
-                                {assignment.workerLabel}
-                              </p>
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">Mobile</Badge>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {paged.map((assignment) => {
+                          const initial = assignment.workerLabel[0]?.toUpperCase() ?? "?";
+                          return (
+                            <div
+                              key={assignment.id}
+                              className="rounded-xl border border-slate-200 border-l-4 border-l-orange-400 bg-white p-4 flex flex-col gap-3 min-w-0 transition-opacity"
+                            >
+                              <div className="flex items-start gap-3 min-w-0">
+                                <div className="h-9 w-9 rounded-full bg-[#CCFBF1] flex items-center justify-center text-[#0F766E] text-sm font-semibold shrink-0 select-none">
+                                  {initial}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                                    <p className="text-sm font-medium text-slate-900 truncate">
+                                      {assignment.workerLabel}
+                                    </p>
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">Mobile</Badge>
+                                  </div>
+                                  <p className="text-xs text-slate-500 truncate">{assignment.workerEmail}</p>
+                                  <p className="mt-1 text-xs font-medium text-slate-700 truncate">{assignment.siteLabel}</p>
+                                  <p className="mt-0.5 text-[10px] text-slate-400">
+                                    by {assignment.assignedByLabel} on{" "}
+                                    {new Date(assignment.createdAt).toLocaleDateString("en-GB", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="pt-2 border-t border-slate-100 flex justify-end">
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="outline"
+                                  title="Remove site access"
+                                  disabled={isPending}
+                                  onClick={() => removeAssignment(assignment)}
+                                  className="h-8 w-8"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
                             </div>
-                            <p className="text-xs text-slate-500 truncate">{assignment.workerEmail}</p>
-                            <p className="mt-1 text-xs font-medium text-slate-700 truncate">{assignment.siteLabel}</p>
-                            <p className="mt-0.5 text-[10px] text-slate-400">
-                              by {assignment.assignedByLabel} on{" "}
-                              {new Date(assignment.createdAt).toLocaleDateString("en-GB", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </p>
+                          );
+                        })}
+                      </div>
+
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-1">
+                          <p className="text-xs text-slate-500">
+                            Showing {assignPage * PAGE_SIZE + 1}-{Math.min((assignPage + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              className="h-7 w-7"
+                              disabled={assignPage === 0}
+                              onClick={() => setAssignPage((p) => p - 1)}
+                            >
+                              <ChevronLeft className="h-3.5 w-3.5" />
+                            </Button>
+                            <span className="text-xs text-slate-600 px-1">
+                              {assignPage + 1} / {totalPages}
+                            </span>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              className="h-7 w-7"
+                              disabled={assignPage >= totalPages - 1}
+                              onClick={() => setAssignPage((p) => p + 1)}
+                            >
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            </Button>
                           </div>
                         </div>
-                        <div className="pt-2 border-t border-slate-100 flex justify-end">
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="outline"
-                            title="Remove site access"
-                            disabled={isPending}
-                            onClick={() => removeAssignment(assignment)}
-                            className="h-8 w-8"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })()}
           )}
         </div>
       </div>
