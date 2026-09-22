@@ -9,14 +9,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import { scheduleAccountingSyncForAllOrgs } from "@/lib/jobs/schedulers/accounting-sync-scheduler";
 
 export async function POST(req: NextRequest) {
-  // Verify cron secret to prevent unauthorized calls
-  const cronSecret = req.headers.get("x-cron-secret") || req.nextUrl.searchParams.get("secret");
-  const expectedSecret = process.env.CRON_SECRET;
-
-  if (!expectedSecret || !cronSecret || cronSecret !== expectedSecret) {
+  if (!isAuthorizedCronRequest(req)) {
     console.warn("[accounting-sync] Unauthorized cron call attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -13,13 +13,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import { processDueSchedules } from "@/lib/scheduling/calculation-scheduler";
 
 export async function POST(req: NextRequest) {
-  const cronSecret = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret");
-  const expected = process.env.CRON_SECRET;
-
-  if (!expected || !cronSecret || cronSecret !== expected) {
+  if (!isAuthorizedCronRequest(req)) {
     console.warn("[cron/calculation-schedules] Unauthorized call");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

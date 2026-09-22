@@ -16,6 +16,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import { prisma } from "@/lib/db";
 import { dispatchCalculation } from "@/lib/jobs/dispatch";
 
@@ -59,10 +60,7 @@ async function advanceStalledRuns() {
 }
 
 export async function POST(req: NextRequest) {
-  const cronSecret = req.headers.get("x-cron-secret") || req.nextUrl.searchParams.get("secret");
-  const expectedSecret = process.env.CRON_SECRET;
-
-  if (!expectedSecret || !cronSecret || cronSecret !== expectedSecret) {
+  if (!isAuthorizedCronRequest(req)) {
     console.warn("[advance-calculation-runs] Unauthorized cron call attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
