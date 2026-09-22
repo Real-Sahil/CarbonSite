@@ -106,6 +106,8 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "H&S", items: [
         { label: "H&S Incidents",    href: `/orgs/${orgId}/hs-incidents`,      icon: AlertTriangle, roles: EXTENDED_VIEW_ROLES },
         { label: "Method Statements", href: `/orgs/${orgId}/method-statements`, icon: ClipboardList, roles: EXTENDED_VIEW_ROLES },
+        { label: "Worker Check-ins",  href: `/orgs/${orgId}/worker-sessions`,   icon: Clock,         roles: EXTENDED_VIEW_ROLES },
+        { label: "Programmes",        href: `/orgs/${orgId}/programmes`,         icon: FolderKanban,  roles: EXTENDED_VIEW_ROLES },
       ]},
     ]},
     { label: "Social Value", icon: Heart, sections: [
