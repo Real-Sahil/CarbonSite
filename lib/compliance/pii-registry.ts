@@ -171,6 +171,12 @@ export const PII_REGISTRY: PiiRegistryEntry[] = [
     },
   },
   {
+    model: "WorkerSession",
+    label: "Field-worker check-in sessions (incl. GPS pings)",
+    erasureStrategy: "delete",
+    where: (s) => ({ userId: s.userId }),
+  },
+  {
     model: "DigestPreference",
     label: "Email digest preferences",
     erasureStrategy: "delete",

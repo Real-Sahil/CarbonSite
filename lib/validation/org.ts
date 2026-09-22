@@ -503,3 +503,39 @@ export const reviewSvActivitySchema = z.object({
   status: z.enum(["approved", "rejected"]),
   reviewNotes: z.string().max(2000).optional(),
 });
+
+// ─── Carbon Intelligence ──────────────────────────────────────────────────────
+
+export const createCarbonSignalSchema = z.object({
+  signalType: z.string().min(1).max(100),
+  source: z.string().min(1).max(200),
+  region: z.string().max(100).optional(),
+  value: z.number(),
+  unit: z.string().min(1).max(50),
+  recordedAt: z.string().datetime(),
+  rawPayload: z.record(z.unknown()).optional(),
+});
+
+export const createImpactAlertSchema = z.object({
+  alertType: z.string().min(1).max(100),
+  severity: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+  title: z.string().min(1).max(300),
+  message: z.string().min(1).max(2000),
+  resourceType: z.string().max(100).optional(),
+  resourceId: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+export const createExternalCredentialSchema = z.object({
+  provider: z.string().min(1).max(100),
+  label: z.string().max(200).optional(),
+  apiKey: z.string().min(1),
+  scopes: z.array(z.string()).default([]),
+});
+
+export const updateExternalCredentialSchema = z.object({
+  label: z.string().max(200).optional(),
+  apiKey: z.string().min(1).optional(),
+  scopes: z.array(z.string()).optional(),
+  isActive: z.boolean().optional(),
+});

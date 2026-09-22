@@ -294,7 +294,16 @@ export type AuditAction =
   | "sv_activity.delete"
   | "sv_activity.approved"
   | "sv_activity.rejected"
-  | "sv_activity.ai_extract";
+  | "sv_activity.ai_extract"
+  | "carbon_signal.ingested"
+  | "impact_alert.created"
+  | "impact_alert.resolved"
+  | "geographic_impact.recorded"
+  | "geographic_impact.deleted"
+  | "external_credential.created"
+  | "external_credential.updated"
+  | "external_credential.deleted"
+  | "external_credential.validated";
 
 export async function writeAuditLog(params: {
   organizationId: string;
