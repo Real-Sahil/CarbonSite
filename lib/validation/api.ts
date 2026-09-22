@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { AuthError } from "@/lib/auth/session";
@@ -33,6 +34,9 @@ export function handleRouteError(err: unknown): NextResponse {
   if (err instanceof ZodError) {
     return apiError("VALIDATION_ERROR", "Invalid request data", 422, err.flatten());
   }
+  // Anything reaching here is unexpected: report it, since returning a 500
+  // swallows the error before Sentry's request instrumentation can see it.
+  Sentry.captureException(err);
   if (err instanceof Error) {
     console.error("Route error:", err.message, err);
     return apiError("INTERNAL_ERROR", err.message || "An unexpected error occurred", 500);

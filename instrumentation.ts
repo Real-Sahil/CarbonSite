@@ -14,3 +14,13 @@ export async function register() {
   // business logic that would benefit from error tracking. Skipping Sentry here keeps
   // the Edge Function size under 1 MB limit.
 }
+
+// Reports errors thrown by server components, route handlers and server
+// actions that no code caught. Loaded only in the Node.js runtime, like register().
+export async function onRequestError(
+  ...args: Parameters<typeof import("@sentry/nextjs").captureRequestError>
+) {
+  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  const Sentry = await import("@sentry/nextjs");
+  Sentry.captureRequestError(...args);
+}
