@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -12,8 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
+import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 interface EngagementSection {
   assuranceType?: string;
@@ -67,7 +66,6 @@ export function AssuranceEngagementEditor({
   canEdit,
   isAdmin,
 }: Props) {
-  const router = useRouter();
   const [title, setTitle] = useState(initialEngagement.title);
   const [projectId, setProjectId] = useState(initialEngagement.projectId || "");
   const [siteId, setSiteId] = useState(initialEngagement.siteId || "");
@@ -75,15 +73,14 @@ export function AssuranceEngagementEditor({
   const [sections, setSections] = useState<EngagementSection>(
     initialEngagement.sectionsJson || {}
   );
-  const [status, setStatus] = useState(initialEngagement.status);
+  const status = initialEngagement.status;
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState<string | null>(null);
-  const lastSavedRef = useRef(JSON.stringify(sections));
+  const lastSavedRef = useRef(JSON.stringify({ title, projectId: projectId || null, siteId: siteId || null, engagementDate: engagementDate || null, sectionsJson: sections }));
 
   const autoSave = useCallback(async () => {
-    if (JSON.stringify(sections) === lastSavedRef.current && status === initialEngagement.status) {
-      return;
-    }
+    const payload = JSON.stringify({ title, projectId: projectId || null, siteId: siteId || null, engagementDate: engagementDate || null, sectionsJson: sections });
+    if (payload === lastSavedRef.current) return;
 
     setSaveStatus("saving");
     setError(null);
@@ -94,14 +91,7 @@ export function AssuranceEngagementEditor({
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title,
-            projectId: projectId || null,
-            siteId: siteId || null,
-            engagementDate: engagementDate || null,
-            sectionsJson: sections,
-            status,
-          }),
+          body: payload,
         }
       );
 
@@ -110,14 +100,14 @@ export function AssuranceEngagementEditor({
         throw new Error(data.message || "Save failed");
       }
 
-      lastSavedRef.current = JSON.stringify(sections);
+      lastSavedRef.current = payload;
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
       setSaveStatus("idle");
     }
-  }, [sections, status, title, projectId, siteId, engagementDate, initialEngagement]);
+  }, [sections, title, projectId, siteId, engagementDate, initialEngagement]);
 
   const debouncedAutoSave = useCallback(() => {
     const timer = setTimeout(autoSave, 1500);
@@ -125,50 +115,11 @@ export function AssuranceEngagementEditor({
   }, [autoSave]);
 
   useEffect(() => {
-    if (!canEdit || initialEngagement.lockedAt) return;
+    if (!canEdit || isLockedStatus("assurance-engagements", status)) return;
     return debouncedAutoSave();
-  }, [sections, title, projectId, siteId, engagementDate, debouncedAutoSave, canEdit, initialEngagement.lockedAt]);
+  }, [sections, title, projectId, siteId, engagementDate, debouncedAutoSave, canEdit, status]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    await autoSave();
-    setStatus(newStatus);
-
-    try {
-      const res = await fetch(
-        `/api/orgs/${initialEngagement.orgId}/assurance-engagements/${initialEngagement.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-
-      if (!res.ok) throw new Error("Status update failed");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed");
-      setStatus(initialEngagement.status);
-    }
-  };
-
-  const handleRevise = async () => {
-    try {
-      const res = await fetch(
-        `/api/orgs/${initialEngagement.orgId}/assurance-engagements/${initialEngagement.id}/revise`,
-        { method: "POST" }
-      );
-
-      if (!res.ok) throw new Error("Revise failed");
-      const newEngagement = await res.json();
-      router.push(
-        `/orgs/${initialEngagement.orgId}/assurance-engagements/${newEngagement.id}`
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Revise failed");
-    }
-  };
-
-  const disabled = !canEdit || !!initialEngagement.lockedAt;
-  const showRevise = ["approved", "issued", "signed_off"].includes(status) && canEdit;
+  const disabled = !canEdit || isLockedStatus("assurance-engagements", status);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -187,7 +138,7 @@ export function AssuranceEngagementEditor({
             {saveStatus === "saved" && (
               <span className="flex items-center gap-1 text-sm text-green-600">✓ Saved</span>
             )}
-            <Badge variant={status === "draft" ? "secondary" : "default"}>{status}</Badge>
+            <StatusBadge form="assurance-engagements" status={status} />
           </div>
         </div>
       </div>
@@ -199,11 +150,9 @@ export function AssuranceEngagementEditor({
         </div>
       )}
 
-      {initialEngagement.lockedAt && (
-        <div className="max-w-4xl mx-auto px-4 py-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
-          Locked at {new Date(initialEngagement.lockedAt).toLocaleString()}. Create a new revision to edit.
-        </div>
-      )}
+      <div className="max-w-7xl mx-auto px-4 pt-4">
+        <LockNotice form="assurance-engagements" status={status} />
+      </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <form className="space-y-6">
@@ -368,50 +317,15 @@ export function AssuranceEngagementEditor({
             </div>
           </div>
 
-          {/* Status Transitions */}
-          <div className="bg-white p-6 rounded-lg border">
-            <h2 className="text-lg font-semibold mb-4">Status & Actions</h2>
-            <div className="flex flex-wrap gap-2">
-              {status === "draft" && (
-                <Button
-                  onClick={() => handleStatusChange("submitted_for_review")}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Submit for Review
-                </Button>
-              )}
-              {status === "submitted_for_review" && isAdmin && (
-                <>
-                  <Button
-                    onClick={() => handleStatusChange("approved")}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Approve
-                  </Button>
-                  <Button variant="outline" onClick={() => handleStatusChange("draft")}>
-                    Request Changes
-                  </Button>
-                </>
-              )}
-              {status === "approved" && isAdmin && (
-                <Button
-                  onClick={() => handleStatusChange("issued")}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  Issue
-                </Button>
-              )}
-              {showRevise && (
-                <Button
-                  onClick={handleRevise}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" /> Create New Revision
-                </Button>
-              )}
-            </div>
-          </div>
+          <WorkflowBar
+            form="assurance-engagements"
+            orgId={initialEngagement.orgId}
+            id={initialEngagement.id}
+            status={status}
+            canEdit={canEdit}
+            isAdmin={isAdmin}
+            beforeChange={autoSave}
+          />
         </form>
       </div>
     </div>

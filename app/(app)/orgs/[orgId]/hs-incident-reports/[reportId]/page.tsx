@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { asSections, lookupPeople } from "@/lib/structured-forms/people";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { HsIncidentReportEditor } from "./hs-incident-report-editor";
 
 interface PageProps {
@@ -23,14 +25,8 @@ export default async function HsIncidentReportDetailPage({ params }: PageProps) 
     return <div className="p-8 text-sm text-red-600">Access denied.</div>;
   }
 
-  const report = await prisma.hsIncidentReport.findUnique({
-    where: { id: reportId },
-    include: {
-      createdBy: { select: { id: true, name: true } },
-      signedOffBy: { select: { id: true, name: true } },
-      project: { select: { id: true, name: true } },
-      site: { select: { id: true, name: true } },
-    },
+  const report = await prisma.hsIncidentReport.findFirst({
+    where: { id: reportId, organizationId: orgId },
   });
 
   if (!report || report.organizationId !== orgId) {
@@ -50,24 +46,26 @@ export default async function HsIncidentReportDetailPage({ params }: PageProps) 
     }),
   ]);
 
+  const person = await lookupPeople([report.createdByUserId, report.signedOffByUserId]);
+
   const serialized = {
     id: report.id,
     orgId,
-    title: report.title,
+    title: report.title ?? "",
     version: report.version,
     status: report.status as string,
     projectId: report.projectId,
     siteId: report.siteId,
-    sectionsJson: report.sectionsJson ?? null,
-    incidentDate: report.incidentDate ? report.incidentDate.toISOString().slice(0, 10) : null,
-    lockedAt: report.lockedAt ? report.lockedAt.toISOString() : null,
+    sectionsJson: asSections(report.sectionsJson),
+    incidentDate: report.occurredAt ? report.occurredAt.toISOString().slice(0, 10) : null,
+    lockedAt: isLockedStatus("hs-incident-reports", report.status) ? (report.lockedAt ?? report.updatedAt).toISOString() : null,
     revisionOf: report.revisionOf,
     createdAt: report.createdAt.toISOString(),
     updatedAt: report.updatedAt.toISOString(),
-    createdBy: report.createdBy,
-    signedOffBy: report.signedOffBy,
-    project: report.project,
-    site: report.site,
+    createdBy: person(report.createdByUserId),
+    signedOffBy: person(report.signedOffByUserId),
+    project: projects.find((p) => p.id === report.projectId) ?? null,
+    site: sites.find((x) => x.id === report.siteId) ?? null,
   };
 
   return (

@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { asSections, lookupPeople } from "@/lib/structured-forms/people";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { EnvironmentalPermitEditor } from "./env-permit-editor";
 
 interface PageProps {
@@ -23,14 +25,8 @@ export default async function EnvironmentalPermitDetailPage({ params }: PageProp
     return <div className="p-8 text-sm text-red-600">Access denied.</div>;
   }
 
-  const permit = await prisma.environmentalPermit.findUnique({
-    where: { id: reportId },
-    include: {
-      createdBy: { select: { id: true, name: true } },
-      signedOffBy: { select: { id: true, name: true } },
-      project: { select: { id: true, name: true } },
-      site: { select: { id: true, name: true } },
-    },
+  const permit = await prisma.environmentalPermit.findFirst({
+    where: { id: reportId, organizationId: orgId },
   });
 
   if (!permit || permit.organizationId !== orgId) {
@@ -50,25 +46,27 @@ export default async function EnvironmentalPermitDetailPage({ params }: PageProp
     }),
   ]);
 
+  const person = await lookupPeople([permit.createdByUserId, permit.signedOffByUserId]);
+
   const serialized = {
     id: permit.id,
     orgId,
-    title: permit.title,
+    title: permit.title ?? "",
     version: permit.version,
     status: permit.status as string,
-    projectId: permit.projectId,
+    projectId: null as string | null,
     siteId: permit.siteId,
-    sectionsJson: permit.sectionsJson ?? null,
-    permitDate: permit.permitDate ? permit.permitDate.toISOString().slice(0, 10) : null,
-    expiryDate: permit.expiryDate ? permit.expiryDate.toISOString().slice(0, 10) : null,
-    lockedAt: permit.lockedAt ? permit.lockedAt.toISOString() : null,
+    sectionsJson: asSections(permit.sectionsJson),
+    permitDate: permit.issuedOn ? permit.issuedOn.toISOString().slice(0, 10) : null,
+    expiryDate: permit.expiresOn ? permit.expiresOn.toISOString().slice(0, 10) : null,
+    lockedAt: isLockedStatus("environmental-permits", permit.status) ? (permit.lockedAt ?? permit.updatedAt).toISOString() : null,
     revisionOf: permit.revisionOf,
     createdAt: permit.createdAt.toISOString(),
     updatedAt: permit.updatedAt.toISOString(),
-    createdBy: permit.createdBy,
-    signedOffBy: permit.signedOffBy,
-    project: permit.project,
-    site: permit.site,
+    createdBy: person(permit.createdByUserId),
+    signedOffBy: person(permit.signedOffByUserId),
+    project: null,
+    site: sites.find((x) => x.id === permit.siteId) ?? null,
   };
 
   return (

@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import { asSections, lookupPeople } from "@/lib/structured-forms/people";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { BiodiversityAssessmentEditor } from "./biodiversity-assessment-editor";
 
 interface PageProps {
@@ -23,14 +25,8 @@ export default async function BiodiversityAssessmentDetailPage({ params }: PageP
     return <div className="p-8 text-sm text-red-600">Access denied.</div>;
   }
 
-  const assessment = await prisma.biodiversityAssessment.findUnique({
-    where: { id: reportId },
-    include: {
-      createdBy: { select: { id: true, name: true } },
-      signedOffBy: { select: { id: true, name: true } },
-      project: { select: { id: true, name: true } },
-      site: { select: { id: true, name: true } },
-    },
+  const assessment = await prisma.biodiversityAssessment.findFirst({
+    where: { id: reportId, organizationId: orgId },
   });
 
   if (!assessment || assessment.organizationId !== orgId) {
@@ -50,24 +46,26 @@ export default async function BiodiversityAssessmentDetailPage({ params }: PageP
     }),
   ]);
 
+  const person = await lookupPeople([assessment.createdByUserId, assessment.signedOffByUserId]);
+
   const serialized = {
     id: assessment.id,
     orgId,
-    title: assessment.title,
+    title: assessment.title ?? "",
     version: assessment.version,
     status: assessment.status as string,
     projectId: assessment.projectId,
     siteId: assessment.siteId,
-    sectionsJson: assessment.sectionsJson ?? null,
+    sectionsJson: asSections(assessment.sectionsJson),
     assessmentDate: assessment.assessmentDate ? assessment.assessmentDate.toISOString().slice(0, 10) : null,
-    lockedAt: assessment.lockedAt ? assessment.lockedAt.toISOString() : null,
+    lockedAt: isLockedStatus("biodiversity-assessments", assessment.status) ? (assessment.lockedAt ?? assessment.updatedAt).toISOString() : null,
     revisionOf: assessment.revisionOf,
     createdAt: assessment.createdAt.toISOString(),
     updatedAt: assessment.updatedAt.toISOString(),
-    createdBy: assessment.createdBy,
-    signedOffBy: assessment.signedOffBy,
-    project: assessment.project,
-    site: assessment.site,
+    createdBy: person(assessment.createdByUserId),
+    signedOffBy: person(assessment.signedOffByUserId),
+    project: projects.find((p) => p.id === assessment.projectId) ?? null,
+    site: sites.find((x) => x.id === assessment.siteId) ?? null,
   };
 
   return (

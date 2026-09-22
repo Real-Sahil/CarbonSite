@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ChevronLeft, ChevronRight, Menu, X, Save, AlertCircle, CheckCircle2,
-  Plus, Trash2, GripVertical, ChevronDown
-} from "lucide-react";
+import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
+import { Menu, X, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export interface HsReportData {
   id: string;
@@ -110,15 +108,6 @@ const NAV_SECTIONS = [
   { id: "corrections", label: "Corrective Actions" },
   { id: "riddor", label: "RIDDOR Report" },
 ];
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  review: "Under Review",
-  approved: "Approved",
-  issued: "Issued",
-  signed_off: "Signed Off",
-  superseded: "Superseded",
-};
 
 function IncidentDetailsSection({ s, onChange, disabled }: { s: HsSections; onChange: (s: HsSections) => void; disabled: boolean }) {
   return (
@@ -494,7 +483,6 @@ export function HsIncidentReportEditor({
   canEdit: boolean;
   isAdmin: boolean;
 }) {
-  const router = useRouter();
   const [sections, setSections] = useState<HsSections>(
     (report.sectionsJson as HsSections | null) || DEFAULT_SECTIONS
   );
@@ -502,34 +490,41 @@ export function HsIncidentReportEditor({
   const [projectId, setProjectId] = useState(report.projectId || "");
   const [siteId, setSiteId] = useState(report.siteId || "");
   const [incidentDate, setIncidentDate] = useState(report.incidentDate || "");
-  const [status, setStatus] = useState(report.status);
+  const status = report.status;
   const [activeNav, setActiveNav] = useState("details");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const lastSavedRef = useRef<HsSections | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const lastSavedRef = useRef(JSON.stringify({ sectionsJson: sections, title, projectId, siteId, incidentDate }));
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const disabled = !canEdit || !!report.lockedAt;
+  const disabled = !canEdit || isLockedStatus("hs-incident-reports", status);
 
-  const autoSave = useCallback(() => {
-    if (!canEdit || saveStatus === "saving") return;
-
-    const hasChanges = JSON.stringify(sections) !== JSON.stringify(lastSavedRef.current);
-    if (!hasChanges) return;
+  const autoSave = useCallback(async () => {
+    if (disabled) return;
+    const payload = JSON.stringify({ sectionsJson: sections, title, projectId, siteId, incidentDate });
+    if (payload === lastSavedRef.current) return;
 
     setSaveStatus("saving");
-    fetch(`/api/orgs/${report.orgId}/hs-incident-reports/${report.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sectionsJson: sections, title, projectId, siteId, incidentDate }),
-    })
-      .then(() => {
-        lastSavedRef.current = sections;
-        setSaveStatus("saved");
-        setTimeout(() => setSaveStatus("idle"), 2000);
-      })
-      .catch(() => setSaveStatus("idle"));
-  }, [sections, title, projectId, siteId, incidentDate, canEdit, report.orgId, report.id, saveStatus]);
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/orgs/${report.orgId}/hs-incident-reports/${report.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(data?.message ?? "Changes could not be saved.");
+      }
+      lastSavedRef.current = payload;
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Changes could not be saved.");
+      setSaveStatus("idle");
+    }
+  }, [sections, title, projectId, siteId, incidentDate, disabled, report.orgId, report.id]);
 
   const debouncedAutoSave = useCallback(() => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -543,37 +538,6 @@ export function HsIncidentReportEditor({
     };
   }, [sections, title, projectId, siteId, incidentDate, debouncedAutoSave]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    if (!canEdit) return;
-    await autoSave();
-    try {
-      const res = await fetch(`/api/orgs/${report.orgId}/hs-incident-reports/${report.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus, sectionsJson: sections }),
-      });
-      if (res.ok) {
-        setStatus(newStatus);
-      }
-    } catch (err) {
-      console.error("Status change failed:", err);
-    }
-  };
-
-  const handleRevise = async () => {
-    try {
-      const res = await fetch(`/api/orgs/${report.orgId}/hs-incident-reports/${report.id}/revise`, {
-        method: "POST",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        router.push(`/orgs/${report.orgId}/hs-incident-reports/${data.id}`);
-      }
-    } catch (err) {
-      console.error("Revise failed:", err);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="lg:flex h-screen">
@@ -586,8 +550,8 @@ export function HsIncidentReportEditor({
         </div>
 
         {/* Navigation */}
-        {(mobileMenuOpen || window.innerWidth >= 1024) && (
-          <div className="w-full lg:w-64 bg-white border-r border-gray-200 p-4 space-y-2 overflow-y-auto">
+        {(
+          <div className={`${mobileMenuOpen ? "block" : "hidden"} lg:block w-full lg:w-64 bg-white border-r border-gray-200 p-4 space-y-2 overflow-y-auto`}>
             {NAV_SECTIONS.map((sec) => (
               <button
                 key={sec.id}
@@ -614,14 +578,7 @@ export function HsIncidentReportEditor({
               <p className="text-sm text-gray-600">Version {report.version}</p>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`px-3 py-1 rounded text-sm font-semibold ${
-                status === "draft" ? "bg-gray-100 text-gray-700" :
-                status === "review" ? "bg-amber-100 text-amber-800" :
-                status === "approved" ? "bg-blue-100 text-blue-800" :
-                "bg-green-100 text-green-800"
-              }`}>
-                {STATUS_LABELS[status] || status}
-              </span>
+              <StatusBadge form="hs-incident-reports" status={status} />
               {saveStatus === "saving" && <div className="text-sm text-amber-600">Saving...</div>}
               {saveStatus === "saved" && <CheckCircle2 className="w-5 h-5 text-green-600" />}
             </div>
@@ -684,54 +641,22 @@ export function HsIncidentReportEditor({
                 </div>
               </div>
 
-              {/* Status controls */}
-              {canEdit && (
-                <div className="bg-white rounded-lg border p-4 space-y-2">
-                  <p className="text-sm font-medium">Status Actions</p>
-                  <div className="flex flex-wrap gap-2">
-                    {status === "draft" && (
-                      <button
-                        onClick={() => handleStatusChange("review")}
-                        className="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 text-sm"
-                      >
-                        Submit for Review
-                      </button>
-                    )}
-                    {status === "review" && isAdmin && (
-                      <>
-                        <button
-                          onClick={() => handleStatusChange("approved")}
-                          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange("draft")}
-                          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-                    {status === "approved" && isAdmin && (
-                      <button
-                        onClick={() => handleStatusChange("issued")}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                      >
-                        Issue
-                      </button>
-                    )}
-                    {(status === "approved" || status === "issued") && !report.lockedAt && (
-                      <button
-                        onClick={handleRevise}
-                        className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
-                      >
-                        Create Revision
-                      </button>
-                    )}
-                  </div>
-                </div>
+              <LockNotice form="hs-incident-reports" status={status} />
+              {saveError && (
+                <p role="alert" className="flex gap-2 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                  {saveError}
+                </p>
               )}
+              <WorkflowBar
+                form="hs-incident-reports"
+                orgId={report.orgId}
+                id={report.id}
+                status={status}
+                canEdit={canEdit}
+                isAdmin={isAdmin}
+                beforeChange={autoSave}
+              />
 
               {/* Section content */}
               <div className="bg-white rounded-lg border p-6">

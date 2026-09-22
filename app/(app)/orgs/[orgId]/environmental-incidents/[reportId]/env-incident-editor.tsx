@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,8 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle, ChevronDown, ChevronUp, Loader2, RotateCcw } from "lucide-react";
+import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
+import { isLockedStatus } from "@/lib/structured-forms/workflows";
+import { AlertCircle, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 
 interface EnvIncidentSection {
   incidentType?: string;
@@ -84,7 +84,6 @@ export function EnvironmentalIncidentEditor({
   canEdit,
   isAdmin,
 }: Props) {
-  const router = useRouter();
   const [title, setTitle] = useState(initialReport.title);
   const [projectId, setProjectId] = useState(initialReport.projectId || "");
   const [siteId, setSiteId] = useState(initialReport.siteId || "");
@@ -92,12 +91,12 @@ export function EnvironmentalIncidentEditor({
   const [sections, setSections] = useState<EnvIncidentSection>(
     initialReport.sectionsJson || {}
   );
-  const [status, setStatus] = useState(initialReport.status);
+  const status = initialReport.status;
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = useState<string | null>(null);
   const [activeNav, setActiveNav] = useState("details");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const lastSavedRef = useRef(JSON.stringify(sections));
+  const lastSavedRef = useRef(JSON.stringify({ title, projectId: projectId || null, siteId: siteId || null, incidentDate: incidentDate || null, sectionsJson: sections }));
 
   const NAV_SECTIONS = [
     { id: "details", label: "Incident Details" },
@@ -108,9 +107,8 @@ export function EnvironmentalIncidentEditor({
   ];
 
   const autoSave = useCallback(async () => {
-    if (JSON.stringify(sections) === lastSavedRef.current && status === initialReport.status) {
-      return;
-    }
+    const payload = JSON.stringify({ title, projectId: projectId || null, siteId: siteId || null, incidentDate: incidentDate || null, sectionsJson: sections });
+    if (payload === lastSavedRef.current) return;
 
     setSaveStatus("saving");
     setError(null);
@@ -121,14 +119,7 @@ export function EnvironmentalIncidentEditor({
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title,
-            projectId: projectId || null,
-            siteId: siteId || null,
-            incidentDate: incidentDate || null,
-            sectionsJson: sections,
-            status,
-          }),
+          body: payload,
         }
       );
 
@@ -137,14 +128,14 @@ export function EnvironmentalIncidentEditor({
         throw new Error(data.message || "Save failed");
       }
 
-      lastSavedRef.current = JSON.stringify(sections);
+      lastSavedRef.current = payload;
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
       setSaveStatus("idle");
     }
-  }, [sections, status, title, projectId, siteId, incidentDate, initialReport]);
+  }, [sections, title, projectId, siteId, incidentDate, initialReport]);
 
   const debouncedAutoSave = useCallback(() => {
     const timer = setTimeout(autoSave, 1500);
@@ -152,50 +143,11 @@ export function EnvironmentalIncidentEditor({
   }, [autoSave]);
 
   useEffect(() => {
-    if (!canEdit || initialReport.lockedAt) return;
+    if (!canEdit || isLockedStatus("environmental-incidents", status)) return;
     return debouncedAutoSave();
-  }, [sections, title, projectId, siteId, incidentDate, debouncedAutoSave, canEdit, initialReport.lockedAt]);
+  }, [sections, title, projectId, siteId, incidentDate, debouncedAutoSave, canEdit, status]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    await autoSave();
-    setStatus(newStatus);
-
-    try {
-      const res = await fetch(
-        `/api/orgs/${initialReport.orgId}/environmental-incidents/${initialReport.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-
-      if (!res.ok) throw new Error("Status update failed");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed");
-      setStatus(initialReport.status);
-    }
-  };
-
-  const handleRevise = async () => {
-    try {
-      const res = await fetch(
-        `/api/orgs/${initialReport.orgId}/environmental-incidents/${initialReport.id}/revise`,
-        { method: "POST" }
-      );
-
-      if (!res.ok) throw new Error("Revise failed");
-      const newReport = await res.json();
-      router.push(
-        `/orgs/${initialReport.orgId}/environmental-incidents/${newReport.id}`
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Revise failed");
-    }
-  };
-
-  const disabled = !canEdit || !!initialReport.lockedAt;
-  const showRevise = ["approved", "issued", "signed_off"].includes(status) && canEdit;
+  const disabled = !canEdit || isLockedStatus("environmental-incidents", status);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -214,7 +166,7 @@ export function EnvironmentalIncidentEditor({
             {saveStatus === "saved" && (
               <span className="flex items-center gap-1 text-sm text-green-600">✓ Saved</span>
             )}
-            <Badge variant={status === "draft" ? "secondary" : "default"}>{status}</Badge>
+            <StatusBadge form="environmental-incidents" status={status} />
           </div>
         </div>
       </div>
@@ -226,11 +178,9 @@ export function EnvironmentalIncidentEditor({
         </div>
       )}
 
-      {initialReport.lockedAt && (
-        <div className="max-w-7xl mx-auto px-4 py-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
-          Locked at {new Date(initialReport.lockedAt).toLocaleString()}. Create a new revision to edit.
-        </div>
-      )}
+      <div className="max-w-7xl mx-auto px-4 pt-4">
+        <LockNotice form="environmental-incidents" status={status} />
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <nav className="lg:col-span-1">
@@ -251,8 +201,8 @@ export function EnvironmentalIncidentEditor({
               )}
             </Button>
           </div>
-          {(mobileMenuOpen || window.innerWidth >= 1024) && (
-            <div className="space-y-2">
+          {(
+            <div className={`space-y-2 ${mobileMenuOpen ? "block" : "hidden"} lg:block`}>
               {NAV_SECTIONS.map((section) => (
                 <button
                   key={section.id}
@@ -657,49 +607,16 @@ export function EnvironmentalIncidentEditor({
             )}
           </form>
 
-          {/* Status Transitions */}
-          <div className="bg-white p-6 rounded-lg border mt-6">
-            <h2 className="text-lg font-semibold mb-4">Status & Actions</h2>
-            <div className="flex flex-wrap gap-2">
-              {status === "draft" && (
-                <Button
-                  onClick={() => handleStatusChange("submitted_for_review")}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Submit for Review
-                </Button>
-              )}
-              {status === "submitted_for_review" && isAdmin && (
-                <>
-                  <Button
-                    onClick={() => handleStatusChange("approved")}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Approve
-                  </Button>
-                  <Button variant="outline" onClick={() => handleStatusChange("draft")}>
-                    Request Changes
-                  </Button>
-                </>
-              )}
-              {status === "approved" && isAdmin && (
-                <Button
-                  onClick={() => handleStatusChange("issued")}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  Issue
-                </Button>
-              )}
-              {showRevise && (
-                <Button
-                  onClick={handleRevise}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" /> Create New Revision
-                </Button>
-              )}
-            </div>
+          <div className="mt-6">
+            <WorkflowBar
+              form="environmental-incidents"
+              orgId={initialReport.orgId}
+              id={initialReport.id}
+              status={status}
+              canEdit={canEdit}
+              isAdmin={isAdmin}
+              beforeChange={autoSave}
+            />
           </div>
         </div>
       </div>
