@@ -282,7 +282,19 @@ export type AuditAction =
   | "tnfd.scenario_created"
   | "tnfd.scenario_updated"
   | "tnfd.scenario_deleted"
-  | "evidence.access_logged";
+  | "evidence.access_logged"
+  | "sv_framework.create"
+  | "sv_framework.update"
+  | "sv_framework.delete"
+  | "sv_commitment.create"
+  | "sv_commitment.update"
+  | "sv_commitment.delete"
+  | "sv_activity.create"
+  | "sv_activity.update"
+  | "sv_activity.delete"
+  | "sv_activity.approved"
+  | "sv_activity.rejected"
+  | "sv_activity.ai_extract";
 
 export async function writeAuditLog(params: {
   organizationId: string;

@@ -455,3 +455,51 @@ export const createSocialValueTargetSchema = z.object({
 });
 
 export const updateSocialValueTargetSchema = createSocialValueTargetSchema.partial().omit({ contractId: true, reportingPeriodId: true });
+
+// ─── Social Value Foundation (Phase 1) ────────────────────────────────────────
+
+export const createSvFrameworkSchema = z.object({
+  name: z.string().min(1).max(200),
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
+  version: z.string().max(50).optional(),
+  description: z.string().max(2000).optional(),
+  isDefault: z.boolean().optional(),
+});
+export const updateSvFrameworkSchema = createSvFrameworkSchema.partial();
+
+export const createSvCommitmentSchema = z.object({
+  contractId: z.string().min(1).optional(),
+  frameworkId: z.string().min(1).optional(),
+  ownerUserId: z.string().min(1).optional(),
+  title: z.string().min(1).max(300),
+  description: z.string().max(5000).optional(),
+  targetValue: z.coerce.number().positive().optional(),
+  targetUnit: z.string().max(50).optional(),
+  targetDate: z.string().datetime({ offset: true }).optional(),
+  reportingPeriodId: z.string().min(1).optional(),
+  status: z.enum(["draft", "active", "in_progress", "completed", "cancelled"]).optional(),
+  monetisedValue: z.coerce.number().nonnegative().optional(),
+  currency: z.string().length(3).optional(),
+});
+export const updateSvCommitmentSchema = createSvCommitmentSchema.partial();
+
+export const createSvActivitySchema = z.object({
+  commitmentId: z.string().min(1).optional(),
+  measureId: z.string().min(1).optional(),
+  facilityId: z.string().min(1).optional(),
+  reportingPeriodId: z.string().min(1).optional(),
+  title: z.string().min(1).max(300),
+  description: z.string().max(5000).optional(),
+  activityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  quantityValue: z.coerce.number().positive().optional(),
+  quantityUnit: z.string().max(50).optional(),
+  monetisedValue: z.coerce.number().nonnegative().optional(),
+  currency: z.string().length(3).optional(),
+  evidenceUrls: z.array(z.string().url()).optional(),
+});
+export const updateSvActivitySchema = createSvActivitySchema.partial();
+
+export const reviewSvActivitySchema = z.object({
+  status: z.enum(["approved", "rejected"]),
+  reviewNotes: z.string().max(2000).optional(),
+});
