@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect, useState } from "react";
 
 export default function AppError({
@@ -12,6 +13,7 @@ export default function AppError({
   const [resetCount, setResetCount] = useState(0);
 
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("[MetricOra] App error:", {
       message: error.message,
       digest: error.digest,
