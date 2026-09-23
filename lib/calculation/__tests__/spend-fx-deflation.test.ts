@@ -37,7 +37,7 @@ describe("spend adjusted to the factor's price year", () => {
 
   it("flags years beyond the published index", () => {
     const d = deflateSpend(1000, "GBP", 2031, 2021)!;
-    expect(d.warning).toMatch(/No GBP CPI figure yet for 2031; used 2024/);
+    expect(d.warning).toMatch(/No GBP CPI figure yet for 2031; used 2025/);
   });
 
   it("returns null for a currency without an index", () => {
