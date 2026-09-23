@@ -159,6 +159,8 @@ export const reviewFieldSubmissionSchema = z.object({
   emissionCategoryId: z.string().optional(),
   facilityId: z.string().optional(),
   reviewNote: z.string().max(2000).optional(),
+  /** Delivery notes: a library material id, or null to record no embodied carbon. Omit to match automatically. */
+  embodiedMaterialId: z.string().min(1).nullable().optional(),
   ocrExtractedData: z.record(z.any()).optional(),
   formData: z.record(z.any()).optional(),
 });

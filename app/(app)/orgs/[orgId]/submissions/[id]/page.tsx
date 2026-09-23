@@ -18,6 +18,7 @@ import { SubmissionEditActions } from "../edit-actions";
 import { SubmissionEvidenceDownloads } from "../evidence-download-actions";
 import { SubmissionCommentActions } from "../comment-actions";
 import { SubmissionClaimBanner } from "../claim-banner";
+import { deliveryDescription, matchMaterial } from "@/lib/embodied-carbon/delivery-notes";
 
 interface SubmissionDetailPageProps {
   params: Promise<{ orgId: string; id: string }>;
@@ -161,6 +162,41 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
   });
 
   const isResolved = submission.status === "approved" || submission.status === "rejected";
+
+  // Delivery notes feed the project's embodied carbon: suggest the library
+  // material before approval, and show the record made after it.
+  const isDelivery = submission.documentType === "delivery_note";
+  const [embodiedMaterials, embodiedRecord] = isDelivery
+    ? await Promise.all([
+        isResolved
+          ? Promise.resolve([])
+          : prisma.embodiedMaterial.findMany({
+              select: { id: true, name: true, category: true, declaredUnit: true, density: true },
+              orderBy: [{ category: "asc" }, { name: "asc" }],
+            }),
+        prisma.embodiedCarbonRecord.findFirst({
+          where: { organizationId: orgId, fieldSubmissionId: id },
+          select: {
+            totalKgCo2e: true,
+            quantity: true,
+            unit: true,
+            lifecycleStages: true,
+            notes: true,
+            material: { select: { name: true } },
+            project: { select: { name: true } },
+          },
+        }),
+      ])
+    : [[], null];
+  const embodiedMatch = isDelivery && !isResolved
+    ? matchMaterial(
+        deliveryDescription({
+          ...((submission.ocrExtractedData ?? {}) as Record<string, unknown>),
+          ...((submission.formData ?? {}) as Record<string, unknown>),
+        }),
+        embodiedMaterials,
+      )
+    : null;
 
   // Calculate what (if anything) blocks approval — shown as a banner so
   // admins know exactly what to fix before clicking Approve.
@@ -622,11 +658,42 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 <p className="mt-3 text-sm text-[#374151] tracking-[-0.42px]">
                   Calculated CO₂e:{" "}
                   <span className="font-medium text-[#111827]">
-                    {Number(activityRecord.calculations[0].totalCo2e).toFixed(2)} tCO₂e
+                    {(Number(activityRecord.calculations[0].totalCo2e) / 1000).toFixed(3)} tCO₂e
                   </span>
                 </p>
               )}
             </CardContent>
+          </Card>
+        )}
+
+        {isDelivery && submission.status === "approved" && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Embodied carbon</CardTitle>
+              <CardDescription>
+                {embodiedRecord
+                  ? `Recorded for ${embodiedRecord.project?.name ?? "no project (the submission has no site)"}.`
+                  : "No embodied carbon was recorded for this delivery. The audit log says why."}
+              </CardDescription>
+            </CardHeader>
+            {embodiedRecord && (
+              <CardContent className="flex flex-col gap-2">
+                <p className="text-sm text-[#374151] tracking-[-0.42px]">
+                  {embodiedRecord.material?.name ?? "Material"}, {embodiedRecord.quantity} {embodiedRecord.unit}:{" "}
+                  <span className="font-medium text-[#111827]">{(embodiedRecord.totalKgCo2e / 1000).toFixed(3)} tCO₂e</span>{" "}
+                  ({embodiedRecord.lifecycleStages.join(" + ")})
+                </p>
+                {embodiedRecord.notes && (
+                  <pre className="whitespace-pre-wrap rounded-[7px] bg-[#F9FAFB] p-2 text-xs text-[#374151]">{embodiedRecord.notes}</pre>
+                )}
+                <Link
+                  href={`/orgs/${orgId}/embodied-carbon`}
+                  className="text-xs text-[#111827] underline underline-offset-2 tracking-[-0.36px] hover:opacity-70"
+                >
+                  View embodied carbon
+                </Link>
+              </CardContent>
+            )}
           </Card>
         )}
 
@@ -782,6 +849,15 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 emissionCategories={emissionCategories}
                 facilities={facilities}
                 disabled={isResolved}
+                embodied={
+                  embodiedMatch
+                    ? {
+                        materials: embodiedMaterials.map(({ id, name, category }) => ({ id, name, category })),
+                        suggestedMaterialId: embodiedMatch.material?.id ?? null,
+                        matchReason: embodiedMatch.reason,
+                      }
+                    : undefined
+                }
               />
             </CardContent>
           </Card>

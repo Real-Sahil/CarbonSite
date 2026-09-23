@@ -90,10 +90,24 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           facilityId: body.facilityId,
           reviewerUserId: session.user.id,
           reviewNote: body.reviewNote,
+          embodiedMaterialId: body.embodiedMaterialId,
         });
       });
       activityRecordId = result.activityRecordId;
       updated = result.submission;
+
+      if (result.embodied) {
+        await writeAuditLog({
+          organizationId: orgId,
+          actorUserId: session.user.id,
+          action: result.embodied.recordId ? "embodied_carbon.record_created" : "embodied_carbon.not_recorded",
+          resourceType: result.embodied.recordId ? "EmbodiedCarbonRecord" : "field_submission",
+          resourceId: result.embodied.recordId ?? submissionId,
+          metadata: result.embodied.recordId
+            ? { fromFieldSubmission: submissionId, totalKgCo2e: result.embodied.totalKgCo2e }
+            : { reason: "reason" in result.embodied ? result.embodied.reason : null },
+        });
+      }
 
       if (activityRecordId) {
         await writeAuditLog({

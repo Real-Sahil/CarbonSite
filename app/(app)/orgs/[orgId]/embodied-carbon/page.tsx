@@ -252,7 +252,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
                           {record.project?.name ?? "-"}
                         </TableCell>
                         <TableCell className="py-3.5">
-                          <span className="text-xs text-zinc-500 capitalize">{record.source}</span>
+                          <span className="text-xs text-zinc-500 capitalize">{record.source.replace(/_/g, " ")}</span>
                         </TableCell>
                         <TableCell className="py-3.5 pr-6 text-right tabular-nums">
                           <span className="text-sm font-semibold text-[#111827]">

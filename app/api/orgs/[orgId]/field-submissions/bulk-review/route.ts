@@ -132,7 +132,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           action: "field_submission.reviewed",
           resourceType: "field_submission",
           resourceId: submission.id,
-          metadata: { action: "approved", activityRecordId: result.activityRecordId, bulk: true },
+          metadata: {
+            action: "approved",
+            activityRecordId: result.activityRecordId,
+            bulk: true,
+            ...(result.embodied
+              ? result.embodied.recordId
+                ? { embodiedCarbonRecordId: result.embodied.recordId }
+                : { embodiedNotRecorded: "reason" in result.embodied ? result.embodied.reason : null }
+              : {}),
+          },
         });
         await writeAuditLog({
           organizationId: orgId,

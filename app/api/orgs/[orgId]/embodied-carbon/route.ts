@@ -69,6 +69,16 @@ export async function POST(
       return apiError("MISSING_MATERIAL", "Either materialId or epdId is required", 400);
     }
 
+    // Project and period are this org's own rows; the IDs come from the client.
+    if (data.projectId) {
+      const project = await prisma.project.findFirst({ where: { id: data.projectId, organizationId: orgId }, select: { id: true } });
+      if (!project) return apiError("PROJECT_NOT_FOUND", "Project not found", 404);
+    }
+    if (data.reportingPeriodId) {
+      const period = await prisma.reportingPeriod.findFirst({ where: { id: data.reportingPeriodId, organizationId: orgId }, select: { id: true } });
+      if (!period) return apiError("PERIOD_NOT_FOUND", "Reporting period not found", 404);
+    }
+
     // Resolve factors
     let factors: Parameters<typeof calculateEmbodiedCarbon>[0]["factors"] | null = null;
 

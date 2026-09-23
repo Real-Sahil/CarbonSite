@@ -156,6 +156,7 @@ export type AuditAction =
   | "webhook.created"
   | "webhook.deleted"
   | "embodied_carbon.record_created"
+  | "embodied_carbon.not_recorded"
   | "embodied_carbon.record_deleted"
   | "api_key.created"
   | "api_key.deleted"

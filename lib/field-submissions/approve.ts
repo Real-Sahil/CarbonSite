@@ -5,6 +5,7 @@
 import { Prisma } from "@prisma/client";
 import { isValid as isValidUkPostcode } from "postcode";
 import { convertBetween } from "@/lib/calculation/units";
+import { recordDeliveryEmbodiedCarbon, type EmbodiedOutcome } from "@/lib/embodied-carbon/delivery-notes";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -128,8 +129,12 @@ export async function approveSubmissionInTx(
     facilityId?: string | null;
     reviewerUserId: string;
     reviewNote?: string;
+    /** Delivery notes: undefined = match the material automatically, null = record no embodied carbon. */
+    embodiedMaterialId?: string | null;
   },
 ): Promise<{
+  /** Delivery notes only: the embodied carbon record created, or why none was. */
+  embodied?: EmbodiedOutcome;
   // Null exactly when this submission promoted to a WaterRecord instead of
   // an ActivityRecord (water_meter_reading — water has no GHG scope).
   activityRecordId: string | null;
@@ -147,6 +152,7 @@ export async function approveSubmissionInTx(
   const activityDate = extractActivityDate(formData, submission.deviceSubmittedAt);
 
   let activityRecordId: string | null = submission.activityRecordId;
+  let embodied: EmbodiedOutcome | undefined;
 
   if (submission.documentType === "water_meter_reading") {
     if (!facilityId) {
@@ -251,6 +257,21 @@ export async function approveSubmissionInTx(
         },
       });
     }
+
+    // Delivery notes also feed the project's embodied carbon (A1-A3 and the
+    // actual A4 delivery), separate from the Scope 3 inventory record above.
+    if (submission.documentType === "delivery_note") {
+      embodied = await recordDeliveryEmbodiedCarbon(tx, {
+        orgId,
+        submission,
+        formData: { ...(ocrData ?? {}), ...formData },
+        quantity: amount,
+        unit,
+        activityDate: activityDate ?? submission.deviceSubmittedAt ?? new Date(),
+        materialId: opts.embodiedMaterialId,
+        userId: reviewerUserId,
+      });
+    }
   }
 
   if (evidenceFileIds.length > 0 && activityRecordId) {
@@ -277,5 +298,5 @@ export async function approveSubmissionInTx(
     },
   });
 
-  return { activityRecordId, submission: updated };
+  return { activityRecordId, submission: updated, ...(embodied ? { embodied } : {}) };
 }

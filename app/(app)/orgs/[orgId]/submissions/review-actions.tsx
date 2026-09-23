@@ -23,7 +23,16 @@ interface SubmissionReviewActionsProps {
   emissionCategories: { id: string; scope: number; name: string }[];
   facilities: { id: string; name: string }[];
   disabled?: boolean;
+  /** Delivery notes: library materials and the automatic match for the embodied carbon record. */
+  embodied?: {
+    materials: { id: string; name: string; category: string }[];
+    suggestedMaterialId: string | null;
+    matchReason: string;
+  };
 }
+
+// Select values: a material id, "auto" (server matches), or "none" (skip).
+const EMBODIED_NONE = "none";
 
 export function SubmissionReviewActions({
   orgId,
@@ -33,11 +42,13 @@ export function SubmissionReviewActions({
   emissionCategories,
   facilities,
   disabled,
+  embodied,
 }: SubmissionReviewActionsProps) {
   const { execute, error, isPending, setError } = useSafeMutation();
   const [emissionCategoryId, setEmissionCategoryId] = useState(currentEmissionCategoryId ?? "");
   const [facilityId, setFacilityId] = useState(currentFacilityId ?? "");
   const [reviewNote, setReviewNote] = useState("");
+  const [embodiedChoice, setEmbodiedChoice] = useState(embodied?.suggestedMaterialId ?? EMBODIED_NONE);
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleAction(action: "approved" | "rejected" | "needs_info") {
@@ -56,6 +67,7 @@ export function SubmissionReviewActions({
           emissionCategoryId: emissionCategoryId || undefined,
           facilityId: facilityId || undefined,
           reviewNote: reviewNote || undefined,
+          ...(embodied ? { embodiedMaterialId: embodiedChoice === EMBODIED_NONE ? null : embodiedChoice } : {}),
         }),
       });
 
@@ -109,6 +121,30 @@ export function SubmissionReviewActions({
               </Select>
             </div>
           )}
+        </div>
+      )}
+      {embodied && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="embodied-material" className="text-xs text-[#374151] tracking-[-0.36px]">
+            Embodied carbon material
+          </label>
+          <Select value={embodiedChoice} onValueChange={setEmbodiedChoice} disabled={disabled}>
+            <SelectTrigger id="embodied-material" className="w-full max-w-md">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={EMBODIED_NONE}>Do not record embodied carbon</SelectItem>
+              {embodied.materials.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.name} ({m.category})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-[#6B7280]">
+            {embodied.suggestedMaterialId ? `Suggested: ${embodied.matchReason}` : embodied.matchReason} Approving records
+            A1-A3 for the material and A4 for this delivery against the site&apos;s project.
+          </p>
         </div>
       )}
       <div className="flex flex-col gap-1">
