@@ -2,10 +2,6 @@
   "source": "DESNZ GHG conversion factors 2025 (flat file v1, 10 June 2025)",
   "library": "2025.2",
   "published": "2025-06-10",
-  "notPublished": [
-    "defra-2025-waste-mixed-recycling",
-    "defra-2025-waste-recycled-mixed-kg"
-  ],
   "factors": [
     {
       "externalId": "defra-2025-car-avg-km",
@@ -696,6 +692,26 @@
       "geographyCountry": "GB",
       "co2e": 520.5327,
       "usageNotes": "Commercial and industrial waste to landfill. DESNZ 2025 v1 flat file, row 20_507_5313_15_1."
+    },
+    {
+      "externalId": "defra-2025-waste-mixed-recycling",
+      "replacesExternalId": "defra-2025-waste-mixed-recycling",
+      "categoryCode": "s3-waste",
+      "activityType": "waste_disposal",
+      "inputUnit": "tonne",
+      "geographyCountry": "GB",
+      "co2e": 4.68568,
+      "usageNotes": "Commercial and industrial waste, closed-loop recycling. Uses the mixed paper and board closed-loop row, the single DESNZ 2025 recycling figure. DESNZ 2025 v1 flat file, row 20_506_5450_15_1."
+    },
+    {
+      "externalId": "defra-2025-waste-recycled-mixed-kg",
+      "replacesExternalId": "defra-2025-waste-recycled-mixed-kg",
+      "categoryCode": "s3-waste",
+      "activityType": "waste_disposal",
+      "inputUnit": "kg",
+      "geographyCountry": "GB",
+      "co2e": 0.00468568,
+      "usageNotes": "Commercial and industrial waste, closed-loop recycling, per kg. Uses the mixed paper and board closed-loop row, the single DESNZ 2025 recycling figure. DESNZ 2025 v1 flat file, row 20_506_5450_15_1, per tonne / 1000."
     },
     {
       "externalId": "defra-2025-waste-wood-landfill",

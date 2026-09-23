@@ -21,6 +21,11 @@ const RELEASES = {
     names: {
       hgv: "HGV (all diesel)", hgvArtics: "All artics", hgvAll: "All HGVs", hgvRigids: "All rigids",
       wasteCombustion: "Incineration with Energy Recovery",
+      // No 2025 closed-loop value for commercial and industrial waste. DESNZ's
+      // recycling factor is the same transport-to-facility figure for every
+      // material in a year (2026 gives this row that figure), so the
+      // published mixed paper and board closed-loop row stands in.
+      wasteRecycling: ["Paper", "Paper and board: mixed", "mixed paper and board closed-loop row, the single DESNZ 2025 recycling figure"],
     },
   },
   2026: {
@@ -32,6 +37,7 @@ const RELEASES = {
       hgv: "HGV (non-refrigerated, all diesel)", hgvArtics: "Average non-refrigerated artics",
       hgvAll: "Average non-refrigerated HGVs", hgvRigids: "Average non-refrigerated rigids",
       wasteCombustion: "Combustion",
+      wasteRecycling: ["Refuse", "Commercial and industrial waste", null],
     },
   },
 };
@@ -158,8 +164,8 @@ const SPEC = [
   ["waste-inert-landfill", "s3-waste", "waste_disposal", "tonne", "GB", [waste("Construction", "Aggregates", "Landfill")], 1, "Inert construction waste (aggregates) to landfill."],
   ["waste-landfill-mixed-kg", "s3-waste", "waste_disposal", "kg", "GB", [waste("Refuse", "Commercial and industrial waste", "Landfill")], 1000, "Commercial and industrial waste to landfill, per kg."],
   ["waste-mixed-landfill", "s3-waste", "waste_disposal", "tonne", "GB", [waste("Refuse", "Commercial and industrial waste", "Landfill")], 1, "Commercial and industrial waste to landfill."],
-  ["waste-mixed-recycling", "s3-waste", "waste_disposal", "tonne", "GB", [waste("Refuse", "Commercial and industrial waste", "Closed-loop")], 1, "Commercial and industrial waste, closed-loop recycling."],
-  ["waste-recycled-mixed-kg", "s3-waste", "waste_disposal", "kg", "GB", [waste("Refuse", "Commercial and industrial waste", "Closed-loop")], 1000, "Commercial and industrial waste, closed-loop recycling, per kg."],
+  ["waste-mixed-recycling", "s3-waste", "waste_disposal", "tonne", "GB", [waste(N.wasteRecycling[0], N.wasteRecycling[1], "Closed-loop")], 1, `Commercial and industrial waste, closed-loop recycling.${N.wasteRecycling[2] ? ` Uses the ${N.wasteRecycling[2]}.` : ""}`],
+  ["waste-recycled-mixed-kg", "s3-waste", "waste_disposal", "kg", "GB", [waste(N.wasteRecycling[0], N.wasteRecycling[1], "Closed-loop")], 1000, `Commercial and industrial waste, closed-loop recycling, per kg.${N.wasteRecycling[2] ? ` Uses the ${N.wasteRecycling[2]}.` : ""}`],
   ["waste-wood-landfill", "s3-waste", "waste_disposal", "tonne", "GB", [waste("Construction", "Wood", "Landfill")], 1, "Construction wood waste to landfill."],
 ];
 
