@@ -148,6 +148,12 @@ const optionalIsoDateSchema = z.preprocess(
   z.string().regex(isoDateRegex, "Must be YYYY-MM-DD").optional(),
 );
 
+/** As optionalIsoDateSchema, but null clears the date on update. */
+const clearableIsoDateSchema = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().regex(isoDateRegex, "Must be YYYY-MM-DD").nullable().optional(),
+);
+
 const optionalMoneySchema = z.preprocess(
   (value) => (value === "" ? undefined : value),
   z.coerce.number().nonnegative().optional(),
@@ -191,7 +197,7 @@ export const createReductionInitiativeSchema = z.object({
     z.coerce.number().int().positive().optional(),
   ),
   expectedImpactCo2e: optionalMoneySchema,
-  expectedStartDate: optionalIsoDateSchema,
+  expectedStartDate: clearableIsoDateSchema,
   notes: z.string().max(2000).optional(),
 });
 

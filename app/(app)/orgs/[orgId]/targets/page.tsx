@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Target } from "lucide-react";
-import { DeleteInitiativeButton, DeleteTargetButton } from "./target-actions";
+import { DeleteInitiativeButton, DeleteTargetButton, InitiativeStartDate } from "./target-actions";
 import { TargetProgressSection, type TargetWithProgress } from "./target-progress";
 
 interface TargetsPageProps {
@@ -94,6 +94,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       select: { id: true, code: true, name: true },
       orderBy: { name: "asc" },
     }),
+    prisma.organization.findUnique({ where: { id: orgId }, select: { reportingCurrency: true } }),
   ]).catch(() => null);
 
   if (!dbResult) {
@@ -101,7 +102,8 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       <div className="p-8"><p className="text-red-600 text-sm">Failed to load targets. The database may be updating — try refreshing in a moment.</p></div>
     );
   }
-  const [targets, initiatives, periods, memberships, facilities, categories] = dbResult;
+  const [targets, initiatives, periods, memberships, facilities, categories, orgRow] = dbResult;
+  const orgCurrency = orgRow?.reportingCurrency ?? "GBP";
 
   // Fetch aggregate totals for all periods referenced by targets
   const periodIds = [
@@ -266,6 +268,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                   facilities={facilities}
                   categories={categories}
                   targets={targetOptions}
+                  currency={orgCurrency}
                 />
               </div>
             )}
@@ -283,6 +286,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Linked to</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Owner</TableHead>
+                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Starts</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Expected impact</TableHead>
                       <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Cost</TableHead>
                       {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Actions</TableHead>}
@@ -313,6 +317,19 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">
                           {initiative.owner?.name ?? initiative.owner?.email ?? "Unassigned"}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                          {canEdit ? (
+                            <InitiativeStartDate
+                              orgId={orgId}
+                              initiativeId={initiative.id}
+                              value={initiative.expectedStartDate ? initiative.expectedStartDate.toISOString().slice(0, 10) : null}
+                            />
+                          ) : initiative.expectedStartDate ? (
+                            initiative.expectedStartDate.toISOString().slice(0, 10)
+                          ) : (
+                            "Not scheduled"
+                          )}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
                           {initiative.expectedImpactCo2e

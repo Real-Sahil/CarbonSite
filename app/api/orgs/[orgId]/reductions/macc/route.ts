@@ -9,6 +9,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { computeMacc, buildMaccCurve } from "@/lib/reductions/macc";
 import { appraisalPrice, netOfCarbonPrice } from "@/lib/carbon-price";
+import { maccInputsInCurrency, priceIn } from "@/lib/reductions/macc-inputs";
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
@@ -24,6 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
         status: true,
         capexAmount: true,
         costAmount: true,
+        costCurrency: true,
         opexDeltaAnnual: true,
         lifetimeYears: true,
         expectedImpactCo2e: true,
@@ -31,34 +33,27 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
       orderBy: { createdAt: "desc" },
     });
 
-    const entries = computeMacc(
-      initiatives.map((i) => ({
-        id: i.id,
-        name: i.name,
-        // Fall back to the legacy single-figure costAmount when capexAmount
-        // hasn't been set on this initiative yet.
-        capexAmount: i.capexAmount != null ? Number(i.capexAmount) : i.costAmount != null ? Number(i.costAmount) : null,
-        opexDeltaAnnual: i.opexDeltaAnnual != null ? Number(i.opexDeltaAnnual) : null,
-        lifetimeYears: i.lifetimeYears,
-        // ReductionInitiative.expectedImpactCo2e is stored in kgCO2e (see
-        // the "Expected impact (kgCO2e)" field on the creation form) —
-        // computeMacc expects tCO2e, so it must be converted here.
-        expectedImpactCo2e: i.expectedImpactCo2e != null ? Number(i.expectedImpactCo2e) / 1000 : null,
-      })),
-    );
+    const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { reportingCurrency: true } });
+    const currency = org?.reportingCurrency ?? "GBP";
+    // Costs converted to the reporting currency (see lib/reductions/macc-inputs.ts).
+    const { inputs, unconverted } = await maccInputsInCurrency(initiatives, currency);
+    const entries = computeMacc(inputs);
 
-    // Initiative costs are in pounds; only a GBP internal carbon price nets against them.
     const price = appraisalPrice(await loadCarbonPrices(orgId), new Date());
-    const netPrice = price?.currency === "GBP" ? price : null;
+    const netPrice = price ? priceIn(price, currency) : null;
     const curve = buildMaccCurve(entries).map((e) => ({
       ...e,
-      ...(netPrice ? netOfCarbonPrice(e.marginalCostPerTco2e, netPrice.pricePerTonne) : {}),
+      ...(netPrice != null ? netOfCarbonPrice(e.marginalCostPerTco2e, netPrice) : {}),
     }));
-    const excludedCount = initiatives.length - entries.length;
+    const excludedCount = inputs.length - entries.length;
 
     return NextResponse.json({
       curve,
-      carbonPrice: price ? { name: price.name, pricePerTonne: price.pricePerTonne, currency: price.currency, appliedToCurve: netPrice != null } : null,
+      currency,
+      unconverted,
+      carbonPrice: price
+        ? { name: price.name, pricePerTonne: price.pricePerTonne, currency: price.currency, pricePerTonneInCurrency: netPrice, appliedToCurve: netPrice != null }
+        : null,
       totalAbatementTco2e: curve.length > 0 ? curve[curve.length - 1].cumulativeAbatementEndTco2e : 0,
       excludedCount,
       excludedReason:

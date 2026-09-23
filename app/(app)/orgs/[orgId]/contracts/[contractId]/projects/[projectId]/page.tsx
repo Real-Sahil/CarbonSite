@@ -24,6 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CreateSiteForm, DeleteSiteButton } from "./site-actions";
+import { loadProjectBurndown } from "@/lib/project-carbon/burndown-load";
+import { BudgetStatusChip } from "@/components/project-carbon/budget-status-chip";
 
 interface Props {
   params: Promise<{ orgId: string; contractId: string; projectId: string }>;
@@ -116,6 +118,8 @@ export default async function ProjectDetailPage({ params }: Props) {
       select: { name: true },
     }),
   ]);
+  const burndown = await loadProjectBurndown(orgId, project.id).catch(() => null);
+
 
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
@@ -156,6 +160,9 @@ export default async function ProjectDetailPage({ params }: Props) {
               Carbon budget
             </Link>
           </Button>
+          {burndown && <span className="self-center">
+            <BudgetStatusChip burndown={burndown} href={`/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/carbon-budget`} />
+          </span>}
           <Button asChild size="sm" variant="outline">
             <Link href={`/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/whole-life-carbon`}>
               <Layers className="mr-1.5 h-3.5 w-3.5" />

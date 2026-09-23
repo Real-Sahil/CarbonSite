@@ -158,7 +158,7 @@ const INITIATIVE_STATUSES = [
   { value: "planned", label: "Planned" },
   { value: "in_progress", label: "In progress" },
   { value: "complete", label: "Complete" },
-  { value: "cancelled", label: "Cancelled" },
+  { value: "canceled", label: "Cancelled" },
 ];
 
 interface CreateInitiativeFormProps {
@@ -167,9 +167,10 @@ interface CreateInitiativeFormProps {
   facilities: { id: string; name: string }[];
   categories: { id: string; code: string; name: string }[];
   targets: { id: string; label: string }[];
+  currency: string;
 }
 
-export function CreateInitiativeForm({ orgId, members, facilities, categories, targets }: CreateInitiativeFormProps) {
+export function CreateInitiativeForm({ orgId, members, facilities, categories, targets, currency: defaultCurrency }: CreateInitiativeFormProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [status, setStatus] = useState(INITIATIVE_STATUSES[0].value);
@@ -178,6 +179,8 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
   const [costAmount, setCostAmount] = useState("");
   const [opexDeltaAnnual, setOpexDeltaAnnual] = useState("");
   const [lifetimeYears, setLifetimeYears] = useState("");
+  const [currency, setCurrency] = useState(defaultCurrency);
+  const [startDate, setStartDate] = useState("");
   const [facilityId, setFacilityId] = useState("");
   const [emissionCategoryId, setEmissionCategoryId] = useState("");
   const [reductionTargetId, setReductionTargetId] = useState("");
@@ -202,7 +205,8 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
           ownerUserId: ownerId || undefined,
           expectedImpactCo2e: expectedImpact ? parseFloat(expectedImpact) : undefined,
           costAmount: costAmount ? parseFloat(costAmount) : undefined,
-          costCurrency: "GBP",
+          costCurrency: currency.trim().toUpperCase() || defaultCurrency,
+          expectedStartDate: startDate || undefined,
           opexDeltaAnnual: opexDeltaAnnual ? parseFloat(opexDeltaAnnual) : undefined,
           lifetimeYears: lifetimeYears ? parseInt(lifetimeYears, 10) : undefined,
           facilityId: facilityId || undefined,
@@ -267,11 +271,19 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
         <Input type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} placeholder="Optional" className="w-36" />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Capital cost (GBP)</label>
+        <label htmlFor="initiative-start" className="text-xs text-[#374151] tracking-[-0.36px]">Starts</label>
+        <Input id="initiative-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-40" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="initiative-currency" className="text-xs text-[#374151] tracking-[-0.36px]">Currency</label>
+        <Input id="initiative-currency" value={currency} maxLength={3} onChange={(e) => setCurrency(e.target.value)} className="w-20 uppercase" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Capital cost ({currency.toUpperCase() || defaultCurrency})</label>
         <Input type="number" min="0" step="any" value={costAmount} onChange={(e) => setCostAmount(e.target.value)} placeholder="Optional" className="w-28" />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Annual opex change (GBP)</label>
+        <label className="text-xs text-[#374151] tracking-[-0.36px]">Annual opex change ({currency.toUpperCase() || defaultCurrency})</label>
         <Input type="number" step="any" value={opexDeltaAnnual} onChange={(e) => setOpexDeltaAnnual(e.target.value)} placeholder="Negative = saves money" className="w-40" />
       </div>
       <div className="flex flex-col gap-1">

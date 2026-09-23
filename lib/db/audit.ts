@@ -62,6 +62,7 @@ export type AuditAction =
   | "target.created"
   | "target.deleted"
   | "initiative.created"
+  | "initiative.updated"
   | "initiative.deleted"
   | "legal_entity.created"
   | "legal_entity.updated"

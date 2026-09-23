@@ -8,6 +8,7 @@ import { loadSbtiPathway } from "@/lib/calculation/sbti-actuals";
 import { computeMacc, buildMaccCurve } from "@/lib/reductions/macc";
 import { appraisalPrice, formatMoney, netOfCarbonPrice } from "@/lib/carbon-price";
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
+import { maccInputsInCurrency, priceIn } from "@/lib/reductions/macc-inputs";
 import { gradeCells, summarizeCompleteness, type CompletenessCellInput } from "@/lib/inventory/completeness";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
         name: true,
         capexAmount: true,
         costAmount: true,
+        costCurrency: true,
         opexDeltaAnnual: true,
         lifetimeYears: true,
         expectedImpactCo2e: true,
@@ -58,27 +60,22 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
       },
     }),
     loadCarbonPrices(orgId),
+    prisma.organization.findUnique({ where: { id: orgId }, select: { reportingCurrency: true } }),
   ]).catch(() => null);
 
   if (!dbResult) {
     return <div className="p-8"><p className="text-sm text-red-600">Failed to load the pathway. The database may be updating — try refreshing in a moment.</p></div>;
   }
-  const [pathway, initiatives, currentPeriod, requirements, carbonPrices] = dbResult;
-  // Initiative costs are entered in pounds, so only a GBP price nets against them.
+  const [pathway, initiatives, currentPeriod, requirements, carbonPrices, orgRow] = dbResult;
+  const currency = orgRow?.reportingCurrency ?? "GBP";
+  const money = (v: number) => formatMoney(v, currency);
+  // Costs and the price are both converted to the reporting currency.
   const carbonPrice = appraisalPrice(carbonPrices, new Date());
-  const netPrice = carbonPrice?.currency === "GBP" ? carbonPrice : null;
+  const netPrice = carbonPrice ? priceIn(carbonPrice, currency) : null;
 
   // ── MACC ──────────────────────────────────────────────────────────────────
-  const maccEntries = computeMacc(
-    initiatives.map((i) => ({
-      id: i.id,
-      name: i.name,
-      capexAmount: i.capexAmount != null ? Number(i.capexAmount) : i.costAmount != null ? Number(i.costAmount) : null,
-      opexDeltaAnnual: i.opexDeltaAnnual != null ? Number(i.opexDeltaAnnual) : null,
-      lifetimeYears: i.lifetimeYears,
-      expectedImpactCo2e: i.expectedImpactCo2e != null ? Number(i.expectedImpactCo2e) / 1000 : null,
-    })),
-  );
+  const { inputs: maccInputs, unconverted } = await maccInputsInCurrency(initiatives, currency);
+  const maccEntries = computeMacc(maccInputs);
   const maccCurve = buildMaccCurve(maccEntries);
   const initiativeById = new Map(initiatives.map((i) => [i.id, i]));
 
@@ -276,9 +273,10 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
             <div>
               <CardTitle className="text-sm font-semibold text-[#111827]">Cheapest initiatives first</CardTitle>
               <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
-                Ranked by £ per tCO2e abated. A gap badge means this measure also closes a red or amber
+                Ranked by {currency} per tCO2e abated. A gap badge means this measure also closes a red or amber
                 completeness cell.
-                {netPrice && ` Net figures take off your internal carbon price of ${formatMoney(netPrice.pricePerTonne, "GBP", 2)}/tCO2e.`}
+                {netPrice != null && ` Net figures take off your internal carbon price of ${formatMoney(netPrice, currency, 2)}/tCO2e.`}
+                {unconverted.length > 0 && ` Left out, currency not convertible: ${unconverted.join(", ")}.`}
               </CardDescription>
             </div>
             <Link href={`/orgs/${orgId}/scenarios`} className="text-xs font-medium text-[#f97316] hover:text-[#ea580c] flex items-center gap-1">
@@ -328,13 +326,13 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                       </div>
                       <div className="text-right shrink-0">
                         <div className={`text-sm font-semibold tabular-nums ${entry.marginalCostPerTco2e < 0 ? "text-emerald-600" : "text-[#111827]"}`}>
-                          £{entry.marginalCostPerTco2e.toFixed(0)}/tCO2e
+                          {money(entry.marginalCostPerTco2e)}/tCO2e
                         </div>
-                        {netPrice && (() => {
-                          const net = netOfCarbonPrice(entry.marginalCostPerTco2e, netPrice.pricePerTonne);
+                        {netPrice != null && (() => {
+                          const net = netOfCarbonPrice(entry.marginalCostPerTco2e, netPrice);
                           return (
                             <div className={`text-xs tabular-nums ${net.paysAtPrice ? "text-emerald-600" : "text-[#6B7280]"}`}>
-                              £{net.netCostPerTco2e.toFixed(0)}/t net{net.paysAtPrice ? ", pays at your carbon price" : ""}
+                              {money(net.netCostPerTco2e)}/t net{net.paysAtPrice ? ", pays at your carbon price" : ""}
                             </div>
                           );
                         })()}

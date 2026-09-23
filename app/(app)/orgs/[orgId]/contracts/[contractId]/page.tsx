@@ -25,6 +25,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CreateProjectForm, DeleteProjectButton } from "./project-actions";
+import { loadProjectBurndown } from "@/lib/project-carbon/burndown-load";
+import { BudgetStatusChip } from "@/components/project-carbon/budget-status-chip";
 import { RequestSubmissionForm, SubmissionRow } from "./subcontractor-actions";
 
 interface Props {
@@ -177,6 +179,11 @@ export default async function ContractDetailPage({ params }: Props) {
       GROUP BY c.id
     `,
   ]);
+  // Burn-down status per project with a budget (a few queries each; contracts hold few projects).
+  const burndowns = new Map(
+    await Promise.all(projects.map(async (p) => [p.id, await loadProjectBurndown(orgId, p.id).catch(() => null)] as const)),
+  );
+
 
   const directCo2eResult = await prisma.$queryRaw<Array<{ total_co2e: number }>>`
     SELECT COALESCE(SUM(ec.total_co2e), 0)::float AS total_co2e
@@ -298,6 +305,7 @@ export default async function ContractDetailPage({ params }: Props) {
                     <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Start</TableHead>
                     <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">End</TableHead>
                     <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Sites</TableHead>
+                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Carbon budget</TableHead>
                     <TableHead className="w-[80px]" />
                   </TableRow>
                 </TableHeader>
@@ -324,6 +332,12 @@ export default async function ContractDetailPage({ params }: Props) {
                       </TableCell>
                       <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
                         {project._count.sites}
+                      </TableCell>
+                      <TableCell>
+                        <BudgetStatusChip
+                          burndown={burndowns.get(project.id) ?? null}
+                          href={`/orgs/${orgId}/contracts/${contractId}/projects/${project.id}/carbon-budget`}
+                        />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">

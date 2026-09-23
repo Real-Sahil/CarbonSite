@@ -58,6 +58,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
         ...(body.opexDeltaAnnual !== undefined ? { opexDeltaAnnual: body.opexDeltaAnnual } : {}),
         ...(body.lifetimeYears !== undefined ? { lifetimeYears: body.lifetimeYears } : {}),
         ...(body.expectedImpactCo2e !== undefined ? { expectedImpactCo2e: body.expectedImpactCo2e } : {}),
+        ...(body.expectedStartDate !== undefined ? { expectedStartDate: body.expectedStartDate ? new Date(body.expectedStartDate) : null } : {}),
         ...(body.facilityId !== undefined ? { facilityId: body.facilityId } : {}),
         ...(body.emissionCategoryId !== undefined ? { emissionCategoryId: body.emissionCategoryId } : {}),
         ...(body.reductionTargetId !== undefined ? { reductionTargetId: body.reductionTargetId } : {}),
@@ -68,7 +69,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
-      action: "initiative.created",
+      action: "initiative.updated",
       resourceType: "reduction_initiative",
       resourceId: initiativeId,
       metadata: { updated: Object.keys(body) },

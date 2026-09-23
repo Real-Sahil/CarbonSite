@@ -232,10 +232,10 @@ interface MaccCurvePoint {
   cumulativeAbatementEndTco2e: number;
 }
 
-function fmtCost(value: number): string {
+function fmtCost(value: number, currency = "GBP"): string {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
-    currency: "GBP",
+    currency,
     maximumFractionDigits: 0,
     signDisplay: "exceptZero",
   }).format(value);
@@ -245,6 +245,7 @@ function MaccCard({ orgId }: { orgId: string }) {
   const [curve, setCurve] = useState<MaccCurvePoint[]>([]);
   const [totalAbatementTco2e, setTotalAbatementTco2e] = useState(0);
   const [excludedCount, setExcludedCount] = useState(0);
+  const [currency, setCurrency] = useState("GBP");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -262,6 +263,7 @@ function MaccCard({ orgId }: { orgId: string }) {
       setCurve(d.curve);
       setTotalAbatementTco2e(d.totalAbatementTco2e);
       setExcludedCount(d.excludedCount);
+      setCurrency(d.currency ?? "GBP");
     } catch {
       setLoadError("Could not reach the server. Check your connection and try again.");
     } finally {
@@ -318,7 +320,7 @@ function MaccCard({ orgId }: { orgId: string }) {
           Marginal abatement cost curve
         </CardTitle>
         <CardDescription>
-          Reduction initiatives ranked by £ per tCO2e, cheapest first. Bar width is the tonnes each measure abates.
+          Reduction initiatives ranked by {currency} per tCO2e, cheapest first. Bar width is the tonnes each measure abates.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -354,7 +356,7 @@ function MaccCard({ orgId }: { orgId: string }) {
                   />
                 </div>
                 <div className={`w-24 shrink-0 text-right text-sm tabular-nums font-medium ${isNegative ? "text-green-700" : "text-amber-700"}`}>
-                  {fmtCost(point.marginalCostPerTco2e)}/t
+                  {fmtCost(point.marginalCostPerTco2e, currency)}/t
                 </div>
                 <div className="w-20 shrink-0 text-right text-xs text-zinc-500 tabular-nums">
                   {point.paybackYears != null ? `${point.paybackYears.toFixed(1)}y payback` : "-"}
