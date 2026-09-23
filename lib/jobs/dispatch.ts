@@ -12,6 +12,7 @@ import {
   enqueueSupplierPerformanceUpdate,
   enqueueCausalAnalysis,
   enqueueAccountPoliciesCheck,
+  enqueueDbtTransform,
   enqueueSubmissionSlaMonitoring,
   enqueuePermitExpiryMonitoring,
   enqueueWorkerSessionMonitoring,
@@ -39,7 +40,7 @@ import { processForecastingJob } from "@/lib/jobs/workers/forecasting";
 import { detectInvoiceAnomalies } from "@/lib/jobs/workers/invoice-anomaly-detector";
 import { processSupplierPerformanceUpdate } from "@/lib/jobs/workers/supplier-performance";
 import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
-import { runDbtTransformation, type DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
+import type { DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
 import { processAccountPolicies } from "@/workers/account-policies";
 import { processSubmissionSlaMonitoring } from "@/workers/submission-sla-monitoring";
 import { processPermitExpiryMonitoring } from "@/workers/permit-expiry-monitoring";
@@ -204,17 +205,16 @@ export async function dispatchQuickBooksSync(
   return { status: "processed", ...result };
 }
 
+/**
+ * dbt builds the analytics fact tables by running the Python `dbt` CLI, which
+ * only a worker host has. On the Vercel-only deployment there is no dbt and no
+ * queue consumer, so the step is skipped rather than enqueued into a queue
+ * nothing drains (which also started a pg-boss client on every calculation).
+ */
 export async function dispatchDbtTransform(data: DbtTransformJobData) {
-  if (mode === "worker") {
-    // enqueue via pg-boss — workers/index.ts handles the "dbt-transform-jobs" queue
-    // There is currently no top-level enqueue helper for this queue; pg-boss consumer
-    // in workers/index.ts handles it. In inline mode we call the function directly.
-    // When adding a proper enqueue helper to queues/index.ts, wire it here.
-    return "queued" as const;
-  }
-
-  await runDbtTransformation(data.calculationRunId, data.organizationId);
-  return "processed" as const;
+  if (mode !== "worker") return "skipped" as const;
+  await enqueueDbtTransform(data);
+  return "queued" as const;
 }
 
 export async function dispatchAccountPolicies(_data: AccountPoliciesJobData) {

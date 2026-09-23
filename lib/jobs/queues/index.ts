@@ -81,6 +81,11 @@ export async function enqueueDsarErasure(data: DsarJobData) {
   await boss.send("dsar-erasure", data, retry);
 }
 
+export async function enqueueDbtTransform(data: { calculationRunId: string; organizationId: string }) {
+  await ensureBossStarted();
+  await boss.send("dbt-transform-jobs", data, { retryLimit: 2, retryDelay: 30 });
+}
+
 export async function enqueueAccountPoliciesCheck(data: AccountPoliciesJobData) {
   await ensureBossStarted();
   await boss.send("account-policies", data, retry);

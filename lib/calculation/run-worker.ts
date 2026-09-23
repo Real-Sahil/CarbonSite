@@ -24,7 +24,6 @@ import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
 import { assessTemporalRepresentativeness } from "./temporal-representativeness";
 import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
-import { getBoss } from "@/lib/jobs/boss";
 import type { ActivityRecord } from "@prisma/client";
 
 // A single HTTP request (in JOB_PROCESSING_MODE=inline, the only mode that
@@ -640,14 +639,9 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
     data: { status: "succeeded", finishedAt: new Date(), errorMessage: null },
   });
 
-  // Enqueue dbt transformation for immutable fact table building
-  const boss = await getBoss();
-  await boss
-    .send(
-      "dbt-transform-jobs",
-      { calculationRunId, organizationId: orgId },
-      { retryLimit: 2, retryDelay: 30 },
-    )
+  // dbt fact tables: queued on a worker deployment, skipped on Vercel.
+  const { dispatchDbtTransform } = await import("@/lib/jobs/dispatch");
+  await dispatchDbtTransform({ calculationRunId, organizationId: orgId })
     .catch((err: Error) => calculationLogger.warn("Failed to enqueue dbt transformation", { err }));
 
   // Trigger n8n workflow for facility risk flagging
