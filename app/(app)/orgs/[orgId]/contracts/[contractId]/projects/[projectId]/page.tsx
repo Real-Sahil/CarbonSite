@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2, Target, Layers } from "lucide-react";
+import { Building2, Target, Layers, ListChecks } from "lucide-react";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import type { OrgRole } from "@prisma/client";
@@ -104,15 +104,15 @@ export default async function ProjectDetailPage({ params }: Props) {
   const canEdit = EDIT_ROLES.includes(role!);
 
   const [project, sites, contract] = await Promise.all([
-    prisma.project.findUniqueOrThrow({
-      where: { id: projectId, organizationId: orgId },
+    prisma.project.findFirstOrThrow({
+      where: { id: projectId, contractId, organizationId: orgId },
     }),
     prisma.site.findMany({
       where: { projectId, organizationId: orgId },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.contract.findUniqueOrThrow({
-      where: { id: contractId },
+    prisma.contract.findFirstOrThrow({
+      where: { id: contractId, organizationId: orgId },
       select: { name: true },
     }),
   ]);
@@ -160,6 +160,12 @@ export default async function ProjectDetailPage({ params }: Props) {
             <Link href={`/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/whole-life-carbon`}>
               <Layers className="mr-1.5 h-3.5 w-3.5" />
               Whole-life carbon
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/orgs/${orgId}/contracts/${contractId}/projects/${projectId}/pas2080`}>
+              <ListChecks className="mr-1.5 h-3.5 w-3.5" />
+              PAS 2080
             </Link>
           </Button>
         </div>

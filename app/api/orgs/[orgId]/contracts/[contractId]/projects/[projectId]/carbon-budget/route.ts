@@ -6,42 +6,13 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { setCarbonBudgetSchema } from "@/lib/validation/project-carbon";
+import { measuredProjectTco2e } from "@/lib/project-carbon/measured";
 
 type Params = { params: Promise<{ orgId: string; contractId: string; projectId: string }> };
 
-/**
- * The project's real, measured actual emissions to date — embodied carbon
- * records plus activity-record emissions on the project's sites, taking
- * only the latest calculation run per record so re-running calculations
- * doesn't double count. This is the top-line "actual" the carbon-budget
- * page shows; it is never derived from the per-phase actualTco2e figures,
- * which are a separate, manually reconciled allocation (see
- * CarbonBudgetPhase.percentComplete in schema.prisma).
- */
+/** Measured actual to date; never derived from the manually reconciled per-phase actualTco2e figures. */
 async function computeProjectActualTco2e(orgId: string, projectId: string): Promise<number> {
-  const [embodiedAgg, activityRows] = await Promise.all([
-    prisma.embodiedCarbonRecord.aggregate({
-      where: { organizationId: orgId, projectId },
-      _sum: { totalKgCo2e: true },
-    }),
-    prisma.$queryRaw<Array<{ total_co2e: number }>>`
-      SELECT COALESCE(SUM(ec.total_co2e), 0)::float AS total_co2e
-      FROM activity_records ar
-      JOIN sites s ON s.id = ar.site_id
-      LEFT JOIN LATERAL (
-        SELECT total_co2e FROM emission_calculations
-        WHERE activity_record_id = ar.id
-        ORDER BY created_at DESC LIMIT 1
-      ) ec ON TRUE
-      WHERE s.project_id = ${projectId}
-        AND ar.organization_id = ${orgId}
-        AND ar.review_status = 'approved'
-    `,
-  ]);
-
-  const embodiedKg = embodiedAgg._sum.totalKgCo2e ?? 0;
-  const activityKg = Number(activityRows[0]?.total_co2e ?? 0);
-  return (embodiedKg + activityKg) / 1000;
+  return (await measuredProjectTco2e(orgId, projectId)).total;
 }
 
 export async function GET(_req: NextRequest, { params }: Params) {

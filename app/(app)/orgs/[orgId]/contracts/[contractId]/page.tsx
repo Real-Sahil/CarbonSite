@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { HEADLINE_ONLY } from "@/lib/project-carbon/sql";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Building2, CheckCircle2, MinusCircle } from "lucide-react";
@@ -164,6 +165,7 @@ export default async function ContractDetailPage({ params }: Props) {
       LEFT JOIN projects p ON p.contract_id = c.id
       LEFT JOIN sites s ON s.project_id = p.id
       LEFT JOIN activity_records ar ON ar.site_id = s.id
+      LEFT JOIN emission_categories cat ON cat.id = ar.emission_category_id
       LEFT JOIN LATERAL (
         SELECT total_co2e FROM emission_calculations
         WHERE activity_record_id = ar.id
@@ -171,6 +173,7 @@ export default async function ContractDetailPage({ params }: Props) {
       ) ec ON TRUE
       WHERE c.id = ${contractId}
         AND c.organization_id = ${orgId}
+        AND ${HEADLINE_ONLY}
       GROUP BY c.id
     `,
   ]);
@@ -178,6 +181,7 @@ export default async function ContractDetailPage({ params }: Props) {
   const directCo2eResult = await prisma.$queryRaw<Array<{ total_co2e: number }>>`
     SELECT COALESCE(SUM(ec.total_co2e), 0)::float AS total_co2e
     FROM activity_records ar
+    JOIN emission_categories cat ON cat.id = ar.emission_category_id
     LEFT JOIN LATERAL (
       SELECT total_co2e FROM emission_calculations
       WHERE activity_record_id = ar.id
@@ -186,6 +190,7 @@ export default async function ContractDetailPage({ params }: Props) {
     WHERE ar.organization_id = ${orgId}
       AND ar.contract_id = ${contractId}
       AND ar.site_id IS NULL
+      AND ${HEADLINE_ONLY}
   `;
 
   const totalKgCo2e =

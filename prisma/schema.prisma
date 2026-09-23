@@ -61,6 +61,7 @@ model User {
   snapshotVerifications             PublishedSnapshot[]          @relation("SnapshotVerifiedBy")
   embodiedCarbonRecords             EmbodiedCarbonRecord[]
   wholeLifeCarbonAssessmentsCreated WholeLifeCarbonAssessment[]
+  carbonOpportunitiesCreated        CarbonReductionOpportunity[] @relation("CarbonOpportunityCreator")
   subcontractorSubmissionsRequested SubcontractorCarbonSubmission[] @relation("SubcontractorSubmissionRequestedBy")
   subcontractorSubmissionsVerified  SubcontractorCarbonSubmission[] @relation("SubcontractorSubmissionVerifiedBy")
   completenessRequirementsOwned     DataCompletenessRequirement[]   @relation("CompletenessRequirementOwner")
@@ -251,6 +252,8 @@ model Organization {
   complianceRecords           ComplianceRecord[]
   carbonBudgets               CarbonBudget[]
   wholeLifeCarbonAssessments  WholeLifeCarbonAssessment[]
+  carbonManagementPlans       CarbonManagementPlan[]
+  carbonReductionOpportunities CarbonReductionOpportunity[]
   subcontractorCarbonSubmissions SubcontractorCarbonSubmission[]
   dataCompletenessRequirements DataCompletenessRequirement[]
   wasteRecords                WasteRecord[]
@@ -2081,6 +2084,8 @@ model Project {
   workerSessions        WorkerSession[]           @relation("ProjectWorkerSessions")
   programme             Programme?               @relation("ProgrammeProjects", fields: [programmeId], references: [id], onDelete: SetNull)
   programmeId           String?                  @map("programme_id")
+  carbonManagementPlan  CarbonManagementPlan?
+  carbonOpportunities   CarbonReductionOpportunity[]
 
   @@index([organizationId, contractId])
   @@map("projects")
@@ -6455,4 +6460,92 @@ model ExternalApiCredential {
   @@unique([organizationId, provider])
   @@index([organizationId, isActive])
   @@map("external_api_credentials")
+}
+
+// ─── PAS 2080:2023 carbon management ─────────────────────────────────────────
+// A project's carbon management plan and its log of reduction opportunities,
+// tested against the carbon reduction hierarchy. Measured figures come from
+// embodied carbon records and site activity (lib/pas2080/position.ts).
+
+enum ValueChainRole {
+  asset_owner
+  designer
+  constructor
+  product_supplier
+
+  @@map("value_chain_role")
+}
+
+/// PAS 2080:2023 carbon reduction hierarchy, most effective first.
+enum CarbonHierarchyLevel {
+  build_nothing
+  build_less
+  build_clever
+  build_efficiently
+
+  @@map("carbon_hierarchy_level")
+}
+
+enum CarbonOpportunityStatus {
+  identified
+  under_review
+  adopted
+  implemented
+  rejected
+
+  @@map("carbon_opportunity_status")
+}
+
+model CarbonManagementPlan {
+  id                 String          @id @default(cuid())
+  organizationId     String          @map("organization_id")
+  projectId          String          @unique @map("project_id")
+  valueChainRole     ValueChainRole  @map("value_chain_role")
+  /// Named person accountable for carbon on the project (PAS 2080 leadership).
+  carbonLeadName     String?         @map("carbon_lead_name")
+  /// Business-as-usual whole-life carbon the project is measured against, tCO2e.
+  baselineTco2e      Decimal?        @map("baseline_tco2e") @db.Decimal(18, 4)
+  /// How the baseline was set (reference design, benchmark, earlier scheme).
+  baselineBasis      String?         @map("baseline_basis")
+  targetTco2e        Decimal?        @map("target_tco2e") @db.Decimal(18, 4)
+  /// EN 17472 / EN 15978 modules the baseline, target and monitoring cover.
+  modulesInScope     String[]        @map("modules_in_scope")
+  notes              String?
+  updatedByUserId    String?         @map("updated_by_user_id")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("carbon_management_plans")
+}
+
+model CarbonReductionOpportunity {
+  id                   String                  @id @default(cuid())
+  organizationId       String                  @map("organization_id")
+  projectId            String                  @map("project_id")
+  title                String
+  description          String?
+  hierarchyLevel       CarbonHierarchyLevel    @map("hierarchy_level")
+  /// Work stage the opportunity was raised at, e.g. "RIBA 2" or "Options".
+  workStage            String?                 @map("work_stage")
+  lifecycleModules     String[]                @map("lifecycle_modules")
+  estimatedSavingTco2e Decimal?                @map("estimated_saving_tco2e") @db.Decimal(18, 4)
+  status               CarbonOpportunityStatus @default(identified)
+  /// Why it was adopted or rejected. Required for a rejection.
+  decisionRationale    String?                 @map("decision_rationale")
+  ownerName            String?                 @map("owner_name")
+  decidedAt            DateTime?               @map("decided_at")
+  createdByUserId      String                  @map("created_by_user_id")
+  createdAt            DateTime                @default(now()) @map("created_at")
+  updatedAt            DateTime                @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("CarbonOpportunityCreator", fields: [createdByUserId], references: [id])
+
+  @@index([organizationId, projectId, status])
+  @@map("carbon_reduction_opportunities")
 }

@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 // measured Scope 1+2 emissions on its own sites; see
 // lib/embodied-carbon/whole-life.ts for the full methodology notes.
 
+import { HEADLINE_ONLY } from "@/lib/project-carbon/sql";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -41,6 +42,7 @@ async function computeOperationalEnergyKgCo2e(
       AND ar.organization_id = ${orgId}
       AND ar.review_status = 'approved'
       AND cat.scope IN (1, 2)
+      AND ${HEADLINE_ONLY}
       AND (${operationalStartDate}::date IS NULL OR ar.activity_date >= ${operationalStartDate}::date)
   `;
   return Number(rows[0]?.total_co2e ?? 0);
