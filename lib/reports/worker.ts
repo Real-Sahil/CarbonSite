@@ -402,7 +402,9 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
 
   // These types query their own tables directly — no EmissionCalculation rows.
   const isNonGhgType = report.type === "ecology_scan" || report.type === "ecology_survey"
-    || report.type === "csrd_esrs_e3" || report.type === "csrd_esrs_e5";
+    || report.type === "csrd_esrs_e3" || report.type === "csrd_esrs_e5"
+    // The bid pack reads snapshot aggregates itself (lib/bids/carbon-pack.ts).
+    || report.type === "bid_carbon_pack";
 
   const calcs = !isNonGhgType && report.type !== "national_toms"
     ? await fetchCalculations(orgId, runId, report.contractId ?? undefined)
@@ -421,7 +423,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   // Ecology report types carry no GHG emission calculations — basePdfData has
   // all-zero values, so an LLM narrative would reference "0.00 tCO2e" and be
   // meaningless. Skip narrative for those types.
-  const noNarrativeTypes = new Set(["national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
+  const noNarrativeTypes = new Set(["bid_carbon_pack", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
   if (llmClient.isConfigured() && !noNarrativeTypes.has(report.type)) {
     reportLogger.info("LLM configured, generating audit narrative", {
       reportId: report.id,
@@ -471,6 +473,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
       organization: report.organization,
       reportingPeriod: report.reportingPeriod,
       snapshot: {
+        id: report.snapshotId,
         version: report.snapshot.version,
         publishedAt: report.snapshot.publishedAt,
         calculationRunId: report.snapshot.calculationRunId,

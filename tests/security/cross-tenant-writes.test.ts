@@ -35,6 +35,9 @@ const db = vi.hoisted(() => {
     emissionFactor: model(),
     factorLibrary: model(),
     organizationEmissionFactor: model(),
+    publishedSnapshot: model(),
+    contract: model(),
+    report: model(),
     $transaction: vi.fn(),
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
@@ -47,12 +50,18 @@ vi.mock("@/lib/jobs/dispatch", () => ({
   dispatchNotification: vi.fn().mockResolvedValue(undefined),
   dispatchDsarExport: vi.fn(),
   dispatchDsarErasure: vi.fn(),
+  dispatchReport: vi.fn(),
 }));
 vi.mock("@/lib/notifications/email", () => ({ resolveEmailLogoUrl: vi.fn() }));
 vi.mock("@/workers/supplier-invite-email", () => ({
   sendSupplierInviteEmail: vi.fn(),
   sendSupplierCredentialsEmail: vi.fn(),
 }));
+vi.mock("@/lib/billing/limits", () => ({
+  requireActiveBilling: vi.fn().mockResolvedValue(null),
+  requireWithinUsageLimit: vi.fn().mockResolvedValue(null),
+}));
+vi.mock("@/lib/billing/usage", () => ({ recordUsage: vi.fn() }));
 vi.mock("@/lib/security/rate-limit-async", () => ({ rateLimitRequest: vi.fn().mockResolvedValue(null) }));
 vi.mock("@/lib/auth/session", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/auth/session")>();
@@ -250,5 +259,26 @@ describe("data subject requests", () => {
 
     expect(res.status).toBe(403);
     expect(db.dsarRequest.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("reports", () => {
+  it.each([
+    ["a contract report", { type: "contract_carbon", contractId: "contract-b" }],
+    ["a bid carbon pack", { type: "bid_carbon_pack", options: { contractIds: ["contract-a", "contract-b"] } }],
+  ])("refuses %s naming another organisation's contract", async (_name, extra) => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/reports/route");
+    db.publishedSnapshot.findUnique.mockResolvedValue({ organizationId: ORG_A, reportingPeriodId: "p1" });
+    db.contract.findFirst.mockResolvedValue(null);
+    db.contract.count.mockResolvedValue(1);
+
+    const res = await POST(post(`/api/orgs/${ORG_A}/reports`, { snapshotId: "snap-a", ...extra }), {
+      params: Promise.resolve({ orgId: ORG_A }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.report.create).not.toHaveBeenCalled();
+    const where = (db.contract.findFirst.mock.calls[0] ?? db.contract.count.mock.calls[0])[0].where;
+    expect(where.organizationId).toBe(ORG_A);
   });
 });

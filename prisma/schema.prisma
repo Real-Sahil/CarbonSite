@@ -1737,6 +1737,7 @@ enum ReportType {
   ecology_scan
   social_value
   snapshot_export
+  bid_carbon_pack
 
   @@map("report_type")
 }

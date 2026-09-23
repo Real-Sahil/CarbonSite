@@ -21,6 +21,8 @@ import { renderPpn006CrpHtml, type Ppn006CrpData, type CrpScopeRow } from "./tem
 import { renderEcologySurveyHtml, type EcologySurveyData, type EcologySurveyAssessment } from "./templates/ecology-survey";
 import { renderEcologyScanHtml, type EcologyScanReportData, type EcologyScanRecord, type EcologyScanSpecies, type EcologyScanSite, type EcologyScanWoodland } from "./templates/ecology-scan";
 import { llmClient } from "@/lib/llm/client";
+import { renderBidCarbonPackHtml } from "./templates/bid-carbon-pack";
+import { loadBidPackData } from "@/lib/bids/carbon-pack";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
   return Promise.race([
@@ -50,7 +52,7 @@ export type ReportContext = {
     reportingPeriodId: string;
     organization: { name: string };
     reportingPeriod: { label: string; startDate: Date; endDate: Date };
-    snapshot: { version: number; publishedAt: Date; calculationRunId: string };
+    snapshot: { id: string; version: number; publishedAt: Date; calculationRunId: string };
     contract: { name: string } | null;
   };
 };
@@ -503,11 +505,11 @@ const handlers: Record<string, ReportHandler> = {
 
   ppn_006_crp: async (ctx) => {
     const { agg, opts, basePdfData, report, orgId, logoDataUri} = ctx;
-    const initiatives = await withQueryTimeout(
-      prisma.reductionInitiative.findMany({
-        where: { organizationId: orgId },
-        select: { name: true, expectedImpactCo2e: true, status: true },
-        orderBy: { createdAt: "asc" },
+    const baseYear = await withQueryTimeout(
+      prisma.baseYear.findFirst({
+        where: { organizationId: orgId, status: "active" },
+        orderBy: { createdAt: "desc" },
+        include: { reportingPeriod: { select: { endDate: true } } },
       })
     );
 
@@ -517,10 +519,11 @@ const handlers: Record<string, ReportHandler> = {
       kgCo2e: c.totalKg,
     }));
 
-    const baselineTonnes = opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined;
-    const baselineKgS1 = opts.baselineScope1Kg !== undefined ? Number(opts.baselineScope1Kg) : undefined;
-    const baselineKgS2 = opts.baselineScope2Kg !== undefined ? Number(opts.baselineScope2Kg) : undefined;
-    const baselineKgS3 = opts.baselineScope3Kg !== undefined ? Number(opts.baselineScope3Kg) : undefined;
+    // Baseline per scope: explicit options first, else the org's active base
+    // year (stored in tonnes). Never apportioned from a total: a CRP is a
+    // published procurement document and every figure must be measured.
+    const optKg = (v: unknown) => (v !== undefined ? Number(v) : undefined);
+    const baseKg = (v: { toString(): string } | null | undefined) => (v != null ? Number(v) * 1000 : undefined);
 
     const crpTargets = Array.isArray(opts.targets)
       ? (opts.targets as Array<{ year: number; reductionPct: number; description?: string }>)
@@ -530,14 +533,14 @@ const handlers: Record<string, ReportHandler> = {
       orgName: report.organization.name,
       logoDataUri,
       periodLabel: report.reportingPeriod.label,
-      baselineYear: Number(opts.baselineYear ?? 2019),
+      baselineYear: Number(opts.baselineYear ?? baseYear?.reportingPeriod.endDate.getFullYear() ?? report.reportingPeriod.endDate.getFullYear()),
       reportingYear: report.reportingPeriod.endDate.getFullYear(),
       scope1Kg: agg.s1kg,
       scope2Kg: agg.s2kg,
       scope3Kg: agg.s3kg,
-      scope1BaselineKg: baselineKgS1 ?? (baselineTonnes ? baselineTonnes * 1000 * 0.4 : undefined),
-      scope2BaselineKg: baselineKgS2 ?? (baselineTonnes ? baselineTonnes * 1000 * 0.3 : undefined),
-      scope3BaselineKg: baselineKgS3 ?? (baselineTonnes ? baselineTonnes * 1000 * 0.3 : undefined),
+      scope1BaselineKg: optKg(opts.baselineScope1Kg) ?? baseKg(baseYear?.currentScope1Co2e ?? baseYear?.originalScope1Co2e),
+      scope2BaselineKg: optKg(opts.baselineScope2Kg) ?? baseKg(baseYear?.currentScope2Co2e ?? baseYear?.originalScope2Co2e),
+      scope3BaselineKg: optKg(opts.baselineScope3Kg) ?? baseKg(baseYear?.currentScope3Co2e ?? baseYear?.originalScope3Co2e),
       scopeRows,
       targets: crpTargets,
       signatoryName: opts.signatoryName as string | undefined,
@@ -546,8 +549,12 @@ const handlers: Record<string, ReportHandler> = {
       netZeroYear: opts.netZeroYear !== undefined ? Number(opts.netZeroYear) : 2050,
       methodologyNotes: opts.methodologyNotes as string | undefined,
     };
-    void initiatives;
     return { html: renderPpn006CrpHtml(data), pdfkitData: basePdfData };
+  },
+
+  bid_carbon_pack: async (ctx) => {
+    const data = await withQueryTimeout(loadBidPackData(ctx.orgId, ctx.report.snapshot.id, ctx.opts), 60_000);
+    return { html: renderBidCarbonPackHtml({ ...data, logoDataUri: ctx.logoDataUri }) };
   },
 
   cbam: async (ctx) => {

@@ -72,6 +72,11 @@ const CHECK_FIX_ACTIONS: Record<string, FixAction> = {
   "ppn-all-approved":       { label: "Review pending records",         href: (o) => `/orgs/${o}/records?status=pending` },
   "iso-scope1":             { label: "Add Scope 1 records",            href: (o) => `/orgs/${o}/records?scope=1` },
   "iso-scope2":             { label: "Add Scope 2 records",            href: (o) => `/orgs/${o}/records?scope=2` },
+  "bid-emissions":          { label: "Go to calculations",             href: (o) => `/orgs/${o}/calculations` },
+  "bid-base-year":          { label: "Set a base year",                href: (o) => `/orgs/${o}/targets` },
+  "bid-scope3":             { label: "Add Scope 3 records",            href: (o) => `/orgs/${o}/records?scope=3` },
+  "bid-reviewed":           { label: "Review the snapshot",            href: (o) => `/orgs/${o}/calculations` },
+  "bid-measures":           { label: "Add reduction measures",         href: (o) => `/orgs/${o}/targets` },
 };
 
 // Report types that require a contract selection
@@ -84,9 +89,13 @@ const FRAMEWORK_VALIDATED_TYPES = new Set([
   "audit_package",
   "inventory",
   "monthly_snapshot",
+  "bid_carbon_pack",
 ]);
 
+const MAX_BID_CONTRACTS = 5;
+
 const REPORT_TYPE_OPTIONS = [
+  { value: "bid_carbon_pack",  label: "Bid carbon pack (tender evidence)" },
   { value: "inventory",        label: "Inventory" },
   { value: "monthly_snapshot", label: "Monthly snapshot" },
   { value: "audit_package",    label: "Audit package" },
@@ -126,20 +135,42 @@ export function CreateReportForm({
   const [intensityMetricValue, setIntensityMetricValue] = useState("");
   const [cbamOpen, setCbamOpen] = useState(false);
   const [cbamEori, setCbamEori] = useState("");
+  const [bid, setBid] = useState({
+    bidTitle: "",
+    buyerName: "",
+    tenderReference: "",
+    signatoryName: "",
+    signatoryTitle: "",
+    signatoryDate: "",
+    netZeroYear: "2050",
+  });
+  const [bidContractIds, setBidContractIds] = useState<string[]>([]);
 
   // Validation state
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [validatedFor, setValidatedFor] = useState<{ snapshotId: string; reportType: string } | null>(null);
+  const [validatedFor, setValidatedFor] = useState<{ snapshotId: string; reportType: string; optionsKey: string } | null>(null);
 
   const canCreate = snapshots.length > 0;
   const needsContract = CONTRACT_REQUIRED_TYPES.has(reportType);
   const needsValidation = FRAMEWORK_VALIDATED_TYPES.has(reportType);
+  const isBidPack = reportType === "bid_carbon_pack";
 
-  // Validation is stale if snapshot or type changed since last run
+  // Only the fields the user filled in, so an empty field never overrides a default.
+  const bidOptions: Record<string, unknown> = isBidPack
+    ? {
+        ...Object.fromEntries(Object.entries(bid).filter(([, v]) => v.trim() !== "").map(([k, v]) => [k, k === "netZeroYear" ? Number(v) : v.trim()])),
+        ...(bidContractIds.length ? { contractIds: bidContractIds } : {}),
+      }
+    : {};
+  const optionsKey = JSON.stringify(bidOptions);
+
+  // Validation is stale if snapshot, type or bid details changed since last run
   const validationFresh =
-    validatedFor?.snapshotId === snapshotId && validatedFor?.reportType === reportType;
+    validatedFor?.snapshotId === snapshotId &&
+    validatedFor?.reportType === reportType &&
+    validatedFor?.optionsKey === optionsKey;
 
   const canGenerate =
     !needsValidation ||
@@ -171,10 +202,10 @@ export function CreateReportForm({
     setValidationResult(null);
     try {
       const url = `/api/orgs/${orgId}/reports/validate`;
-      const payload = { snapshotId, reportType };
+      const payload = { snapshotId, reportType, ...(isBidPack ? { options: bidOptions } : {}) };
       const result = (await postJson(url, payload)) as ValidationResult;
       setValidationResult(result);
-      setValidatedFor({ snapshotId, reportType });
+      setValidatedFor({ snapshotId, reportType, optionsKey });
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Validation failed";
       console.error("[CreateReportForm] Validation error:", errorMsg, err);
@@ -210,11 +241,12 @@ export function CreateReportForm({
           snapshotId: sid,
           reportingPeriodId: snapshot?.reportingPeriodId,
           type: reportType,
-          ...(contractId && contractId !== "" ? { contractId } : {}),
-          options: { ...secrOptions, ...cbamOptions },
+          ...(!isBidPack && contractId && contractId !== "" ? { contractId } : {}),
+          options: { ...secrOptions, ...cbamOptions, ...bidOptions },
         });
         formEl.reset();
         setReportType("inventory");
+        setBidContractIds([]);
         setSnapshotId(snapshots[0]?.id ?? "");
         setValidationResult(null);
         setValidatedFor(null);
@@ -264,7 +296,11 @@ export function CreateReportForm({
           </select>
         </Field>
 
-        {needsContract ? (
+        {isBidPack ? (
+          <Field label="Contracts">
+            <p className="flex h-9 items-center text-sm text-[#374151]">Pick below, under bid details</p>
+          </Field>
+        ) : needsContract ? (
           <Field label="Contract (required)">
             <select name="contractId" required={needsContract} disabled={!canCreate || contracts.length === 0} className={selectClass}>
               <option value="">Select contract…</option>
@@ -330,7 +366,7 @@ export function CreateReportForm({
         )}
         {needsValidation && !validationFresh && !isValidating && (
           <p className="text-sm text-[#374151] lg:col-span-5">
-            Click <strong>Validate</strong> to check framework requirements before generating.
+            Click <strong>Validate</strong> to check {isBidPack ? "the pack is ready for a tender" : "framework requirements"} before generating.
           </p>
         )}
         {submitError && <p className="text-sm text-red-600 lg:col-span-5">{submitError}</p>}
@@ -375,6 +411,71 @@ export function CreateReportForm({
               </Field>
             </div>
           )}
+        </div>
+      )}
+
+      {isBidPack && (
+        <div className="grid gap-4 rounded-[14px] border border-[#E5E7EB] p-4">
+          <div>
+            <p className="text-sm font-medium text-[#111827]">Bid details</p>
+            <p className="mt-0.5 text-xs text-[#374151]">
+              Figures come from the snapshot above and earlier published snapshots. Check readiness before generating.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Bid or project name">
+              <input id="bid-title" type="text" maxLength={200} value={bid.bidTitle} onChange={(e) => setBid({ ...bid, bidTitle: e.target.value })} placeholder="e.g. Highways maintenance framework" className={inputClass} />
+            </Field>
+            <Field label="Buyer">
+              <input id="bid-buyer" type="text" maxLength={200} value={bid.buyerName} onChange={(e) => setBid({ ...bid, buyerName: e.target.value })} placeholder="e.g. Kent County Council" className={inputClass} />
+            </Field>
+            <Field label="Tender reference">
+              <input id="bid-reference" type="text" maxLength={100} value={bid.tenderReference} onChange={(e) => setBid({ ...bid, tenderReference: e.target.value })} className={inputClass} />
+            </Field>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-4">
+            <Field label="Signed off by (director)">
+              <input id="bid-signatory" type="text" maxLength={120} value={bid.signatoryName} onChange={(e) => setBid({ ...bid, signatoryName: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Their position">
+              <input id="bid-signatory-title" type="text" maxLength={120} value={bid.signatoryTitle} onChange={(e) => setBid({ ...bid, signatoryTitle: e.target.value })} placeholder="e.g. Managing Director" className={inputClass} />
+            </Field>
+            <Field label="Sign-off date">
+              <input id="bid-signatory-date" type="date" value={bid.signatoryDate} onChange={(e) => setBid({ ...bid, signatoryDate: e.target.value })} className={inputClass} />
+            </Field>
+            <Field label="Net zero year">
+              <input id="bid-net-zero" type="number" min={2025} max={2050} value={bid.netZeroYear} onChange={(e) => setBid({ ...bid, netZeroYear: e.target.value })} className={inputClass} />
+            </Field>
+          </div>
+          <fieldset>
+            <legend className="mb-1.5 text-xs text-[#374151] tracking-[-0.36px]">
+              Comparable contracts to feature (up to {MAX_BID_CONTRACTS})
+            </legend>
+            {contracts.length === 0 ? (
+              <p className="text-sm text-[#374151]">No contracts yet. Add contracts to show delivery evidence.</p>
+            ) : (
+              <div className="grid gap-1.5 sm:grid-cols-2">
+                {contracts.map((c) => {
+                  const checked = bidContractIds.includes(c.id);
+                  const full = !checked && bidContractIds.length >= MAX_BID_CONTRACTS;
+                  return (
+                    <label key={c.id} className={`flex items-center gap-2 text-sm ${full ? "text-[#9CA3AF]" : "text-[#111827]"}`}>
+                      <input
+                        id={`bid-contract-${c.id}`}
+                        type="checkbox"
+                        checked={checked}
+                        disabled={full}
+                        onChange={(e) =>
+                          setBidContractIds((ids) => (e.target.checked ? [...ids, c.id] : ids.filter((id) => id !== c.id)))
+                        }
+                      />
+                      {c.name}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </fieldset>
         </div>
       )}
 
@@ -542,6 +643,9 @@ function Field({
     </div>
   );
 }
+
+const inputClass =
+  "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm placeholder:text-[#999]";
 
 const selectClass =
   "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";

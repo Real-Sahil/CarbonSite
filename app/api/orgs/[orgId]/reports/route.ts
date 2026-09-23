@@ -11,6 +11,7 @@ import { createHash } from "crypto";
 import { z } from "zod";
 import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
 import { recordUsage } from "@/lib/billing/usage";
+import { bidPackOptionsSchema } from "@/lib/bids/carbon-pack";
 
 // Inline job mode renders the PDF (Puppeteer) inside this request.
 export const maxDuration = 60;
@@ -38,7 +39,9 @@ const createReportSchema = z.object({
     "ppn_006_crp",
     "ecology_scan",
     "ecology_survey",
+    "bid_carbon_pack",
   ]),
+  contractId: z.string().min(1).optional(),
   options: z.record(z.any()).optional(),
   auditEventFilter: z.array(z.string()).optional(),
 });
@@ -121,9 +124,27 @@ export async function POST(req: NextRequest, { params }: Params) {
       return apiError("NOT_FOUND", "Snapshot not found.", 404);
     }
 
-    // Idempotency — same snapshot + type + options = same report
+    // The contract must be this org's. (Before this field was accepted,
+    // contract reports silently covered every contract.)
+    if (body.contractId) {
+      const contract = await prisma.contract.findFirst({
+        where: { id: body.contractId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!contract) return apiError("NOT_FOUND", "Contract not found.", 404);
+    }
+    if (body.type === "bid_carbon_pack") {
+      const opts = bidPackOptionsSchema.parse(body.options ?? {});
+      const ids = opts.contractIds ?? [];
+      if (ids.length) {
+        const owned = await prisma.contract.count({ where: { id: { in: ids }, organizationId: orgId } });
+        if (owned !== new Set(ids).size) return apiError("NOT_FOUND", "Contract not found.", 404);
+      }
+    }
+
+    // Idempotency — same snapshot + type + contract + options = same report
     const requestHash = createHash("sha256")
-      .update(`${orgId}:${body.snapshotId}:${body.type}:${JSON.stringify(body.options ?? {})}`)
+      .update(`${orgId}:${body.snapshotId}:${body.type}:${body.contractId ? `${body.contractId}:` : ""}${JSON.stringify(body.options ?? {})}`)
       .digest("hex");
 
     const existing = await prisma.report.findUnique({
@@ -168,6 +189,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           reportingPeriodId: snapshot.reportingPeriodId,
           snapshotId: body.snapshotId,
           type: body.type,
+          contractId: body.contractId ?? null,
           status: "queued",
           options: reportOptions,
           requestHash,

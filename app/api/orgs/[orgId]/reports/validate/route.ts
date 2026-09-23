@@ -11,12 +11,14 @@ import {
   type ReportValidationInput,
 } from "@/lib/validation/report-frameworks";
 import { z } from "zod";
+import { bidPackReadiness, loadBidPackData } from "@/lib/bids/carbon-pack";
 
 type Params = { params: Promise<{ orgId: string }> };
 
 const validateReportSchema = z.object({
   snapshotId: z.string().min(1),
   reportType: z.string().min(1),
+  options: z.record(z.any()).optional(),
 });
 
 export async function POST(req: NextRequest, { params }: Params) {
@@ -38,6 +40,17 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const { reportingPeriodId } = snapshot;
+
+    if (reportType === "bid_carbon_pack") {
+      const pack = await loadBidPackData(orgId, snapshotId, body.options);
+      const checks: FrameworkCheckResult[] = bidPackReadiness(pack).map(({ passed, message, ...check }) => ({
+        check,
+        passed,
+        message,
+      }));
+      const blockingFailures = checks.filter((r) => !r.passed && r.check.required);
+      return NextResponse.json({ valid: blockingFailures.length === 0, checks, blockingFailures });
+    }
 
     // Gather the data needed for framework validation in parallel.
     // Scope/category presence uses LIVE ActivityRecord counts so that records
