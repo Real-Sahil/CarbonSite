@@ -54,7 +54,7 @@ describe.skip("Scope 3 Estimation", () => {
 
     const category = await prisma.emissionCategory.create({
       data: {
-        code: "s3-energy-consumption",
+        code: "s2-electricity-lb",
         name: "Scope 3 Energy",
         scope: 3,
       },
@@ -85,7 +85,7 @@ describe.skip("Scope 3 Estimation", () => {
     await prisma.reportingPeriod.deleteMany({ where: { organizationId: orgId } });
     await prisma.facility.deleteMany({ where: { organizationId: orgId } });
     await prisma.scope3Estimate.deleteMany({ where: { organizationId: orgId } });
-    await prisma.emissionCategory.deleteMany({ where: { code: "s3-energy-consumption" } });
+    await prisma.emissionCategory.deleteMany({ where: { code: "s2-electricity-lb" } });
     await prisma.organization.deleteMany({ where: { id: orgId } });
     await prisma.user.deleteMany({ where: { id: userId } });
   });
@@ -152,7 +152,7 @@ describe.skip("Scope 3 Estimation", () => {
     const estimate = await estimateScope3Energy(orgId, facilityId);
 
     if (estimate) {
-      await storeScope3Estimate(orgId, facilityId, categoryId, estimate, true);
+      await storeScope3Estimate(orgId, facilityId, "energy", estimate, true);
 
       const stored = await getScope3Estimates(orgId, facilityId, 1);
       expect(stored).toHaveLength(1);
@@ -165,7 +165,7 @@ describe.skip("Scope 3 Estimation", () => {
     const estimate = await estimateScope3Energy(orgId, facilityId);
 
     if (estimate) {
-      await storeScope3Estimate(orgId, facilityId, categoryId, estimate, false);
+      await storeScope3Estimate(orgId, facilityId, "energy", estimate, false);
 
       const rejected = await prisma.scope3Estimate.findFirst({
         where: {

@@ -61,16 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<Param
       );
     }
 
-    if (storeEstimate) {
-      const categoryCodeMap: Record<string, string> = {
-        energy: "s3-energy-consumption",
-        waste: "s3-waste-disposal",
-        water: "s3-water-consumption",
-      };
-
-      // This is a simplified category lookup; in production, fetch from database
-      await storeScope3Estimate(orgId, facilityId, categoryCodeMap[categoryType], estimate);
-    }
+    const stored = storeEstimate ? await storeScope3Estimate(orgId, facilityId, categoryType, estimate) : false;
 
     return NextResponse.json(
       {
@@ -78,6 +69,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<Param
         estimate,
         categoryType,
         facilityId,
+        stored,
         timestamp: new Date().toISOString(),
       },
       { status: 200 }

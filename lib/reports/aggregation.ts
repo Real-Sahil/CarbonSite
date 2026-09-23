@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { getObject } from "@/lib/storage";
 import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
+import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-method";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs = 30000): Promise<T> {
   return Promise.race([
@@ -52,6 +53,11 @@ export type Aggregation = {
   hasBiogenic: boolean;
 };
 
+/**
+ * Headline totals for a report. Market-based Scope 2 is excluded, exactly as
+ * the dashboard excludes it (see aggregate-filters.ts): dual reporting shows it
+ * beside the location-based figure via splitScope2(), never added to it.
+ */
 export function aggregate(calcs: CalculationRow[]): Aggregation {
   const scopeKg = new Map<number, number>();
   const catTotals = new Map<string, { name: string; scope: number; totalKg: number; count: number }>();
@@ -68,6 +74,7 @@ export function aggregate(calcs: CalculationRow[]): Aggregation {
   let hasBiogenic = false;
 
   for (const calc of calcs) {
+    if (!countsTowardHeadline(scope2MethodOf(calc.activityRecord))) continue;
     const kg = Number(calc.totalCo2e);
     const scope = calc.activityRecord.emissionCategory.scope;
     const catName = calc.activityRecord.emissionCategory.name;
@@ -101,9 +108,9 @@ export function splitScope2(calcs: CalculationRow[]): { s2lbKg: number; s2mbKg: 
   let s2lbKg = 0;
   let s2mbKg = 0;
   for (const calc of calcs) {
-    const code = calc.activityRecord.emissionCategory.code;
-    if (code === "s2-electricity-lb") s2lbKg += Number(calc.totalCo2e);
-    else if (code === "s2-electricity-mb") s2mbKg += Number(calc.totalCo2e);
+    const method = scope2MethodOf(calc.activityRecord);
+    if (method === "location_based") s2lbKg += Number(calc.totalCo2e);
+    else if (method === "market_based") s2mbKg += Number(calc.totalCo2e);
   }
   return { s2lbKg, s2mbKg };
 }

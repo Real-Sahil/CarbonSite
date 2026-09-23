@@ -1,11 +1,12 @@
 import { createHash } from "crypto";
-import { Prisma } from "@prisma/client";
+import { Prisma, type Scope2Method } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { putObject, keys } from "@/lib/storage";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { reportLogger } from "@/lib/logger";
 import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
 import type { ReportData } from "./template";
+import { scope2MethodOf } from "@/lib/calculation/scope2-method";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { getReportHandler, type ReportContext } from "./registry";
 import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHeader } from "./pdf-generator";
@@ -673,6 +674,7 @@ async function renderPdf(html: string): Promise<Buffer> {
 type CalcRow = {
   activityRecord: {
     sourceDescription: string | null;
+    scope2Method?: Scope2Method | null;
     emissionCategory: { code: string; name: string; scope: number };
     facility: { name: string } | null;
   };
@@ -701,12 +703,14 @@ function buildCsv(calculations: CalcRow[], report: { organization: { name: strin
   const lines: string[] = [
     `# ${report.organization.name} — GHG emissions export`,
     `# Period: ${report.reportingPeriod.label} | Snapshot v${report.snapshot.version} | Factors: ${factorLib} | Methodology: ${methodology} (GWP ${gwp})`,
-    ["scope","category_code","category_name","facility","source_description","original_amount","original_unit","normalized_amount","normalized_unit","factor_library_version","methodology","co2_kg","ch4_kg_co2e","n2o_kg_co2e","biogenic_co2_kg","total_kg_co2e","total_t_co2e","formula"].join(","),
+    `# Scope 2 is listed under both methods. Totals use location_based; do not add market_based to them.`,
+    ["scope","scope2_method","category_code","category_name","facility","source_description","original_amount","original_unit","normalized_amount","normalized_unit","factor_library_version","methodology","co2_kg","ch4_kg_co2e","n2o_kg_co2e","biogenic_co2_kg","total_kg_co2e","total_t_co2e","formula"].join(","),
   ];
   for (const calc of calculations) {
     const kg = Number(calc.totalCo2e);
     lines.push([
       calc.activityRecord.emissionCategory.scope,
+      scope2MethodOf(calc.activityRecord) ?? "",
       esc2(calc.activityRecord.emissionCategory.code),
       esc2(calc.activityRecord.emissionCategory.name),
       esc2(calc.activityRecord.facility?.name ?? ""),

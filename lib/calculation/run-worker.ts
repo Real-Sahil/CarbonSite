@@ -13,6 +13,7 @@ import {
   GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3,
 } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
+import { groupDashboardAggregates } from "./dashboard-groups";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
 import { assessTemporalRepresentativeness } from "./temporal-representativeness";
@@ -626,73 +627,13 @@ async function rebuildDashboardAggregates(
     include: {
       activityRecord: {
         include: {
-          emissionCategory: { select: { scope: true } },
+          emissionCategory: { select: { scope: true, code: true } },
         },
       },
     },
   });
 
-  // Group by scope, category, facility, business unit, and scope2Method for Scope 2
-  type AggKey = {
-    scope: number;
-    scope2Method: Scope2Method | null | undefined;
-    emissionCategoryId: string | null;
-    facilityId: string | null;
-    businessUnitId: string | null;
-  };
-  const groups = new Map<string, { key: AggKey; totalCo2e: number; count: number }>();
-
-  const add = (key: AggKey, co2e: number) => {
-    const k = JSON.stringify(key);
-    const existing = groups.get(k);
-    if (existing) {
-      existing.totalCo2e += co2e;
-      existing.count += 1;
-    } else {
-      groups.set(k, { key, totalCo2e: co2e, count: 1 });
-    }
-  };
-
-  for (const calc of calculations) {
-    const record = calc.activityRecord;
-    const scope = record.emissionCategory.scope;
-    const co2e = Number(calc.totalCo2e);
-    // For Scope 2, track both location-based and market-based separately
-    const scope2Method = scope === 2 ? (record.scope2Method ?? "location_based") : undefined;
-
-    // Scope-only aggregate
-    add({ scope, scope2Method, emissionCategoryId: null, facilityId: null, businessUnitId: null }, co2e);
-
-    // By category
-    add({ scope, scope2Method, emissionCategoryId: record.emissionCategoryId, facilityId: null, businessUnitId: null }, co2e);
-
-    // By facility (if set)
-    if (record.facilityId) {
-      add({ scope, scope2Method, emissionCategoryId: null, facilityId: record.facilityId, businessUnitId: null }, co2e);
-
-      // By category AND facility. Needed so a category breakdown can be scoped
-      // to a subset of facilities (a contract). The category-only rows above
-      // carry no facility, so without this cross-dimension a contract-filtered
-      // dashboard could only ever show an org-wide category breakdown next to
-      // contract-scoped totals, and the categories would exceed the total.
-      // Bounded by distinct category/facility pairs, not by record count.
-      add(
-        {
-          scope,
-          scope2Method,
-          emissionCategoryId: record.emissionCategoryId,
-          facilityId: record.facilityId,
-          businessUnitId: null,
-        },
-        co2e,
-      );
-    }
-
-    // By business unit (if set)
-    if (record.businessUnitId) {
-      add({ scope, scope2Method, emissionCategoryId: null, facilityId: null, businessUnitId: record.businessUnitId }, co2e);
-    }
-  }
+  const groups = groupDashboardAggregates(calculations);
 
   // Feature 5: Compute intensity metrics for multi-year trend analysis
   const computeIntensity = (totalCo2e: number) => {
@@ -716,10 +657,10 @@ async function rebuildDashboardAggregates(
       where: { organizationId: orgId, reportingPeriodId, snapshotId: null },
     });
 
-    if (groups.size === 0) return;
+    if (groups.length === 0) return;
 
     await tx.dashboardAggregate.createMany({
-      data: Array.from(groups.values()).map(({ key, totalCo2e, count }) => ({
+      data: groups.map(({ key, totalCo2e, count }) => ({
         organizationId: orgId,
         reportingPeriodId,
         snapshotId: null,

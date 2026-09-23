@@ -8,6 +8,18 @@
 
 import { prisma } from "@/lib/db";
 
+/**
+ * The seeded category each estimate belongs to. Facility energy is metered
+ * grid electricity (Scope 2, location-based); water supply and treatment sit
+ * under purchased goods in the DEFRA factor set.
+ */
+export const ESTIMATE_CATEGORY_CODES = {
+  energy: "s2-electricity-lb",
+  waste: "s3-waste",
+  water: "s3-purchased-goods",
+} as const;
+export type EstimateCategoryType = keyof typeof ESTIMATE_CATEGORY_CODES;
+
 export interface Scope3Estimate {
   estimatedValue: number;
   estimatedUnit: string;
@@ -57,7 +69,7 @@ export async function estimateScope3Energy(
       where: {
         organizationId: orgId,
         emissionCategory: {
-          code: "s3-energy-consumption",
+          code: ESTIMATE_CATEGORY_CODES.energy,
         },
         reviewStatus: "approved",
       },
@@ -244,16 +256,24 @@ export async function estimateScope3Water(
 export async function storeScope3Estimate(
   orgId: string,
   facilityId: string,
-  categoryId: string,
+  categoryType: EstimateCategoryType,
   estimate: Scope3Estimate,
   accepted: boolean | null = null
-): Promise<void> {
+): Promise<boolean> {
+  const category = await prisma.emissionCategory.findUnique({
+    where: { code: ESTIMATE_CATEGORY_CODES[categoryType] },
+    select: { id: true },
+  });
+  if (!category) {
+    console.error(`[scope3] No category ${ESTIMATE_CATEGORY_CODES[categoryType]} for ${categoryType} estimate`);
+    return false;
+  }
   try {
     await prisma.scope3Estimate.create({
       data: {
         organizationId: orgId,
         facilitId: facilityId,
-        emissionCategoryId: categoryId,
+        emissionCategoryId: category.id,
         estimationModelId: "v1-heuristic",
         estimatedValue: estimate.estimatedValue,
         estimatedUnit: estimate.estimatedUnit,
@@ -272,20 +292,18 @@ export async function storeScope3Estimate(
         basedOnRecordCount: estimate.basedOnSimilarFacilities,
       },
     });
-
     console.info(
       `[scope3] Stored estimate for facility ${facilityId}: ${estimate.estimatedValue} ${estimate.estimatedUnit}`
     );
+    return true;
   } catch (error) {
     console.error(
       `[scope3] Failed to store estimate: ${error instanceof Error ? error.message : String(error)}`
     );
+    return false;
   }
 }
 
-/**
- * Get Scope 3 estimates for a facility (returns recent accepted estimates)
- */
 export async function getScope3Estimates(
   orgId: string,
   facilityId: string,

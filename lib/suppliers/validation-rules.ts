@@ -67,8 +67,8 @@ export const CATEGORY_RULES: Record<string, CategoryRule> = {
     acceptableRangeMultiplier: 2,
   },
 
-  's3-waste-disposal': {
-    categoryCode: 's3-waste-disposal',
+  's3-waste': {
+    categoryCode: 's3-waste',
     categoryName: 'Waste Disposal',
     expectedUnits: ['kg', 'tonne', 'GBP', 'USD'],
     description: 'Weight of waste sent to landfill, incineration, or recycling facilities.',
