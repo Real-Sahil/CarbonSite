@@ -25,6 +25,20 @@ export function chooseFactorLibrary<T extends LibraryRef>(libraries: T[], period
  * the hand-entered 2025.1), only the newest is kept. Superseded versions stay
  * in the database so the runs that used them still reproduce.
  */
+/**
+ * The newer version of the same year's set that replaces `used`, or null when
+ * `used` is current. A snapshot calculated with a replaced set should be
+ * recalculated: the newer version corrects its factors.
+ */
+export function supersedingLibrary<T extends LibraryRef>(used: LibraryRef, libraries: T[]): T | null {
+  const year = libraryYear(used.version);
+  const newer = libraries
+    .filter((l) => l.name === used.name && l.id !== used.id && libraryYear(l.version) === year)
+    .filter((l) => l.version.localeCompare(used.version, undefined, { numeric: true }) > 0)
+    .sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
+  return newer[0] ?? null;
+}
+
 export function currentFactorLibraries<T extends LibraryRef>(libraries: T[]): T[] {
   const newest = new Map<string, T>();
   for (const lib of libraries) {

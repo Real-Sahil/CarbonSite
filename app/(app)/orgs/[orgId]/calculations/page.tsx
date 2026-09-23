@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { currentFactorLibraries } from "@/lib/calculation/library-for-period";
+import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -115,7 +115,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
       where: { organizationId: orgId },
       include: {
         reportingPeriod: { select: { label: true } },
-        factorLibrary: { select: { name: true, version: true } },
+        factorLibrary: { select: { id: true, name: true, version: true } },
         methodologyVersion: { select: { name: true } },
         triggeredBy: { select: { name: true, email: true } },
         _count: { select: { calculations: true } },
@@ -305,6 +305,17 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                           <TableCell className="text-sm text-[#374151] py-3.5">
                             {run.factorLibrary.name}{" "}
                             <span className="text-[#9CA3AF]">{run.factorLibrary.version}</span>
+                            {(() => {
+                              const replacement = supersedingLibrary(run.factorLibrary, factorLibraries);
+                              return replacement ? (
+                                <span
+                                  className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800"
+                                  title={`Corrected by ${replacement.name} ${replacement.version}. Recalculate to use it.`}
+                                >
+                                  Replaced by {replacement.version}
+                                </span>
+                              ) : null;
+                            })()}
                           </TableCell>
                           <TableCell className="text-sm text-[#374151] py-3.5">
                             {run.methodologyVersion.name}

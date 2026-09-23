@@ -72,8 +72,8 @@ describe("checks", () => {
   });
 });
 
-const params = (projectId = "proj-a", opportunityId?: string) => ({
-  params: Promise.resolve({ orgId: "org-a", contractId: "c-a", projectId, ...(opportunityId ? { opportunityId } : {}) }),
+const params = (projectId = "proj-a", opportunityId = "none") => ({
+  params: Promise.resolve({ orgId: "org-a", contractId: "c-a", projectId, opportunityId }),
 });
 const req = (method: string, body: unknown) =>
   new NextRequest("http://localhost/x", { method, body: JSON.stringify(body), headers: { "content-type": "application/json" } });

@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { currentFactorLibraries } from "@/lib/calculation/library-for-period";
+import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
 import Link from "next/link";
 import {
   Activity,
@@ -721,6 +721,28 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     _siteCount,
     _fieldWorkerCount,
   ] = batchB;
+
+  // Published figures calculated with a factor set that has since been
+  // corrected (DEFRA 2025.1 was replaced by 2025.2). Every tenant sees this
+  // for its own snapshots until it recalculates and republishes.
+  const publishedLibraries = await prisma.publishedSnapshot.findMany({
+    where: { organizationId: orgId },
+    orderBy: [{ reportingPeriodId: "asc" }, { version: "desc" }],
+    select: {
+      reportingPeriodId: true,
+      version: true,
+      reportingPeriod: { select: { label: true } },
+      calculationRun: { select: { factorLibrary: { select: { id: true, name: true, version: true } } } },
+    },
+  }).catch(onLoadFailure(() => []));
+  const seenPeriods = new Set<string>();
+  const staleSnapshots = publishedLibraries.flatMap((snap) => {
+    if (seenPeriods.has(snap.reportingPeriodId)) return [];
+    seenPeriods.add(snap.reportingPeriodId);
+    const used = snap.calculationRun.factorLibrary;
+    const replacement = used ? supersedingLibrary(used, factorLibraries) : null;
+    return replacement ? [{ period: snap.reportingPeriod.label, version: snap.version, used, replacement }] : [];
+  });
 
   const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
     dataQualityBatch;
@@ -1823,6 +1845,16 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 shown as empty. {failedFigureCount !== 1 ? "These are" : "This is"} not
                 a reading of zero. Refresh, and if it persists the database is
                 unreachable rather than the data missing.
+              </div>
+            )}
+            {staleSnapshots.length > 0 && (
+              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                {staleSnapshots
+                  .map((s) => `${s.period} (snapshot v${s.version}) was calculated with ${s.used.name} ${s.used.version}, since corrected by ${s.replacement.version}`)
+                  .join("; ")}
+                . Recalculate {staleSnapshots.length === 1 ? "that period" : "those periods"} with the corrected set and publish again so your reports use the right factors.{" "}
+                <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Go to calculations</Link>
               </div>
             )}
             {snapshotDiverges && latestSnapshot && (

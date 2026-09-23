@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { chooseFactorLibrary, currentFactorLibraries } from "../library-for-period";
+import { chooseFactorLibrary, currentFactorLibraries, supersedingLibrary } from "../library-for-period";
 
 const libs = [
   { id: "epa25", name: "EPA", version: "2025.1" },
@@ -40,5 +40,13 @@ describe("reloaded versions of the same year's set", () => {
 
   test("only the newest version of each year is offered, other libraries untouched", () => {
     expect(currentFactorLibraries([d26, d251, epa, d252]).map((l) => l.id)).toEqual(["d26", "epa", "d252"]);
+  });
+
+  test("a replaced version points at its replacement; current versions and other years do not", () => {
+    const all = [d26, d251, epa, d252];
+    expect(supersedingLibrary(d251, all)?.id).toBe("d252");
+    expect(supersedingLibrary(d252, all)).toBeNull();
+    expect(supersedingLibrary(d26, all)).toBeNull();
+    expect(supersedingLibrary(epa, all)).toBeNull();
   });
 });
