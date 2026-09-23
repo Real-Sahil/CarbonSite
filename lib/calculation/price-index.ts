@@ -20,10 +20,15 @@ const CPI: Record<string, Record<number, number>> = {
     2018: 105.9, 2019: 107.8, 2020: 108.7, 2021: 111.6, 2022: 121.7, 2023: 130.5, 2024: 133.9,
     2025: 138.4,
   },
-  // Not yet checked against BLS annual averages; 2025 still to add.
+  // 2016-2024 checked against the BLS CUUR0000SA0 series report (monthly and
+  // half-year averages, downloaded 23 September 2026): each is the mean of the
+  // two half-year averages. 2012-2015 not yet rechecked (the report starts in
+  // 2016). BLS did not publish October 2025, so 2025 is the mean of its
+  // half-year averages (320.229, 324.000), the same method.
   USD: {
     2012: 229.594, 2013: 232.957, 2014: 236.736, 2015: 237.017, 2016: 240.007, 2017: 245.12,
     2018: 251.107, 2019: 255.657, 2020: 258.811, 2021: 270.97, 2022: 292.655, 2023: 304.702, 2024: 313.689,
+    2025: 322.115,
   },
 };
 

@@ -44,3 +44,11 @@ describe("spend adjusted to the factor's price year", () => {
     expect(deflateSpend(1, "JPY", 2024, 2020)).toBeNull();
   });
 });
+
+describe("published price indices", () => {
+  it("includes 2025 for GBP (ONS D7BT) and USD (BLS CPI-U)", () => {
+    expect(deflateSpend(1000, "GBP", 2025, 2022)!.ratio).toBeCloseTo(121.7 / 138.4, 10);
+    expect(deflateSpend(1000, "USD", 2025, 2022)!.ratio).toBeCloseTo(292.655 / 322.115, 10);
+    expect(deflateSpend(1000, "USD", 2025, 2022)!.warning).toBeUndefined();
+  });
+});
