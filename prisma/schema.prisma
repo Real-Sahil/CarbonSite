@@ -983,6 +983,9 @@ model ActivityRecord {
   transportMode             String?        @map("transport_mode")
   fuelType                  String?        @map("fuel_type")
   refrigerantType           String?        @map("refrigerant_type")
+  /// Supplier's industry code for spend-based factors: a 6-digit NAICS code
+  /// (US, EPA USEEIO) or a UK SIC code. See lib/calculation/industry-code.ts.
+  industryCode              String?        @map("industry_code")
   scope2Method              Scope2Method?  @map("scope2_method")
   biogenicCo2e              Decimal?       @map("biogenic_co2e") @db.Decimal(18, 8)
   /// How this figure was obtained. Assurance providers sample by tier and

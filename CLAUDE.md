@@ -209,6 +209,8 @@ GWP values (AR6): CH4 = 27.9, N2O = 273 (`lib/calculation/gwp.ts`).
 
 **Scope 2 dual reporting:** `scope2MethodOf()` decides each record's method (the record's `scope2Method`, else the category). Headline totals use location-based only; market-based is shown beside it, never added. Market-based records draw on the org's `EnergyInstrument` rows (Settings → Electricity contracts) in GHG Protocol order: certificates/PPAs, green tariffs, supplier rate, residual mix; certificates are never claimed twice; any uncovered kWh falls back to the library factor with a warning.
 
+**Spend by industry:** a library whose factors carry `activityType` `naics_<code>` (EPA USEEIO 1.3) prices a record only through the record's own `industryCode`; without one those factors are excluded and the calculation says to add the code. A factor whose notes say "Unverified:" still calculates, with a warning on the calculation.
+
 **Spend-based Scope 3:** currency is converted at the ECB rate for the record's date (`prefetchFxRatesOn()` / `convertCurrency()` in `units.ts`), falling back to today's rate and then a built-in rate, and the calculation says which. When a factor has `priceBaseYear`, spend is deflated to that year with UK or US CPI (`price-index.ts`); update the CPI table each year.
 
 Published snapshots are immutable. Recalculation creates a new `CalculationRun` + `PublishedSnapshot` version. Users must see a diff before replacing a published report.
@@ -290,7 +292,7 @@ Use only these codes in code (see `prisma/seed.ts`). A code that is not seeded m
 | DEFRA 2025.2 | gov.uk conversion factors (flat file v1) | XLSX → `node scripts/build-defra-factors.mjs <file> 2025` → `prisma/data/defra-2025-factors.json` + migration |
 | DEFRA 2025.1 | hand-entered, superseded by 2025.2 | Kept only so runs that used it reproduce; hidden from the library picker (`currentFactorLibraries()`) |
 | EPA 2025.1 | epa.gov GHG Emission Factors Hub | PDF → manual CSV (its 3-digit spend factors are flagged Unverified) |
-| EPA USEEIO 1.3 | EPA Supply Chain GHG Emission Factors v1.3 by NAICS-6 (1016 factors, kg CO2e per 2022 USD, purchaser price, AR5) | `data/sources/*.csv` → `pnpm tsx scripts/build-useeio-factors.ts <csv> <migration>` → migration `20260923000023`; `priceBaseYear` 2022; records match on `activityType` `naics_<6-digit code>` |
+| EPA USEEIO 1.3 | EPA Supply Chain GHG Emission Factors v1.3 by NAICS-6 (1016 factors, kg CO2e per 2022 USD, purchaser price, AR5) | `data/sources/*.csv` → `pnpm tsx scripts/build-useeio-factors.ts <csv> <migration>` → migration `20260923000023`; `priceBaseYear` 2022; records name the supplier's code in `ActivityRecord.industryCode` (import column `industry_code`/`naics`, record form field with lookup); `lib/calculation/industry-code.ts` selects only the exact NAICS factor and never falls back to an arbitrary one |
 | SustainMetrics | sustainmetrics.net/factors | CSV, free download, no signup |
 
 Library records are seeded; actual factor rows loaded via admin import. Methodology: `ghg-protocol-v2026-01`, GWP AR6.

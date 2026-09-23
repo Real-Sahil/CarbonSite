@@ -15,7 +15,7 @@ import {
   GAS_VOLUME_CORRECTION,
   GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3,
 } from "./units";
-import { selectFactor, selectHvoFactor, buildFactorCache, type FactorSelection } from "./factor-selector";
+import { selectFactor, selectHvoFactor, buildFactorCache, type FactorCache, type FactorSelection } from "./factor-selector";
 import { hvoShare } from "./fuels";
 import { loadOrgCustomFactors, pickCustomFactor, customFactorAsLibraryFactor } from "./custom-factors";
 import { groupDashboardAggregates } from "./dashboard-groups";
@@ -27,6 +27,12 @@ import { calculateDataQualityScore, calculateConfidenceInterval } from "./qualit
 import { assessTemporalRepresentativeness } from "./temporal-representativeness";
 import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
 import type { ActivityRecord } from "@prisma/client";
+import { isNaicsFactor, isUnverifiedFactor, naicsCode, naicsMissingWarning, UNVERIFIED_FACTOR_WARNING } from "./industry-code";
+
+/** Whether this library prices the category's spend by NAICS code. */
+function libraryPricesByIndustry(cache: FactorCache, libraryId: string, categoryId: string): boolean {
+  return (cache.get(`${libraryId}:${categoryId}`) ?? []).some(isNaicsFactor);
+}
 
 // A single HTTP request (in JOB_PROCESSING_MODE=inline, the only mode that
 // works on a Vercel-only deployment — see CLAUDE.md) cannot safely run the
@@ -283,6 +289,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         scope2Method: record.scope2Method ?? undefined,
         recordUnit: normalized.unit,
         matchHint,
+        industryCode: record.industryCode,
       };
       // HVO is only fuel-combustion Scope 1; a Scope 3 record mentioning it
       // (e.g. HVO deliveries by a haulier) keeps its own category's factor.
@@ -328,6 +335,9 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
             warnings: [
               ...unitWarnings,
               `No emission factor found for category ${record.emissionCategory.code}`,
+              ...(libraryPricesByIndustry(factorCache, run.factorLibraryId, record.emissionCategoryId)
+                ? [naicsMissingWarning(naicsCode(record.industryCode))]
+                : []),
             ],
             dataQualityScore: qualityScore.score,
             confidenceIntervalLower: confidenceInterval.lower,
@@ -340,6 +350,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       }
 
       const { factor, selectionReason, warnings: selectionWarnings = [] } = factorSelection;
+      if (!custom && isUnverifiedFactor(factor)) unitWarnings.push(UNVERIFIED_FACTOR_WARNING);
       // An org factor's id belongs in its own column; emissionFactorId is a
       // foreign key to the shared library only.
       const factorRef = custom

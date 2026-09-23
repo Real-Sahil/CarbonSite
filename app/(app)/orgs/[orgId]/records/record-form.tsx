@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,22 @@ export function CreateRecordForm({
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("");
   const [sourceDescription, setSourceDescription] = useState("");
+  const [industryCode, setIndustryCode] = useState("");
+  const [industryOptions, setIndustryOptions] = useState<{ code: string; title: string }[]>([]);
+
+  // NAICS suggestions for spend priced by industry (EPA USEEIO).
+  useEffect(() => {
+    const q = industryCode.trim();
+    if (q.length < 2 || /^\d{6}$/.test(q)) return;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => {
+      fetch(`/api/orgs/${orgId}/industry-codes?q=${encodeURIComponent(q)}`, { signal: ctrl.signal })
+        .then((r) => (r.ok ? r.json() : { data: [] }))
+        .then((d) => setIndustryOptions(d.data ?? []))
+        .catch(() => undefined);
+    }, 250);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [industryCode, orgId]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,6 +74,7 @@ export function CreateRecordForm({
           amount: parseFloat(amount),
           unit,
           sourceDescription: sourceDescription || undefined,
+          industryCode: industryCode.trim().match(/\d{6}/)?.[0] ?? (industryCode.trim() || undefined),
         }),
       });
       if (!res.ok) {
@@ -166,6 +183,20 @@ export function CreateRecordForm({
           placeholder="Optional"
           className="w-40"
         />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="record-industry-code" className="text-xs text-[#374151] tracking-[-0.36px]">Industry code (NAICS)</label>
+        <Input
+          id="record-industry-code"
+          list="record-industry-codes"
+          value={industryCode}
+          onChange={(e) => setIndustryCode(e.target.value)}
+          placeholder="For spend, e.g. 236220"
+          className="w-44"
+        />
+        <datalist id="record-industry-codes">
+          {industryOptions.map((o) => <option key={o.code} value={o.code}>{o.title}</option>)}
+        </datalist>
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading} size="sm">

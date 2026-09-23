@@ -159,6 +159,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
               {record.sourceDescription && <DetailRow label="Source" value={record.sourceDescription} />}
               {record.fuelType && <DetailRow label="Fuel type" value={record.fuelType} />}
               {record.refrigerantType && <DetailRow label="Refrigerant" value={record.refrigerantType} />}
+              {record.industryCode && <DetailRow label="Industry code" value={record.industryCode} />}
               {record.transportMode && <DetailRow label="Transport mode" value={record.transportMode} />}
               <DetailRow label="Evidence status" value={record.evidenceStatus.replaceAll("_", " ")} />
               {record.activityDate && (

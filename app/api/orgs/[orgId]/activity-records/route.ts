@@ -135,6 +135,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         transportMode: body.transportMode,
         fuelType: body.fuelType,
         refrigerantType: body.refrigerantType,
+        industryCode: body.industryCode,
         scope2Method: body.scope2Method,
         assumptionNotes: body.assumptionNotes,
         dataOrigin: body.dataOrigin,

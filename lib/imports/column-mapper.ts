@@ -25,6 +25,7 @@ export const CANONICAL_FIELDS: CanonicalField[] = [
   { canonical: "fuelType",            label: "Fuel Type",           required: false, description: "Type of fuel (e.g. diesel, natural gas)" },
   { canonical: "transportMode",       label: "Transport Mode",      required: false, description: "Mode of transport (e.g. road, rail, air)" },
   { canonical: "refrigerantType",     label: "Refrigerant",         required: false, description: "Refrigerant or F-gas type" },
+  { canonical: "industryCode",        label: "Industry code",       required: false, description: "Supplier's 6-digit NAICS (US) or SIC (UK) code, for spend-based factors" },
   { canonical: "distanceAmount",      label: "Distance",            required: false, description: "Distance travelled" },
   { canonical: "distanceUnit",        label: "Distance Unit",       required: false, description: "Unit of distance (km, miles)" },
   { canonical: "spendAmount",         label: "Spend Amount",        required: false, description: "Financial spend amount" },
@@ -90,6 +91,9 @@ const ACTIVITY_SYNONYMS: Record<string, string[]> = {
   ],
   refrigerantType: [
     "refrigerant", "refrigerant_type", "gas_type", "f_gas", "hfc_type",
+  ],
+  industryCode: [
+    "industry_code", "naics", "naics_code", "naics6", "sic", "sic_code",
   ],
   distanceAmount: [
     "distance", "distance_amount", "distance_km", "km", "miles", "mileage",

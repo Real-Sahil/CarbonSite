@@ -78,6 +78,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         ...(body.transportMode !== undefined ? { transportMode: body.transportMode } : {}),
         ...(body.fuelType !== undefined ? { fuelType: body.fuelType } : {}),
         ...(body.refrigerantType !== undefined ? { refrigerantType: body.refrigerantType } : {}),
+        ...(body.industryCode !== undefined ? { industryCode: body.industryCode } : {}),
         ...(body.spendAmount !== undefined ? { spendAmount: body.spendAmount } : {}),
         ...(body.spendCurrency !== undefined ? { spendCurrency: body.spendCurrency } : {}),
         ...(body.distanceAmount !== undefined ? { distanceAmount: body.distanceAmount } : {}),

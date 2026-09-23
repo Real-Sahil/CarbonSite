@@ -30,6 +30,7 @@ const FIELD_MAPPINGS: FieldMapping[] = [
   { canonical: "fuelType", aliases: ["fuel type", "fuel_type", "fuel", "fuel source"] },
   { canonical: "transportMode", aliases: ["transport mode", "mode", "transport_mode", "vehicle type"] },
   { canonical: "refrigerantType", aliases: ["refrigerant", "refrigerant type", "gas type", "f-gas"] },
+  { canonical: "industryCode", aliases: ["industry code", "naics", "naics code", "sic", "sic code"] },
   { canonical: "distanceAmount", aliases: ["distance", "distance amount", "distance_amount", "km", "miles"] },
   { canonical: "distanceUnit", aliases: ["distance unit", "distance_unit"] },
   { canonical: "spendAmount", aliases: ["spend", "cost", "spend amount", "expenditure", "invoice amount"] },
@@ -177,6 +178,7 @@ export function validateRow(
     "fuelType",
     "transportMode",
     "refrigerantType",
+    "industryCode",
     "assumptionNotes",
   ];
   for (const field of stringFields) {

@@ -75,6 +75,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
               region: (d.region as string | undefined) ?? undefined,
               fuelType: (d.fuelType as string | undefined) ?? undefined,
               refrigerantType: (d.refrigerantType as string | undefined) ?? undefined,
+              industryCode: (d.industryCode as string | undefined) ?? undefined,
               transportMode: (d.transportMode as string | undefined) ?? undefined,
               assumptionNotes: (d.assumptionNotes as string | undefined) ?? undefined,
               // Provenance is normalised by the validator at staging time, so

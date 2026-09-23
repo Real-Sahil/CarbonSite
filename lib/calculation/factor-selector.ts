@@ -8,6 +8,7 @@
 import { prisma } from "@/lib/db";
 import type { EmissionFactor } from "@prisma/client";
 import { areUnitsCompatible } from "./units";
+import { naicsMissingWarning, pickNaics } from "./industry-code";
 
 // Pre-loaded factor table keyed by "factorLibraryId:emissionCategoryId".
 // Build once at the start of a calculation run and pass to selectFactor.
@@ -44,6 +45,8 @@ export type FactorQuery = {
    *  matched against the factor's id/type/notes so e.g. a diesel record picks
    *  the diesel factor, not the petrol one in the same category. */
   matchHint?: string;
+  /** Supplier's industry code (6-digit NAICS) for spend-by-industry factors. */
+  industryCode?: string | null;
 };
 
 export type FactorSelection = {
@@ -159,6 +162,16 @@ export async function selectFactor(
 
   if (candidates.length === 0) return null;
 
+  // Spend-by-industry factors (EPA USEEIO): only the record's own NAICS code
+  // may select one; lib/calculation/industry-code.ts.
+  const naics = pickNaics(candidates, query.industryCode);
+  if (naics.kind === "matched") {
+    return { factor: naics.factor, selectionReason: `NAICS ${naics.code} matched`, warnings: [] };
+  }
+  const naicsWarning = naics.kind === "excluded" ? naicsMissingWarning(naics.code) : null;
+  candidates = naics.candidates;
+  if (candidates.length === 0) return null;
+
   // When market-based Scope 2 is requested, prefer factors with "market" in
   // activityType or a supplier-specific geographyRegion set.
   if (query.scope2Method === "market_based") {
@@ -188,7 +201,7 @@ export async function selectFactor(
 
   const best = rankCandidates(candidates, query)[0];
 
-  const finalWarnings: string[] = [];
+  const finalWarnings: string[] = naicsWarning ? [naicsWarning] : [];
   if (
     !query.geographyCountry &&
     query.emissionCategoryId.startsWith("s2-")
