@@ -334,6 +334,7 @@ model Organization {
   datapointNarratives         OrganizationDatapointNarrative[]
   energyInstruments           EnergyInstrument[]
   internalCarbonPrices        InternalCarbonPrice[]
+  transitionPlan              TransitionPlan?
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
   onboardingProgress            OnboardingProgress?
   tcfdScenarios                 TcfdScenario[]       @relation("OrgTcfdScenarios")
@@ -911,6 +912,41 @@ model InternalCarbonPrice {
 
   @@index([organizationId, effectiveFrom])
   @@map("internal_carbon_prices")
+}
+
+/// An organisation's climate transition plan (ESRS E1-1, UK TPT framework).
+/// One living plan per organisation. The numbers (base year, targets,
+/// decarbonisation levers, actuals) come from the org's own records; this row
+/// holds the narrative and the approval. Any edit after approval returns the
+/// plan to draft; the audit log keeps each approval.
+model TransitionPlan {
+  id                      String    @id @default(cuid())
+  organizationId          String    @unique @map("organization_id")
+  status                  String    @default("draft")
+  ambition                String?
+  netZeroYear             Int?      @map("net_zero_year")
+  /// How the plan is embedded in strategy and financial planning.
+  strategy                String?
+  /// Value chain, industry and policy engagement.
+  engagement              String?
+  /// Board oversight, accountable roles, incentives, skills.
+  governance              String?
+  /// Assessment of locked-in emissions from key assets and products.
+  lockedInEmissions       String?   @map("locked_in_emissions")
+  capexPlanned            Decimal?  @map("capex_planned") @db.Decimal(18, 2)
+  opexPlanned             Decimal?  @map("opex_planned") @db.Decimal(18, 2)
+  currency                String    @default("GBP")
+  taxonomyAlignedCapexPct Decimal?  @map("taxonomy_aligned_capex_pct") @db.Decimal(5, 2)
+  approvalBody            String?   @map("approval_body")
+  approvedByUserId        String?   @map("approved_by_user_id")
+  approvedAt              DateTime? @map("approved_at")
+  updatedByUserId         String    @map("updated_by_user_id")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("transition_plans")
 }
 
 model ActivityRecord {

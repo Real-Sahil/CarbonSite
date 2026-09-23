@@ -240,6 +240,8 @@ export type AuditAction =
   | "carbon_budget.forecast_alert"
   | "carbon_price.created"
   | "carbon_price.deleted"
+  | "transition_plan.updated"
+  | "transition_plan.approved"
   | "subcontractor_submission.requested"
   | "subcontractor_submission.submitted"
   | "subcontractor_submission.verified"

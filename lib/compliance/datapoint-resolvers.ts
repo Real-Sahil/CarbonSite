@@ -13,6 +13,7 @@
 
 import type { PrismaClient } from "@prisma/client";
 import { summariseProvenance } from "@/lib/inventory/provenance";
+import { loadTransitionPlan } from "@/lib/transition-plan/load";
 import { e18Gaps, formatMoney, pricesInForce, PRICE_TYPES, type PriceType } from "@/lib/carbon-price";
 
 export interface ResolverResult {
@@ -191,18 +192,24 @@ async function primaryDataShareDisclosed(orgId: string, db: PrismaClient): Promi
   return { status: "gap", evidenceSummary: "No emissions are backed by primary data." };
 }
 
+/// ESRS E1-1. Satisfied only by an approved transition plan whose checklist
+/// is complete (EU Taxonomy capex aside, which applies to few undertakings);
+/// initiatives alone are levers, not a plan.
 async function transitionPlanDisclosed(orgId: string, db: PrismaClient): Promise<ResolverResult> {
-  const count = await db.reductionInitiative.count({ where: { organizationId: orgId } });
-  if (count === 0) return { status: "gap", evidenceSummary: "No reduction initiatives recorded." };
-  const quantified = await db.reductionInitiative.count({
-    where: { organizationId: orgId, expectedImpactCo2e: { not: null } },
-  });
-  if (quantified === count) {
-    return { status: "satisfied", evidenceSummary: `${count} reduction initiatives recorded, all with a quantified expected impact.` };
+  const plan = await db.transitionPlan.findUnique({ where: { organizationId: orgId }, select: { id: true } });
+  if (!plan) {
+    const count = await db.reductionInitiative.count({ where: { organizationId: orgId, status: { not: "canceled" } } });
+    return count === 0
+      ? { status: "gap", evidenceSummary: "No transition plan and no reduction initiatives recorded." }
+      : { status: "partial", evidenceSummary: `${count} reduction initiatives recorded, but no transition plan (Strategy, Transition plan).` };
   }
+  const { checklist } = await loadTransitionPlan(orgId);
+  const required = checklist.filter((c) => c.id !== "taxonomy");
+  const open = required.filter((c) => c.status !== "met");
+  if (open.length === 0) return { status: "satisfied", evidenceSummary: "Approved transition plan with every E1-1 element recorded." };
   return {
     status: "partial",
-    evidenceSummary: `${count} reduction initiatives recorded, ${quantified} with a quantified expected impact.`,
+    evidenceSummary: `Transition plan recorded; ${open.length} of ${required.length} E1-1 elements still open: ${open.map((c) => c.label).join("; ")}.`,
   };
 }
 

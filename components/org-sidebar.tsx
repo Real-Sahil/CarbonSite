@@ -150,6 +150,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     { label: "Carbon Forecast", icon: TrendingUp, sections: [
       { items: [
         { label: "Pathway",      href: `/orgs/${orgId}/pathway`,      icon: Compass,      roles: CORE_ROLES },
+        { label: "Transition plan", href: `/orgs/${orgId}/transition-plan`, icon: ClipboardCheck, roles: CORE_ROLES },
         { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
         { label: "SBTi Roadmap", href: `/orgs/${orgId}/sbti`,         icon: TrendingDown, roles: CORE_ROLES },
         { label: "Offsets",      href: `/orgs/${orgId}/offsets`,      icon: Sprout,       roles: CORE_ROLES },

@@ -36,6 +36,7 @@ interface OrgData {
   hasEnergyConsumption: boolean;
   hasOffsets: boolean;
   carbonPriceGaps: string[] | null;
+  transitionPlan: { approved: boolean; open: number; total: number } | null;
   hasComplianceCsrd: boolean;
   totalRecords: number;
   approvedRecords: number;
@@ -75,6 +76,14 @@ function buildDisclosures(org: OrgData): DisclosureRequirement[] {
           label: 'Decarbonisation initiatives and actions underway',
           status: org.hasReductionInitiatives ? 'met' : 'gap',
           detail: org.hasReductionInitiatives ? 'Reduction initiatives recorded with status and impact estimates' : 'No reduction initiatives recorded. Add initiatives in Targets.',
+        },
+        {
+          id: 'e1-1-plan',
+          label: 'Transition plan with levers, funding, locked-in emissions and board approval',
+          status: !org.transitionPlan ? 'gap' : org.transitionPlan.approved && org.transitionPlan.open === 0 ? 'met' : 'partial',
+          detail: !org.transitionPlan
+            ? 'No transition plan recorded. Build one in Carbon Forecast > Transition plan.'
+            : `${org.transitionPlan.total - org.transitionPlan.open} of ${org.transitionPlan.total} plan elements complete${org.transitionPlan.approved ? ', approved by the board' : ', not yet approved'}.`,
         },
       ],
     },
@@ -273,7 +282,7 @@ export default function EsrsE1GapPage() {
 
     async function fetchData() {
       try {
-        const [recordsRes, snapshotsRes, reportsRes, targetsRes, initiativesRes, complianceRes, sbtiRes, offsetsRes, pricesRes] =
+        const [recordsRes, snapshotsRes, reportsRes, targetsRes, initiativesRes, complianceRes, sbtiRes, offsetsRes, pricesRes, planRes] =
           await Promise.all([
             fetch(`/api/orgs/${orgId}/activity-records?limit=1&status=approved`),
             fetch(`/api/orgs/${orgId}/calculation-runs?limit=1`),
@@ -284,9 +293,10 @@ export default function EsrsE1GapPage() {
             fetch(`/api/orgs/${orgId}/sbti`),
             fetch(`/api/orgs/${orgId}/offsets?limit=1`),
             fetch(`/api/orgs/${orgId}/carbon-prices`),
+            fetch(`/api/orgs/${orgId}/transition-plan`),
           ]);
 
-        const [recordsJson, snapshotsJson, reportsJson, targetsJson, initiativesJson, complianceJson, sbtiJson, offsetsJson, pricesJson] =
+        const [recordsJson, snapshotsJson, reportsJson, targetsJson, initiativesJson, complianceJson, sbtiJson, offsetsJson, pricesJson, planJson] =
           await Promise.all([
             recordsRes.ok ? recordsRes.json() : { records: [], pagination: {} },
             snapshotsRes.ok ? snapshotsRes.json() : { runs: [] },
@@ -297,7 +307,9 @@ export default function EsrsE1GapPage() {
             sbtiRes.ok ? sbtiRes.json() : { target: null },
             offsetsRes.ok ? offsetsRes.json() : { offsets: [] },
             pricesRes.ok ? pricesRes.json() : { data: [] },
+            planRes.ok ? planRes.json() : null,
           ]);
+        const planChecks: { id: string; status: string }[] = (planJson?.checklist || []).filter((c: { id: string }) => c.id !== 'taxonomy');
         const prices: CarbonPrice[] = (pricesJson.data || []).map((p: CarbonPrice & { effectiveFrom: string; effectiveTo: string | null; pricePerTonne: string }) => ({
           ...p,
           pricePerTonne: Number(p.pricePerTonne),
@@ -340,6 +352,13 @@ export default function EsrsE1GapPage() {
           hasEnergyConsumption,
           hasOffsets: (offsetsJson.offsets || []).length > 0,
           carbonPriceGaps: prices.length > 0 ? e18Gaps(prices, new Date()) : null,
+          transitionPlan: planJson?.plan
+            ? {
+                approved: planJson.plan.status === 'approved',
+                open: planChecks.filter((c) => c.status !== 'met').length,
+                total: planChecks.length,
+              }
+            : null,
           hasComplianceCsrd: (complianceJson.records || []).some((r: { framework: string }) => r.framework === 'CSRD_ESRS_E1'),
           totalRecords: recordsJson.pagination?.total ?? (recordsJson.records || []).length,
           approvedRecords: (recordsJson.records || []).length,
