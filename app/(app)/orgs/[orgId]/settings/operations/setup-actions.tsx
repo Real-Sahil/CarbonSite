@@ -253,7 +253,6 @@ function FactorImportPanel({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const canImport = factorLibraries.length > 0;
 
   function importFactors(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -273,7 +272,11 @@ function FactorImportPanel({
           throw new Error(body?.message ?? "Factor import failed");
         }
         formEl.reset();
-        setSuccess(`${body.importedRows} factor rows imported.`);
+        setSuccess(
+          body.target === "organization"
+            ? `${body.importedRows} factors added to your organisation's factors. Recalculate to apply them.`
+            : `${body.importedRows} factor rows imported.`,
+        );
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Factor import failed");
@@ -285,54 +288,47 @@ function FactorImportPanel({
     <div className="rounded-lg border border-slate-200 bg-white">
       <PanelHeader
         title="Emission factor import"
-        description="Load governed factor rows into an approved library for deterministic calculation runs."
+        description="Add your own factors, such as supplier-specific or EPD figures. Calculations use a matching organisation factor before the shared library, and record which one they used."
       />
-      {canEdit ? (
-        <form onSubmit={importFactors} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
-          <Field label="Factor library">
-            <select
-              name="factorLibraryId"
-              required
-              disabled={!canImport || isPending}
-              className={selectClass}
-            >
-              {factorLibraries.map((library) => (
+      <form onSubmit={importFactors} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
+        <Field label="Import into">
+          <select name="factorLibraryId" defaultValue="" disabled={isPending} className={selectClass}>
+            <option value="">Your organisation&apos;s factors</option>
+            {canEdit &&
+              factorLibraries.map((library) => (
                 <option key={library.id} value={library.id}>
-                  {library.name} {library.version} ({library.factorCount} rows)
+                  Shared library: {library.name} {library.version} ({library.factorCount} rows)
                 </option>
               ))}
-            </select>
-          </Field>
-          <Field label="Factor file">
-            <input
-              name="file"
-              type="file"
-              accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-              required
-              disabled={!canImport || isPending}
-              className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </Field>
-          <div className="flex items-end">
-            <Button type="submit" disabled={!canImport || isPending}>
-              <Upload className="h-4 w-4" />
-              Import factors
-            </Button>
-          </div>
-          {!canImport && (
-            <p className="text-sm text-slate-500 lg:col-span-3">
-              Seed methodology and approved factor libraries before importing factor rows.
-            </p>
-          )}
+          </select>
+        </Field>
+        <Field label="Factor file">
+          <input
+            name="file"
+            type="file"
+            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            required
+            disabled={isPending}
+            className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </Field>
+        <div className="flex items-end">
+          <Button type="submit" disabled={isPending}>
+            <Upload className="h-4 w-4" />
+            Import factors
+          </Button>
+        </div>
+        <p className="text-xs leading-5 text-slate-500 lg:col-span-3">
+          Required columns: scope, input_unit, emission_category_code, and at least one of co2e, co2, ch4, or n2o. Optional: activity_type, geography_country, geography_region, effective_start_date, effective_end_date, uncertainty_rating, usage_notes. A row matching an existing factor&apos;s category, activity, country and unit becomes its next version.
+        </p>
+        {!canEdit && (
           <p className="text-xs leading-5 text-slate-500 lg:col-span-3">
-            Required columns: scope, input_unit, and at least one of co2e, co2, ch4, or n2o. Optional columns include external_id, emission_category_code, activity_type, geography_country, geography_region, effective_start_date, effective_end_date, uncertainty_rating, and usage_notes.
+            Only your organisation&apos;s calculations use these factors. The shared DEFRA and EPA libraries are maintained by the MetricOra team.
           </p>
-          {success && <p className="text-sm text-green-700 lg:col-span-3">{success}</p>}
-          {error && <p className="whitespace-pre-line text-sm text-red-600 lg:col-span-3">{error}</p>}
-        </form>
-      ) : (
-        <SharedLibraryNotice />
-      )}
+        )}
+        {success && <p className="text-sm text-green-700 lg:col-span-3">{success}</p>}
+        {error && <p className="whitespace-pre-line text-sm text-red-600 lg:col-span-3">{error}</p>}
+      </form>
     </div>
   );
 }

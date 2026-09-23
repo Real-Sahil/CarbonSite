@@ -31,6 +31,10 @@ const db = vi.hoisted(() => {
     frameworkDatapoint: model(),
     organizationDatapointNarrative: model(),
     dsarRequest: model(),
+    emissionCategory: model(),
+    emissionFactor: model(),
+    factorLibrary: model(),
+    organizationEmissionFactor: model(),
     $transaction: vi.fn(),
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
@@ -186,15 +190,46 @@ describe("shared factor and material libraries", () => {
   it.each([
     ["factors", "@/app/api/orgs/[orgId]/factors/import/route"],
     ["materials", "@/app/api/orgs/[orgId]/materials/import/route"],
-  ])("an org editor without platform access cannot import %s", async (_name, path) => {
+  ])("an org editor without platform access cannot import %s into a shared library", async (_name, path) => {
     const { POST } = await import(/* @vite-ignore */ path);
     db.platformMembership.findUnique.mockResolvedValue(null);
+    const form = new FormData();
+    form.set("factorLibraryId", "defra-2025");
 
-    const res = await POST(new NextRequest("http://localhost/x", { method: "POST", body: new FormData() }), {
+    const res = await POST(new NextRequest("http://localhost/x", { method: "POST", body: form }), {
       params: Promise.resolve({ orgId: ORG_A }),
     });
 
     expect(res.status).toBe(403);
+    expect(db.emissionFactor.createMany).not.toHaveBeenCalled();
+  });
+
+  it("an org editor's factor upload goes into that org's own factors only", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/factors/import/route");
+    db.platformMembership.findUnique.mockResolvedValue(null);
+    db.emissionCategory.findMany.mockResolvedValue([
+      { id: "cat-waste", code: "s3-waste", scope: 3, activityType: "waste" },
+    ]);
+    db.organizationEmissionFactor.findMany.mockResolvedValue([
+      { scope: 3, emissionCategoryId: "cat-waste", activityType: "waste", geographyCountry: null, geographyRegion: null, inputUnit: "tonnes", version: 2 },
+    ]);
+    db.organizationEmissionFactor.createMany.mockResolvedValue({ count: 1 });
+    const form = new FormData();
+    form.set(
+      "file",
+      new File(["scope,emission_category_code,input_unit,co2e\n3,s3-waste,tonnes,12.5\n"], "supplier.csv", { type: "text/csv" }),
+    );
+
+    const res = await POST(new NextRequest("http://localhost/x", { method: "POST", body: form }), {
+      params: Promise.resolve({ orgId: ORG_A }),
+    });
+
+    expect(res.status).toBe(201);
+    expect(db.emissionFactor.createMany).not.toHaveBeenCalled();
+    expect(db.organizationEmissionFactor.findMany.mock.calls[0][0].where.organizationId).toBe(ORG_A);
+    const rows = db.organizationEmissionFactor.createMany.mock.calls[0][0].data;
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ organizationId: ORG_A, emissionCategoryId: "cat-waste", version: 3, createdByUserId: "admin-a" });
   });
 
   it("platform analysts are read-only too", async () => {

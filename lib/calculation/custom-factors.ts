@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/db';
+import type { EmissionFactor, OrganizationEmissionFactor } from '@prisma/client';
+import { areUnitsCompatible, isCurrencyUnit } from './units';
 
 export interface CustomFactorInput {
   scope?: number;
@@ -19,39 +21,116 @@ export interface CustomFactorInput {
   version?: number;
 }
 
-export interface CustomFactorMatchCriteria {
-  organizationId: string;
-  scope: number;
-  emissionCategoryId?: string;
-  geographyCountry?: string;
-  geographyRegion?: string;
-  activityType?: string;
-  effectiveDate?: Date;
-  inputUnit: string;
+/**
+ * The org's own factors, loaded once per calculation chunk. Always filtered by
+ * organizationId: another tenant's factor must never reach this org's run.
+ */
+export async function loadOrgCustomFactors(organizationId: string): Promise<OrganizationEmissionFactor[]> {
+  return prisma.organizationEmissionFactor.findMany({
+    where: { organizationId, OR: [{ co2e: { not: null } }, { co2: { not: null } }] },
+  });
 }
 
-export async function selectCustomFactor(criteria: CustomFactorMatchCriteria) {
-  const { organizationId, scope, emissionCategoryId, geographyCountry, geographyRegion, activityType, effectiveDate, inputUnit } = criteria;
+export type CustomFactorQuery = {
+  organizationId: string;
+  emissionCategoryId: string;
+  /** The category's activity type. */
+  activityType?: string | null;
+  geographyCountry?: string | null;
+  activityDate: Date;
+  /** The record's normalized unit. */
+  recordUnit: string;
+  /** Fuel type, transport mode, refrigerant: matched against the factor's activity type. */
+  matchHint?: string;
+};
 
-  // Query custom factors with fallback to more general matches
-  const customFactor = await prisma.organizationEmissionFactor.findFirst({
-    where: {
-      organizationId,
-      scope,
-      ...(emissionCategoryId && { emissionCategoryId }),
-      ...(geographyCountry && { geographyCountry }),
-      ...(geographyRegion && { geographyRegion }),
-      ...(activityType && { activityType }),
-      inputUnit,
-      ...(effectiveDate && {
-        effectiveStartDate: { lte: effectiveDate },
-        effectiveEndDate: { gte: effectiveDate },
-      }),
-    },
-    orderBy: [{ version: 'desc' }, { createdAt: 'desc' }],
-  });
+const unitFits = (factorUnit: string, recordUnit: string) =>
+  factorUnit === recordUnit ||
+  areUnitsCompatible(factorUnit, recordUnit) ||
+  (isCurrencyUnit(factorUnit) && isCurrencyUnit(recordUnit));
 
-  return customFactor;
+/**
+ * The org factor that applies to a record, or null to fall back to the run's
+ * shared library. A factor applies when its category matches, its unit can
+ * take the record's, its dates cover the activity, and any country or
+ * activity type it names matches the record. The most specific applies; ties
+ * go to the latest version. Pure, so the tenant check here is a second line
+ * behind the loader's organizationId filter.
+ */
+export function pickCustomFactor(
+  factors: OrganizationEmissionFactor[],
+  q: CustomFactorQuery,
+): { factor: OrganizationEmissionFactor; reason: string } | null {
+  const hints = (q.matchHint ?? "").toLowerCase().split(/[^a-z0-9]+/).filter((t) => t.length >= 3);
+  let best: { factor: OrganizationEmissionFactor; score: number; reasons: string[] } | null = null;
+
+  for (const f of factors) {
+    if (f.organizationId !== q.organizationId) continue;
+    if (f.emissionCategoryId !== q.emissionCategoryId) continue;
+    if (f.co2e == null && f.co2 == null) continue;
+    if (!unitFits(f.inputUnit, q.recordUnit)) continue;
+    if (f.effectiveStartDate && f.effectiveStartDate > q.activityDate) continue;
+    if (f.effectiveEndDate && f.effectiveEndDate < q.activityDate) continue;
+
+    const reasons: string[] = [];
+    let score = 0;
+    if (f.geographyCountry) {
+      if (f.geographyCountry !== q.geographyCountry) continue;
+      score += 2;
+      reasons.push(`geography ${f.geographyCountry}`);
+    }
+    if (f.activityType) {
+      const type = f.activityType.toLowerCase();
+      const byCategory = type === q.activityType?.toLowerCase();
+      const byDetail = hints.some((h) => type.includes(h));
+      if (!byCategory && !byDetail) continue;
+      score += byDetail ? 2 : 1;
+      reasons.push(`activity ${f.activityType}`);
+    }
+
+    if (
+      !best ||
+      score > best.score ||
+      (score === best.score &&
+        (f.version > best.factor.version ||
+          (f.version === best.factor.version && f.createdAt > best.factor.createdAt)))
+    ) {
+      best = { factor: f, score, reasons };
+    }
+  }
+
+  if (!best) return null;
+  const detail = best.reasons.length ? `, ${best.reasons.join(", ")}` : "";
+  return { factor: best.factor, reason: `organisation factor v${best.factor.version} (${best.factor.inputUnit}${detail})` };
+}
+
+/**
+ * An org factor in the shape the calculation pipeline takes. `id` is the org
+ * factor's id; callers must store it as organizationEmissionFactorId, never
+ * as emissionFactorId.
+ */
+export function customFactorAsLibraryFactor(f: OrganizationEmissionFactor, factorLibraryId: string): EmissionFactor {
+  return {
+    id: f.id,
+    factorLibraryId,
+    externalId: null,
+    scope: f.scope,
+    emissionCategoryId: f.emissionCategoryId,
+    activityType: f.activityType,
+    geographyCountry: f.geographyCountry,
+    geographyRegion: f.geographyRegion,
+    effectiveStartDate: f.effectiveStartDate,
+    effectiveEndDate: f.effectiveEndDate,
+    inputUnit: f.inputUnit,
+    co2: f.co2,
+    ch4: f.ch4,
+    n2o: f.n2o,
+    co2e: f.co2e,
+    biogenicCo2: null,
+    uncertaintyRating: f.uncertaintyRating,
+    usageNotes: f.usageNotes,
+    priceBaseYear: null,
+  };
 }
 
 export async function getOrgCustomFactorLibrary(organizationId: string, filters?: { scope?: number; categoryId?: string }) {
@@ -101,7 +180,7 @@ export async function updateCustomFactor(organizationId: string, factorId: strin
   });
 
   if (!existing || existing.organizationId !== organizationId) {
-    throw new Error('Custom factor not found or access denied');
+    throw Object.assign(new Error('Custom factor not found.'), { code: 'NOT_FOUND', status: 404 });
   }
 
   // Get next version
@@ -151,7 +230,16 @@ export async function deleteCustomFactor(organizationId: string, factorId: strin
   });
 
   if (!factor || factor.organizationId !== organizationId) {
-    throw new Error('Custom factor not found or access denied');
+    throw Object.assign(new Error('Custom factor not found.'), { code: 'NOT_FOUND', status: 404 });
+  }
+
+  // Calculations are immutable and must keep pointing at the factor they used.
+  const used = await prisma.emissionCalculation.count({ where: { organizationId, organizationEmissionFactorId: factorId } });
+  if (used > 0) {
+    throw Object.assign(
+      new Error('This factor is used by existing calculations, so it cannot be deleted. Add a new version instead.'),
+      { code: 'FACTOR_IN_USE', status: 409 },
+    );
   }
 
   return prisma.organizationEmissionFactor.delete({

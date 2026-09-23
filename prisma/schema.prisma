@@ -1343,6 +1343,9 @@ model EmissionCalculation {
   /// Null when no matching factor existed — the record is included with
   /// totalCo2e 0 and a warning instead of failing the whole run.
   emissionFactorId        String?  @map("emission_factor_id")
+  /// Set instead of emissionFactorId when the org's own factor
+  /// (OrganizationEmissionFactor) was used rather than the shared library.
+  organizationEmissionFactorId String? @map("organization_emission_factor_id")
   factorLibraryId         String   @map("factor_library_id")
   factorLibraryVersion    String   @map("factor_library_version")
   methodologyVersionName  String   @map("methodology_version_name")
@@ -1379,6 +1382,7 @@ model EmissionCalculation {
   activityRecord     ActivityRecord     @relation(fields: [activityRecordId], references: [id])
   calculationRun     CalculationRun     @relation(fields: [calculationRunId], references: [id])
   emissionFactor     EmissionFactor?    @relation(fields: [emissionFactorId], references: [id])
+  organizationEmissionFactor OrganizationEmissionFactor? @relation(fields: [organizationEmissionFactorId], references: [id], onDelete: SetNull)
   assuranceSamples   AssuranceSample[]  @relation("SampleCalculation")
   methodologyVersion MethodologyVersion @relation(fields: [methodologyVersionName], references: [name])
   modelExplanations  ModelExplanation[]  @relation("explanationCalc")
@@ -1389,6 +1393,7 @@ model EmissionCalculation {
   @@unique([calculationRunId, activityRecordId])
   @@index([calculationRunId])
   @@index([activityRecordId])
+  @@index([organizationEmissionFactorId])
   @@map("emission_calculations")
 }
 
@@ -3311,6 +3316,7 @@ model OrganizationEmissionFactor {
   organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   emissionCategory EmissionCategory? @relation(fields: [emissionCategoryId], references: [id])
   createdBy        User              @relation("CustomFactorCreator", fields: [createdByUserId], references: [id])
+  calculations     EmissionCalculation[]
 
   @@unique([organizationId, scope, emissionCategoryId, activityType, geographyCountry, geographyRegion, inputUnit, version])
   @@index([organizationId, scope, emissionCategoryId])

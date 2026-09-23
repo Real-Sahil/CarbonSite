@@ -56,6 +56,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     const calculations = await prisma.emissionCalculation.findMany({
       where: {
+        organizationId: orgId,
         id: { in: calculationIds },
       },
       include: {
@@ -145,6 +146,7 @@ interface CalculationData {
   activityRecordId: string;
   createdAt: Date;
   emissionFactorId: string | null;
+  organizationEmissionFactorId: string | null;
   totalCo2e: { toString(): string };
   dataQualityScore?: { toString(): string } | null;
   factorLibraryVersion: string;
@@ -194,8 +196,8 @@ function generateComplianceEvidence(params: {
         scope: String(calc.activityRecord.emissionCategory.scope),
       },
       emissionFactor: {
-        id: calc.emissionFactorId || "unknown",
-        source: "library",
+        id: calc.emissionFactorId ?? calc.organizationEmissionFactorId ?? "unknown",
+        source: calc.organizationEmissionFactorId ? "organisation" : "library",
         version: calc.factorLibraryVersion,
       },
       result: {

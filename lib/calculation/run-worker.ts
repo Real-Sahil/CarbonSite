@@ -15,7 +15,8 @@ import {
   GAS_VOLUME_CORRECTION,
   GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3,
 } from "./units";
-import { selectFactor, buildFactorCache } from "./factor-selector";
+import { selectFactor, buildFactorCache, type FactorSelection } from "./factor-selector";
+import { loadOrgCustomFactors, pickCustomFactor, customFactorAsLibraryFactor } from "./custom-factors";
 import { groupDashboardAggregates } from "./dashboard-groups";
 import { loadMarketAllocations } from "./scope2-allocation-loader";
 import { deflateSpend } from "./price-index";
@@ -194,6 +195,9 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
   // chunk agrees on which certificate backs which record).
   const marketAllocations = await loadMarketAllocations(orgId, activityRecordWhere);
 
+  // The org's own factors take precedence over the shared library.
+  const customFactors = await loadOrgCustomFactors(orgId);
+
   const chunkDeadline = Date.now() + CHUNK_TIME_BUDGET_MS;
 
   for (;;) {
@@ -257,21 +261,33 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         continue;
       }
 
-      const factorSelection = await selectFactor(
-        {
-          emissionCategoryId: record.emissionCategoryId,
-          activityType: record.emissionCategory.activityType,
-          geographyCountry: record.country,
-          activityDate,
-          factorLibraryId: run.factorLibraryId,
-          scope2Method: record.scope2Method ?? undefined,
-          recordUnit: normalized.unit,
-          matchHint: [record.fuelType, record.transportMode, record.refrigerantType]
-            .filter(Boolean)
-            .join(" "),
-        },
-        factorCache,
-      );
+      const matchHint = [record.fuelType, record.transportMode, record.refrigerantType]
+        .filter(Boolean)
+        .join(" ");
+      const custom = pickCustomFactor(customFactors, {
+        organizationId: orgId,
+        emissionCategoryId: record.emissionCategoryId,
+        activityType: record.emissionCategory.activityType,
+        geographyCountry: record.country,
+        activityDate,
+        recordUnit: normalized.unit,
+        matchHint,
+      });
+      const factorSelection: FactorSelection | null = custom
+        ? { factor: customFactorAsLibraryFactor(custom.factor, run.factorLibraryId), selectionReason: custom.reason, warnings: [] }
+        : await selectFactor(
+            {
+              emissionCategoryId: record.emissionCategoryId,
+              activityType: record.emissionCategory.activityType,
+              geographyCountry: record.country,
+              activityDate,
+              factorLibraryId: run.factorLibraryId,
+              scope2Method: record.scope2Method ?? undefined,
+              recordUnit: normalized.unit,
+              matchHint,
+            },
+            factorCache,
+          );
 
       if (!factorSelection) {
         // No factor found — include the record with zero CO2e and a warning
@@ -318,6 +334,11 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       }
 
       const { factor, selectionReason, warnings: selectionWarnings = [] } = factorSelection;
+      // An org factor's id belongs in its own column; emissionFactorId is a
+      // foreign key to the shared library only.
+      const factorRef = custom
+        ? { emissionFactorId: null, organizationEmissionFactorId: custom.factor.id }
+        : { emissionFactorId: factor.id };
 
       // Reconcile the record's unit with the factor's input unit BEFORE
       // multiplying. Multiplying through a mismatch (2,500 kg × a per-tonne
@@ -430,7 +451,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
                 organizationId: orgId,
                 activityRecordId: record.id,
                 calculationRunId,
-                emissionFactorId: factor.id,
+                ...factorRef,
                 factorLibraryId: run.factorLibraryId,
                 factorLibraryVersion,
                 methodologyVersionName,
@@ -501,7 +522,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
             organizationId: orgId,
             activityRecordId: record.id,
             calculationRunId,
-            emissionFactorId: factor.id,
+            ...factorRef,
             factorLibraryId: run.factorLibraryId,
             factorLibraryVersion,
             methodologyVersionName,
@@ -555,7 +576,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
           organizationId: orgId,
           activityRecordId: record.id,
           calculationRunId,
-          emissionFactorId: factor.id,
+          ...factorRef,
           factorLibraryId: run.factorLibraryId,
           factorLibraryVersion,
           methodologyVersionName,

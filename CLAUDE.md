@@ -148,7 +148,7 @@ All presigned URLs generated server-side after auth checks. Expiry: 1 hour (`PRE
 
 ### Security guards (keep these when adding features)
 - **Database roles:** Supabase's `anon` and `authenticated` roles have no grants on `public` (migration `20260922000012`). The app never uses the Supabase Data API; Prisma connects as `postgres`, which bypasses RLS. Every new table still gets `ENABLE ROW LEVEL SECURITY` plus a deny-all policy in its migration.
-- **Shared reference data** (factor libraries, embodied materials, framework datapoints) is read by every tenant. Org routes must never write it. Imports go through `requireSharedLibraryEditor()` in `lib/auth/shared-libraries.ts` (platform owner/support only). Per-org text about a shared row lives in its own org-scoped table (e.g. `OrganizationDatapointNarrative`).
+- **Shared reference data** (factor libraries, embodied materials, framework datapoints) is read by every tenant. Org routes must never write it. Imports go through `requireSharedLibraryEditor()` in `lib/auth/shared-libraries.ts` (platform owner/support only). Per-org text about a shared row lives in its own org-scoped table (e.g. `OrganizationDatapointNarrative`). An org's own factors live in `OrganizationEmissionFactor`: the factor import writes there unless a platform editor picks a shared library.
 - **Passwords set by an admin:** hash with `hashTemporaryPassword()` from `lib/auth/temporary-password.ts` (Better Auth's format; bcrypt/SHA-256 can never sign in). Never set a password on an account that exists outside the org: check `accountBelongsOnlyToOrg()`. Invite acceptance takes the org from the invite, never the request body.
 - **Errors:** `handleRouteError()` returns a generic 500 with a Sentry reference, never the raw message.
 - **Regression tests:** `tests/security/cross-tenant-writes.test.ts`.
@@ -202,6 +202,8 @@ Pipeline for each `CalculationRun`:
 6. Rebuild `DashboardAggregate` rows for the snapshot.
 
 GWP values (AR6): CH4 = 27.9, N2O = 273 (`lib/calculation/gwp.ts`).
+
+**Organisation factors first:** each record is matched against the org's `OrganizationEmissionFactor` rows (`pickCustomFactor()` in `custom-factors.ts`: same category, usable unit, dates cover the activity, any country/activity it names must match; most specific, then latest version) before the run's shared library. The calculation stores `organizationEmissionFactorId` instead of `emissionFactorId`; a factor a calculation used cannot be deleted, only superseded by a new version.
 
 **Factor library per run:** a run is pinned to one library. `chooseFactorLibrary()` picks the newest DEFRA set whose year is at most the period's end year (DEFRA 2026.1 has no effective-date window, so it covers periods that straddle years); the UI warns when another library is chosen. EPA stays available for US operations.
 

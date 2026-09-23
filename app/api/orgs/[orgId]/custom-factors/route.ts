@@ -72,7 +72,7 @@ export async function POST(
 }
 
 /**
- * PATCH /api/orgs/[orgId]/custom-factors/[factorId]
+ * PATCH /api/orgs/[orgId]/custom-factors?id=<factorId>
  * Update a custom emission factor (creates new version)
  */
 export async function PATCH(
@@ -84,7 +84,8 @@ export async function PATCH(
     await requireOrgMember(orgId, 'admin', 'editor');
 
     const url = new URL(req.url);
-    const factorId = url.pathname.split('/').pop();
+    // This route has no [factorId] segment, so the id comes as ?id=.
+    const factorId = url.searchParams.get('id');
 
     if (!factorId) {
       return NextResponse.json(
@@ -105,7 +106,7 @@ export async function PATCH(
 }
 
 /**
- * DELETE /api/orgs/[orgId]/custom-factors/[factorId]
+ * DELETE /api/orgs/[orgId]/custom-factors?id=<factorId>
  * Delete a custom emission factor
  */
 export async function DELETE(
@@ -117,7 +118,8 @@ export async function DELETE(
     await requireOrgMember(orgId, 'admin');
 
     const url = new URL(req.url);
-    const factorId = url.pathname.split('/').pop();
+    // This route has no [factorId] segment, so the id comes as ?id=.
+    const factorId = url.searchParams.get('id');
 
     if (!factorId) {
       return NextResponse.json(

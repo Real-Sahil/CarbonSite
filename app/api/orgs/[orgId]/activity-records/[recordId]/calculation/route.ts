@@ -38,6 +38,20 @@ export async function GET(_req: NextRequest, { params }: Params) {
             uncertaintyRating: true,
           },
         },
+        organizationEmissionFactor: {
+          select: {
+            version: true,
+            source: true,
+            inputUnit: true,
+            co2: true,
+            ch4: true,
+            n2o: true,
+            co2e: true,
+            geographyCountry: true,
+            usageNotes: true,
+            uncertaintyRating: true,
+          },
+        },
         calculationRun: {
           select: {
             id: true,
