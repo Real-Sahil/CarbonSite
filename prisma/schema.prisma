@@ -327,6 +327,7 @@ model Organization {
   assuranceFindings           AssuranceFinding[]            @relation("OrgAssuranceFindings")
   datapointStatuses           OrganizationDatapointStatus[] @relation("OrgDatapointStatuses")
   datapointNarratives         OrganizationDatapointNarrative[]
+  energyInstruments           EnergyInstrument[]
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
   onboardingProgress            OnboardingProgress?
   tcfdScenarios                 TcfdScenario[]       @relation("OrgTcfdScenarios")
@@ -602,6 +603,7 @@ model Facility {
   hsIncidents              HsIncidentReport[]   @relation("FacilityHsIncidents")
   enforcementNotices       EnforcementNotice[]  @relation("FacilityEnforcementNotices")
   svActivities             SvActivity[]         @relation("SvActivityFacility")
+  energyInstruments        EnergyInstrument[]
 
   @@index([organizationId])
   @@index([organizationId, legalEntityId])
@@ -832,6 +834,46 @@ enum Scope2Method {
   market_based
 
   @@map("scope2_method")
+}
+
+enum EnergyInstrumentType {
+  rego
+  guarantee_of_origin
+  ppa
+  green_tariff
+  supplier_specific
+  residual_mix
+
+  @@map("energy_instrument_type")
+}
+
+/// A contractual instrument behind market-based Scope 2: an energy attribute
+/// certificate, a PPA, a green tariff, the supplier's emission rate, or the
+/// residual mix. Allocated to market-based electricity records by
+/// lib/calculation/scope2-instruments.ts. coveredKwh null means it covers all
+/// consumption in its facility (or the whole org) and validity window.
+model EnergyInstrument {
+  id                     String               @id @default(cuid())
+  organizationId         String               @map("organization_id")
+  facilityId             String?              @map("facility_id")
+  type                   EnergyInstrumentType
+  supplierName           String?              @map("supplier_name")
+  reference              String?
+  coveredKwh             Decimal?             @map("covered_kwh") @db.Decimal(20, 4)
+  emissionFactorKgPerKwh Decimal              @map("emission_factor_kg_per_kwh") @db.Decimal(12, 6)
+  validFrom              DateTime             @map("valid_from")
+  validTo                DateTime             @map("valid_to")
+  evidenceFileId         String?              @map("evidence_file_id")
+  notes                  String?
+  createdByUserId        String               @map("created_by_user_id")
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility     Facility?    @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, validFrom])
+  @@map("energy_instruments")
 }
 
 model ActivityRecord {

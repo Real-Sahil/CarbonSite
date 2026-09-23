@@ -14,6 +14,8 @@ import {
 } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { groupDashboardAggregates } from "./dashboard-groups";
+import { loadMarketAllocations } from "./scope2-allocation-loader";
+import { allocationFormula, type Allocation } from "./scope2-instruments";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
 import { assessTemporalRepresentativeness } from "./temporal-representativeness";
@@ -184,6 +186,11 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
   // runs never re-fetch the entire factor table from the DB.
   const factorCache = sharedFactorCache ?? await buildFactorCache(run.factorLibraryId);
 
+  // Market-based Scope 2: REGOs, PPAs, tariffs and supplier rates the org
+  // holds, allocated across the whole run up front (deterministic, so every
+  // chunk agrees on which certificate backs which record).
+  const marketAllocations = await loadMarketAllocations(orgId, activityRecordWhere);
+
   const chunkDeadline = Date.now() + CHUNK_TIME_BUDGET_MS;
 
   for (;;) {
@@ -237,6 +244,15 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         );
       }
 
+      const allocation = marketAllocations.get(record.id);
+      if (allocation && allocation.uncoveredKwh <= 1e-9) {
+        await writeInstrumentCalculation({
+          orgId, calculationRunId, record, normalized, allocation, unitWarnings,
+          factorLibraryId: run.factorLibraryId, factorLibraryVersion, methodologyVersionName,
+        });
+        continue;
+      }
+
       const factorSelection = await selectFactor(
         {
           emissionCategoryId: record.emissionCategoryId,
@@ -279,8 +295,10 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
             originalUnit: record.unit,
             normalizedAmount: normalized.amount,
             normalizedUnit: normalized.unit,
-            totalCo2e: 0,
-            formula: "No matching emission factor found.",
+            totalCo2e: allocation?.instrumentCo2eKg ?? 0,
+            formula: allocation
+              ? `${allocationFormula(allocation)}; remaining ${allocation.uncoveredKwh.toFixed(3)} kWh not calculated (no matching emission factor).`
+              : "No matching emission factor found.",
             warnings: [
               ...unitWarnings,
               `No emission factor found for category ${record.emissionCategory.code}`,
@@ -474,6 +492,8 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         });
         continue;
       }
+
+      if (allocation) blendInstrumentShare(result, allocation, amountForFactor, factor.inputUnit);
 
       const factorValue = factor.co2e ?? factor.co2;
 
@@ -861,4 +881,85 @@ async function autoCreateSupplierDataRequests(
       });
     }
   }
+}
+
+/**
+ * A market-based record wholly covered by contractual instruments. Its CO2e
+ * is the instruments' own rates; no library factor is involved.
+ */
+async function writeInstrumentCalculation(args: {
+  orgId: string;
+  calculationRunId: string;
+  record: ActivityRecord & { emissionCategory: { scope: number } };
+  normalized: { amount: number; unit: string };
+  allocation: Allocation;
+  unitWarnings: string[];
+  factorLibraryId: string;
+  factorLibraryVersion: string;
+  methodologyVersionName: string;
+}): Promise<void> {
+  const { record, allocation } = args;
+  const first = allocation.portions[0];
+  // Supplier-specific contractual data is the top tier of the Scope 2 quality
+  // hierarchy; score it as a matched, in-period, same-geography factor.
+  const qualityScore = calculateDataQualityScore({
+    record,
+    factorSelection: {
+      factor: { effectiveStartDate: record.activityDate, geographyCountry: record.country } as never,
+      selectionReason: "matched contractual instrument, matched facility, compatible unit",
+    },
+    unitConverted: false,
+    unitConversionComplex: false,
+  });
+  const ci = calculateConfidenceInterval(allocation.instrumentCo2eKg, qualityScore.geometricStdDev);
+  await prisma.emissionCalculation.create({
+    data: {
+      organizationId: args.orgId,
+      activityRecordId: record.id,
+      calculationRunId: args.calculationRunId,
+      emissionFactorId: null,
+      factorLibraryId: args.factorLibraryId,
+      factorLibraryVersion: args.factorLibraryVersion,
+      methodologyVersionName: args.methodologyVersionName,
+      originalAmount: record.amount,
+      originalUnit: record.unit,
+      normalizedAmount: args.normalized.amount,
+      normalizedUnit: args.normalized.unit,
+      totalCo2e: allocation.instrumentCo2eKg,
+      selectionReason: `market-based: ${allocation.portions.map((p) => p.label).join(", ")}`,
+      factorValue: allocation.portions.length === 1 ? toDecimal(first.factorKgPerKwh) : null,
+      formula: `${allocationFormula(allocation)} = ${allocation.instrumentCo2eKg.toFixed(6)} kg CO2e`,
+      warnings: args.unitWarnings,
+      dataQualityScore: qualityScore.score,
+      confidenceIntervalLower: toDecimal(ci.lower),
+      confidenceIntervalUpper: toDecimal(ci.upper),
+      pedigreeScores: qualityScore.pedigreeScores as unknown as Record<string, number>,
+      geometricStdDev: qualityScore.geometricStdDev,
+    },
+  });
+}
+
+/**
+ * A market-based record partly covered by instruments: the library factor
+ * applies only to the uncovered kWh, and the instruments' CO2e is added.
+ * `amount` is the record's amount in the factor's input unit.
+ */
+function blendInstrumentShare(
+  result: ReturnType<typeof computeCo2e>,
+  allocation: Allocation,
+  amount: number,
+  factorUnit: string,
+): void {
+  const uncovered = convertBetween(allocation.uncoveredKwh, "kWh", factorUnit) ?? allocation.uncoveredKwh;
+  const share = amount > 0 ? Math.min(1, uncovered / amount) : 0;
+  const scale = (v: number | null) => (v == null ? null : v * share);
+  result.co2 = scale(result.co2);
+  result.ch4 = scale(result.ch4);
+  result.n2o = scale(result.n2o);
+  result.biogenicCo2e = scale(result.biogenicCo2e);
+  result.totalCo2e = result.totalCo2e * share + allocation.instrumentCo2eKg;
+  result.formula = `${allocationFormula(allocation)} + ${allocation.uncoveredKwh.toFixed(3)} kWh uncovered at the library factor (${result.formula})`;
+  result.warnings.push(
+    `${allocation.uncoveredKwh.toFixed(0)} kWh of this record is not covered by any contractual instrument or residual mix, so the library factor was used for that share. Add a residual mix rate to report it on a true market basis.`,
+  );
 }

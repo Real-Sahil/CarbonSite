@@ -38,6 +38,8 @@ export type AuditAction =
   | "record.created"
   | "record.updated"
   | "record.deleted"
+  | "energy_instrument.created"
+  | "energy_instrument.deleted"
   | "record.reviewed"
   | "record.bulk_imported"
   | "factor.library_imported"
