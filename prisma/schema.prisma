@@ -1250,6 +1250,11 @@ model EmissionFactor {
   biogenicCo2        Decimal?  @map("biogenic_co2") @db.Decimal(18, 8)
   uncertaintyRating  String?   @map("uncertainty_rating")
   usageNotes         String?   @map("usage_notes")
+  /// For spend-based factors (inputUnit a currency): the year whose prices the
+  /// factor is expressed in. Spend is deflated to this year before the factor
+  /// applies (lib/calculation/price-index.ts). Null means not known, and spend
+  /// is used as recorded, with a warning.
+  priceBaseYear      Int?      @map("price_base_year")
 
   factorLibrary    FactorLibrary         @relation(fields: [factorLibraryId], references: [id])
   emissionCategory EmissionCategory?     @relation(fields: [emissionCategoryId], references: [id])

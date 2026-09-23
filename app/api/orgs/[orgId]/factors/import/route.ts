@@ -109,6 +109,7 @@ export async function POST(
         scope: row.scope,
         uncertaintyRating: row.uncertaintyRating,
         usageNotes: row.usageNotes,
+        priceBaseYear: row.priceBaseYear,
       })),
     });
 

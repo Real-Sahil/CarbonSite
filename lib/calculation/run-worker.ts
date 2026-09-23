@@ -7,6 +7,9 @@ import {
   convertBetween,
   UnitError,
   refreshFxRates,
+  prefetchFxRatesOn,
+  isCurrencyUnit,
+  convertCurrency,
   gasVolumeM3ToKwh,
   CUBIC_METRE_UNITS,
   GAS_VOLUME_CORRECTION,
@@ -15,6 +18,7 @@ import {
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { groupDashboardAggregates } from "./dashboard-groups";
 import { loadMarketAllocations } from "./scope2-allocation-loader";
+import { deflateSpend } from "./price-index";
 import { allocationFormula, type Allocation } from "./scope2-instruments";
 import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
@@ -205,6 +209,14 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
 
     if (records.length === 0) break;
 
+    // Exchange rates for the day of each spend in this page, fetched once.
+    await prefetchFxRatesOn(
+      records
+        .filter((r) => isCurrencyUnit(r.unit))
+        .map((r) => r.activityDate ?? r.startDate)
+        .filter((d): d is Date => d != null),
+    );
+
     for (const record of records) {
       const activityDate = record.activityDate ?? record.startDate ?? new Date();
 
@@ -216,7 +228,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         );
       }
       try {
-        normalized = normalizeUnit(Number(record.amount), record.unit);
+        normalized = normalizeUnit(Number(record.amount), record.unit, record.activityDate ?? record.startDate);
       } catch (err) {
         if (err instanceof UnitError) {
           unitWarnings.push(`Unknown unit "${record.unit}" — using amount as-is.`);
@@ -229,14 +241,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       // Record which exchange rate a spend-based record was converted at.
       // Without this the figure is not reproducible: the rate moves daily and
       // nothing on the immutable row would say which one applied.
-      if (normalized.fx) {
-        const { currency, rate, source, fetchedAt } = normalized.fx;
-        unitWarnings.push(
-          source === "live"
-            ? `Converted ${currency} to GBP at ${rate.toFixed(6)} (ECB rate fetched ${fetchedAt?.toISOString() ?? "this run"}).`
-            : `Converted ${currency} to GBP at ${rate.toFixed(6)} using the built-in fallback rate, because live ECB rates could not be fetched. This figure is an approximation and will not reproduce against live rates.`,
-        );
-      }
+      if (normalized.fx && normalized.fx.currency !== "GBP") unitWarnings.push(describeFx(normalized.fx));
 
       if (normalized.amount === 0) {
         unitWarnings.push(
@@ -323,7 +328,17 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       let unitWasConverted = false;
       let unitConversionWasComplex = false;
 
-      if (normalized.unit !== factor.inputUnit) {
+      const spendToOtherCurrency =
+        normalized.unit !== factor.inputUnit && isCurrencyUnit(normalized.unit) && isCurrencyUnit(factor.inputUnit)
+          ? convertCurrency(normalized.amount, normalized.unit, factor.inputUnit, record.activityDate ?? record.startDate)
+          : null;
+      if (spendToOtherCurrency) {
+        amountForFactor = spendToOtherCurrency.amount;
+        unitWasConverted = true;
+        unitWarnings.push(
+          `Converted ${normalized.amount.toFixed(2)} ${normalized.unit} to ${amountForFactor.toFixed(2)} ${factor.inputUnit} to match the factor. ${describeFx(spendToOtherCurrency.to)}`,
+        );
+      } else if (normalized.unit !== factor.inputUnit) {
         const converted = convertBetween(normalized.amount, normalized.unit, factor.inputUnit);
         if (converted != null) {
           amountForFactor = converted;
@@ -440,6 +455,24 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
             });
             continue;
           }
+        }
+      }
+
+      // Spend-based factors are per unit of currency at one year's prices.
+      if (isCurrencyUnit(factor.inputUnit)) {
+        const spendYear = (record.activityDate ?? record.startDate ?? activityDate).getUTCFullYear();
+        const deflated = factor.priceBaseYear != null
+          ? deflateSpend(amountForFactor, factor.inputUnit, spendYear, factor.priceBaseYear)
+          : null;
+        if (deflated) {
+          amountForFactor = deflated.amount;
+          unitWarnings.push(deflated.note, ...(deflated.warning ? [deflated.warning] : []));
+        } else {
+          unitWarnings.push(
+            factor.priceBaseYear == null
+              ? "This spend factor does not state its price year, so the spend was not adjusted for inflation. Spend from years after the factor's year overstates emissions."
+              : `No price index for ${factor.inputUnit}, so the spend was not adjusted to ${factor.priceBaseYear} prices.`,
+          );
         }
       }
 
@@ -962,4 +995,13 @@ function blendInstrumentShare(
   result.warnings.push(
     `${allocation.uncoveredKwh.toFixed(0)} kWh of this record is not covered by any contractual instrument or residual mix, so the library factor was used for that share. Add a residual mix rate to report it on a true market basis.`,
   );
+}
+
+function describeFx(fx: import("./units").FxProvenance): string {
+  const rate = `${fx.rate.toFixed(6)} GBP per ${fx.currency}`;
+  if (fx.source === "dated") return `Exchange rate ${rate}, ECB reference rate for ${fx.rateDate}.`;
+  if (fx.source === "live") {
+    return `Exchange rate ${rate}, today's ECB rate (${fx.fetchedAt?.toISOString().slice(0, 10) ?? "this run"}), because the rate for the spend date could not be fetched. Recalculate later for the dated rate.`;
+  }
+  return `Exchange rate ${rate} is the built-in approximation, because ECB rates could not be fetched. This figure will change when recalculated with live rates.`;
 }

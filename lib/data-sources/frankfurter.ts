@@ -49,6 +49,21 @@ export async function getLatestRatesGbp(): Promise<ExchangeRates> {
 }
 
 /**
+ * ECB reference rates, GBP base, for a given day. On a weekend or holiday the
+ * ECB publishes nothing, and Frankfurter returns the last business day's
+ * rates; `date` in the response says which day that was.
+ */
+export async function getRatesGbpOn(date: string): Promise<ExchangeRates> {
+  const res = await fetchWithTimeout(`${BASE}/${date}?base=GBP`);
+  if (!res.ok) throw new DataSourceError("frankfurter", res.status, await res.text().catch(() => ""));
+  const data = (await res.json()) as ExchangeRates;
+  if (!data.rates || typeof data.rates !== "object") {
+    throw new DataSourceError("frankfurter", 0, "unexpected response shape");
+  }
+  return data;
+}
+
+/**
  * Convert an amount in `fromCurrency` to GBP using live ECB rates.
  * Falls back gracefully to the approximate rate map if the API is unreachable.
  */

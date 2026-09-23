@@ -36,6 +36,85 @@ export async function refreshFxRates(): Promise<void> {
   }
 }
 
+// Rates for the day each spend happened, keyed by YYYY-MM-DD. Spend-based
+// Scope 3 must convert at the rate on the transaction date: converting a 2024
+// invoice at today's rate makes the figure move every time it is recalculated.
+// Values are GBP per 1 unit of the currency. `asOf` is the ECB business day the
+// rates are for, which is earlier than the key on weekends and holidays.
+const datedFx = new Map<string, { asOf: string; rates: Record<string, number> }>();
+
+const isoDay = (d: Date) => d.toISOString().slice(0, 10);
+// Days whose fetch failed recently, so an outage costs one timeout, not one per page.
+const failedFxDays = new Map<string, number>();
+const FX_RETRY_MS = 10 * 60 * 1000;
+
+/** Fetch ECB rates for each day not already cached. Failures leave the day uncached. */
+export async function prefetchFxRatesOn(days: Date[]): Promise<void> {
+  const now = Date.now();
+  const missing = [...new Set(days.map(isoDay))].filter(
+    (d) => !datedFx.has(d) && now - (failedFxDays.get(d) ?? 0) > FX_RETRY_MS,
+  );
+  if (missing.length === 0) return;
+  const { getRatesGbpOn } = await import("@/lib/data-sources/frankfurter");
+  await Promise.all(
+    missing.map(async (day) => {
+      try {
+        const res = await getRatesGbpOn(day);
+        const rates: Record<string, number> = { GBP: 1 };
+        for (const [ccy, perGbp] of Object.entries(res.rates)) if (perGbp > 0) rates[ccy.toUpperCase()] = 1 / perGbp;
+        datedFx.set(day, { asOf: res.date, rates });
+      } catch {
+        // Leave uncached; the latest or built-in rate applies, and the
+        // calculation says so in its provenance.
+        failedFxDays.set(day, Date.now());
+      }
+    }),
+  );
+}
+
+/** Test hook: seed the dated cache without the network. */
+export function setFxRatesOn(day: string, asOf: string, gbpPerUnit: Record<string, number>): void {
+  datedFx.set(day, { asOf, rates: { GBP: 1, ...gbpPerUnit } });
+}
+
+export function isCurrencyUnit(unit: string): boolean {
+  return registry[unit.toLowerCase().trim()]?.canonical === "GBP" || liveFxRates[unit.toUpperCase().trim()] !== undefined;
+}
+
+/// GBP per 1 unit of `currency`, preferring the rate for `onDate`.
+function gbpRate(currency: string, onDate?: Date | null): FxProvenance | null {
+  const ccy = currency.toUpperCase().trim();
+  if (ccy === "GBP") return { currency: ccy, rate: 1, source: "live", fetchedAt: null };
+  if (onDate) {
+    const day = datedFx.get(isoDay(onDate));
+    if (day?.rates[ccy] !== undefined) {
+      return { currency: ccy, rate: day.rates[ccy], source: "dated", fetchedAt: null, rateDate: day.asOf };
+    }
+  }
+  if (liveFxRates[ccy] !== undefined) {
+    return { currency: ccy, rate: liveFxRates[ccy], source: "live", fetchedAt: liveFxFetchedAt ? new Date(liveFxFetchedAt) : null };
+  }
+  const entry = registry[ccy.toLowerCase()];
+  if (entry?.canonical === "GBP") return { currency: ccy, rate: entry.toCanonical, source: "fallback", fetchedAt: null };
+  return null;
+}
+
+/**
+ * Convert between two currencies at the rate for `onDate` (falling back to the
+ * latest, then the built-in rate). Null when either currency is unknown.
+ */
+export function convertCurrency(
+  amount: number,
+  from: string,
+  to: string,
+  onDate?: Date | null,
+): { amount: number; from: FxProvenance; to: FxProvenance } | null {
+  const a = gbpRate(from, onDate);
+  const b = gbpRate(to, onDate);
+  if (!a || !b) return null;
+  return { amount: (amount * a.rate) / b.rate, from: a, to: b };
+}
+
 const registry: Record<string, UnitConversion> = {
   // Energy - canonical: kWh
   kwh: { toCanonical: 1, canonical: "kWh" },
@@ -121,10 +200,13 @@ export type FxProvenance = {
   currency: string;
   /// GBP per 1 unit of `currency`.
   rate: number;
-  /// "live" is the ECB rate fetched this run. "fallback" is the hardcoded rate
-  /// in this file, used when Frankfurter could not be reached.
-  source: "live" | "fallback";
+  /// "dated" is the ECB rate for the activity date (the correct one).
+  /// "live" is today's ECB rate, used when the dated rate could not be
+  /// fetched. "fallback" is the hardcoded rate in this file.
+  source: "dated" | "live" | "fallback";
   fetchedAt: Date | null;
+  /// ECB business day of a "dated" rate.
+  rateDate?: string;
 };
 
 export type NormalizedUnit = {
@@ -134,9 +216,16 @@ export type NormalizedUnit = {
   fx?: FxProvenance;
 };
 
-export function normalizeUnit(amount: number, unit: string): NormalizedUnit {
+export function normalizeUnit(amount: number, unit: string, onDate?: Date | null): NormalizedUnit {
   const upper = unit.toUpperCase().trim();
-  // Check live FX cache first for currency conversions
+  if (onDate && upper !== "GBP") {
+    const dated = datedFx.get(isoDay(onDate));
+    if (dated?.rates[upper] !== undefined) {
+      const fx = gbpRate(upper, onDate)!;
+      return { amount: amount * fx.rate, unit: "GBP", fx };
+    }
+  }
+  // Then the latest live rate
   if (liveFxRates[upper] !== undefined) {
     const rate = liveFxRates[upper];
     return {

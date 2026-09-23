@@ -26,6 +26,7 @@ export type ParsedFactorRow = {
   scope: number;
   uncertaintyRating: string | null;
   usageNotes: string | null;
+  priceBaseYear: number | null;
 };
 
 export type FactorImportValidation = {
@@ -55,6 +56,7 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   effective_end_date: ["end_date", "valid_to", "effective_to", "date_to", "expiry_date"],
   uncertainty_rating: ["uncertainty", "confidence", "rating"],
   external_id: ["id", "factor_id", "ref", "reference", "external_ref"],
+  price_base_year: ["price_year", "base_year", "currency_year", "dollar_year", "price_basis_year"],
 };
 
 // Build reverse lookup: synonym → canonical header name.
@@ -231,7 +233,15 @@ export function parseFactorWorkbook(
       return;
     }
 
+    const rawPriceYear = normalizeCell(row.price_base_year);
+    const priceBaseYear = rawPriceYear ? Number(rawPriceYear) : null;
+    if (priceBaseYear !== null && (!Number.isInteger(priceBaseYear) || priceBaseYear < 1990 || priceBaseYear > 2100)) {
+      errors.push(`Row ${rowNumber}: price_base_year must be a four-digit year.`);
+      return;
+    }
+
     parsedRows.push({
+      priceBaseYear,
       activityType: nullableText(row.activity_type, 120) ?? category?.activityType ?? null,
       ch4: values.ch4,
       co2: values.co2,
