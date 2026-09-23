@@ -15,7 +15,8 @@ import {
   GAS_VOLUME_CORRECTION,
   GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3,
 } from "./units";
-import { selectFactor, buildFactorCache, type FactorSelection } from "./factor-selector";
+import { selectFactor, selectHvoFactor, buildFactorCache, type FactorSelection } from "./factor-selector";
+import { hvoShare } from "./fuels";
 import { loadOrgCustomFactors, pickCustomFactor, customFactorAsLibraryFactor } from "./custom-factors";
 import { groupDashboardAggregates } from "./dashboard-groups";
 import { loadMarketAllocations } from "./scope2-allocation-loader";
@@ -273,21 +274,26 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         recordUnit: normalized.unit,
         matchHint,
       });
+      const libraryQuery = {
+        emissionCategoryId: record.emissionCategoryId,
+        activityType: record.emissionCategory.activityType,
+        geographyCountry: record.country,
+        activityDate,
+        factorLibraryId: run.factorLibraryId,
+        scope2Method: record.scope2Method ?? undefined,
+        recordUnit: normalized.unit,
+        matchHint,
+      };
+      // HVO is only fuel-combustion Scope 1; a Scope 3 record mentioning it
+      // (e.g. HVO deliveries by a haulier) keeps its own category's factor.
+      const hvo = record.emissionCategory.scope === 1 ? hvoShare(record.fuelType) : null;
+      const hvoSelection = !custom && hvo != null ? await selectHvoFactor(libraryQuery, factorCache, hvo) : null;
+      if (hvo != null && !custom && !hvoSelection) {
+        unitWarnings.push("The fuel is HVO but the factor library has no HVO factor for this unit, so the category's usual fuel factor was used. Record HVO in litres.");
+      }
       const factorSelection: FactorSelection | null = custom
         ? { factor: customFactorAsLibraryFactor(custom.factor, run.factorLibraryId), selectionReason: custom.reason, warnings: [] }
-        : await selectFactor(
-            {
-              emissionCategoryId: record.emissionCategoryId,
-              activityType: record.emissionCategory.activityType,
-              geographyCountry: record.country,
-              activityDate,
-              factorLibraryId: run.factorLibraryId,
-              scope2Method: record.scope2Method ?? undefined,
-              recordUnit: normalized.unit,
-              matchHint,
-            },
-            factorCache,
-          );
+        : hvoSelection ?? await selectFactor(libraryQuery, factorCache);
 
       if (!factorSelection) {
         // No factor found — include the record with zero CO2e and a warning

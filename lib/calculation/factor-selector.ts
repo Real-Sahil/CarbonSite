@@ -207,3 +207,47 @@ export async function selectFactor(
 
   return { factor: best.factor, selectionReason: best.reason || "tie-break (score 0)", warnings: finalWarnings };
 }
+
+/**
+ * HVO, neat or blended with diesel. DEFRA publishes HVO once, per litre, as a
+ * transport fuel; the same factor applies in a generator, so it is found in
+ * the run's library whatever the record's category. A blend is weighted with
+ * the diesel factor the record's own category would use.
+ */
+export async function selectHvoFactor(
+  query: FactorQuery,
+  cache: FactorCache,
+  share: number,
+): Promise<FactorSelection | null> {
+  const prefix = `${query.factorLibraryId}:`;
+  let hvo: EmissionFactor | undefined;
+  for (const [key, bucket] of cache) {
+    if (!key.startsWith(prefix)) continue;
+    hvo = bucket.find((f) => f.externalId?.endsWith("-hvo-litre"));
+    if (hvo) break;
+  }
+  if (!hvo || hvo.co2e == null) return null;
+  if (share >= 1) {
+    return { factor: hvo, selectionReason: `HVO (neat): ${hvo.externalId}`, warnings: [] };
+  }
+
+  const diesel = await selectFactor({ ...query, matchHint: "diesel" }, cache);
+  if (!diesel || diesel.factor.co2e == null || diesel.factor.inputUnit !== hvo.inputUnit) return null;
+  const mix = (a: unknown, b: unknown) => share * Number(a ?? 0) + (1 - share) * Number(b ?? 0);
+  const pct = Math.round(share * 100);
+  return {
+    factor: {
+      ...hvo,
+      co2: null,
+      ch4: null,
+      n2o: null,
+      co2e: mix(hvo.co2e, diesel.factor.co2e) as unknown as EmissionFactor["co2e"],
+      biogenicCo2: (hvo.biogenicCo2 != null || diesel.factor.biogenicCo2 != null
+        ? mix(hvo.biogenicCo2, diesel.factor.biogenicCo2)
+        : null) as unknown as EmissionFactor["biogenicCo2"],
+      usageNotes: `${pct}% HVO (${hvo.externalId}) and ${100 - pct}% diesel (${diesel.factor.externalId}), weighted by volume.`,
+    },
+    selectionReason: `HVO blend ${pct}%: ${hvo.externalId} x ${share} + ${diesel.factor.externalId} x ${(1 - share).toFixed(2)}`,
+    warnings: [],
+  };
+}

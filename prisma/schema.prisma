@@ -253,6 +253,8 @@ model Organization {
   carbonBudgets               CarbonBudget[]
   wholeLifeCarbonAssessments  WholeLifeCarbonAssessment[]
   carbonManagementPlans       CarbonManagementPlan[]
+  plantAssets                 PlantAsset[]
+  plantReadings               PlantTelematicsReading[]
   carbonReductionOpportunities CarbonReductionOpportunity[]
   subcontractorCarbonSubmissions SubcontractorCarbonSubmission[]
   dataCompletenessRequirements DataCompletenessRequirement[]
@@ -2106,6 +2108,7 @@ model Site {
 
   project           Project                     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organization      Organization                @relation("OrgSites", fields: [organizationId], references: [id], onDelete: Cascade)
+  plantAssets       PlantAsset[]
   activityRecords   ActivityRecord[]
   fieldSubmissions  FieldSubmission[]           @relation("FieldSubmissionSite")
   inviteLinks       InviteLink[]
@@ -6548,4 +6551,78 @@ model CarbonReductionOpportunity {
 
   @@index([organizationId, projectId, status])
   @@map("carbon_reduction_opportunities")
+}
+
+// ─── Plant and telematics ────────────────────────────────────────────────────
+// Construction plant (owned or hired) and the engine hours, idle hours and
+// fuel its telematics report. Monitoring only: readings are never added to the
+// inventory, whose fuel comes from purchase and delivery records, so the two
+// can be reconciled instead of double counted (lib/plant/analytics.ts).
+
+enum PlantOwnership {
+  owned
+  hired
+
+  @@map("plant_ownership")
+}
+
+model PlantAsset {
+  id                 String         @id @default(cuid())
+  organizationId     String         @map("organization_id")
+  name               String
+  assetCode          String?        @map("asset_code")
+  /// e.g. excavator, dumper, telehandler, generator, roller, crane.
+  category           String?
+  make               String?
+  model              String?
+  /// OEM serial / PIN the telematics feed identifies the machine by.
+  serialNumber       String?        @map("serial_number")
+  telematicsProvider String?        @map("telematics_provider")
+  /// Fuel it runs on: "diesel", "HVO", "HVO50", "electric".
+  fuelType           String         @default("diesel") @map("fuel_type")
+  ownership          PlantOwnership @default(owned)
+  supplierName       String?        @map("supplier_name")
+  siteId             String?        @map("site_id")
+  onHireFrom         DateTime?      @map("on_hire_from") @db.Date
+  onHireTo           DateTime?      @map("on_hire_to") @db.Date
+  /// Created by a telematics feed for a machine not yet in the register.
+  autoRegistered     Boolean        @default(false) @map("auto_registered")
+  active             Boolean        @default(true)
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  organization Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  site         Site?                    @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  readings     PlantTelematicsReading[]
+
+  @@unique([organizationId, serialNumber])
+  @@index([organizationId, siteId])
+  @@map("plant_assets")
+}
+
+model PlantTelematicsReading {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  assetId         String    @map("asset_id")
+  periodStart     DateTime  @map("period_start")
+  periodEnd       DateTime  @map("period_end")
+  operatingHours  Decimal?  @map("operating_hours") @db.Decimal(12, 3)
+  idleHours       Decimal?  @map("idle_hours") @db.Decimal(12, 3)
+  fuelLitres      Decimal?  @map("fuel_litres") @db.Decimal(14, 3)
+  /// Only when the feed reports idle fuel itself; never estimated.
+  idleFuelLitres  Decimal?  @map("idle_fuel_litres") @db.Decimal(14, 3)
+  /// ISO 15143-3 cumulative counters at periodEnd, kept to difference the next snapshot.
+  cumulativeHours     Decimal? @map("cumulative_hours") @db.Decimal(14, 3)
+  cumulativeIdleHours Decimal? @map("cumulative_idle_hours") @db.Decimal(14, 3)
+  cumulativeFuelLitres Decimal? @map("cumulative_fuel_litres") @db.Decimal(16, 3)
+  /// iso15143 | csv | manual
+  source          String
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  asset        PlantAsset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, periodEnd])
+  @@index([organizationId, periodEnd])
+  @@map("plant_telematics_readings")
 }

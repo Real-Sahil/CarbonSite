@@ -68,6 +68,13 @@ const rows = XLSX.utils
   .filter((r) => r[8] === "kg CO2e")
   .map((r) => ({ id: r[0], l1: r[2], l2: r[3], l3: r[4], l4: r[5] ?? "", col: r[6] ?? "", uom: r[7], v: r[9] }));
 
+// "Outside of scopes": biogenic CO2 from biofuels and biomass, reported as a
+// memo beside the inventory and never added to it (GHG Protocol).
+const outsideRows = XLSX.utils
+  .sheet_to_json(wb.Sheets["Factors by Category"], { header: 1, blankrows: false })
+  .filter((r) => r[2] === "Outside of scopes" && r[8] === "kg CO2e of CO2 per unit")
+  .map((r) => ({ id: r[0], l2: r[3], l3: r[4], uom: r[7], v: r[9] }));
+
 // Collected so one run lists every row that did not match, not just the first.
 const missing = [];
 function row(l1, l2, l3, col, uom, l4 = "") {
@@ -169,6 +176,23 @@ const SPEC = [
   ["waste-wood-landfill", "s3-waste", "waste_disposal", "tonne", "GB", [waste("Construction", "Wood", "Landfill")], 1, "Construction wood waste to landfill."],
 ];
 
+// Biogenic CO2 memo per factor, from the matching outside-of-scopes row.
+function outside(l2, l3, uom) {
+  const hits = outsideRows.filter((r) => r.l2 === l2 && r.l3 === l3 && r.uom === uom);
+  if (hits.length !== 1 || typeof hits[0].v !== "number") {
+    missing.push(`Outside of scopes | ${l2} | ${l3} | ${uom} (found ${hits.length})`);
+    return { id: "?", v: NaN };
+  }
+  return hits[0];
+}
+const BIOGENIC = {
+  "diesel-litre": outside("Forecourt fuels containing biofuel", "Diesel (average biofuel blend)", "litres"),
+  "petrol-litre": outside("Forecourt fuels containing biofuel", "Petrol (average biofuel blend)", "litres"),
+  "hvo-litre": outside("Biofuel", "Biodiesel HVO", "litres"),
+  "wood-chips-kg": outside("Biomass", "Wood chips", "tonnes"),
+  "wood-pellets-kg": outside("Biomass", "Wood pellets", "tonnes"),
+};
+
 if (missing.length) throw new Error(`No unique numeric row for:\n  ${missing.join("\n  ")}`);
 
 // Mapped rows DESNZ published without a value this year. They get no factor
@@ -179,6 +203,7 @@ if (unpublished.length) console.log(`Not published by DESNZ for ${year}: ${unpub
 
 const factors = SPEC.filter(([suffix]) => !unpublished.includes(suffix)).map(([suffix, categoryCode, activityType, inputUnit, geographyCountry, src, divisor, note]) => {
   const co2e = Number((src.reduce((sum, r) => sum + r.v, 0) / divisor).toPrecision(10));
+  const bio = BIOGENIC[suffix];
   return {
     externalId: `defra-${year}-${suffix}`,
     replacesExternalId: `defra-2025-${suffix}`,
@@ -187,7 +212,8 @@ const factors = SPEC.filter(([suffix]) => !unpublished.includes(suffix)).map(([s
     inputUnit,
     geographyCountry,
     co2e,
-    usageNotes: `${note} ${release.label}, row ${src.map((r) => r.id).join(" + ")}${divisor === 1 ? "" : `, per tonne / ${divisor}`}.`,
+    ...(bio ? { biogenicCo2: Number((bio.v / divisor).toPrecision(10)) } : {}),
+    usageNotes: `${note} ${release.label}, row ${src.map((r) => r.id).join(" + ")}${bio ? `; biogenic CO2 row ${bio.id}` : ""}${divisor === 1 ? "" : `, per tonne / ${divisor}`}.`,
   };
 });
 

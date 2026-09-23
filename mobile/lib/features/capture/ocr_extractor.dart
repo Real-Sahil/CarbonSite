@@ -243,10 +243,16 @@ class OcrExtractor {
 
   // ── Fuel keywords, longest-first so "red diesel" wins over "diesel" ─────────
 
+  // HVO before diesel: HVO receipts usually also say "renewable diesel",
+  // and HVO's factor is about 1% of diesel's.
   static const _fuelTypes = [
-    'red diesel', 'gas oil', 'diesel', 'unleaded', 'petrol',
-    'kerosene', 'adblue', 'hvo', 'lpg',
+    'renewable diesel', 'hvo', 'red diesel', 'gas oil', 'diesel', 'unleaded',
+    'petrol', 'kerosene', 'adblue', 'lpg',
   ];
+
+  // Blends name their HVO share: "HVO50", "HVO-30". A space is not accepted,
+  // so "HVO 50 litres" stays neat HVO.
+  static final _hvoBlend = RegExp(r'\bhvo-?(\d{1,3})\b');
 
   // ── Supplier names ──────────────────────────────────────────────────────────
 
@@ -712,6 +718,8 @@ class OcrExtractor {
 
   static String? _extractFuelType(String text) {
     final lower = text.toLowerCase();
+    final blend = _hvoBlend.firstMatch(lower);
+    if (blend != null) return 'hvo${blend.group(1)}';
     for (final fuel in _fuelTypes) {
       if (lower.contains(fuel)) return fuel;
     }

@@ -111,7 +111,8 @@
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 2.57082,
-      "usageNotes": "Diesel, average biofuel blend. DESNZ 2025 v1 flat file, row 1_101_1011_8_1."
+      "biogenicCo2": 0.14,
+      "usageNotes": "Diesel, average biofuel blend. DESNZ 2025 v1 flat file, row 1_101_1011_8_1; biogenic CO2 row 99_604_1011_8_2."
     },
     {
       "externalId": "defra-2025-hvo-litre",
@@ -121,7 +122,8 @@
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 0.03558,
-      "usageNotes": "HVO. Biogenic CO2 reported outside of scopes. DESNZ 2025 v1 flat file, row 2_103_1036_8_1."
+      "biogenicCo2": 2.43,
+      "usageNotes": "HVO. Biogenic CO2 reported outside of scopes. DESNZ 2025 v1 flat file, row 2_103_1036_8_1; biogenic CO2 row 99_103_1036_8_2."
     },
     {
       "externalId": "defra-2025-lng-kg",
@@ -151,7 +153,8 @@
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 2.06916,
-      "usageNotes": "Petrol, average biofuel blend. DESNZ 2025 v1 flat file, row 1_101_1017_8_1."
+      "biogenicCo2": 0.13,
+      "usageNotes": "Petrol, average biofuel blend. DESNZ 2025 v1 flat file, row 1_101_1017_8_1; biogenic CO2 row 99_604_1017_8_2."
     },
     {
       "externalId": "defra-2025-van-diesel-km",
@@ -251,7 +254,8 @@
       "inputUnit": "kg",
       "geographyCountry": "GB",
       "co2e": 0.04343964,
-      "usageNotes": "Wood chips, per kg. Biogenic CO2 outside of scopes. DESNZ 2025 v1 flat file, row 2_104_1044_15_1, per tonne / 1000."
+      "biogenicCo2": 1.33571,
+      "usageNotes": "Wood chips, per kg. Biogenic CO2 outside of scopes. DESNZ 2025 v1 flat file, row 2_104_1044_15_1; biogenic CO2 row 99_104_1044_15_2, per tonne / 1000."
     },
     {
       "externalId": "defra-2025-wood-pellets-kg",
@@ -261,7 +265,8 @@
       "inputUnit": "kg",
       "geographyCountry": "GB",
       "co2e": 0.05519389,
-      "usageNotes": "Wood pellets, per kg. Biogenic CO2 outside of scopes. DESNZ 2025 v1 flat file, row 2_104_1045_15_1, per tonne / 1000."
+      "biogenicCo2": 1.67718,
+      "usageNotes": "Wood pellets, per kg. Biogenic CO2 outside of scopes. DESNZ 2025 v1 flat file, row 2_104_1045_15_1; biogenic CO2 row 99_104_1045_15_2, per tonne / 1000."
     },
     {
       "externalId": "defra-2025-elec-uk-lb-kwh",

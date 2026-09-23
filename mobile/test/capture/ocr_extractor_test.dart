@@ -156,6 +156,18 @@ void main() {
       expect(result.fuelType, 'red diesel');
       expect(result.volume, '120');
     });
+
+    test('reads HVO even when the receipt also says diesel', () {
+      const text = 'HVO renewable diesel 200 litres\nDate: 01/05/2026';
+      final result = OcrExtractor.extract(text, DocumentType.fuelReceipt);
+      expect(result.fuelType, 'renewable diesel');
+    });
+
+    test('keeps the HVO share of a blend', () {
+      const text = 'Delivered HVO50 blend 500 litres';
+      final result = OcrExtractor.extract(text, DocumentType.fuelReceipt);
+      expect(result.fuelType, 'hvo50');
+    });
   });
 
   group('OcrExtractor — postcode', () {

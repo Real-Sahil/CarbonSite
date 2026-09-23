@@ -79,6 +79,12 @@ export function extractActivityDate(
   return fallback ?? undefined;
 }
 
+/** Fuel named on the submission (reviewer edit, then worker entry, then OCR). */
+export function fuelTypeOf(formData: Record<string, unknown>, ocrData: Record<string, unknown> | null): string | undefined {
+  const v = formData["fuelType"] ?? ocrData?.["fuelType"];
+  return typeof v === "string" && v.trim() ? v.trim().slice(0, 60) : undefined;
+}
+
 export type ApprovalIssue = { code: string; message: string };
 
 // Validates a submission can be approved. Returns null when OK.
@@ -191,6 +197,8 @@ export async function approveSubmissionInTx(
             submission.documentType,
         ),
         supplierName: formData["supplierName"] ? String(formData["supplierName"]) : undefined,
+        // Fuel receipts: the fuel picks the factor (HVO is ~1% of diesel's Scope 1).
+        fuelType: fuelTypeOf(formData, ocrData),
         amount,
         unit,
         activityDate,

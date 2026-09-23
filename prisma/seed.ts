@@ -905,6 +905,7 @@ async function main() {
     factors: Array<{
       externalId: string; replacesExternalId: string; categoryCode: string; activityType: string;
       inputUnit: string; geographyCountry: string | null; co2e: number; usageNotes: string;
+      biogenicCo2?: number;
     }>;
   };
   const flatFiles: Array<[number, FlatFileData]> = [
@@ -936,6 +937,7 @@ async function main() {
           factorLibraryId: lib.id, externalId: f.externalId, scope,
           emissionCategoryId: cat(f.categoryCode), activityType: f.activityType,
           geographyCountry: f.geographyCountry, inputUnit: f.inputUnit, co2e: f.co2e, usageNotes: f.usageNotes,
+          biogenicCo2: f.biogenicCo2 ?? null,
         },
       });
       createdFactors++;
