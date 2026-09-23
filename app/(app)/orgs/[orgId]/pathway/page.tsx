@@ -6,6 +6,8 @@ import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { loadSbtiPathway } from "@/lib/calculation/sbti-actuals";
 import { computeMacc, buildMaccCurve } from "@/lib/reductions/macc";
+import { appraisalPrice, formatMoney, netOfCarbonPrice } from "@/lib/carbon-price";
+import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { gradeCells, summarizeCompleteness, type CompletenessCellInput } from "@/lib/inventory/completeness";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,12 +57,16 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
         emissionCategory: { select: { id: true, name: true } },
       },
     }),
+    loadCarbonPrices(orgId),
   ]).catch(() => null);
 
   if (!dbResult) {
     return <div className="p-8"><p className="text-sm text-red-600">Failed to load the pathway. The database may be updating — try refreshing in a moment.</p></div>;
   }
-  const [pathway, initiatives, currentPeriod, requirements] = dbResult;
+  const [pathway, initiatives, currentPeriod, requirements, carbonPrices] = dbResult;
+  // Initiative costs are entered in pounds, so only a GBP price nets against them.
+  const carbonPrice = appraisalPrice(carbonPrices, new Date());
+  const netPrice = carbonPrice?.currency === "GBP" ? carbonPrice : null;
 
   // ── MACC ──────────────────────────────────────────────────────────────────
   const maccEntries = computeMacc(
@@ -272,6 +278,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
               <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
                 Ranked by £ per tCO2e abated. A gap badge means this measure also closes a red or amber
                 completeness cell.
+                {netPrice && ` Net figures take off your internal carbon price of ${formatMoney(netPrice.pricePerTonne, "GBP", 2)}/tCO2e.`}
               </CardDescription>
             </div>
             <Link href={`/orgs/${orgId}/scenarios`} className="text-xs font-medium text-[#f97316] hover:text-[#ea580c] flex items-center gap-1">
@@ -323,6 +330,14 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                         <div className={`text-sm font-semibold tabular-nums ${entry.marginalCostPerTco2e < 0 ? "text-emerald-600" : "text-[#111827]"}`}>
                           £{entry.marginalCostPerTco2e.toFixed(0)}/tCO2e
                         </div>
+                        {netPrice && (() => {
+                          const net = netOfCarbonPrice(entry.marginalCostPerTco2e, netPrice.pricePerTonne);
+                          return (
+                            <div className={`text-xs tabular-nums ${net.paysAtPrice ? "text-emerald-600" : "text-[#6B7280]"}`}>
+                              £{net.netCostPerTco2e.toFixed(0)}/t net{net.paysAtPrice ? ", pays at your carbon price" : ""}
+                            </div>
+                          );
+                        })()}
                         {entry.paybackYears != null && (
                           <div className="text-xs text-[#9CA3AF]">pays back in {entry.paybackYears.toFixed(1)}y</div>
                         )}

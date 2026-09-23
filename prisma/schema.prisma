@@ -333,6 +333,7 @@ model Organization {
   datapointStatuses           OrganizationDatapointStatus[] @relation("OrgDatapointStatuses")
   datapointNarratives         OrganizationDatapointNarrative[]
   energyInstruments           EnergyInstrument[]
+  internalCarbonPrices        InternalCarbonPrice[]
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
   onboardingProgress            OnboardingProgress?
   tcfdScenarios                 TcfdScenario[]       @relation("OrgTcfdScenarios")
@@ -879,6 +880,37 @@ model EnergyInstrument {
 
   @@index([organizationId, validFrom])
   @@map("energy_instruments")
+}
+
+/// An organisation's internal carbon price (ESRS E1-8): a shadow price used
+/// in investment appraisal, an internal fee actually charged to business
+/// units, or an implicit price derived from spend. Prices are versioned by
+/// date; lib/carbon-price picks the one in force for a date.
+model InternalCarbonPrice {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  name            String
+  /// "shadow" | "internal_fee" | "implicit"
+  priceType       String    @map("price_type")
+  pricePerTonne   Decimal   @map("price_per_tonne") @db.Decimal(12, 2)
+  currency        String    @default("GBP")
+  /// GHG scopes the price applies to (1, 2, 3).
+  scopes          Int[]
+  /// Decisions it is used for: capital_investment, procurement, operations,
+  /// research, product_pricing, business_unit_charging.
+  appliesTo       String[]  @map("applies_to")
+  effectiveFrom   DateTime  @map("effective_from") @db.Date
+  effectiveTo     DateTime? @map("effective_to") @db.Date
+  /// Critical assumptions and source of the price (E1-8 asks for both).
+  basis           String?
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, effectiveFrom])
+  @@map("internal_carbon_prices")
 }
 
 model ActivityRecord {

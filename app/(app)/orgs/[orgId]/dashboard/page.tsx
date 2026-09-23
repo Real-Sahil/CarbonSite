@@ -59,6 +59,8 @@ import { BklitDataGauge } from "@/components/charts/bklit-data-gauge";
 import { CalculationRunsLive } from "./calculation-runs-live";
 import { LiveDashboard } from "@/components/dashboard/LiveDashboard";
 import { OnboardingChecklist } from "./onboarding-checklist";
+import { appraisalPrice, coveredCost, formatMoney, PRICE_TYPES, type PriceType } from "@/lib/carbon-price";
+import { loadCarbonPrices } from "@/lib/carbon-price/load";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -868,6 +870,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   });
 
   const hasAggregates = scopeRows.some((row) => Number(row.total) > 0 || Number(row.records) > 0);
+
+  // Internal carbon price (Settings > Carbon price) applied to this page's
+  // location-based scope totals. Informational: nothing is charged here.
+  const carbonPrice = appraisalPrice(await loadCarbonPrices(orgId).catch(onLoadFailure(() => [])), new Date());
+  const carbonPriceCost = carbonPrice && hasAggregates
+    ? coveredCost(scopeRows.map((r) => ({ scope: r.scope, tco2e: Number(r.total) / 1000 })), carbonPrice)
+    : null;
   const currentFootprint = scopeRows.reduce((total, row) => total + Number(row.total), 0);
   const currentCalculatedRecords = scopeRows.reduce(
     (total, row) => total + Number(row.records),
@@ -1855,6 +1864,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   .join("; ")}
                 . Recalculate {staleSnapshots.length === 1 ? "that period" : "those periods"} with the corrected set and publish again so your reports use the right factors.{" "}
                 <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Go to calculations</Link>
+              </div>
+            )}
+            {carbonPrice && carbonPriceCost && carbonPriceCost.coveredTco2e > 0 && (
+              <div className="rounded-[14px] border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#374151] tracking-[-0.42px]">
+                At your {(PRICE_TYPES[carbonPrice.priceType as PriceType]?.label ?? "internal carbon price").toLowerCase()} of{" "}
+                {formatMoney(carbonPrice.pricePerTonne, carbonPrice.currency, 2)}/tCO2e, the Scope {carbonPrice.scopes.join(", ")} emissions
+                on this page carry a carbon cost of{" "}
+                <span className="font-medium text-[#111827]">{formatMoney(carbonPriceCost.cost, carbonPrice.currency)}</span>.{" "}
+                <Link href={`/orgs/${orgId}/settings/carbon-price`} className="underline underline-offset-2">Carbon price</Link>
               </div>
             )}
             {snapshotDiverges && latestSnapshot && (

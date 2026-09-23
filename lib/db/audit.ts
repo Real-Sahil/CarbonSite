@@ -238,6 +238,8 @@ export type AuditAction =
   | "carbon_budget.phase_updated"
   | "carbon_budget.phase_deleted"
   | "carbon_budget.forecast_alert"
+  | "carbon_price.created"
+  | "carbon_price.deleted"
   | "subcontractor_submission.requested"
   | "subcontractor_submission.submitted"
   | "subcontractor_submission.verified"

@@ -66,7 +66,7 @@ export const FRAMEWORK_DATAPOINTS: FrameworkDatapointSeed[] = [
     title: "Internal carbon pricing",
     description: "Whether the undertaking applies an internal carbon price and how it is used.",
     category: "Strategy",
-    resolverKey: null,
+    resolverKey: "internal_carbon_price",
   },
   {
     framework: "esrs_e1",

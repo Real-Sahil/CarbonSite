@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { computeMacc, buildMaccCurve } from "@/lib/reductions/macc";
+import { appraisalPrice, netOfCarbonPrice } from "@/lib/carbon-price";
+import { loadCarbonPrices } from "@/lib/carbon-price/load";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
@@ -45,11 +47,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
       })),
     );
 
-    const curve = buildMaccCurve(entries);
+    // Initiative costs are in pounds; only a GBP internal carbon price nets against them.
+    const price = appraisalPrice(await loadCarbonPrices(orgId), new Date());
+    const netPrice = price?.currency === "GBP" ? price : null;
+    const curve = buildMaccCurve(entries).map((e) => ({
+      ...e,
+      ...(netPrice ? netOfCarbonPrice(e.marginalCostPerTco2e, netPrice.pricePerTonne) : {}),
+    }));
     const excludedCount = initiatives.length - entries.length;
 
     return NextResponse.json({
       curve,
+      carbonPrice: price ? { name: price.name, pricePerTonne: price.pricePerTonne, currency: price.currency, appliedToCurve: netPrice != null } : null,
       totalAbatementTco2e: curve.length > 0 ? curve[curve.length - 1].cumulativeAbatementEndTco2e : 0,
       excludedCount,
       excludedReason:

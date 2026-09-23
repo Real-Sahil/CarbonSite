@@ -13,6 +13,7 @@
 
 import type { PrismaClient } from "@prisma/client";
 import { summariseProvenance } from "@/lib/inventory/provenance";
+import { e18Gaps, formatMoney, pricesInForce, PRICE_TYPES, type PriceType } from "@/lib/carbon-price";
 
 export interface ResolverResult {
   status: "satisfied" | "partial" | "gap" | "not_applicable";
@@ -205,6 +206,29 @@ async function transitionPlanDisclosed(orgId: string, db: PrismaClient): Promise
   };
 }
 
+/// ESRS E1-8. With no price recorded, a manual entry (e.g. "we use no internal
+/// carbon price", which E1-8 accepts as a disclosure) is respected.
+async function internalCarbonPrice(orgId: string, db: PrismaClient): Promise<ResolverResult> {
+  const rows = await db.internalCarbonPrice.findMany({ where: { organizationId: orgId } });
+  if (rows.length === 0) {
+    const manual = await db.organizationDatapointStatus.findFirst({
+      where: { organizationId: orgId, datapoint: { framework: "esrs_e1", code: "E1-8" } },
+      select: { status: true, evidenceSummary: true },
+    });
+    if (manual) return { status: manual.status, evidenceSummary: manual.evidenceSummary ?? "Recorded manually." };
+    return { status: "gap", evidenceSummary: "No internal carbon price recorded (Settings, Carbon price). If none is used, record that manually." };
+  }
+  const prices = rows.map((r) => ({ ...r, pricePerTonne: Number(r.pricePerTonne) }));
+  const now = new Date();
+  const gaps = e18Gaps(prices, now);
+  const live = pricesInForce(prices, now);
+  const described = live
+    .map((p) => `${PRICE_TYPES[p.priceType as PriceType]?.label ?? p.priceType} ${formatMoney(p.pricePerTonne, p.currency)}/tCO2e (Scope ${p.scopes.join(", ")})`)
+    .join("; ");
+  if (gaps.length === 0) return { status: "satisfied", evidenceSummary: `In force: ${described}.` };
+  return { status: "partial", evidenceSummary: [described && `In force: ${described}.`, ...gaps].filter(Boolean).join(" ") };
+}
+
 async function restatementDisclosed(orgId: string, db: PrismaClient): Promise<ResolverResult> {
   const materialUndisclosed = await db.restatement.findFirst({
     where: { organizationId: orgId, isMaterial: true, disclosedAt: null },
@@ -336,6 +360,7 @@ export const DATAPOINT_RESOLVERS: Record<string, Resolver> = {
   assurance_statement_disclosed: assuranceStatementDisclosed,
   primary_data_share_disclosed: primaryDataShareDisclosed,
   transition_plan_disclosed: transitionPlanDisclosed,
+  internal_carbon_price: internalCarbonPrice,
   restatement_disclosed: restatementDisclosed,
   offsets_disclosed: offsetsDisclosed,
   water_metrics_disclosed: waterMetricsDisclosed,

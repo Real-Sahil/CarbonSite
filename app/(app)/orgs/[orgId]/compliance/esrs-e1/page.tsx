@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import { e18Gaps, type CarbonPrice } from '@/lib/carbon-price';
 
 interface DisclosureRequirement {
   id: string;
@@ -34,6 +35,7 @@ interface OrgData {
   hasGhgReport: boolean;
   hasEnergyConsumption: boolean;
   hasOffsets: boolean;
+  carbonPriceGaps: string[] | null;
   hasComplianceCsrd: boolean;
   totalRecords: number;
   approvedRecords: number;
@@ -231,8 +233,13 @@ function buildDisclosures(org: OrgData): DisclosureRequirement[] {
         {
           id: 'e1-8-icp',
           label: 'Internal carbon price configured',
-          status: 'gap',
-          detail: 'Internal carbon pricing is not yet tracked in MetricOra. This is a planned future feature.',
+          status: org.carbonPriceGaps == null ? 'gap' : org.carbonPriceGaps.length === 0 ? 'met' : 'partial',
+          detail:
+            org.carbonPriceGaps == null
+              ? 'No internal carbon price recorded. Add one in Settings > Carbon price, or record on the crosswalk that none is used.'
+              : org.carbonPriceGaps.length === 0
+                ? 'Internal carbon price in force with its scopes, uses, and basis recorded'
+                : org.carbonPriceGaps.join(' '),
         },
       ],
     },
@@ -266,7 +273,7 @@ export default function EsrsE1GapPage() {
 
     async function fetchData() {
       try {
-        const [recordsRes, snapshotsRes, reportsRes, targetsRes, initiativesRes, complianceRes, sbtiRes, offsetsRes] =
+        const [recordsRes, snapshotsRes, reportsRes, targetsRes, initiativesRes, complianceRes, sbtiRes, offsetsRes, pricesRes] =
           await Promise.all([
             fetch(`/api/orgs/${orgId}/activity-records?limit=1&status=approved`),
             fetch(`/api/orgs/${orgId}/calculation-runs?limit=1`),
@@ -276,9 +283,10 @@ export default function EsrsE1GapPage() {
             fetch(`/api/orgs/${orgId}/compliance`),
             fetch(`/api/orgs/${orgId}/sbti`),
             fetch(`/api/orgs/${orgId}/offsets?limit=1`),
+            fetch(`/api/orgs/${orgId}/carbon-prices`),
           ]);
 
-        const [recordsJson, snapshotsJson, reportsJson, targetsJson, initiativesJson, complianceJson, sbtiJson, offsetsJson] =
+        const [recordsJson, snapshotsJson, reportsJson, targetsJson, initiativesJson, complianceJson, sbtiJson, offsetsJson, pricesJson] =
           await Promise.all([
             recordsRes.ok ? recordsRes.json() : { records: [], pagination: {} },
             snapshotsRes.ok ? snapshotsRes.json() : { runs: [] },
@@ -288,7 +296,14 @@ export default function EsrsE1GapPage() {
             complianceRes.ok ? complianceRes.json() : { records: [] },
             sbtiRes.ok ? sbtiRes.json() : { target: null },
             offsetsRes.ok ? offsetsRes.json() : { offsets: [] },
+            pricesRes.ok ? pricesRes.json() : { data: [] },
           ]);
+        const prices: CarbonPrice[] = (pricesJson.data || []).map((p: CarbonPrice & { effectiveFrom: string; effectiveTo: string | null; pricePerTonne: string }) => ({
+          ...p,
+          pricePerTonne: Number(p.pricePerTonne),
+          effectiveFrom: new Date(p.effectiveFrom),
+          effectiveTo: p.effectiveTo ? new Date(p.effectiveTo) : null,
+        }));
 
         // Fetch category breakdown from performance/own or analytics
         const analyticsRes = await fetch(`/api/orgs/${orgId}/performance/own`);
@@ -324,6 +339,7 @@ export default function EsrsE1GapPage() {
           hasGhgReport: (reportsJson.reports || []).some((r: { type: string }) => ['ghg_protocol', 'csrd_esrs_e1'].includes(r.type)),
           hasEnergyConsumption,
           hasOffsets: (offsetsJson.offsets || []).length > 0,
+          carbonPriceGaps: prices.length > 0 ? e18Gaps(prices, new Date()) : null,
           hasComplianceCsrd: (complianceJson.records || []).some((r: { framework: string }) => r.framework === 'CSRD_ESRS_E1'),
           totalRecords: recordsJson.pagination?.total ?? (recordsJson.records || []).length,
           approvedRecords: (recordsJson.records || []).length,
