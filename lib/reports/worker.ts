@@ -93,7 +93,8 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       // Non-GHG report types have no EmissionCalculation rows to export.
       if (report.type !== "national_toms" && report.type !== "cbam"
         && report.type !== "csrd_esrs_e3" && report.type !== "csrd_esrs_e5"
-        && report.type !== "ecology_scan" && report.type !== "ecology_survey") {
+        && report.type !== "ecology_scan" && report.type !== "ecology_survey"
+        && report.type !== "transition_plan") {
         const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
         csvBuffer = buildCsv(calculations, report);
         reportLogger.info("CSV buffer built", {
@@ -404,7 +405,9 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   const isNonGhgType = report.type === "ecology_scan" || report.type === "ecology_survey"
     || report.type === "csrd_esrs_e3" || report.type === "csrd_esrs_e5"
     // The bid pack reads snapshot aggregates itself (lib/bids/carbon-pack.ts).
-    || report.type === "bid_carbon_pack";
+    || report.type === "bid_carbon_pack"
+    // The transition plan reads its own pathway and published totals (lib/transition-plan/load.ts).
+    || report.type === "transition_plan";
 
   const calcs = !isNonGhgType && report.type !== "national_toms"
     ? await fetchCalculations(orgId, runId, report.contractId ?? undefined)
@@ -423,7 +426,7 @@ async function renderForType(report: ReportWithIncludes): Promise<{ html: string
   // Ecology report types carry no GHG emission calculations — basePdfData has
   // all-zero values, so an LLM narrative would reference "0.00 tCO2e" and be
   // meaningless. Skip narrative for those types.
-  const noNarrativeTypes = new Set(["bid_carbon_pack", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
+  const noNarrativeTypes = new Set(["bid_carbon_pack", "transition_plan", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
   if (llmClient.isConfigured() && !noNarrativeTypes.has(report.type)) {
     reportLogger.info("LLM configured, generating audit narrative", {
       reportId: report.id,

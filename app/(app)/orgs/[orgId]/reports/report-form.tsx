@@ -96,6 +96,7 @@ const MAX_BID_CONTRACTS = 5;
 
 const REPORT_TYPE_OPTIONS = [
   { value: "bid_carbon_pack",  label: "Bid carbon pack (tender evidence)" },
+  { value: "transition_plan",  label: "Climate transition plan (ESRS E1-1)" },
   { value: "inventory",        label: "Inventory" },
   { value: "monthly_snapshot", label: "Monthly snapshot" },
   { value: "audit_package",    label: "Audit package" },

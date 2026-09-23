@@ -1811,6 +1811,7 @@ enum ReportType {
   social_value
   snapshot_export
   bid_carbon_pack
+  transition_plan
 
   @@map("report_type")
 }

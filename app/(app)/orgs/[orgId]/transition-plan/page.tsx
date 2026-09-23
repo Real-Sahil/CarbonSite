@@ -42,6 +42,14 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
             signed it off. The numbers come from your targets, initiatives and published totals; this page adds the
             narrative ESRS E1-1 and the UK Transition Plan Taskforce ask for.
           </p>
+          {plan && (
+            <p className="mt-2 text-sm">
+              <Link href={`/orgs/${orgId}/reports`} className="text-[#111827] underline underline-offset-2">
+                Generate the PDF
+              </Link>{" "}
+              <span className="text-[#6B7280]">from Reports, type &ldquo;Climate transition plan&rdquo;.</span>
+            </p>
+          )}
         </div>
         <span
           className={`rounded-full border px-3 py-1 text-xs font-medium ${

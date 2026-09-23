@@ -37,6 +37,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   ppn_06_21:       "PPN 06/21",
   ppn_006_crp:     "PPN 006 CRP",
   bid_carbon_pack: "Bid carbon pack",
+  transition_plan: "Transition plan",
   nhs_evergreen:   "NHS Evergreen L1",
   breeam_evidence: "BREEAM Evidence",
   national_toms:   "National TOMS",

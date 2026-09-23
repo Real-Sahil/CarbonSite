@@ -23,6 +23,8 @@ import { renderEcologyScanHtml, type EcologyScanReportData, type EcologyScanReco
 import { llmClient } from "@/lib/llm/client";
 import { renderBidCarbonPackHtml } from "./templates/bid-carbon-pack";
 import { loadBidPackData } from "@/lib/bids/carbon-pack";
+import { renderTransitionPlanHtml } from "./templates/transition-plan";
+import { loadTransitionPlan } from "@/lib/transition-plan/load";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
   return Promise.race([
@@ -555,6 +557,22 @@ const handlers: Record<string, ReportHandler> = {
   bid_carbon_pack: async (ctx) => {
     const data = await withQueryTimeout(loadBidPackData(ctx.orgId, ctx.report.snapshot.id, ctx.opts), 60_000);
     return { html: renderBidCarbonPackHtml({ ...data, logoDataUri: ctx.logoDataUri }) };
+  },
+
+  transition_plan: async (ctx) => {
+    const view = await withQueryTimeout(loadTransitionPlan(ctx.orgId), 60_000);
+    return {
+      html: renderTransitionPlanHtml({
+        ...view,
+        orgName: ctx.report.organization.name,
+        snapshot: {
+          version: ctx.report.snapshot.version,
+          periodLabel: ctx.report.reportingPeriod.label,
+          publishedAt: ctx.report.snapshot.publishedAt,
+        },
+        logoDataUri: ctx.logoDataUri,
+      }),
+    };
   },
 
   cbam: async (ctx) => {

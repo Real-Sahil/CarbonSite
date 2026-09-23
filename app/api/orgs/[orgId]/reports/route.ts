@@ -40,6 +40,7 @@ const createReportSchema = z.object({
     "ecology_scan",
     "ecology_survey",
     "bid_carbon_pack",
+    "transition_plan",
   ]),
   contractId: z.string().min(1).optional(),
   options: z.record(z.any()).optional(),
@@ -142,9 +143,23 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
+    // The transition plan changes without the snapshot changing; a report of
+    // an older version of the plan must not be handed back as current.
+    let planVersion = "";
+    if (body.type === "transition_plan") {
+      const plan = await prisma.transitionPlan.findUnique({ where: { organizationId: orgId }, select: { updatedAt: true } });
+      if (!plan) return apiError("NOT_FOUND", "Save a transition plan before generating its report.", 404);
+      const lastInitiative = await prisma.reductionInitiative.findFirst({
+        where: { organizationId: orgId },
+        orderBy: { updatedAt: "desc" },
+        select: { updatedAt: true },
+      });
+      planVersion = `plan@${plan.updatedAt.toISOString()}:${lastInitiative?.updatedAt.toISOString() ?? ""}:`;
+    }
+
     // Idempotency — same snapshot + type + contract + options = same report
     const requestHash = createHash("sha256")
-      .update(`${orgId}:${body.snapshotId}:${body.type}:${body.contractId ? `${body.contractId}:` : ""}${JSON.stringify(body.options ?? {})}`)
+      .update(`${orgId}:${body.snapshotId}:${body.type}:${body.contractId ? `${body.contractId}:` : ""}${planVersion}${JSON.stringify(body.options ?? {})}`)
       .digest("hex");
 
     const existing = await prisma.report.findUnique({
