@@ -25,6 +25,7 @@ const factor = (over: Partial<OrganizationEmissionFactor> = {}): OrganizationEmi
   co2e: new Prisma.Decimal(10),
   uncertaintyRating: null,
   usageNotes: null,
+  priceBaseYear: null,
   source: "uploaded_csv",
   version: 1,
   createdByUserId: "u",
@@ -85,5 +86,6 @@ describe("organisation factor matching", () => {
     const lib = customFactorAsLibraryFactor(f, "lib-1");
     expect(lib).toMatchObject({ factorLibraryId: "lib-1", externalId: null, priceBaseYear: null, inputUnit: "tonnes" });
     expect(Number(lib.co2e)).toBe(12.5);
+    expect(customFactorAsLibraryFactor(factor({ priceBaseYear: 2021 }), "lib-1").priceBaseYear).toBe(2021);
   });
 });

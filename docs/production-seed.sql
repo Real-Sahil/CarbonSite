@@ -328,7 +328,7 @@ VALUES
   (gen_random_uuid()::text,'Plasterboard (standard)','finishes',0.39,0.010,'kg',800,'ICE v3.0',NOW(),NOW()),
   (gen_random_uuid()::text,'Gypsum Plaster','finishes',0.12,0.009,'kg',NULL,'ICE v3.0',NOW(),NOW()),
   (gen_random_uuid()::text,'Ceramic Floor Tile','finishes',0.73,0.012,'kg',2000,'ICE v3.0',NOW(),NOW()),
-  (gen_random_uuid()::text,'Carpet (nylon, broadloom)','finishes',5.30,0.032,'kg',2,'ICE v3.0',NOW(),NOW()),
+  (gen_random_uuid()::text,'Carpet (nylon, broadloom)','finishes',5.30,0.032,'kg',NULL,'ICE v3.0',NOW(),NOW()),
   -- Services & MEP
   (gen_random_uuid()::text,'Copper Pipe','services',3.77,0.020,'kg',8900,'ICE v3.0',NOW(),NOW()),
   (gen_random_uuid()::text,'PVC-U Pipe','services',2.41,0.018,'kg',1400,'ICE v3.0',NOW(),NOW()),

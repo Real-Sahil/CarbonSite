@@ -19,6 +19,7 @@ const CustomFactorSchema = z.object({
   co2e: z.number().optional(),
   uncertaintyRating: z.enum(['low', 'medium', 'high']).optional(),
   usageNotes: z.string().optional(),
+  priceBaseYear: z.number().int().min(1990).max(2100).nullable().optional(),
   source: z.string().optional(),
 });
 

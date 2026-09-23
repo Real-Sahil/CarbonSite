@@ -20,6 +20,11 @@ const lib = [
   ["Plasterboard (standard)", "finishes", "kg", 800],
   ["Gypsum Plaster", "finishes", "kg", null],
   ["Double-Glazed Unit (standard low-e)", "glass", "m2", null],
+  ["Aggregates (primary)", "aggregates", "kg", null],
+  ["Aggregates (recycled)", "aggregates", "kg", null],
+  ["Asphalt (primary)", "asphalt", "kg", null],
+  ["Asphalt (recycled content)", "asphalt", "kg", null],
+  ["Plywood", "timber", "kg", 530],
 ].map(([name, category, declaredUnit, density], i) => ({
   id: `m${i}`,
   name: name as string,
@@ -42,12 +47,22 @@ describe("material matching", () => {
     expect(nameOf("C32/40 ready-mix, 20mm aggregate")).toBe("Ready Mix Concrete (25 MPa, 300 kg/m3 cement)");
   });
 
+  it("tells primary from recycled aggregates and asphalt", () => {
+    expect(nameOf("Recycled concrete aggregate 6F2")).toBe("Aggregates (recycled)");
+    expect(nameOf("Crushed concrete hardcore")).toBe("Aggregates (recycled)");
+    expect(nameOf("Type 1 MOT sub-base")).toBe("Aggregates (primary)");
+    expect(nameOf("Sharp sand")).toBe("Aggregates (primary)");
+    expect(nameOf("7N dense aggregate blocks")).toBe("Dense Aggregate Block");
+    expect(nameOf("20mm dense bitmac / tarmac")).toBe("Asphalt (primary)");
+    expect(nameOf("AC 10 surface course, 30% RAP")).toBe("Asphalt (recycled content)");
+    expect(nameOf("18mm plywood")).toBe("Plywood");
+    expect(matchMaterial("Type 1 MOT sub-base", lib).reason).toContain("primary aggregate factor");
+  });
+
   it("says so, rather than guessing, when the library has no factor", () => {
-    const m = matchMaterial("Recycled concrete aggregate 6F2", lib);
+    const m = matchMaterial("Screened topsoil", lib);
     expect(m.material).toBeNull();
-    expect(m.reason).toContain("aggregate");
-    expect(nameOf("Type 1 MOT sub-base")).toBeNull();
-    expect(nameOf("20mm dense bitmac / tarmac")).toBeNull();
+    expect(m.reason).toContain("topsoil");
     expect(nameOf("Assorted fixings")).toBeNull();
     expect(matchMaterial("", lib).reason).toContain("no material description");
   });
@@ -138,7 +153,7 @@ describe("recording on approval", () => {
     const base = { orgId: "org-a", submission, quantity: 10, unit: "t", activityDate: new Date(), userId: "u1" };
     expect(await recordDeliveryEmbodiedCarbon(tx as never, { ...base, formData: { materialType: "concrete" }, materialId: null }))
       .toMatchObject({ recordId: null });
-    expect(await recordDeliveryEmbodiedCarbon(tx as never, { ...base, formData: { materialType: "Type 1 sub-base" } }))
+    expect(await recordDeliveryEmbodiedCarbon(tx as never, { ...base, formData: { materialType: "Screened topsoil" } }))
       .toMatchObject({ recordId: null });
     expect(tx.embodiedCarbonRecord.create).not.toHaveBeenCalled();
   });

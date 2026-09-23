@@ -1067,16 +1067,24 @@ async function main() {
     { name: "Plasterboard (standard)", category: "finishes", gwpA1A3: 0.39,  gwpA4: 0.010, declaredUnit: "kg", density: 800, source: "ICE v3.0" },
     { name: "Gypsum Plaster", category: "finishes", gwpA1A3: 0.12,  gwpA4: 0.009, declaredUnit: "kg", source: "ICE v3.0" },
     { name: "Ceramic Floor Tile", category: "finishes", gwpA1A3: 0.73,  gwpA4: 0.012, declaredUnit: "kg", density: 2000, source: "ICE v3.0" },
-    { name: "Carpet (nylon, broadloom)", category: "finishes", gwpA1A3: 5.30,  gwpA4: 0.032, declaredUnit: "kg", density: 2, source: "ICE v3.0" },
+    // No density: the old value of 2 kg/m3 was not a real carpet density.
+    { name: "Carpet (nylon, broadloom)", category: "finishes", gwpA1A3: 5.30,  gwpA4: 0.032, declaredUnit: "kg", source: "ICE v3.0" },
     // Services & MEP
     { name: "Copper Pipe", category: "services", gwpA1A3: 3.77,  gwpA4: 0.020, declaredUnit: "kg", density: 8900, source: "ICE v3.0" },
     { name: "PVC-U Pipe", category: "services", gwpA1A3: 2.41,  gwpA4: 0.018, declaredUnit: "kg", density: 1400, source: "ICE v3.0" },
     { name: "HDPE Pipe", category: "services", gwpA1A3: 2.12,  gwpA4: 0.016, declaredUnit: "kg", density: 950, source: "ICE v3.0" },
+    // Aggregates and asphalt: DEFRA 2025 "Material use" factors (kg CO2e per
+    // tonne / 1000), primary material production and closed-loop source. No
+    // generic A4: deliveries use the actual route (lib/embodied-carbon/delivery-notes.ts).
+    { name: "Aggregates (primary)", category: "aggregates", gwpA1A3: 0.00779306, declaredUnit: "kg", source: "DEFRA 2025 Material use: Aggregates, primary material production (7.79306 kg CO2e/t)" },
+    { name: "Aggregates (recycled)", category: "aggregates", gwpA1A3: 0.00321835, declaredUnit: "kg", source: "DEFRA 2025 Material use: Aggregates, closed-loop source (3.21835 kg CO2e/t)" },
+    { name: "Asphalt (primary)", category: "asphalt", gwpA1A3: 0.03921249, declaredUnit: "kg", source: "DEFRA 2025 Material use: Asphalt, primary material production (39.21249 kg CO2e/t)" },
+    { name: "Asphalt (recycled content)", category: "asphalt", gwpA1A3: 0.02867835, declaredUnit: "kg", source: "DEFRA 2025 Material use: Asphalt, closed-loop source (28.67835 kg CO2e/t)" },
   ];
 
   let createdMaterials = 0;
   for (const m of embodiedMaterials) {
-    const { gwpA4, density, ...core } = m;
+    const { gwpA4, density, ...core } = m as typeof m & { gwpA4?: number; density?: number };
     await prisma.embodiedMaterial.upsert({
       where: { name: m.name },
       update: {},

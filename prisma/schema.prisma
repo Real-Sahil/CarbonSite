@@ -3308,6 +3308,9 @@ model OrganizationEmissionFactor {
   co2e               Decimal?  @db.Decimal(18, 8)
   uncertaintyRating  String?   @map("uncertainty_rating")
   usageNotes         String?   @map("usage_notes")
+  /// Spend-based factors: the year whose prices the factor is in. Spend is
+  /// deflated to it before the factor applies, as for library factors.
+  priceBaseYear      Int?      @map("price_base_year")
   source             String // e.g., "uploaded_csv", "admin_manual"
   version            Int       @default(1) // For versioning org-specific factors
   createdByUserId    String    @map("created_by_user_id")

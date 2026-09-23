@@ -203,6 +203,7 @@ async function importOrganizationFactors(orgId: string, userId: string, filename
       co2e: row.co2e,
       uncertaintyRating: row.uncertaintyRating,
       usageNotes: row.usageNotes,
+      priceBaseYear: row.priceBaseYear,
       source: "uploaded_csv",
       version,
       createdByUserId: userId,

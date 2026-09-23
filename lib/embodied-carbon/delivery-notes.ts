@@ -5,8 +5,8 @@
 // delivery, using the route distance the app captured and DEFRA's HGV
 // tonne.km factor instead of a generic transport assumption.
 //
-// Nothing is guessed: a material the library does not hold (aggregates,
-// asphalt), or a quantity that cannot be converted to the material's unit
+// Nothing is guessed: a material the library does not hold (topsoil, sand
+// when named on its own), or a quantity that cannot be converted to the material's unit
 // (bags, pallets, m2 of a per-kg product), produces no record and says why.
 
 import type { EmbodiedMaterial, EpdRecord, Prisma } from "@prisma/client";
@@ -15,26 +15,34 @@ import { chooseFactorLibrary, currentFactorLibraries } from "@/lib/calculation/l
 
 type Material = Pick<EmbodiedMaterial, "id" | "name" | "category" | "declaredUnit" | "density">;
 
-// Common delivered materials with no factor in the library, checked before
-// the ordinary rules so "recycled concrete aggregate" never matches concrete.
-const NOT_IN_LIBRARY =
-  /\b(aggregates?|type ?1|mot|sub[- ]?base|sand|gravel|ballast|asphalt|tarmac|macadam|hardcore|scalpings|topsoil|crushed|grit|shingle)\b/i;
+// Delivered materials with no factor in the library, checked before the
+// ordinary rules so they are reported rather than filed as something else.
+const NOT_IN_LIBRARY = /\b(topsoil|subsoil|soils?|turf|mulch|bark)\b/i;
+
+const RECYCLED = /\b(recycled|reclaimed|secondary|rca|rap|planings|crushed concrete|6f[1-5])\b/i;
+const AGGREGATE = /\b(aggregates?|type ?[13]|mot|sub[- ]?base|sand|gravel|ballast|scalpings|hardcore|grit|shingle|crushed (rock|concrete)|limestone|granite|6f[1-5])\b/i;
+const ASPHALT = /\b(asphalt|tarmac|macadam|bitmac|dbm|hra|sma|ac ?\d{1,2}|surface course|binder course|base course|planings)\b/i;
 
 // Most specific first. Where the note does not say which grade or route
 // (virgin or recycled steel, primary or recycled aluminium), the higher
 // factor is used so the figure is not understated; a supplier EPD replaces it.
 // `strong` rules name the product unambiguously and win even when the note
 // also mentions an unmatched material ("C32/40 ready-mix, 20mm aggregate").
-const RULES: { test: RegExp; material: string; note?: string; strong?: boolean }[] = [
+// `when`, if set, must also match (recycled variants).
+const RULES: { test: RegExp; when?: RegExp; material: string; note?: string; strong?: boolean }[] = [
   { test: /\b(rebar|reinforc\w*|b500\w*|a393|a252|a142|steel mesh)\b/i, material: "Reinforcing Bar (rebar, recycled)", strong: true },
   { test: /\b(ready[- ]?mix\w*|readymix|c\d{2}\/\d{2}|gen ?[0-3]|st[1-5]|rc ?\d{2}(\/\d{2})?)\b/i, material: "Ready Mix Concrete (25 MPa, 300 kg/m3 cement)", note: "mix design not matched, so a C25-class ready-mix factor was used", strong: true },
+  { test: /\b(aircrete|aac|thermalite|celcon|aerated)\b/i, material: "Aerated Concrete Block (AAC)", strong: true },
+  { test: /\b(dense |concrete |aggregate )?blocks?\b/i, material: "Dense Aggregate Block", strong: true },
+  { test: ASPHALT, when: RECYCLED, material: "Asphalt (recycled content)", strong: true },
+  { test: ASPHALT, material: "Asphalt (primary)", note: "recycled content not stated, so the primary asphalt factor was used", strong: true },
+  { test: AGGREGATE, when: RECYCLED, material: "Aggregates (recycled)", strong: true },
+  { test: AGGREGATE, material: "Aggregates (primary)", note: "recycled content not stated, so the primary aggregate factor was used", strong: true },
   { test: /\bstainless\b/i, material: "Stainless Steel 304" },
   { test: /\b(cold[- ]?rolled|steel sheet|purlins?|steel decking)\b/i, material: "Cold-Rolled Steel Sheet" },
   { test: /\b(ub|uc|pfc|rsj|universal (beam|column)s?|structural steel|steel (beams?|columns?|sections?))\b/i, material: "Structural Steel (virgin, UK EAF)", note: "steel route not stated, so the higher virgin-steel factor was used" },
   { test: /\bprecast\b/i, material: "Precast Concrete Panel" },
-  { test: /\b(aircrete|aac|thermalite|celcon|aerated)\b/i, material: "Aerated Concrete Block (AAC)" },
   { test: /\broof ?tiles?\b/i, material: "Concrete Roof Tile" },
-  { test: /\b(dense |concrete |aggregate )?blocks?\b/i, material: "Dense Aggregate Block" },
   { test: /\bconcrete\b/i, material: "Ready Mix Concrete (25 MPa, 300 kg/m3 cement)", note: "mix design not matched, so a C25-class ready-mix factor was used" },
   { test: /\b(cem ?i|cement|opc)\b/i, material: "General Purpose Cement (CEM I)" },
   { test: /\bbricks?\b/i, material: "Facing Brick" },
@@ -69,8 +77,9 @@ export function matchMaterial(text: string, materials: Material[]): MaterialMatc
   const first = (rules: typeof RULES): MaterialMatch | null => {
     for (const rule of rules) {
       const hit = t.match(rule.test);
-      const material = hit && byName.get(rule.material);
-      if (material) return { material, reason: `"${hit![0]}" matched ${material.name}${rule.note ? `; ${rule.note}` : ""}` };
+      if (!hit || (rule.when && !rule.when.test(t))) continue;
+      const material = byName.get(rule.material);
+      if (material) return { material, reason: `"${hit[0]}" matched ${material.name}${rule.note ? `; ${rule.note}` : ""}` };
     }
     return null;
   };

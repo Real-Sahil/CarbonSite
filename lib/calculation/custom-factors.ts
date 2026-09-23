@@ -17,6 +17,7 @@ export interface CustomFactorInput {
   co2e?: number;
   uncertaintyRating?: string;
   usageNotes?: string;
+  priceBaseYear?: number | null;
   source?: string;
   version?: number;
 }
@@ -129,7 +130,7 @@ export function customFactorAsLibraryFactor(f: OrganizationEmissionFactor, facto
     biogenicCo2: null,
     uncertaintyRating: f.uncertaintyRating,
     usageNotes: f.usageNotes,
-    priceBaseYear: null,
+    priceBaseYear: f.priceBaseYear,
   };
 }
 
@@ -166,6 +167,7 @@ export async function createCustomFactor(organizationId: string, data: CustomFac
       co2e: data.co2e,
       uncertaintyRating: data.uncertaintyRating,
       usageNotes: data.usageNotes,
+      priceBaseYear: data.priceBaseYear ?? null,
       source: data.source || 'admin_manual',
       version: data.version || 1,
       createdByUserId: userId,
@@ -217,6 +219,7 @@ export async function updateCustomFactor(organizationId: string, factorId: strin
       co2e: data.co2e ?? existing.co2e,
       uncertaintyRating: data.uncertaintyRating ?? existing.uncertaintyRating,
       usageNotes: data.usageNotes ?? existing.usageNotes,
+      priceBaseYear: data.priceBaseYear !== undefined ? data.priceBaseYear : existing.priceBaseYear,
       source: existing.source,
       version: nextVersion,
       createdByUserId: existing.createdByUserId,
