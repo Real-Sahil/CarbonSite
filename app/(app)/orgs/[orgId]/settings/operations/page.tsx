@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { canEditSharedLibraries } from "@/lib/auth/shared-libraries";
 import { prisma } from "@/lib/db";
 import { OperationsSetup } from "./setup-actions";
 
@@ -15,9 +16,11 @@ export default async function OperationsSettingsPage({
   const { orgId } = await params;
 
   let authError: "forbidden" | "db" | null = null;
+  let userId = "";
 
   try {
-    await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    userId = session.user.id;
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
@@ -71,6 +74,7 @@ export default async function OperationsSettingsPage({
     prisma.embodiedMaterial.findMany({
       select: { gwpC1C4: true, gwpC1: true, gwpC2: true, gwpC3: true, gwpC4: true, replacementCycleYears: true },
     }),
+    canEditSharedLibraries(userId),
   ]).catch(() => null);
 
   if (!data) {
@@ -83,7 +87,7 @@ export default async function OperationsSettingsPage({
     );
   }
 
-  const [org, periods, facilities, businessUnits, factorLibraries, materials] = data;
+  const [org, periods, facilities, businessUnits, factorLibraries, materials, sharedLibraryEditor] = data;
 
   const materialLibrary = {
     total: materials.length,
@@ -129,6 +133,7 @@ export default async function OperationsSettingsPage({
           factorCount: library._count.factors,
         }))}
         materialLibrary={materialLibrary}
+        canEditSharedLibraries={sharedLibraryEditor}
         apiDataSources={[]}
       />
     </div>

@@ -41,6 +41,18 @@ export async function POST(req: NextRequest) {
     const session = await requireSession();
     const body = createDsarRequestSchema.parse(await req.json());
 
+    // The org's admins are chased about this request's deadline, so it may
+    // only name an org the requester belongs to.
+    if (body.organizationId) {
+      const membership = await prisma.organizationMembership.findUnique({
+        where: { organizationId_userId: { organizationId: body.organizationId, userId: session.user.id } },
+        select: { id: true },
+      });
+      if (!membership) {
+        return apiError("NOT_MEMBER", "You are not a member of that organisation.", 403);
+      }
+    }
+
     // Idempotency: don't stack duplicate in-flight requests of the same type.
     const existing = await prisma.dsarRequest.findFirst({
       where: {

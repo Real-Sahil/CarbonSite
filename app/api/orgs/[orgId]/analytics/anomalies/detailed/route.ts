@@ -55,8 +55,8 @@ export async function GET(
 
     // Get active period
     const activePeriod = query.periodId
-      ? await prisma.reportingPeriod.findUnique({
-          where: { id: query.periodId },
+      ? await prisma.reportingPeriod.findFirst({
+          where: { id: query.periodId, organizationId: orgId },
           select: { id: true, label: true, startDate: true },
         })
       : await prisma.reportingPeriod.findFirst({

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireSharedLibraryEditor } from "@/lib/auth/shared-libraries";
 import { parseFactorWorkbook } from "@/lib/factors/import";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -18,7 +18,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireSharedLibraryEditor(orgId);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "factor-imports", session.user.id),
       limit: 5,

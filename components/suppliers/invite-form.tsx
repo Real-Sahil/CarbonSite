@@ -69,7 +69,9 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
 
       const data = await response.json();
 
-      if (inviteMethod === "magic-link") {
+      if (data.inviteMethod !== inviteMethod) {
+        setSuccessMessage(data.message);
+      } else if (inviteMethod === "magic-link") {
         setSuccessMessage(
           `Magic link invitation sent to ${formData.email}. They can accept using the secure link in their email.`
         );

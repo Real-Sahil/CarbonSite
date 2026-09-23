@@ -113,6 +113,7 @@ export function OperationsSetup({
   businessUnits,
   factorLibraries,
   materialLibrary,
+  canEditSharedLibraries,
   apiDataSources,
 }: {
   orgId: string;
@@ -122,6 +123,7 @@ export function OperationsSetup({
   businessUnits: BusinessUnit[];
   factorLibraries: FactorLibrary[];
   materialLibrary: { total: number; missingEndOfLife: number; missingReplacementCycle: number };
+  canEditSharedLibraries: boolean;
   apiDataSources: ApiDataSourceRow[];
 }) {
   return (
@@ -132,8 +134,8 @@ export function OperationsSetup({
         <FacilitiesPanel orgId={orgId} facilities={facilities} />
         <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
       </div>
-      <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} />
-      <MaterialImportPanel orgId={orgId} materialLibrary={materialLibrary} />
+      <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} canEdit={canEditSharedLibraries} />
+      <MaterialImportPanel orgId={orgId} materialLibrary={materialLibrary} canEdit={canEditSharedLibraries} />
       <ApiDataSourcesPanel orgId={orgId} sources={apiDataSources} />
       <PilotKitPanel
         orgId={orgId}
@@ -241,9 +243,11 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
 function FactorImportPanel({
   orgId,
   factorLibraries,
+  canEdit,
 }: {
   orgId: string;
   factorLibraries: FactorLibrary[];
+  canEdit: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -283,48 +287,52 @@ function FactorImportPanel({
         title="Emission factor import"
         description="Load governed factor rows into an approved library for deterministic calculation runs."
       />
-      <form onSubmit={importFactors} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
-        <Field label="Factor library">
-          <select
-            name="factorLibraryId"
-            required
-            disabled={!canImport || isPending}
-            className={selectClass}
-          >
-            {factorLibraries.map((library) => (
-              <option key={library.id} value={library.id}>
-                {library.name} {library.version} ({library.factorCount} rows)
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Factor file">
-          <input
-            name="file"
-            type="file"
-            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            required
-            disabled={!canImport || isPending}
-            className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </Field>
-        <div className="flex items-end">
-          <Button type="submit" disabled={!canImport || isPending}>
-            <Upload className="h-4 w-4" />
-            Import factors
-          </Button>
-        </div>
-        {!canImport && (
-          <p className="text-sm text-slate-500 lg:col-span-3">
-            Seed methodology and approved factor libraries before importing factor rows.
+      {canEdit ? (
+        <form onSubmit={importFactors} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
+          <Field label="Factor library">
+            <select
+              name="factorLibraryId"
+              required
+              disabled={!canImport || isPending}
+              className={selectClass}
+            >
+              {factorLibraries.map((library) => (
+                <option key={library.id} value={library.id}>
+                  {library.name} {library.version} ({library.factorCount} rows)
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Factor file">
+            <input
+              name="file"
+              type="file"
+              accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              required
+              disabled={!canImport || isPending}
+              className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </Field>
+          <div className="flex items-end">
+            <Button type="submit" disabled={!canImport || isPending}>
+              <Upload className="h-4 w-4" />
+              Import factors
+            </Button>
+          </div>
+          {!canImport && (
+            <p className="text-sm text-slate-500 lg:col-span-3">
+              Seed methodology and approved factor libraries before importing factor rows.
+            </p>
+          )}
+          <p className="text-xs leading-5 text-slate-500 lg:col-span-3">
+            Required columns: scope, input_unit, and at least one of co2e, co2, ch4, or n2o. Optional columns include external_id, emission_category_code, activity_type, geography_country, geography_region, effective_start_date, effective_end_date, uncertainty_rating, and usage_notes.
           </p>
-        )}
-        <p className="text-xs leading-5 text-slate-500 lg:col-span-3">
-          Required columns: scope, input_unit, and at least one of co2e, co2, ch4, or n2o. Optional columns include external_id, emission_category_code, activity_type, geography_country, geography_region, effective_start_date, effective_end_date, uncertainty_rating, and usage_notes.
-        </p>
-        {success && <p className="text-sm text-green-700 lg:col-span-3">{success}</p>}
-        {error && <p className="whitespace-pre-line text-sm text-red-600 lg:col-span-3">{error}</p>}
-      </form>
+          {success && <p className="text-sm text-green-700 lg:col-span-3">{success}</p>}
+          {error && <p className="whitespace-pre-line text-sm text-red-600 lg:col-span-3">{error}</p>}
+        </form>
+      ) : (
+        <SharedLibraryNotice />
+      )}
     </div>
   );
 }
@@ -332,9 +340,11 @@ function FactorImportPanel({
 function MaterialImportPanel({
   orgId,
   materialLibrary,
+  canEdit,
 }: {
   orgId: string;
   materialLibrary: { total: number; missingEndOfLife: number; missingReplacementCycle: number };
+  canEdit: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -388,31 +398,35 @@ function MaterialImportPanel({
           </>
         )}
       </div>
-      <form onSubmit={importMaterials} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
-        <Field label="Material file">
-          <input
-            name="file"
-            type="file"
-            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            required
-            disabled={isPending}
-            className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </Field>
-        <div className="flex items-end">
-          <Button type="submit" disabled={isPending}>
-            <Upload className="h-4 w-4" />
-            Import materials
-          </Button>
-        </div>
-        <p className="text-xs leading-5 text-slate-500 md:col-span-2">
-          Required columns: name, category, gwp_a1_a3. Optional columns: description, gwp_a4, gwp_a5, gwp_c1_c4
-          (lumped end-of-life), or the granular gwp_c1/gwp_c2/gwp_c3/gwp_c4, gwp_d, replacement_cycle_years,
-          declared_unit (kg, m3 or m2), density, source, source_url.
-        </p>
-        {success && <p className="text-sm text-green-700 md:col-span-2">{success}</p>}
-        {error && <p className="whitespace-pre-line text-sm text-red-600 md:col-span-2">{error}</p>}
-      </form>
+      {canEdit ? (
+        <form onSubmit={importMaterials} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
+          <Field label="Material file">
+            <input
+              name="file"
+              type="file"
+              accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              required
+              disabled={isPending}
+              className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </Field>
+          <div className="flex items-end">
+            <Button type="submit" disabled={isPending}>
+              <Upload className="h-4 w-4" />
+              Import materials
+            </Button>
+          </div>
+          <p className="text-xs leading-5 text-slate-500 md:col-span-2">
+            Required columns: name, category, gwp_a1_a3. Optional columns: description, gwp_a4, gwp_a5, gwp_c1_c4
+            (lumped end-of-life), or the granular gwp_c1/gwp_c2/gwp_c3/gwp_c4, gwp_d, replacement_cycle_years,
+            declared_unit (kg, m3 or m2), density, source, source_url.
+          </p>
+          {success && <p className="text-sm text-green-700 md:col-span-2">{success}</p>}
+          {error && <p className="whitespace-pre-line text-sm text-red-600 md:col-span-2">{error}</p>}
+        </form>
+      ) : (
+        <SharedLibraryNotice />
+      )}
     </div>
   );
 }
@@ -837,6 +851,15 @@ function EntityPanel({
       <PanelHeader title={title} description={description} />
       {children}
     </div>
+  );
+}
+
+function SharedLibraryNotice() {
+  return (
+    <p className="border-t border-slate-100 p-4 text-sm text-slate-600">
+      This library is shared by every organisation on MetricOra, so only the MetricOra team can change it. To report
+      a wrong or missing figure, contact support with the source document.
+    </p>
   );
 }
 

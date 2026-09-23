@@ -3,9 +3,8 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
+import { generateTemporaryPassword, hashTemporaryPassword } from "@/lib/auth/temporary-password";
 import { parseSupplierCsv, validateSupplierRows, formatTags, formatCategoryAssignments } from "@/lib/suppliers/csv-parser";
-import * as crypto from "crypto";
-import { createHash } from "crypto";
 
 export async function POST(
   req: NextRequest,
@@ -95,8 +94,8 @@ export async function POST(
 
     for (const row of rowsToCreate) {
       try {
-        const plainPassword = crypto.randomBytes(9).toString("base64").substring(0, 12);
-        const hashedPassword = createHash("sha256").update(plainPassword).digest("hex");
+        const plainPassword = generateTemporaryPassword();
+        const hashedPassword = await hashTemporaryPassword(plainPassword);
 
         await prisma.$transaction(async (tx) => {
           // Create user

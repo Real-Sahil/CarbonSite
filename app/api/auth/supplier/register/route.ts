@@ -3,13 +3,14 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
-import { hash } from "bcryptjs";
+import { hashPassword } from "better-auth/crypto";
 
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   inviteToken: z.string(),
-  organizationId: z.string(),
+  // Accepted for older clients but ignored: the invite decides the org.
+  organizationId: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const hashedPassword = await hash(body.password, 12);
+    const hashedPassword = await hashPassword(body.password);
     const existing = await prisma.account.findFirst({
       where: { userId: user.id, providerId: "credential" },
     });
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     const existing_membership = await prisma.organizationMembership.findFirst({
       where: {
         userId: user.id,
-        organizationId: body.organizationId,
+        organizationId: invite.organizationId,
       },
     });
 
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
       await prisma.organizationMembership.create({
         data: {
           userId: user.id,
-          organizationId: body.organizationId,
+          organizationId: invite.organizationId,
           role: "supplier",
         },
       });
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
     });
 
     await writeAuditLog({
-      organizationId: body.organizationId,
+      organizationId: invite.organizationId,
       actorUserId: user.id,
       action: "supplier_account.created",
       resourceType: "User",
@@ -114,7 +115,7 @@ export async function POST(req: NextRequest) {
       {
         userId: user.id,
         email: user.email,
-        organizationId: body.organizationId,
+        organizationId: invite.organizationId,
         role: "supplier",
       },
       { status: 201 },

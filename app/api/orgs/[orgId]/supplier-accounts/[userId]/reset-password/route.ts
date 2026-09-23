@@ -3,8 +3,11 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
-import * as crypto from "crypto";
-import { createHash } from "crypto";
+import {
+  accountBelongsOnlyToOrg,
+  generateTemporaryPassword,
+  hashTemporaryPassword,
+} from "@/lib/auth/temporary-password";
 
 // Admin resets supplier password
 export async function POST(
@@ -32,14 +35,24 @@ export async function POST(
       );
     }
 
-    // Generate new password
-    const plainPassword = crypto.randomBytes(9).toString("base64").substring(0, 12);
-    // Use SHA-256 hash for temporary password storage (will be updated on first login)
-    const hashedPassword = createHash("sha256").update(plainPassword).digest("hex");
+    // The new password is shown to this org's admin, so it must not unlock
+    // anything outside this org.
+    if (!(await accountBelongsOnlyToOrg(userId, orgId))) {
+      return NextResponse.json(
+        {
+          code: "SHARED_ACCOUNT",
+          message:
+            "This supplier also uses MetricOra with another organisation, so only they can change their password. Ask them to use \"Forgot password\" on the sign-in page.",
+        },
+        { status: 409 },
+      );
+    }
 
-    // Get the account
+    const plainPassword = generateTemporaryPassword();
+    const hashedPassword = await hashTemporaryPassword(plainPassword);
+
     const account = await prisma.account.findFirst({
-      where: { userId },
+      where: { userId, providerId: "credential" },
     });
 
     if (!account) {

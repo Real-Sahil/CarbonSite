@@ -4,8 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
-import * as crypto from "crypto";
-import { createHash } from "crypto";
+import { generateTemporaryPassword, hashTemporaryPassword } from "@/lib/auth/temporary-password";
 
 // Admin creates a supplier account (email/password auto-generated)
 const createSupplierSchema = z.object({
@@ -54,9 +53,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate random password (12 chars, mixed case + numbers + symbols)
-    const plainPassword = crypto.randomBytes(9).toString("base64").substring(0, 12);
-    // Use SHA-256 hash for temporary password storage (will be updated on first login)
-    const hashedPassword = createHash("sha256").update(plainPassword).digest("hex");
+    const plainPassword = generateTemporaryPassword();
+    const hashedPassword = await hashTemporaryPassword(plainPassword);
 
     // Create user, account, and organization membership in a transaction
     const newUser = await prisma.$transaction(async (tx) => {

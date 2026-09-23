@@ -8,13 +8,14 @@ export const dynamic = "force-dynamic";
 // seeds by default) updates that row in place. The library is shared
 // across every organisation, exactly like the DEFRA/EPA factor libraries,
 // so this write is not organization-scoped even though the route lives
-// under an org path — the URL only decides who is allowed to make the
-// change, via requireOrgMember.
+// under an org path. Only platform staff may make it
+// (requireSharedLibraryEditor): an org editor changing it would change
+// every other tenant's figures.
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireSharedLibraryEditor } from "@/lib/auth/shared-libraries";
 import { parseMaterialWorkbook } from "@/lib/materials/import";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -26,7 +27,7 @@ const ALLOWED_EXTENSIONS = [".csv", ".xlsx"];
 export async function POST(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireSharedLibraryEditor(orgId);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "material-imports", session.user.id),
       limit: 5,

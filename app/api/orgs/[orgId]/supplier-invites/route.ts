@@ -8,6 +8,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
 import { resolveEmailLogoUrl } from "@/lib/notifications/email";
+import { generateTemporaryPassword, hashTemporaryPassword } from "@/lib/auth/temporary-password";
 
 const createSchema = z.object({
   email: z.string().email().trim().toLowerCase(),
@@ -96,65 +97,33 @@ export async function POST(
     let userId: string | undefined;
     let temporaryPassword: string | undefined;
 
-    // If admin wants to create credentials, generate password and create user account
-    if (body.inviteMethod === "credentials") {
-      const tempPwd = generateTemporaryPassword();
-      temporaryPassword = tempPwd;
+    // Someone who already has a MetricOra account keeps their own password:
+    // setting one here would lock them out of every other org they use. They
+    // get an invite link instead and accept it with their existing sign-in.
+    const existingUser = await prisma.user.findUnique({
+      where: { email: body.email },
+      select: { id: true },
+    });
+    const inviteMethod = body.inviteMethod === "credentials" && existingUser ? "magic-link" : body.inviteMethod;
 
-      // Create or fetch user
-      let user = await prisma.user.findUnique({
-        where: { email: body.email },
-      });
-
-      if (!user) {
-        user = await prisma.user.create({
+    if (inviteMethod === "credentials") {
+      temporaryPassword = generateTemporaryPassword();
+      const password = await hashTemporaryPassword(temporaryPassword);
+      const user = await prisma.$transaction(async (tx) => {
+        const created = await tx.user.create({
           data: {
             email: body.email,
             name: body.companyName || body.email.split("@")[0],
           },
         });
-      }
-
-      // Store password in Account table (Better Auth credential provider)
-      const bcrypt = await import("bcryptjs");
-      const hashedPassword = await bcrypt.hash(tempPwd, 10);
-      const existingAccount = await prisma.account.findFirst({
-        where: { userId: user.id, providerId: "credential" },
+        await tx.account.create({
+          data: { userId: created.id, accountId: created.id, providerId: "credential", password },
+        });
+        await tx.organizationMembership.create({
+          data: { organizationId: orgId, userId: created.id, role: "supplier" },
+        });
+        return created;
       });
-      if (existingAccount) {
-        await prisma.account.update({
-          where: { id: existingAccount.id },
-          data: { password: hashedPassword },
-        });
-      } else {
-        await prisma.account.create({
-          data: {
-            userId: user.id,
-            accountId: user.id,
-            providerId: "credential",
-            password: hashedPassword,
-          },
-        });
-      }
-
-      // Create organization membership
-      const existingMembership = await prisma.organizationMembership.findFirst({
-        where: {
-          organizationId: orgId,
-          userId: user.id,
-        },
-      });
-
-      if (!existingMembership) {
-        await prisma.organizationMembership.create({
-          data: {
-            organizationId: orgId,
-            userId: user.id,
-            role: "supplier",
-          },
-        });
-      }
-
       userId = user.id;
     }
 
@@ -165,7 +134,7 @@ export async function POST(
         companyName: body.companyName ?? null,
         expiresAt,
         createdByUserId: session.user.id,
-        inviteMethod: body.inviteMethod,
+        inviteMethod,
         usedByUserId: userId, // Mark as used if credentials method
         usedAt: userId ? new Date() : undefined,
       },
@@ -180,7 +149,7 @@ export async function POST(
       metadata: {
         email: invite.email,
         companyName: invite.companyName,
-        inviteMethod: body.inviteMethod,
+        inviteMethod,
       },
     });
 
@@ -190,7 +159,7 @@ export async function POST(
 
     try {
       const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
-      if (body.inviteMethod === "credentials" && temporaryPassword) {
+      if (inviteMethod === "credentials" && temporaryPassword) {
         const { sendSupplierCredentialsEmail } = await import("@/workers/supplier-invite-email");
         await sendSupplierCredentialsEmail({
           supplierEmail: body.email,
@@ -221,7 +190,7 @@ export async function POST(
       recipientUserId: session.user.id,
       orgId,
       resourceId: invite.id,
-      metadata: { targetLabel: `Supplier invite for ${body.email} (${body.inviteMethod})` },
+      metadata: { targetLabel: `Supplier invite for ${body.email} (${inviteMethod})` },
     }).catch(() => {});
 
     return NextResponse.json(
@@ -229,14 +198,16 @@ export async function POST(
         id: invite.id,
         email: invite.email,
         companyName: invite.companyName,
-        inviteMethod: body.inviteMethod,
-        inviteUrl: body.inviteMethod === "magic-link" ? inviteUrl : undefined,
-        loginUrl: body.inviteMethod === "credentials" ? loginUrl : undefined,
+        inviteMethod,
+        inviteUrl: inviteMethod === "magic-link" ? inviteUrl : undefined,
+        loginUrl: inviteMethod === "credentials" ? loginUrl : undefined,
         expiresAt: invite.expiresAt.toISOString(),
         message:
-          body.inviteMethod === "credentials"
+          inviteMethod === "credentials"
             ? "Supplier account created. Temporary password sent via email."
-            : "Magic link invitation sent via email.",
+            : inviteMethod !== body.inviteMethod
+              ? "This email already has a MetricOra account, so we sent an invite link instead. They accept it with their existing sign-in."
+              : "Magic link invitation sent via email.",
       },
       { status: 201 },
     );
@@ -244,13 +215,3 @@ export async function POST(
     return handleRouteError(err);
   }
 }
-
-function generateTemporaryPassword(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes)
-    .map((b) => chars[b % chars.length])
-    .join("");
-}
-

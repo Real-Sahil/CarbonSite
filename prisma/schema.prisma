@@ -326,6 +326,7 @@ model Organization {
   assuranceSamples            AssuranceSample[]             @relation("OrgAssuranceSamples")
   assuranceFindings           AssuranceFinding[]            @relation("OrgAssuranceFindings")
   datapointStatuses           OrganizationDatapointStatus[] @relation("OrgDatapointStatuses")
+  datapointNarratives         OrganizationDatapointNarrative[]
   environmentalMetricAggregates EnvironmentalMetricAggregate[]
   onboardingProgress            OnboardingProgress?
   tcfdScenarios                 TcfdScenario[]       @relation("OrgTcfdScenarios")
@@ -5451,11 +5452,30 @@ model FrameworkDatapoint {
   publicNarrative  String?            @map("public_narrative")
   createdAt        DateTime           @default(now()) @map("created_at")
 
-  overrides OrganizationDatapointStatus[] @relation("DatapointOverrides")
+  overrides  OrganizationDatapointStatus[]    @relation("DatapointOverrides")
+  narratives OrganizationDatapointNarrative[]
 
   @@unique([framework, code])
   @@index([framework])
   @@map("framework_datapoints")
+}
+
+/// An organisation's own public disclosure text for a datapoint. Datapoints
+/// are shared reference rows, so the narrative must live per organisation.
+model OrganizationDatapointNarrative {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  datapointId     String   @map("datapoint_id")
+  narrative       String
+  updatedByUserId String   @map("updated_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  datapoint    FrameworkDatapoint @relation(fields: [datapointId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, datapointId])
+  @@map("organization_datapoint_narratives")
 }
 
 /// Manual evidence recorded against a datapoint for an organisation, used
