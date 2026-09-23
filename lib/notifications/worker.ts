@@ -206,14 +206,16 @@ export async function processNotification(data: NotificationJobData): Promise<vo
         recipientName,
         orgName,
         daysRemaining,
-        appUrl: `${APP_URL}/settings/security`,
+        appUrl: `${APP_URL}/forgot-password`,
       });
 
       await Promise.all([
         sendEmail({ to: recipient.email, ...template }),
         sendPushToUser(d.recipientUserId, {
-          title: "Password expiring soon",
-          body: `Your MetricOra password expires in ${daysRemaining} day${daysRemaining !== 1 ? "s" : ""}. Update it now.`,
+          title: "Password change due",
+          body: daysRemaining <= 0
+            ? "Your MetricOra password is due for a change."
+            : `Your MetricOra password is due for a change in ${daysRemaining} day${daysRemaining !== 1 ? "s" : ""}.`,
           data: { type: "supplier_password_expiring", orgId: d.orgId },
         }),
       ]);
@@ -281,7 +283,7 @@ export async function processNotification(data: NotificationJobData): Promise<vo
         orgName,
         alertType,
         detail,
-        appUrl: `${APP_URL}/orgs/${d.orgId}/settings/security`,
+        appUrl: `${APP_URL}/orgs/${d.orgId}/settings/audit`,
       });
 
       await Promise.all([

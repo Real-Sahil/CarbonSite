@@ -69,9 +69,11 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
     case "supplier_password_expiring": {
       const days = num(data.metadata?.daysRemaining, 7);
       return {
-        title: "Password expiring soon",
-        body: `Your password expires in ${days} day${days !== 1 ? "s" : ""}. Update it now.`,
-        link: `/settings/security`,
+        title: "Password change due",
+        body: days <= 0
+          ? "Your password is due for a change."
+          : `Your password is due for a change in ${days} day${days !== 1 ? "s" : ""}.`,
+        link: `/forgot-password`,
       };
     }
     case "supplier_account_terminated":
@@ -103,7 +105,7 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
       return {
         title: `Security alert: ${alertType}`,
         body: detail,
-        link: `${orgBase}/settings/security`,
+        link: `${orgBase}/settings/audit`,
       };
     }
     case "submission_sla_overdue": {

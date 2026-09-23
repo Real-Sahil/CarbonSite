@@ -608,25 +608,27 @@ export function supplierPasswordExpiringEmail(params: {
   daysRemaining: number;
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const overdue = params.daysRemaining <= 0;
   const days = `${params.daysRemaining} day${params.daysRemaining !== 1 ? "s" : ""}`;
-  const subject = `Action required: your MetricOra password expires in ${days}`;
+  const subject = overdue
+    ? "Action required: your MetricOra password is due for a change"
+    : `Action required: your MetricOra password is due for a change in ${days}`;
+  const lead = overdue
+    ? `${params.orgName} asks suppliers to change their MetricOra password regularly, and yours is now due.`
+    : `${params.orgName} asks suppliers to change their MetricOra password regularly, and yours is due in ${days}.`;
   const text = [
     `Hi ${params.recipientName},`,
     ``,
-    `Your MetricOra password for ${params.orgName} will expire in ${days}.`,
+    lead,
     ``,
-    `Please update your password before it expires to avoid losing access.`,
-    ``,
-    `Update your password: ${params.appUrl}`,
+    `Choose a new password here: ${params.appUrl}`,
   ].join("\n");
   const html = emailLayout(`
-    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Password expiring soon</p>
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">${overdue ? "Time to change your password" : "Password change due soon"}</p>
     <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
-      Hi ${params.recipientName}, your MetricOra password for
-      <strong style="color:${BRAND_DARK};">${params.orgName}</strong> will expire in <strong style="color:#d97706;">${days}</strong>.
-      Please update it before it expires to avoid losing access.
+      Hi ${params.recipientName}, ${lead}
     </p>
-    ${btn("Update password", params.appUrl)}
+    ${btn("Change password", params.appUrl)}
   `);
   return { subject, html, text };
 }

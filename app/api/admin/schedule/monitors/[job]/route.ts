@@ -1,12 +1,14 @@
 /**
  * Scheduled monitoring jobs. Called by the Supabase pg_cron schedule in
- * migration 20260922000010 (worker sessions every 5 minutes, the rest daily).
- * Each job only alerts once per record, so a repeated or late call is safe.
+ * migrations 20260922000010 and 20260923000005 (worker sessions every 5
+ * minutes, the rest daily). Each job only alerts once per record or per
+ * threshold day, so a repeated or late call is safe.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import {
+  dispatchAccountPolicies,
   dispatchEnforcementNoticeMonitoring,
   dispatchPermitExpiryMonitoring,
   dispatchSubmissionSlaMonitoring,
@@ -21,6 +23,8 @@ const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
   "submission-sla": dispatchSubmissionSlaMonitoring,
   "permit-expiry": dispatchPermitExpiryMonitoring,
   "enforcement-notices": dispatchEnforcementNoticeMonitoring,
+  // Acts only on orgs that switched supplier policies on in settings.
+  "account-policies": () => dispatchAccountPolicies({}),
 };
 
 async function handle(req: NextRequest, { params }: { params: Promise<{ job: string }> }) {
