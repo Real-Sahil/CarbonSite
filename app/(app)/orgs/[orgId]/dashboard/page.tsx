@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { currentFactorLibraries } from "@/lib/calculation/library-for-period";
 import Link from "next/link";
 import {
   Activity,
@@ -2305,7 +2306,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               id: item.id,
               label: `${item.name} (${item.gwpVersion})`,
             }))}
-            factorLibraries={factorLibraries}
+            factorLibraries={currentFactorLibraries(factorLibraries)}
           />
           <CalculationRunsLive orgId={orgId} initialRuns={calculationRuns} />
         </CardContent>

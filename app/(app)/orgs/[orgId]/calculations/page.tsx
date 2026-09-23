@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { currentFactorLibraries } from "@/lib/calculation/library-for-period";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -228,7 +229,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                   id: item.id,
                   label: `${item.name} (${item.gwpVersion})`,
                 }))}
-                factorLibraries={factorLibraries}
+                factorLibraries={currentFactorLibraries(factorLibraries)}
               />
             </CardContent>
           </Card>

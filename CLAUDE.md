@@ -266,8 +266,9 @@ Use only these codes in code (see `prisma/seed.ts`). A code that is not seeded m
 
 | Library | Source | Format |
 |---|---|---|
-| DEFRA 2026.1 | gov.uk conversion factors (flat file) | XLSX → `scripts/build-defra-2026-factors.mjs` → `prisma/data/defra-2026-factors.json` |
-| DEFRA 2025.1 | gov.uk conversion factors | XLSX download (some values are placeholders; reload from the 2025 flat file) |
+| DEFRA 2026.1 | gov.uk conversion factors (flat file v1.2) | XLSX → `node scripts/build-defra-factors.mjs <file> 2026` → `prisma/data/defra-2026-factors.json` + migration |
+| DEFRA 2025.2 | gov.uk conversion factors (flat file v1) | XLSX → `node scripts/build-defra-factors.mjs <file> 2025` → `prisma/data/defra-2025-factors.json` + migration |
+| DEFRA 2025.1 | hand-entered, superseded by 2025.2 | Kept only so runs that used it reproduce; hidden from the library picker (`currentFactorLibraries()`) |
 | EPA 2025.1 | epa.gov GHG Emission Factors Hub | PDF → manual CSV |
 | SustainMetrics | sustainmetrics.net/factors | CSV, free download, no signup |
 
@@ -357,4 +358,3 @@ Skills live in `.claude/skills/` and can be invoked as slash commands.
 3. **Billing** — required at first production launch (affects org model, gating, trial flows).
 4. **Primary report format** — auditor package vs. customer disclosure vs. internal executive summary.
 5. **Spend factor price years** — dated ECB rates and CPI deflation are in place, but the seeded DEFRA/EPA spend factors have no confirmed `priceBaseYear`, so their spend is not yet inflation-adjusted. Set it once the source publication's price basis is confirmed.
-6. **DEFRA 2025 values** — duplicates are removed, but some 2025 factor values are placeholders. Reload from DEFRA's 2025 flat file.

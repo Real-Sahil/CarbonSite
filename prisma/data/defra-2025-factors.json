@@ -1,727 +1,711 @@
 {
-  "source": "DESNZ GHG conversion factors 2026, flat file v1.2 (revised July 2026)",
-  "library": "2026.1",
-  "published": "2026-07-10",
+  "source": "DESNZ GHG conversion factors 2025 (flat file v1, 10 June 2025)",
+  "library": "2025.2",
+  "published": "2025-06-10",
+  "notPublished": [
+    "defra-2025-waste-mixed-recycling",
+    "defra-2025-waste-recycled-mixed-kg"
+  ],
   "factors": [
     {
-      "externalId": "defra-2026-car-avg-km",
+      "externalId": "defra-2025-car-avg-km",
       "replacesExternalId": "defra-2025-car-avg-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.16591,
-      "usageNotes": "Car, average size, unknown fuel, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_301_3074_4_1."
+      "co2e": 0.16725,
+      "usageNotes": "Car, average size, unknown fuel, per vehicle.km. DESNZ 2025 v1 flat file, row 4_301_3074_4_1."
     },
     {
-      "externalId": "defra-2026-car-bev-medium-km",
+      "externalId": "defra-2025-car-bev-medium-km",
       "replacesExternalId": "defra-2025-car-bev-medium-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.02563,
-      "usageNotes": "Medium BEV, UK grid charging (DEFRA 'UK electricity for EVs'), per vehicle.km. DESNZ 2026 v1.2 flat file, row 8_301_3060_4_1."
+      "co2e": 0.03513,
+      "usageNotes": "Medium BEV, UK grid charging (DEFRA 'UK electricity for EVs'), per vehicle.km. DESNZ 2025 v1 flat file, row 8_301_3060_4_1."
     },
     {
-      "externalId": "defra-2026-car-diesel-large-km",
+      "externalId": "defra-2025-car-diesel-large-km",
       "replacesExternalId": "defra-2025-car-diesel-large-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.20905,
-      "usageNotes": "Large diesel car, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_301_3061_4_1."
+      "co2e": 0.21007,
+      "usageNotes": "Large diesel car, per vehicle.km. DESNZ 2025 v1 flat file, row 4_301_3061_4_1."
     },
     {
-      "externalId": "defra-2026-car-diesel-medium-km",
+      "externalId": "defra-2025-car-diesel-medium-km",
       "replacesExternalId": "defra-2025-car-diesel-medium-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.17209,
-      "usageNotes": "Medium diesel car, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_301_3053_4_1."
+      "co2e": 0.17174,
+      "usageNotes": "Medium diesel car, per vehicle.km. DESNZ 2025 v1 flat file, row 4_301_3053_4_1."
     },
     {
-      "externalId": "defra-2026-car-diesel-small-km",
+      "externalId": "defra-2025-car-diesel-small-km",
       "replacesExternalId": "defra-2025-car-diesel-small-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.14327,
-      "usageNotes": "Small diesel car, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_301_3045_4_1."
+      "co2e": 0.1434,
+      "usageNotes": "Small diesel car, per vehicle.km. DESNZ 2025 v1 flat file, row 4_301_3045_4_1."
     },
     {
-      "externalId": "defra-2026-car-petrol-large-km",
+      "externalId": "defra-2025-car-petrol-large-km",
       "replacesExternalId": "defra-2025-car-petrol-large-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.26606,
-      "usageNotes": "Large petrol car, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_301_3062_4_1."
+      "co2e": 0.26828,
+      "usageNotes": "Large petrol car, per vehicle.km. DESNZ 2025 v1 flat file, row 4_301_3062_4_1."
     },
     {
-      "externalId": "defra-2026-car-petrol-medium-km",
+      "externalId": "defra-2025-car-petrol-medium-km",
       "replacesExternalId": "defra-2025-car-petrol-medium-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.17411,
-      "usageNotes": "Medium petrol car, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_301_3054_4_1."
+      "co2e": 0.17474,
+      "usageNotes": "Medium petrol car, per vehicle.km. DESNZ 2025 v1 flat file, row 4_301_3054_4_1."
     },
     {
-      "externalId": "defra-2026-car-petrol-small-km",
+      "externalId": "defra-2025-car-petrol-small-km",
       "replacesExternalId": "defra-2025-car-petrol-small-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.14257,
-      "usageNotes": "Small petrol car, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_301_3046_4_1."
+      "co2e": 0.14308,
+      "usageNotes": "Small petrol car, per vehicle.km. DESNZ 2025 v1 flat file, row 4_301_3046_4_1."
     },
     {
-      "externalId": "defra-2026-car-phev-avg-km",
+      "externalId": "defra-2025-car-phev-avg-km",
       "replacesExternalId": "defra-2025-car-phev-avg-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.09832,
-      "usageNotes": "Average PHEV: fuel plus UK grid charging, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_301_3075_4_1 + 8_301_3075_4_1."
+      "co2e": 0.10338,
+      "usageNotes": "Average PHEV: fuel plus UK grid charging, per vehicle.km. DESNZ 2025 v1 flat file, row 4_301_3075_4_1 + 8_301_3075_4_1."
     },
     {
-      "externalId": "defra-2026-cng-kg",
+      "externalId": "defra-2025-cng-kg",
       "replacesExternalId": "defra-2025-cng-kg",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion",
       "inputUnit": "kg",
       "geographyCountry": "GB",
-      "co2e": 2.50772441,
-      "usageNotes": "CNG, per kg. DESNZ 2026 v1.2 flat file, row 1_100_1001_15_1, per tonne / 1000."
+      "co2e": 2.57546441,
+      "usageNotes": "CNG, per kg. DESNZ 2025 v1 flat file, row 1_100_1001_15_1, per tonne / 1000."
     },
     {
-      "externalId": "defra-2026-diesel-litre",
+      "externalId": "defra-2025-diesel-litre",
       "replacesExternalId": "defra-2025-diesel-litre",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion",
       "inputUnit": "litre",
       "geographyCountry": "GB",
-      "co2e": 2.58354,
-      "usageNotes": "Diesel, average biofuel blend. DESNZ 2026 v1.2 flat file, row 1_101_1011_8_1."
+      "co2e": 2.57082,
+      "usageNotes": "Diesel, average biofuel blend. DESNZ 2025 v1 flat file, row 1_101_1011_8_1."
     },
     {
-      "externalId": "defra-2026-hvo-litre",
+      "externalId": "defra-2025-hvo-litre",
       "replacesExternalId": "defra-2025-hvo-litre",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion",
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 0.03558,
-      "usageNotes": "HVO. Biogenic CO2 reported outside of scopes. DESNZ 2026 v1.2 flat file, row 2_103_1036_8_1."
+      "usageNotes": "HVO. Biogenic CO2 reported outside of scopes. DESNZ 2025 v1 flat file, row 2_103_1036_8_1."
     },
     {
-      "externalId": "defra-2026-lng-kg",
+      "externalId": "defra-2025-lng-kg",
       "replacesExternalId": "defra-2025-lng-kg",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion",
       "inputUnit": "kg",
       "geographyCountry": "GB",
-      "co2e": 2.53685441,
-      "usageNotes": "LNG, per kg. DESNZ 2026 v1.2 flat file, row 1_100_1002_15_1, per tonne / 1000."
+      "co2e": 2.60330441,
+      "usageNotes": "LNG, per kg. DESNZ 2025 v1 flat file, row 1_100_1002_15_1, per tonne / 1000."
     },
     {
-      "externalId": "defra-2026-motorbike-avg-km",
+      "externalId": "defra-2025-motorbike-avg-km",
       "replacesExternalId": "defra-2025-motorbike-avg-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_motorbike",
       "inputUnit": "km",
       "geographyCountry": "GB",
       "co2e": 0.11367,
-      "usageNotes": "Motorbike, average, per vehicle.km. DESNZ 2026 v1.2 flat file, row 4_302_3080_4_1."
+      "usageNotes": "Motorbike, average, per vehicle.km. DESNZ 2025 v1 flat file, row 4_302_3080_4_1."
     },
     {
-      "externalId": "defra-2026-petrol-litre",
+      "externalId": "defra-2025-petrol-litre",
       "replacesExternalId": "defra-2025-petrol-litre",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion",
       "inputUnit": "litre",
       "geographyCountry": "GB",
-      "co2e": 2.075,
-      "usageNotes": "Petrol, average biofuel blend. DESNZ 2026 v1.2 flat file, row 1_101_1017_8_1."
+      "co2e": 2.06916,
+      "usageNotes": "Petrol, average biofuel blend. DESNZ 2025 v1 flat file, row 1_101_1017_8_1."
     },
     {
-      "externalId": "defra-2026-van-diesel-km",
+      "externalId": "defra-2025-van-diesel-km",
       "replacesExternalId": "defra-2025-van-diesel-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_van",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.25716,
-      "usageNotes": "Van up to 3.5t, diesel, per vehicle.km. DESNZ 2026 v1.2 flat file, row 5_303_3102_4_1."
+      "co2e": 0.25561,
+      "usageNotes": "Van up to 3.5t, diesel, per vehicle.km. DESNZ 2025 v1 flat file, row 5_303_3102_4_1."
     },
     {
-      "externalId": "defra-2026-van-electric-km",
+      "externalId": "defra-2025-van-electric-km",
       "replacesExternalId": "defra-2025-van-electric-km",
       "categoryCode": "s1-mobile",
       "activityType": "mobile_combustion_van",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.0426,
-      "usageNotes": "Electric van up to 3.5t, UK grid charging, per vehicle.km. DESNZ 2026 v1.2 flat file, row 8_303_3108_4_1."
+      "co2e": 0.06315,
+      "usageNotes": "Electric van up to 3.5t, UK grid charging, per vehicle.km. DESNZ 2025 v1 flat file, row 8_303_3108_4_1."
     },
     {
-      "externalId": "defra-2026-burning-oil-litre",
+      "externalId": "defra-2025-burning-oil-litre",
       "replacesExternalId": "defra-2025-burning-oil-litre",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 2.54016,
-      "usageNotes": "Burning oil (kerosene). DESNZ 2026 v1.2 flat file, row 1_101_1010_8_1."
+      "usageNotes": "Burning oil (kerosene). DESNZ 2025 v1 flat file, row 1_101_1010_8_1."
     },
     {
-      "externalId": "defra-2026-coal-industrial-kg",
+      "externalId": "defra-2025-coal-industrial-kg",
       "replacesExternalId": "defra-2025-coal-industrial-kg",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "kg",
       "geographyCountry": "GB",
-      "co2e": 2.41503994,
-      "usageNotes": "Industrial coal, per kg. DESNZ 2026 v1.2 flat file, row 1_102_1025_15_1, per tonne / 1000."
+      "co2e": 2.39528994,
+      "usageNotes": "Industrial coal, per kg. DESNZ 2025 v1 flat file, row 1_102_1025_15_1, per tonne / 1000."
     },
     {
-      "externalId": "defra-2026-diesel-stationary-litre",
+      "externalId": "defra-2025-diesel-stationary-litre",
       "replacesExternalId": "defra-2025-diesel-stationary-litre",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 2.66155,
-      "usageNotes": "Diesel (100% mineral) for stationary generators. DESNZ 2026 v1.2 flat file, row 1_101_1012_8_1."
+      "usageNotes": "Diesel (100% mineral) for stationary generators. DESNZ 2025 v1 flat file, row 1_101_1012_8_1."
     },
     {
-      "externalId": "defra-2026-gasoil-litre",
+      "externalId": "defra-2025-gasoil-litre",
       "replacesExternalId": "defra-2025-gasoil-litre",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 2.75541,
-      "usageNotes": "Gas oil. DESNZ 2026 v1.2 flat file, row 1_101_1014_8_1."
+      "usageNotes": "Gas oil. DESNZ 2025 v1 flat file, row 1_101_1014_8_1."
     },
     {
-      "externalId": "defra-2026-heavyfueloil-litre",
+      "externalId": "defra-2025-heavyfueloil-litre",
       "replacesExternalId": "defra-2025-heavyfueloil-litre",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 3.17492,
-      "usageNotes": "Fuel oil. DESNZ 2026 v1.2 flat file, row 1_101_1013_8_1."
+      "usageNotes": "Fuel oil. DESNZ 2025 v1 flat file, row 1_101_1013_8_1."
     },
     {
-      "externalId": "defra-2026-lpg-litre",
+      "externalId": "defra-2025-lpg-litre",
       "replacesExternalId": "defra-2025-lpg-litre",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "litre",
       "geographyCountry": "GB",
       "co2e": 1.55713,
-      "usageNotes": "LPG. DESNZ 2026 v1.2 flat file, row 1_100_1003_8_1."
+      "usageNotes": "LPG. DESNZ 2025 v1 flat file, row 1_100_1003_8_1."
     },
     {
-      "externalId": "defra-2026-natgas-kwh",
+      "externalId": "defra-2025-natgas-kwh",
       "replacesExternalId": "defra-2025-natgas-kwh",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "kWh",
       "geographyCountry": "GB",
-      "co2e": 0.18231,
-      "usageNotes": "Natural gas, gross CV. DESNZ 2026 v1.2 flat file, row 1_100_1004_6_1."
+      "co2e": 0.18296,
+      "usageNotes": "Natural gas, gross CV. DESNZ 2025 v1 flat file, row 1_100_1004_6_1."
     },
     {
-      "externalId": "defra-2026-wood-chips-kg",
+      "externalId": "defra-2025-wood-chips-kg",
       "replacesExternalId": "defra-2025-wood-chips-kg",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "kg",
       "geographyCountry": "GB",
-      "co2e": 0.04505983,
-      "usageNotes": "Wood chips, per kg. Biogenic CO2 outside of scopes. DESNZ 2026 v1.2 flat file, row 2_104_1044_15_1, per tonne / 1000."
+      "co2e": 0.04343964,
+      "usageNotes": "Wood chips, per kg. Biogenic CO2 outside of scopes. DESNZ 2025 v1 flat file, row 2_104_1044_15_1, per tonne / 1000."
     },
     {
-      "externalId": "defra-2026-wood-pellets-kg",
+      "externalId": "defra-2025-wood-pellets-kg",
       "replacesExternalId": "defra-2025-wood-pellets-kg",
       "categoryCode": "s1-stationary",
       "activityType": "stationary_combustion",
       "inputUnit": "kg",
       "geographyCountry": "GB",
-      "co2e": 0.05725249,
-      "usageNotes": "Wood pellets, per kg. Biogenic CO2 outside of scopes. DESNZ 2026 v1.2 flat file, row 2_104_1045_15_1, per tonne / 1000."
+      "co2e": 0.05519389,
+      "usageNotes": "Wood pellets, per kg. Biogenic CO2 outside of scopes. DESNZ 2025 v1 flat file, row 2_104_1045_15_1, per tonne / 1000."
     },
     {
-      "externalId": "defra-2026-elec-uk-lb-kwh",
+      "externalId": "defra-2025-elec-uk-lb-kwh",
       "replacesExternalId": "defra-2025-elec-uk-lb-kwh",
       "categoryCode": "s2-electricity-lb",
       "activityType": "purchased_electricity_location",
       "inputUnit": "kWh",
       "geographyCountry": "GB",
-      "co2e": 0.13096,
-      "usageNotes": "UK grid electricity generated, location-based. DESNZ 2026 v1.2 flat file, row 7_400_4000_5_1."
+      "co2e": 0.177,
+      "usageNotes": "UK grid electricity generated, location-based. DESNZ 2025 v1 flat file, row 7_400_4000_5_1."
     },
     {
-      "externalId": "defra-2026-electricity-lb-kwh",
+      "externalId": "defra-2025-electricity-lb-kwh",
       "replacesExternalId": "defra-2025-electricity-lb-kwh",
       "categoryCode": "s2-electricity-lb",
       "activityType": "purchased_electricity_location",
       "inputUnit": "kWh",
       "geographyCountry": "GB",
-      "co2e": 0.13096,
-      "usageNotes": "UK grid electricity generated, location-based. DESNZ 2026 v1.2 flat file, row 7_400_4000_5_1."
+      "co2e": 0.177,
+      "usageNotes": "UK grid electricity generated, location-based. DESNZ 2025 v1 flat file, row 7_400_4000_5_1."
     },
     {
-      "externalId": "defra-2026-elec-uk-td-kwh",
+      "externalId": "defra-2025-elec-uk-td-kwh",
       "replacesExternalId": "defra-2025-elec-uk-td-kwh",
       "categoryCode": "s2-electricity-lb",
       "activityType": "purchased_electricity_location_td",
       "inputUnit": "kWh",
       "geographyCountry": "GB",
-      "co2e": 0.01299,
-      "usageNotes": "UK grid transmission and distribution losses. DESNZ 2026 v1.2 flat file, row 13_402_4000_5_1."
+      "co2e": 0.01853,
+      "usageNotes": "UK grid transmission and distribution losses. DESNZ 2025 v1 flat file, row 13_402_4000_5_1."
     },
     {
-      "externalId": "defra-2026-electricity-mb-kwh",
+      "externalId": "defra-2025-electricity-mb-kwh",
       "replacesExternalId": "defra-2025-electricity-mb-kwh",
       "categoryCode": "s2-electricity-mb",
       "activityType": "purchased_electricity_market",
       "inputUnit": "kWh",
       "geographyCountry": "GB",
-      "co2e": 0.13096,
-      "usageNotes": "UK grid average, used for market-based only when no supplier-specific or residual-mix factor applies. DESNZ 2026 v1.2 flat file, row 7_400_4000_5_1."
+      "co2e": 0.177,
+      "usageNotes": "UK grid average, used for market-based only when no supplier-specific or residual-mix factor applies. DESNZ 2025 v1 flat file, row 7_400_4000_5_1."
     },
     {
-      "externalId": "defra-2026-air-long-haul-km",
+      "externalId": "defra-2025-air-long-haul-km",
       "replacesExternalId": "defra-2025-air-long-haul-km",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel",
       "inputUnit": "km",
       "geographyCountry": "GB",
       "co2e": 0.11704,
-      "usageNotes": "Long-haul flight, economy, with radiative forcing, per passenger.km. DESNZ 2026 v1.2 flat file, row 21_316_3170_11_1."
+      "usageNotes": "Long-haul flight, economy, with radiative forcing, per passenger.km. DESNZ 2025 v1 flat file, row 21_316_3170_11_1."
     },
     {
-      "externalId": "defra-2026-air-short-haul-km",
+      "externalId": "defra-2025-air-short-haul-km",
       "replacesExternalId": "defra-2025-air-short-haul-km",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel",
       "inputUnit": "km",
       "geographyCountry": "GB",
       "co2e": 0.12576,
-      "usageNotes": "Short-haul flight, economy, with radiative forcing, per passenger.km. DESNZ 2026 v1.2 flat file, row 21_316_3164_11_1."
+      "usageNotes": "Short-haul flight, economy, with radiative forcing, per passenger.km. DESNZ 2025 v1 flat file, row 21_316_3164_11_1."
     },
     {
-      "externalId": "defra-2026-biz-bus-local-pkm",
+      "externalId": "defra-2025-biz-bus-local-pkm",
       "replacesExternalId": "defra-2025-biz-bus-local-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_bus",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.10151,
-      "usageNotes": "Average local bus, per passenger.km. DESNZ 2026 v1.2 flat file, row 25_314_3145_11_1."
+      "co2e": 0.10385,
+      "usageNotes": "Average local bus, per passenger.km. DESNZ 2025 v1 flat file, row 25_314_3145_11_1."
     },
     {
-      "externalId": "defra-2026-biz-car-avg-km",
+      "externalId": "defra-2025-biz-car-avg-km",
       "replacesExternalId": "defra-2025-biz-car-avg-km",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_car",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.16591,
-      "usageNotes": "Average car, unknown fuel, per vehicle.km. DESNZ 2026 v1.2 flat file, row 25_301_3074_4_1."
+      "co2e": 0.16725,
+      "usageNotes": "Average car, unknown fuel, per vehicle.km. DESNZ 2025 v1 flat file, row 25_301_3074_4_1."
     },
     {
-      "externalId": "defra-2026-biz-car-bev-km",
+      "externalId": "defra-2025-biz-car-bev-km",
       "replacesExternalId": "defra-2025-biz-car-bev-km",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_car_bev",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.02951,
-      "usageNotes": "Average BEV, UK grid charging incl. T&D, per vehicle.km. DESNZ 2026 v1.2 flat file, row 25_301_3076_4_1."
+      "co2e": 0.04047,
+      "usageNotes": "Average BEV, UK grid charging incl. T&D, per vehicle.km. DESNZ 2025 v1 flat file, row 25_301_3076_4_1."
     },
     {
-      "externalId": "defra-2026-biz-coach-pkm",
+      "externalId": "defra-2025-biz-coach-pkm",
       "replacesExternalId": "defra-2025-biz-coach-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_coach",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.03948,
-      "usageNotes": "Coach, per passenger.km. DESNZ 2026 v1.2 flat file, row 25_314_3146_11_1."
+      "co2e": 0.02776,
+      "usageNotes": "Coach, per passenger.km. DESNZ 2025 v1 flat file, row 25_314_3146_11_1."
     },
     {
-      "externalId": "defra-2026-biz-eurostar-pkm",
+      "externalId": "defra-2025-biz-eurostar-pkm",
       "replacesExternalId": "defra-2025-biz-eurostar-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_rail_international",
       "inputUnit": "km",
       "geographyCountry": null,
-      "co2e": 0.01135,
-      "usageNotes": "International rail (Eurostar), per passenger.km. DESNZ 2026 v1.2 flat file, row 25_315_3148_11_1."
+      "co2e": 0.00446,
+      "usageNotes": "International rail (Eurostar), per passenger.km. DESNZ 2025 v1 flat file, row 25_315_3148_11_1."
     },
     {
-      "externalId": "defra-2026-biz-flight-domestic-econ-pkm",
+      "externalId": "defra-2025-biz-flight-domestic-econ-pkm",
       "replacesExternalId": "defra-2025-biz-flight-domestic-econ-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_flight_domestic",
       "inputUnit": "km",
       "geographyCountry": "GB",
       "co2e": 0.22928,
-      "usageNotes": "UK domestic flight, average passenger, with radiative forcing, per passenger.km. DESNZ 2026 v1.2 flat file, row 21_316_3160_11_1."
+      "usageNotes": "UK domestic flight, average passenger, with radiative forcing, per passenger.km. DESNZ 2025 v1 flat file, row 21_316_3160_11_1."
     },
     {
-      "externalId": "defra-2026-biz-flight-longhaul-biz-pkm",
+      "externalId": "defra-2025-biz-flight-longhaul-biz-pkm",
       "replacesExternalId": "defra-2025-biz-flight-longhaul-biz-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_flight_longhaul_biz",
       "inputUnit": "km",
       "geographyCountry": null,
       "co2e": 0.3394,
-      "usageNotes": "Long-haul flight, business class, with radiative forcing, per passenger.km. DESNZ 2026 v1.2 flat file, row 21_316_3174_11_1."
+      "usageNotes": "Long-haul flight, business class, with radiative forcing, per passenger.km. DESNZ 2025 v1 flat file, row 21_316_3174_11_1."
     },
     {
-      "externalId": "defra-2026-biz-flight-longhaul-econ-pkm",
+      "externalId": "defra-2025-biz-flight-longhaul-econ-pkm",
       "replacesExternalId": "defra-2025-biz-flight-longhaul-econ-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_flight_longhaul",
       "inputUnit": "km",
       "geographyCountry": null,
       "co2e": 0.11704,
-      "usageNotes": "Long-haul flight, economy, with radiative forcing, per passenger.km. DESNZ 2026 v1.2 flat file, row 21_316_3170_11_1."
+      "usageNotes": "Long-haul flight, economy, with radiative forcing, per passenger.km. DESNZ 2025 v1 flat file, row 21_316_3170_11_1."
     },
     {
-      "externalId": "defra-2026-biz-flight-longhaul-first-pkm",
+      "externalId": "defra-2025-biz-flight-longhaul-first-pkm",
       "replacesExternalId": "defra-2025-biz-flight-longhaul-first-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_flight_longhaul_first",
       "inputUnit": "km",
       "geographyCountry": null,
       "co2e": 0.46814,
-      "usageNotes": "Long-haul flight, first class, with radiative forcing, per passenger.km. DESNZ 2026 v1.2 flat file, row 21_316_3176_11_1."
+      "usageNotes": "Long-haul flight, first class, with radiative forcing, per passenger.km. DESNZ 2025 v1 flat file, row 21_316_3176_11_1."
     },
     {
-      "externalId": "defra-2026-biz-flight-shorthaul-biz-pkm",
+      "externalId": "defra-2025-biz-flight-shorthaul-biz-pkm",
       "replacesExternalId": "defra-2025-biz-flight-shorthaul-biz-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_flight_shorthaul_biz",
       "inputUnit": "km",
       "geographyCountry": null,
       "co2e": 0.18863,
-      "usageNotes": "Short-haul flight, business class, with radiative forcing, per passenger.km. DESNZ 2026 v1.2 flat file, row 21_316_3166_11_1."
+      "usageNotes": "Short-haul flight, business class, with radiative forcing, per passenger.km. DESNZ 2025 v1 flat file, row 21_316_3166_11_1."
     },
     {
-      "externalId": "defra-2026-biz-flight-shorthaul-econ-pkm",
+      "externalId": "defra-2025-biz-flight-shorthaul-econ-pkm",
       "replacesExternalId": "defra-2025-biz-flight-shorthaul-econ-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_flight_shorthaul",
       "inputUnit": "km",
       "geographyCountry": null,
       "co2e": 0.12576,
-      "usageNotes": "Short-haul flight, economy, with radiative forcing, per passenger.km. DESNZ 2026 v1.2 flat file, row 21_316_3164_11_1."
+      "usageNotes": "Short-haul flight, economy, with radiative forcing, per passenger.km. DESNZ 2025 v1 flat file, row 21_316_3164_11_1."
     },
     {
-      "externalId": "defra-2026-biz-motorbike-km",
+      "externalId": "defra-2025-biz-motorbike-km",
       "replacesExternalId": "defra-2025-biz-motorbike-km",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_motorbike",
       "inputUnit": "km",
       "geographyCountry": "GB",
       "co2e": 0.11367,
-      "usageNotes": "Motorbike, average, per vehicle.km. DESNZ 2026 v1.2 flat file, row 25_302_3080_4_1."
+      "usageNotes": "Motorbike, average, per vehicle.km. DESNZ 2025 v1 flat file, row 25_302_3080_4_1."
     },
     {
-      "externalId": "defra-2026-biz-rail-national-pkm",
+      "externalId": "defra-2025-biz-rail-national-pkm",
       "replacesExternalId": "defra-2025-biz-rail-national-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_rail",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.03092,
-      "usageNotes": "National rail, per passenger.km. DESNZ 2026 v1.2 flat file, row 25_315_3147_11_1."
+      "co2e": 0.03546,
+      "usageNotes": "National rail, per passenger.km. DESNZ 2025 v1 flat file, row 25_315_3147_11_1."
     },
     {
-      "externalId": "defra-2026-biz-rail-tube-pkm",
+      "externalId": "defra-2025-biz-rail-tube-pkm",
       "replacesExternalId": "defra-2025-biz-rail-tube-pkm",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_rail_underground",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.01549,
-      "usageNotes": "London Underground, per passenger.km. DESNZ 2026 v1.2 flat file, row 25_315_3150_11_1."
+      "co2e": 0.0278,
+      "usageNotes": "London Underground, per passenger.km. DESNZ 2025 v1 flat file, row 25_315_3150_11_1."
     },
     {
-      "externalId": "defra-2026-biz-taxi-avg-km",
+      "externalId": "defra-2025-biz-taxi-avg-km",
       "replacesExternalId": "defra-2025-biz-taxi-avg-km",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel_taxi",
       "inputUnit": "km",
       "geographyCountry": "GB",
       "co2e": 0.14861,
-      "usageNotes": "Regular taxi, per passenger.km. DESNZ 2026 v1.2 flat file, row 25_313_3141_11_1."
+      "usageNotes": "Regular taxi, per passenger.km. DESNZ 2025 v1 flat file, row 25_313_3141_11_1."
     },
     {
-      "externalId": "defra-2026-car-average-km",
+      "externalId": "defra-2025-car-average-km",
       "replacesExternalId": "defra-2025-car-average-km",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.16591,
-      "usageNotes": "Average car, unknown fuel, per vehicle.km. DESNZ 2026 v1.2 flat file, row 25_301_3074_4_1."
+      "co2e": 0.16725,
+      "usageNotes": "Average car, unknown fuel, per vehicle.km. DESNZ 2025 v1 flat file, row 25_301_3074_4_1."
     },
     {
-      "externalId": "defra-2026-rail-uk-km",
+      "externalId": "defra-2025-rail-uk-km",
       "replacesExternalId": "defra-2025-rail-uk-km",
       "categoryCode": "s3-business-travel",
       "activityType": "business_travel",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.03092,
-      "usageNotes": "National rail, per passenger.km. DESNZ 2026 v1.2 flat file, row 25_315_3147_11_1."
+      "co2e": 0.03546,
+      "usageNotes": "National rail, per passenger.km. DESNZ 2025 v1 flat file, row 25_315_3147_11_1."
     },
     {
-      "externalId": "defra-2026-commute-bus-pkm",
+      "externalId": "defra-2025-commute-bus-pkm",
       "replacesExternalId": "defra-2025-commute-bus-pkm",
       "categoryCode": "s3-commuting",
       "activityType": "employee_commuting_bus",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.10151,
-      "usageNotes": "Average local bus, per passenger.km. DESNZ 2026 v1.2 flat file, row 25_314_3145_11_1."
+      "co2e": 0.10385,
+      "usageNotes": "Average local bus, per passenger.km. DESNZ 2025 v1 flat file, row 25_314_3145_11_1."
     },
     {
-      "externalId": "defra-2026-commute-car-avg-km",
+      "externalId": "defra-2025-commute-car-avg-km",
       "replacesExternalId": "defra-2025-commute-car-avg-km",
       "categoryCode": "s3-commuting",
       "activityType": "employee_commuting",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.16591,
-      "usageNotes": "Average car, unknown fuel, per vehicle.km. DESNZ 2026 v1.2 flat file, row 25_301_3074_4_1."
+      "co2e": 0.16725,
+      "usageNotes": "Average car, unknown fuel, per vehicle.km. DESNZ 2025 v1 flat file, row 25_301_3074_4_1."
     },
     {
-      "externalId": "defra-2026-commute-car-bev-km",
+      "externalId": "defra-2025-commute-car-bev-km",
       "replacesExternalId": "defra-2025-commute-car-bev-km",
       "categoryCode": "s3-commuting",
       "activityType": "employee_commuting_bev",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.02951,
-      "usageNotes": "Average BEV, UK grid charging incl. T&D, per vehicle.km. DESNZ 2026 v1.2 flat file, row 25_301_3076_4_1."
+      "co2e": 0.04047,
+      "usageNotes": "Average BEV, UK grid charging incl. T&D, per vehicle.km. DESNZ 2025 v1 flat file, row 25_301_3076_4_1."
     },
     {
-      "externalId": "defra-2026-commute-motorbike-km",
+      "externalId": "defra-2025-commute-motorbike-km",
       "replacesExternalId": "defra-2025-commute-motorbike-km",
       "categoryCode": "s3-commuting",
       "activityType": "employee_commuting_motorbike",
       "inputUnit": "km",
       "geographyCountry": "GB",
       "co2e": 0.11367,
-      "usageNotes": "Motorbike, average, per vehicle.km. DESNZ 2026 v1.2 flat file, row 25_302_3080_4_1."
+      "usageNotes": "Motorbike, average, per vehicle.km. DESNZ 2025 v1 flat file, row 25_302_3080_4_1."
     },
     {
-      "externalId": "defra-2026-commute-rail-pkm",
+      "externalId": "defra-2025-commute-rail-pkm",
       "replacesExternalId": "defra-2025-commute-rail-pkm",
       "categoryCode": "s3-commuting",
       "activityType": "employee_commuting_rail",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.03092,
-      "usageNotes": "National rail, per passenger.km. DESNZ 2026 v1.2 flat file, row 25_315_3147_11_1."
+      "co2e": 0.03546,
+      "usageNotes": "National rail, per passenger.km. DESNZ 2025 v1 flat file, row 25_315_3147_11_1."
     },
     {
-      "externalId": "defra-2026-freight-air-tkm",
+      "externalId": "defra-2025-freight-air-tkm",
       "replacesExternalId": "defra-2025-freight-air-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_air_freight",
       "inputUnit": "tonne.km",
       "geographyCountry": null,
       "co2e": 0.89939,
-      "usageNotes": "Air freight, long-haul, with radiative forcing, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_317_3156_14_1."
+      "usageNotes": "Air freight, long-haul, with radiative forcing, per tonne.km. DESNZ 2025 v1 flat file, row 27_317_3156_14_1."
     },
     {
-      "externalId": "defra-2026-freight-rail-tkm",
+      "externalId": "defra-2025-freight-rail-tkm",
       "replacesExternalId": "defra-2025-freight-rail-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_rail",
       "inputUnit": "tonne.km",
       "geographyCountry": "GB",
-      "co2e": 0.02583,
-      "usageNotes": "Rail freight, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_315_3151_14_1."
+      "co2e": 0.02779,
+      "usageNotes": "Rail freight, per tonne.km. DESNZ 2025 v1 flat file, row 27_315_3151_14_1."
     },
     {
-      "externalId": "defra-2026-freight-sea-container-tkm",
+      "externalId": "defra-2025-freight-sea-container-tkm",
       "replacesExternalId": "defra-2025-freight-sea-container-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_sea_container",
       "inputUnit": "tonne.km",
       "geographyCountry": null,
       "co2e": 0.01612,
-      "usageNotes": "Container ship, average, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_320_3235_14_1."
+      "usageNotes": "Container ship, average, per tonne.km. DESNZ 2025 v1 flat file, row 27_320_3235_14_1."
     },
     {
-      "externalId": "defra-2026-hgv-40t-tkm",
+      "externalId": "defra-2025-hgv-40t-tkm",
       "replacesExternalId": "defra-2025-hgv-40t-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_hgv_40t",
       "inputUnit": "tonne.km",
       "geographyCountry": "GB",
-      "co2e": 0.07835,
-      "usageNotes": "HGV articulated >33t, average laden, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_304_3132_14_1."
+      "co2e": 0.07703,
+      "usageNotes": "HGV articulated >33t, average laden, per tonne.km. DESNZ 2025 v1 flat file, row 27_304_3132_14_1."
     },
     {
-      "externalId": "defra-2026-hgv-7.5t-tkm",
+      "externalId": "defra-2025-hgv-7.5t-tkm",
       "replacesExternalId": "defra-2025-hgv-7.5t-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_hgv_7.5t",
       "inputUnit": "tonne.km",
       "geographyCountry": "GB",
-      "co2e": 0.54001,
-      "usageNotes": "HGV rigid 3.5-7.5t, average laden, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_304_3112_14_1."
+      "co2e": 0.52761,
+      "usageNotes": "HGV rigid 3.5-7.5t, average laden, per tonne.km. DESNZ 2025 v1 flat file, row 27_304_3112_14_1."
     },
     {
-      "externalId": "defra-2026-hgv-artic-avg-tkm",
+      "externalId": "defra-2025-hgv-artic-avg-tkm",
       "replacesExternalId": "defra-2025-hgv-artic-avg-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_hgv_artic",
       "inputUnit": "tonne.km",
       "geographyCountry": "GB",
-      "co2e": 0.07926,
-      "usageNotes": "HGV articulated average, average laden, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_304_3136_14_1."
+      "co2e": 0.078,
+      "usageNotes": "HGV articulated average, average laden, per tonne.km. DESNZ 2025 v1 flat file, row 27_304_3136_14_1."
     },
     {
-      "externalId": "defra-2026-hgv-avg-tkm",
+      "externalId": "defra-2025-hgv-avg-tkm",
       "replacesExternalId": "defra-2025-hgv-avg-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport",
       "inputUnit": "tonne.km",
       "geographyCountry": "GB",
-      "co2e": 0.10356,
-      "usageNotes": "HGV all types average, average laden, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_304_3140_14_1."
+      "co2e": 0.10163,
+      "usageNotes": "HGV all types average, average laden, per tonne.km. DESNZ 2025 v1 flat file, row 27_304_3140_14_1."
     },
     {
-      "externalId": "defra-2026-hgv-rigid-avg-tkm",
+      "externalId": "defra-2025-hgv-rigid-avg-tkm",
       "replacesExternalId": "defra-2025-hgv-rigid-avg-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_hgv_rigid",
       "inputUnit": "tonne.km",
       "geographyCountry": "GB",
-      "co2e": 0.19947,
-      "usageNotes": "HGV rigid average, average laden, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_304_3124_14_1."
+      "co2e": 0.19748,
+      "usageNotes": "HGV rigid average, average laden, per tonne.km. DESNZ 2025 v1 flat file, row 27_304_3124_14_1."
     },
     {
-      "externalId": "defra-2026-van-avg-km",
+      "externalId": "defra-2025-van-avg-km",
       "replacesExternalId": "defra-2025-van-avg-km",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_van_vehicle",
       "inputUnit": "km",
       "geographyCountry": "GB",
-      "co2e": 0.25612,
-      "usageNotes": "Van up to 3.5t, unknown fuel, per vehicle.km. DESNZ 2026 v1.2 flat file, row 5_303_3106_4_1."
+      "co2e": 0.2543,
+      "usageNotes": "Van up to 3.5t, unknown fuel, per vehicle.km. DESNZ 2025 v1 flat file, row 5_303_3106_4_1."
     },
     {
-      "externalId": "defra-2026-van-diesel-tkm",
+      "externalId": "defra-2025-van-diesel-tkm",
       "replacesExternalId": "defra-2025-van-diesel-tkm",
       "categoryCode": "s3-upstream-transport",
       "activityType": "upstream_transport_van",
       "inputUnit": "tonne.km",
       "geographyCountry": "GB",
-      "co2e": 0.63511,
-      "usageNotes": "Van up to 3.5t, diesel, per tonne.km. DESNZ 2026 v1.2 flat file, row 27_303_3102_14_1."
+      "co2e": 0.6313,
+      "usageNotes": "Van up to 3.5t, diesel, per tonne.km. DESNZ 2025 v1 flat file, row 27_303_3102_14_1."
     },
     {
-      "externalId": "defra-2026-waste-efw-incineration",
+      "externalId": "defra-2025-waste-efw-incineration",
       "replacesExternalId": "defra-2025-waste-efw-incineration",
       "categoryCode": "s3-waste",
       "activityType": "waste_disposal",
       "inputUnit": "tonne",
       "geographyCountry": "GB",
-      "co2e": 4.65358,
-      "usageNotes": "Commercial and industrial waste, combustion with energy recovery. DESNZ 2026 v1.2 flat file, row 20_507_5311_15_1."
+      "co2e": 4.68568,
+      "usageNotes": "Commercial and industrial waste, combustion with energy recovery. DESNZ 2025 v1 flat file, row 20_507_5311_15_1."
     },
     {
-      "externalId": "defra-2026-waste-incineration-kg",
+      "externalId": "defra-2025-waste-incineration-kg",
       "replacesExternalId": "defra-2025-waste-incineration-kg",
       "categoryCode": "s3-waste",
       "activityType": "waste_disposal",
       "inputUnit": "kg",
       "geographyCountry": "GB",
-      "co2e": 0.00465358,
-      "usageNotes": "Commercial and industrial waste, combustion with energy recovery, per kg. DESNZ 2026 v1.2 flat file, row 20_507_5311_15_1, per tonne / 1000."
+      "co2e": 0.00468568,
+      "usageNotes": "Commercial and industrial waste, combustion with energy recovery, per kg. DESNZ 2025 v1 flat file, row 20_507_5311_15_1, per tonne / 1000."
     },
     {
-      "externalId": "defra-2026-waste-inert-landfill",
+      "externalId": "defra-2025-waste-inert-landfill",
       "replacesExternalId": "defra-2025-waste-inert-landfill",
       "categoryCode": "s3-waste",
       "activityType": "waste_disposal",
       "inputUnit": "tonne",
       "geographyCountry": "GB",
-      "co2e": 1.27043,
-      "usageNotes": "Inert construction waste (aggregates) to landfill. DESNZ 2026 v1.2 flat file, row 20_500_5173_15_1."
+      "co2e": 1.26338,
+      "usageNotes": "Inert construction waste (aggregates) to landfill. DESNZ 2025 v1 flat file, row 20_500_5173_15_1."
     },
     {
-      "externalId": "defra-2026-waste-landfill-mixed-kg",
+      "externalId": "defra-2025-waste-landfill-mixed-kg",
       "replacesExternalId": "defra-2025-waste-landfill-mixed-kg",
       "categoryCode": "s3-waste",
       "activityType": "waste_disposal",
       "inputUnit": "kg",
       "geographyCountry": "GB",
-      "co2e": 0.52058023,
-      "usageNotes": "Commercial and industrial waste to landfill, per kg. DESNZ 2026 v1.2 flat file, row 20_507_5313_15_1, per tonne / 1000."
+      "co2e": 0.5205327,
+      "usageNotes": "Commercial and industrial waste to landfill, per kg. DESNZ 2025 v1 flat file, row 20_507_5313_15_1, per tonne / 1000."
     },
     {
-      "externalId": "defra-2026-waste-mixed-landfill",
+      "externalId": "defra-2025-waste-mixed-landfill",
       "replacesExternalId": "defra-2025-waste-mixed-landfill",
       "categoryCode": "s3-waste",
       "activityType": "waste_disposal",
       "inputUnit": "tonne",
       "geographyCountry": "GB",
-      "co2e": 520.58023,
-      "usageNotes": "Commercial and industrial waste to landfill. DESNZ 2026 v1.2 flat file, row 20_507_5313_15_1."
+      "co2e": 520.5327,
+      "usageNotes": "Commercial and industrial waste to landfill. DESNZ 2025 v1 flat file, row 20_507_5313_15_1."
     },
     {
-      "externalId": "defra-2026-waste-mixed-recycling",
-      "replacesExternalId": "defra-2025-waste-mixed-recycling",
-      "categoryCode": "s3-waste",
-      "activityType": "waste_disposal",
-      "inputUnit": "tonne",
-      "geographyCountry": "GB",
-      "co2e": 4.65358,
-      "usageNotes": "Commercial and industrial waste, closed-loop recycling. DESNZ 2026 v1.2 flat file, row 20_507_5310_15_1."
-    },
-    {
-      "externalId": "defra-2026-waste-recycled-mixed-kg",
-      "replacesExternalId": "defra-2025-waste-recycled-mixed-kg",
-      "categoryCode": "s3-waste",
-      "activityType": "waste_disposal",
-      "inputUnit": "kg",
-      "geographyCountry": "GB",
-      "co2e": 0.00465358,
-      "usageNotes": "Commercial and industrial waste, closed-loop recycling, per kg. DESNZ 2026 v1.2 flat file, row 20_507_5310_15_1, per tonne / 1000."
-    },
-    {
-      "externalId": "defra-2026-waste-wood-landfill",
+      "externalId": "defra-2025-waste-wood-landfill",
       "replacesExternalId": "defra-2025-waste-wood-landfill",
       "categoryCode": "s3-waste",
       "activityType": "waste_disposal",
       "inputUnit": "tonne",
       "geographyCountry": "GB",
-      "co2e": 925.36725,
-      "usageNotes": "Construction wood waste to landfill. DESNZ 2026 v1.2 flat file, row 20_500_5257_15_1."
+      "co2e": 925.34348,
+      "usageNotes": "Construction wood waste to landfill. DESNZ 2025 v1 flat file, row 20_500_5257_15_1."
     }
   ]
 }

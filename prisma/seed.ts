@@ -893,64 +893,76 @@ async function main() {
     createdFactors++;
   }
 
-  // DESNZ/DEFRA 2026 factors (flat file v1.2). Mirrors migration
-  // 20260922000011 so local databases match production: no effective-date
-  // window, plus 2025.1 factors DESNZ does not publish carried forward.
-  const defra2026 = await prisma.factorLibrary.upsert({
-    where: { name_version: { name: "DEFRA", version: "2026.1" } },
-    update: {},
-    create: {
-      name: "DEFRA",
-      version: "2026.1",
-      license: "Open Government Licence v3.0",
-      sourceUrl: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2026",
-      publishedAt: new Date("2026-07-10"),
-    },
-  });
-  const defra2026Data = (await import("./data/defra-2026-factors.json")).default as {
+  // DESNZ/DEFRA flat-file libraries, built by scripts/build-defra-factors.mjs.
+  // Mirrors migrations 20260922000011 (2026.1) and 20260923000006 (2025.2) so
+  // local databases match production: no effective-date window, plus 2025.1
+  // factors DESNZ does not publish carried forward (unless DESNZ listed the
+  // row with no value that year, in which case it is left out).
+  type FlatFileData = {
+    library: string;
+    published: string;
+    notPublished?: string[];
     factors: Array<{
       externalId: string; replacesExternalId: string; categoryCode: string; activityType: string;
       inputUnit: string; geographyCountry: string | null; co2e: number; usageNotes: string;
     }>;
   };
-  for (const f of defra2026Data.factors) {
-    const exists = await prisma.emissionFactor.findFirst({
-      where: { factorLibraryId: defra2026.id, externalId: f.externalId },
-      select: { id: true },
-    });
-    if (exists) continue;
-    const scope = f.categoryCode.startsWith("s1-") ? 1 : f.categoryCode.startsWith("s2-") ? 2 : 3;
-    await prisma.emissionFactor.create({
-      data: {
-        factorLibraryId: defra2026.id, externalId: f.externalId, scope,
-        emissionCategoryId: cat(f.categoryCode), activityType: f.activityType,
-        geographyCountry: f.geographyCountry, inputUnit: f.inputUnit, co2e: f.co2e, usageNotes: f.usageNotes,
+  const flatFiles: Array<[number, FlatFileData]> = [
+    [2025, (await import("./data/defra-2025-factors.json")).default as FlatFileData],
+    [2026, (await import("./data/defra-2026-factors.json")).default as FlatFileData],
+  ];
+  for (const [year, data] of flatFiles) {
+    const version = data.library ?? `${year}.1`;
+    const lib = await prisma.factorLibrary.upsert({
+      where: { name_version: { name: "DEFRA", version } },
+      update: {},
+      create: {
+        name: "DEFRA",
+        version,
+        license: "Open Government Licence v3.0",
+        sourceUrl: `https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-${year}`,
+        publishedAt: new Date(data.published ?? `${year}-07-10`),
       },
     });
-    createdFactors++;
-  }
-  const replaced = new Set(defra2026Data.factors.map((f) => f.replacesExternalId));
-  const carried = await prisma.emissionFactor.findMany({
-    where: { factorLibraryId: defra.id, externalId: { notIn: [...replaced] } },
-    distinct: ["externalId"],
-  });
-  for (const f of carried) {
-    const exists = await prisma.emissionFactor.findFirst({
-      where: { factorLibraryId: defra2026.id, externalId: f.externalId },
-      select: { id: true },
+    for (const f of data.factors) {
+      const exists = await prisma.emissionFactor.findFirst({
+        where: { factorLibraryId: lib.id, externalId: f.externalId },
+        select: { id: true },
+      });
+      if (exists) continue;
+      const scope = f.categoryCode.startsWith("s1-") ? 1 : f.categoryCode.startsWith("s2-") ? 2 : 3;
+      await prisma.emissionFactor.create({
+        data: {
+          factorLibraryId: lib.id, externalId: f.externalId, scope,
+          emissionCategoryId: cat(f.categoryCode), activityType: f.activityType,
+          geographyCountry: f.geographyCountry, inputUnit: f.inputUnit, co2e: f.co2e, usageNotes: f.usageNotes,
+        },
+      });
+      createdFactors++;
+    }
+    const replaced = new Set([...data.factors.map((f) => f.replacesExternalId), ...(data.notPublished ?? [])]);
+    const carried = await prisma.emissionFactor.findMany({
+      where: { factorLibraryId: defra.id, externalId: { notIn: [...replaced] } },
+      distinct: ["externalId"],
     });
-    if (exists) continue;
-    await prisma.emissionFactor.create({
-      data: {
-        factorLibraryId: defra2026.id, externalId: f.externalId, scope: f.scope,
-        emissionCategoryId: f.emissionCategoryId, activityType: f.activityType,
-        geographyCountry: f.geographyCountry, geographyRegion: f.geographyRegion, inputUnit: f.inputUnit,
-        co2: f.co2, ch4: f.ch4, n2o: f.n2o, co2e: f.co2e, uncertaintyRating: f.uncertaintyRating,
-        biogenicCo2: f.biogenicCo2,
-        usageNotes: `Carried forward from DEFRA 2025.1 (no DESNZ 2026 equivalent). ${f.usageNotes ?? ""}`,
-      },
-    });
-    createdFactors++;
+    for (const f of carried) {
+      const exists = await prisma.emissionFactor.findFirst({
+        where: { factorLibraryId: lib.id, externalId: f.externalId },
+        select: { id: true },
+      });
+      if (exists) continue;
+      await prisma.emissionFactor.create({
+        data: {
+          factorLibraryId: lib.id, externalId: f.externalId, scope: f.scope,
+          emissionCategoryId: f.emissionCategoryId, activityType: f.activityType,
+          geographyCountry: f.geographyCountry, geographyRegion: f.geographyRegion, inputUnit: f.inputUnit,
+          co2: f.co2, ch4: f.ch4, n2o: f.n2o, co2e: f.co2e, uncertaintyRating: f.uncertaintyRating,
+          biogenicCo2: f.biogenicCo2,
+          usageNotes: `Carried forward from DEFRA 2025.1 (no DESNZ ${year} equivalent). ${f.usageNotes ?? ""}`,
+        },
+      });
+      createdFactors++;
+    }
   }
 
   // Social Value Themes (National TOMS Framework)

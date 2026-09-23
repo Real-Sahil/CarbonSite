@@ -18,3 +18,19 @@ export function chooseFactorLibrary<T extends LibraryRef>(libraries: T[], period
 
   return defra.find((l) => libraryYear(l.version)! <= endYear) ?? defra[0] ?? libraries[0] ?? null;
 }
+
+/**
+ * Libraries worth offering for a new run: where a newer version of the same
+ * year's set exists (DEFRA 2025.2 reloaded from the official flat file after
+ * the hand-entered 2025.1), only the newest is kept. Superseded versions stay
+ * in the database so the runs that used them still reproduce.
+ */
+export function currentFactorLibraries<T extends LibraryRef>(libraries: T[]): T[] {
+  const newest = new Map<string, T>();
+  for (const lib of libraries) {
+    const key = `${lib.name}:${libraryYear(lib.version) ?? lib.version}`;
+    const seen = newest.get(key);
+    if (!seen || lib.version.localeCompare(seen.version, undefined, { numeric: true }) > 0) newest.set(key, lib);
+  }
+  return libraries.filter((l) => newest.get(`${l.name}:${libraryYear(l.version) ?? l.version}`) === l);
+}

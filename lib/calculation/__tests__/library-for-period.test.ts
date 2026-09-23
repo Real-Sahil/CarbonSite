@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { chooseFactorLibrary } from "../library-for-period";
+import { chooseFactorLibrary, currentFactorLibraries } from "../library-for-period";
 
 const libs = [
   { id: "epa25", name: "EPA", version: "2025.1" },
@@ -24,5 +24,21 @@ describe("chooseFactorLibrary", () => {
   test("falls back to any library when there is no DEFRA set", () => {
     expect(chooseFactorLibrary([libs[0]], new Date("2026-01-01"))?.id).toBe("epa25");
     expect(chooseFactorLibrary([], new Date("2026-01-01"))).toBeNull();
+  });
+});
+
+describe("reloaded versions of the same year's set", () => {
+  const d251 = { id: "d251", name: "DEFRA", version: "2025.1" };
+  const d252 = { id: "d252", name: "DEFRA", version: "2025.2" };
+  const d26 = { id: "d26", name: "DEFRA", version: "2026.1" };
+  const epa = { id: "epa", name: "EPA", version: "2025.1" };
+
+  test("a 2025 period uses the flat-file reload, not the superseded set", () => {
+    expect(chooseFactorLibrary([d251, d252, d26], new Date("2025-12-31"))?.id).toBe("d252");
+    expect(chooseFactorLibrary([d252, d251, d26], new Date("2025-12-31"))?.id).toBe("d252");
+  });
+
+  test("only the newest version of each year is offered, other libraries untouched", () => {
+    expect(currentFactorLibraries([d26, d251, epa, d252]).map((l) => l.id)).toEqual(["d26", "epa", "d252"]);
   });
 });
