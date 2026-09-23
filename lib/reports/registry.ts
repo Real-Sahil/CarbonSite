@@ -3,6 +3,7 @@ import type { ReportData } from "./template";
 import { renderReportHtml } from "./template";
 import type { Aggregation, CalculationRow } from "./aggregation";
 import { splitScope2 } from "./aggregation";
+import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
 import { renderSecrHtml, type SecrData } from "./templates/secr";
 import { renderPpn0621Html, type Ppn0621Data } from "./templates/ppn-0621";
 import { renderNhsEvergreenHtml, type NhsEvergreenData } from "./templates/nhs-evergreen";
@@ -351,10 +352,7 @@ const handlers: Record<string, ReportHandler> = {
       ),
     ]);
 
-    const LANDFILL_ROUTES = new Set(["landfill_mixed", "landfill_food", "landfill_wood", "landfill_plastic", "hazardous_landfill"]);
-    const RECOVERY_ROUTES = new Set(["incineration_efw"]);
-    const hierarchyOf = (route: string): "recycle" | "recovery" | "landfill" =>
-      LANDFILL_ROUTES.has(route) ? "landfill" : RECOVERY_ROUTES.has(route) ? "recovery" : "recycle";
+    const hierarchyOf = wasteHierarchyOf;
 
     const byFacility = new Map<string, { name: string; generatedTonnes: number; hazardousTonnes: number }>();
     for (const f of facilities) byFacility.set(f.id, { name: f.name, generatedTonnes: 0, hazardousTonnes: 0 });

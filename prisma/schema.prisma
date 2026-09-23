@@ -2815,6 +2815,14 @@ model WasteRecord {
   co2eTonnes        Decimal?                @map("co2e_tonnes") @db.Decimal(12, 6)
   ewcCode           String?                 @map("ewc_code")
   carrierName       String?                 @map("carrier_name")
+  /// Duty of care (Environmental Protection Act 1990 s34): the carrier's
+  /// Environment Agency / NRW / SEPA / NIEA registration number.
+  carrierRegistration String?               @map("carrier_registration")
+  /// Waste transfer note, or hazardous waste consignment note, reference.
+  transferNoteReference String?             @map("transfer_note_reference")
+  /// Receiving site or its environmental permit number.
+  destination       String?                 @map("destination")
+  vehicleRegistration String?               @map("vehicle_registration")
   /// The ActivityRecord (category s3-waste) this record drives through the
   /// real calculation engine. Nullable only during the backfill window.
   activityRecordId  String?                 @unique @map("activity_record_id")

@@ -40,6 +40,10 @@ export const createWasteRecordSchema = z.object({
   weightTonnes: z.number().positive(),
   ewcCode: z.string().max(20).optional(),
   carrierName: z.string().max(200).optional(),
+  carrierRegistration: z.string().trim().max(40).optional(),
+  transferNoteReference: z.string().trim().max(100).optional(),
+  destination: z.string().trim().max(200).optional(),
+  vehicleRegistration: z.string().trim().max(20).optional(),
   recordedAt: z.string().datetime(),
   notes: z.string().max(1000).optional(),
 });
@@ -68,6 +72,10 @@ export const wasteRecordCsvRowSchema = z.object({
   weightTonnes: z.coerce.number().positive(),
   ewcCode: z.string().max(20).optional(),
   carrierName: z.string().max(200).optional(),
+  carrierRegistration: z.string().trim().max(40).optional(),
+  transferNoteReference: z.string().trim().max(100).optional(),
+  destination: z.string().trim().max(200).optional(),
+  vehicleRegistration: z.string().trim().max(20).optional(),
   recordedAt: z.coerce.date(),
   notes: z.string().max(1000).optional(),
 });

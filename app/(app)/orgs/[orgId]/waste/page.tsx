@@ -78,6 +78,9 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Waste Emissions</h1>
           <p className="text-sm text-gray-500 mt-1">Track waste disposal routes for ESRS E5 and Scope 3 Category 5 emissions.</p>
+          <a href={`/orgs/${orgId}/waste/register`} className="mt-2 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">
+            Duty of care register
+          </a>
         </div>
         {canEdit && <WasteAddButtons orgId={orgId} facilities={facilities} periods={rawPeriods} />}
       </div>

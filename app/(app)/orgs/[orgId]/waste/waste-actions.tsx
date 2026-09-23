@@ -26,9 +26,9 @@ export const DISPOSAL_ROUTES = [
 ];
 
 const WASTE_TEMPLATE_CSV = [
-  "facilityId,reportingPeriodId,wasteType,disposalRoute,hazardous,weightTonnes,ewcCode,carrierName,recordedAt,notes",
-  "facility-id-here,period-id-here,general_waste,landfill_mixed,false,0.5,20 03 01,Acme Waste Ltd,2024-01-15,Example note",
-  "facility-id-here,period-id-here,construction_waste,recycling_mixed,false,1.2,17 01 01,,2024-01-20,",
+  "facilityId,reportingPeriodId,wasteType,disposalRoute,hazardous,weightTonnes,ewcCode,carrierName,carrierRegistration,transferNoteReference,destination,vehicleRegistration,recordedAt,notes",
+  "facility-id-here,period-id-here,general_waste,landfill_mixed,false,0.5,20 03 01,Acme Waste Ltd,CBDU123456,WTN-0001,Permit EPR/AB1234CD,AB12 CDE,2024-01-15,Example note",
+  "facility-id-here,period-id-here,construction_waste,recycling_mixed,false,1.2,17 01 01,,,,,,2024-01-20,",
 ].join("\n");
 
 function AddRecordModal({
@@ -39,6 +39,7 @@ function AddRecordModal({
     reportingPeriodId: periods[0]?.id ?? "",
     wasteType: "", disposalRoute: "recycling_mixed", hazardous: false,
     weightTonnes: "", ewcCode: "", carrierName: "",
+    carrierRegistration: "", transferNoteReference: "", destination: "", vehicleRegistration: "",
     recordedAt: new Date().toISOString().slice(0, 10), notes: "",
   });
   const [loading, setLoading] = useState(false);
@@ -61,6 +62,10 @@ function AddRecordModal({
           weightTonnes: Number(form.weightTonnes),
           ewcCode: form.ewcCode || undefined,
           carrierName: form.carrierName || undefined,
+          carrierRegistration: form.carrierRegistration || undefined,
+          transferNoteReference: form.transferNoteReference || undefined,
+          destination: form.destination || undefined,
+          vehicleRegistration: form.vehicleRegistration || undefined,
           recordedAt: new Date(form.recordedAt).toISOString(),
           notes: form.notes || undefined,
         }),
@@ -156,6 +161,36 @@ function AddRecordModal({
                 className={inputCls} placeholder="Biffa, Veolia..." />
             </div>
           </div>
+          <p className="text-xs text-gray-500">
+            Duty of care: record the carrier&apos;s registration and the transfer note (or consignment note for
+            hazardous waste). Transfers without them show as gaps on the duty of care register.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Carrier registration</label>
+              <input type="text" value={form.carrierRegistration} maxLength={40}
+                onChange={(e) => setForm((f) => ({ ...f, carrierRegistration: e.target.value }))}
+                className={inputCls} placeholder="CBDU123456" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Transfer or consignment note</label>
+              <input type="text" value={form.transferNoteReference} maxLength={100}
+                onChange={(e) => setForm((f) => ({ ...f, transferNoteReference: e.target.value }))}
+                className={inputCls} placeholder="WTN-0001" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Receiving site or permit</label>
+              <input type="text" value={form.destination} maxLength={200}
+                onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
+                className={inputCls} placeholder="Permit EPR/AB1234CD" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Vehicle registration</label>
+              <input type="text" value={form.vehicleRegistration} maxLength={20}
+                onChange={(e) => setForm((f) => ({ ...f, vehicleRegistration: e.target.value }))}
+                className={inputCls} placeholder="AB12 CDE" />
+            </div>
+          </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
             <textarea rows={2} value={form.notes}
@@ -220,7 +255,9 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
               <p className="text-xs text-gray-500 font-mono leading-relaxed">
                 facilityId, reportingPeriodId, wasteType,<br />
                 disposalRoute, hazardous, weightTonnes,<br />
-                ewcCode, carrierName, recordedAt, notes
+                ewcCode, carrierName, carrierRegistration,<br />
+                transferNoteReference, destination,<br />
+                vehicleRegistration, recordedAt, notes
               </p>
             </div>
             <button type="button" onClick={downloadTemplate}

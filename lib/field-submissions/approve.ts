@@ -235,6 +235,14 @@ export async function approveSubmissionInTx(
             : formData["supplierName"]
               ? String(formData["supplierName"])
               : undefined,
+          carrierRegistration: formData["carrierRegistration"] ? String(formData["carrierRegistration"]) : undefined,
+          transferNoteReference: formData["transferNoteReference"]
+            ? String(formData["transferNoteReference"])
+            : formData["consignment"]
+              ? String(formData["consignment"])
+              : undefined,
+          destination: formData["destination"] ? String(formData["destination"]) : undefined,
+          vehicleRegistration: formData["vehicleReg"] ? String(formData["vehicleReg"]) : undefined,
           activityRecordId: record.id,
           dataSource: "field_submission",
           fieldSubmissionId: submission.id,
