@@ -356,4 +356,5 @@ Skills live in `.claude/skills/` and can be invoked as slash commands.
 2. **Methodology versioning policy** — when does `ghg-protocol-v2026-01` increment and how are customers notified.
 3. **Billing** — required at first production launch (affects org model, gating, trial flows).
 4. **Primary report format** — auditor package vs. customer disclosure vs. internal executive summary.
-5. **Currency exchange rates** — spend-based Scope 3 uses approximations in `lib/calculation/units.ts`; use live rates in production.
+5. **Spend factor price years** — dated ECB rates and CPI deflation are in place, but the seeded DEFRA/EPA spend factors have no confirmed `priceBaseYear`, so their spend is not yet inflation-adjusted. Set it once the source publication's price basis is confirmed.
+6. **DEFRA 2025 values** — duplicates are removed, but some 2025 factor values are placeholders. Reload from DEFRA's 2025 flat file.
