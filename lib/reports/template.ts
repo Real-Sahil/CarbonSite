@@ -18,6 +18,8 @@ export type ReportData = {
   publishedAt: Date;
   publishedBy: string;
   factorLibrary: string;
+  /** Licence attribution for the factor library (OGL v3 requires it). */
+  factorAttribution?: string;
   methodology: string;
   gwpVersion: string;
   grandTotalKg: number;

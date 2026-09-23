@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
+import { outdatedMethodology } from "@/lib/calculation/methodology";
 import Link from "next/link";
 import {
   Activity,
@@ -734,7 +735,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       reportingPeriodId: true,
       version: true,
       reportingPeriod: { select: { label: true } },
-      calculationRun: { select: { factorLibrary: { select: { id: true, name: true, version: true } } } },
+      calculationRun: {
+        select: {
+          factorLibrary: { select: { id: true, name: true, version: true } },
+          methodologyVersion: { select: { name: true } },
+        },
+      },
     },
   }).catch(onLoadFailure(() => []));
   const seenPeriods = new Set<string>();
@@ -745,6 +751,18 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     const replacement = used ? supersedingLibrary(used, factorLibraries) : null;
     return replacement ? [{ period: snap.reportingPeriod.label, version: snap.version, used, replacement }] : [];
   });
+
+  // Published figures calculated under an older methodology version
+  // (lib/calculation/methodology.ts). methodologies is newest first.
+  const outdatedSnapshots = outdatedMethodology(
+    publishedLibraries.map((snap) => ({
+      reportingPeriodId: snap.reportingPeriodId,
+      version: snap.version,
+      periodLabel: snap.reportingPeriod.label,
+      methodology: snap.calculationRun.methodologyVersion?.name ?? null,
+    })),
+    methodologies[0]?.name ?? null,
+  );
 
   const [totalCo2eAgg, approvedCo2eAgg, missingEvidenceCount, pendingAttentionCount, staleRecordCount, fallbackCo2eAgg, ocrDiscrepancySubmissions] =
     dataQualityBatch;
@@ -1863,6 +1881,16 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   .map((s) => `${s.period} (snapshot v${s.version}) was calculated with ${s.used.name} ${s.used.version}, since corrected by ${s.replacement.version}`)
                   .join("; ")}
                 . Recalculate {staleSnapshots.length === 1 ? "that period" : "those periods"} with the corrected set and publish again so your reports use the right factors.{" "}
+                <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Go to calculations</Link>
+              </div>
+            )}
+            {outdatedSnapshots.length > 0 && (
+              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                {outdatedSnapshots.map((s) => `${s.period} (snapshot v${s.version}) was calculated under ${s.used}`).join("; ")}.
+                The current methodology is {outdatedSnapshots[0].current}
+                {outdatedSnapshots[0].changes.length > 0 && `: ${outdatedSnapshots[0].changes.join(" ")}`}{" "}
+                Published figures stay as they were; recalculate and publish again to use the current rules.{" "}
                 <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Go to calculations</Link>
               </div>
             )}

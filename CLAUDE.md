@@ -371,10 +371,11 @@ Skills live in `.claude/skills/` and can be invoked as slash commands.
 
 `motion` (https://github.com/motiondivision/motion) is an npm dependency, not a skill. Add as `motion` to `package.json` — it is the animation library for the web app.
 
-## Open Decisions (Resolve Before Production)
+## Decisions and open items
 
-1. **Emission factor dataset licensing** — confirm DEFRA/EPA redistribution terms for production.
-2. **Methodology versioning policy** — when does `ghg-protocol-v2026-01` increment and how are customers notified.
-3. **Billing** — required at first production launch (affects org model, gating, trial flows).
-4. **Primary report format** — auditor package vs. customer disclosure vs. internal executive summary.
-5. **Spend factor price years** — dated ECB rates and CPI deflation are in place, but the seeded DEFRA/EPA spend factors have no confirmed `priceBaseYear`, so their spend is not yet inflation-adjusted. Set it once the source publication's price basis is confirmed.
+1. **Emission factor licensing** — settled. DEFRA/DESNZ factors are Open Government Licence v3.0 (commercial reuse allowed with attribution); EPA factors are a US Government work (public domain). Every report and CSV carries the attribution from the library's `license` field (`lib/reports/attribution.ts`). SustainMetrics is not loaded; confirm its terms before adding it.
+2. **Methodology versioning** — settled; the policy is in `lib/calculation/methodology.ts`. Bump (new `methodology_versions` row via migration plus a `METHODOLOGY_CHANGELOG` entry) only for rule changes that alter a figure from the same records and library: GWPs, Scope 2 allocation, spend conversion/deflation, fuel/unit conversion, headline scope. Not for factor libraries (tracked per run), layout, or bug fixes. Snapshots keep their version; the dashboard lists periods published under an older one.
+3. **Billing** — open. Needs pricing (per org/user/site), trial length, tier gating and failed-payment behaviour before Stripe checkout and plan gating are built.
+4. **Primary report format** — settled: the customer-facing GHG Protocol report is the default (`DEFAULT_REPORT_TYPE` in the report form); every emissions report ships the CSV calculation trail as the auditor's appendix.
+5. **Spend factors and price years** — open. The seeded DEFRA `eeio-2025-*` and EPA 3-digit `useeio-v1.3-naics-*` factors have no traceable source or price year and are flagged "Unverified" (migration `20260923000022`). Load EPA's published v1.3 NAICS-6 factors (kg CO2e per 2022 USD, purchaser price) with `pnpm tsx scripts/build-useeio-factors.ts <csv> <migration_name>`; they carry `priceBaseYear` 2022. There is no DESNZ spend factor set; UK spend needs a sourced set (e.g. the DEFRA/ONS UK carbon footprint by SIC) or supplier data.
+6. **CPI table** (`lib/calculation/price-index.ts`) — add each year's ONS D7BT and BLS CPI-U annual averages when published (January). 2025 is not in yet, so 2025-26 spend uses 2024 with a warning.

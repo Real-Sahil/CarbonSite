@@ -94,13 +94,18 @@ const FRAMEWORK_VALIDATED_TYPES = new Set([
 
 const MAX_BID_CONTRACTS = 5;
 
+// The default is the customer-facing GHG Protocol disclosure. Every emissions
+// report also ships the CSV calculation trail (every record's factor and
+// formula), which is the auditor's appendix.
+export const DEFAULT_REPORT_TYPE = "ghg_protocol";
+
 const REPORT_TYPE_OPTIONS = [
+  { value: "ghg_protocol",     label: "GHG Protocol emissions report (recommended)" },
   { value: "bid_carbon_pack",  label: "Bid carbon pack (tender evidence)" },
   { value: "transition_plan",  label: "Climate transition plan (ESRS E1-1)" },
   { value: "inventory",        label: "Inventory" },
   { value: "monthly_snapshot", label: "Monthly snapshot" },
   { value: "audit_package",    label: "Audit package" },
-  { value: "ghg_protocol",     label: "GHG Protocol Corporate Standard" },
   { value: "cdp",              label: "CDP Climate Change (C5, C6, C7)" },
   { value: "cbam",             label: "CBAM Embedded Emissions (EU/UK)" },
   { value: "secr",             label: "SECR (Streamlined Energy & Carbon)" },
@@ -129,7 +134,7 @@ export function CreateReportForm({
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [reportType, setReportType] = useState("inventory");
+  const [reportType, setReportType] = useState(DEFAULT_REPORT_TYPE);
   const [snapshotId, setSnapshotId] = useState(snapshots[0]?.id ?? "");
   const [secrOpen, setSecrOpen] = useState(false);
   const [intensityMetricLabel, setIntensityMetricLabel] = useState("");
@@ -246,7 +251,7 @@ export function CreateReportForm({
           options: { ...secrOptions, ...cbamOptions, ...bidOptions },
         });
         formEl.reset();
-        setReportType("inventory");
+        setReportType(DEFAULT_REPORT_TYPE);
         setBidContractIds([]);
         setSnapshotId(snapshots[0]?.id ?? "");
         setValidationResult(null);
