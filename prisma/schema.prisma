@@ -1260,6 +1260,7 @@ model EmissionFactor {
   emissionCategory EmissionCategory?     @relation(fields: [emissionCategoryId], references: [id])
   calculations     EmissionCalculation[]
 
+  @@unique([factorLibraryId, externalId])
   @@index([scope, emissionCategoryId, geographyCountry, effectiveStartDate, effectiveEndDate])
   @@map("emission_factors")
 }
