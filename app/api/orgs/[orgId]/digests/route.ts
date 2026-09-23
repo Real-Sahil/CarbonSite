@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS, getSession } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
-import { sendDigestEmail, compileDigestData } from "@/lib/notifications/digests";
 import { z } from "zod";
 
 const configSchema = z.object({

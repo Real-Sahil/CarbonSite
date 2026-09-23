@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/db";
 
 export interface FailedJob {
   id: string;

@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 
 export interface FailedJobRecord {

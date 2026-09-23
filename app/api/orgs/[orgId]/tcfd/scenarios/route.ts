@@ -5,7 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { handleRouteError, apiError } from "@/lib/validation/api";
+import { handleRouteError } from "@/lib/validation/api";
 
 const CreateScenarioSchema = z.object({
   scenarioType: z.enum(["physical", "transition"]),

@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { BlogCard, type BlogPost } from '@/components/blog/BlogCard';
+import { BlogCard } from '@/components/blog/BlogCard';
 import { getPosts } from '@/lib/blog/posts';
 
 export const metadata: Metadata = {

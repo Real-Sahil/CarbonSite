@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
-import { prisma } from "@/lib/db";
 import {
   Card,
   CardContent,

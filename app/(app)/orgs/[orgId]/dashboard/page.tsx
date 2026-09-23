@@ -717,9 +717,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     topCategoryAggregates,
     reportStatusRows,
     socialValueStats,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _siteCount,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _fieldWorkerCount,
   ] = batchB;
 

@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/db';
 import type { Prisma } from '@prisma/client';
 import * as ss from 'simple-statistics';
-import { ensembleForecast, calculateForecastAccuracy } from '@/lib/calculation/forecaster';
-import { getScope3Growth, detectFacilityAnomalies } from '@/lib/calculation/trend-analyzer';
+import { ensembleForecast } from '@/lib/calculation/forecaster';
+import { getScope3Growth } from '@/lib/calculation/trend-analyzer';
 
 interface SupplierScore {
   organizationId: string;

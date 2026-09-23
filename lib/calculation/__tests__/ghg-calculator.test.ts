@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { GhgCalculatorClient, type GhgCalculatorConfig } from "../ghg-calculator-client";
+import { GhgCalculatorClient } from "../ghg-calculator-client";
 import { compareCalculations, aggregateComparisons } from "../comparison-engine";
 import type { CalculateResponse } from "../ghg-calculator-client";
 

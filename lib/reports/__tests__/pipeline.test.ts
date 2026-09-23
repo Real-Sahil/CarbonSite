@@ -43,7 +43,7 @@ vi.mock("@/lib/llm/client", () => ({
   },
 }));
 
-import { aggregate, fetchCalculations, buildBasePdfData, loadLogoDataUri } from "../aggregation";
+import { aggregate, fetchCalculations, buildBasePdfData } from "../aggregation";
 import { generateReportPdf } from "../pdf-generator";
 import { generateAuditNarrative } from "../narrative-generator";
 import type { CalculationRow } from "../aggregation";

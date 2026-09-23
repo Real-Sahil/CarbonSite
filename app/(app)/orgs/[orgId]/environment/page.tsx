@@ -8,7 +8,6 @@ import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import type { OrgRole } from "@prisma/client";
 import {
   Card,
   CardContent,

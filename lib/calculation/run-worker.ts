@@ -25,7 +25,7 @@ import { calculateDataQualityScore, calculateConfidenceInterval } from "./qualit
 import { assessTemporalRepresentativeness } from "./temporal-representativeness";
 import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
 import { getBoss } from "@/lib/jobs/boss";
-import type { ActivityRecord, Scope2Method } from "@prisma/client";
+import type { ActivityRecord } from "@prisma/client";
 
 // A single HTTP request (in JOB_PROCESSING_MODE=inline, the only mode that
 // works on a Vercel-only deployment — see CLAUDE.md) cannot safely run the

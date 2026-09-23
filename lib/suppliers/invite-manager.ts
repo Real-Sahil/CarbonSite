@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/db";
-import { writeAuditLog } from "@/lib/db/audit";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
 import { supplierInviteEmail, inviteAcceptedEmail } from "./email-templates";
 import { CATEGORY_GUIDANCE } from "./category-guidance";

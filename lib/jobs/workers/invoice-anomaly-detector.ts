@@ -167,7 +167,6 @@ const currencyMismatchRule: DetectionRule = {
   name: "Currency Mismatch Detection",
   type: "currency_mismatch",
   severity: "warning",
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   check: (invoice, _context) => {
     // Check if invoice currency differs from org default
     const invoiceData = invoice.lineItems as LineItem[] | null;
@@ -193,7 +192,6 @@ const unmatchedInvoiceRule: DetectionRule = {
   name: "Unmatched Invoice Detection",
   type: "unmatched_invoice",
   severity: "warning",
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   check: (invoice, _context) => {
     // Flag as unmatched if no line items or reconciliation status is unmatched
     const lineItems = invoice.lineItems as LineItem[] | null;

@@ -5,7 +5,6 @@ import {
   type DashboardUpdate,
   clearAllSubscriptions,
 } from "../subscription-manager";
-import { broadcastDashboardUpdate as broadcasterFn } from "../dashboard-broadcaster";
 
 /**
  * Phase 2C: Real-Time Dashboard Integration Test

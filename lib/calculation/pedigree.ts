@@ -11,7 +11,7 @@
 // published geometric standard deviation contribution. The five combine into
 // one number that has a defensible derivation.
 
-import type { ActivityRecord, EmissionFactor } from "@prisma/client";
+import type { ActivityRecord } from "@prisma/client";
 import type { FactorSelection } from "./factor-selector";
 
 /** 1 = best, 5 = worst, per the pedigree matrix convention. */

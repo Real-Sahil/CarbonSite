@@ -6,10 +6,7 @@ import { handleRouteError } from '@/lib/validation/api';
 import {
   confirmSetupIntent,
   getPaymentMethod,
-  setDefaultPaymentMethod,
-  detachPaymentMethod,
-  extractPaymentMethodData,
-  getCustomerPaymentMethods,
+  setDefaultPaymentMethod, extractPaymentMethodData
 } from '@/lib/billing/stripe';
 import { writeAuditLog } from '@/lib/db/audit';
 

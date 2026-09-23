@@ -1,14 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertTriangle, AlertCircle, Info, ChevronDown, Filter } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, ChevronDown } from 'lucide-react';
 import { useAnomalies } from './hooks/useAnomalies';
 import {
   Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  CardContent, CardHeader
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';

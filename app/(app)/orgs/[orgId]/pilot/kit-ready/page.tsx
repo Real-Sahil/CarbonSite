@@ -3,7 +3,7 @@ import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, FileText, Users, Settings, BookOpen, Shield, Download, ArrowLeft } from "lucide-react";
+import { CheckCircle2, Users, Settings, BookOpen, Shield, Download, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface KitReadyPageProps {

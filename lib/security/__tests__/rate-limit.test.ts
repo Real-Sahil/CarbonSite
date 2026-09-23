@@ -5,6 +5,8 @@ import {
   rateLimitKey,
   resetRateLimitBucketsForTests,
 } from "../rate-limit";
+import { prisma } from "@/lib/db";
+import { rateLimitRequest } from "../rate-limit-async";
 
 // rateLimitRequest is Postgres-backed (async) — mock the DB module so unit
 // tests don't need a live database.
@@ -13,8 +15,6 @@ vi.mock("@/lib/db", () => ({
     $queryRaw: vi.fn(),
   },
 }));
-import { prisma } from "@/lib/db";
-import { rateLimitRequest } from "../rate-limit-async";
 
 describe("rateLimit (sync in-memory — Edge middleware path)", () => {
   beforeEach(() => resetRateLimitBucketsForTests());

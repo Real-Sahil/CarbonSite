@@ -1,7 +1,6 @@
 // Data Lineage — track the source-to-calculation path for emissions records
 // Enables auditors to navigate from dashboard numbers → calculations → source data → evidence files
 
-import type { Prisma } from "@prisma/client";
 
 export enum LineageNodeType {
   DASHBOARD_AGGREGATE = "dashboard_aggregate",

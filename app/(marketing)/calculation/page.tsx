@@ -5,8 +5,6 @@ import { FactorLibraryShowcase } from "@/components/factor-library-showcase";
 import { EmissionsBreakdownCard } from "@/components/emissions-breakdown-card";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Calculation Engine - MetricOra",

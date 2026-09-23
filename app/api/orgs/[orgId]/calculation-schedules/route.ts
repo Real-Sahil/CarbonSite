@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
-import { handleRouteError, apiError } from "@/lib/validation/api";
+import { handleRouteError } from "@/lib/validation/api";
 import {
   createCalculationSchedule,
   getCalculationSchedules,

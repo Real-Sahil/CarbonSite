@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Decimal } from "@prisma/client/runtime/library";
 import { detectAnomaliesInBatch, detectFacilityTrendAnomalies, detectDuplicateRecords } from "../anomaly-detector";
 import { prisma } from "@/lib/db";

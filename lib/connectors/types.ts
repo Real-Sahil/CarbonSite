@@ -1,7 +1,6 @@
 // Connector interface for third-party data ingestion (Xero, utilities, fleet, etc).
 // All connectors normalize their payloads into ActivityRecord-compatible JSON.
 
-import type { Decimal } from "@prisma/client/runtime/library";
 
 export interface ConnectorWaterRecord {
   externalRecordId: string;

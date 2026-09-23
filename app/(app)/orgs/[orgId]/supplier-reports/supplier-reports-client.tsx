@@ -4,10 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2, XCircle, Clock, AlertTriangle, ChevronDown, ChevronRight,
-  Building2, Calendar, Package, TrendingUp,
+  Building2, Calendar, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";

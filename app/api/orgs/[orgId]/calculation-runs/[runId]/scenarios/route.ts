@@ -3,12 +3,9 @@
 
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { NextRequest } from "next/server";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { z } from "zod";
-import { runScenario } from "@/lib/calculation/scenario-runner";
 
 const CreateScenarioSchema = z.object({
   modifications: z.record(

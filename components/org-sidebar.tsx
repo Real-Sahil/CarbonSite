@@ -188,7 +188,6 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
   useEffect(() => {
     const active = navGroups.find(groupIsActive);
     if (active && active.label !== openGroup) setOpenGroup(active.label);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   async function handleSignOut() { await authClient.signOut(); router.push("/sign-in"); }

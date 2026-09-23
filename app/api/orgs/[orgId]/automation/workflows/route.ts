@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion } from "@/lib/api/versioned-handler";

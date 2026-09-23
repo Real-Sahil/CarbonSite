@@ -1,9 +1,8 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { handleRouteError, apiError } from "@/lib/validation/api";
+import { handleRouteError } from "@/lib/validation/api";
 import { verifyCredential } from "@/lib/iot/device-manager";
 import { processMeterReading } from "@/lib/iot/meter-processor";
-import { prisma } from "@/lib/db";
 
 type Params = { params: Promise<{ orgId: string }> };
 

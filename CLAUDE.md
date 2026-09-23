@@ -89,7 +89,8 @@ lib/
     index.ts               # Prisma client singleton
     audit.ts               # writeAuditLog() — append-only, never update rows
   jobs/
-    queues/index.ts        # BullMQ queue definitions (imports, calculations, reports, notifications)
+    queues/index.ts        # pg-boss queue definitions (imports, calculations, reports, notifications)
+    dispatch.ts            # dispatchX(): runs a job inline on Vercel, or enqueues in worker mode
   storage/index.ts         # Cloudflare R2 client, presignUpload/Download, key conventions
   validation/
     api.ts                 # handleRouteError(), apiError() — consistent { code, message, details? }
@@ -97,12 +98,18 @@ lib/
     units.ts               # Canonical unit registry + normalizeUnit()
     factor-selector.ts     # selectFactor() — deterministic, records selection reason
     engine.ts              # computeCo2e() — gas-specific or scalar, stores formula string
+    scope2-method.ts       # scope2MethodOf(): the one place a record's Scope 2 method is decided
+    scope2-instruments.ts  # Market-based allocation of REGOs/PPAs/tariffs/residual mix (pure)
+    dashboard-groups.ts    # DashboardAggregate grouping (pure; shared with the reconciliation test)
+    aggregate-filters.ts   # Where-fragments for reading DashboardAggregate without double counting
+    library-for-period.ts  # chooseFactorLibrary(): newest DEFRA set whose year <= period end year
+    price-index.ts         # CPI deflation of spend to a factor's price year
 prisma/
   schema.prisma            # Canonical schema — all tenant tables include organization_id
   migrations/
   seed.ts                  # Seeds categories, methodology version, DEFRA/EPA library records
 workers/
-  index.ts                 # BullMQ worker entry point (separate process)
+  index.ts                 # pg-boss worker entry point (only for a worker-mode deployment)
 mobile/                    # Flutter project
   lib/
     core/
@@ -139,6 +146,13 @@ All presigned URLs generated server-side after auth checks. Expiry: 1 hour (`PRE
 - Use cursor pagination by default on list endpoints.
 - Accept idempotency keys on imports, calculation runs, and report generation. Store business keys (`source_checksum`, `trigger_hash`, `request_hash`) in the database to detect duplicates before enqueuing.
 
+### Security guards (keep these when adding features)
+- **Database roles:** Supabase's `anon` and `authenticated` roles have no grants on `public` (migration `20260922000012`). The app never uses the Supabase Data API; Prisma connects as `postgres`, which bypasses RLS. Every new table still gets `ENABLE ROW LEVEL SECURITY` plus a deny-all policy in its migration.
+- **Shared reference data** (factor libraries, embodied materials, framework datapoints) is read by every tenant. Org routes must never write it. Imports go through `requireSharedLibraryEditor()` in `lib/auth/shared-libraries.ts` (platform owner/support only). Per-org text about a shared row lives in its own org-scoped table (e.g. `OrganizationDatapointNarrative`).
+- **Passwords set by an admin:** hash with `hashTemporaryPassword()` from `lib/auth/temporary-password.ts` (Better Auth's format; bcrypt/SHA-256 can never sign in). Never set a password on an account that exists outside the org: check `accountBelongsOnlyToOrg()`. Invite acceptance takes the org from the invite, never the request body.
+- **Errors:** `handleRouteError()` returns a generic 500 with a Sentry reference, never the raw message.
+- **Regression tests:** `tests/security/cross-tenant-writes.test.ts`.
+
 ### Authorization (RBAC)
 Six roles: `admin | editor | reviewer | viewer | auditor | field_worker`.
 
@@ -157,6 +171,8 @@ Uses `pg-boss` — a PostgreSQL-backed job queue. No Redis, no Docker, no extra 
 **Deployment reality: this project runs on Vercel only, with no separate host running `workers/index.ts` continuously.** Vercel serverless functions cannot run a persistent pg-boss consumer, so a queue with no other consumer is a queue nothing ever drains. `lib/jobs/dispatch.ts` is the load-bearing piece that makes this work anyway: `dispatchImport()`, `dispatchCalculation()`, `dispatchReport()`, `dispatchNotification()`, `dispatchDsarExport()`, `dispatchDsarErasure()`, and `dispatchForecast()` each check `JOB_PROCESSING_MODE` (env var, defaults to `"inline"`) — in `inline` mode (the only mode that actually works on Vercel-only) the job runs synchronously inside the API route's request/response cycle instead of being enqueued; in `worker` mode it enqueues to pg-boss as normal, for a deployment that *does* run a separate worker process. **Always call a route through its `dispatchX()` function, never `enqueueX()`/`boss.send()` directly** — a route that enqueues without going through `dispatch.ts` will silently never run on this deployment. Several older queues (`invoice-anomaly`, `xero-sync`, `quickbooks-sync`, `supplier-performance`, `dbt-transform`, `causal-analysis`) predate this pattern and do **not** have an inline fallback — treat anything that only calls `enqueueX()` as dead code on the current deployment until it's added to `dispatch.ts` the same way.
 
 Core queues: `imports`, `calculations`, `reports`, `notifications`, `forecasting`.
+
+**Scheduled jobs run from Supabase pg_cron, not pg-boss schedules** (nothing on Vercel would fire those). Migrations `20260922000010` and later register `cron.schedule` entries that call the app's secret-protected routes through `scheduler.call_app(path)` (pg_net), reading `app_base_url` and `scheduler_secret` from Supabase Vault. Routes check the secret with `isAuthorizedCronRequest()` (`lib/security/cron-auth.ts`, accepts `SCHEDULER_SECRET` or `CRON_SECRET`). Monitoring jobs live in `app/api/admin/schedule/monitors/[job]/route.ts`: worker sessions (5 min), submission SLA, permit expiry, enforcement notices, supplier account policies (daily). To add one, add it to that route and schedule it in a new guarded migration.
 
 All jobs must be idempotent and retryable (3 attempts, exponential backoff). Store job status in DB (`ImportBatch.state`, `CalculationRun.status`, `Report.status`).
 
@@ -183,9 +199,21 @@ Pipeline for each `CalculationRun`:
 5. Persist immutable `EmissionCalculation` rows — **never update them**.
 6. Rebuild `DashboardAggregate` rows for the snapshot.
 
-GWP values (AR6): CH4 = 27.9, N2O = 273.
+GWP values (AR6): CH4 = 27.9, N2O = 273 (`lib/calculation/gwp.ts`).
+
+**Factor library per run:** a run is pinned to one library. `chooseFactorLibrary()` picks the newest DEFRA set whose year is at most the period's end year (DEFRA 2026.1 has no effective-date window, so it covers periods that straddle years); the UI warns when another library is chosen. EPA stays available for US operations.
+
+**Scope 2 dual reporting:** `scope2MethodOf()` decides each record's method (the record's `scope2Method`, else the category). Headline totals use location-based only; market-based is shown beside it, never added. Market-based records draw on the org's `EnergyInstrument` rows (Settings → Electricity contracts) in GHG Protocol order: certificates/PPAs, green tariffs, supplier rate, residual mix; certificates are never claimed twice; any uncovered kWh falls back to the library factor with a warning.
+
+**Spend-based Scope 3:** currency is converted at the ECB rate for the record's date (`prefetchFxRatesOn()` / `convertCurrency()` in `units.ts`), falling back to today's rate and then a built-in rate, and the calculation says which. When a factor has `priceBaseYear`, spend is deflated to that year with UK or US CPI (`price-index.ts`); update the CPI table each year.
 
 Published snapshots are immutable. Recalculation creates a new `CalculationRun` + `PublishedSnapshot` version. Users must see a diff before replacing a published report.
+
+### Migrations
+`.github/workflows/migrate.yml` applies migrations as soon as code reaches `main`, **while the previous deploy is still serving traffic**. So:
+- Additive changes only in the same release as the code. A drop, rename, type change or `SET NOT NULL` must ship in a later release, in a migration containing a `-- contract-step:` line explaining why no deployed code still depends on it. `scripts/check-migration-safety.mjs` enforces this in CI and before migrating.
+- CI replays every migration on plain Postgres 16, where Supabase roles and the `cron`/`vault`/`storage` schemas do not exist: guard Supabase-specific SQL with `IF EXISTS (SELECT 1 FROM pg_roles ...)` / `to_regnamespace(...)` checks inside a `DO $do$` block.
+- CI fails if `prisma migrate diff` grows beyond `prisma/drift-baseline.txt`; lower the baseline as drift is fixed. Generate new migration SQL with `prisma migrate diff --from-schema-datamodel <old> --to-schema-datamodel prisma/schema.prisma --script`, never by hand.
 
 ### Flutter: Field Capture Flow
 ```
@@ -207,7 +235,7 @@ Submissions are always written to local SQLite (`drift`) first. A background syn
 `ReviewTask.targetId` and `Comment.targetId` are polymorphic references (resolved in application code, not via Prisma FK relations). Query the specific resource table after reading `targetType`.
 
 ### Reporting
-Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Report totals must match dashboard totals for the same snapshot — this is a core trust invariant. Generated PDFs/CSVs stored in R2 with checksums. Download links are 1-hour signed URLs.
+Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Report totals must match dashboard totals for the same snapshot — this is a core trust invariant, guarded by `lib/calculation/__tests__/report-dashboard-reconciliation.test.ts`. Generated PDFs/CSVs stored in R2 with checksums. Download links are 1-hour signed URLs.
 
 ### Audit Log
 `AuditLog` is append-only via `writeAuditLog()` in `lib/db/audit.ts`. Never update or delete rows. Required events: auth, role changes, imports, record mutations, factor imports, calculation runs, snapshot publication, report publication, field submission submission/review.
@@ -230,13 +258,16 @@ See `prisma/schema.prisma` for canonical definitions.
 
 - Scope 1: `s1-stationary`, `s1-mobile`, `s1-fugitive`
 - Scope 2: `s2-electricity-lb` (location-based), `s2-electricity-mb` (market-based)
-- Scope 3: `s3-business-travel`, `s3-commuting`, `s3-purchased-goods`, `s3-upstream-transport`
+- Scope 3: `s3-purchased-goods`, `s3-capital-goods`, `s3-fuel-energy`, `s3-upstream-transport`, `s3-waste`, `s3-business-travel`, `s3-commuting`, `s3-upstream-leased`, `s3-downstream-transport`, `s3-processing-sold`, `s3-use-sold`, `s3-end-of-life`, `s3-downstream-leased`, `s3-franchises`, `s3-investments`
+
+Use only these codes in code (see `prisma/seed.ts`). A code that is not seeded matches nothing and fails silently.
 
 ## Emission Factor Sources (Zero Cost)
 
 | Library | Source | Format |
 |---|---|---|
-| DEFRA 2025.1 | gov.uk conversion factors | XLSX download |
+| DEFRA 2026.1 | gov.uk conversion factors (flat file) | XLSX → `scripts/build-defra-2026-factors.mjs` → `prisma/data/defra-2026-factors.json` |
+| DEFRA 2025.1 | gov.uk conversion factors | XLSX download (some values are placeholders; reload from the 2025 flat file) |
 | EPA 2025.1 | epa.gov GHG Emission Factors Hub | PDF → manual CSV |
 | SustainMetrics | sustainmetrics.net/factors | CSV, free download, no signup |
 
@@ -285,6 +316,11 @@ All services are free tier, no credit card required except Cloudflare R2.
 - Flutter: `firebase_messaging` package handles FCM token registration
 - Server: `firebase-admin` npm package sends push from the notifications worker
 - Set `FIREBASE_SERVICE_ACCOUNT_JSON` in `.env`
+
+### Sentry (error tracking, EU region)
+- Server: `SENTRY_DSN` (Vercel env), initialised in `instrumentation.ts`; uncaught request errors via `onRequestError`, route errors via `handleRouteError()`.
+- Browser: `instrumentation-client.ts`, using the same DSN exposed at build time by `next.config.ts`. The `withSentryConfig` wrapper is not used (it pushes the middleware bundle past Vercel's 1 MB limit).
+- Source maps: set `SENTRY_AUTH_TOKEN` on Vercel and `scripts/upload-sourcemaps.mjs` uploads them after `next build`, then deletes them from the public output.
 
 ### Redis (optional but recommended for production rate limiting)
 - Sign up at upstash.com, aws.amazon.com (ElastiCache), heroku.com, or redis.com — free or low-cost managed options

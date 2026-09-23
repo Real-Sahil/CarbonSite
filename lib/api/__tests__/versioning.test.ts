@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach, vi } from "vitest";
+import { describe, expect, test, beforeEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 import {
   negotiateApiVersion,

@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft, ChevronRight, Menu, X, Save, AlertCircle, CheckCircle2,
-  Plus, Trash2, Copy, GripVertical, ChevronDown, ExternalLink,
-  FileText, Eye, Printer
+  Plus, Trash2, Copy, Printer
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

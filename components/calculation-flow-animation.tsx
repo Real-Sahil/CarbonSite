@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { ArrowRight, Activity, Calculator, FileCheck, BarChart3 } from 'lucide-react';
+import { Activity, Calculator, FileCheck, BarChart3 } from 'lucide-react';
 
 export function CalculationFlowAnimation() {
   const containerRef = useRef<HTMLDivElement>(null);

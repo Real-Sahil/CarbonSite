@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { handleRouteError, apiError } from "@/lib/validation/api";
+import { handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 

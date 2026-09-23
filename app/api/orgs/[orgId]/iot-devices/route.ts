@@ -1,12 +1,11 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { requireOrgMember } from "@/lib/auth/session";
-import { handleRouteError, apiError } from "@/lib/validation/api";
+import { handleRouteError } from "@/lib/validation/api";
 import {
   registerDevice,
   listDevices,
 } from "@/lib/iot/device-manager";
-import type { IoTDeviceType } from "@prisma/client";
 
 type Params = { params: Promise<{ orgId: string }> };
 

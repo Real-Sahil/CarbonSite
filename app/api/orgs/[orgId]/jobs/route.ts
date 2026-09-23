@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
-import { handleRouteError, apiError } from "@/lib/validation/api";
+import { handleRouteError } from "@/lib/validation/api";
 import {
   getFailedJobsForOrg,
-  getFailedJobStats,
-  recordFailedJob,
+  getFailedJobStats
 } from "@/lib/jobs/failed-job-manager";
 import { z } from "zod";
 

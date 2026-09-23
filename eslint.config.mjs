@@ -20,7 +20,18 @@ const eslintConfig = defineConfig([
     rules: {
       "react-hooks/purity": "off",
       "react-hooks/set-state-in-effect": "off",
-      "@typescript-eslint/no-unused-vars": "warn",
+      // A leading underscore marks a deliberately unused binding (route
+      // handlers must accept `_req`, destructuring may skip a field).
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
       "react/no-unescaped-entities": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "react/display-name": "off",

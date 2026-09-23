@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GhgCalculatorClient } from "../ghg-calculator-client";
-import { compareCalculations, aggregateComparisons } from "../comparison-engine";
+import { compareCalculations } from "../comparison-engine";
 
 // Integration tests for ghg-calculator PoC
 // These tests run against a live ghg-calculator API service

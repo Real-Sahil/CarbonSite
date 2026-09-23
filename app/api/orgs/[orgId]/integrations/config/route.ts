@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { encryptCredential, decryptCredential } from "@/lib/integrations/encryption";
+import { encryptCredential } from "@/lib/integrations/encryption";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 

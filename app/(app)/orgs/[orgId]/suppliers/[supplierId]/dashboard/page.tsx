@@ -4,21 +4,15 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import {
   LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
+  Line, XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
+  Tooltip, ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
+  Cell
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface SupplierPerformanceData {

@@ -5,7 +5,7 @@
  */
 
 import { prisma } from "@/lib/db";
-import { estimateCausalEffect, DoWhyClient } from "@/lib/causal-inference/dowhyClient";
+import { estimateCausalEffect } from "@/lib/causal-inference/dowhyClient";
 import { selectModelFromQuestion } from "@/lib/causal-inference/models";
 import type { CausalDataPoint } from "@/lib/causal-inference/dowhyClient";
 

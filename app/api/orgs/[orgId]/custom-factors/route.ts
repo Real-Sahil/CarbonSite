@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireOrgMember } from '@/lib/auth/session';
 import { handleRouteError } from '@/lib/validation/api';
 import { z } from 'zod';
-import { prisma } from '@/lib/db';
 import { createCustomFactor, getOrgCustomFactorLibrary, updateCustomFactor, deleteCustomFactor } from '@/lib/calculation/custom-factors';
 
 const CustomFactorSchema = z.object({

@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
-import { apiError, handleRouteError } from "@/lib/validation/api";
+import { handleRouteError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 type Params = { params: Promise<{ orgId: string }> };
