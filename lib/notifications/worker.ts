@@ -365,6 +365,16 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       });
     })
 
+    .with({ type: "carbon_budget_forecast" }, async (d) => {
+      const project = (d.metadata?.projectName as string) ?? "A project";
+      const over = d.metadata?.status === "over";
+      await sendPushToUser(d.recipientUserId, {
+        title: over ? `${project}: carbon budget forecast over` : `${project}: carbon budget at risk`,
+        body: (d.metadata?.reason as string) ?? "Check the project's carbon budget burn-down.",
+        data: { type: "carbon_budget_forecast", budgetId: d.resourceId, orgId: d.orgId },
+      });
+    })
+
     .exhaustive();
 
   notificationLogger.info("Notification processed", {

@@ -27,7 +27,8 @@ export type NotificationJobData = {
     | "worker_session_overdue"
     | "enforcement_notice_overdue"
     | "discharge_reading_exceedance"
-    | "supplier_certification_expiring";
+    | "supplier_certification_expiring"
+    | "carbon_budget_forecast";
   recipientUserId: string;
   orgId: string;
   resourceId: string;

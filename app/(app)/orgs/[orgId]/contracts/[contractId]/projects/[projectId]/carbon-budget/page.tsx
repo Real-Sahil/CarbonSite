@@ -6,6 +6,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Target, Plus, AlertTriangle, CheckCircle, TrendingUp, X, Pencil, Gauge } from "lucide-react";
 import { computeCarbonEvm } from "@/lib/project-carbon/evm";
+import type { Burndown } from "@/lib/project-carbon/burndown";
+import { BurndownCard } from "./burndown-card";
 
 interface Phase {
   id: string;
@@ -375,6 +377,7 @@ export default function CarbonBudgetPage() {
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [totalActualTco2e, setTotalActualTco2e] = useState(0);
+  const [burndown, setBurndown] = useState<Burndown | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -392,6 +395,7 @@ export default function CarbonBudgetPage() {
       const d = await res.json();
       setBudget(d.budget);
       setTotalActualTco2e(d.totalActualTco2e);
+      setBurndown(d.burndown ?? null);
     } catch {
       setLoadError("Could not reach the server. Check your connection and try again.");
     } finally {
@@ -489,6 +493,8 @@ export default function CarbonBudgetPage() {
               <span>{budgetTco2e.toFixed(0)} tCO2e</span>
             </div>
           </div>
+
+          {burndown && <BurndownCard burndown={burndown} />}
 
           {/* KPI intensities */}
           {(intensityPerM2 || intensityPerMGbp) && (

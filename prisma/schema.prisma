@@ -2595,6 +2595,10 @@ model CarbonBudget {
   floorAreaM2      Decimal? @map("floor_area_m2") @db.Decimal(12, 2)
   contractValueGbp Decimal? @map("contract_value_gbp") @db.Decimal(18, 2)
   notes            String?
+  /// Last burn-down status alerted ("at_risk" | "over"); the daily monitor
+  /// notifies only when the status gets worse (lib/project-carbon/burndown.ts).
+  forecastAlertLevel String?   @map("forecast_alert_level")
+  forecastAlertedAt  DateTime? @map("forecast_alerted_at")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

@@ -170,5 +170,16 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
         link: `${orgBase}/supply-chain/suppliers/${data.resourceId}`,
       };
     }
+    case "carbon_budget_forecast": {
+      const project = str(data.metadata?.projectName, "A project");
+      const over = data.metadata?.status === "over";
+      const contractId = str(data.metadata?.contractId, "");
+      const projectId = str(data.metadata?.projectId, "");
+      return {
+        title: over ? `${project}: carbon budget forecast over` : `${project}: carbon budget at risk`,
+        body: str(data.metadata?.reason, "Check the project's carbon budget burn-down."),
+        link: contractId && projectId ? `${orgBase}/contracts/${contractId}/projects/${projectId}/carbon-budget` : `${orgBase}/contracts`,
+      };
+    }
   }
 }

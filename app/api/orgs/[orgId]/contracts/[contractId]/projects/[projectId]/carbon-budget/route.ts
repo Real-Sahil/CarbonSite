@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { setCarbonBudgetSchema } from "@/lib/validation/project-carbon";
 import { measuredProjectTco2e } from "@/lib/project-carbon/measured";
+import { loadProjectBurndown } from "@/lib/project-carbon/burndown-load";
 
 type Params = { params: Promise<{ orgId: string; contractId: string; projectId: string }> };
 
@@ -23,15 +24,16 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const project = await prisma.project.findFirst({ where: { id: projectId, contractId, organizationId: orgId } });
     if (!project) return apiError("NOT_FOUND", "Project not found.", 404);
 
-    const [budget, totalActualTco2e] = await Promise.all([
-      prisma.carbonBudget.findUnique({
-        where: { projectId },
+    const [budget, totalActualTco2e, burndown] = await Promise.all([
+      prisma.carbonBudget.findFirst({
+        where: { projectId, organizationId: orgId },
         include: { phases: { orderBy: { sortOrder: "asc" } } },
       }),
       computeProjectActualTco2e(orgId, projectId),
+      loadProjectBurndown(orgId, projectId),
     ]);
 
-    return NextResponse.json({ budget, totalActualTco2e });
+    return NextResponse.json({ budget, totalActualTco2e, burndown });
   } catch (err) {
     return handleRouteError(err);
   }
