@@ -61,7 +61,7 @@ export function BurndownCard({ burndown }: { burndown: Burndown }) {
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E5E7EB" }} minTickGap={16} />
               <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={48} />
               <Tooltip
-                formatter={(v, name) => [v == null ? "–" : `${t(Number(v))} tCO2e`, String(name)]}
+                formatter={(v, name) => [v == null ? "–" : `${t(Number(v))} tCO₂e`, String(name)]}
                 contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: "#E5E7EB" }}
               />
               <ReferenceLine y={burndown.budgetTco2e} stroke="#DC2626" strokeDasharray="4 4" label={{ value: "Budget", position: "insideTopLeft", fontSize: 11, fill: "#DC2626" }} />

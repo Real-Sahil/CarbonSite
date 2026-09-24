@@ -74,7 +74,7 @@ export default async function ProgrammesPage({ params }: PageProps) {
                 <div>Projects: {p._count.projects}</div>
                 {p.startDate && <div>Start: {new Date(p.startDate).toLocaleDateString("en-GB")}</div>}
                 {p.endDate && <div>End: {new Date(p.endDate).toLocaleDateString("en-GB")}</div>}
-                {p.budgetTco2e && <div>Budget: {Number(p.budgetTco2e).toLocaleString()} tCO2e</div>}
+                {p.budgetTco2e && <div>Budget: {Number(p.budgetTco2e).toLocaleString()} tCO₂e</div>}
               </CardContent>
             </Card>
           ))}

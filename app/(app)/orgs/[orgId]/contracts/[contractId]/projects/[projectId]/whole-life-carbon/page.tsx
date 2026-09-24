@@ -34,7 +34,7 @@ const MODULES = [
 ] as const;
 
 function fmt(kg: number): string {
-  return `${(kg / 1000).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tCO2e`;
+  return `${(kg / 1000).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tCO₂e`;
 }
 
 function SettingsModal({

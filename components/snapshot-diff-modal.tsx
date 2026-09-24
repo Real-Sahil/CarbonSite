@@ -48,7 +48,7 @@ function formatTonnes(kg: number): string {
   return `${(kg / 1000).toLocaleString("en-GB", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })} tCO2e`;
+  })} tCO₂e`;
 }
 
 function formatDeltaPercent(pct: number | null): string {
@@ -125,7 +125,7 @@ export function SnapshotDiffModal({
               : "Compare snapshots"}
           </DialogTitle>
           <DialogDescription>
-            Review what changed before publishing. Totals are in tCO2e. Green = fewer emissions,
+            Review what changed before publishing. Totals are in tCO₂e. Green = fewer emissions,
             red = more emissions.
           </DialogDescription>
         </DialogHeader>

@@ -87,8 +87,8 @@ interface ScenarioRunSummary {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(tCo2e: number): string {
-  if (tCo2e >= 1000) return `${(tCo2e / 1000).toFixed(1)} ktCO2e`;
-  return `${tCo2e.toFixed(2)} tCO2e`;
+  if (tCo2e >= 1000) return `${(tCo2e / 1000).toFixed(1)} ktCO₂e`;
+  return `${tCo2e.toFixed(2)} tCO₂e`;
 }
 
 function fmtPct(n: number): string {
@@ -320,13 +320,13 @@ function MaccCard({ orgId }: { orgId: string }) {
           Marginal abatement cost curve
         </CardTitle>
         <CardDescription>
-          Reduction initiatives ranked by {currency} per tCO2e, cheapest first. Bar width is the tonnes each measure abates.
+          Reduction initiatives ranked by {currency} per tCO₂e, cheapest first. Bar width is the tonnes each measure abates.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-4 mb-5 text-sm">
           <span className="text-zinc-600">
-            <span className="font-semibold text-zinc-900">{totalAbatementTco2e.toFixed(1)}</span> tCO2e total abatement potential
+            <span className="font-semibold text-zinc-900">{totalAbatementTco2e.toFixed(1)}</span> tCO₂e total abatement potential
           </span>
           {winWinCount > 0 && (
             <span className="text-green-700">
@@ -352,7 +352,7 @@ function MaccCard({ orgId }: { orgId: string }) {
                       width: `${Math.max(barWidthPct / 2, 2)}%`,
                       marginLeft: isNegative ? `${50 - Math.max(barWidthPct / 2, 2)}%` : "50%",
                     }}
-                    title={`${point.abatementTco2e.toFixed(1)} tCO2e/yr`}
+                    title={`${point.abatementTco2e.toFixed(1)} tCO₂e/yr`}
                   />
                 </div>
                 <div className={`w-24 shrink-0 text-right text-sm tabular-nums font-medium ${isNegative ? "text-green-700" : "text-amber-700"}`}>

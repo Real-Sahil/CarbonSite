@@ -10,7 +10,7 @@ import type { PathwayPoint, PlanFields } from "@/lib/transition-plan";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
 const areaClass = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm disabled:opacity-60";
-const fmt = (v: unknown) => (v == null ? "-" : `${Number(v).toLocaleString("en-GB", { maximumFractionDigits: 0 })} tCO2e`);
+const fmt = (v: unknown) => (v == null ? "-" : `${Number(v).toLocaleString("en-GB", { maximumFractionDigits: 0 })} tCO₂e`);
 
 export function PathwayChart({ points }: { points: PathwayPoint[] }) {
   return (

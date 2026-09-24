@@ -88,7 +88,7 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {[
           { label: "Total waste",          value: totalWeight.toFixed(2),        unit: "tonnes" },
-          { label: "Total emissions",      value: totalCo2e.toFixed(3),          unit: "tCO2e" },
+          { label: "Total emissions",      value: totalCo2e.toFixed(3),          unit: "tCO₂e" },
           { label: "Recycled / diverted",  value: `${recycledPct}%`,             unit: "of waste weight" },
           { label: "Hazardous",            value: hazardousTonnes.toFixed(2),    unit: "tonnes" },
           { label: "Records",              value: records.length.toString(),      unit: "waste records" },
@@ -120,7 +120,7 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
                   <p className="text-xs font-medium text-gray-600 mb-1">{label}</p>
                   <p className="text-xl font-semibold text-gray-900 tabular-nums">{pct}%</p>
                   <p className="text-xs text-gray-500">{(data?.weight ?? 0).toFixed(2)} t</p>
-                  <p className="text-xs text-gray-500">{(data?.co2e ?? 0).toFixed(4)} tCO2e</p>
+                  <p className="text-xs text-gray-500">{(data?.co2e ?? 0).toFixed(4)} tCO₂e</p>
                 </div>
               );
             })}
@@ -141,7 +141,7 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
               <tr>
-                {["Waste type", "Facility", "Disposal route", "Weight (t)", "CO2e (tCO2e)", "Date", "EWC", ""].map((h) => (
+                {["Waste type", "Facility", "Disposal route", "Weight (t)", "CO2e (tCO₂e)", "Date", "EWC", ""].map((h) => (
                   <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
                 ))}
               </tr>

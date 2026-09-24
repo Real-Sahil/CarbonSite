@@ -273,9 +273,9 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
             <div>
               <CardTitle className="text-sm font-semibold text-[#111827]">Cheapest initiatives first</CardTitle>
               <CardDescription className="text-xs text-[#6B7280] mt-0.5">
-                Ranked by {currency} per tCO2e abated. A gap badge means this measure also closes a red or amber
+                Ranked by {currency} per tCO₂e abated. A gap badge means this measure also closes a red or amber
                 completeness cell.
-                {netPrice != null && ` Net figures take off your internal carbon price of ${formatMoney(netPrice, currency, 2)}/tCO2e.`}
+                {netPrice != null && ` Net figures take off your internal carbon price of ${formatMoney(netPrice, currency, 2)}/tCO₂e.`}
                 {unconverted.length > 0 && ` Left out, currency not convertible: ${unconverted.join(", ")}.`}
               </CardDescription>
             </div>
@@ -321,12 +321,12 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                           )}
                         </div>
                         <div className="text-xs text-[#6B7280] mt-0.5">
-                          {entry.abatementTco2e.toFixed(1)} tCO2e/yr abated
+                          {entry.abatementTco2e.toFixed(1)} tCO₂e/yr abated
                         </div>
                       </div>
                       <div className="text-right shrink-0">
                         <div className={`text-sm font-semibold tabular-nums ${entry.marginalCostPerTco2e < 0 ? "text-emerald-600" : "text-[#111827]"}`}>
-                          {money(entry.marginalCostPerTco2e)}/tCO2e
+                          {money(entry.marginalCostPerTco2e)}/tCO₂e
                         </div>
                         {netPrice != null && (() => {
                           const net = netOfCarbonPrice(entry.marginalCostPerTco2e, netPrice);

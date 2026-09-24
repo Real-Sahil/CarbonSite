@@ -52,14 +52,14 @@ export function FacilityComparisonChart({
             height={100}
             stroke="#6b7280"
           />
-          <YAxis stroke="#6b7280" label={{ value: "tCO2e", angle: -90, position: "insideLeft" }} />
+          <YAxis stroke="#6b7280" label={{ value: "tCO₂e", angle: -90, position: "insideLeft" }} />
           <Tooltip
             contentStyle={{
               backgroundColor: "#fff",
               border: "1px solid #e5e7eb",
               borderRadius: "0.5rem",
             }}
-            formatter={(value) => `${(value as number).toFixed(2)} tCO2e`}
+            formatter={(value) => `${(value as number).toFixed(2)} tCO₂e`}
           />
           <Legend />
           <Bar

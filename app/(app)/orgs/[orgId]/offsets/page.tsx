@@ -56,7 +56,7 @@ export default async function OffsetsPage({ params }: { params: Promise<{ orgId:
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Total purchased</div>
           <div className="text-2xl font-semibold text-gray-900 tabular-nums">{totalTonnes.toFixed(1)}</div>
-          <div className="text-xs text-gray-500 mt-0.5">tCO2e</div>
+          <div className="text-xs text-gray-500 mt-0.5">tCO₂e</div>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Projects tracked</div>
@@ -78,7 +78,7 @@ export default async function OffsetsPage({ params }: { params: Promise<{ orgId:
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
               <tr>
-                {["Project", "Type", "Standard", "Vintage", "Quantity (tCO2e)", "Purchased", "Verified", ""].map((h) => (
+                {["Project", "Type", "Standard", "Vintage", "Quantity (tCO₂e)", "Purchased", "Verified", ""].map((h) => (
                   <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
                 ))}
               </tr>

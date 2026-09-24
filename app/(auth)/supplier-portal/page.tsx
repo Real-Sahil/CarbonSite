@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Link from "next/link";
 import { format } from "date-fns";
 
@@ -151,48 +152,43 @@ export default async function SupplierPortalPage() {
               <CardDescription>Review and submit emissions data for each category and period</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-zinc-200">
-                      <th className="px-4 py-3 text-left font-medium text-zinc-600">Category</th>
-                      <th className="px-4 py-3 text-left font-medium text-zinc-600">Period</th>
-                      <th className="px-4 py-3 text-left font-medium text-zinc-600">Deadline</th>
-                      <th className="px-4 py-3 text-left font-medium text-zinc-600">Status</th>
-                      <th className="px-4 py-3 text-left font-medium text-zinc-600">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {requests.map((request) => {
-                      const categoryName = request.categoryCode.replace(/^s\d-/, "").replace(/-/g, " ");
-                      const statusColor = getStatusColor(request.status, request.expiresAt);
-                      const statusLabel = getStatusLabel(request.status, request.expiresAt);
-
-                      return (
-                        <tr key={request.id} className="border-b border-zinc-200 hover:bg-zinc-50">
-                          <td className="px-4 py-3">
-                            <div className="font-medium capitalize text-zinc-900">{categoryName}</div>
-                          </td>
-                          <td className="px-4 py-3 text-zinc-600">{request.reportingPeriod.label}</td>
-                          <td className="px-4 py-3 text-zinc-600">
-                            {format(new Date(request.expiresAt), "d MMM yyyy")}
-                          </td>
-                          <td className="px-4 py-3">
-                            <Badge variant={statusColor}>{statusLabel}</Badge>
-                          </td>
-                          <td className="px-4 py-3">
-                            <Button asChild variant="ghost" size="sm">
-                              <Link href={`/supplier-portal/${request.id}`}>
-                                {request.status === "approved" ? "View" : "Review"}
-                              </Link>
-                            </Button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Period</TableHead>
+                    <TableHead>Deadline</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {requests.map((request) => {
+                    const categoryName = request.categoryCode.replace(/^s\d-/, "").replace(/-/g, " ");
+                    return (
+                      <TableRow key={request.id}>
+                        <TableCell className="font-medium capitalize">{categoryName}</TableCell>
+                        <TableCell className="text-zinc-600">{request.reportingPeriod.label}</TableCell>
+                        <TableCell className="text-zinc-600 tabular-nums">
+                          {format(new Date(request.expiresAt), "d MMM yyyy")}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusColor(request.status, request.expiresAt)}>
+                            {getStatusLabel(request.status, request.expiresAt)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button asChild variant="ghost" size="sm">
+                            <Link href={`/supplier-portal/${request.id}`}>
+                              {request.status === "approved" ? "View" : "Review"}
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         )}

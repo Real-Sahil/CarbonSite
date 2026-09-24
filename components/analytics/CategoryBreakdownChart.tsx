@@ -56,7 +56,7 @@ export function CategoryBreakdownChart({ orgId }: { orgId: string }) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value) => `${(value as number).toFixed(2)} tCO2e`}
+            formatter={(value) => `${(value as number).toFixed(2)} tCO₂e`}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -68,7 +68,7 @@ export function CategoryBreakdownChart({ orgId }: { orgId: string }) {
               style={{ backgroundColor: COLORS[index % COLORS.length] }}
             />
             <span className="whitespace-nowrap">
-              {entry.name}: {entry.value.toFixed(1)} tCO2e
+              {entry.name}: {entry.value.toFixed(1)} tCO₂e
             </span>
           </div>
         ))}

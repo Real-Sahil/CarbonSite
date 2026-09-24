@@ -216,7 +216,7 @@ function AggregateCard({ aggregate, onSelect }: AggregateCardProps) {
           <div className="text-2xl font-bold text-gray-900">
             {aggregate.totalCo2e.toFixed(2)}
           </div>
-          <p className="text-sm text-gray-500">tCO2e</p>
+          <p className="text-sm text-gray-500">tCO₂e</p>
           <p className="mt-1 text-xs text-gray-500">
             {aggregate.recordCount} {aggregate.recordCount === 1 ? "record" : "records"}
           </p>
@@ -264,7 +264,7 @@ function AggregateModal({
             <div>
               <p className="text-xs font-medium text-gray-500">TOTAL CO2E</p>
               <p className="text-sm font-medium text-gray-900">
-                {aggregate.totalCo2e.toFixed(2)} tCO2e
+                {aggregate.totalCo2e.toFixed(2)} tCO₂e
               </p>
             </div>
           </div>
@@ -280,7 +280,7 @@ function AggregateModal({
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">
-                    {calc.totalCo2e.toFixed(4)} tCO2e
+                    {calc.totalCo2e.toFixed(4)} tCO₂e
                   </p>
                   <p className="mt-1 text-xs text-gray-500">
                     {calc.normalizedAmount.toFixed(2)} {calc.normalizedUnit}

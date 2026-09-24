@@ -452,3 +452,57 @@
   .eco-loader .eco-leaf { transform: scale(1); }
   .eco-tagline:first-child { opacity: 1; }
 }
+
+/* Tables as cards on phones (components/ui/table.tsx stamps data-stack and
+   each cell's data-label from the header row). Unlayered so it wins over the
+   cells' Tailwind padding. */
+@media (max-width: 639px) {
+  table[data-stack],
+  table[data-stack] > tbody,
+  table[data-stack] > tfoot,
+  table[data-stack] > tbody > tr,
+  table[data-stack] > tfoot > tr {
+    display: block;
+    width: 100%;
+  }
+  table[data-stack] > thead {
+    display: none;
+  }
+  table[data-stack] > tbody > tr,
+  table[data-stack] > tfoot > tr {
+    border: 1px solid #E5E7EB;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.75rem;
+    background: #FFFFFF;
+  }
+  table[data-stack] > tbody > tr > td,
+  table[data-stack] > tfoot > tr > td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.375rem 1rem;
+    text-align: right;
+    white-space: normal;
+    word-break: break-word;
+  }
+  table[data-stack] > tbody > tr > td[data-label=""],
+  table[data-stack] > tfoot > tr > td[data-label=""] {
+    justify-content: flex-end;
+  }
+  table[data-stack] > tbody > tr > td[colspan] {
+    justify-content: center;
+    text-align: center;
+  }
+  table[data-stack] > tbody > tr > td:not([data-label=""])::before,
+  table[data-stack] > tfoot > tr > td:not([data-label=""])::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    max-width: 45%;
+    text-align: left;
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    color: #6B7280;
+  }
+}

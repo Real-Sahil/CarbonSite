@@ -38,7 +38,7 @@ export function EmissionsByScopeChart({ orgId }: { orgId: string }) {
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, value }) => `${name}: ${value.toFixed(2)} tCO2e`}
+            label={({ name, value }) => `${name}: ${value.toFixed(2)} tCO₂e`}
             outerRadius={120}
             fill="#8884d8"
             dataKey="value"
@@ -48,7 +48,7 @@ export function EmissionsByScopeChart({ orgId }: { orgId: string }) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value) => `${(value as number).toFixed(2)} tCO2e`}
+            formatter={(value) => `${(value as number).toFixed(2)} tCO₂e`}
           />
           <Legend />
         </PieChart>

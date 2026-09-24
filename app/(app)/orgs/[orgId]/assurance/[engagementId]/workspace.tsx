@@ -141,7 +141,7 @@ export function EngagementWorkspace({
                 {engagement.materialityThresholdPercent !== null
                   ? `${engagement.materialityThresholdPercent}%`
                   : engagement.materialityThresholdCo2e !== null
-                    ? `${engagement.materialityThresholdCo2e} tCO2e`
+                    ? `${engagement.materialityThresholdCo2e} tCO₂e`
                     : "Not set"}
               </span>
             </span>
@@ -492,7 +492,7 @@ function SamplesTab({
                       </div>
                       {s.totalCo2e !== null && (
                         <div className="text-xs text-zinc-500">
-                          {s.totalCo2e.toFixed(2)} tCO2e{s.dataOrigin ? ` · ${s.dataOrigin}` : ""}
+                          {s.totalCo2e.toFixed(2)} tCO₂e{s.dataOrigin ? ` · ${s.dataOrigin}` : ""}
                         </div>
                       )}
                     </TableCell>

@@ -65,7 +65,7 @@ export default async function SharedSnapshotPage({ params }: Props) {
           <p className="text-5xl font-bold text-zinc-900 dark:text-zinc-50 tabular-nums">
             {(total / 1000).toLocaleString("en-GB", { maximumFractionDigits: 1 })}
           </p>
-          <p className="text-sm text-zinc-500 mt-1">tCO2e</p>
+          <p className="text-sm text-zinc-500 mt-1">tCO₂e</p>
         </section>
 
         <section className="grid grid-cols-3 gap-4 mb-6">
@@ -82,7 +82,7 @@ export default async function SharedSnapshotPage({ params }: Props) {
                   ? (s.value / 1000).toLocaleString("en-GB", { maximumFractionDigits: 1 })
                   : "-"}
               </p>
-              <p className="text-xs text-zinc-400 mt-0.5">tCO2e</p>
+              <p className="text-xs text-zinc-400 mt-0.5">tCO₂e</p>
               <p className="text-xs text-zinc-500 mt-1">{s.description}</p>
             </div>
           ))}

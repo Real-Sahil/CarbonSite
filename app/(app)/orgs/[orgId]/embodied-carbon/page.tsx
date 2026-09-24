@@ -26,7 +26,7 @@ interface PageProps {
 }
 
 function fmtKgCo2e(kg: number): string {
-  if (kg >= 1000) return `${(kg / 1000).toFixed(2)} tCO2e`;
+  if (kg >= 1000) return `${(kg / 1000).toFixed(2)} tCO₂e`;
   return `${kg.toFixed(2)} kgCO2e`;
 }
 

@@ -58,7 +58,7 @@ function formatTonnes(kg: number): string {
   return `${(kg / 1000).toLocaleString("en-GB", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })} tCO2e`;
+  })} tCO₂e`;
 }
 
 function formatAmount(value: unknown, unit: string): string {
@@ -413,7 +413,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Top categories</CardTitle>
-            <CardDescription>Largest emission categories by tCO2e (top 8).</CardDescription>
+            <CardDescription>Largest emission categories by tCO₂e (top 8).</CardDescription>
           </CardHeader>
           <CardContent>
             <CategoryBar data={categoryData} ariaLabel="Top emission categories bar chart" />

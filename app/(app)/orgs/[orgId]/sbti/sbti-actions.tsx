@@ -159,7 +159,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
           </div>
 
           <div className="rounded-lg bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3">
-            <p className="text-xs font-medium text-[#c2410c] mb-2">Baseline emissions (tCO2e)</p>
+            <p className="text-xs font-medium text-[#c2410c] mb-2">Baseline emissions (tCO₂e)</p>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { key: "baselineScope1Tco2e", label: "Scope 1", required: true },

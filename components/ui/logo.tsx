@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 interface LogoMarkProps {
@@ -8,6 +9,10 @@ interface LogoMarkProps {
 export function LogoMark({ size = 24, className }: LogoMarkProps) {
   const rx = Math.round(14 * size / 64);
   const sw = (5.5 * size / 64).toFixed(1);
+  // Unique per instance: a shared id resolves to the first copy in the page,
+  // and when that copy is hidden (the mobile header on desktop) the gradient
+  // paints nothing.
+  const gradientId = `mo-bg-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -18,12 +23,12 @@ export function LogoMark({ size = 24, className }: LogoMarkProps) {
       className={className}
     >
       <defs>
-        <linearGradient id="mo-bg" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#f97316" />
           <stop offset="100%" stopColor="#fbbf24" />
         </linearGradient>
       </defs>
-      <rect width="64" height="64" rx={rx} fill="url(#mo-bg)" />
+      <rect width="64" height="64" rx={rx} fill={`url(#${gradientId})`} />
       <path
         d="M13 51 L23 15 L32 33 L41 15 L51 51"
         stroke="white"

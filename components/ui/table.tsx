@@ -1,18 +1,64 @@
+"use client";
+
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+// Below 640px a table with three or more columns is shown as one card per
+// row: each cell is labelled with its column header (data-label, stamped here
+// from the header row and kept current as rows change), styled in
+// globals.css under table[data-stack]. Pass stack={false} to keep the grid.
+function stampLabels(table: HTMLTableElement) {
+  const headers = Array.from(table.tHead?.rows[0]?.cells ?? []).map((c) => c.textContent?.trim() ?? "");
+  if (headers.length < 3) {
+    table.removeAttribute("data-stack");
+    return;
+  }
+  for (const body of Array.from(table.tBodies)) {
+    for (const row of Array.from(body.rows)) {
+      let col = 0;
+      for (const cell of Array.from(row.cells)) {
+        const label = cell.colSpan > 1 ? "" : headers[col] ?? "";
+        if (cell.getAttribute("data-label") !== label) cell.setAttribute("data-label", label);
+        col += cell.colSpan;
+      }
+    }
+  }
+  table.setAttribute("data-stack", "");
+}
+
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
-    <table
-      ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
-      {...props}
-    />
-  </div>
-));
+  React.HTMLAttributes<HTMLTableElement> & { stack?: boolean }
+>(({ className, stack = true, ...props }, ref) => {
+  const innerRef = React.useRef<HTMLTableElement | null>(null);
+  const setRef = React.useCallback(
+    (node: HTMLTableElement | null) => {
+      innerRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref]
+  );
+
+  React.useEffect(() => {
+    const table = innerRef.current;
+    if (!table || !stack) return;
+    stampLabels(table);
+    const observer = new MutationObserver(() => stampLabels(table));
+    observer.observe(table, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
+  }, [stack]);
+
+  return (
+    <div className="relative w-full overflow-auto">
+      <table
+        ref={setRef}
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...props}
+      />
+    </div>
+  );
+});
 Table.displayName = "Table";
 
 const TableHeader = React.forwardRef<

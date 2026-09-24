@@ -67,7 +67,7 @@ export function TrendLine({ data, height = 260 }: TrendLineProps) {
             axisLine={false}
             tickLine={false}
             label={{
-              value: "tCO2e",
+              value: "tCO₂e",
               angle: -90,
               position: "insideLeft",
               fill: "#64748b",

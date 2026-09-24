@@ -42,7 +42,7 @@ function formatDate(iso: string) {
 }
 
 function formatTco2e(value: string | null) {
-  return value != null ? `${Number(value).toFixed(2)} tCO2e` : "-";
+  return value != null ? `${Number(value).toFixed(2)} tCO₂e` : "-";
 }
 
 export function RequestSubmissionForm({ orgId, contractId }: { orgId: string; contractId: string }) {

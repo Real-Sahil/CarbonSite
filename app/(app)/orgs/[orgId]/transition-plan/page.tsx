@@ -65,7 +65,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
           <h2 className="text-base font-semibold text-[#111827]">Pathway</h2>
           <p className="mt-1 max-w-[70ch] text-xs text-[#6B7280]">
             {base
-              ? `From ${base.source} (${base.year}, ${t(base.tco2e)} tCO2e). The 1.5°C benchmark cuts ${(ACA_RATE_1_5C * 100).toFixed(1)}% of base-year emissions a year down to a 90% cut. Planned is the base less each scheduled initiative's annual saving from the year it starts.`
+              ? `From ${base.source} (${base.year}, ${t(base.tco2e)} tCO₂e). The 1.5°C benchmark cuts ${(ACA_RATE_1_5C * 100).toFixed(1)}% of base-year emissions a year down to a 90% cut. Planned is the base less each scheduled initiative's annual saving from the year it starts.`
               : "Set an SBTi target or an active base year to draw the pathway."}
           </p>
         </div>
@@ -83,16 +83,16 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
           <div className="grid grid-cols-1 gap-4 border-t border-[#F3F4F6] px-5 py-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-[#6B7280]">{nearTermGap.against === "target" ? "Target" : "1.5°C benchmark"} for {nearTermGap.year}</p>
-              <p className="mt-1 text-lg font-semibold tabular-nums text-[#111827]">{t(nearTermGap.goal)} tCO2e</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-[#111827]">{t(nearTermGap.goal)} tCO₂e</p>
             </div>
             <div>
               <p className="text-xs text-[#6B7280]">Planned for {nearTermGap.year}</p>
-              <p className="mt-1 text-lg font-semibold tabular-nums text-[#111827]">{t(nearTermGap.planned)} tCO2e</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-[#111827]">{t(nearTermGap.planned)} tCO₂e</p>
             </div>
             <div>
               <p className="text-xs text-[#6B7280]">Still to find</p>
               <p className={`mt-1 text-lg font-semibold tabular-nums ${nearTermGap.gapTco2e > 0 ? "text-red-600" : "text-green-700"}`}>
-                {nearTermGap.gapTco2e > 0 ? `${t(nearTermGap.gapTco2e)} tCO2e a year` : "None"}
+                {nearTermGap.gapTco2e > 0 ? `${t(nearTermGap.gapTco2e)} tCO₂e a year` : "None"}
               </p>
             </div>
           </div>

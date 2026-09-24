@@ -101,10 +101,10 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Baseline (total)", value: baseTotal.toFixed(1), unit: "tCO2e" },
-              { label: `Near-term target (${target.nearTermYear})`, value: nearTermTarget.toFixed(1), unit: `tCO2e (-${target.nearTermReductionPct.toFixed(0)}%)` },
-              { label: `Net-zero target (${target.netZeroYear})`, value: netZeroTarget.toFixed(1), unit: `tCO2e (-${target.netZeroReductionPct.toFixed(0)}%)` },
-              { label: "Annual reduction needed", value: ((baseTotal - nearTermTarget) / Math.max(target.nearTermYear - target.baseYear, 1)).toFixed(1), unit: "tCO2e/year" },
+              { label: "Baseline (total)", value: baseTotal.toFixed(1), unit: "tCO₂e" },
+              { label: `Near-term target (${target.nearTermYear})`, value: nearTermTarget.toFixed(1), unit: `tCO₂e (-${target.nearTermReductionPct.toFixed(0)}%)` },
+              { label: `Net-zero target (${target.netZeroYear})`, value: netZeroTarget.toFixed(1), unit: `tCO₂e (-${target.netZeroReductionPct.toFixed(0)}%)` },
+              { label: "Annual reduction needed", value: ((baseTotal - nearTermTarget) / Math.max(target.nearTermYear - target.baseYear, 1)).toFixed(1), unit: "tCO₂e/year" },
             ].map(({ label, value, unit }) => (
               <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
                 <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1 leading-tight">{label}</div>
@@ -130,7 +130,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-sm text-gray-700">{label}</span>
                       <span className="text-sm font-medium tabular-nums text-gray-900">
-                        {value.toFixed(1)} tCO2e <span className="text-gray-500 font-normal">({pct.toFixed(0)}%)</span>
+                        {value.toFixed(1)} tCO₂e <span className="text-gray-500 font-normal">({pct.toFixed(0)}%)</span>
                       </span>
                     </div>
                     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -200,11 +200,11 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
               <div className="flex items-center gap-6 mt-3 pt-3 border-t border-gray-100">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-                  <span className="text-xs text-gray-500">Near-term: {nearTermTarget.toFixed(0)} tCO2e by {target.nearTermYear}</span>
+                  <span className="text-xs text-gray-500">Near-term: {nearTermTarget.toFixed(0)} tCO₂e by {target.nearTermYear}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="h-3.5 w-3.5 text-[#c2410c]" />
-                  <span className="text-xs text-gray-500">Net-zero: {netZeroTarget.toFixed(0)} tCO2e by {target.netZeroYear}</span>
+                  <span className="text-xs text-gray-500">Net-zero: {netZeroTarget.toFixed(0)} tCO₂e by {target.netZeroYear}</span>
                 </div>
               </div>
             </div>

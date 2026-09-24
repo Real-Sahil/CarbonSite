@@ -127,7 +127,7 @@ function SetBudgetModal({
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Total carbon budget (tCO2e) <span className="text-red-500">*</span>
+              Total carbon budget (tCO₂e) <span className="text-red-500">*</span>
             </label>
             <input type="number" required min="0.01" step="0.01" value={totalBudget}
               onChange={(e) => setTotalBudget(e.target.value)} className={inputCls} placeholder="500.00" />
@@ -157,7 +157,7 @@ function SetBudgetModal({
                   <input type="text" value={phase.name} placeholder="Phase name"
                     onChange={(e) => setPhases(phases.map((p, j) => j === i ? { ...p, name: e.target.value } : p))}
                     className={`${inputCls} flex-1`} />
-                  <input type="number" min="0" step="0.01" value={phase.budgetTco2e} placeholder="tCO2e"
+                  <input type="number" min="0" step="0.01" value={phase.budgetTco2e} placeholder="tCO₂e"
                     onChange={(e) => setPhases(phases.map((p, j) => j === i ? { ...p, budgetTco2e: e.target.value } : p))}
                     className="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15" />
                   <button type="button" onClick={() => setPhases(phases.filter((_, j) => j !== i))}
@@ -257,7 +257,7 @@ function PhaseRow({
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500 tabular-nums">
-            {phaseActual.toFixed(1)} / {phaseBudget.toFixed(1)} tCO2e ({phasePct}%)
+            {phaseActual.toFixed(1)} / {phaseBudget.toFixed(1)} tCO₂e ({phasePct}%)
           </span>
           {!editing && (
             <button
@@ -274,7 +274,7 @@ function PhaseRow({
       {editing && (
         <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Actual (tCO2e)</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Actual (tCO₂e)</label>
             <input
               type="number" min="0" step="0.01" value={actual}
               onChange={(e) => setActual(e.target.value)}
@@ -347,7 +347,7 @@ function CarbonEvmCard({ phases }: { phases: Phase[] }) {
         <div className="p-5">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Earned value</div>
           <div className="text-xl font-semibold text-gray-900 tabular-nums">{evm.earnedValueTco2e.toFixed(1)}</div>
-          <div className="text-xs text-gray-500 mt-0.5">tCO2e of budgeted work done</div>
+          <div className="text-xs text-gray-500 mt-0.5">tCO₂e of budgeted work done</div>
         </div>
         <div className="p-5">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Carbon performance index</div>
@@ -357,14 +357,14 @@ function CarbonEvmCard({ phases }: { phases: Phase[] }) {
         <div className="p-5">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Forecast at completion</div>
           <div className="text-xl font-semibold text-gray-900 tabular-nums">{evm.forecastAtCompletionTco2e.toFixed(1)}</div>
-          <div className="text-xs text-gray-500 mt-0.5">tCO2e, vs {evm.budgetAtCompletionTco2e.toFixed(1)} budgeted</div>
+          <div className="text-xs text-gray-500 mt-0.5">tCO₂e, vs {evm.budgetAtCompletionTco2e.toFixed(1)} budgeted</div>
         </div>
         <div className="p-5">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Variance at completion</div>
           <div className={`text-xl font-semibold tabular-nums ${varianceTone}`}>
             {evm.varianceAtCompletionTco2e >= 0 ? "+" : ""}{evm.varianceAtCompletionTco2e.toFixed(1)}
           </div>
-          <div className="text-xs text-gray-500 mt-0.5">tCO2e {evm.varianceAtCompletionTco2e >= 0 ? "under" : "over"} budget</div>
+          <div className="text-xs text-gray-500 mt-0.5">tCO₂e {evm.varianceAtCompletionTco2e >= 0 ? "under" : "over"} budget</div>
         </div>
       </div>
     </div>
@@ -452,7 +452,7 @@ export default function CarbonBudgetPage() {
             <Target className="h-5 w-5 text-[#c2410c]" />
           </div>
           <p className="text-sm font-medium text-gray-700">No carbon budget set</p>
-          <p className="text-xs text-gray-500 mt-1">Set a tCO2e limit to track project emissions against your budget.</p>
+          <p className="text-xs text-gray-500 mt-1">Set a tCO₂e limit to track project emissions against your budget.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -467,9 +467,9 @@ export default function CarbonBudgetPage() {
           {/* Summary cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Budget", value: `${budgetTco2e.toFixed(1)}`, unit: "tCO2e", color: "text-gray-900" },
-              { label: "Actual", value: `${totalActualTco2e.toFixed(1)}`, unit: "tCO2e", color: usedPct >= 100 ? "text-red-600" : "text-gray-900" },
-              { label: "Remaining", value: `${Math.abs(remaining).toFixed(1)}`, unit: remaining < 0 ? "tCO2e over" : "tCO2e left", color: remaining < 0 ? "text-red-600" : "text-green-700" },
+              { label: "Budget", value: `${budgetTco2e.toFixed(1)}`, unit: "tCO₂e", color: "text-gray-900" },
+              { label: "Actual", value: `${totalActualTco2e.toFixed(1)}`, unit: "tCO₂e", color: usedPct >= 100 ? "text-red-600" : "text-gray-900" },
+              { label: "Remaining", value: `${Math.abs(remaining).toFixed(1)}`, unit: remaining < 0 ? "tCO₂e over" : "tCO₂e left", color: remaining < 0 ? "text-red-600" : "text-green-700" },
               { label: "Used", value: `${usedPct}%`, unit: "of budget", color: usedPct >= 100 ? "text-red-600" : "text-gray-900" },
             ].map(({ label, value, unit, color }) => (
               <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
@@ -489,8 +489,8 @@ export default function CarbonBudgetPage() {
             <ProgressBar actual={totalActualTco2e} budget={budgetTco2e} />
             <div className="flex justify-between mt-2 text-xs text-gray-500">
               <span>0</span>
-              <span className="text-amber-500">80% ({(budgetTco2e * 0.8).toFixed(0)} tCO2e)</span>
-              <span>{budgetTco2e.toFixed(0)} tCO2e</span>
+              <span className="text-amber-500">80% ({(budgetTco2e * 0.8).toFixed(0)} tCO₂e)</span>
+              <span>{budgetTco2e.toFixed(0)} tCO₂e</span>
             </div>
           </div>
 
@@ -506,7 +506,7 @@ export default function CarbonBudgetPage() {
                     <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Budget intensity</span>
                   </div>
                   <div className="text-xl font-semibold text-gray-900 tabular-nums">{intensityPerM2}</div>
-                  <div className="text-xs text-gray-500">tCO2e / m2</div>
+                  <div className="text-xs text-gray-500">tCO₂e / m2</div>
                 </div>
               )}
               {intensityPerMGbp && (
@@ -516,7 +516,7 @@ export default function CarbonBudgetPage() {
                     <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Spend intensity</span>
                   </div>
                   <div className="text-xl font-semibold text-gray-900 tabular-nums">{intensityPerMGbp}</div>
-                  <div className="text-xs text-gray-500">tCO2e / £1M spend</div>
+                  <div className="text-xs text-gray-500">tCO₂e / £1M spend</div>
                 </div>
               )}
             </div>
@@ -528,7 +528,7 @@ export default function CarbonBudgetPage() {
               <div className="px-6 py-4 border-b border-gray-100">
                 <h3 className="text-sm font-semibold text-gray-900">Budget by phase</h3>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Actual tCO2e and percent complete are reconciled manually per phase.
+                  Actual tCO₂e and percent complete are reconciled manually per phase.
                 </p>
               </div>
               <div className="divide-y divide-gray-50">
@@ -575,8 +575,8 @@ export default function CarbonBudgetPage() {
               </p>
               <p className="text-xs text-gray-500 mt-0.5">
                 {remaining >= 0
-                  ? `${remaining.toFixed(1)} tCO2e remaining (${100 - usedPct}% headroom)`
-                  : `${Math.abs(remaining).toFixed(1)} tCO2e over budget`}
+                  ? `${remaining.toFixed(1)} tCO₂e remaining (${100 - usedPct}% headroom)`
+                  : `${Math.abs(remaining).toFixed(1)} tCO₂e over budget`}
               </p>
             </div>
           </div>

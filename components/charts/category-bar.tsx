@@ -67,7 +67,7 @@ export function CategoryBar({
             axisLine={{ stroke: GRID_STROKE }}
             tickLine={false}
             label={{
-              value: "tCO2e",
+              value: "tCO₂e",
               position: "insideBottomRight",
               offset: -2,
               fill: "#64748b",

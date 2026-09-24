@@ -108,7 +108,7 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
               <input type="number" required min={2000} max={2050} value={form.vintage} onChange={(e) => set("vintage", e.target.value)} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Quantity (tCO2e)</label>
+              <label className={labelCls}>Quantity (tCO₂e)</label>
               <input type="number" required min="0.0001" step="0.0001" value={form.quantityTonnes} onChange={(e) => set("quantityTonnes", e.target.value)} className={inputCls} placeholder="100.0000" />
             </div>
             <div>

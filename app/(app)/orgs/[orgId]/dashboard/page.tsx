@@ -72,7 +72,7 @@ interface DashboardPageProps {
 function formatKgCo2e(value: unknown): string {
   const numeric = Number(value ?? 0);
   if (!Number.isFinite(numeric) || numeric === 0) return "0 kgCO2e";
-  if (numeric >= 1000) return `${(numeric / 1000).toFixed(2)} tCO2e`;
+  if (numeric >= 1000) return `${(numeric / 1000).toFixed(2)} tCO₂e`;
   return `${numeric.toFixed(1)} kgCO2e`;
 }
 
@@ -1244,7 +1244,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               <AlertTriangle aria-hidden="true" className="inline h-4 w-4 mr-2 align-text-bottom" />
               <span className="font-medium">
                 Unpublished changes: {deltaKg >= 0 ? "+" : "\u2212"}
-                {deltaT.toLocaleString("en-GB", { maximumFractionDigits: deltaT < 10 ? 2 : 1 })} tCO2e
+                {deltaT.toLocaleString("en-GB", { maximumFractionDigits: deltaT < 10 ? 2 : 1 })} tCO₂e
               </span>{" "}
               since snapshot v{latestSnapshot.version} ({formatKgCo2e(snapshotTotalCo2e)}). The figures below are live
               ({formatKgCo2e(liveTotalCo2e)}); reports still use the published snapshot until you publish again.
@@ -1375,7 +1375,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   icon={Layers}
                   label="Embodied carbon total"
                   value={industryData.totalKgCo2e >= 1000
-                    ? `${(industryData.totalKgCo2e / 1000).toFixed(2)} tCO2e`
+                    ? `${(industryData.totalKgCo2e / 1000).toFixed(2)} tCO₂e`
                     : `${industryData.totalKgCo2e.toFixed(1)} kgCO2e`}
                   detail={`${industryData.recordCount} material record${industryData.recordCount !== 1 ? "s" : ""}`}
                   href={`/orgs/${orgId}/embodied-carbon`}
@@ -1395,7 +1395,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   icon={Route}
                   label="Transport emissions (Scope 3)"
                   value={industryData.transportKgCo2e >= 1000
-                    ? `${(industryData.transportKgCo2e / 1000).toFixed(2)} tCO2e`
+                    ? `${(industryData.transportKgCo2e / 1000).toFixed(2)} tCO₂e`
                     : `${industryData.transportKgCo2e.toFixed(1)} kgCO2e`}
                   detail={`${industryData.transportRecords} Scope 3 records`}
                 />
@@ -1405,7 +1405,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 >
                   <div className="flex items-center gap-2">
                     <Scale aria-hidden="true" className="h-4 w-4 text-[#111827]" />
-                    <p className="text-xs font-normal uppercase tracking-wide text-[#111827]">tCO2e/tonne-km</p>
+                    <p className="text-xs font-normal uppercase tracking-wide text-[#111827]">tCO₂e/tonne-km</p>
                   </div>
                   <div className="mt-3">
                     <p className="text-base font-normal text-[#111827] tracking-[-0.42px]">Add transport data</p>
@@ -1422,7 +1422,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   icon={Gauge}
                   label="Building energy (Scope 2)"
                   value={industryData.energyKgCo2e >= 1000
-                    ? `${(industryData.energyKgCo2e / 1000).toFixed(2)} tCO2e`
+                    ? `${(industryData.energyKgCo2e / 1000).toFixed(2)} tCO₂e`
                     : `${industryData.energyKgCo2e.toFixed(1)} kgCO2e`}
                   detail={`${industryData.energyRecords} electricity records`}
                 />
@@ -1948,7 +1948,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {carbonPrice && carbonPriceCost && carbonPriceCost.coveredTco2e > 0 && (
               <div className="rounded-[14px] border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#374151] tracking-[-0.42px]">
                 At your {(PRICE_TYPES[carbonPrice.priceType as PriceType]?.label ?? "internal carbon price").toLowerCase()} of{" "}
-                {formatMoney(carbonPrice.pricePerTonne, carbonPrice.currency, 2)}/tCO2e, the Scope {carbonPrice.scopes.join(", ")} emissions
+                {formatMoney(carbonPrice.pricePerTonne, carbonPrice.currency, 2)}/tCO₂e, the Scope {carbonPrice.scopes.join(", ")} emissions
                 on this page carry a carbon cost of{" "}
                 <span className="font-medium text-[#111827]">{formatMoney(carbonPriceCost.cost, carbonPrice.currency)}</span>.{" "}
                 <Link href={`/orgs/${orgId}/settings/carbon-price`} className="underline underline-offset-2">Carbon price</Link>

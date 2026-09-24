@@ -116,7 +116,7 @@ export function CarbonPrices({
           <div className="grid grid-cols-1 gap-4 border-t border-slate-100 p-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-slate-500">Emissions covered ({coverage.periodLabel}, snapshot v{coverage.version})</p>
-              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">{tonnes.format(coverage.coveredTco2e)} tCO2e</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">{tonnes.format(coverage.coveredTco2e)} tCO₂e</p>
             </div>
             <div>
               <p className="text-xs text-slate-500">Share of gross emissions</p>
@@ -145,7 +145,7 @@ export function CarbonPrices({
               <thead className="text-left text-xs text-slate-500">
                 <tr>
                   <th className="px-4 py-2 font-medium">Price</th>
-                  <th className="px-4 py-2 text-right font-medium">Per tCO2e</th>
+                  <th className="px-4 py-2 text-right font-medium">Per tCO₂e</th>
                   <th className="px-4 py-2 font-medium">Scopes</th>
                   <th className="px-4 py-2 font-medium">Used for</th>
                   <th className="px-4 py-2 font-medium">In force</th>

@@ -75,7 +75,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Imports",          href: `/orgs/${orgId}/imports`,           icon: Upload,        roles: CORE_ROLES },
         { label: "Records",          href: `/orgs/${orgId}/records`,           icon: FileText,      roles: CORE_ROLES },
         { label: "Submissions",      href: `/orgs/${orgId}/submissions`,       icon: Inbox,         roles: ["admin", "editor", "reviewer"] },
-        { label: "Supplier Reports", href: `/orgs/${orgId}/supplier-reports`,  icon: PackageSearch, roles: ["admin", "editor", "reviewer", "auditor"] },
+        { label: "Supplier reports", href: `/orgs/${orgId}/supplier-reports`,  icon: PackageSearch, roles: ["admin", "editor", "reviewer", "auditor"] },
         { label: "Tasks",            href: `/orgs/${orgId}/tasks`,             icon: ListChecks },
         { label: "Contracts",        href: `/orgs/${orgId}/contracts`,         icon: Briefcase,     roles: EXTENDED_VIEW_ROLES },
         { label: "Programmes",       href: `/orgs/${orgId}/programmes`,        icon: FolderKanban,  roles: EXTENDED_VIEW_ROLES },
@@ -83,35 +83,34 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Calculations", items: [
         { label: "Analytics",       href: `/orgs/${orgId}/analytics`,       icon: LineChart,  roles: CORE_ROLES },
         { label: "Calculations",    href: `/orgs/${orgId}/calculations`,    icon: Calculator, roles: CORE_ROLES },
-        { label: "Embodied Carbon", href: `/orgs/${orgId}/embodied-carbon`, icon: Layers,     roles: CORE_ROLES },
+        { label: "Embodied carbon", href: `/orgs/${orgId}/embodied-carbon`, icon: Layers,     roles: CORE_ROLES },
         { label: "Plant",           href: `/orgs/${orgId}/plant`,           icon: Tractor,    roles: CORE_ROLES },
         { label: "Scenarios",       href: `/orgs/${orgId}/scenarios`,       icon: Sliders,    roles: CORE_ROLES },
       ]},
       { label: "Inventory governance", items: [
         { label: "Boundary",     href: `/orgs/${orgId}/boundary`,     icon: GitBranch, roles: EXTENDED_VIEW_ROLES },
-        { label: "Base Year",    href: `/orgs/${orgId}/base-year`,    icon: Anchor,    roles: EXTENDED_VIEW_ROLES },
+        { label: "Base year",    href: `/orgs/${orgId}/base-year`,    icon: Anchor,    roles: EXTENDED_VIEW_ROLES },
         { label: "Completeness", href: `/orgs/${orgId}/completeness`, icon: Grid3x3,   roles: EXTENDED_VIEW_ROLES },
       ]},
       { label: "Environment", items: [
         { label: "Overview",       href: `/orgs/${orgId}/environment`,                icon: ShieldAlert, roles: EXTENDED_VIEW_ROLES },
         { label: "Permits",        href: `/orgs/${orgId}/environment/permits`,        icon: BadgeCheck,  roles: EXTENDED_VIEW_ROLES },
         { label: "Incidents",      href: `/orgs/${orgId}/environment/incidents`,      icon: Siren,       roles: EXTENDED_VIEW_ROLES },
-        { label: "Legal Register", href: `/orgs/${orgId}/environment/legal-register`, icon: Scale,       roles: EXTENDED_VIEW_ROLES },
+        { label: "Legal register", href: `/orgs/${orgId}/environment/legal-register`, icon: Scale,       roles: EXTENDED_VIEW_ROLES },
         { label: "Aspects",        href: `/orgs/${orgId}/environment/aspects`,        icon: ListChecks,  roles: EXTENDED_VIEW_ROLES },
         { label: "Biodiversity",   href: `/orgs/${orgId}/biodiversity`,               icon: Sprout,      roles: EXTENDED_VIEW_ROLES },
-        { label: "Ecology Scans", href: `/orgs/${orgId}/ecology`,                     icon: Leaf,        roles: EXTENDED_VIEW_ROLES },
+        { label: "Ecology scans", href: `/orgs/${orgId}/ecology`,                     icon: Leaf,        roles: EXTENDED_VIEW_ROLES },
         { label: "Water",         href: `/orgs/${orgId}/water`,                       icon: Droplets,    roles: EXTENDED_VIEW_ROLES },
         { label: "Waste",                href: `/orgs/${orgId}/waste`,              icon: Trash2,       roles: EXTENDED_VIEW_ROLES },
-        { label: "Enforcement Notices",  href: `/orgs/${orgId}/enforcement-notices`, icon: Gavel,        roles: EXTENDED_VIEW_ROLES },
+        { label: "Enforcement notices",  href: `/orgs/${orgId}/enforcement-notices`, icon: Gavel,        roles: EXTENDED_VIEW_ROLES },
       ]},
       { label: "H&S", items: [
-        { label: "H&S Incidents",    href: `/orgs/${orgId}/hs-incidents`,      icon: AlertTriangle, roles: EXTENDED_VIEW_ROLES },
-        { label: "Method Statements", href: `/orgs/${orgId}/method-statements`, icon: ClipboardList, roles: EXTENDED_VIEW_ROLES },
-        { label: "Worker Check-ins",  href: `/orgs/${orgId}/worker-sessions`,   icon: Clock,         roles: EXTENDED_VIEW_ROLES },
-        { label: "Programmes",        href: `/orgs/${orgId}/programmes`,         icon: FolderKanban,  roles: EXTENDED_VIEW_ROLES },
+        { label: "H&S incidents",    href: `/orgs/${orgId}/hs-incidents`,      icon: AlertTriangle, roles: EXTENDED_VIEW_ROLES },
+        { label: "Method statements", href: `/orgs/${orgId}/method-statements`, icon: ClipboardList, roles: EXTENDED_VIEW_ROLES },
+        { label: "Worker check-ins",  href: `/orgs/${orgId}/worker-sessions`,   icon: Clock,         roles: EXTENDED_VIEW_ROLES },
       ]},
     ]},
-    { label: "Social Value", icon: Heart, sections: [
+    { label: "Social value", icon: Heart, sections: [
       { items: [
         { label: "Overview",     href: `/orgs/${orgId}/social-value`,                icon: Heart,         roles: EXTENDED_VIEW_ROLES },
         { label: "Commitments",  href: `/orgs/${orgId}/social-value/commitments`,    icon: ClipboardList, roles: EXTENDED_VIEW_ROLES },
@@ -119,7 +118,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Frameworks",   href: `/orgs/${orgId}/social-value/frameworks`,     icon: Network,       roles: ["admin", "sustainability_director"] },
       ]},
     ]},
-    { label: "Carbon Intelligence", icon: Zap, sections: [
+    { label: "Carbon intelligence", icon: Zap, sections: [
       { items: [
         { label: "Overview",      href: `/orgs/${orgId}/carbon-intelligence`,              icon: Zap,           roles: EXTENDED_VIEW_ROLES },
         { label: "Alerts",        href: `/orgs/${orgId}/carbon-intelligence/alerts`,       icon: AlertTriangle, roles: EXTENDED_VIEW_ROLES },
@@ -127,44 +126,44 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Integrations",  href: `/orgs/${orgId}/carbon-intelligence/integrations`, icon: Plug,          roles: ["admin", "sustainability_director"] },
       ]},
     ]},
-    { label: "Impact Reports", icon: BarChart2, sections: [
+    { label: "Impact reports", icon: BarChart2, sections: [
       { items: [
         { label: "Reports", href: `/orgs/${orgId}/reports`, icon: BarChart2, roles: CORE_ROLES },
       ]},
       { label: "Compliance", items: [
         { label: "Compliance",         href: `/orgs/${orgId}/compliance`,                       icon: ShieldCheck,    roles: CORE_ROLES },
-        { label: "Reg. Calendar",      href: `/orgs/${orgId}/compliance/deadlines`,              icon: CalendarClock,  roles: CORE_ROLES },
+        { label: "Regulatory calendar",      href: `/orgs/${orgId}/compliance/deadlines`,              icon: CalendarClock,  roles: CORE_ROLES },
         { label: "Assurance",          href: `/orgs/${orgId}/compliance/assurance-readiness`,    icon: BadgeCheck,     roles: CORE_ROLES },
-        { label: "ESRS E1 Gap",        href: `/orgs/${orgId}/compliance/esrs-e1`,                icon: BookOpen,       roles: CORE_ROLES },
-        { label: "Framework Crosswalk", href: `/orgs/${orgId}/compliance/crosswalk`,             icon: Network,        roles: EXTENDED_VIEW_ROLES },
-        { label: "Assurance Engagements", href: `/orgs/${orgId}/assurance`,                      icon: ClipboardCheck, roles: ["admin", "sustainability_director", "auditor", "sustainability_manager"] },
-        { label: "TCFD Scenarios",         href: `/orgs/${orgId}/tcfd`,                           icon: CloudSun,       roles: CORE_ROLES },
+        { label: "ESRS E1 gap",        href: `/orgs/${orgId}/compliance/esrs-e1`,                icon: BookOpen,       roles: CORE_ROLES },
+        { label: "Framework crosswalk", href: `/orgs/${orgId}/compliance/crosswalk`,             icon: Network,        roles: EXTENDED_VIEW_ROLES },
+        { label: "Assurance engagements", href: `/orgs/${orgId}/assurance`,                      icon: ClipboardCheck, roles: ["admin", "sustainability_director", "auditor", "sustainability_manager"] },
+        { label: "TCFD scenarios",         href: `/orgs/${orgId}/tcfd`,                           icon: CloudSun,       roles: CORE_ROLES },
         { label: "Materiality",            href: `/orgs/${orgId}/materiality`,                    icon: BarChart3,      roles: CORE_ROLES },
-        { label: "TNFD Scenarios",         href: `/orgs/${orgId}/tnfd`,                           icon: Leaf,           roles: CORE_ROLES },
+        { label: "TNFD scenarios",         href: `/orgs/${orgId}/tnfd`,                           icon: Leaf,           roles: CORE_ROLES },
       ]},
       { label: "Audit", items: [
-        { label: "Audit Trail",    href: `/orgs/${orgId}/audit`,             icon: Clock, roles: CORE_ROLES },
-        { label: "Data Lineage",   href: `/orgs/${orgId}/audit/data-lineage`, icon: Eye,   roles: ["admin", "auditor"] },
+        { label: "Audit trail",    href: `/orgs/${orgId}/audit`,             icon: Clock, roles: CORE_ROLES },
+        { label: "Data lineage",   href: `/orgs/${orgId}/audit/data-lineage`, icon: Eye,   roles: ["admin", "auditor"] },
       ]},
     ]},
-    { label: "Carbon Forecast", icon: TrendingUp, sections: [
+    { label: "Carbon forecast", icon: TrendingUp, sections: [
       { items: [
         { label: "Pathway",      href: `/orgs/${orgId}/pathway`,      icon: Compass,      roles: CORE_ROLES },
         { label: "Transition plan", href: `/orgs/${orgId}/transition-plan`, icon: ClipboardCheck, roles: CORE_ROLES },
         { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
-        { label: "SBTi Roadmap", href: `/orgs/${orgId}/sbti`,         icon: TrendingDown, roles: CORE_ROLES },
+        { label: "SBTi roadmap", href: `/orgs/${orgId}/sbti`,         icon: TrendingDown, roles: CORE_ROLES },
         { label: "Offsets",      href: `/orgs/${orgId}/offsets`,      icon: Sprout,       roles: CORE_ROLES },
       ]},
     ]},
     { label: "Admin", icon: Settings, sections: [
       { items: [
         { label: "Integrations",        href: `/orgs/${orgId}/integrations`,                 icon: Plug,        roles: ["admin", "editor"] },
-        { label: "Accounting Software",  href: `/orgs/${orgId}/integrations/accounting`,      icon: Plug,        roles: ["admin", "editor"] },
-        { label: "Supplier Management",  href: `/orgs/${orgId}/integrations/suppliers`,       icon: Truck,       roles: ["admin", "editor"] },
+        { label: "Accounting software",  href: `/orgs/${orgId}/integrations/accounting`,      icon: Plug,        roles: ["admin", "editor"] },
+        { label: "Supplier management",  href: `/orgs/${orgId}/integrations/suppliers`,       icon: Truck,       roles: ["admin", "editor"] },
         { label: "Suppliers",            href: `/orgs/${orgId}/settings/suppliers`,           icon: Truck,       roles: ["admin"] },
         { label: "Performance",          href: `/orgs/${orgId}/suppliers/performance`,        icon: LineChart,   roles: ["admin"] },
-        { label: "Invoice Review",       href: `/orgs/${orgId}/finance/invoice-review`,       icon: Zap,         roles: ["admin", "editor"] },
-        { label: "SSO Config",           href: `/orgs/${orgId}/settings/sso`,                 icon: ShieldCheck, roles: ["admin"] },
+        { label: "Invoice review",       href: `/orgs/${orgId}/finance/invoice-review`,       icon: Zap,         roles: ["admin", "editor"] },
+        { label: "Single sign-on",           href: `/orgs/${orgId}/settings/sso`,                 icon: ShieldCheck, roles: ["admin"] },
         { label: "Settings",             href: role === "admin" ? `/orgs/${orgId}/settings/members` : `/orgs/${orgId}/settings/operations`, icon: Settings, roles: ["admin", "editor"] },
       ]},
     ]},
@@ -191,6 +190,28 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     const active = navGroups.find(groupIsActive);
     if (active && active.label !== openGroup) setOpenGroup(active.label);
   }, [pathname]);
+
+  // Sections inside a group fold too, so a long group (MetricOra has five)
+  // shows only the part in use. Open by default: the section holding the
+  // current page, else the group's first section.
+  const sectionKey = (group: NavGroup, idx: number) => `${group.label}/${group.sections[idx].label ?? idx}`;
+  function activeSectionKeys(): string[] {
+    return navGroups.map((group) => {
+      const idx = group.sections.findIndex((sec) => sec.items.some((item) => pathname === item.href || pathname.startsWith(item.href + "/")));
+      return sectionKey(group, idx >= 0 ? idx : 0);
+    });
+  }
+  const [openSections, setOpenSections] = useState<Set<string>>(() => new Set(activeSectionKeys()));
+  useEffect(() => {
+    setOpenSections((prev) => new Set([...prev, ...activeSectionKeys()]));
+  }, [pathname]);
+  function toggleSection(key: string) {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
 
   async function handleSignOut() { await authClient.signOut(); router.push("/sign-in"); }
 
@@ -253,11 +274,23 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
             )}
             {isOpen && (
               <div className={cn("flex flex-col gap-0.5", !isCollapsed && "mt-0.5")}>
-                {group.sections.map((section, sIdx) => (
-                  <div key={section.label ?? sIdx} className={cn(sIdx > 0 && !isCollapsed && "mt-2")}>
+                {group.sections.map((section, sIdx) => {
+                  const key = sectionKey(group, sIdx);
+                  const sectionOpen = isCollapsed || !section.label || openSections.has(key);
+                  return (
+                  <div key={key} className={cn(sIdx > 0 && !isCollapsed && "mt-1")}>
                     {section.label && !isCollapsed && (
-                      <p className="px-2.5 mb-1 text-[9px] uppercase tracking-[0.12em] font-semibold text-slate-600">{section.label}</p>
+                      <button
+                        type="button"
+                        onClick={() => toggleSection(key)}
+                        aria-expanded={sectionOpen}
+                        className="flex w-full items-center gap-1 rounded-md px-2.5 py-1 text-[10px] uppercase tracking-[0.1em] font-semibold text-slate-500 hover:text-slate-700"
+                      >
+                        <span className="flex-1 text-left">{section.label}</span>
+                        <ChevronRight className={cn("h-3 w-3 shrink-0 transition-transform", sectionOpen && "rotate-90")} aria-hidden="true" />
+                      </button>
                     )}
+                    {sectionOpen && (
                     <div className="flex flex-col gap-0.5">
                       {section.items.map((item) => {
                         const link = <NavLink key={item.href} item={item} onClick={onNavClick} indent isCollapsed={isCollapsed} />;
@@ -272,8 +305,10 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                         return link;
                       })}
                     </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -342,7 +377,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <DropdownMenuItem asChild>
                 <Link href={`/orgs/${orgId}/settings/members`} className="rounded-lg text-slate-600 focus:text-slate-900 focus:bg-slate-100">
                   <Users aria-hidden="true" className="h-4 w-4 mr-2" />
-                  Members &amp; Settings
+                  Members and settings
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-slate-200" />
@@ -414,7 +449,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                   <DropdownMenuItem asChild>
                     <Link href={`/orgs/${orgId}/settings/members`} onClick={() => setMobileOpen(false)} className="rounded-lg text-slate-600 focus:text-slate-900 focus:bg-slate-100">
                       <Users aria-hidden="true" className="h-4 w-4 mr-2" />
-                      Members &amp; Settings
+                      Members and settings
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-slate-200" />
@@ -431,7 +466,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
 
       {/* ── Desktop sidebar ───────────────────────────────────────────────────── */}
       <div className="relative hidden md:flex shrink-0">
-        <aside className={cn("flex flex-col min-h-screen bg-white border-r border-slate-200 transition-[width] duration-200 overflow-hidden", collapsed ? "w-[56px]" : "w-56")}>
+        <aside className={cn("sticky top-0 flex flex-col h-[100dvh] bg-white border-r border-slate-200 transition-[width] duration-200 overflow-hidden", collapsed ? "w-[56px]" : "w-56")}>
           <div className="relative z-10 flex flex-col flex-1">
             <SidebarInner />
           </div>

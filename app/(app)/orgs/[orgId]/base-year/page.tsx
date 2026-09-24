@@ -188,8 +188,8 @@ export default async function BaseYearPage({ params }: PageProps) {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
-                    <Row label="As first published" value={`${original.toFixed(2)} tCO2e`} />
-                    <Row label="After recalculations" value={`${current.toFixed(2)} tCO2e`} />
+                    <Row label="As first published" value={`${original.toFixed(2)} tCO₂e`} />
+                    <Row label="After recalculations" value={`${current.toFixed(2)} tCO₂e`} />
                     <Row
                       label="Cumulative drift"
                       value={drift === null ? "not applicable" : `${drift.toFixed(2)}%`}

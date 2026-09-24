@@ -35,7 +35,7 @@ export function AnalyticsSummary({ orgId }: { orgId: string }) {
   const scopeItems: Array<{ name: string; value: number; scope: number }> = scopeData?.data || [];
   const trendItems: Array<{ date: string; totalCo2e: number }> = trendData?.data || [];
 
-  // API returns kgCO2e — convert to tCO2e for display
+  // API returns kgCO2e — convert to tCO₂e for display
   const kgToT = (kg: number) => kg / 1000;
 
   const totalEmissions =
@@ -48,21 +48,21 @@ export function AnalyticsSummary({ orgId }: { orgId: string }) {
   const metrics: SummaryMetric[] = [
     {
       label: "Total Emissions",
-      value: `${kgToT(totalEmissions).toFixed(2)} tCO2e`,
+      value: `${kgToT(totalEmissions).toFixed(2)} tCO₂e`,
       change: weekChange,
       trend: weekChange > 0 ? "up" : "down",
     },
     {
       label: "Scope 1",
-      value: `${kgToT(scopeItems.find(s => s.scope === 1)?.value || 0).toFixed(2)} tCO2e`,
+      value: `${kgToT(scopeItems.find(s => s.scope === 1)?.value || 0).toFixed(2)} tCO₂e`,
     },
     {
       label: "Scope 2",
-      value: `${kgToT(scopeItems.find(s => s.scope === 2)?.value || 0).toFixed(2)} tCO2e`,
+      value: `${kgToT(scopeItems.find(s => s.scope === 2)?.value || 0).toFixed(2)} tCO₂e`,
     },
     {
       label: "Scope 3",
-      value: `${kgToT(scopeItems.find(s => s.scope === 3)?.value || 0).toFixed(2)} tCO2e`,
+      value: `${kgToT(scopeItems.find(s => s.scope === 3)?.value || 0).toFixed(2)} tCO₂e`,
     },
   ];
 

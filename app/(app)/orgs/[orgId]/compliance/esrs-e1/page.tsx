@@ -171,7 +171,7 @@ function buildDisclosures(org: OrgData): DisclosureRequirement[] {
         },
         {
           id: 'e1-5-intensity',
-          label: 'Emissions intensity metric configured (tCO2e per revenue or employee)',
+          label: 'Emissions intensity metric configured (tCO₂e per revenue or employee)',
           status: 'partial',
           detail: 'Intensity metrics are available in the Analytics module once Scope 1+2 data is present.',
         },
