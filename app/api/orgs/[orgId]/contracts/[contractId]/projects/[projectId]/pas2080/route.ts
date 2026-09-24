@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { requireFeature } from "@/lib/billing/limits";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -30,6 +31,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const { orgId, contractId, projectId } = await params;
     const { session } = await requireOrgMember(orgId, ...PAS2080_EDITORS);
+    const planGate = await requireFeature(orgId, "pas2080");
+    if (planGate) return planGate;
     if (!(await findProject(orgId, contractId, projectId))) return apiError("NOT_FOUND", "Project not found.", 404);
 
     const body = planSchema.parse(await req.json());

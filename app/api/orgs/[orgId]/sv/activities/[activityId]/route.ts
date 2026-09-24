@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { requireFeature } from "@/lib/billing/limits";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -41,6 +42,8 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   try {
     const { orgId, activityId } = await params;
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "contract_manager");
+    const planGate = await requireFeature(orgId, "socialValue");
+    if (planGate) return planGate;
 
     const activity = await prisma.svActivity.findUnique({ where: { id: activityId } });
     if (!activity || activity.organizationId !== orgId) {

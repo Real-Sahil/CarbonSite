@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getLimits, usagePercent, PLAN_PRICES, PLAN_LABELS } from "@/lib/billing/limits";
+import { getLimits, hasFeature, usagePercent, PLAN_ANNUAL_TOTAL, PLAN_PRICES, PLAN_LABELS } from "@/lib/billing/limits";
 
 describe("getLimits", () => {
   it("returns trial limits for unknown plan", () => {
@@ -17,12 +17,12 @@ describe("getLimits", () => {
   it("returns starter limits", () => {
     const l = getLimits("starter");
     expect(l.fieldSubmissionsPerMonth).toBe(500);
-    expect(l.members).toBe(10);
+    expect(l.members).toBe(5);
   });
 
   it("returns growth limits", () => {
     const l = getLimits("growth");
-    expect(l.members).toBe(50);
+    expect(l.members).toBe(25);
     expect(l.apiRequestsPerMonth).toBe(100_000);
   });
 
@@ -66,8 +66,24 @@ describe("PLAN_PRICES", () => {
     expect(PLAN_PRICES.growth.annual).toBeLessThan(PLAN_PRICES.growth.monthly);
   });
 
-  it("enterprise is custom (0)", () => {
-    expect(PLAN_PRICES.enterprise.monthly).toBe(0);
+  it("enterprise starts at £750/month, billed annually", () => {
+    expect(PLAN_PRICES.enterprise.monthly).toBe(750);
+  });
+
+  it("annual prices are two months free", () => {
+    expect(PLAN_ANNUAL_TOTAL.starter).toBe(PLAN_PRICES.starter.monthly * 10);
+    expect(PLAN_ANNUAL_TOTAL.growth).toBe(PLAN_PRICES.growth.monthly * 10);
+  });
+});
+
+describe("plan features", () => {
+  it("social value, bid carbon pack and PAS 2080 start at Growth (and are open on trial)", () => {
+    for (const f of ["socialValue", "bidCarbonPack", "pas2080"] as const) {
+      expect(hasFeature("starter", f)).toBe(false);
+      expect(hasFeature("growth", f)).toBe(true);
+      expect(hasFeature("enterprise", f)).toBe(true);
+      expect(hasFeature("trial", f)).toBe(true);
+    }
   });
 });
 

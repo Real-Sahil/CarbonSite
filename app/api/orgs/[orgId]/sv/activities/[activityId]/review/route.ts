@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { requireFeature } from "@/lib/billing/limits";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
@@ -16,6 +17,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
       orgId,
       "admin", "sustainability_director", "sustainability_manager", "reviewer",
     );
+    const planGate = await requireFeature(orgId, "socialValue");
+    if (planGate) return planGate;
 
     const activity = await prisma.svActivity.findUnique({ where: { id: activityId } });
     if (!activity || activity.organizationId !== orgId) {

@@ -60,6 +60,8 @@ vi.mock("@/workers/supplier-invite-email", () => ({
 vi.mock("@/lib/billing/limits", () => ({
   requireActiveBilling: vi.fn().mockResolvedValue(null),
   requireWithinUsageLimit: vi.fn().mockResolvedValue(null),
+  requireFeature: vi.fn().mockResolvedValue(null),
+  requireCapacity: vi.fn().mockResolvedValue(null),
 }));
 vi.mock("@/lib/billing/usage", () => ({ recordUsage: vi.fn() }));
 vi.mock("@/lib/security/rate-limit-async", () => ({ rateLimitRequest: vi.fn().mockResolvedValue(null) }));

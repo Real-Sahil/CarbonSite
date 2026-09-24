@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { requireCapacity } from "@/lib/billing/limits";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -57,6 +58,8 @@ export async function POST(
     });
     if (limited) return limited;
     const body = createFacilitySchema.parse(await req.json());
+    const capacity = await requireCapacity(orgId, "facilities");
+    if (capacity) return capacity;
 
     if (body.legalEntityId) {
       const entity = await prisma.legalEntity.findFirst({

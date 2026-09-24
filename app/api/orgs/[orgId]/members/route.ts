@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { requireCapacity } from "@/lib/billing/limits";
 import { NextRequest } from "next/server";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
@@ -63,6 +64,8 @@ export async function POST(
 
     const { session } = await requireOrgMember(orgId, "admin");
     const body = inviteMemberSchema.parse(await req.json());
+    const capacity = await requireCapacity(orgId, "members", body.role);
+    if (capacity) return capacity;
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "member_invites", session.user.id),
       limit: 15,

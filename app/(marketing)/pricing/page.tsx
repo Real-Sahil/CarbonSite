@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Check, X } from 'lucide-react';
+import { PLAN_ANNUAL_TOTAL, PLAN_PRICES } from '@/lib/billing/limits';
 
 export const metadata: Metadata = {
   title: 'Pricing | MetricOra',
@@ -15,8 +16,10 @@ export const metadata: Metadata = {
 
 interface PricingTier {
   name: string;
-  price: string | number;
+  /** Monthly price in GBP excluding VAT, or a label for sales-led plans. */
+  price: number | string;
   period?: string;
+  note?: string;
   description: string;
   cta: string;
   ctaUrl: string;
@@ -24,65 +27,64 @@ interface PricingTier {
   highlight?: boolean;
 }
 
+// Prices match PLAN_PRICES / PLAN_ANNUAL_TOTAL in lib/billing/limits.ts.
 const tiers: PricingTier[] = [
   {
     name: 'Starter',
-    price: '30 days free',
-    period: ', then £49/month',
-    description: 'For small teams getting started',
-    cta: 'Start Free Trial',
+    price: PLAN_PRICES.starter.monthly,
+    period: '/month + VAT',
+    note: `or £${PLAN_ANNUAL_TOTAL.starter.toLocaleString('en-GB')}/year, 2 months free`,
+    description: 'SECR and Carbon Reduction Plans for bids',
+    cta: 'Start 30-day free trial',
     ctaUrl: '/sign-up',
     features: [
-      { name: 'Up to 10 team members, 10 facilities', included: true },
-      { name: 'Core Scope 1, 2 and 3 calculation', included: true },
-      { name: 'Mobile app + on-device OCR field capture', included: true },
-      { name: 'CSV/Excel import, audit-ready reports', included: true },
+      { name: 'Up to 3 sites and 5 web users', included: true },
+      { name: 'Unlimited field workers on the mobile app', included: true },
+      { name: 'Scope 1, 2 and 3 with DEFRA, EPA and ADEME factors', included: true },
+      { name: 'GHG Protocol, SECR and PPN 06/21 reports with auditor CSV trail', included: true },
       { name: 'Email support', included: true },
-      { name: 'Supplier portal', included: false },
-      { name: 'Accounting software sync', included: false },
-      { name: 'Invoice anomaly detection', included: false },
-      { name: 'Live real-time dashboard', included: false },
+      { name: 'Social value (TOMs) reporting', included: false },
+      { name: 'Bid carbon pack and PAS 2080', included: false },
+      { name: 'Accounting sync (Xero, QuickBooks, Sage)', included: false },
       { name: 'SSO / SAML', included: false },
     ],
   },
   {
     name: 'Growth',
-    price: '30 days free',
-    period: ', then £149/month',
-    description: 'For mid-market organizations',
-    cta: 'Start Free Trial',
+    price: PLAN_PRICES.growth.monthly,
+    period: '/month + VAT',
+    note: `or £${PLAN_ANNUAL_TOTAL.growth.toLocaleString('en-GB')}/year, 2 months free`,
+    description: 'For contractors bidding for public work every month',
+    cta: 'Start 30-day free trial',
     ctaUrl: '/sign-up',
     highlight: true,
     features: [
-      { name: 'Up to 50 team members, 50 facilities', included: true },
-      { name: 'Core Scope 1, 2 and 3 calculation', included: true },
-      { name: 'Mobile app + on-device OCR field capture', included: true },
-      { name: 'CSV/Excel import, audit-ready reports', included: true },
-      { name: 'Supplier portal', included: true },
-      { name: 'Email support', included: true },
-      { name: 'Accounting software sync (Xero, QuickBooks, Sage)', included: true },
-      { name: 'Invoice anomaly detection', included: false },
-      { name: 'Live real-time dashboard', included: false },
+      { name: 'Up to 15 sites or contracts and 25 web users', included: true },
+      { name: 'Unlimited field workers and supplier portal logins', included: true },
+      { name: 'Everything in Starter', included: true },
+      { name: 'Social value (TOMs) reporting', included: true },
+      { name: 'Bid carbon pack, PAS 2080 and project carbon budgets', included: true },
+      { name: 'Accounting sync (Xero, QuickBooks, Sage)', included: true },
+      { name: 'Priority support and an onboarding call', included: true },
       { name: 'SSO / SAML', included: false },
     ],
   },
   {
     name: 'Enterprise',
-    price: 'Custom',
-    description: 'For large organizations with advanced needs',
-    cta: 'Contact Sales',
+    price: `From £${PLAN_PRICES.enterprise.monthly}`,
+    period: '/month',
+    note: 'Billed annually by invoice',
+    description: 'For groups with many sites and IT requirements',
+    cta: 'Contact sales',
     ctaUrl: '/contact',
     features: [
-      { name: 'Unlimited members, facilities and records', included: true },
-      { name: 'Core Scope 1, 2 and 3 calculation', included: true },
-      { name: 'Mobile app + on-device OCR field capture', included: true },
-      { name: 'Supplier portal', included: true },
-      { name: 'Accounting software sync (Xero, QuickBooks, Sage)', included: true },
+      { name: 'Unlimited sites, entities and users', included: true },
+      { name: 'Everything in Growth', included: true },
+      { name: 'SSO / SAML and API access', included: true },
       { name: 'Invoice anomaly detection', included: true },
       { name: 'Live real-time dashboard', included: true },
-      { name: 'SSO / SAML', included: true },
-      { name: 'Priority + phone support', included: true },
-      { name: 'Uptime guarantee', included: true },
+      { name: 'Assurance-ready evidence packs', included: true },
+      { name: 'Named contact and priority support', included: true },
     ],
   },
 ];
@@ -130,7 +132,7 @@ export default function PricingPage() {
 
                 {/* Price */}
                 <div className="mt-6 flex items-baseline gap-1">
-                  {tier.price !== 'Free' && tier.price !== 'Custom' && (
+                  {typeof tier.price === 'number' && (
                     <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
                       £
                     </span>
@@ -144,6 +146,10 @@ export default function PricingPage() {
                     </span>
                   )}
                 </div>
+
+                {tier.note && (
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{tier.note}</p>
+                )}
 
                 {/* CTA Button */}
                 <Link
@@ -198,7 +204,7 @@ export default function PricingPage() {
             },
             {
               q: 'Do you offer annual discounts?',
-              a: 'Yes. Starter and Growth are 20% off when paid annually. Contact sales for Enterprise discounts.',
+              a: 'Yes. Paying yearly for Starter or Growth gets you 2 months free. Enterprise is billed annually.',
             },
             {
               q: 'Is there a free trial?',
@@ -210,7 +216,7 @@ export default function PricingPage() {
             },
             {
               q: 'What’s the difference between Growth and Enterprise?',
-              a: 'Growth covers core Scope 1, 2 and 3 calculation, mobile field capture, the supplier portal, and accounting software sync (Xero, QuickBooks, Sage). Enterprise adds invoice anomaly detection, the live real-time dashboard, and SSO/SAML, the back-office and IT-procurement features larger teams need.',
+              a: 'Growth covers up to 15 sites with social value, bid carbon packs, PAS 2080 and accounting sync. Enterprise removes the limits and adds SSO, API access, invoice anomaly detection and the live dashboard, the features larger groups and their IT teams need.',
             },
             {
               q: 'What happens after the free trial ends?',

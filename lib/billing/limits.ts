@@ -30,14 +30,16 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     members: 3,
     facilities: 2,
   },
+  // Priced per organisation by sites and web users (founder/pricing-strategy.md).
+  // Field workers and supplier logins are not counted as members.
   starter: {
     fieldSubmissionsPerMonth: 500,
     reportsPerMonth: 10,
     importsPerMonth: 25,
     calculationRunsPerMonth: 50,
     apiRequestsPerMonth: 10_000,
-    members: 10,
-    facilities: 10,
+    members: 5,
+    facilities: 3,
   },
   growth: {
     fieldSubmissionsPerMonth: 5_000,
@@ -45,8 +47,8 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     importsPerMonth: 100,
     calculationRunsPerMonth: 200,
     apiRequestsPerMonth: 100_000,
-    members: 50,
-    facilities: 50,
+    members: 25,
+    facilities: 15,
   },
   enterprise: {
     fieldSubmissionsPerMonth: Infinity,
@@ -59,12 +61,18 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   },
 };
 
+// GBP excluding VAT. `annual` is the per-month equivalent of the yearly price
+// (two months free): Starter £990/yr, Growth £2,990/yr. Enterprise is
+// sales-led from £9,000/yr (£750/month), billed annually by invoice.
 export const PLAN_PRICES: Record<Plan, { monthly: number; annual: number }> = {
   trial:      { monthly: 0,   annual: 0 },
-  starter:    { monthly: 49,  annual: 39 },
-  growth:     { monthly: 149, annual: 119 },
-  enterprise: { monthly: 0,   annual: 0 },
+  starter:    { monthly: 99,  annual: 82.5 },
+  growth:     { monthly: 299, annual: 249.17 },
+  enterprise: { monthly: 750, annual: 750 },
 };
+
+/** Yearly price for the self-serve plans (what Stripe's annual price charges). */
+export const PLAN_ANNUAL_TOTAL: Record<"starter" | "growth", number> = { starter: 990, growth: 2990 };
 
 export const PLAN_LABELS: Record<Plan, string> = {
   trial:      "Trial",
@@ -83,13 +91,17 @@ export type PlanFeature =
   | "accountingIntegrations" // Xero / QuickBooks / Sage sync
   | "invoiceAnomalyDetection"
   | "liveDashboard" // SSE-streamed real-time dashboard
-  | "sso"; // OIDC/SAML
+  | "sso" // OIDC/SAML
+  | "socialValue" // TOMs / social value measurement and commitments
+  | "bidCarbonPack" // bid_carbon_pack report
+  | "pas2080"; // PAS 2080 carbon management plans
 
 const PLAN_FEATURES: Record<Plan, Record<PlanFeature, boolean>> = {
-  trial:      { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false },
-  starter:    { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false },
-  growth:     { accountingIntegrations: true,  invoiceAnomalyDetection: false, liveDashboard: false, sso: false },
-  enterprise: { accountingIntegrations: true,  invoiceAnomalyDetection: true,  liveDashboard: true,  sso: true  },
+  // Trial shows the Growth tier so a prospect can try what they would buy.
+  trial:      { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: true,  bidCarbonPack: true,  pas2080: true  },
+  starter:    { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: false, bidCarbonPack: false, pas2080: false },
+  growth:     { accountingIntegrations: true,  invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: true,  bidCarbonPack: true,  pas2080: true  },
+  enterprise: { accountingIntegrations: true,  invoiceAnomalyDetection: true,  liveDashboard: true,  sso: true,  socialValue: true,  bidCarbonPack: true,  pas2080: true  },
 };
 
 export function getLimits(plan: string): PlanLimits {
@@ -282,4 +294,42 @@ export async function requireWithinUsageLimit(orgId: string, eventType: UsageEve
   }
 
   return null;
+}
+
+// Web users and sites, the two things plans are priced on. Field workers and
+// supplier accounts are unlimited on every plan, so they are not counted.
+const UNCOUNTED_ROLES = ["field_worker", "supplier"] as const;
+
+/**
+ * Blocks adding one more web user or facility beyond the plan's limit
+ * (402 PLAN_LIMIT_REACHED), or null to proceed. Pilots are exempt.
+ * `adding` is the role being added, for members: an unlimited role passes.
+ */
+export async function requireCapacity(
+  orgId: string,
+  resource: "members" | "facilities",
+  adding?: string,
+): Promise<NextResponse | null> {
+  if (resource === "members" && adding && (UNCOUNTED_ROLES as readonly string[]).includes(adding)) return null;
+  const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } });
+  if (!org || org.isPilot) return null;
+  const limit = getLimits(org.plan)[resource];
+  if (!isFinite(limit)) return null;
+  const used =
+    resource === "members"
+      ? await prisma.organizationMembership.count({
+          where: { organizationId: orgId, terminatedAt: null, role: { notIn: [...UNCOUNTED_ROLES] } },
+        })
+      : await prisma.facility.count({ where: { organizationId: orgId } });
+  if (used < limit) return null;
+  const plan = org.plan as Plan;
+  const noun = resource === "members" ? "web users" : "sites";
+  return NextResponse.json(
+    {
+      code: "PLAN_LIMIT_REACHED",
+      message: `The ${PLAN_LABELS[plan] ?? plan} plan includes ${limit} ${noun}. Upgrade to add more; field workers and supplier logins are not counted.`,
+      details: { resource, limit, used, plan },
+    },
+    { status: 402 },
+  );
 }

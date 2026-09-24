@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { requireFeature } from "@/lib/billing/limits";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -68,6 +69,8 @@ export async function POST(
       orgId,
       "admin", "sustainability_director", "sustainability_manager", "contract_manager",
     );
+    const planGate = await requireFeature(orgId, "socialValue");
+    if (planGate) return planGate;
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "sv-commitments-create", session.user.id),
       limit: 60,

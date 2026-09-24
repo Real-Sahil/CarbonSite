@@ -9,6 +9,7 @@ const db = vi.hoisted(() => {
 });
 vi.mock("@/lib/db", () => ({ prisma: db }));
 vi.mock("@/lib/db/audit", () => ({ writeAuditLog: vi.fn() }));
+vi.mock("@/lib/billing/limits", () => ({ requireFeature: vi.fn().mockResolvedValue(null) }));
 vi.mock("@/lib/auth/session", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/auth/session")>();
   return {

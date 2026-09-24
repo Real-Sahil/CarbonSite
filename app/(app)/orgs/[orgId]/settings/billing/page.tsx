@@ -137,7 +137,7 @@ export default function BillingPage() {
                 </span>
               )}
             </div>
-            {PLAN_PRICES[plan].monthly > 0 && (
+            {PLAN_PRICES[plan].monthly > 0 && plan !== "enterprise" && (
               <p className="text-sm text-gray-500 mt-0.5">
                 £{PLAN_PRICES[plan].monthly}/mo per organisation
               </p>
@@ -236,7 +236,7 @@ export default function BillingPage() {
                 <td className="py-3 px-6 text-gray-500">Price</td>
                 {PLANS.map((p) => (
                   <td key={p} className="py-3 px-4 text-center text-gray-700 tabular-nums">
-                    {PLAN_PRICES[p].monthly === 0 ? (p === "enterprise" ? "Custom" : "Free") : `£${PLAN_PRICES[p].monthly}/mo`}
+                    {p === "enterprise" ? `From £${PLAN_PRICES[p].monthly}/mo, billed annually` : PLAN_PRICES[p].monthly === 0 ? "Free" : `£${PLAN_PRICES[p].monthly}/mo`}
                   </td>
                 ))}
               </tr>

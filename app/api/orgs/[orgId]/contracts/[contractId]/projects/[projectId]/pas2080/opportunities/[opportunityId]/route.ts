@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { requireFeature } from "@/lib/billing/limits";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
@@ -22,6 +23,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { orgId, contractId, projectId, opportunityId } = await params;
     const { session } = await requireOrgMember(orgId, ...PAS2080_EDITORS);
+    const planGate = await requireFeature(orgId, "pas2080");
+    if (planGate) return planGate;
     const existing = await findOpportunity(orgId, contractId, projectId, opportunityId);
     if (!existing) return apiError("NOT_FOUND", "Opportunity not found.", 404);
 

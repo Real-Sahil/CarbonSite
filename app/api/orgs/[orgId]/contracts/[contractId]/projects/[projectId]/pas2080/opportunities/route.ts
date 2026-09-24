@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { requireFeature } from "@/lib/billing/limits";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
@@ -16,6 +17,8 @@ export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId, contractId, projectId } = await params;
     const { session } = await requireOrgMember(orgId, ...PAS2080_EDITORS);
+    const planGate = await requireFeature(orgId, "pas2080");
+    if (planGate) return planGate;
     const project = await prisma.project.findFirst({ where: { id: projectId, contractId, organizationId: orgId }, select: { id: true } });
     if (!project) return apiError("NOT_FOUND", "Project not found.", 404);
 
