@@ -394,3 +394,61 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── EcoLoader (components/brand/eco-loader.tsx) ─────────────────────────── */
+/* One 3.6s growth cycle: stem draws, leaves unfurl, CO2 drifts in and is
+   absorbed, then the seedling fades and regrows. Taglines rotate every 3s. */
+.eco-loader .eco-ring {
+  transform-origin: 60px 60px;
+  animation: eco-ring-spin 2.4s linear infinite;
+}
+.eco-loader .eco-stem {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: eco-stem-grow 3.6s ease-out infinite;
+}
+.eco-loader .eco-leaf {
+  transform: scale(0);
+  animation: eco-leaf-open 3.6s cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
+}
+.eco-loader .eco-leaf-left { transform-origin: 60px 72px; animation-delay: 0.1s; }
+.eco-loader .eco-leaf-right { transform-origin: 60px 58px; animation-delay: 0.3s; }
+.eco-loader .eco-co2 { opacity: 0; animation: eco-co2-absorb 3.6s ease-in infinite; }
+.eco-loader .eco-co2-1 { --eco-dx: 18px; --eco-dy: 22px; animation-delay: 0.6s; }
+.eco-loader .eco-co2-2 { --eco-dx: -16px; --eco-dy: 16px; animation-delay: 0.9s; }
+.eco-loader .eco-co2-3 { --eco-dx: 14px; --eco-dy: 6px; animation-delay: 1.2s; }
+.eco-tagline { opacity: 0; animation: eco-tagline 12s ease-in-out infinite; }
+
+@keyframes eco-ring-spin { to { transform: rotate(360deg); } }
+@keyframes eco-stem-grow {
+  0% { stroke-dashoffset: 40; opacity: 1; }
+  30%, 85% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes eco-leaf-open {
+  0%, 25% { transform: scale(0); opacity: 1; }
+  45%, 85% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+@keyframes eco-co2-absorb {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15% { opacity: 0.85; }
+  55% { opacity: 0; transform: translate(var(--eco-dx), var(--eco-dy)); }
+  100% { opacity: 0; transform: translate(var(--eco-dx), var(--eco-dy)); }
+}
+@keyframes eco-tagline {
+  0% { opacity: 0; transform: translateY(4px); }
+  4%, 22% { opacity: 1; transform: translateY(0); }
+  26%, 100% { opacity: 0; transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eco-loader .eco-ring,
+  .eco-loader .eco-stem,
+  .eco-loader .eco-leaf,
+  .eco-loader .eco-co2,
+  .eco-tagline { animation: none; }
+  .eco-loader .eco-stem { stroke-dashoffset: 0; }
+  .eco-loader .eco-leaf { transform: scale(1); }
+  .eco-tagline:first-child { opacity: 1; }
+}
