@@ -19,7 +19,7 @@ MetricOra is a multi-tenant GHG emissions tracking platform for small-to-mid-mar
 - **Email:** Resend (3k/month free, 100/day). Dev: log to console.
 - **Push Notifications:** Firebase Cloud Messaging (FCM) — free, Google account only.
 - **Document Parsing:** `xlsx` (CSV + Excel), `pdf-parse` (PDFs), `mammoth` (DOCX) — all npm, no Python, no Docker.
-- **Emission Factors:** DEFRA 2025 + EPA GHG Hub 2025 + SustainMetrics CSV — seeded into PostgreSQL, zero paid API
+- **Emission Factors:** DEFRA 2025/2026 + EPA GHG Hub 2025 + EPA USEEIO 1.3 + ADEME Base Carbone — seeded into PostgreSQL, zero paid API
 - **PDF generation:** Puppeteer (headless Chromium) in the reports worker
 - **Validation:** Zod at all API boundaries
 - **UI:** shadcn/ui + Tailwind CSS 4 + `motion` (animations)
@@ -209,7 +209,7 @@ GWP values (AR6): CH4 = 27.9, N2O = 273 (`lib/calculation/gwp.ts`).
 
 **Scope 2 dual reporting:** `scope2MethodOf()` decides each record's method (the record's `scope2Method`, else the category). Headline totals use location-based only; market-based is shown beside it, never added. Market-based records draw on the org's `EnergyInstrument` rows (Settings → Electricity contracts) in GHG Protocol order: certificates/PPAs, green tariffs, supplier rate, residual mix; certificates are never claimed twice; any uncovered kWh falls back to the library factor with a warning.
 
-**Spend by industry:** a library whose factors carry `activityType` `naics_<code>` (EPA USEEIO 1.3) prices a record only through the record's own `industryCode`; without one those factors are excluded and the calculation says to add the code. A factor whose notes say "Unverified:" still calculates, with a warning on the calculation.
+**Spend by industry:** a library whose factors carry `activityType` `naics_<code>` (EPA USEEIO 1.3) or `naf_<division>` (ADEME spend ratios; a NAF/UK SIC code such as 41.20 or 79110 matches on its 2-digit division) prices a record only through the record's own `industryCode`; without one those factors are excluded and the calculation says to add the code. A factor whose notes say "Unverified:" still calculates, with a warning on the calculation.
 
 **Spend-based Scope 3:** currency is converted at the ECB rate for the record's date (`prefetchFxRatesOn()` / `convertCurrency()` in `units.ts`), falling back to today's rate and then a built-in rate, and the calculation says which. When a factor has `priceBaseYear`, spend is deflated to that year with UK or US CPI (`price-index.ts`); update the CPI table each year.
 
@@ -293,7 +293,8 @@ Use only these codes in code (see `prisma/seed.ts`). A code that is not seeded m
 | DEFRA 2025.1 | hand-entered, superseded by 2025.2 | Kept only so runs that used it reproduce; hidden from the library picker (`currentFactorLibraries()`) |
 | EPA 2025.1 | epa.gov GHG Emission Factors Hub | PDF → manual CSV (its 3-digit spend factors are flagged Unverified) |
 | EPA USEEIO 1.3 | EPA Supply Chain GHG Emission Factors v1.3 by NAICS-6 (1016 factors, kg CO2e per 2022 USD, purchaser price, AR5) | `data/sources/*.csv` → `pnpm tsx scripts/build-useeio-factors.ts <csv> <migration>` → migration `20260923000023`; `priceBaseYear` 2022; records name the supplier's code in `ActivityRecord.industryCode` (import column `industry_code`/`naics`, record form field with lookup); `lib/calculation/industry-code.ts` selects only the exact NAICS factor and never falls back to an arbitrary one |
-| SustainMetrics | sustainmetrics.net/factors | CSV, free download, no signup |
+| ADEME Base Carbone 2025.04 | ADEME Base Empreinte export (`base-carbone.csv`, 4111 factors loaded, Licence Ouverte v2.0) | `data/sources/ademe-base-carbone.csv` → `pnpm tsx scripts/build-ademe-factors.ts <csv> <migration>` (`lib/factors/ademe.ts`) → migration `20260923000025`. Only "Valide générique" factors: France electricity by year (s2 location-based), French fuels (s1, litre fuels also mobile, biogenic CO2 kept apart; PCI/GJ/tep units skipped), waste, passenger and freight transport (vehicle manufacture excluded), AR6 refrigerants, goods per kg/unit, and 2023 EUR spend ratios per NAF division (`naf_<2 digits>`, price year 2023). Heat networks and land use are not mapped |
+| SustainMetrics | sustainmetrics.net/factors | Not loaded: needs an API key and re-publishes DEFRA/EPA/ADEME, so the sources are loaded directly |
 
 Library records are seeded; actual factor rows loaded via admin import. Methodology: `ghg-protocol-v2026-01`, GWP AR6.
 
@@ -376,9 +377,9 @@ Skills live in `.claude/skills/` and can be invoked as slash commands.
 
 ## Decisions and open items
 
-1. **Emission factor licensing** — settled. DEFRA/DESNZ factors are Open Government Licence v3.0 (commercial reuse allowed with attribution); EPA factors are a US Government work (public domain). Every report and CSV carries the attribution from the library's `license` field (`lib/reports/attribution.ts`). SustainMetrics is not loaded; confirm its terms before adding it.
+1. **Emission factor licensing** — settled. DEFRA/DESNZ factors are Open Government Licence v3.0 (commercial reuse allowed with attribution); EPA factors are a US Government work (public domain). ADEME Base Carbone is Licence Ouverte v2.0 (Etalab; commercial reuse allowed with attribution). Every report and CSV carries the attribution from the library's `license` field (`lib/reports/attribution.ts`). SustainMetrics is not loaded; confirm its terms before adding it.
 2. **Methodology versioning** — settled; the policy is in `lib/calculation/methodology.ts`. Bump (new `methodology_versions` row via migration plus a `METHODOLOGY_CHANGELOG` entry) only for rule changes that alter a figure from the same records and library: GWPs, Scope 2 allocation, spend conversion/deflation, fuel/unit conversion, headline scope. Not for factor libraries (tracked per run), layout, or bug fixes. Snapshots keep their version; the dashboard lists periods published under an older one.
 3. **Billing** — open. Needs pricing (per org/user/site), trial length, tier gating and failed-payment behaviour before Stripe checkout and plan gating are built.
 4. **Primary report format** — settled: the customer-facing GHG Protocol report is the default (`DEFAULT_REPORT_TYPE` in the report form); every emissions report ships the CSV calculation trail as the auditor's appendix.
-5. **Spend factors and price years** — US settled, UK open. EPA's published v1.3 NAICS-6 factors are loaded as the "EPA USEEIO 1.3" library (price year 2022, so spend is deflated). The seeded DEFRA `eeio-2025-*` and EPA 3-digit `useeio-v1.3-naics-*` factors have no traceable source and are flagged "Unverified" (migration `20260923000022`). There is no DESNZ spend factor set; UK spend needs a sourced set (e.g. the DEFRA/ONS UK carbon footprint by SIC) or supplier data.
+5. **Spend factors and price years** — US settled, UK open. EPA's published v1.3 NAICS-6 factors are loaded as the "EPA USEEIO 1.3" library (price year 2022, so spend is deflated). The seeded DEFRA `eeio-2025-*` and EPA 3-digit `useeio-v1.3-naics-*` factors have no traceable source and are flagged "Unverified" (migration `20260923000022`). ADEME's 2023 EUR ratios per NAF division are loaded (price year 2023; there is no EUR index in `price-index.ts`, so later EUR spend is not deflated and the calculation says so). There is no DESNZ spend factor set; UK spend needs a sourced set (e.g. the DEFRA/ONS UK carbon footprint by SIC) or supplier data.
 6. **CPI table** (`lib/calculation/price-index.ts`) — GBP checked against ONS Table 15a (D7BT annual averages) to 2025; 2012-2014 were wrong and are corrected. USD 2016-2024 checked against BLS CPI-U (CUUR0000SA0) and 2025 added (322.115, mean of the half-year averages; October 2025 was not published); 2012-2015 not yet rechecked. Add each year's figures when published (January).

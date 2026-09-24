@@ -27,11 +27,12 @@ import { calculateDataQualityScore, calculateConfidenceInterval } from "./qualit
 import { assessTemporalRepresentativeness } from "./temporal-representativeness";
 import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
 import type { ActivityRecord } from "@prisma/client";
-import { isNaicsFactor, isUnverifiedFactor, naicsCode, naicsMissingWarning, UNVERIFIED_FACTOR_WARNING } from "./industry-code";
+import { industryMissingWarning, isNaicsFactor, isNafFactor, isUnverifiedFactor, nafDivision, naicsCode, UNVERIFIED_FACTOR_WARNING } from "./industry-code";
 
-/** Whether this library prices the category's spend by NAICS code. */
-function libraryPricesByIndustry(cache: FactorCache, libraryId: string, categoryId: string): boolean {
-  return (cache.get(`${libraryId}:${categoryId}`) ?? []).some(isNaicsFactor);
+/** How this library prices the category's spend by industry, if it does. */
+function libraryPricesByIndustry(cache: FactorCache, libraryId: string, categoryId: string): "NAICS" | "NAF" | null {
+  const bucket = cache.get(`${libraryId}:${categoryId}`) ?? [];
+  return bucket.some(isNaicsFactor) ? "NAICS" : bucket.some(isNafFactor) ? "NAF" : null;
 }
 
 // A single HTTP request (in JOB_PROCESSING_MODE=inline, the only mode that
@@ -335,9 +336,9 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
             warnings: [
               ...unitWarnings,
               `No emission factor found for category ${record.emissionCategory.code}`,
-              ...(libraryPricesByIndustry(factorCache, run.factorLibraryId, record.emissionCategoryId)
-                ? [naicsMissingWarning(naicsCode(record.industryCode))]
-                : []),
+              ...((scheme) => (scheme
+                ? [industryMissingWarning(scheme, scheme === "NAICS" ? naicsCode(record.industryCode) : nafDivision(record.industryCode))]
+                : []))(libraryPricesByIndustry(factorCache, run.factorLibraryId, record.emissionCategoryId)),
             ],
             dataQualityScore: qualityScore.score,
             confidenceIntervalLower: confidenceInterval.lower,

@@ -8,7 +8,7 @@
 import { prisma } from "@/lib/db";
 import type { EmissionFactor } from "@prisma/client";
 import { areUnitsCompatible } from "./units";
-import { naicsMissingWarning, pickNaics } from "./industry-code";
+import { industryMissingWarning, pickIndustry } from "./industry-code";
 
 // Pre-loaded factor table keyed by "factorLibraryId:emissionCategoryId".
 // Build once at the start of a calculation run and pass to selectFactor.
@@ -164,12 +164,12 @@ export async function selectFactor(
 
   // Spend-by-industry factors (EPA USEEIO): only the record's own NAICS code
   // may select one; lib/calculation/industry-code.ts.
-  const naics = pickNaics(candidates, query.industryCode);
-  if (naics.kind === "matched") {
-    return { factor: naics.factor, selectionReason: `NAICS ${naics.code} matched`, warnings: [] };
+  const industry = pickIndustry(candidates, query.industryCode);
+  if (industry.kind === "matched") {
+    return { factor: industry.factor, selectionReason: `${industry.scheme} ${industry.code} matched`, warnings: [] };
   }
-  const naicsWarning = naics.kind === "excluded" ? naicsMissingWarning(naics.code) : null;
-  candidates = naics.candidates;
+  const naicsWarning = industry.kind === "excluded" ? industryMissingWarning(industry.scheme, industry.code) : null;
+  candidates = industry.candidates;
   if (candidates.length === 0) return null;
 
   // When market-based Scope 2 is requested, prefer factors with "market" in

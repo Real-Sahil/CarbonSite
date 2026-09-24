@@ -2,7 +2,8 @@
 // DEFRA/DESNZ conversion factors are Crown copyright under the Open
 // Government Licence v3.0, which requires this attribution statement
 // wherever the information is reused. EPA factors are a US Government work
-// (public domain); attributing them is courtesy, not a condition.
+// (public domain); attributing them is courtesy, not a condition. ADEME's
+// Licence Ouverte v2.0 requires naming the source and its last update.
 
 export type LibraryLicence = { name: string; version: string; license?: string | null; sourceUrl?: string | null };
 
@@ -11,6 +12,9 @@ export function factorAttribution(lib: LibraryLicence | null | undefined): strin
   const licence = (lib.license ?? "").trim();
   if (/open government licen[cs]e/i.test(licence)) {
     return `Emission factors: ${lib.name} ${lib.version}. Contains public sector information licensed under the Open Government Licence v3.0.`;
+  }
+  if (/licence ouverte/i.test(licence)) {
+    return `Emission factors: ${lib.name} ${lib.version} (source: ADEME, Base Carbone, updated ${lib.version}), reused under the Licence Ouverte v2.0 (Etalab).`;
   }
   if (/public domain/i.test(licence)) {
     return `Emission factors: ${lib.name} ${lib.version}, a US Government work in the public domain.`;

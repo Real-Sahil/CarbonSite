@@ -36,7 +36,7 @@ export function CreateRecordForm({
   const [unit, setUnit] = useState("");
   const [sourceDescription, setSourceDescription] = useState("");
   const [industryCode, setIndustryCode] = useState("");
-  const [industryOptions, setIndustryOptions] = useState<{ code: string; title: string }[]>([]);
+  const [industryOptions, setIndustryOptions] = useState<{ code: string; title: string; scheme: string }[]>([]);
 
   // NAICS suggestions for spend priced by industry (EPA USEEIO).
   useEffect(() => {
@@ -74,7 +74,7 @@ export function CreateRecordForm({
           amount: parseFloat(amount),
           unit,
           sourceDescription: sourceDescription || undefined,
-          industryCode: industryCode.trim().match(/\d{6}/)?.[0] ?? (industryCode.trim() || undefined),
+          industryCode: industryCode.trim() || undefined,
         }),
       });
       if (!res.ok) {
@@ -185,17 +185,17 @@ export function CreateRecordForm({
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label htmlFor="record-industry-code" className="text-xs text-[#374151] tracking-[-0.36px]">Industry code (NAICS)</label>
+        <label htmlFor="record-industry-code" className="text-xs text-[#374151] tracking-[-0.36px]">Industry code (NAICS / SIC)</label>
         <Input
           id="record-industry-code"
           list="record-industry-codes"
           value={industryCode}
           onChange={(e) => setIndustryCode(e.target.value)}
-          placeholder="For spend, e.g. 236220"
+          placeholder="For spend, e.g. 236220 or 41.20"
           className="w-44"
         />
         <datalist id="record-industry-codes">
-          {industryOptions.map((o) => <option key={o.code} value={o.code}>{o.title}</option>)}
+          {industryOptions.map((o) => <option key={`${o.scheme}-${o.code}`} value={o.code}>{`${o.scheme} · ${o.title}`}</option>)}
         </datalist>
       </div>
       <div className="flex gap-2">

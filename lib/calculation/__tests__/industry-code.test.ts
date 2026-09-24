@@ -4,7 +4,7 @@ import type { EmissionFactor } from "@prisma/client";
 
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 import { selectFactor, type FactorCache } from "../factor-selector";
-import { isUnverifiedFactor, naicsCode, pickNaics } from "../industry-code";
+import { isUnverifiedFactor, nafDivision, naicsCode, pickIndustry } from "../industry-code";
 
 const f = (id: string, activityType: string | null, over: Partial<EmissionFactor> = {}) =>
   ({
@@ -45,11 +45,27 @@ describe("industry codes", () => {
 
   it("leaves libraries without NAICS factors alone", () => {
     const c = [f("x", "purchased_goods_spend")];
-    expect(pickNaics(c, "236220")).toEqual({ kind: "not_applicable", candidates: c });
+    expect(pickIndustry(c, "236220")).toEqual({ kind: "not_applicable", candidates: c });
   });
 
   it("recognises factors marked Unverified", () => {
     expect(isUnverifiedFactor({ usageNotes: "EEIO average. Unverified: no source." })).toBe(true);
     expect(isUnverifiedFactor({ usageNotes: "DEFRA 2026." })).toBe(false);
+  });
+
+  it("reads a NAF / UK SIC division, but not from a NAICS code", () => {
+    expect(["79", "79.11", "79.11Z", "7911", "79110", "N79", "NAF-N79", "SIC 79110"].map(nafDivision)).toEqual(Array(8).fill("79"));
+    expect(nafDivision("236220")).toBeNull();
+    expect(nafDivision("hello")).toBeNull();
+  });
+
+  it("prices EUR spend by NAF division (ADEME) and never by an arbitrary division", async () => {
+    const eur = { ...query, recordUnit: "EUR", geographyCountry: "FR" };
+    const cache: FactorCache = new Map([["lib:cat", [f("n41", "naf_41", { inputUnit: "EUR" }), f("n79", "naf_79", { inputUnit: "EUR" })]]]);
+    const s = await selectFactor({ ...eur, industryCode: "79.11Z" }, cache);
+    expect(s?.factor.id).toBe("n79");
+    expect(s?.selectionReason).toBe("NAF 79 matched");
+    expect(await selectFactor(eur, cache)).toBeNull();
+    expect(await selectFactor({ ...eur, industryCode: "99" }, cache)).toBeNull();
   });
 });

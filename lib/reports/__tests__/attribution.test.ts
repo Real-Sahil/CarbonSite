@@ -11,6 +11,7 @@ describe("factor library attribution", () => {
 
   it("credits public domain and other licences, and says nothing without one", () => {
     expect(factorAttribution({ name: "EPA", version: "2025.1", license: "Public Domain (US Government Work)" })).toMatch(/public domain/);
+    expect(factorAttribution({ name: "ADEME Base Carbone", version: "2025.04", license: "Licence Ouverte v2.0 (Etalab)" })).toMatch(/source: ADEME, Base Carbone, updated 2025\.04.*Licence Ouverte/);
     expect(factorAttribution({ name: "X", version: "1", license: "CC BY 4.0" })).toBe("Emission factors: X 1, used under CC BY 4.0.");
     expect(factorAttribution({ name: "X", version: "1", license: null })).toBeNull();
     expect(factorAttribution(null)).toBeNull();
