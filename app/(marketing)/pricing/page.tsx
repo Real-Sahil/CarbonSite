@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 interface PricingTier {
   name: string;
-  /** Monthly price in GBP excluding VAT, or a label for sales-led plans. */
+  /** Monthly price in GBP (MetricOra is not VAT-registered), or a label for sales-led plans. */
   price: number | string;
   period?: string;
   note?: string;
@@ -32,7 +32,7 @@ const tiers: PricingTier[] = [
   {
     name: 'Starter',
     price: PLAN_PRICES.starter.monthly,
-    period: '/month + VAT',
+    period: '/month',
     note: `or £${PLAN_ANNUAL_TOTAL.starter.toLocaleString('en-GB')}/year, 2 months free`,
     description: 'SECR and Carbon Reduction Plans for bids',
     cta: 'Start 30-day free trial',
@@ -52,7 +52,7 @@ const tiers: PricingTier[] = [
   {
     name: 'Growth',
     price: PLAN_PRICES.growth.monthly,
-    period: '/month + VAT',
+    period: '/month',
     note: `or £${PLAN_ANNUAL_TOTAL.growth.toLocaleString('en-GB')}/year, 2 months free`,
     description: 'For contractors bidding for public work every month',
     cta: 'Start 30-day free trial',

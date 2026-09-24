@@ -61,7 +61,7 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   },
 };
 
-// GBP excluding VAT. `annual` is the per-month equivalent of the yearly price
+// GBP; no VAT is charged while MetricOra is not VAT-registered. `annual` is the per-month equivalent of the yearly price
 // (two months free): Starter £990/yr, Growth £2,990/yr. Enterprise is
 // sales-led from £9,000/yr (£750/month), billed annually by invoice.
 export const PLAN_PRICES: Record<Plan, { monthly: number; annual: number }> = {
