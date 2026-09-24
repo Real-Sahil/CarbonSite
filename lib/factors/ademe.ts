@@ -31,8 +31,8 @@
 //                       and every named network, which is only used when a
 //                       record names it (lib/calculation/heat-network.ts).
 //
-// Also loaded: electricity mixes for other countries and the French overseas
-// territories (by ISO country, from the sub-location), fuels for the
+// Also loaded: electricity mixes, goods and transport for other countries and
+// the French overseas territories (by ISO country, from the sub-location), fuels for the
 // overseas territories and Europe (Europe with no country), and fuels on a
 // net calorific value basis (PCI) as per kWh_ncv, converted from GJ, MJ or
 // tep when ADEME gives no per-kWh row. Not loaded: land use change (UTCF,
@@ -313,7 +313,8 @@ export function buildAdemeFactors(text: string): AdemeBuild {
       continue;
     }
     const [, categoryCode, activityType] = hit;
-    if (country === undefined) { skip(`${activityType}: outside mainland France`); continue; }
+    const where = country !== undefined ? country : placeOf(r, false);
+    if (where === undefined) { skip(`${activityType}: region without a country`); continue; }
     const unit = unitOf(r["Unité français"]);
     const allowed: Record<string, string[]> = {
       waste_treatment: ["tonne"], passenger_transport: ["passenger.km", "km"], freight_transport: ["tonne.km"],
@@ -322,7 +323,7 @@ export function buildAdemeFactors(text: string): AdemeBuild {
     if (!unit || !allowed[activityType].includes(unit)) { skip(`${activityType}: unit ${r["Unité français"] || "blank"}`); continue; }
     const transport = activityType.endsWith("_transport");
     push({
-      ...base, externalId: `ademe-${id}`, categoryCode, activityType, geographyCountry: country, inputUnit: unit,
+      ...base, externalId: `ademe-${id}`, categoryCode, activityType, geographyCountry: where, inputUnit: unit,
       co2e: transport ? withoutManufacture() : total,
       usageNotes: `${label} (ADEME ${id}${transport && ps.some((p) => /^Fabrication/i.test(p.type)) ? `; vehicle manufacture excluded, total ${total}` : ""}).`,
     });

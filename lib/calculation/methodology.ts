@@ -34,7 +34,7 @@ export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
       "Spend that names its supplier's industry code is priced from the sourced spend library for its currency (Defra UK multipliers by UK SIC for GBP, EPA USEEIO by NAICS for USD, ADEME by NAF for EUR) when the run's library has no industry factor, instead of a generic spend factor.",
       "EUR spend is deflated with the euro area HICP, or France's own HICP for French spend factors; the US 2025 CPI is BLS's published annual average.",
       "Fuel quantities on a net calorific value basis (kWh PCI, GJ/MJ PCI, toe) are their own unit and match only net-CV factors.",
-      "Purchased heat, steam and cooling (s2-heat) counts toward location-based Scope 2.",
+      "Purchased heat, steam and cooling (s2-heat) counts toward location-based Scope 2, and also toward the market-based total when there is market-based electricity.",
     ],
   },
   {

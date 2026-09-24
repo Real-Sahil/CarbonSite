@@ -16,7 +16,7 @@ import { AlertCircle, Plus } from "lucide-react";
 interface CreateRecordFormProps {
   orgId: string;
   periods: { id: string; label: string }[];
-  categories: { id: string; scope: number; label: string }[];
+  categories: { id: string; scope: number; label: string; code?: string }[];
   facilities: { id: string; label: string }[];
   businessUnits: { id: string; label: string }[];
 }
@@ -37,6 +37,22 @@ export function CreateRecordForm({
   const [sourceDescription, setSourceDescription] = useState("");
   const [industryCode, setIndustryCode] = useState("");
   const [industryOptions, setIndustryOptions] = useState<{ code: string; title: string; scheme: string }[]>([]);
+  // Heat network (s2-heat): the named network the heat comes from, if known.
+  const [heatNetwork, setHeatNetwork] = useState("");
+  const [heatOptions, setHeatOptions] = useState<{ value: string; label: string }[]>([]);
+  const isHeat = categories.find((c) => c.id === categoryId)?.code === "s2-heat";
+  useEffect(() => {
+    const q = heatNetwork.trim();
+    if (!isHeat || q.length < 2) return;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => {
+      fetch(`/api/orgs/${orgId}/heat-networks?q=${encodeURIComponent(q)}`, { signal: ctrl.signal })
+        .then((r) => (r.ok ? r.json() : { data: [] }))
+        .then((d) => setHeatOptions(d.data ?? []))
+        .catch(() => undefined);
+    }, 250);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [heatNetwork, isHeat, orgId]);
 
   // NAICS suggestions for spend priced by industry (EPA USEEIO).
   useEffect(() => {
@@ -75,6 +91,8 @@ export function CreateRecordForm({
           unit,
           sourceDescription: sourceDescription || undefined,
           industryCode: industryCode.trim() || undefined,
+          // The network name as published selects its factor (heat-network.ts).
+          fuelType: isHeat ? heatNetwork.trim() || undefined : undefined,
         }),
       });
       if (!res.ok) {
@@ -198,6 +216,22 @@ export function CreateRecordForm({
           {industryOptions.map((o) => <option key={`${o.scheme}-${o.code}`} value={o.code}>{`${o.scheme} · ${o.title}`}</option>)}
         </datalist>
       </div>
+      {isHeat && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="record-heat-network" className="text-xs text-[#374151] tracking-[-0.36px]">Heat network</label>
+          <Input
+            id="record-heat-network"
+            list="record-heat-networks"
+            value={heatNetwork}
+            onChange={(e) => setHeatNetwork(e.target.value)}
+            placeholder="Optional: city or network name"
+            className="w-56"
+          />
+          <datalist id="record-heat-networks">
+            {heatOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </datalist>
+        </div>
+      )}
       <div className="flex gap-2">
         <Button type="submit" disabled={loading} size="sm">
           {loading ? "Saving…" : "Save"}

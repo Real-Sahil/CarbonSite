@@ -1,5 +1,5 @@
 import type { Scope2Method } from "@prisma/client";
-import { scope2MethodOf } from "./scope2-method";
+import { inBothScope2Totals, scope2MethodOf } from "./scope2-method";
 
 export type DashboardGroupKey = {
   scope: number;
@@ -29,7 +29,9 @@ export type DashboardCalcInput = {
  *   - a per-category row
  *   - a per-facility row and a category-by-facility row, when it has a facility
  *   - a per-business-unit row, when it has one
- * Scope 2 rows are split by reporting method. Readers pin dimensions through
+ * Scope 2 rows are split by reporting method; purchased heat is written under
+ * both methods when the run has market-based electricity (inBothScope2Totals).
+ * Readers pin dimensions through
  * lib/calculation/aggregate-filters.ts so nothing is summed twice.
  */
 export function groupDashboardAggregates(calculations: DashboardCalcInput[]): DashboardGroup[] {
@@ -45,11 +47,17 @@ export function groupDashboardAggregates(calculations: DashboardCalcInput[]): Da
     }
   };
 
+  const hasMarket = calculations.some((c) => scope2MethodOf(c.activityRecord) === "market_based");
+  const rows: Array<{ calc: DashboardCalcInput; scope2Method: Scope2Method | null }> = [];
   for (const calc of calculations) {
+    rows.push({ calc, scope2Method: scope2MethodOf(calc.activityRecord) });
+    if (hasMarket && inBothScope2Totals(calc.activityRecord)) rows.push({ calc, scope2Method: "market_based" });
+  }
+
+  for (const { calc, scope2Method } of rows) {
     const record = calc.activityRecord;
     const scope = record.emissionCategory.scope;
     const co2e = Number(calc.totalCo2e);
-    const scope2Method = scope2MethodOf(record);
     const base = { scope, scope2Method };
 
     add({ ...base, emissionCategoryId: null, facilityId: null, businessUnitId: null }, co2e);

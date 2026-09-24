@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { getObject } from "@/lib/storage";
 import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
-import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-method";
+import { countsTowardHeadline, inBothScope2Totals, scope2MethodOf } from "@/lib/calculation/scope2-method";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs = 30000): Promise<T> {
   return Promise.race([
@@ -107,12 +107,16 @@ export function aggregate(calcs: CalculationRow[]): Aggregation {
 export function splitScope2(calcs: CalculationRow[]): { s2lbKg: number; s2mbKg: number } {
   let s2lbKg = 0;
   let s2mbKg = 0;
+  let heatKg = 0;
+  let hasMarket = false;
   for (const calc of calcs) {
     const method = scope2MethodOf(calc.activityRecord);
     if (method === "location_based") s2lbKg += Number(calc.totalCo2e);
-    else if (method === "market_based") s2mbKg += Number(calc.totalCo2e);
+    else if (method === "market_based") { s2mbKg += Number(calc.totalCo2e); hasMarket = true; }
+    if (inBothScope2Totals(calc.activityRecord)) heatKg += Number(calc.totalCo2e);
   }
-  return { s2lbKg, s2mbKg };
+  // Purchased heat stands in both totals (same rule as the dashboard rows).
+  return { s2lbKg, s2mbKg: hasMarket ? s2mbKg + heatKg : s2mbKg };
 }
 
 const SCOPE_LABELS: Record<number, string> = {

@@ -31,6 +31,7 @@ const FILE = csv([
   el({ "Identifiant de l'élément": "13", "Nom base français": "Électricité", "Nom attribut français": "mix moyen", "Code de la catégorie": "Electricité > Mix réseau électrique > Autres pays du monde", "Unité français": "kgCO2e/kWh", "Localisation géographique": "Autre pays du monde", "Sous-localisation géographique français": "Allemagne", "Total poste non décomposé": "0.461" }),
   el({ "Identifiant de l'élément": "14", "Nom base français": "Réseau de chaleur", "Nom attribut français": "Autres réseaux de chaleurs", "Nom frontière français": "2021", "Code de la catégorie": "Réseaux de chaleur / froid > Autre", "Unité français": "kgCO2e/kWh", "Total poste non décomposé": "0.385" }),
   el({ "Identifiant de l'élément": "15", "Nom base français": "Réseau de chaleur", "Nom attribut français": "92, Courbevoie, Réseau de La Défense", "Nom frontière français": "2021", "Code de la catégorie": "Réseaux de chaleur / froid > Île-de-France", "Unité français": "kgCO2e/kWh", "Sous-localisation géographique français": "Île-de-France, Courbevoie", "Total poste non décomposé": "0.12" }),
+  el({ "Identifiant de l'élément": "17", "Nom base français": "Train de marchandises", "Code de la catégorie": "Transport de marchandises > Ferroviaire", "Unité français": "kgCO2e/t.km", "Localisation géographique": "Autre pays du monde", "Sous-localisation géographique anglais": "Germany", "Total poste non décomposé": "0.032" }),
   el({ "Identifiant de l'élément": "16", "Nom base français": "Changement d'affectation des sols direct (culture vers imperméabilisés)", "Code de la catégorie": "UTCF > Changement d'affectation des sols", "Unité français": "kgCO2e/ha", "Total poste non décomposé": "190000" }),
   el({ "Identifiant de l'élément": "5", "Nom base français": "Agences de voyage – 2023", "Code de la catégorie": "Achats de services > Ratios monétaires", "Unité français": "kgCO2e/keuro (2023) HT", "Total poste non décomposé": "164", "Commentaire français": "NAF-N79 - Agences" }),
   el({ "Identifiant de l'élément": "6", "Nom base français": "Agences de voyage – 2022", "Code de la catégorie": "Achats de services > Ratios monétaires", "Unité français": "kgCO2e/keuro (2022) HT", "Total poste non décomposé": "170", "Commentaire français": "NAF-N79 - Agences" }),
@@ -73,6 +74,10 @@ describe("ADEME Base Carbone import", () => {
     expect(byId("ademe-14")).toMatchObject({ categoryCode: "s2-heat", activityType: "purchased_heat", inputUnit: "kWh", co2e: 0.385 });
     expect(byId("ademe-15")).toMatchObject({ activityType: "heat_network" });
     expect(byId("ademe-15").usageNotes).toMatch(/^Heat network "92, Courbevoie, Réseau de La Défense" \(/);
+  });
+
+  it("keeps transport priced for another country, under its ISO code", () => {
+    expect(byId("ademe-17")).toMatchObject({ categoryCode: "s3-upstream-transport", geographyCountry: "DE", inputUnit: "tonne.km" });
   });
 
   it("leaves land use change out, and says why", () => {

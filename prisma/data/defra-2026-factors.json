@@ -727,6 +727,26 @@
       "geographyCountry": "GB",
       "co2e": 925.36725,
       "usageNotes": "Construction wood waste to landfill. DESNZ 2026 v1.2 flat file, row 20_500_5257_15_1."
+    },
+    {
+      "externalId": "defra-2026-heat-district-kwh",
+      "replacesExternalId": "defra-2025-heat-district-kwh",
+      "categoryCode": "s2-heat",
+      "activityType": "purchased_heat",
+      "inputUnit": "kWh",
+      "geographyCountry": "GB",
+      "co2e": 0.17529,
+      "usageNotes": "District heat and steam, per kWh delivered. DESNZ 2026 v1.2 flat file, row 10_401_4003_5_1."
+    },
+    {
+      "externalId": "defra-2026-heat-onsite-kwh",
+      "replacesExternalId": "defra-2025-heat-onsite-kwh",
+      "categoryCode": "s2-heat",
+      "activityType": "purchased_heat_onsite",
+      "inputUnit": "kWh",
+      "geographyCountry": "GB",
+      "co2e": 0.17529,
+      "usageNotes": "Onsite heat and steam bought from a third-party plant, per kWh delivered. DESNZ 2026 v1.2 flat file, row 10_401_4002_5_1."
     }
   ]
 }

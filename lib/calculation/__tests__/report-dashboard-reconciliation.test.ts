@@ -42,6 +42,7 @@ const CATEGORIES = {
   "s1-stationary": { id: "cat-s1", scope: 1, name: "Stationary combustion" },
   "s2-electricity-lb": { id: "cat-s2lb", scope: 2, name: "Electricity (location-based)" },
   "s2-electricity-mb": { id: "cat-s2mb", scope: 2, name: "Electricity (market-based)" },
+  "s2-heat": { id: "cat-s2h", scope: 2, name: "Purchased heat" },
   "s3-waste": { id: "cat-s3w", scope: 3, name: "Waste" },
 } as const;
 
@@ -80,6 +81,8 @@ const calcs = [
   // Method on the record wins over the category.
   calc("s2-electricity-lb", 90, { facility: "Yard", scope2Method: "market_based" }),
   calc("s2-electricity-lb", 60, { facility: "Yard", scope2Method: "location_based" }),
+  // District heating counts in both Scope 2 totals.
+  calc("s2-heat", 40, { facility: "Depot" }),
   calc("s3-waste", 510.75, { facility: "Yard", bu: "Rail" }),
   calc("s3-waste", 20),
 ];
@@ -118,11 +121,18 @@ describe("report totals match dashboard totals for the same run", () => {
       sum(groups, { emissionCategoryId: null, facilityId: null, businessUnitId: null, scope: 2, scope2Method });
     close(s2lbKg, methodTotal("location_based"));
     close(s2mbKg, methodTotal("market_based"));
-    close(s2lbKg, 860);
-    close(s2mbKg, 240);
+    close(s2lbKg, 900);
+    close(s2mbKg, 280);
   });
 
   it("market-based Scope 2 is never added to the headline", () => {
-    close(report.grandKg, 1200.5 + 300 + 45.25 + 800 + 60 + 510.75 + 20);
+    close(report.grandKg, 1200.5 + 300 + 45.25 + 800 + 60 + 40 + 510.75 + 20);
+  });
+
+  it("leaves the market-based total empty when there is no market-based electricity, heat or not", () => {
+    const heatOnly = [calc("s2-electricity-lb", 800), calc("s2-heat", 40)];
+    const g = groupDashboardAggregates(heatOnly);
+    expect(g.some((x) => x.key.scope2Method === "market_based")).toBe(false);
+    expect(splitScope2(heatOnly as unknown as CalculationRow[])).toEqual({ s2lbKg: 840, s2mbKg: 0 });
   });
 });

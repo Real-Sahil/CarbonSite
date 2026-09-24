@@ -131,6 +131,10 @@ const SPEC = [
   ["elec-uk-lb-kwh", "s2-electricity-lb", "purchased_electricity_location", "kWh", "GB", [row("UK electricity", "Electricity generated", "Electricity: UK", "", "kWh", "kWh")], 1, "UK grid electricity generated, location-based."],
   ["electricity-lb-kwh", "s2-electricity-lb", "purchased_electricity_location", "kWh", "GB", [row("UK electricity", "Electricity generated", "Electricity: UK", "", "kWh", "kWh")], 1, "UK grid electricity generated, location-based."],
   ["elec-uk-td-kwh", "s2-electricity-lb", "purchased_electricity_location_td", "kWh", "GB", [row("Transmission and distribution", "T&D- UK electricity", "Electricity: UK", "", "kWh", "kWh")], 1, "UK grid transmission and distribution losses."],
+  // Purchased heat and steam (s2-heat): district heating is the default; heat
+  // bought from an on-site plant someone else runs is picked by "onsite".
+  ["heat-district-kwh", "s2-heat", "purchased_heat", "kWh", "GB", [row("Heat and steam", "Heat and steam", "District heat and steam", "", "kWh", "kWh")], 1, "District heat and steam, per kWh delivered."],
+  ["heat-onsite-kwh", "s2-heat", "purchased_heat_onsite", "kWh", "GB", [row("Heat and steam", "Heat and steam", "Onsite heat and steam", "", "kWh", "kWh")], 1, "Onsite heat and steam bought from a third-party plant, per kWh delivered."],
   ["electricity-mb-kwh", "s2-electricity-mb", "purchased_electricity_market", "kWh", "GB", [row("UK electricity", "Electricity generated", "Electricity: UK", "", "kWh", "kWh")], 1, "UK grid average, used for market-based only when no supplier-specific or residual-mix factor applies."],
   ["air-long-haul-km", "s3-business-travel", "business_travel", "km", "GB", [flight("Long-haul, to/from UK", "Economy class")], 1, "Long-haul flight, economy, with radiative forcing, per passenger.km."],
   ["air-short-haul-km", "s3-business-travel", "business_travel", "km", "GB", [flight("Short-haul, to/from UK", "Economy class")], 1, "Short-haul flight, economy, with radiative forcing, per passenger.km."],

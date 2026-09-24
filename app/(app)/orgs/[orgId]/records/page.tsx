@@ -51,7 +51,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
     }),
     prisma.emissionCategory.findMany({
-      select: { id: true, scope: true, name: true },
+      select: { id: true, scope: true, name: true, code: true },
       orderBy: [{ scope: "asc" }, { name: "asc" }],
     }),
     prisma.facility.findMany({
@@ -148,6 +148,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                   id: category.id,
                   scope: category.scope,
                   label: category.name,
+                  code: category.code,
                 }))}
                 facilities={facilities.map((facility) => ({
                   id: facility.id,
