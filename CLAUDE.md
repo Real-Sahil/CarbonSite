@@ -105,6 +105,7 @@ lib/
     library-for-period.ts  # chooseFactorLibrary(): newest DEFRA set whose year <= period end year
     default-run-inputs.ts  # Library/methodology for automatic runs: published snapshot's, else chooseFactorLibrary()
     geography.ts           # recordCountry(): record, then facility, then org country as ISO-2 for factor matching
+    library-country.ts     # Library home country; a run on another country's library needs confirmLibraryCountry
     price-index.ts         # CPI deflation of spend to a factor's price year
 prisma/
   schema.prisma            # Canonical schema — all tenant tables include organization_id

@@ -74,6 +74,8 @@ export const createCalculationRunSchema = z.object({
   reportingPeriodId: z.string().min(1),
   methodologyVersionId: z.string().min(1),
   factorLibraryId: z.string().min(1),
+  /** Set after the user confirms running on another country's library. */
+  confirmLibraryCountry: z.boolean().optional(),
 });
 
 export const createTargetSchema = z.object({

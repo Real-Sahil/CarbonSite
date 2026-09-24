@@ -9,6 +9,7 @@ import { createCalculationRunSchema } from "@/lib/validation/records";
 import { dispatchCalculation } from "@/lib/jobs/dispatch";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { createHash } from "crypto";
+import { libraryCountryMismatch } from "@/lib/calculation/library-country";
 import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
 import { recordUsage } from "@/lib/billing/usage";
 
@@ -78,10 +79,18 @@ export async function POST(req: NextRequest, { params }: Params) {
     // Verify factor library exists
     const factorLibrary = await prisma.factorLibrary.findUnique({
       where: { id: body.factorLibraryId },
-      select: { id: true },
+      select: { id: true, name: true },
     });
     if (!factorLibrary) {
       return apiError("NOT_FOUND", "Factor library not found.", 404);
+    }
+
+    // Another country's library prices every record with that country's
+    // factors: allowed, but only once the user has confirmed it.
+    if (!body.confirmLibraryCountry) {
+      const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { hqCountry: true } });
+      const mismatch = libraryCountryMismatch(factorLibrary.name, org?.hqCountry);
+      if (mismatch) return apiError("LIBRARY_COUNTRY_MISMATCH", mismatch, 409);
     }
 
     // Double-trigger guard: identical parameters within the same minute

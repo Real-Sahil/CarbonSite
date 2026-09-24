@@ -129,15 +129,27 @@ export function CalculationControls({
     setRun(null);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/orgs/${orgId}/calculation-runs`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            reportingPeriodId: periodId,
-            methodologyVersionId: methodologyId,
-            factorLibraryId,
-          }),
-        });
+        const start = (confirmLibraryCountry: boolean) =>
+          fetch(`/api/orgs/${orgId}/calculation-runs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              reportingPeriodId: periodId,
+              methodologyVersionId: methodologyId,
+              factorLibraryId,
+              confirmLibraryCountry,
+            }),
+          });
+        let res = await start(false);
+        if (res.status === 409) {
+          // Library written for another country: run only if the user confirms.
+          const conflict = await res.json().catch(() => ({}));
+          if (conflict.code !== "LIBRARY_COUNTRY_MISMATCH" || !window.confirm(conflict.message)) {
+            setRun(null);
+            return;
+          }
+          res = await start(true);
+        }
         if (res.status === 401) {
           window.location.href = "/sign-in";
           return;

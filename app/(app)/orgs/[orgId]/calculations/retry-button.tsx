@@ -24,11 +24,18 @@ export function RetryCalculationButton({
   async function handleRetry() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/orgs/${orgId}/calculation-runs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reportingPeriodId, methodologyVersionId, factorLibraryId }),
-      });
+      const start = (confirmLibraryCountry: boolean) =>
+        fetch(`/api/orgs/${orgId}/calculation-runs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reportingPeriodId, methodologyVersionId, factorLibraryId, confirmLibraryCountry }),
+        });
+      let res = await start(false);
+      if (res.status === 409) {
+        const conflict = await res.json().catch(() => ({}));
+        if (conflict.code !== "LIBRARY_COUNTRY_MISMATCH" || !window.confirm(conflict.message)) return;
+        res = await start(true);
+      }
       if (res.ok) router.refresh();
     } finally {
       setLoading(false);

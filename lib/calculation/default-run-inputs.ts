@@ -5,11 +5,19 @@
 //   1. the library and methodology behind the period's latest published
 //      snapshot, the set the organisation deliberately chose (an earlier
 //      automatic run is not a choice, so it is never copied);
-//   2. otherwise the DEFRA set for the period's end year
-//      (chooseFactorLibrary) and the newest methodology.
+//   2. otherwise, for an organisation outside the UK, the newest activity
+//      library written for its country (EPA for the US, ADEME for France);
+//   3. otherwise the DEFRA set for the period's end year
+//      (chooseFactorLibrary). Always the newest methodology.
 
 import { prisma } from "@/lib/db";
 import { chooseFactorLibrary, currentFactorLibraries } from "./library-for-period";
+import { libraryCountry } from "./library-country";
+import { countryIso2 } from "./geography";
+
+// Spend-only sets price purchases by industry; they are drawn on per record
+// (spend-supplement.ts), never as a run's whole library.
+const SPEND_ONLY = /^(EPA USEEIO|Defra UK spend)/i;
 
 export async function defaultRunInputs(
   orgId: string,
@@ -22,16 +30,25 @@ export async function defaultRunInputs(
   });
   if (published) return published.calculationRun;
 
-  const [period, libraries, methodology] = await Promise.all([
+  const [period, libraries, methodology, org] = await Promise.all([
     prisma.reportingPeriod.findFirst({
       where: { id: reportingPeriodId, organizationId: orgId },
       select: { endDate: true },
     }),
     prisma.factorLibrary.findMany({ select: { id: true, name: true, version: true } }),
     prisma.methodologyVersion.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }),
+    prisma.organization.findUnique({ where: { id: orgId }, select: { hqCountry: true } }),
   ]);
   if (!period || !methodology) return null;
-  const library = chooseFactorLibrary(currentFactorLibraries(libraries), period.endDate);
+  const current = currentFactorLibraries(libraries);
+  const country = countryIso2(org?.hqCountry);
+  const national =
+    country && country !== "GB"
+      ? current
+          .filter((l) => !SPEND_ONLY.test(l.name) && libraryCountry(l.name) === country)
+          .sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }))[0]
+      : undefined;
+  const library = national ?? chooseFactorLibrary(current, period.endDate);
   if (!library) return null;
   return { factorLibraryId: library.id, methodologyVersionId: methodology.id };
 }

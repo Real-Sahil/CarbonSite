@@ -6,6 +6,7 @@ const db = vi.hoisted(() => ({
   reportingPeriod: { findFirst: vi.fn() },
   factorLibrary: { findMany: vi.fn() },
   methodologyVersion: { findFirst: vi.fn() },
+  organization: { findUnique: vi.fn() },
 }));
 vi.mock("@/lib/db", () => ({ prisma: db }));
 
@@ -17,6 +18,8 @@ const LIBRARIES = [
   { id: "d252", name: "DEFRA", version: "2025.2" },
   { id: "d261", name: "DEFRA", version: "2026.1" },
   { id: "uks", name: "Defra UK spend multipliers", version: "2023" },
+  { id: "useeio", name: "EPA USEEIO", version: "1.3" },
+  { id: "ademe", name: "ADEME Base Carbone", version: "2025.04" },
 ];
 
 describe("defaultRunInputs", () => {
@@ -24,6 +27,7 @@ describe("defaultRunInputs", () => {
     vi.resetAllMocks();
     db.factorLibrary.findMany.mockResolvedValue(LIBRARIES);
     db.methodologyVersion.findFirst.mockResolvedValue({ id: "m2" });
+    db.organization.findUnique.mockResolvedValue({ hqCountry: "GB" });
   });
 
   it("reuses the library and methodology behind the period's published snapshot", async () => {
@@ -35,6 +39,17 @@ describe("defaultRunInputs", () => {
     db.publishedSnapshot.findFirst.mockResolvedValue(null);
     db.reportingPeriod.findFirst.mockResolvedValue({ endDate: new Date("2025-12-31") });
     expect(await defaultRunInputs("org", "p")).toEqual({ factorLibraryId: "d252", methodologyVersionId: "m2" });
+  });
+
+  it("takes the national activity library for an organisation outside the UK", async () => {
+    db.publishedSnapshot.findFirst.mockResolvedValue(null);
+    db.reportingPeriod.findFirst.mockResolvedValue({ endDate: new Date("2025-12-31") });
+    db.organization.findUnique.mockResolvedValue({ hqCountry: "United States" });
+    expect((await defaultRunInputs("org", "p"))?.factorLibraryId).toBe("epa");
+    db.organization.findUnique.mockResolvedValue({ hqCountry: "France" });
+    expect((await defaultRunInputs("org", "p"))?.factorLibraryId).toBe("ademe");
+    db.organization.findUnique.mockResolvedValue({ hqCountry: "Ireland" });
+    expect((await defaultRunInputs("org", "p"))?.factorLibraryId).toBe("d252");
   });
 
   it("returns null for a period outside the organisation", async () => {

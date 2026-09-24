@@ -165,6 +165,20 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
     }),
   ]);
 
+  // Warnings the engine recorded, grouped, so a weak factor pick (no
+  // country, tie-break, Unverified factor, fallback) is seen before the run
+  // is published instead of only in the CSV trail.
+  const warningGroups = await prisma.$queryRaw<Array<{ warning: string; records: bigint; kg: number }>>`
+    SELECT w AS warning, count(*) AS records, sum(c.total_co2e)::float8 AS kg
+    FROM emission_calculations c, jsonb_array_elements_text(
+      CASE WHEN jsonb_typeof(c.warnings) = 'array' THEN c.warnings ELSE '[]'::jsonb END
+    ) AS w
+    WHERE c.organization_id = ${orgId} AND c.calculation_run_id = ${runId}
+    GROUP BY w
+    ORDER BY sum(c.total_co2e) DESC
+    LIMIT 8
+  `.catch(() => []);
+
   // Group server-side; convert Prisma Decimal to number before passing to client charts.
   const scopeTotals = new Map<number, number>();
   const categoryTotals = new Map<string, { name: string; scope: number; value: number }>();
@@ -255,6 +269,30 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
           <MetaItem label="Total footprint" value={formatTonnes(totalKg)} />
         </CardContent>
       </Card>
+
+      {warningGroups.length > 0 && (
+        <Card className="mb-6 border-amber-200 bg-amber-50/40">
+          <CardHeader>
+            <CardTitle className="text-base">Check before publishing</CardTitle>
+            <CardDescription>
+              Warnings recorded while selecting factors, largest emissions first. Each is also kept on
+              the calculation and in the report&apos;s CSV trail.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y divide-amber-100">
+              {warningGroups.map((w) => (
+                <li key={w.warning} className="flex flex-col gap-1 py-2 text-sm sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                  <span className="text-slate-800">{w.warning}</span>
+                  <span className="shrink-0 tabular-nums text-slate-500">
+                    {Number(w.records).toLocaleString("en-GB")} record{Number(w.records) === 1 ? "" : "s"} · {formatTonnes(w.kg ?? 0)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {uncertainty && (
         <Card className="mb-6">
