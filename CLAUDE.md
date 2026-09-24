@@ -223,7 +223,7 @@ Published snapshots are immutable. Recalculation creates a new `CalculationRun` 
 `.github/workflows/migrate.yml` applies migrations as soon as code reaches `main`, **while the previous deploy is still serving traffic**. So:
 - Additive changes only in the same release as the code. A drop, rename, type change or `SET NOT NULL` must ship in a later release, in a migration containing a `-- contract-step:` line explaining why no deployed code still depends on it. `scripts/check-migration-safety.mjs` enforces this in CI and before migrating.
 - CI replays every migration on plain Postgres 16, where Supabase roles and the `cron`/`vault`/`storage` schemas do not exist: guard Supabase-specific SQL with `IF EXISTS (SELECT 1 FROM pg_roles ...)` / `to_regnamespace(...)` checks inside a `DO $do$` block.
-- CI fails if `prisma migrate diff` grows beyond `prisma/drift-baseline.txt`; lower the baseline as drift is fixed. Generate new migration SQL with `prisma migrate diff --from-schema-datamodel <old> --to-schema-datamodel prisma/schema.prisma --script`, never by hand.
+- CI fails if `prisma migrate diff` grows beyond `prisma/drift-baseline.txt`, which is 0 since migration `20260924000031`: every schema change needs its migration. Generate new migration SQL with `prisma migrate diff --from-schema-datamodel <old> --to-schema-datamodel prisma/schema.prisma --script`, never by hand.
 
 ### Flutter: Field Capture Flow
 ```
