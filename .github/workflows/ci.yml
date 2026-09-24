@@ -91,7 +91,16 @@ jobs:
         run: |
           pnpm prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script > drift.sql
           node scripts/check-migration-safety.mjs --drift < drift.sql
-      - run: pnpm test
+      - name: Seed reference data
+        # Categories, methodology and factor libraries, then the factor-loading
+        # migrations replayed (they insert nothing before categories exist).
+        run: pnpm prisma db seed
+      - name: Unit, integration and golden-number tests
+        # RUN_DB_TESTS runs tests/golden: a UK inventory calculated end to end
+        # against the seeded libraries and checked against hand-worked values.
+        run: pnpm test
+        env:
+          RUN_DB_TESTS: "1"
       - run: pnpm build
 
   smoke:

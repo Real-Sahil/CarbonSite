@@ -1145,9 +1145,47 @@ export async function runSeed() {
   return main();
 }
 
+// Migrations that load reference factors join emission_categories, which
+// only this seed creates. On a database built from scratch (a new
+// environment, CI, disaster recovery) they ran before any category existed
+// and inserted nothing, leaving ADEME, EPA USEEIO and the Defra UK spend
+// multipliers empty. Each is idempotent (ON CONFLICT / NOT EXISTS / UPDATE),
+// so replaying them after the seed fills what is missing and changes nothing
+// on a database that already has the rows. Listed in migration order.
+const REFERENCE_DATA_MIGRATIONS = [
+  "20260922000011_defra_2026_factor_library",
+  "20260923000006_defra_2025_flat_file_library",
+  "20260923000007_defra_2025_recycling_factor",
+  "20260923000014_defra_biogenic_co2",
+  "20260923000022_flag_unverified_spend_factors",
+  "20260923000023_epa_useeio_v13",
+  "20260923000025_ademe_base_carbone",
+  "20260924000026_ademe_heat_world_ncv",
+  "20260924000027_defra_uk_spend_multipliers",
+  "20260924000028_methodology_v2026_02",
+  "20260924000029_ademe_other_regions",
+  "20260924000030_defra_heat_and_steam",
+];
+
+function replayReferenceDataMigrations() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { execFileSync } = require("node:child_process") as typeof import("node:child_process");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("node:path") as typeof import("node:path");
+  const prismaBin = path.join(__dirname, "..", "node_modules", ".bin", "prisma");
+  for (const name of REFERENCE_DATA_MIGRATIONS) {
+    const file = path.join(__dirname, "migrations", name, "migration.sql");
+    execFileSync(prismaBin, ["db", "execute", "--file", file, "--schema", path.join(__dirname, "schema.prisma")], {
+      stdio: ["ignore", "ignore", "inherit"],
+    });
+  }
+  console.log(`Replayed ${REFERENCE_DATA_MIGRATIONS.length} reference-data migrations.`);
+}
+
 // Auto-run when called via CLI (pnpm prisma db seed)
 if (require.main === module) {
   main()
+    .then(() => replayReferenceDataMigrations())
     .catch((e) => {
       console.error(e);
       process.exit(1);
