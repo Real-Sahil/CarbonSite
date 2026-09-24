@@ -51,4 +51,12 @@ describe("published price indices", () => {
     expect(deflateSpend(1000, "USD", 2025, 2022)!.ratio).toBeCloseTo(292.655 / 322.115, 10);
     expect(deflateSpend(1000, "USD", 2025, 2022)!.warning).toBeUndefined();
   });
+
+  it("deflates EUR spend with the euro area HICP (Eurostat), e.g. to ADEME's 2023 prices", () => {
+    const d = deflateSpend(1000, "EUR", 2025, 2023)!;
+    expect(d.ratio).toBeCloseTo(123.15 / 128.75, 10);
+    expect(d.amount).toBeCloseTo(956.5, 1);
+    expect(d.warning).toBeUndefined();
+    expect(deflateSpend(1000, "EUR", 2022, 2015)!.ratio).toBeCloseTo(100 / 116.82, 10);
+  });
 });

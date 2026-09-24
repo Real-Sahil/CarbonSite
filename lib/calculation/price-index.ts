@@ -11,6 +11,9 @@
 //        https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7bt/mm23
 //   USD: BLS CPI-U, US city average, all items, 1982-84 = 100, series CUUR0000SA0
 //        https://data.bls.gov/timeseries/CUUR0000SA0
+//   EUR: Eurostat HICP, euro area (EA, changing composition), all items,
+//        2015 = 100, prc_hicp_aind (unit INX_A_AVG, coicop CP00)
+//        https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_aind/default/table
 
 const CPI: Record<string, Record<number, number>> = {
   GBP: {
@@ -29,6 +32,14 @@ const CPI: Record<string, Record<number, number>> = {
     2012: 229.594, 2013: 232.957, 2014: 236.736, 2015: 237.017, 2016: 240.007, 2017: 245.12,
     2018: 251.107, 2019: 255.657, 2020: 258.811, 2021: 270.97, 2022: 292.655, 2023: 304.702, 2024: 313.689,
     2025: 322.115,
+  },
+  // Eurostat export of 6 February 2026 (data/sources/eurostat-prc_hicp_aind-EA-FR.csv).
+  // The euro area series covers spend in euros from any member state; France
+  // (FR) is in the same file if a France-only index is ever wanted.
+  EUR: {
+    2012: 98.05, 2013: 99.38, 2014: 99.81, 2015: 100.0, 2016: 100.23, 2017: 101.78,
+    2018: 103.56, 2019: 104.8, 2020: 105.06, 2021: 107.78, 2022: 116.82, 2023: 123.15, 2024: 126.07,
+    2025: 128.75,
   },
 };
 
