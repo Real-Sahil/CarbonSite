@@ -76,7 +76,7 @@ export function renderCdpHtml(data: CdpData): string {
 
   const logoHtml = data.logoDataUri
     ? `<img src="${esc(data.logoDataUri)}" alt="${esc(data.orgName)} logo" style="height:44px;max-width:180px;object-fit:contain;">`
-    : `<span style="font-size:1.1rem;font-weight:700;color:#228B22;">${esc(data.orgName)}</span>`;
+    : `<span style="font-size:1.1rem;font-weight:700;color:#fff;">${esc(data.orgName)}</span>`;
 
   const reductionVsBaseline =
     hasBaseline && data.baselineTonnes! > 0
@@ -114,7 +114,7 @@ export function renderCdpHtml(data: CdpData): string {
       `<table class="data-table">
         ${row2("Accounting standard", "GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition)")}
         ${row2("Methodology version", esc(data.methodology))}
-        ${row2("GWP dataset", `IPCC AR6 (${esc(data.gwpVersion)})`)}
+        ${row2("GWP dataset", `IPCC ${esc(data.gwpVersion)}, 100-year`)}
         ${row2("Emission factor library", esc(data.factorLibrary))}
         ${row2("Scope 2 methods", "Location-based and market-based (dual-reporting per GHG Protocol Scope 2 Guidance)")}
         ${row2("Consolidation approach", "Operational control (default)")}
@@ -123,7 +123,7 @@ export function renderCdpHtml(data: CdpData): string {
       </table>`
     )}
     ${questionBlock("C5.2", "Provide any additional context on your emission calculation methodology.",
-      `<p>Calculations performed using MetricOra v${data.snapshotVersion}, applying DEFRA 2025 conversion factors for UK activities.
+      `<p>Calculations performed in MetricOra (snapshot v${data.snapshotVersion}) with ${esc(data.factorLibrary)} emission factors.
        Scope 1 includes stationary combustion, mobile combustion, and fugitive emissions.
        Scope 2 location-based uses UK grid average emission factors; market-based uses supplier-specific or residual mix factors where available.
        Scope 3 categories reported where material data is available. GWP values: CH4 = 27.9, N2O = 273 (AR6 100-year).</p>`

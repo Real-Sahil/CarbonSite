@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GET } from "../stream/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/auth/session";
-import * as subscription from "@/lib/realtime/subscription-manager";
+import * as live from "@/lib/realtime/live-totals";
 import * as billing from "@/lib/billing/limits";
 
 // Mock dependencies
 vi.mock("@/lib/auth/session");
-vi.mock("@/lib/realtime/subscription-manager");
+vi.mock("@/lib/realtime/live-totals");
 vi.mock("@/lib/billing/limits", async (importOriginal) => ({
   ...(await importOriginal<typeof billing>()),
   requireFeature: vi.fn(),
@@ -25,8 +25,11 @@ describe("GET /api/orgs/[orgId]/dashboard/stream", () => {
       session: { id: "session-123" },
     } as any);
 
-    // Mock subscription
-    vi.mocked(subscription.subscribeToDashboardUpdates).mockReturnValue(() => {});
+    vi.mocked(live.loadLiveTotals).mockResolvedValue({
+      aggregates: { totalCo2e: 4710050, scope1: 909490, scope2: 154640, scope3: 3645920, byCategory: { "s1-mobile": 690420 } },
+      timestamp: "2026-09-24T09:50:00.000Z",
+      calculationRunId: "run-1",
+    });
 
     // Mock plan feature gate as available by default
     vi.mocked(billing.requireFeature).mockResolvedValue(null);
@@ -51,15 +54,26 @@ describe("GET /api/orgs/[orgId]/dashboard/stream", () => {
     expect(response.headers.get("X-Accel-Buffering")).toBe("no");
   });
 
-  it("subscribes to dashboard updates for the organization", async () => {
-    const response = await GET(mockRequest, {
+  it("sends the current live totals as soon as the stream opens", async () => {
+    const controller = new AbortController();
+    const response = await GET(new NextRequest("http://localhost:3000/api/orgs/org-456/dashboard/stream", { signal: controller.signal }), {
       params: Promise.resolve({ orgId: "org-456" }),
     });
 
-    // Note: In a real scenario, we'd need to actually read from the stream
-    // to verify the subscription is working. This is a simplified check.
-    expect(response.status).toBe(200);
-    expect(auth.requireOrgMember).toHaveBeenCalled();
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
+    let text = "";
+    while (!text.includes("data: ")) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      text += decoder.decode(value);
+    }
+    controller.abort();
+
+    expect(live.loadLiveTotals).toHaveBeenCalledWith("org-456");
+    const payload = JSON.parse(text.split("data: ")[1].split("\n\n")[0]);
+    expect(payload.calculationRunId).toBe("run-1");
+    expect(payload.aggregates.totalCo2e).toBe(4710050);
   });
 
   it("returns text/event-stream content type", async () => {

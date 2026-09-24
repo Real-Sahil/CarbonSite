@@ -83,7 +83,7 @@ const SCOPE3_CATEGORIES: Record<number, string> = {
 export function renderGhgProtocolHtml(data: GhgProtocolData): string {
   const logoHtml = data.logoDataUri
     ? `<img src="${esc(data.logoDataUri)}" alt="${esc(data.orgName)} logo" style="height:48px;max-width:200px;object-fit:contain;">`
-    : `<span style="font-size:1.1rem;font-weight:700;color:#228B22;">${esc(data.orgName)}</span>`;
+    : `<span style="font-size:1.1rem;font-weight:700;color:#fff;">${esc(data.orgName)}</span>`;
 
   const scope1Pct  = pct(data.scope1Kg, data.totalKg);
   const scope2LPct = pct(data.scope2LocationKg, data.totalKg);
@@ -187,7 +187,7 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
       <div>${logoHtml}</div>
       <h1>GHG Protocol Corporate Inventory</h1>
       <p>Scope 1, 2 &amp; 3 — ${esc(data.periodLabel)} &nbsp;|&nbsp; ${fmt(data.periodStart)} – ${fmt(data.periodEnd)}</p>
-      <div class="header-meta">Snapshot v${data.snapshotVersion} · ${esc(data.factorLibrary)} · ${esc(data.methodology)} (AR6 GWP ${esc(data.gwpVersion)}) · ${data.recordCount.toLocaleString("en-GB")} records</div>
+      <div class="header-meta">Snapshot v${data.snapshotVersion} · ${esc(data.factorLibrary)} · ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}) · ${data.recordCount.toLocaleString("en-GB")} records</div>
     </div>
     <div style="text-align:right;font-size:0.8rem;opacity:0.85;">
       <p>Published: ${fmt(data.publishedAt)}</p>

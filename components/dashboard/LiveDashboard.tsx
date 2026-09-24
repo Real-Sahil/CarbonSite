@@ -146,7 +146,7 @@ export function LiveDashboard({
     return (
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">Connecting to live dashboard...</p>
+          <p className="text-sm text-gray-600">{connected ? "Live. Figures appear here after the first calculation run." : "Connecting to live dashboard..."}</p>
           {statusIndicator}
         </div>
       </div>
@@ -164,7 +164,7 @@ export function LiveDashboard({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-medium text-gray-600 uppercase">Total CO2e</p>
           <p className="mt-2 text-2xl font-bold text-gray-900">
-            {(data.aggregates.totalCo2e / 1000).toFixed(2)}
+            {(data.aggregates.totalCo2e / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-gray-500">tonnes</p>
         </div>
@@ -172,7 +172,7 @@ export function LiveDashboard({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-medium text-gray-600 uppercase">Scope 1</p>
           <p className="mt-2 text-2xl font-bold text-orange-600">
-            {(data.aggregates.scope1 / 1000).toFixed(2)}
+            {(data.aggregates.scope1 / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-gray-500">tonnes</p>
         </div>
@@ -180,7 +180,7 @@ export function LiveDashboard({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-medium text-gray-600 uppercase">Scope 2</p>
           <p className="mt-2 text-2xl font-bold text-blue-600">
-            {(data.aggregates.scope2 / 1000).toFixed(2)}
+            {(data.aggregates.scope2 / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-gray-500">tonnes</p>
         </div>
@@ -188,7 +188,7 @@ export function LiveDashboard({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-medium text-gray-600 uppercase">Scope 3</p>
           <p className="mt-2 text-2xl font-bold text-green-600">
-            {(data.aggregates.scope3 / 1000).toFixed(2)}
+            {(data.aggregates.scope3 / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-gray-500">tonnes</p>
         </div>
@@ -201,7 +201,7 @@ export function LiveDashboard({
       )}
 
       <p className="text-xs text-gray-500 text-center">
-        Last updated: {new Date(data.timestamp).toLocaleTimeString()}
+        Last calculated: {new Date(data.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
       </p>
     </div>
   );

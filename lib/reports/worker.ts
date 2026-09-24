@@ -10,7 +10,7 @@ import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
 import type { ReportData } from "./template";
 import { scope2MethodOf } from "@/lib/calculation/scope2-method";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
-import { getReportHandler, type ReportContext } from "./registry";
+import { getReportHandler, hasTypedTemplate, type ReportContext } from "./registry";
 import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHeader } from "./pdf-generator";
 import { generateAuditNarrative } from "./narrative-generator";
 import { llmClient } from "@/lib/llm/client";
@@ -110,27 +110,51 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         });
       }
 
-      let rawPdfBuffer: Buffer;
-      if (pdfkitData) {
+      // Types with their own layout render their HTML with Chromium; the
+      // generic PDFKit report is the fallback if Chromium is unavailable, and
+      // the renderer for the default types (inventory, monthly snapshot).
+      const renderPdfKit = async () => {
         reportLogger.info("Starting pdfkit PDF generation", { reportId });
-        const pdfPromise = generateReportPdf(pdfkitData);
-        rawPdfBuffer = await Promise.race([
-          pdfPromise,
+        const buffer = await Promise.race([
+          generateReportPdf(pdfkitData!),
           new Promise<Buffer>((_, reject) =>
             setTimeout(() => reject(new Error("PDF generation timeout after 45 seconds")), 45000)
           ),
         ]);
-        reportLogger.info("PDFKit PDF generated successfully", { reportId, sizeBytes: rawPdfBuffer.length });
-      } else {
+        reportLogger.info("PDFKit PDF generated successfully", { reportId, sizeBytes: buffer.length });
+        return buffer;
+      };
+      const renderHtml = async () => {
         reportLogger.info("Starting Puppeteer PDF rendering", { reportId });
-        const pdfPromise = renderPdf(html);
-        rawPdfBuffer = await Promise.race([
-          pdfPromise,
+        const buffer = await Promise.race([
+          renderPdf(html),
           new Promise<Buffer>((_, reject) =>
             setTimeout(() => reject(new Error("PDF rendering timeout after 50 seconds")), 50000)
           ),
         ]);
-        reportLogger.info("Puppeteer PDF rendered successfully", { reportId, sizeBytes: rawPdfBuffer.length });
+        reportLogger.info("Puppeteer PDF rendered successfully", { reportId, sizeBytes: buffer.length });
+        return buffer;
+      };
+
+      let rawPdfBuffer: Buffer;
+      let usedPdfKit = false;
+      if (!pdfkitData) {
+        rawPdfBuffer = await renderHtml();
+      } else if (hasTypedTemplate(report.type)) {
+        try {
+          rawPdfBuffer = await renderHtml();
+        } catch (err) {
+          reportLogger.warn("Chromium rendering failed, using the generic PDFKit report", {
+            reportId,
+            reportType: report.type,
+            error: err instanceof Error ? err.message : String(err),
+          });
+          rawPdfBuffer = await renderPdfKit();
+          usedPdfKit = true;
+        }
+      } else {
+        rawPdfBuffer = await renderPdfKit();
+        usedPdfKit = true;
       }
 
       const pdfChecksum = createHash("sha256").update(rawPdfBuffer).digest("hex");
@@ -213,14 +237,14 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       });
 
       // Add logo to header for HTML-rendered reports (ecology_scan, ecology_survey, etc.)
-      // For pdfkitData reports, logo is already embedded in generateReportPdf
+      // PDFKit reports already embed the logo in generateReportPdf
       const brandingKey = report.organization.branding?.reportHeaderLogoKey
         ?? report.organization.branding?.logoStorageKey;
       reportLogger.info("Checking logo for header", {
         reportId,
         hasBranding: !!report.organization.branding,
         brandingKey,
-        isPdfkitReport: !!pdfkitData,
+        isPdfkitReport: usedPdfKit,
       });
       const logoDataUri = brandingKey
         ? await loadLogoDataUri(brandingKey)
@@ -230,10 +254,10 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         logoDataUriExists: !!logoDataUri,
         logoDataUriLength: logoDataUri?.length,
       });
-      if (logoDataUri && !pdfkitData) {
+      if (logoDataUri && !usedPdfKit) {
         pdfBuffer = await addLogoToHeader(pdfBuffer, logoDataUri);
         reportLogger.info("Logo added to header", { reportId });
-      } else if (!logoDataUri && brandingKey && !pdfkitData) {
+      } else if (!logoDataUri && brandingKey && !usedPdfKit) {
         reportLogger.warn("Logo loading failed but branding key exists", {
           reportId,
           brandingKey,

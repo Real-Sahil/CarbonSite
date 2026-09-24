@@ -177,7 +177,7 @@ export function renderPpn0621Html(d: Ppn0621Data): string {
 </section>
 
 <div class="footer">
-  PPN 06/21 Carbon Reduction Plan · ${esc(d.orgName)} · Generated ${now} by Fluid · Snapshot v${d.snapshotVersion} · ${esc(d.factorLibrary)} · ${esc(d.methodology)}
+  PPN 06/21 Carbon Reduction Plan · ${esc(d.orgName)} · Generated ${now} by MetricOra · Snapshot v${d.snapshotVersion} · ${esc(d.factorLibrary)} · ${esc(d.methodology)}
 </div>
 </body></html>`;
 }

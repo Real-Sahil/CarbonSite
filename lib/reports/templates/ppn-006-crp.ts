@@ -1,7 +1,7 @@
-// PPN 006/21 Carbon Reduction Plan (CRP) report template.
-// Required for UK government procurement contracts above £5m threshold.
+// PPN 006 Carbon Reduction Plan (CRP) report template.
+// Required for UK government procurement contracts above £5m a year.
 // Covers: baseline year, Scope 1/2/3 emissions, net zero commitment, targets.
-// Reference: Procurement Policy Note 06/21, HM Government.
+// Reference: Procurement Policy Note 006 (2025), HM Government.
 
 import { esc, brandStyles, brandLogoHtml, svgDonut, svgHBars, SCOPE_COLORS } from "./shared";
 
@@ -23,8 +23,13 @@ export interface Ppn006CrpData {
   logoDataUri?: string;
   // Reporting period info
   periodLabel: string;
-  baselineYear: number;
+  /// Undefined when the organisation has no base year yet.
+  baselineYear?: number;
   reportingYear: number;
+  // The run's library and methodology, printed as the basis of the figures.
+  factorLibrary: string;
+  methodology: string;
+  gwpVersion: string;
   // Totals (kgCO2e)
   scope1Kg: number;
   scope2Kg: number;
@@ -59,14 +64,15 @@ function reductionPct(current: number, baseline: number): string {
 export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
   const totalKg = data.scope1Kg + data.scope2Kg + data.scope3Kg;
   const baselineKg = (data.scope1BaselineKg ?? 0) + (data.scope2BaselineKg ?? 0) + (data.scope3BaselineKg ?? 0);
-  const hasBaseline = baselineKg > 0;
+  const hasBaseline = baselineKg > 0 && data.baselineYear !== undefined;
+  const baselineLabel = data.baselineYear !== undefined ? `${data.baselineYear} baseline` : "baseline";
 
   // ── Charts ──────────────────────────────────────────────────────────────────
 
   const donutSlices = [
-    { label: "Scope 1 — Direct", value: data.scope1Kg, scope: 1 as const },
-    { label: "Scope 2 — Electricity", value: data.scope2Kg, scope: 2 as const },
-    { label: "Scope 3 — Value chain", value: data.scope3Kg, scope: 3 as const },
+    { label: "Scope 1 direct", value: data.scope1Kg, scope: 1 as const },
+    { label: "Scope 2 energy", value: data.scope2Kg, scope: 2 as const },
+    { label: "Scope 3 value chain", value: data.scope3Kg, scope: 3 as const },
   ].filter((s) => s.value > 0);
 
   const donutChart = svgDonut(donutSlices, {
@@ -77,9 +83,9 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
 
   // Horizontal bars: top categories by scope row (aggregate same-scope rows)
   const barItems = [
-    { label: "Scope 1 — Direct", value: data.scope1Kg, scope: 1 as const },
-    { label: "Scope 2 — Electricity", value: data.scope2Kg, scope: 2 as const },
-    { label: "Scope 3 — Value chain", value: data.scope3Kg, scope: 3 as const },
+    { label: "Scope 1 direct", value: data.scope1Kg, scope: 1 as const },
+    { label: "Scope 2 energy", value: data.scope2Kg, scope: 2 as const },
+    { label: "Scope 3 value chain", value: data.scope3Kg, scope: 3 as const },
   ].filter((b) => b.value > 0);
 
   const scopeBarChart = svgHBars(barItems, { unit: "tCO2e" });
@@ -100,28 +106,28 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
   const baselineBars = hasBaseline
     ? [
         {
-          label: `Scope 1 — ${data.reportingYear}`,
+          label: `Scope 1, ${data.reportingYear}`,
           value: data.scope1Kg,
           color: SCOPE_COLORS[1],
         },
         ...(data.scope1BaselineKg
-          ? [{ label: `Scope 1 — ${data.baselineYear} baseline`, value: data.scope1BaselineKg, color: "#d1fae5" }]
+          ? [{ label: `Scope 1, ${baselineLabel}`, value: data.scope1BaselineKg, color: "#d1fae5" }]
           : []),
         {
-          label: `Scope 2 — ${data.reportingYear}`,
+          label: `Scope 2, ${data.reportingYear}`,
           value: data.scope2Kg,
           color: SCOPE_COLORS[2],
         },
         ...(data.scope2BaselineKg
-          ? [{ label: `Scope 2 — ${data.baselineYear} baseline`, value: data.scope2BaselineKg, color: "#bae6fd" }]
+          ? [{ label: `Scope 2, ${baselineLabel}`, value: data.scope2BaselineKg, color: "#bae6fd" }]
           : []),
         {
-          label: `Scope 3 — ${data.reportingYear}`,
+          label: `Scope 3, ${data.reportingYear}`,
           value: data.scope3Kg,
           color: SCOPE_COLORS[3],
         },
         ...(data.scope3BaselineKg
-          ? [{ label: `Scope 3 — ${data.baselineYear} baseline`, value: data.scope3BaselineKg, color: "#d9f99d" }]
+          ? [{ label: `Scope 3, ${baselineLabel}`, value: data.scope3BaselineKg, color: "#d9f99d" }]
           : []),
       ]
     : [];
@@ -146,12 +152,12 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
           (t) => `
           <tr>
             <td>${t.year}</td>
-            <td>${t.reductionPct}% reduction vs ${data.baselineYear} baseline</td>
+            <td>${t.reductionPct}% reduction vs ${baselineLabel}</td>
             <td>${esc(t.description ?? "")}</td>
           </tr>`,
         )
         .join("")
-    : `<tr><td colspan="3" class="empty">No targets defined</td></tr>`;
+    : `<tr><td colspan="3" class="empty">No reduction target has been set. Add one under Targets before submitting this plan.</td></tr>`;
 
   const signatureSection = data.signatoryName
     ? `
@@ -179,7 +185,7 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Carbon Reduction Plan — ${esc(data.orgName)}</title>
+<title>Carbon Reduction Plan, ${esc(data.orgName)}</title>
 <style>
   ${brandStyles()}
 
@@ -200,20 +206,19 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
 
   .content { padding: 0 48px 48px; }
 
-  .kpi-row { display: flex; gap: 16px; margin: 32px 0 24px; flex-wrap: wrap; }
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 32px 0 24px; }
   .kpi-card {
-    flex: 1; min-width: 140px;
     border: 1.5px solid #e5e7eb;
     border-radius: 8px;
     padding: 16px 18px;
   }
   .kpi-label { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 6px; }
-  .kpi-value { font-size: 18pt; font-weight: 700; color: #0f3e17; }
+  .kpi-value { font-size: 14pt; white-space: nowrap; font-weight: 700; color: #0f3e17; }
   .kpi-sub { font-size: 8pt; color: #888; margin-top: 3px; }
   .kpi-delta { font-size: 9pt; font-weight: 600; margin-top: 4px; color: #228B22; }
 
-  .chart-section { display: flex; gap: 40px; align-items: flex-start; margin: 32px 0 0; flex-wrap: wrap; }
-  .chart-col { flex: 1; min-width: 200px; }
+  .chart-section { display: grid; gap: 24px; margin: 32px 0 0; }
+  .chart-col { min-width: 0; }
   .chart-col h3 { font-size: 10pt; font-weight: 700; color: #083b10; margin-bottom: 8px; }
 
   .section { margin-top: 36px; }
@@ -259,11 +264,11 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
 <body>
 
 <div class="cover">
-  ${brandLogoHtml(data.logoDataUri, data.orgName)}
-  <div class="cover-eyebrow">Procurement Policy Note 06/21 — PPN 006/21</div>
+  ${brandLogoHtml(data.logoDataUri)}
+  <div class="cover-eyebrow">PPN 006 Carbon Reduction Plan</div>
   <div class="cover-title">Carbon Reduction Plan</div>
   <div class="cover-org">${esc(data.orgName)}</div>
-  <div class="cover-period">${esc(data.periodLabel)} &nbsp;|&nbsp; Reporting Year: ${data.reportingYear} &nbsp;|&nbsp; Baseline: ${data.baselineYear}</div>
+  <div class="cover-period">${esc(data.periodLabel)} &nbsp;|&nbsp; Reporting year: ${data.reportingYear} &nbsp;|&nbsp; Baseline: ${data.baselineYear ?? "not set"}</div>
 </div>
 
 <div class="content">
@@ -281,7 +286,7 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
       ${hasBaseline && data.scope1BaselineKg ? `<div class="kpi-delta">${reductionPct(data.scope1Kg, data.scope1BaselineKg)} vs baseline</div>` : ""}
     </div>
     <div class="kpi-card">
-      <div class="kpi-label">Scope 2 (Electricity)</div>
+      <div class="kpi-label">Scope 2 (Energy)</div>
       <div class="kpi-value">${fmtTCo2e(data.scope2Kg)}</div>
       ${hasBaseline && data.scope2BaselineKg ? `<div class="kpi-delta">${reductionPct(data.scope2Kg, data.scope2BaselineKg)} vs baseline</div>` : ""}
     </div>
@@ -322,8 +327,9 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
       and demonstrates our commitment to measuring, reporting, and reducing our greenhouse gas emissions.
     </div>
     <p>
-      This plan covers our UK operations and is prepared in accordance with the GHG Protocol Corporate Standard
-      (GWP AR6), DEFRA 2025 emission factors, and Procurement Policy Note 06/21.
+      This plan is prepared in accordance with the GHG Protocol Corporate Standard and Procurement Policy Note 006,
+      using ${esc(data.factorLibrary)} emission factors and ${esc(data.gwpVersion)} global warming potentials.
+      Scope 2 is reported location-based.
     </p>
   </div>
 
@@ -366,9 +372,9 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
   ${signatureSection}
 
   <div class="footer">
-    ${esc(data.orgName)} — Carbon Reduction Plan — ${esc(data.periodLabel)} —
-    Generated ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} —
-    Prepared using MetricOra (GHG Protocol v2026-01, GWP AR6)
+    ${esc(data.orgName)} · Carbon Reduction Plan · ${esc(data.periodLabel)} ·
+    Generated ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} ·
+    Prepared with MetricOra (${esc(data.methodology)}, ${esc(data.factorLibrary)}, ${esc(data.gwpVersion)})
   </div>
 
 </div>

@@ -77,7 +77,14 @@ async function fetchLineageData(
   } else if (query.reportingPeriodId) {
     whereClause.reportingPeriodId = query.reportingPeriodId;
   } else {
-    throw new Error("Either snapshotId or reportingPeriodId is required");
+    // No selection: trace the organisation's most recently published snapshot.
+    const latest = await prisma.publishedSnapshot.findFirst({
+      where: { organizationId: orgId },
+      orderBy: { publishedAt: "desc" },
+      select: { id: true },
+    });
+    if (!latest) return [];
+    whereClause.snapshotId = latest.id;
   }
 
   if (query.categoryId) {

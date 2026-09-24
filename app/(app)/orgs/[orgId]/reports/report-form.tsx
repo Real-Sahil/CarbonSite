@@ -235,8 +235,8 @@ export function CreateReportForm({
         const secrOptions =
           reportType === "secr"
             ? {
-                ...(intensityMetricLabel ? { intensityMetricLabel } : {}),
-                ...(intensityMetricValue !== "" ? { intensityMetricValue: Number(intensityMetricValue) } : {}),
+                ...(intensityMetricLabel.trim() ? { intensityDenominator: intensityMetricLabel.trim() } : {}),
+                ...(intensityMetricValue !== "" ? { intensityDenominatorValue: Number(intensityMetricValue) } : {}),
               }
             : {};
         const cbamOptions =
@@ -395,23 +395,23 @@ export function CreateReportForm({
           </button>
           {secrOpen && (
             <div className="grid gap-4 border-t border-[#E5E7EB] px-4 pb-4 pt-4 sm:grid-cols-2">
-              <Field label="Intensity metric label">
+              <Field label="Intensity denominator">
                 <input
                   type="text"
                   value={intensityMetricLabel}
                   onChange={(e) => setIntensityMetricLabel(e.target.value)}
-                  placeholder="e.g. per £m revenue, per FTE, per tonne output"
+                  placeholder="e.g. employee, £m turnover, tonne output"
                   className="h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm placeholder:text-[#999]"
                 />
               </Field>
-              <Field label="Intensity ratio (tCO₂e per unit)">
+              <Field label="Denominator for the period">
                 <input
                   type="number"
                   step="any"
                   min="0"
                   value={intensityMetricValue}
                   onChange={(e) => setIntensityMetricValue(e.target.value)}
-                  placeholder="0.00"
+                  placeholder="e.g. 250"
                   className="h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm placeholder:text-[#999]"
                 />
               </Field>

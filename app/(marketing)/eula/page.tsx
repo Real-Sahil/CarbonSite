@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function EulaPage() {
   return (
     <LegalShell title="End-User Licence Agreement" updated="Last updated: September 2026">
-      <p>This End-User Licence Agreement ("EULA") is a legal agreement between you ("End User") and MetricOra Ltd ("MetricOra", "we", "us") for use of the MetricOra mobile application ("App") available on Apple App Store and Google Play Store. Please read this EULA carefully before downloading or using the App.</p>
+      <p>This End-User Licence Agreement ("EULA") is a legal agreement between you ("End User") and MetricOra Ltd ("MetricOra", "we", "us") for use of the MetricOra mobile application ("App") distributed through Google Play and, once approved, the Apple App Store. Please read this EULA carefully before downloading or using the App.</p>
           <section>
             <h2>1. Grant of Licence</h2>
             <p>

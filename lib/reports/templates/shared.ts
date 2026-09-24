@@ -136,7 +136,7 @@ export function svgDonut(
     const pct = total > 0 ? ((sl.value / total) * 100).toFixed(1) : "0.0";
     return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
       <div style="width:10px;height:10px;border-radius:2px;background:${color};flex-shrink:0;"></div>
-      <span style="font-size:9pt;color:#374151;">${esc(sl.label)}</span>
+      <span style="font-size:9pt;color:#374151;white-space:nowrap;">${esc(sl.label)}</span>
       <span style="margin-left:auto;font-size:9pt;font-weight:600;color:#111827;white-space:nowrap;">${fmt(sl.value)} ${esc(unit)}</span>
       <span style="font-size:8pt;color:#9ca3af;white-space:nowrap;">(${pct}%)</span>
     </div>`;
@@ -176,14 +176,14 @@ export function svgHBars(
   const gap = opts.gap ?? 8;
   const maxVal = Math.max(...items.map((b) => b.value), 1);
 
-  const LABEL_W_PCT = 28;  // % of container for label column
-  const VALUE_W_PCT = 14;  // % for value column
-  const BAR_W_PCT = 58;    // % for bar
+  const LABEL_W_PCT = 38;  // % of container for label column
+  const VALUE_W_PCT = 18;  // % for value column
+  const BAR_W_PCT = 44;    // % for bar
 
   const rows = items.map((item, i) => {
     const color = item.color ?? pieColor(i, item.scope);
     const pct = (item.value / maxVal) * 100;
-    const formatted = `${fmt(item.value)} ${unit}`;
+    const formatted = unit ? `${fmt(item.value)} ${unit}` : fmt(item.value);
     return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:${gap}px;min-width:0;">
       <div style="width:${LABEL_W_PCT}%;flex-shrink:0;font-size:8.5pt;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.label)}</div>
       <div style="width:${BAR_W_PCT}%;background:#f3f4f6;border-radius:3px;height:${barH}px;overflow:hidden;">

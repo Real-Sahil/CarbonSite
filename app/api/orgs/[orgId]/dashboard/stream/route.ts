@@ -2,9 +2,11 @@
  * Server-Sent Events endpoint for real-time dashboard updates.
  * GET /api/orgs/:orgId/dashboard/stream
  *
- * Streams DashboardAggregate updates as calculation runs complete.
- * Client opens persistent connection; server sends events as they occur.
- * Automatic reconnection on connection loss (client-side).
+ * Sends the latest period's live totals straight away, then again whenever a
+ * newer calculation run changes them. The database is polled rather than an
+ * in-process event bus: on Vercel the run that finishes a calculation is in a
+ * different function instance from this stream. The stream ends before the
+ * function's time limit and EventSource reconnects on its own.
  *
  * Response format (text/event-stream):
  * data: {aggregates, timestamp, calculationRunId}
@@ -12,11 +14,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
-import { subscribeToDashboardUpdates } from "@/lib/realtime/subscription-manager";
+import { loadLiveTotals } from "@/lib/realtime/live-totals";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { requireFeature } from "@/lib/billing/limits";
 
 type Params = { params: Promise<{ orgId: string }> };
+
+export const maxDuration = 300;
+const POLL_MS = 15_000;
+const STREAM_MS = 280_000;
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
@@ -49,44 +55,47 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     const stream = new ReadableStream({
       start(controller) {
-        // Send initial comment to verify connection
-        controller.enqueue(encoder.encode(": connected\n\n"));
-
-        // Subscribe to dashboard updates
-        const unsubscribe = subscribeToDashboardUpdates(orgId, (update) => {
+        let lastSent = "";
+        const send = (chunk: string) => {
           if (!isConnected) return;
-
           try {
-            const data = JSON.stringify(update);
-            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-          } catch (err) {
-            console.error(`Error sending SSE update: ${err}`);
-            isConnected = false;
-            controller.close();
-          }
-        });
-
-        // Send heartbeat every 30 seconds to keep connection alive
-        const heartbeatInterval = setInterval(() => {
-          if (!isConnected) {
-            clearInterval(heartbeatInterval);
-            return;
-          }
-          try {
-            controller.enqueue(encoder.encode(": heartbeat\n\n"));
+            controller.enqueue(encoder.encode(chunk));
           } catch {
             isConnected = false;
-            clearInterval(heartbeatInterval);
           }
-        }, 30000);
+        };
+        const push = async () => {
+          try {
+            const totals = await loadLiveTotals(orgId);
+            if (!totals) return;
+            const key = `${totals.calculationRunId}:${totals.aggregates.totalCo2e}`;
+            if (key === lastSent) return;
+            lastSent = key;
+            send(`data: ${JSON.stringify(totals)}\n\n`);
+          } catch (err) {
+            console.error(`Dashboard stream query failed: ${err}`);
+          }
+        };
 
-        // Cleanup on request abort
-        _req.signal.addEventListener("abort", () => {
+        send(": connected\n\n");
+        void push();
+        const poll = setInterval(() => {
+          void push();
+          send(": heartbeat\n\n");
+        }, POLL_MS);
+        const stop = () => {
+          if (!isConnected) return;
           isConnected = false;
-          clearInterval(heartbeatInterval);
-          unsubscribe();
-          controller.close();
-        });
+          clearInterval(poll);
+          clearTimeout(end);
+          try {
+            controller.close();
+          } catch {
+            // already closed
+          }
+        };
+        const end = setTimeout(stop, STREAM_MS);
+        _req.signal.addEventListener("abort", stop);
       },
     });
 

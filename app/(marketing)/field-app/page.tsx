@@ -11,7 +11,10 @@ import {
   ProductLoop,
   Section,
   SectionIntro,
+  TextLink,
 } from "@/components/marketing/kit";
+
+const PLAY_URL = "https://play.google.com/store/apps/details?id=app.metricora.metricora_mobile";
 
 export const metadata: Metadata = {
   title: "Field app",
@@ -52,6 +55,12 @@ export default function FieldAppPage() {
             <ButtonLink href="/solutions/construction" variant="secondary" tone="dark">
               Main contractors
             </ButtonLink>
+          </div>
+          <div className="flex flex-col gap-1">
+            <TextLink href={PLAY_URL} tone="dark">
+              Get it on Google Play
+            </TextLink>
+            <p className="text-[14px] text-mk-on-dark-2">Available for Android now. The iPhone app is in App Store review.</p>
           </div>
         </div>
       </Section>

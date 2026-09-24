@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import {
@@ -61,6 +63,7 @@ export default function InvoicePage() {
   const [anomaliesData, setAnomaliesData] = useState<{ anomalies: InvoiceAnomaly[]; pagination: PaginationMeta } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
 
   useEffect(() => {
@@ -78,7 +81,14 @@ export default function InvoicePage() {
         const res = await fetch(
           `/api/orgs/${orgId}/invoices/anomalies?${params.toString()}`
         );
-        if (!res.ok) throw new Error('Failed to fetch anomalies');
+        if (!res.ok) {
+          // A 402 means the plan does not include this feature; show the
+          // server's message so the page says why instead of a generic error.
+          const body = await res.json().catch(() => null);
+          setUpgradeRequired(res.status === 402);
+          throw new Error(body?.message ?? 'Could not load invoice anomalies.');
+        }
+        setUpgradeRequired(false);
         const data = await res.json();
         setAnomaliesData(data);
       } catch (err) {
@@ -328,8 +338,13 @@ export default function InvoicePage() {
           {isLoading ? (
             <div className="text-center py-8 text-gray-500">Loading...</div>
           ) : error ? (
-            <div className="text-center py-8 text-red-500">
-              Error loading anomalies
+            <div className="text-center py-8 text-sm text-[#374151]">
+              <p>{error}</p>
+              {upgradeRequired ? (
+                <Link href={`/orgs/${orgId}/settings/billing`} className="mt-2 inline-block text-[#c2410c] hover:underline">
+                  See plans
+                </Link>
+              ) : null}
             </div>
           ) : anomalies.length === 0 ? (
             <div className="text-center py-8 text-gray-500">

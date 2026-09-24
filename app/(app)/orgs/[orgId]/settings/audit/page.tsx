@@ -19,6 +19,8 @@ interface AuditLogEntry {
   metadata: Record<string, unknown>;
 }
 
+const PAGE_SIZE = 50;
+
 const ACTION_COLOURS: Record<string, string> = {
   "auth.sign_in": "bg-blue-50 text-blue-600",
   "auth.sign_out": "bg-[#F3F4F6] text-[#374151]",
@@ -60,33 +62,28 @@ export default function AuditLogPage() {
   const { orgId } = useParams<{ orgId: string }>();
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [page, setPage] = useState(1);
-  const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [actionFilter, setActionFilter] = useState("");
   const [search, setSearch] = useState("");
   const [exporting, setExporting] = useState(false);
 
+  // The audit-logs API pages by offset and returns each row's time as `timestamp`.
   const fetchLogs = useCallback(
-    async (targetPage: number, cursorList: (string | undefined)[]) => {
+    async (targetPage: number) => {
       setLoading(true);
       try {
-        const cursor = cursorList[targetPage - 1];
-        const qs = new URLSearchParams({ limit: "50" });
-        if (cursor) qs.set("cursor", cursor);
+        const qs = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String((targetPage - 1) * PAGE_SIZE) });
         if (actionFilter) qs.set("action", actionFilter);
         const res = await fetch(`/api/orgs/${orgId}/audit-logs?${qs}`);
         if (!res.ok) throw new Error("Failed to fetch audit logs");
-        const json = await res.json();
-        setLogs(json.data);
-        setHasNextPage(!!json.nextCursor);
-        if (json.nextCursor && cursorList.length <= targetPage) {
-          setCursors((prev) => {
-            const next = [...prev];
-            next[targetPage] = json.nextCursor;
-            return next;
-          });
-        }
+        const json = (await res.json()) as {
+          data: (Omit<AuditLogEntry, "createdAt"> & { timestamp: string })[];
+          pagination?: { offset: number; total: number };
+        };
+        setLogs(json.data.map(({ timestamp, ...rest }) => ({ ...rest, createdAt: timestamp })));
+        const total = json.pagination?.total ?? 0;
+        setHasNextPage((targetPage - 1) * PAGE_SIZE + json.data.length < total);
       } finally {
         setLoading(false);
       }
@@ -96,8 +93,7 @@ export default function AuditLogPage() {
 
   useEffect(() => {
     setPage(1);
-    setCursors([undefined]);
-    fetchLogs(1, [undefined]);
+    fetchLogs(1);
   }, [fetchLogs]);
 
   async function handleExport(format: "csv" | "json") {
@@ -164,7 +160,7 @@ export default function AuditLogPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => fetchLogs(page, cursors)}
+            onClick={() => fetchLogs(page)}
             disabled={loading}
             aria-label="Refresh"
           >
@@ -273,7 +269,7 @@ export default function AuditLogPage() {
             onClick={() => {
               const prev = page - 1;
               setPage(prev);
-              fetchLogs(prev, cursors);
+              fetchLogs(prev);
             }}
           >
             Previous
@@ -285,7 +281,7 @@ export default function AuditLogPage() {
             onClick={() => {
               const next = page + 1;
               setPage(next);
-              fetchLogs(next, cursors);
+              fetchLogs(next);
             }}
           >
             Next

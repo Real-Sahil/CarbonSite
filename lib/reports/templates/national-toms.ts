@@ -153,7 +153,7 @@ ${d.themes.filter((t) => t.measures.length > 0).map((t) => `
 </section>
 
 <div class="footer">
-  National TOMS Social Value Report · ${esc(d.orgName)} · Contract: ${esc(d.contractName)} · Generated ${now} by Fluid · Published by ${esc(d.publishedBy)}
+  National TOMS Social Value Report · ${esc(d.orgName)} · Contract: ${esc(d.contractName)} · Generated ${now} by MetricOra · Published by ${esc(d.publishedBy)}
 </div>
 </body></html>`;
 }

@@ -106,9 +106,7 @@ export default function LineagePage() {
       }
     };
 
-    if (orgId && (snapshotId || reportingPeriodId)) {
-      fetchLineage();
-    }
+    if (orgId) fetchLineage();
   }, [orgId, snapshotId, reportingPeriodId]);
 
   if (loading) {

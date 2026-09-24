@@ -377,7 +377,7 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       const maxScopeKg = Math.max(...data.scopes.map((s) => s.totalKg), 1);
       const BAR_H = 14;
       const BAR_GAP = 8;
-      const LABEL_W = 68;
+      const LABEL_W = 130;
       const VALUE_W = 72;
       const BAR_W = BODY_W - LABEL_W - VALUE_W - 12;
 
@@ -443,11 +443,14 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       fillColor(COLOR_MID);
       doc.fontSize(7.5);
       setFont("Helvetica-Bold");
+      // Every column is written at the same y: doc.text() moves doc.y down,
+      // so reading doc.y inside the loop would step each header lower.
+      const catHeadY = doc.y;
       for (const [key, col] of Object.entries(cols)) {
         const label = { category: "Category", scope: "Scope", records: "Records", total: "Total tCO2e", pct: "% of Total" }[key] ?? key;
-        doc.text(label, col.x + 4, doc.y + 5, { width: col.w - 4 });
+        doc.text(label, col.x + 4, catHeadY + 5, { width: col.w - 4, lineBreak: false });
       }
-      doc.y += 18;
+      doc.y = catHeadY + 18;
       rule();
 
       for (const cat of data.categories) {
@@ -461,6 +464,7 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         fillColor(COLOR_DARK);
         doc.fontSize(8);
         setFont("Helvetica");
+        const catRowH = Math.max(18, doc.heightOfString(cat.name, { width: cols.category.w - 8 }) + 8);
         doc.text(cat.name, cols.category.x + 4, rowY, { width: cols.category.w - 8 });
         doc.text(`Scope ${cat.scope}`, cols.scope.x + 4, rowY, { width: cols.scope.w - 4 });
         doc.text(cat.count.toLocaleString(), cols.records.x + 4, rowY, { width: cols.records.w - 4 });
@@ -471,7 +475,7 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         setFont("Helvetica");
         doc.text(`${pct}%`, cols.pct.x + 4, rowY, { width: cols.pct.w - 4 });
 
-        doc.y += 18;
+        doc.y = rowY - 4 + catRowH;
         rule();
       }
       moveDown(18);
@@ -503,11 +507,12 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       fillColor(COLOR_MID);
       doc.fontSize(7.5);
       setFont("Helvetica-Bold");
+      const facHeadY = doc.y;
       for (const [key, col] of Object.entries(facilCols)) {
         const label = { name: "Facility", records: "Records", total: "Total tCO2e" }[key] ?? key;
-        doc.text(label, col.x + 4, doc.y + 5, { width: col.w - 4 });
+        doc.text(label, col.x + 4, facHeadY + 5, { width: col.w - 4, lineBreak: false });
       }
-      doc.y += 18;
+      doc.y = facHeadY + 18;
       rule();
 
       for (const fac of data.facilities) {
@@ -519,11 +524,12 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         fillColor(COLOR_DARK);
         doc.fontSize(8);
         setFont("Helvetica");
+        const facRowH = Math.max(18, doc.heightOfString(fac.name, { width: facilCols.name.w - 8 }) + 8);
         doc.text(fac.name, facilCols.name.x + 4, rowY, { width: facilCols.name.w - 8 });
         doc.text(fac.count.toLocaleString(), facilCols.records.x + 4, rowY, { width: facilCols.records.w - 4 });
         setFont("Helvetica-Bold");
         doc.text(tonnes(fac.totalKg), facilCols.total.x + 4, rowY, { width: facilCols.total.w - 4 });
-        doc.y += 18;
+        doc.y = rowY - 4 + facRowH;
         rule();
       }
       moveDown(18);
@@ -550,22 +556,22 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       for (let i = 0; i < topCats.length; i++) {
         const cat = topCats[i];
         const pct = data.grandTotalKg > 0 ? ((cat.totalKg / data.grandTotalKg) * 100) : 0;
-        const barWidth = (pct / 100) * 300;
+        const barWidth = (pct / 100) * 200;
         const y = doc.y;
 
         fillColor(COLOR_DARK);
         doc.fontSize(8);
         setFont("Helvetica");
-        doc.text(`${i + 1}. ${cat.name}`, MARGIN, y, { width: 150 });
+        doc.text(`${i + 1}. ${cat.name}`, MARGIN, y, { width: 150, height: 10, ellipsis: true });
 
         fillColor(SCOPE_COLORS[cat.scope] ?? COLOR_ACCENT);
-        doc.rect(MARGIN + 160, y + 2, barWidth, 8).fill();
+        doc.rect(MARGIN + 160, y + 1, barWidth, 8).fill();
 
         fillColor(COLOR_MID);
         doc.fontSize(7.5);
-        doc.text(`${pct.toFixed(1)}% (${tonnes(cat.totalKg)} tCO2e)`, MARGIN + 470, y, { width: 70 });
+        doc.text(`${pct.toFixed(1)}% (${tonnes(cat.totalKg)} tCO2e)`, MARGIN + 370, y, { width: BODY_W - 370, align: "right", lineBreak: false });
 
-        doc.y += 14;
+        doc.y = y + 14;
       }
       moveDown(8);
     }
@@ -595,16 +601,17 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
     ];
 
     for (const [key, value] of auditItems) {
+      const y = doc.y;
       fillColor(COLOR_MID);
       doc.fontSize(7.5);
       setFont("Helvetica");
-      doc.text(key, MARGIN, doc.y, { width: 120 });
+      doc.text(key, MARGIN, y, { width: 120 });
 
       fillColor(COLOR_DARK);
       setFont("Helvetica-Bold");
-      doc.text(value, MARGIN + 130, doc.y, { width: BODY_W - 140 });
+      doc.text(value, MARGIN + 130, y, { width: BODY_W - 140 });
 
-      moveDown(7);
+      moveDown(4);
     }
 
     moveDown(6);
@@ -640,11 +647,19 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       const pageNum = i + 1;
       const pageTotal = range.count;
 
-      const footY = doc.page.height - 28;
+      // The footer sits inside the bottom margin. Writing there with the
+      // margin in place makes PDFKit start a new page, which left blank
+      // trailing pages, so the margin is lifted while the footer is drawn.
+      const bottomMargin = doc.page.margins.bottom;
+      doc.page.margins.bottom = 0;
+      // Clear of the verification QR code stamped bottom right (pdf-lib, 50pt
+      // square 18pt from the edges) and the audit line stamped at the foot.
+      const footY = doc.page.height - 40;
+      const footW = BODY_W - 80;
 
       // Accent line above footer
       strokeColor(COLOR_LIGHT);
-      doc.moveTo(MARGIN, footY - 6).lineTo(MARGIN + BODY_W, footY - 6).lineWidth(0.5).stroke();
+      doc.moveTo(MARGIN, footY - 6).lineTo(MARGIN + footW, footY - 6).lineWidth(0.5).stroke();
 
       fillColor(COLOR_MID);
       doc.fontSize(7);
@@ -654,13 +669,15 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
         `${data.orgName} | ${data.periodLabel} | Generated ${shortDate(new Date(data.publishedAt))}`,
         MARGIN,
         footY,
-        { width: BODY_W * 0.6 },
+        { width: footW * 0.75, lineBreak: false, ellipsis: true },
       );
 
       doc.text(`Page ${pageNum} of ${pageTotal}`, MARGIN, footY, {
-        width: BODY_W,
+        width: footW,
         align: "right",
+        lineBreak: false,
       });
+      doc.page.margins.bottom = bottomMargin;
     }
 
     try {

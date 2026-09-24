@@ -5,6 +5,7 @@ import type { Aggregation, CalculationRow } from "./aggregation";
 import { splitScope2 } from "./aggregation";
 import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
 import { renderSecrHtml, type SecrData } from "./templates/secr";
+import { secrEnergyFromCalculations } from "./secr-energy";
 import { renderPpn0621Html, type Ppn0621Data } from "./templates/ppn-0621";
 import { renderNhsEvergreenHtml, type NhsEvergreenData } from "./templates/nhs-evergreen";
 import { renderNationalTomsHtml, type NationalTomsData, type TomsThemeSummary } from "./templates/national-toms";
@@ -70,7 +71,13 @@ type ReportHandler = (ctx: ReportContext) => Promise<ReportResult>;
 const handlers: Record<string, ReportHandler> = {
   secr: async (ctx) => {
     const { agg, opts, basePdfData, report, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
-    const intensityValue = Number(opts.intensityDenominatorValue ?? 1);
+    const intensityValue = Number(opts.intensityDenominatorValue ?? 0);
+    // Energy comes from the run's own records unless the report form gives it.
+    const energy = secrEnergyFromCalculations(calcs);
+    const kwhOpt = (v: unknown, fallback: number) => (v !== undefined && v !== null && v !== "" ? Number(v) : fallback);
+    const gasKwh = kwhOpt(opts.gasKwh, energy.gasKwh);
+    const electricityKwh = kwhOpt(opts.electricityKwh, energy.electricityKwh);
+    const transportFuelKwh = kwhOpt(opts.transportFuelKwh, energy.transportFuelKwh);
     const data: SecrData = {
       orgName: report.organization.name,
       logoDataUri,
@@ -81,16 +88,19 @@ const handlers: Record<string, ReportHandler> = {
       publishedAt: report.snapshot.publishedAt,
       publishedBy,
       factorLibrary, methodology, gwpVersion,
-      gasKwh: Number(opts.gasKwh ?? 0),
-      electricityKwh: Number(opts.electricityKwh ?? 0),
-      transportFuelKwh: Number(opts.transportFuelKwh ?? 0),
-      totalUkEnergyKwh: Number(opts.totalUkEnergyKwh ?? 0),
+      gasKwh,
+      electricityKwh,
+      transportFuelKwh,
+      totalUkEnergyKwh: kwhOpt(opts.totalUkEnergyKwh, gasKwh + electricityKwh + transportFuelKwh),
+      energyRecordsNotConverted: energy.unconverted,
       scope1Tonnes: agg.s1kg / 1000,
       scope2Tonnes: agg.s2kg / 1000,
       totalTonnes: (agg.s1kg + agg.s2kg) / 1000,
-      intensityMetric: String(opts.intensityMetric ?? "tCO₂e per employee"),
+      // The form gives the denominator and its amount for the period, e.g.
+      // "employee" and 250; the ratio is Scope 1 and 2 tonnes over it.
+      intensityMetric: `tCO₂e per ${String(opts.intensityDenominator ?? "unit")}`,
       intensityValue: intensityValue > 0 ? (agg.s1kg + agg.s2kg) / 1000 / intensityValue : 0,
-      intensityDenominator: String(opts.intensityDenominator ?? ""),
+      intensityDenominator: intensityValue > 0 ? `${intensityValue.toLocaleString("en-GB")} ${String(opts.intensityDenominator ?? "")}`.trim() : "",
       efficiencyMeasures: Array.isArray(opts.efficiencyMeasures) ? opts.efficiencyMeasures as string[] : [],
       recordCount: calcs.length,
     };
@@ -506,13 +516,19 @@ const handlers: Record<string, ReportHandler> = {
   },
 
   ppn_006_crp: async (ctx) => {
-    const { agg, opts, basePdfData, report, orgId, logoDataUri} = ctx;
-    const baseYear = await withQueryTimeout(
-      prisma.baseYear.findFirst({
-        where: { organizationId: orgId, status: "active" },
-        orderBy: { createdAt: "desc" },
-        include: { reportingPeriod: { select: { endDate: true } } },
-      })
+    const { agg, opts, basePdfData, report, orgId, logoDataUri, factorLibrary, methodology, gwpVersion } = ctx;
+    const [baseYear, sbti] = await withQueryTimeout(
+      Promise.all([
+        prisma.baseYear.findFirst({
+          where: { organizationId: orgId, status: "active" },
+          orderBy: { createdAt: "desc" },
+          include: { reportingPeriod: { select: { endDate: true } } },
+        }),
+        prisma.sbtiTarget.findUnique({
+          where: { organizationId: orgId },
+          select: { baseYear: true, nearTermYear: true, nearTermReductionPct: true, netZeroYear: true, netZeroReductionPct: true },
+        }),
+      ])
     );
 
     const scopeRows: CrpScopeRow[] = [...agg.catTotals.values()].map((c) => ({
@@ -527,16 +543,28 @@ const handlers: Record<string, ReportHandler> = {
     const optKg = (v: unknown) => (v !== undefined ? Number(v) : undefined);
     const baseKg = (v: { toString(): string } | null | undefined) => (v != null ? Number(v) * 1000 : undefined);
 
+    // Targets given on the report form win; otherwise the organisation's
+    // science-based target (near term and net zero) is printed.
     const crpTargets = Array.isArray(opts.targets)
       ? (opts.targets as Array<{ year: number; reductionPct: number; description?: string }>)
-      : [];
+      : sbti
+        ? [
+            { year: sbti.nearTermYear, reductionPct: Number(sbti.nearTermReductionPct), description: "Near-term target" },
+            { year: sbti.netZeroYear, reductionPct: Number(sbti.netZeroReductionPct), description: "Net zero target" },
+          ]
+        : [];
+    const baselineYear =
+      opts.baselineYear !== undefined
+        ? Number(opts.baselineYear)
+        : (baseYear?.reportingPeriod.endDate.getFullYear() ?? sbti?.baseYear);
 
     const data: Ppn006CrpData = {
       orgName: report.organization.name,
       logoDataUri,
       periodLabel: report.reportingPeriod.label,
-      baselineYear: Number(opts.baselineYear ?? baseYear?.reportingPeriod.endDate.getFullYear() ?? report.reportingPeriod.endDate.getFullYear()),
+      baselineYear,
       reportingYear: report.reportingPeriod.endDate.getFullYear(),
+      factorLibrary, methodology, gwpVersion,
       scope1Kg: agg.s1kg,
       scope2Kg: agg.s2kg,
       scope3Kg: agg.s3kg,
@@ -548,7 +576,7 @@ const handlers: Record<string, ReportHandler> = {
       signatoryName: opts.signatoryName as string | undefined,
       signatoryTitle: opts.signatoryTitle as string | undefined,
       signatoryDate: opts.signatoryDate as string | undefined,
-      netZeroYear: opts.netZeroYear !== undefined ? Number(opts.netZeroYear) : 2050,
+      netZeroYear: opts.netZeroYear !== undefined ? Number(opts.netZeroYear) : (sbti?.netZeroYear ?? 2050),
       methodologyNotes: opts.methodologyNotes as string | undefined,
     };
     return { html: renderPpn006CrpHtml(data), pdfkitData: basePdfData };
@@ -823,6 +851,13 @@ Write a concise 2-3 paragraph executive summary of the ecological sensitivity fi
 
 export function getReportHandler(reportType: string): ReportHandler {
   return handlers[reportType] ?? defaultHandler;
+}
+
+/// True when a report type has its own HTML layout. The worker renders those
+/// with headless Chromium and only falls back to the generic PDFKit report
+/// (the handler's pdfkitData) when Chromium fails.
+export function hasTypedTemplate(reportType: string): boolean {
+  return Object.prototype.hasOwnProperty.call(handlers, reportType);
 }
 
 const defaultHandler: ReportHandler = async (ctx) => {

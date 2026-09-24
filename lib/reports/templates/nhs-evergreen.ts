@@ -147,7 +147,7 @@ export function renderNhsEvergreenHtml(d: NhsEvergreenData): string {
 </section>
 
 <div class="footer">
-  NHS Evergreen Level 1 · ${esc(d.orgName)} · Generated ${now} by Fluid · Snapshot v${d.snapshotVersion} · ${esc(d.factorLibrary)}
+  NHS Evergreen Level 1 · ${esc(d.orgName)} · Generated ${now} by MetricOra · Snapshot v${d.snapshotVersion} · ${esc(d.factorLibrary)}
 </div>
 </body></html>`;
 }

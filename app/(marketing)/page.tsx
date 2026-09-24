@@ -81,7 +81,7 @@ const jsonLd = {
       "@type": "SoftwareApplication",
       name: "MetricOra",
       applicationCategory: "BusinessApplication",
-      operatingSystem: "Web, iOS, Android",
+      operatingSystem: "Web, Android",
       offers: [
         { "@type": "Offer", name: "Starter", price: "99", priceCurrency: "GBP" },
         { "@type": "Offer", name: "Growth", price: "299", priceCurrency: "GBP" },

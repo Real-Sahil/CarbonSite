@@ -1,324 +1,212 @@
-'use client';
+import Link from "next/link";
+import { Prisma } from "@prisma/client";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { prisma } from "@/lib/db";
+import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Database, Filter, Zap, CheckCircle, FileText } from 'lucide-react';
+export const dynamic = "force-dynamic";
 
-interface LineageStep {
-  step: number;
-  stage: string;
-  description: string;
-  timestamp: string;
-  recordCount?: number;
-  status: 'completed' | 'in_progress' | 'pending';
-  details?: string[];
-}
+type Props = {
+  params: Promise<{ orgId: string }>;
+  searchParams: Promise<{ snapshotId?: string }>;
+};
 
-interface LineageData {
-  snapshotId: string;
-  reportingPeriod: string;
-  createdAt: string;
-  steps: LineageStep[];
-  totalRecords: number;
-  qualityScore: number;
-}
+const t = (kg: number) => `${(kg / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tCO₂e`;
+const n = (v: number) => v.toLocaleString("en-GB");
+const when = (d: Date) => d.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-export default function DataLineagePage() {
-  const [data, setData] = useState<LineageData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// How a published snapshot's figures were produced, stage by stage, from the
+// organisation's own records: where the activity came from, how it was
+// reviewed, which factor libraries priced it, and what was published and
+// reported. Defaults to the latest published snapshot.
+export default async function DataLineagePage({ params, searchParams }: Props) {
+  const { orgId } = await params;
+  const { snapshotId } = await searchParams;
+  await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
-  useEffect(() => {
-    async function fetchLineage() {
-      try {
-        setLoading(true);
-        // In a real implementation, this would fetch from an API
-        // For now, we'll show a mock implementation
-        const mockData: LineageData = {
-          snapshotId: 'snap_abc123',
-          reportingPeriod: '2024-Q3',
-          createdAt: new Date().toISOString(),
-          totalRecords: 1523,
-          qualityScore: 87.5,
-          steps: [
-            {
-              step: 1,
-              stage: 'Data Import',
-              description: 'Activity records imported from CSV uploads and field submissions',
-              timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-              recordCount: 1523,
-              status: 'completed',
-              details: [
-                'CSV uploads: 1200 records',
-                'Field submissions: 323 records',
-                'Validation passed: 100%',
-              ],
-            },
-            {
-              step: 2,
-              stage: 'Data Quality Checks',
-              description: 'Records validated for completeness and accuracy',
-              timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000 + 1 * 60 * 60 * 1000).toISOString(),
-              recordCount: 1523,
-              status: 'completed',
-              details: [
-                'Null checks: PASSED',
-                'Unit validation: PASSED',
-                'Date range validation: PASSED',
-                'Anomaly detection: 23 flagged',
-              ],
-            },
-            {
-              step: 3,
-              stage: 'Factor Selection',
-              description: 'Emission factors matched to each activity record',
-              timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(),
-              status: 'completed',
-              details: [
-                'DEFRA 2025.1: 1200 records',
-                'EPA GHG Hub 2025: 323 records',
-                'Factor match rate: 100%',
-              ],
-            },
-            {
-              step: 4,
-              stage: 'Calculation',
-              description: 'CO2e calculated using GHG Protocol methodology',
-              timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000).toISOString(),
-              status: 'completed',
-              details: [
-                'Scope 1: 450 tonnes CO2e',
-                'Scope 2: 320 tonnes CO2e',
-                'Scope 3: 1250 tonnes CO2e',
-                'GWP AR6 applied: CH4 = 27.9, N2O = 273',
-              ],
-            },
-            {
-              step: 5,
-              stage: 'Snapshot Publication',
-              description: 'Results locked and published for audit trail',
-              timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-              status: 'completed',
-              details: [
-                'SHA-256 hash: 7f3a8c...',
-                'Immutable: Yes',
-                'Audit trail: Complete',
-              ],
-            },
-            {
-              step: 6,
-              stage: 'Report Generation',
-              description: 'Compliance report generated from snapshot',
-              timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-              status: 'completed',
-              details: [
-                'Format: PDF + CSV',
-                'Frameworks: CSRD, GHG Protocol',
-                'Verification: Passed',
-              ],
-            },
-          ],
-        };
-        setData(mockData);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    }
+  const snapshots = await prisma.publishedSnapshot.findMany({
+    where: { organizationId: orgId },
+    orderBy: { publishedAt: "desc" },
+    take: 20,
+    select: { id: true, version: true, publishedAt: true, reportingPeriod: { select: { label: true } } },
+  });
+  const selectedId = snapshots.find((s) => s.id === snapshotId)?.id ?? snapshots[0]?.id;
 
-    fetchLineage();
-  }, []);
-
-  if (loading) {
+  if (!selectedId) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="p-6 md:p-8">
+        <h1 className="text-2xl font-semibold text-[#111827]">Data lineage</h1>
+        <p className="mt-2 max-w-xl text-sm text-[#6B7280]">
+          Lineage traces a published snapshot back to its records. Publish a calculation run from{" "}
+          <Link className="text-[#c2410c] underline" href={`/orgs/${orgId}/calculations`}>
+            Calculations
+          </Link>{" "}
+          to see it here.
+        </p>
       </div>
     );
   }
 
-  if (error || !data) {
-    return (
-      <div className="p-8">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-red-800">Error: {error || 'Failed to load lineage data'}</p>
-        </div>
-      </div>
-    );
-  }
+  const snapshot = await prisma.publishedSnapshot.findFirstOrThrow({
+    where: { id: selectedId, organizationId: orgId },
+    include: {
+      reportingPeriod: { select: { id: true, label: true } },
+      publishedBy: { select: { name: true, email: true } },
+      calculationRun: {
+        select: {
+          id: true,
+          startedAt: true,
+          finishedAt: true,
+          factorLibrary: { select: { name: true, version: true } },
+          methodologyVersion: { select: { name: true, gwpVersion: true } },
+        },
+      },
+    },
+  });
+  const runId = snapshot.calculationRun.id;
+  const periodId = snapshot.reportingPeriod.id;
 
-  const getStageIcon = (step: number) => {
-    switch (step) {
-      case 1:
-        return <Database className="h-5 w-5" />;
-      case 2:
-        return <Filter className="h-5 w-5" />;
-      case 3:
-        return <Zap className="h-5 w-5" />;
-      case 4:
-        return <CheckCircle className="h-5 w-5" />;
-      case 5:
-        return <FileText className="h-5 w-5" />;
-      case 6:
-        return <FileText className="h-5 w-5" />;
-      default:
-        return null;
-    }
-  };
+  const [records, imported, fromField, approved, calcs, sources, scopes, reports] = await Promise.all([
+    prisma.activityRecord.count({ where: { organizationId: orgId, reportingPeriodId: periodId } }),
+    prisma.activityRecord.count({ where: { organizationId: orgId, reportingPeriodId: periodId, importBatchId: { not: null } } }),
+    prisma.$queryRaw<{ n: bigint }[]>(Prisma.sql`
+      SELECT count(*) AS n FROM field_submissions fs
+      JOIN activity_records ar ON ar.id = fs.activity_record_id AND ar.organization_id = fs.organization_id
+      WHERE fs.organization_id = ${orgId} AND ar.reporting_period_id = ${periodId}`).then((r) => Number(r[0]?.n ?? 0)),
+    prisma.activityRecord.count({ where: { organizationId: orgId, reportingPeriodId: periodId, reviewStatus: "approved" } }),
+    prisma.$queryRaw<{ total: bigint; with_warnings: bigint; zero: bigint }[]>(Prisma.sql`
+      SELECT count(*) AS total,
+             count(*) FILTER (WHERE warnings::text <> '[]') AS with_warnings,
+             count(*) FILTER (WHERE total_co2e = 0) AS zero
+      FROM emission_calculations
+      WHERE organization_id = ${orgId} AND calculation_run_id = ${runId}`),
+    prisma.$queryRaw<{ source: string; calcs: bigint }[]>(Prisma.sql`
+      SELECT CASE WHEN c.organization_emission_factor_id IS NOT NULL THEN 'Organisation factors'
+                  WHEN fl.id IS NOT NULL THEN fl.name || ' ' || fl.version
+                  ELSE 'No factor matched' END AS source,
+             count(*) AS calcs
+      FROM emission_calculations c
+      LEFT JOIN emission_factors ef ON ef.id = c.emission_factor_id
+      LEFT JOIN factor_libraries fl ON fl.id = ef.factor_library_id
+      WHERE c.organization_id = ${orgId} AND c.calculation_run_id = ${runId}
+      GROUP BY 1 ORDER BY 2 DESC`),
+    prisma.dashboardAggregate.groupBy({
+      by: ["scope"],
+      where: { organizationId: orgId, snapshotId: selectedId, facilityId: null, ...SCOPE_ROLLUP_DIMENSIONS },
+      _sum: { totalCo2e: true },
+      orderBy: { scope: "asc" },
+    }),
+    prisma.report.findMany({
+      where: { organizationId: orgId, snapshotId: selectedId },
+      select: { id: true, type: true, status: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'pending':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const c = calcs[0] ?? { total: BigInt(0), with_warnings: BigInt(0), zero: BigInt(0) };
+  const scopeTotals = scopes.map((s) => ({ scope: s.scope, kg: Number(s._sum.totalCo2e ?? 0) }));
+  const headline = scopeTotals.reduce((sum, s) => sum + s.kg, 0);
+
+  const stages: { title: string; lines: string[]; href?: { label: string; to: string } }[] = [
+    {
+      title: "Activity data",
+      lines: [
+        `${n(records)} records in ${snapshot.reportingPeriod.label}`,
+        `${n(imported)} from imports, ${n(fromField)} from field submissions, ${n(Math.max(0, records - imported - fromField))} entered by hand`,
+      ],
+      href: { label: "Records", to: `/orgs/${orgId}/records` },
+    },
+    {
+      title: "Review",
+      lines: [`${n(approved)} of ${n(records)} records approved`],
+      href: { label: "Submissions", to: `/orgs/${orgId}/submissions` },
+    },
+    {
+      title: "Factor selection",
+      lines: sources.map((s) => `${s.source}: ${n(Number(s.calcs))} calculations`),
+    },
+    {
+      title: "Calculation",
+      lines: [
+        `Run on ${snapshot.calculationRun.factorLibrary.name} ${snapshot.calculationRun.factorLibrary.version}, ${snapshot.calculationRun.methodologyVersion.name} (${snapshot.calculationRun.methodologyVersion.gwpVersion})`,
+        `${n(Number(c.total))} calculations, ${n(Number(c.with_warnings))} with warnings, ${n(Number(c.zero))} at zero`,
+        ...(snapshot.calculationRun.finishedAt ? [`Finished ${when(snapshot.calculationRun.finishedAt)}`] : []),
+      ],
+      href: { label: "Calculation run", to: `/orgs/${orgId}/calculations/${runId}` },
+    },
+    {
+      title: "Publication",
+      lines: [
+        `Snapshot v${snapshot.version}, published ${when(snapshot.publishedAt)} by ${snapshot.publishedBy.name ?? snapshot.publishedBy.email}`,
+        ...scopeTotals.map((s) => `Scope ${s.scope}: ${t(s.kg)}`),
+        `Total (location-based Scope 2): ${t(headline)}`,
+      ],
+    },
+    {
+      title: "Reports",
+      lines: reports.length ? reports.map((r) => `${r.type.replace(/_/g, " ")}: ${r.status}, ${when(r.createdAt)}`) : ["No reports generated from this snapshot yet"],
+      href: { label: "Reports", to: `/orgs/${orgId}/reports` },
+    },
+  ];
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Data Lineage</h1>
-        <p className="mt-2 text-gray-600">Track emissions data from source to report</p>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Records</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{data.totalRecords}</div>
-            <p className="mt-2 text-sm text-gray-600">Activity records processed</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Quality Score</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{data.qualityScore}%</div>
-            <p className="mt-2 text-sm text-gray-600">Data quality validation</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Processing Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge className="bg-green-100 text-green-800">Complete</Badge>
-            <p className="mt-2 text-sm text-gray-600">All stages completed</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Lineage Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Processing Timeline</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {data.steps.map((step, index) => (
-              <div key={step.step}>
-                <div className="flex items-start gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-full bg-blue-100 p-3 text-blue-600">
-                      {getStageIcon(step.step)}
-                    </div>
-                    {index < data.steps.length - 1 && (
-                      <div className="my-2 h-12 w-1 bg-gray-200" />
-                    )}
-                  </div>
-
-                  <div className="flex-1 pt-2">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {step.stage}
-                      </h3>
-                      <Badge className={getStatusColor(step.status)}>
-                        {step.status}
-                      </Badge>
-                    </div>
-
-                    <p className="mt-1 text-sm text-gray-600">{step.description}</p>
-
-                    {step.recordCount && (
-                      <p className="mt-2 text-sm text-gray-500">
-                        Records: {step.recordCount.toLocaleString()}
-                      </p>
-                    )}
-
-                    {step.details && step.details.length > 0 && (
-                      <ul className="mt-3 space-y-1">
-                        {step.details.map((detail, idx) => (
-                          <li
-                            key={idx}
-                            className="text-sm text-gray-600 before:mr-2 before:content-['•']"
-                          >
-                            {detail}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    <p className="mt-3 text-xs text-gray-500">
-                      {new Date(step.timestamp).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
+    <div className="space-y-6 p-6 md:p-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-[#111827]">Data lineage</h1>
+          <p className="mt-1 text-sm text-[#6B7280]">How the published figures for {snapshot.reportingPeriod.label} were produced, from records to reports.</p>
+        </div>
+        <form className="flex items-center gap-2">
+          <label htmlFor="snapshotId" className="text-sm text-[#374151]">
+            Snapshot
+          </label>
+          <select id="snapshotId" name="snapshotId" defaultValue={selectedId} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
+            {snapshots.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.reportingPeriod.label} v{s.version}
+              </option>
             ))}
-          </div>
-        </CardContent>
-      </Card>
+          </select>
+          <button type="submit" className="h-9 rounded-md border border-[#E5E7EB] px-3 text-sm hover:bg-[#F9FAFB]">
+            Show
+          </button>
+        </form>
+      </div>
 
-      {/* Audit Trail Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Audit Trail Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg bg-blue-50 p-4">
-            <p className="text-sm text-blue-900">
-              This snapshot has a complete audit trail recording all transformations from raw data through
-              calculation to final report. The hash chain ensures immutability and enables verification of any
-              step in the process.
-            </p>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-lg border p-3 text-center">
-              <div className="text-2xl font-bold text-gray-900">
-                {data.steps.filter((s) => s.status === 'completed').length}
-              </div>
-              <p className="text-xs text-gray-600">Completed Steps</p>
-            </div>
-            <div className="rounded-lg border p-3 text-center">
-              <div className="text-2xl font-bold text-gray-900">7f3a8c...</div>
-              <p className="text-xs text-gray-600">SHA-256 Hash</p>
-            </div>
-            <div className="rounded-lg border p-3 text-center">
-              <div className="text-2xl font-bold text-gray-900">Yes</div>
-              <p className="text-xs text-gray-600">Immutable</p>
-            </div>
-            <div className="rounded-lg border p-3 text-center">
-              <div className="text-2xl font-bold text-gray-900">100%</div>
-              <p className="text-xs text-gray-600">Verified</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <ol className="space-y-4">
+        {stages.map((stage, i) => (
+          <li key={stage.title}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-4 pb-2">
+                <CardTitle className="flex items-center gap-3 text-base">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#fff7ed] text-xs font-medium text-[#c2410c]">{i + 1}</span>
+                  {stage.title}
+                </CardTitle>
+                {stage.href ? (
+                  <Link href={stage.href.to} className="text-sm text-[#c2410c] hover:underline">
+                    {stage.href.label}
+                  </Link>
+                ) : null}
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1 text-sm text-[#374151]">
+                  {stage.lines.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </li>
+        ))}
+      </ol>
+      <p className="text-xs text-[#6B7280]">
+        <Badge variant="outline" className="mr-2">
+          Read only
+        </Badge>
+        Figures are counted from this organisation&apos;s records when the page loads.
+      </p>
     </div>
   );
 }
