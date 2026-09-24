@@ -1,22 +1,17 @@
-export const metadata = {
-  title: "Privacy Policy | MetricOra",
+import type { Metadata } from "next";
+import { LegalShell } from "@/components/marketing/legal-shell";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  alternates: { canonical: "/privacy" },
   description: "How MetricOra collects, uses, and protects your data.",
 };
 
 export default function PrivacyPage() {
   return (
-    <div className="bg-white py-12 sm:py-16 lg:py-20">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900">Privacy Policy</h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Last updated: August 2026
-          </p>
-        </div>
-
-        <div className="prose prose-lg max-w-none space-y-8 text-gray-700">
+    <LegalShell title="Privacy Policy" updated="Last updated: August 2026">
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">1. Overview</h2>
+            <h2>1. Overview</h2>
             <p>
               MetricOra ("we," "us," "our," or "Company") respects your privacy
               and is committed to protecting your personal data. This Privacy
@@ -27,13 +22,13 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               2. Data We Collect
             </h2>
-            <h3 className="text-xl font-semibold text-gray-900">
+            <h3>
               2.1 Information You Provide
             </h3>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 <strong>Account & Auth:</strong> Email address, password hash,
                 name, two-factor authentication setup
@@ -55,10 +50,10 @@ export default function PrivacyPage() {
                 delivery notes, photographs)
               </li>
             </ul>
-            <h3 className="mt-6 text-xl font-semibold text-gray-900">
+            <h3>
               2.2 Information Collected Automatically
             </h3>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>IP address, user agent, session timestamps</li>
               <li>Audit log entries: actions, resource IDs, timestamps</li>
               <li>
@@ -68,9 +63,9 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">3. Legal Basis</h2>
+            <h2>3. Legal Basis</h2>
             <p>We process your personal data under the following legal bases:</p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 <strong>Contract:</strong> Providing emissions tracking and
                 reporting services
@@ -90,56 +85,56 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">4. Data Retention</h2>
-            <table className="w-full border-collapse border border-gray-300">
-              <thead className="bg-gray-100">
+            <h2>4. Data Retention</h2>
+            <table>
+              <thead>
                 <tr>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th>
                     Data Category
                   </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th>
                     Retention Period
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Activity Records (emissions data)
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     7 years (post-calculation)
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Audit Logs
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     5 years (anonymized after Phase 5)
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     GPS / Postcode Data
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Stored encrypted; retained per calculation retention
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     User Sessions
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     7 days (web); JWT refresh per mobile app settings
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Evidence Files
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Retained with linked activity record
                   </td>
                 </tr>
@@ -148,13 +143,13 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               5. Data Sharing & Sub-processors
             </h2>
             <p>
               We share your data with trusted partners to deliver the service:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 <strong>Neon (Postgres):</strong> Database hosting (EU/EEA region)
               </li>
@@ -181,17 +176,17 @@ export default function PrivacyPage() {
                 mapping service)
               </li>
             </ul>
-            <p className="mt-4">
+            <p>
               All sub-processors are confirmed DPA-compliant. We do not sell or
               rent your personal data.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               6. Encryption & Security
             </h2>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 <strong>In Transit:</strong> TLS 1.3+ for all data transmission
               </li>
@@ -211,11 +206,11 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               7. Your Data Rights
             </h2>
             <p>Under UK GDPR and DPA 2018, you have the right to:</p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 <strong>Access (Art. 15):</strong> Request a copy of your
                 personal data
@@ -240,11 +235,11 @@ export default function PrivacyPage() {
                 during dispute
               </li>
             </ul>
-            <p className="mt-4">
+            <p>
               To exercise these rights, email{" "}
               <a
                 href="mailto:privacy@metricora.co.uk"
-                className="font-semibold text-blue-600 hover:text-blue-700"
+               
               >
                 privacy@metricora.co.uk
               </a>
@@ -255,7 +250,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               8. International Transfers
             </h2>
             <p>
@@ -267,7 +262,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               9. Data Breach Notification
             </h2>
             <p>
@@ -279,15 +274,15 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               10. Contact & Complaints
             </h2>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 <strong>Data Protection Officer / Privacy Queries:</strong>{" "}
                 <a
                   href="mailto:privacy@metricora.co.uk"
-                  className="font-semibold text-blue-600 hover:text-blue-700"
+                 
                 >
                   privacy@metricora.co.uk
                 </a>
@@ -296,7 +291,7 @@ export default function PrivacyPage() {
                 <strong>Complaints to ICO:</strong>{" "}
                 <a
                   href="https://ico.org.uk"
-                  className="font-semibold text-blue-600 hover:text-blue-700"
+                 
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -307,7 +302,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               11. Changes to Policy
             </h2>
             <p>
@@ -316,8 +311,6 @@ export default function PrivacyPage() {
               or in-app notification at least 30 days before taking effect.
             </p>
           </section>
-        </div>
-      </div>
-    </div>
+    </LegalShell>
   );
 }

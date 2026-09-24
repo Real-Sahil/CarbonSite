@@ -1,150 +1,78 @@
-import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { MDXRemote } from 'next-mdx-remote/rsc';
-import { getPost, getPostSlugs } from '@/lib/blog/posts';
-import { formatDate } from '@/lib/utils/date';
-import * as BlogComponents from '@/components/blog/BlogMdxComponents';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import { getPost, getPostSlugs } from "@/lib/blog/posts";
+import { formatDate } from "@/lib/utils/date";
+import * as BlogComponents from "@/components/blog/BlogMdxComponents";
+import { ClosingCta, Eyebrow, Section, TextLink } from "@/components/marketing/kit";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  const slugs = getPostSlugs();
-  return slugs.map((slug) => ({
-    slug,
-  }));
+  return getPostSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return {};
-
   return {
-    title: `${post.title} | MetricOra Blog`,
+    title: post.title,
     description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: 'article',
-      url: `https://metricora.co.uk/blog/${post.slug}`,
-      images: post.image ? [{ url: post.image }] : [],
-      publishedTime: post.date,
-      authors: [post.author],
-    },
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: { title: post.title, description: post.excerpt, type: "article", publishedTime: post.date, authors: [post.author] },
   };
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = getPost(slug);
+  if (!post) notFound();
 
-  if (!post) {
-    notFound();
-  }
-
-  const components = {
-    Callout: BlogComponents.Callout,
-    ComparisonTable: BlogComponents.ComparisonTable,
-    ProofPoint: BlogComponents.ProofPoint,
-    FeatureList: BlogComponents.FeatureList,
-    CTABlock: BlogComponents.CTABlock,
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    author: { "@type": "Organization", name: post.author },
+    publisher: { "@type": "Organization", name: "MetricOra Ltd" },
+    mainEntityOfPage: `https://www.metricora.co.uk/blog/${post.slug}`,
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
-      {/* Article Header */}
-      <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Back Link */}
-        <Link 
-          href="/blog"
-          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-        >
-          ← Back to blog
-        </Link>
-
-        {/* Title and Meta */}
-        <header className="mb-8">
-          <h1 className="mb-4 text-4xl font-bold text-zinc-900 dark:text-zinc-50">
-            {post.title}
-          </h1>
-          
-          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-            <time dateTime={post.date}>{formatDate(new Date(post.date))}</time>
-            <span>•</span>
-            <span>{post.readingTime} min read</span>
-            {post.author && (
-              <>
-                <span>•</span>
-                <span>By {post.author}</span>
-              </>
-            )}
-          </div>
-
-          {/* Tags */}
-          {post.tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 dark:bg-blue-950 dark:text-blue-200"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </header>
-
-        {/* Featured Image */}
-        {post.image && (
-          <div className="mb-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
-            <img
-              src={post.image}
-              alt={post.title}
-              className="h-96 w-full object-cover"
-            />
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="prose prose-zinc max-w-none dark:prose-invert">
-          <MDXRemote source={post.content} components={components} />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <Section tone="dark" className="pt-36 sm:pt-40">
+        <div className="flex max-w-3xl flex-col gap-5">
+          <Eyebrow tone="dark">{post.tags[0] ?? "Article"}</Eyebrow>
+          <h1 className="text-[36px] font-semibold leading-[1.1] tracking-[-0.03em] text-balance sm:text-[48px]">{post.title}</h1>
+          <p className="max-w-[62ch] text-[18px] leading-relaxed text-mk-on-dark-2">{post.excerpt}</p>
+          <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-mk-on-dark-3">
+            <time dateTime={post.date}>{formatDate(new Date(post.date))}</time> · {post.readingTime} min read · {post.author}
+          </p>
         </div>
-
-        {/* Article Footer */}
-        <footer className="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{post.author}</p>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Carbon accounting & sustainability expert
-              </p>
-            </div>
-            <Link
-              href="/pricing"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-            >
-              Try MetricOra
-            </Link>
+      </Section>
+      <Section tone="light">
+        <article className="mk-prose mx-auto max-w-[68ch]">
+          <MDXRemote
+            source={post.content}
+            components={{
+              Callout: BlogComponents.Callout,
+              ComparisonTable: BlogComponents.ComparisonTable,
+              ProofPoint: BlogComponents.ProofPoint,
+              FeatureList: BlogComponents.FeatureList,
+              CTABlock: BlogComponents.CTABlock,
+            }}
+          />
+          <div className="mt-12 border-t border-mk-line pt-6">
+            <TextLink href="/blog">All articles</TextLink>
           </div>
-        </footer>
-      </article>
-
-      {/* Related Posts */}
-      <section className="border-t border-zinc-200 bg-zinc-50 py-12 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-50">More from the blog</h2>
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Read all posts →
-          </Link>
-        </div>
-      </section>
-    </div>
+        </article>
+      </Section>
+      <ClosingCta title="See your own records traced this way." lead="Import a year of data in the trial and open any figure to see how it was made." />
+    </>
   );
 }

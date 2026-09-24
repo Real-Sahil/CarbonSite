@@ -1,203 +1,55 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { AnimateIn } from "@/components/marketing/animate-in";
-import { VideoBackground } from "@/components/ui/video-background";
-import { ArrowUpRight } from "lucide-react";
+import { SolutionPage } from "@/components/marketing/solution-page";
 
 export const metadata: Metadata = {
-  title: "Waste and Haulage - MetricOra",
-  description: "Waste ticket capture, EWC codes, transfer notes, carrier movements, and route evidence for waste and haulage operators.",
+  title: "Waste and haulage",
+  description:
+    "Waste tickets, EWC codes, weights and routes captured on the phone, reviewed and turned into Scope 1 and Scope 3 records, with a duty-of-care register.",
+  alternates: { canonical: "/solutions/waste-haulage" },
 };
-
-const DOCUMENT_TYPES = [
-  {
-    type: "Waste ticket",
-    fields: ["Gross weight (kg/tonnes)", "EWC code (XX XX XX format)", "Waste description", "Date of collection", "Vehicle registration", "Site or transfer station"],
-    ocr: true,
-  },
-  {
-    type: "Transfer note",
-    fields: ["Transfer note reference number", "Carrier details and licence", "Consignee address", "Waste type and EWC code", "Container type", "Signature date"],
-    ocr: true,
-  },
-  {
-    type: "Carrier movement",
-    fields: ["Vehicle registration", "Route description", "Distance estimate", "Fuel type consumed", "Gross payload", "Departure and arrival site"],
-    ocr: false,
-  },
-  {
-    type: "Weighbridge docket",
-    fields: ["Gross weight", "Tare weight", "Net weight", "Material type", "Job reference", "Date and time stamp"],
-    ocr: true,
-  },
-];
-
-const EWC_EXAMPLES = [
-  { code: "17 01 01", desc: "Concrete" },
-  { code: "17 01 02", desc: "Bricks" },
-  { code: "17 01 03", desc: "Tiles and ceramics" },
-  { code: "17 02 01", desc: "Wood" },
-  { code: "17 02 02", desc: "Glass" },
-  { code: "17 04 05", desc: "Iron and steel" },
-  { code: "17 05 04", desc: "Soil and stones" },
-  { code: "20 03 01", desc: "Mixed municipal waste" },
-];
 
 export default function WasteHaulagePage() {
   return (
-    <main className="min-h-[100dvh] bg-[#FAFBF8]">
-
-      {/* Hero */}
-      <section className="relative min-h-[65vh] flex items-end overflow-hidden">
-        <VideoBackground src="/videos/hero-waste.mp4" overlayOpacity={0.30} />
-        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
-          <AnimateIn>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-gradient-to-r from-teal-400 to-emerald-400" />
-              <span className="text-xs text-teal-300 tracking-[0.12em] font-medium">Waste and haulage</span>
-            </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[20ch]">
-              From waste ticket to Scope 3 calculation.
-            </h1>
-            <p className="text-base text-[#94A3B8] leading-relaxed max-w-[50ch] mb-8">
-              Waste tickets, transfer notes, carrier movements, and weighbridge dockets captured, reviewed, and included in GHG Protocol Scope 1 and 3 calculations.
-            </p>
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.40)] hover:shadow-[0_0_36px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
-            >
-              Start free
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </AnimateIn>
-        </div>
-      </section>
-
-      {/* Document types */}
-      <section className="bg-[#F2F4EF]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
-              Document types supported.
-            </h2>
-            <p className="text-sm text-[#6B7280] mb-14 max-w-[55ch]">
-              The mobile app recognises each document type and extracts the relevant fields. Web upload handles the same types via CSV or XLSX.
-            </p>
-          </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#E5E7EB]">
-            {DOCUMENT_TYPES.map((doc, i) => (
-              <AnimateIn key={doc.type} delay={i * 0.06}>
-                <div className="bg-[#F2F4EF] p-8 hover:bg-white transition-colors">
-                  <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-semibold text-[#111827] tracking-[-0.02em]">{doc.type}</h3>
-                    {doc.ocr && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-teal-300 text-teal-700 bg-teal-50 tracking-wide">OCR</span>
-                    )}
-                  </div>
-                  <ul className="space-y-2">
-                    {doc.fields.map((field) => (
-                      <li key={field} className="flex items-start gap-2.5 text-xs text-[#6B7280]">
-                        <span className="mt-1.5 w-1 h-1 rounded-full bg-teal-400 shrink-0" />
-                        {field}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </AnimateIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* EWC codes */}
-      <section className="bg-[#FAFBF8]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
-              EWC code recognition.
-            </h2>
-            <p className="text-sm text-[#6B7280] mb-12 max-w-[55ch]">
-              The OCR extractor recognises the six-digit XX XX XX European Waste Catalogue format from photographed documents. Codes are validated against expected patterns before the form is pre-filled for reviewer confirmation.
-            </p>
-          </AnimateIn>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#E5E7EB]">
-            {EWC_EXAMPLES.map((e, i) => (
-              <AnimateIn key={e.code} delay={i * 0.04}>
-                <div className="bg-white p-5 hover:bg-[#F4F8F7] transition-colors">
-                  <code className="text-sm font-mono font-semibold text-teal-700">{e.code}</code>
-                  <p className="text-xs text-[#6B7280] mt-1.5 leading-snug">{e.desc}</p>
-                </div>
-              </AnimateIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Calculation note */}
-      <section className="bg-[#F2F4EF] border-t border-[#E5E7EB]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-              <div>
-                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-5">
-                  How waste is calculated.
-                </h2>
-                <div className="space-y-4 text-sm text-[#6B7280] leading-relaxed">
-                  <p>
-                    Waste disposal is reported under Scope 3 upstream transportation (vehicle movements carrying waste) and where applicable under Scope 1 mobile combustion (fleet diesel for own-operated vehicles).
-                  </p>
-                  <p>
-                    Weight-based records (tonnes of waste) use DEFRA 2025 freight factors: HGV average laden at 0.10749 kg CO2e per tonne.km. Van movements use the van average at 0.23092 kg CO2e per vehicle.km.
-                  </p>
-                  <p>
-                    GWP values follow IPCC AR6 (CH4 = 27.9, N2O = 273). All factors reference the DEFRA 2025 conversion factors spreadsheet published by DESNZ.
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { label: "HGV average laden", value: "0.10749 kgCO2e / tonne.km" },
-                  { label: "Van average", value: "0.23092 kgCO2e / vehicle.km" },
-                  { label: "GWP CH4 (AR6)", value: "27.9" },
-                  { label: "GWP N2O (AR6)", value: "273" },
-                ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between py-3 border-b border-[#E5E7EB] last:border-0">
-                    <span className="text-sm text-[#6B7280]">{row.label}</span>
-                    <code className="text-sm font-mono text-[#111827]">{row.value}</code>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </AnimateIn>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-[#FAFBF8] border-t border-[#E5E7EB]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
-              Waste carbon covered.
-            </h2>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/sign-up"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.30)] transition-all active:scale-[0.97]"
-              >
-                Create organisation
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-              <Link
-                href="/field-app"
-                className="inline-flex items-center px-7 py-3.5 rounded-full border border-[#E5E7EB] text-[#6B7280] text-sm font-medium hover:border-[#374151] hover:text-[#111827] transition-colors"
-              >
-                See the mobile app
-              </Link>
-            </div>
-          </AnimateIn>
-        </div>
-      </section>
-
-    </main>
+    <SolutionPage
+      c={{
+        eyebrow: "Waste and haulage",
+        title: "From waste ticket to reported tonne.",
+        lead: "Tickets, transfer notes and fuel receipts are captured where the lorry is, checked in the office, and calculated with the factor and formula recorded for each one.",
+        heroVideo: "/marketing/loops/review.mp4",
+        problems: [
+          {
+            problem: "Ticket data is typed in weeks later",
+            answer: "The field app reads weight, EWC code, date, vehicle registration and carrier from the photo, and saves the submission offline until there is signal.",
+          },
+          {
+            problem: "Distances are guessed",
+            answer: "Pickup and delivery postcodes on a ticket give a road distance for the movement. The worker's own location is kept for the audit trail only.",
+          },
+          {
+            problem: "Duty-of-care paperwork lives in a separate folder",
+            answer: "Waste transfers are kept in a duty-of-care register with EWC codes, carriers and gaps flagged, alongside the carbon records.",
+          },
+          {
+            problem: "Fleet fuel and waste emissions are mixed up",
+            answer: "Your own fleet's fuel is Scope 1. Waste your operations generate is Scope 3 category 5. Each record is categorised on review, and the category is visible on every calculation.",
+          },
+        ],
+        feature: {
+          eyebrow: "Review",
+          title: "Catch the ticket that does not match.",
+          lead: "The reviewer sees the value read from the photo beside the value submitted. A 6.7 tonne ticket entered as 6.1 tonnes gets queried, not approved.",
+          points: ["Needs-info requests go back to the worker's phone", "Approved tickets become activity records linked to their evidence", "Review deadlines can alert the team when submissions wait too long"],
+          media: { kind: "loop", src: "/marketing/loops/review.mp4", label: "Waste ticket under review with a weight query" },
+        },
+        detail: {
+          eyebrow: "Calculation",
+          title: "Every tonne has a formula.",
+          lead: "Each record keeps its calculations: amount, factor, unit conversion, library and methodology version.",
+          points: ["DEFRA 2025.2 and 2026.1 waste and freight factors", "Unit conversions listed on the run before publishing", "A CSV trail with every calculation for your auditor"],
+          media: { kind: "loop", src: "/marketing/loops/record.mp4", label: "Activity record showing its calculations" },
+        },
+        closing: { title: "Try it on a week of tickets.", lead: "Invite a few drivers to the field app during the trial and review what they send in." },
+      }}
+    />
   );
 }

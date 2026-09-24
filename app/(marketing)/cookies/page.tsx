@@ -1,28 +1,23 @@
-export const metadata = {
-  title: "Cookie Policy | MetricOra",
+import type { Metadata } from "next";
+import { LegalShell } from "@/components/marketing/legal-shell";
+
+export const metadata: Metadata = {
+  title: "Cookie Policy",
+  alternates: { canonical: "/cookies" },
   description: "Information about how MetricOra uses cookies.",
 };
 
 export default function CookiesPage() {
   return (
-    <div className="bg-white py-12 sm:py-16 lg:py-20">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900">Cookie Policy</h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Last updated: August 2026
-          </p>
-        </div>
-
-        <div className="prose prose-lg max-w-none space-y-8 text-gray-700">
+    <LegalShell title="Cookie Policy" updated="Last updated: August 2026">
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">1. Overview</h2>
+            <h2>1. Overview</h2>
             <p>
               MetricOra uses cookies and similar technologies to provide, secure,
               and improve our platform. This policy explains what cookies we use,
               why we use them, and your options.
             </p>
-            <p className="mt-4 bg-blue-50 p-4 rounded border-l-4 border-blue-600">
+            <p>
               <strong>Key Point (PECR):</strong> MetricOra does not use
               non-essential tracking or marketing cookies. The cookies below are
               strictly necessary for authentication and service delivery. No
@@ -31,53 +26,53 @@ export default function CookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               2. Essential Cookies
             </h2>
             <p>
               These cookies are required for the platform to function and cannot
               be disabled:
             </p>
-            <table className="w-full border-collapse border border-gray-300 mt-4">
-              <thead className="bg-gray-100">
+            <table>
+              <thead>
                 <tr>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th>
                     Cookie Name
                   </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th>
                     Purpose
                   </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th>
                     Duration
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <code className="bg-gray-100 px-2 py-1 rounded">
+                  <td>
+                    <code>
                       better-auth.session_token
                     </code>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Session authentication. Stores encrypted session token for
                     user identity and permissions.
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     7 days (or when logged out)
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <code className="bg-gray-100 px-2 py-1 rounded">
+                  <td>
+                    <code>
                       next-auth.csrf-token
                     </code>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Cross-Site Request Forgery (CSRF) protection. Prevents
                     unauthorized actions from external sites.
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Session
                   </td>
                 </tr>
@@ -86,22 +81,22 @@ export default function CookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               3. Non-Essential Cookies
             </h2>
             <p>
               MetricOra does <strong>not</strong> currently use:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>Analytics cookies (Google Analytics, Mixpanel, etc.)</li>
               <li>Tracking pixels or third-party marketing tags</li>
               <li>Advertising or retargeting cookies</li>
               <li>Preference cookies for UI personalization</li>
             </ul>
-            <p className="mt-4">
+            <p>
               If we introduce optional analytics in the future, we will:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>Display an explicit consent banner</li>
               <li>Allow users to opt-out at any time</li>
               <li>Not use cookies for behavioral tracking across sites</li>
@@ -109,13 +104,13 @@ export default function CookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               4. Similar Technologies
             </h2>
             <p>
               In addition to cookies, we may use:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 <strong>Local Storage:</strong> Stores non-sensitive preferences
                 (theme, sidebar state) on your browser
@@ -125,23 +120,23 @@ export default function CookiesPage() {
                 drafts, active tabs)
               </li>
             </ul>
-            <p className="mt-4">
+            <p>
               These technologies are not used for tracking or advertising.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               5. Your Options
             </h2>
-            <h3 className="text-xl font-semibold text-gray-900 mt-4">
+            <h3>
               5.1 Browser Controls
             </h3>
             <p>
               You can control cookies at the browser level. Most modern browsers
               allow you to:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>View cookies set by a site</li>
               <li>Delete cookies</li>
               <li>
@@ -149,11 +144,11 @@ export default function CookiesPage() {
                 authentication)
               </li>
             </ul>
-            <p className="mt-4">
+            <p>
               <strong>Warning:</strong> Disabling essential session cookies will
               log you out and prevent you from using the platform.
             </p>
-            <h3 className="text-xl font-semibold text-gray-900 mt-6">
+            <h3>
               5.2 Do Not Track (DNT)
             </h3>
             <p>
@@ -163,39 +158,39 @@ export default function CookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               6. Third-Party Services
             </h2>
             <p>
               Some MetricOra features integrate with third-party services that
               may set their own cookies:
             </p>
-            <table className="w-full border-collapse border border-gray-300 mt-4">
-              <thead className="bg-gray-100">
+            <table>
+              <thead>
                 <tr>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th>
                     Service
                   </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th>
                     Purpose
                   </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
+                  <th>
                     Cookie Policy
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Sentry (Error Tracking)
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Captures error logs for debugging (optional, server-side)
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     <a
                       href="https://sentry.io/privacy/"
-                      className="text-blue-600 hover:text-blue-700"
+                     
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -204,16 +199,16 @@ export default function CookiesPage() {
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Vercel (Hosting)
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     Analytics on platform performance (does not track users)
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>
                     <a
                       href="https://vercel.com/privacy"
-                      className="text-blue-600 hover:text-blue-700"
+                     
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -226,7 +221,7 @@ export default function CookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               7. Changes to This Policy
             </h2>
             <p>
@@ -237,19 +232,17 @@ export default function CookiesPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">8. Contact</h2>
+            <h2>8. Contact</h2>
             <p>
               Questions about cookies? Email{" "}
               <a
                 href="mailto:privacy@metricora.co.uk"
-                className="font-semibold text-blue-600 hover:text-blue-700"
+               
               >
                 privacy@metricora.co.uk
               </a>
             </p>
           </section>
-        </div>
-      </div>
-    </div>
+    </LegalShell>
   );
 }

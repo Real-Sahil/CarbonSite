@@ -1,198 +1,111 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AnimateIn } from "@/components/marketing/animate-in";
-import { SiteNav } from "@/components/marketing/site-nav";
-import { SiteFooter } from "@/components/marketing/site-footer";
-import { VideoBackground } from "@/components/ui/video-background";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Body, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro } from "@/components/marketing/kit";
 
 export const metadata: Metadata = {
-  title: "Resources - MetricOra",
-  description: "Pilot planning, evidence standards, emission factor guidance, methodology notes, and GHG reporting references.",
+  title: "Guides",
+  description: "Practical guides for a first MetricOra reporting period: planning a pilot, keeping evidence, and choosing a Scope 2 method.",
+  alternates: { canonical: "/resources" },
 };
 
 const GUIDES = [
   {
-    category: "Getting started",
-    items: [
-      {
-        title: "Pilot planning checklist",
-        text: "How to scope a first reporting period, choose a factor library, set up org structure (facilities, business units), and invite team members. Includes a suggested timeline for a 90-day pilot.",
-      },
-      {
-        title: "Emission categories for construction",
-        text: "Which GHG Protocol categories apply to typical main contractor, subcontractor, and waste-haulage operations. Scope 1, 2 and 3 decision tree with worked examples.",
-      },
-      {
-        title: "Onboarding field workers",
-        text: "Step-by-step guide for admins: generate invite link, set expiry, send by SMS or email, confirm receipt, and handle PIN setup issues. Includes the field_worker role permission summary.",
-      },
+    id: "pilot",
+    title: "Planning a first reporting period",
+    body: [
+      "Pick one reporting period you already have invoices for, usually the last full financial year. A published year becomes your comparison point.",
+      "Set up the sites that consumed fuel or electricity, then invite the people who will review evidence. Field workers can be added later without affecting your plan's user count.",
+      "Import meter, fuel card and supplier spend exports first. Add field capture once the office data is in, so reviewers are not learning two things at once.",
+      "Run a calculation, read the warnings, then publish. Generate a report from the snapshot and check it against your own records.",
     ],
   },
   {
-    category: "Evidence standards",
-    items: [
-      {
-        title: "What counts as acceptable evidence",
-        text: "DEFRA guidance on supporting evidence for GHG inventory entries. Minimum requirements for waste tickets, fuel receipts, utility bills, and travel bookings. Photo quality guidance for OCR accuracy.",
-      },
-      {
-        title: "Handling missing or incomplete evidence",
-        text: "Using the assumptionNotes field. When estimation is acceptable versus when a record should be rejected. Documentation requirements for auditor review under SECR.",
-      },
+    id: "evidence",
+    title: "What evidence to keep",
+    body: [
+      "Keep the document that shows the quantity: a fuel card statement, a meter reading, a weighbridge ticket, a delivery note. Invoices that only show cost support spend-based figures.",
+      "Attach evidence to the submission or record rather than a shared drive, so the auditor can open it from the figure.",
+      "When a value is estimated, write the assumption on the record. The CSV trail carries it into the report appendix.",
+      "Check your retention setting under Settings, then Data retention. UK company records are normally kept for six years.",
     ],
   },
   {
-    category: "Emission factors",
-    items: [
-      {
-        title: "DEFRA 2025 conversion factors",
-        text: "Published by DESNZ under Open Government Licence v3. Used for UK-based Scope 1 combustion, Scope 2 electricity (UK grid: 0.207 kgCO2e/kWh location-based), and Scope 3 transport and freight factors.",
-      },
-      {
-        title: "EPA GHG Emission Factors Hub",
-        text: "US EPA factors for US-geography records. Natural gas at 0.18116 kgCO2e/kWh. Diesel at 2.705 kgCO2e/litre. US national grid at 0.371 kgCO2e/kWh. Public domain, no redistribution restrictions.",
-      },
-      {
-        title: "IPCC AR6 global warming potentials",
-        text: "GWP-100 values from the IPCC Sixth Assessment Report: CO2 = 1, CH4 = 27.9, N2O = 273. These replace AR5 values (CH4 = 25, N2O = 265) and affect calculation outputs where gas-specific factors are used.",
-      },
-    ],
-  },
-  {
-    category: "Methodology and compliance",
-    items: [
-      {
-        title: "GHG Protocol Corporate Standard",
-        text: "The calculation methodology used by MetricOra is ghg-protocol-v2026-01. Scope 1 includes direct emissions from owned or controlled sources. Scope 2 covers purchased electricity using location-based or market-based methods. Scope 3 covers 15 categories in the standard.",
-      },
-      {
-        title: "SECR reporting requirements",
-        text: "Streamlined Energy and Carbon Reporting applies to UK-quoted companies, large LLPs, and large unquoted companies. Minimum disclosure: energy and carbon figures, intensity ratio, methodology summary. MetricOra audit packages include the required methodology statement.",
-      },
-      {
-        title: "Factor library versioning policy",
-        text: "When DEFRA or EPA update their factor publications, a new FactorLibrary version is created. Existing calculation runs reference their original library version, so historical figures do not change when factors are updated.",
-      },
+    id: "scope2",
+    title: "Location-based or market-based Scope 2",
+    body: [
+      "Location-based uses the grid average for where the electricity was used. MetricOra always reports it, and it is the headline figure.",
+      "Market-based reflects what you bought. Add REGOs, PPAs, green tariffs or supplier-specific rates under Settings, then Electricity contracts, for the sites and dates they cover.",
+      "Anything not covered by a contract falls back to the residual mix or the library factor, and the calculation says so.",
+      "SECR asks for location-based. Reporting market-based beside it shows the effect of your purchasing.",
     ],
   },
 ];
 
-const EXT_LINKS = [
-  { label: "DEFRA 2025 Conversion Factors", href: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting", org: "DESNZ" },
-  { label: "EPA GHG Emission Factors Hub", href: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub", org: "US EPA" },
-  { label: "GHG Protocol Corporate Standard", href: "https://ghgprotocol.org/corporate-standard", org: "WRI / WBCSD" },
-  { label: "IPCC AR6 Working Group I Report", href: "https://www.ipcc.ch/report/ar6/wg1/", org: "IPCC" },
-  { label: "SECR guidance", href: "https://www.gov.uk/guidance/streamlined-energy-and-carbon-reporting", org: "UK Government" },
-  { label: "ISO 14064-1:2018", href: "https://www.iso.org/standard/66453.html", org: "ISO" },
+const LINKS = [
+  { href: "/methodology", title: "Methodology", text: "Factor libraries, licences and version history." },
+  { href: "/blog", title: "Blog", text: "Longer articles on how the calculations work." },
+  { href: "/developer", title: "Developers", text: "API keys, ingest endpoints and webhooks." },
 ];
 
 export default function ResourcesPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#FAFBF8]">
-      <SiteNav theme="dark" />
-
-      {/* Hero */}
-      <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0B3B38]">
-        <VideoBackground
-          src="/videos/hero-resources.mp4"
-          fallbackGradient="linear-gradient(135deg, #0B3B38 0%, #0D4A40 100%)"
-          overlayOpacity={0.25}
-        />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B3B38] to-transparent pointer-events-none" />
-        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
-          <AnimateIn>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-teal-400" />
-              <span className="text-xs text-teal-300 tracking-[0.12em] font-medium">Resources</span>
-            </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[20ch]">
-              Guidance for getting started.
-            </h1>
-            <p className="text-base text-[#A8C4C2] leading-relaxed max-w-[50ch]">
-              Pilot planning, evidence standards, emission factor notes, and methodology references. Grounded in DEFRA 2025, EPA 2025, and GHG Protocol Corporate Standard.
-            </p>
-          </AnimateIn>
+    <>
+      <Section tone="dark" size="lg" video="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" className="pt-36 sm:pt-40">
+        <div className="flex max-w-3xl flex-col gap-6">
+          <Eyebrow tone="dark">Guides</Eyebrow>
+          <H1>Getting a first year right.</H1>
+          <Lead tone="dark">Short, practical notes for the people setting MetricOra up.</Lead>
         </div>
-      </section>
+      </Section>
 
-      {/* Guides */}
-      <section className="bg-[#FAFBF8]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 space-y-20">
-          {GUIDES.map((section) => (
-            <AnimateIn key={section.category}>
-              <div>
-                <div className="text-[10px] font-medium text-teal-700 uppercase tracking-[0.12em] mb-8">
-                  {section.category}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2ECEA]">
-                  {section.items.map((item) => (
-                    <div key={item.title} className="bg-white p-8 hover:bg-[#F4F8F7] transition-colors">
-                      <h3 className="text-base font-semibold text-[#111827] tracking-[-0.02em] mb-3">{item.title}</h3>
-                      <p className="text-sm text-[#6B7280] leading-relaxed">{item.text}</p>
-                    </div>
+      <Section tone="light">
+        <div className="grid gap-12 lg:grid-cols-[240px_1fr]">
+          <nav aria-label="Guides" className="lg:sticky lg:top-24 lg:self-start">
+            <ul className="grid gap-2">
+              {GUIDES.map((g) => (
+                <li key={g.id}>
+                  <a href={`#${g.id}`} className="text-[15px] text-mk-text-2 hover:text-mk-accent">
+                    {g.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="flex flex-col divide-y divide-mk-line">
+            {GUIDES.map((g) => (
+              <article key={g.id} id={g.id} className="scroll-mt-24 py-10 first:pt-0">
+                <h2 className="text-[26px] font-semibold tracking-[-0.02em]">{g.title}</h2>
+                <ol className="mt-5 grid gap-4">
+                  {g.body.map((p, i) => (
+                    <li key={i} className="flex gap-4">
+                      <span className="font-mono text-[13px] leading-[1.8] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
+                      <Body className="text-[16px]">{p}</Body>
+                    </li>
                   ))}
-                </div>
-              </div>
-            </AnimateIn>
-          ))}
-        </div>
-      </section>
-
-      {/* External references */}
-      <section className="bg-[#F2F4EF] border-t border-[#E5E7EB]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
-              <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">Primary references</span>
-            </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-12">
-              Original sources and standards.
-            </h2>
-          </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E2ECEA]">
-            {EXT_LINKS.map((link, i) => (
-              <AnimateIn key={link.label} delay={i * 0.04}>
-                <a
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-white p-8 hover:bg-[#F4F8F7] transition-colors flex flex-col justify-between group"
-                >
-                  <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-[#111827] tracking-[-0.02em] mb-2 group-hover:text-teal-700 transition-colors">{link.label}</h3>
-                    <p className="text-xs text-[#6B7280]">{link.org}</p>
-                  </div>
-                  <div className="text-teal-600 group-hover:text-teal-700 transition-colors mt-4 h-5 w-5">
-                    <ArrowUpRight className="h-4 w-4" />
-                  </div>
-                </a>
-              </AnimateIn>
+                </ol>
+              </article>
             ))}
           </div>
         </div>
-      </section>
+      </Section>
 
-      {/* CTA */}
-      <section className="bg-[#FAFBF8] border-t border-[#E5E7EB]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
-              Ready to run your first calculation?
-            </h2>
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.30)] transition-all active:scale-[0.97]"
-            >
-              Create organisation
-              <ArrowUpRight className="h-3.5 w-3.5" />
+      <Section tone="paper">
+        <SectionIntro eyebrow="More" title="Elsewhere on the site." />
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="group flex flex-col gap-2 rounded-[12px] border border-mk-line bg-mk-surface p-7 hover:border-mk-text/30">
+              <H3>{l.title}</H3>
+              <Body>{l.text}</Body>
+              <span className="mt-2 inline-flex items-center gap-1.5 text-[14px] font-medium text-mk-accent">
+                Open <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
             </Link>
-          </AnimateIn>
+          ))}
         </div>
-      </section>
+      </Section>
 
-      <SiteFooter />
-    </main>
+      <ClosingCta title="Want help with the first import?" lead="Book a pilot and we will set up your sites and first import with you." />
+    </>
   );
 }

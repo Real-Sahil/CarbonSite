@@ -71,9 +71,9 @@ interface DashboardPageProps {
 
 function formatKgCo2e(value: unknown): string {
   const numeric = Number(value ?? 0);
-  if (!Number.isFinite(numeric) || numeric === 0) return "0 kgCO2e";
-  if (numeric >= 1000) return `${(numeric / 1000).toFixed(2)} tCO₂e`;
-  return `${numeric.toFixed(1)} kgCO2e`;
+  if (!Number.isFinite(numeric) || numeric === 0) return "0 kgCO₂e";
+  if (numeric >= 1000) return `${(numeric / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tCO₂e`;
+  return `${numeric.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kgCO₂e`;
 }
 
 

@@ -1,153 +1,59 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { AnimateIn } from "@/components/marketing/animate-in";
-import { VideoBackground } from "@/components/ui/video-background";
-import { ArrowUpRight } from "lucide-react";
+import { SolutionPage } from "@/components/marketing/solution-page";
 
 export const metadata: Metadata = {
-  title: "Construction - MetricOra",
-  description: "GHG emissions tracking for main contractors, subcontractors, and site teams. Field capture, waste tickets, materials, and supplier evidence.",
+  title: "Main contractors",
+  description:
+    "Carbon accounting for UK main contractors: site fuel and plant, materials and embodied carbon, subcontractor evidence, waste and PAS 2080, in one inventory.",
+  alternates: { canonical: "/solutions/construction" },
 };
-
-const PAIN_POINTS = [
-  {
-    problem: "Waste tickets arrive on paper from dozens of subcontractors",
-    solution: "Field workers photograph tickets on-site. On-device OCR extracts weight, EWC code, date, and vehicle registration in under 2 seconds. Offline queue syncs when connectivity returns.",
-  },
-  {
-    problem: "Calculating embodied carbon across material deliveries is a manual process",
-    solution: "Delivery notes processed through the same capture flow. Supplier evidence files attached to review tasks. Approved records feed into Scope 3 upstream transport and purchased goods categories.",
-  },
-  {
-    problem: "Subcontractor fuel returns are inconsistent and hard to verify",
-    solution: "Fuel receipts captured by drivers directly. OCR extracts volume, fuel type, date, and vehicle reg. The reviewer checks evidence before approving into Scope 1 mobile combustion.",
-  },
-  {
-    problem: "Site managers need to submit data without access to the main platform",
-    solution: "Admin sends an invite link with a 7-day expiry. The subcontractor installs the Flutter app, taps the link, sets a PIN, and is immediately in submission mode. No email/password account required.",
-  },
-];
-
-const SCOPE_CATS = [
-  { label: "Scope 1", cats: ["Stationary combustion (site plant, generators)", "Mobile combustion (fleet diesel and petrol)", "Fugitive emissions (refrigerant leakage)"] },
-  { label: "Scope 2", cats: ["Site electricity, location-based (UK grid 0.207 kgCO2e/kWh)", "Market-based where green tariff contracts exist"] },
-  { label: "Scope 3", cats: ["Upstream transport and distribution (tipper movements)", "Purchased goods and services (spend-based)", "Business travel and commuting"] },
-];
 
 export default function ConstructionPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#FAFBF8]">
-
-      {/* Hero */}
-      <section className="relative min-h-[65vh] flex items-end overflow-hidden">
-        <VideoBackground src="/videos/hero-construction.mp4" overlayOpacity={0.30} />
-        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
-          <AnimateIn>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-6 h-px bg-gradient-to-r from-teal-400 to-emerald-400" />
-              <span className="text-xs text-teal-300 tracking-[0.12em] font-medium">Construction</span>
-            </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[22ch]">
-              Carbon tracking that fits the way construction works.
-            </h1>
-            <p className="text-base text-[#94A3B8] leading-relaxed max-w-[50ch] mb-8">
-              Waste tickets, delivery notes, fuel receipts, and subcontractor evidence captured at source, reviewed on the platform, calculated to DEFRA 2025 standards.
-            </p>
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.40)] hover:shadow-[0_0_36px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
-            >
-              Start free
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </AnimateIn>
-        </div>
-      </section>
-
-      {/* Pain points */}
-      <section className="bg-[#F2F4EF]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
-              Common challenges, solved.
-            </h2>
-            <p className="text-sm text-[#6B7280] mb-14 max-w-[55ch]">
-              Construction carbon data collection is fragmented. MetricOra closes the gap between site activity and auditable reporting.
-            </p>
-          </AnimateIn>
-          <div className="space-y-px bg-[#E5E7EB]">
-            {PAIN_POINTS.map((p, i) => (
-              <AnimateIn key={i} delay={i * 0.06}>
-                <div className="grid grid-cols-1 md:grid-cols-2 bg-[#F2F4EF] hover:bg-white transition-colors">
-                  <div className="px-8 py-7 border-r border-[#E5E7EB]">
-                    <div className="text-[10px] text-[#9CA3AF] uppercase tracking-[0.12em] mb-3">Challenge</div>
-                    <p className="text-sm text-[#111827] leading-relaxed">{p.problem}</p>
-                  </div>
-                  <div className="px-8 py-7">
-                    <div className="text-[10px] text-teal-600 uppercase tracking-[0.12em] mb-3">MetricOra</div>
-                    <p className="text-sm text-[#6B7280] leading-relaxed">{p.solution}</p>
-                  </div>
-                </div>
-              </AnimateIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Scope coverage */}
-      <section className="bg-[#FAFBF8]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-14">
-              Scope coverage for construction.
-            </h2>
-          </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#E5E7EB]">
-            {SCOPE_CATS.map((s, i) => (
-              <AnimateIn key={s.label} delay={i * 0.06}>
-                <div className="bg-white p-8 hover:bg-[#F4F8F7] transition-colors">
-                  <div className="text-[10px] font-medium text-teal-700 tracking-[0.12em] mb-6">{s.label}</div>
-                  <ul className="space-y-3">
-                    {s.cats.map((cat) => (
-                      <li key={cat} className="flex items-start gap-3 text-sm text-[#6B7280]">
-                        <span className="mt-1.5 w-1 h-1 rounded-full bg-teal-500 shrink-0" />
-                        {cat}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </AnimateIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-[#F2F4EF] border-t border-[#E5E7EB]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-4">
-              Built for construction carbon reporting.
-            </h2>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/sign-up"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_24px_rgba(15,118,110,0.30)] transition-all active:scale-[0.97]"
-              >
-                Create organisation
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-              <Link
-                href="/field-app"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-[#E5E7EB] text-[#6B7280] text-sm font-medium hover:border-[#374151] hover:text-[#111827] transition-colors"
-              >
-                See the field app
-              </Link>
-            </div>
-          </AnimateIn>
-        </div>
-      </section>
-
-    </main>
+    <SolutionPage
+      c={{
+        eyebrow: "Main contractors",
+        title: "Site carbon, from the bowser to the board report.",
+        lead: "Plant fuel, generators, deliveries, waste and subcontractor paperwork arrive from dozens of sources. MetricOra puts them through one review queue and one calculation, per site and per contract.",
+        heroVideo: "/marketing/loops/prove.mp4",
+        problems: [
+          {
+            problem: "Waste tickets arrive on paper from every subcontractor",
+            answer: "Drivers and site staff photograph them in the field app. Weight, EWC code, date and vehicle are read on the phone and checked by a reviewer before they count.",
+          },
+          {
+            problem: "Plant diesel and HVO are hard to reconcile",
+            answer: "Fuel receipts and bowser deliveries become Scope 1 records. HVO and blends use the library's HVO factor, with biogenic CO₂ reported separately. Telematics feeds show idling and burnt fuel per machine.",
+          },
+          {
+            problem: "Embodied carbon is worked out after the fact",
+            answer: "Approving a delivery note can also create an embodied carbon record for the project, from the material's library factor or the supplier's own EPD, with transport to site added.",
+          },
+          {
+            problem: "Clients ask for PAS 2080 and project budgets",
+            answer: "Each project can hold a carbon management plan, a reduction opportunity log and a carbon budget with a burn-down against its programme dates.",
+          },
+        ],
+        feature: {
+          eyebrow: "Per site, per contract",
+          title: "The same numbers for the site team and the head office.",
+          lead: "Sites, contracts and programmes sit in one organisation, so a contract's carbon and the group SECR figure come from the same published snapshot.",
+          points: [
+            "Location- and market-based Scope 2 for site supplies and offices",
+            "Spend-based Scope 3 for concrete, steel and services by UK SIC code",
+            "Subcontractors submit evidence without seeing anything else",
+          ],
+          media: { kind: "loop", src: "/marketing/loops/prove.mp4", label: "Dashboard for a civils contractor with five sites" },
+        },
+        detail: {
+          eyebrow: "Review",
+          title: "A reviewer sees exactly what was captured on site.",
+          lead: "Recognised values sit beside the submitted ones, so a corrected weight or a mistyped date is obvious before approval.",
+          points: ["Claim a submission so two people do not review it", "Ask the worker for more information without losing the original", "Every decision is written to the audit trail"],
+          media: { kind: "shot", src: "/marketing/screens/submission-review.jpg", alt: "Waste ticket review with a note querying the net weight" },
+        },
+        closing: { title: "Start with one live project.", lead: "Bring a site's fuel, electricity, waste and deliveries for one period. We will help you set up the field app for the team." },
+      }}
+    />
   );
 }

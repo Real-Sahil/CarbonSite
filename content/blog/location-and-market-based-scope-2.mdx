@@ -1,0 +1,38 @@
+---
+title: "Location-based and market-based Scope 2, with one office"
+excerpt: "The two Scope 2 methods measure different things. Here is how MetricOra reports both, using a head office with a REGO-backed supply."
+date: "2026-09-24"
+author: "MetricOra"
+tags: ["Scope 2", "Electricity", "SECR"]
+---
+
+The GHG Protocol asks companies that buy electricity under contracts to report Scope 2 two ways. The two figures answer different questions, so MetricOra keeps them side by side and never adds them together.
+
+## Location-based: what the grid emitted
+
+Location-based Scope 2 multiplies the electricity you used by the average emissions of the grid where you used it. For a UK site in 2025, MetricOra's DEFRA 2025.2 library uses 0.177 kg CO₂e per kWh. A quarter's meter reading at our demo head office is stored like this:
+
+```
+36,224.3 kWh × 0.177 kg CO2e/kWh = 6,411.70 kg CO2e
+```
+
+This is the figure SECR asks for, and it is the headline Scope 2 number on the dashboard and in reports.
+
+## Market-based: what you chose to buy
+
+Market-based Scope 2 reflects the contracts behind your supply. In MetricOra you add them under Settings, then Electricity contracts: REGOs, power purchase agreements, green tariffs, a supplier's own emission rate, or a residual mix figure. Each has the site it covers, the dates it runs and, where relevant, the kWh it covers.
+
+When a run calculates market-based electricity, it works through them in the GHG Protocol order:
+
+1. certificates and PPAs, never claiming the same certificate twice
+2. green tariffs
+3. the supplier's specific rate
+4. the residual mix
+
+Any kilowatt-hours left uncovered fall back to the library factor, and the calculation says so.
+
+## Reading the two together
+
+Our demo office has a REGO covering 130,000 kWh in 2025. Its location-based figure stays the same whatever contract it signs. Its market-based figure falls, because the certificates carry a zero emission rate. The gap between the two shows how much of the change comes from purchasing and how much from using less electricity.
+
+That gap is why neither figure replaces the other. Location-based tracks efficiency at the site. Market-based tracks procurement decisions. Reporting both makes it clear which one moved.

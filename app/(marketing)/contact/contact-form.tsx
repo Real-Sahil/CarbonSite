@@ -46,9 +46,9 @@ export function ContactForm() {
   if (state === "success") {
     return (
       <div className="flex flex-col items-center gap-4 py-12 text-center">
-        <CheckCircle className="h-10 w-10 text-teal-600" />
-        <h3 className="text-lg font-semibold text-[#111827] tracking-tight">Request received</h3>
-        <p className="text-sm text-[#6B7280] max-w-[40ch] leading-relaxed">
+        <CheckCircle className="h-10 w-10 text-mk-accent" />
+        <h3 className="text-lg font-semibold text-mk-text tracking-tight">Request received</h3>
+        <p className="text-sm text-mk-text-3 max-w-[40ch] leading-relaxed">
           We'll be in touch shortly. Check your inbox for a confirmation.
         </p>
       </div>
@@ -61,7 +61,7 @@ export function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
-          <label htmlFor="name" className="block text-xs font-medium text-[#374151] mb-1.5 tracking-wide">
+          <label htmlFor="name" className="block text-[13px] font-medium text-mk-text-2 mb-1.5 tracking-wide">
             Full name
           </label>
           <input
@@ -72,11 +72,11 @@ export function ContactForm() {
             autoComplete="name"
             placeholder="Jane Smith"
             disabled={isSubmitting}
-            className="w-full h-10 rounded-md border border-[#E2ECEA] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full h-11 rounded-[10px] border border-mk-line bg-mk-surface px-3 text-[15px] text-mk-text placeholder-mk-text-3 focus:outline-none focus:ring-2 focus:ring-mk-accent/25 focus:border-mk-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
         </div>
         <div>
-          <label htmlFor="email" className="block text-xs font-medium text-[#374151] mb-1.5 tracking-wide">
+          <label htmlFor="email" className="block text-[13px] font-medium text-mk-text-2 mb-1.5 tracking-wide">
             Work email
           </label>
           <input
@@ -87,13 +87,13 @@ export function ContactForm() {
             autoComplete="email"
             placeholder="jane@company.com"
             disabled={isSubmitting}
-            className="w-full h-10 rounded-md border border-[#E2ECEA] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full h-11 rounded-[10px] border border-mk-line bg-mk-surface px-3 text-[15px] text-mk-text placeholder-mk-text-3 focus:outline-none focus:ring-2 focus:ring-mk-accent/25 focus:border-mk-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="company" className="block text-xs font-medium text-[#374151] mb-1.5 tracking-wide">
+        <label htmlFor="company" className="block text-[13px] font-medium text-mk-text-2 mb-1.5 tracking-wide">
           Company
         </label>
         <input
@@ -104,12 +104,12 @@ export function ContactForm() {
           autoComplete="organization"
           placeholder="Acme Construction Ltd"
           disabled={isSubmitting}
-          className="w-full h-10 rounded-md border border-[#E2ECEA] bg-white px-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full h-11 rounded-[10px] border border-mk-line bg-mk-surface px-3 text-[15px] text-mk-text placeholder-mk-text-3 focus:outline-none focus:ring-2 focus:ring-mk-accent/25 focus:border-mk-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         />
       </div>
 
       <div>
-        <label htmlFor="message" className="block text-xs font-medium text-[#374151] mb-1.5 tracking-wide">
+        <label htmlFor="message" className="block text-[13px] font-medium text-mk-text-2 mb-1.5 tracking-wide">
           Tell us about your pilot
         </label>
         <textarea
@@ -120,12 +120,12 @@ export function ContactForm() {
           minLength={10}
           placeholder="Briefly describe your project, reporting period, and what you want to measure."
           disabled={isSubmitting}
-          className="w-full rounded-md border border-[#E2ECEA] bg-white px-3 py-2.5 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed resize-y transition-colors leading-relaxed"
+          className="w-full rounded-[10px] border border-mk-line bg-mk-surface px-3 py-2.5 text-[15px] text-mk-text placeholder-mk-text-3 focus:outline-none focus:ring-2 focus:ring-mk-accent/25 focus:border-mk-accent disabled:opacity-50 disabled:cursor-not-allowed resize-y transition-colors leading-relaxed"
         />
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2.5">
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-[10px] px-3 py-2.5">
           {error}
         </p>
       )}
@@ -133,7 +133,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F766E] text-white text-sm font-medium hover:bg-[#0B5F59] disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.97]"
+        className="inline-flex items-center gap-2 h-11 px-5 rounded-[10px] bg-mk-accent text-white text-[15px] font-medium hover:bg-mk-accent-hover disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.97]"
       >
         {isSubmitting ? (
           <>

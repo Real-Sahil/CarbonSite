@@ -1,265 +1,179 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { Check, X } from 'lucide-react';
-import { PLAN_ANNUAL_TOTAL, PLAN_PRICES } from '@/lib/billing/limits';
+import type { Metadata } from "next";
+import { Check, Minus } from "lucide-react";
+import { PLAN_ANNUAL_TOTAL, PLAN_PRICES } from "@/lib/billing/limits";
+import { ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro } from "@/components/marketing/kit";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: 'Pricing | MetricOra',
-  description: 'Simple, transparent pricing for carbon accounting. 30-day free trial included.',
-  openGraph: {
-    title: 'Pricing | MetricOra',
-    description: 'Simple, transparent pricing. 30-day free trial. No hidden fees.',
-    type: 'website',
-    url: 'https://metricora.co.uk/pricing',
-  },
+  title: "Pricing",
+  description: "Priced per organisation by sites and web users. Starter £99 a month, Growth £299 a month, Enterprise from £750 a month. 30-day trial.",
+  alternates: { canonical: "/pricing" },
 };
 
-interface PricingTier {
+type Tier = {
   name: string;
-  /** Monthly price in GBP (MetricOra is not VAT-registered), or a label for sales-led plans. */
-  price: number | string;
-  period?: string;
-  note?: string;
-  description: string;
-  cta: string;
-  ctaUrl: string;
-  features: Array<{ name: string; included: boolean }>;
+  price: string;
+  period: string;
+  note: string;
+  forWho: string;
+  cta: { href: string; label: string };
+  features: { name: string; included: boolean }[];
   highlight?: boolean;
-}
+};
 
-// Prices match PLAN_PRICES / PLAN_ANNUAL_TOTAL in lib/billing/limits.ts.
-const tiers: PricingTier[] = [
+// Features follow PLAN_FEATURES and limits follow PLAN_LIMITS in lib/billing/limits.ts.
+const TIERS: Tier[] = [
   {
-    name: 'Starter',
-    price: PLAN_PRICES.starter.monthly,
-    period: '/month',
-    note: `or £${PLAN_ANNUAL_TOTAL.starter.toLocaleString('en-GB')}/year, 2 months free`,
-    description: 'SECR and Carbon Reduction Plans for bids',
-    cta: 'Start 30-day free trial',
-    ctaUrl: '/sign-up',
+    name: "Starter",
+    price: `£${PLAN_PRICES.starter.monthly}`,
+    period: "per month",
+    note: `or £${PLAN_ANNUAL_TOTAL.starter.toLocaleString("en-GB")} a year, two months free`,
+    forWho: "For one business reporting SECR and answering tender questions.",
+    cta: { href: "/sign-up", label: "Start a 30-day trial" },
     features: [
-      { name: 'Up to 3 sites and 5 web users', included: true },
-      { name: 'Unlimited field workers on the mobile app', included: true },
-      { name: 'Scope 1, 2 and 3 with DEFRA, EPA and ADEME factors', included: true },
-      { name: 'GHG Protocol, SECR and PPN 06/21 reports with auditor CSV trail', included: true },
-      { name: 'Email support', included: true },
-      { name: 'Social value (TOMs) reporting', included: false },
-      { name: 'Bid carbon pack and PAS 2080', included: false },
-      { name: 'Accounting sync (Xero, QuickBooks, Sage)', included: false },
-      { name: 'SSO / SAML', included: false },
+      { name: "Up to 3 sites and 5 web users", included: true },
+      { name: "Unlimited field workers on the mobile app", included: true },
+      { name: "Scope 1, 2 and 3 with DEFRA, EPA, ADEME and spend factors", included: true },
+      { name: "Emissions reports with the auditor's CSV calculation trail", included: true },
+      { name: "Email support", included: true },
+      { name: "Social value (TOMs) tracking", included: false },
+      { name: "Bid carbon pack and PAS 2080", included: false },
+      { name: "Accounting sync (Xero, QuickBooks, Sage)", included: false },
     ],
   },
   {
-    name: 'Growth',
-    price: PLAN_PRICES.growth.monthly,
-    period: '/month',
-    note: `or £${PLAN_ANNUAL_TOTAL.growth.toLocaleString('en-GB')}/year, 2 months free`,
-    description: 'For contractors bidding for public work every month',
-    cta: 'Start 30-day free trial',
-    ctaUrl: '/sign-up',
+    name: "Growth",
+    price: `£${PLAN_PRICES.growth.monthly}`,
+    period: "per month",
+    note: `or £${PLAN_ANNUAL_TOTAL.growth.toLocaleString("en-GB")} a year, two months free`,
+    forWho: "For contractors bidding for public work and managing several sites.",
+    cta: { href: "/sign-up", label: "Start a 30-day trial" },
     highlight: true,
     features: [
-      { name: 'Up to 15 sites or contracts and 25 web users', included: true },
-      { name: 'Unlimited field workers and supplier portal logins', included: true },
-      { name: 'Everything in Starter', included: true },
-      { name: 'Social value (TOMs) reporting', included: true },
-      { name: 'Bid carbon pack, PAS 2080 and project carbon budgets', included: true },
-      { name: 'Accounting sync (Xero, QuickBooks, Sage)', included: true },
-      { name: 'Priority support and an onboarding call', included: true },
-      { name: 'SSO / SAML', included: false },
+      { name: "Up to 15 sites or contracts and 25 web users", included: true },
+      { name: "Unlimited field workers and supplier logins", included: true },
+      { name: "Everything in Starter", included: true },
+      { name: "Social value (TOMs) tracking", included: true },
+      { name: "Bid carbon pack, PAS 2080 and project carbon budgets", included: true },
+      { name: "Accounting sync (Xero, QuickBooks, Sage)", included: true },
+      { name: "Priority support and an onboarding call", included: true },
     ],
   },
   {
-    name: 'Enterprise',
+    name: "Enterprise",
     price: `From £${PLAN_PRICES.enterprise.monthly}`,
-    period: '/month',
-    note: 'Billed annually by invoice',
-    description: 'For groups with many sites and IT requirements',
-    cta: 'Contact sales',
-    ctaUrl: '/contact',
+    period: "per month",
+    note: "Billed annually by invoice",
+    forWho: "For groups with many sites, entities and IT requirements.",
+    cta: { href: "/contact", label: "Talk to us" },
     features: [
-      { name: 'Unlimited sites, entities and users', included: true },
-      { name: 'Everything in Growth', included: true },
-      { name: 'SSO / SAML and API access', included: true },
-      { name: 'Invoice anomaly detection', included: true },
-      { name: 'Live real-time dashboard', included: true },
-      { name: 'Assurance-ready evidence packs', included: true },
-      { name: 'Named contact and priority support', included: true },
+      { name: "Unlimited sites, entities and users", included: true },
+      { name: "Everything in Growth", included: true },
+      { name: "Single sign-on (SAML or OpenID Connect)", included: true },
+      { name: "Invoice anomaly detection", included: true },
+      { name: "Live dashboard updates", included: true },
+      { name: "Named contact and priority support", included: true },
     ],
+  },
+];
+
+const FAQ = [
+  {
+    q: "What does the trial include?",
+    a: "30 days with the Growth features, so you can try social value, the bid carbon pack and PAS 2080. During the trial an organisation can have 2 sites, 3 web users and 2 generated reports a month. No card is needed to start.",
+  },
+  {
+    q: "Who counts as a web user?",
+    a: "Anyone who signs in to the web app: admins, editors, reviewers, viewers and auditors. Field workers using the mobile app and supplier portal logins are never counted.",
+  },
+  {
+    q: "Can I change plan or cancel?",
+    a: "Yes. Move between Starter and Growth or cancel from Settings, then Billing. A cancelled plan runs to the end of the period you have paid for. There is no minimum term on monthly plans.",
+  },
+  {
+    q: "Is VAT added?",
+    a: "Prices are in pounds and exclude VAT. MetricOra is not VAT-registered at present, so no VAT is charged.",
+  },
+  {
+    q: "Who owns the data?",
+    a: "You do. You can export records, calculations and reports at any time, and we do not sell or share customer data.",
   },
 ];
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
-      {/* Header */}
-      <div className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
-            Try free for 30 days. Scale with your organization. No credit card required.
-          </p>
+    <>
+      <Section tone="dark" size="lg" video="/marketing/loops/reports.mp4" poster="/marketing/loops/reports.jpg" className="pt-36 sm:pt-40">
+        <div className="flex max-w-3xl flex-col gap-6">
+          <Eyebrow tone="dark">Pricing</Eyebrow>
+          <H1>Priced by sites and web users, not by field workers.</H1>
+          <Lead tone="dark">One price per organisation. Everyone on site can capture evidence on the app at no extra cost.</Lead>
         </div>
-      </div>
+      </Section>
 
-      {/* Pricing Cards */}
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-3 lg:max-w-5xl lg:mx-auto">
-          {tiers.map((tier) => (
+      <Section tone="paper" className="-mt-px">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {TIERS.map((t) => (
             <div
-              key={tier.name}
-              className={`relative rounded-2xl transition-all ${
-                tier.highlight
-                  ? 'border-2 border-blue-600 bg-blue-50 shadow-lg dark:border-blue-500 dark:bg-blue-950/20'
-                  : 'border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'
-              }`}
-            >
-              {tier.highlight && (
-                <div className="absolute -top-4 left-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
-                  Most Popular
-                </div>
+              key={t.name}
+              className={cn(
+                "flex flex-col gap-6 rounded-[12px] border bg-mk-surface p-7",
+                t.highlight ? "border-mk-accent shadow-[0_24px_48px_-24px_rgba(194,65,12,0.35)]" : "border-mk-line",
               )}
-
-              <div className="p-8">
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-                  {tier.name}
-                </h3>
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  {tier.description}
-                </p>
-
-                {/* Price */}
-                <div className="mt-6 flex items-baseline gap-1">
-                  {typeof tier.price === 'number' && (
-                    <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
-                      £
-                    </span>
-                  )}
-                  <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
-                    {tier.price}
-                  </span>
-                  {tier.period && (
-                    <span className="text-zinc-600 dark:text-zinc-400">
-                      {tier.period}
-                    </span>
-                  )}
-                </div>
-
-                {tier.note && (
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{tier.note}</p>
-                )}
-
-                {/* CTA Button */}
-                <Link
-                  href={tier.ctaUrl}
-                  className={`mt-8 block w-full rounded-lg py-3 text-center font-semibold transition-colors ${
-                    tier.highlight
-                      ? 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600'
-                      : 'border border-zinc-300 text-zinc-900 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-50 dark:hover:bg-zinc-800'
-                  }`}
-                >
-                  {tier.cta}
-                </Link>
-
-                {/* Features */}
-                <div className="mt-8 space-y-4 border-t border-zinc-200 pt-8 dark:border-zinc-800">
-                  {tier.features.map((feature) => (
-                    <div key={feature.name} className="flex items-start gap-3">
-                      {feature.included ? (
-                        <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
-                      ) : (
-                        <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-zinc-400 dark:text-zinc-600" />
-                      )}
-                      <span
-                        className={`text-sm ${
-                          feature.included
-                            ? 'text-zinc-900 dark:text-zinc-50'
-                            : 'text-zinc-500 dark:text-zinc-500'
-                        }`}
-                      >
-                        {feature.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+            >
+              <div className="flex items-center justify-between">
+                <H3 className="text-[20px]">{t.name}</H3>
+                {t.highlight ? (
+                  <span className="rounded-full bg-mk-accent-soft px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.1em] text-mk-accent-hover">Most chosen</span>
+                ) : null}
               </div>
+              <p className="text-[15px] text-mk-text-2">{t.forWho}</p>
+              <div>
+                <p className="flex items-baseline gap-2">
+                  <span className="text-[40px] font-semibold tracking-[-0.03em]">{t.price}</span>
+                  <span className="text-[15px] text-mk-text-3">{t.period}</span>
+                </p>
+                <p className="text-[13px] text-mk-text-3">{t.note}</p>
+              </div>
+              <ButtonLink href={t.cta.href} variant={t.highlight ? "primary" : "secondary"}>
+                {t.cta.label}
+              </ButtonLink>
+              <ul className="grid gap-3 border-t border-mk-line pt-6">
+                {t.features.map((f) => (
+                  <li key={f.name} className={cn("flex gap-3 text-[14px] leading-snug", f.included ? "text-mk-text-2" : "text-mk-text-3")}>
+                    {f.included ? (
+                      <Check aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-mk-accent" />
+                    ) : (
+                      <Minus aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+                    )}
+                    <span>
+                      {f.included ? null : <span className="sr-only">Not included: </span>}
+                      {f.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
-      </div>
+        <p className="mt-8 text-[14px] text-mk-text-3">Prices in GBP, excluding VAT. MetricOra is not currently VAT-registered.</p>
+      </Section>
 
-      {/* FAQ */}
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-          Frequently Asked Questions
-        </h2>
-
-        <div className="mt-8 space-y-6">
-          {[
-            {
-              q: 'Can I change plans anytime?',
-              a: 'Yes. After your free trial ends, you can move between Starter and Growth, or cancel anytime. No long-term contracts required.',
-            },
-            {
-              q: 'Do you offer annual discounts?',
-              a: 'Yes. Paying yearly for Starter or Growth gets you 2 months free. Enterprise is billed annually.',
-            },
-            {
-              q: 'Is there a free trial?',
-              a: 'Yes. 30-day free trial with full Growth features, including the supplier portal. No credit card required to start.',
-            },
-            {
-              q: 'Who owns my data?',
-              a: 'You do. We never sell or share data. Full export available anytime.',
-            },
-            {
-              q: 'What’s the difference between Growth and Enterprise?',
-              a: 'Growth covers up to 15 sites with social value, bid carbon packs, PAS 2080 and accounting sync. Enterprise removes the limits and adds SSO, API access, invoice anomaly detection and the live dashboard, the features larger groups and their IT teams need.',
-            },
-            {
-              q: 'What happens after the free trial ends?',
-              a: 'Your trial expires after 30 days. You can start a paid Starter or Growth subscription to continue, or export your data and cancel.',
-            },
-          ].map((faq, i) => (
-            <div key={i} className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
-                {faq.q}
-              </h3>
-              <p className="mt-2 text-zinc-600 dark:text-zinc-400">{faq.a}</p>
-            </div>
-          ))}
+      <Section tone="light">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
+          <SectionIntro eyebrow="Questions" title="Before you choose a plan." />
+          <dl className="divide-y divide-mk-line border-y border-mk-line">
+            {FAQ.map((f) => (
+              <div key={f.q} className="py-6">
+                <dt className="text-[16px] font-semibold">{f.q}</dt>
+                <dd className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-mk-text-2">{f.a}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
-      </div>
+      </Section>
 
-      {/* CTA Section */}
-      <div className="border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-              Ready to get started?
-            </h2>
-            <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
-              Try MetricOra free for 30 days. No credit card required.
-            </p>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <Link
-                href="/sign-up"
-                className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-              >
-                Start 30-Day Trial
-              </Link>
-              <Link
-                href="/contact"
-                className="rounded-lg border border-zinc-300 px-6 py-3 font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-50 dark:hover:bg-zinc-800"
-              >
-                Talk to Sales
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      <ClosingCta title="Try it on your own data." lead="Import a year of meter, fuel and spend data, publish a snapshot and generate a report inside the trial." />
+    </>
   );
 }

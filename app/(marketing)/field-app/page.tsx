@@ -1,179 +1,143 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { AnimateIn } from "@/components/marketing/animate-in";
-import { ArrowUpRight, Smartphone } from "lucide-react";
-import { VideoBackground } from "@/components/ui/video-background";
-import { FieldAppCtaBg } from "@/components/marketing/section-backgrounds";
+import {
+  Body,
+  ButtonLink,
+  CheckList,
+  ClosingCta,
+  Eyebrow,
+  H1,
+  H3,
+  Lead,
+  ProductLoop,
+  Section,
+  SectionIntro,
+} from "@/components/marketing/kit";
 
 export const metadata: Metadata = {
-  title: "Field App - MetricOra",
-  description: "Mobile app for field workers. Capture data from job sites, works without internet, syncs automatically when online.",
+  title: "Field app",
+  description:
+    "The MetricOra field app lets site teams and subcontractors photograph tickets, delivery notes and fuel receipts, read them on the phone and submit them offline.",
+  alternates: { canonical: "/field-app" },
 };
 
-const CAPTURE_STEPS = [
-  { n: "01", title: "Receive invite link", text: "Your admin sends a unique invite link by text or email. Click it and install the app on iOS or Android. No app store account needed." },
-  { n: "02", title: "Set a PIN", text: "On first launch, create a 4 or 6 digit PIN to access the app. That's it — no username or password. Optional: unlock with your fingerprint." },
-  { n: "03", title: "Select a project", text: "See only the projects you've been invited to. Each project is separate — you'll only see work related to you." },
-  { n: "04", title: "Take a photo", text: "Choose what you're capturing (Waste Ticket, Delivery Note, Receipt, or Other). Photograph the document with your phone camera or upload from your gallery." },
-  { n: "05", title: "Review the data", text: "The app automatically reads the key numbers from your photo — weight, dates, supplier name. Check it's right and edit if needed." },
-  { n: "06", title: "Send it in (works offline)", text: "Tap submit. The data is saved on your phone first. When you connect to WiFi or mobile data, it syncs automatically to your team." },
+const STEPS = [
+  { title: "Open the invite", text: "An admin sends a time-limited invite link by text or email. Opening it on the phone signs the worker in to your organisation." },
+  { title: "Set a PIN", text: "A four-digit PIN protects the app. There is no username or password to remember." },
+  { title: "Choose the site", text: "Workers see only the sites they have been assigned to." },
+  { title: "Capture the document", text: "Waste ticket, delivery note, fuel receipt, water meter reading or other. Take a photo, pick one from the library or attach a file." },
+  { title: "Check what was read", text: "Text recognition runs on the phone and fills the form. Each field carries a confidence score, and the worker corrects anything wrong." },
+  { title: "Submit, with or without signal", text: "Submissions are saved on the phone first and sent in the background once there is a connection." },
 ];
 
-const OCR_FIELDS = [
-  { doc: "Waste ticket", fields: "Weight, waste type, date, vehicle number, location" },
-  { doc: "Delivery note", fields: "What was delivered, how much, where it went, who sent it, when it arrived" },
-  { doc: "Fuel receipt", fields: "Fuel type, amount, vehicle number, date, cost" },
-  { doc: "Other documents", fields: "Upload any document — the app will extract the text for you to categorize" },
+const FIELDS = [
+  { doc: "Waste ticket", fields: "Weight and unit, EWC code, date, vehicle registration, carrier" },
+  { doc: "Delivery note", fields: "Material, quantity, date, supplier" },
+  { doc: "Fuel receipt", fields: "Fuel type (including HVO), volume, date, vehicle registration, supplier" },
+  { doc: "Water meter reading", fields: "Meter reading and date" },
 ];
 
 export default function FieldAppPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#FAFBF8]">
-
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[70vh] flex items-end overflow-hidden bg-[#0B3B38]">
-        <VideoBackground src="/videos/hero-field-app.mp4" overlayOpacity={0.30} />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B3B38] to-transparent pointer-events-none" />
-
-        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
-          <AnimateIn>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-400/20 bg-teal-400/8 mb-8">
-              <Smartphone className="h-3.5 w-3.5 text-teal-300" />
-              <span className="text-xs text-teal-300 tracking-[0.1em] font-medium">Mobile field app</span>
-            </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[22ch]">
-              Evidence captured at the{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-emerald-300">
-                point of activity.
-              </span>
-            </h1>
-            <p className="text-base text-[#A8C4C2] leading-relaxed max-w-[48ch] mb-8">
-              Field workers photograph documents on the job site. The app automatically reads the important numbers.
-              Works without internet. Syncs automatically when you're back online.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/sign-up" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-semibold shadow-[0_0_28px_rgba(15,118,110,0.40)] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]">
-                Invite a field worker
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-              <Link href="/solutions/construction" className="inline-flex items-center px-6 py-3 rounded-full border border-[#94A3B8]/40 text-[#94A3B8] text-sm font-medium hover:border-[#94A3B8]/70 hover:text-[#F8FAFC] transition-colors">
-                Construction use cases
-              </Link>
-            </div>
-          </AnimateIn>
-        </div>
-      </section>
-
-      {/* ── Stats ────────────────────────────────────────────────────────── */}
-      <section className="bg-[#F2F4EF] border-b border-[#E5E7EB]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
-            {[
-              { stat: "Works offline", label: "No internet needed", note: "Capture data anywhere — in a basement, a vehicle, or a remote site" },
-              { stat: "Auto-sync", label: "Saves locally first", note: "Your data is saved on your phone before being sent to the team" },
-              { stat: "Smart extraction", label: "Reads documents", note: "The app reads weight, dates, and names from photos automatically" },
-            ].map((item) => (
-              <div key={item.stat} className="px-0 md:px-8 py-8 md:py-4 first:pl-0 last:pr-0">
-                <div className="text-xl font-semibold text-teal-700 mb-1">{item.stat}</div>
-                <div className="text-sm font-medium text-[#374151] mb-1">{item.label}</div>
-                <div className="text-xs text-[#6B7280]">{item.note}</div>
-              </div>
-            ))}
+    <>
+      <Section tone="dark" size="lg" video="/marketing/loops/review.mp4" poster="/marketing/loops/review.jpg" className="pt-36 sm:pt-40">
+        <div className="flex max-w-3xl flex-col gap-6">
+          <Eyebrow tone="dark">Field app</Eyebrow>
+          <H1>Evidence captured where the work happens.</H1>
+          <Lead tone="dark">
+            Site teams, subcontractors and hauliers photograph the paperwork on the day. The phone reads it, the worker checks it, and it reaches your review
+            queue even if they had no signal at the time.
+          </Lead>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/sign-up">Start a 30-day trial</ButtonLink>
+            <ButtonLink href="/solutions/construction" variant="secondary" tone="dark">
+              Main contractors
+            </ButtonLink>
           </div>
         </div>
-      </section>
+      </Section>
 
-      {/* ── Capture steps ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#FAFBF8]">
-        <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
-              <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">How it works</span>
-            </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-16">
-              From first launch to first submission.
-            </h2>
-          </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {CAPTURE_STEPS.map((step, i) => (
-              <AnimateIn key={step.n} delay={i * 0.05}>
-                <div className="rounded-2xl border border-[#E2ECEA] bg-white p-8 hover:border-teal-500/40 hover:bg-[#F4F8F7] transition-all duration-300">
-                  <div className="text-[10px] font-mono text-teal-700 mb-6 tracking-widest">{step.n}</div>
-                  <h3 className="text-base font-semibold text-[#111827] tracking-[-0.02em] mb-3">{step.title}</h3>
-                  <p className="text-sm text-[#6B7280] leading-relaxed">{step.text}</p>
-                </div>
-              </AnimateIn>
-            ))}
+      <Section tone="light">
+        <SectionIntro eyebrow="On the phone" title="From invite to first submission." lead="Designed for people who are not carbon specialists and may be working in gloves." />
+        <ol className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-3">
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+              <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
+              <H3>{s.title}</H3>
+              <Body>{s.text}</Body>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <Section tone="paper">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
+          <SectionIntro
+            eyebrow="What it reads"
+            title="Fields pulled from each document."
+            lead="Anything the phone cannot read with confidence is left for the worker to type. The original values stay with the submission."
+          />
+          <div className="overflow-x-auto rounded-[12px] border border-mk-line bg-mk-surface">
+            <table className="w-full min-w-[480px] text-left text-[15px]">
+              <thead>
+                <tr className="border-b border-mk-line font-mono text-[12px] uppercase tracking-[0.1em] text-mk-text-3">
+                  <th className="px-5 py-3 font-medium">Document</th>
+                  <th className="px-5 py-3 font-medium">Fields</th>
+                </tr>
+              </thead>
+              <tbody>
+                {FIELDS.map((f) => (
+                  <tr key={f.doc} className="border-b border-mk-line last:border-0">
+                    <td className="px-5 py-4 font-medium">{f.doc}</td>
+                    <td className="px-5 py-4 text-mk-text-2">{f.fields}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-      </section>
+      </Section>
 
-      {/* ── OCR fields ───────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#F2F4EF] border-t border-[#E5E7EB]">
-        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
-              <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">Data extraction</span>
-            </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
-              What the app reads.
-            </h2>
-            <p className="text-sm text-[#6B7280] mb-12 max-w-[55ch]">
-              The app automatically identifies and extracts structured fields from photos of your documents. If the app is unsure about a value, it flags it for you to confirm manually.
-            </p>
-          </AnimateIn>
-          <div className="border border-[#E5E7EB] divide-y divide-[#E5E7EB] rounded-2xl overflow-hidden">
-            {OCR_FIELDS.map((row) => (
-              <div key={row.doc} className="grid grid-cols-1 md:grid-cols-[180px_1fr] bg-white hover:bg-[#FAFBF8] transition-colors">
-                <div className="px-6 py-4 border-r border-[#E5E7EB]">
-                  <span className="text-sm font-medium text-[#111827]">{row.doc}</span>
-                </div>
-                <div className="px-6 py-4">
-                  <p className="text-sm text-[#6B7280]">{row.fields}</p>
-                </div>
-              </div>
-            ))}
+      <Section tone="dark" video="/marketing/loops/review.mp4" poster="/marketing/loops/review.jpg">
+        <div className="grid items-center gap-14 lg:grid-cols-2">
+          <div className="flex flex-col gap-6">
+            <SectionIntro
+              eyebrow="In the office"
+              tone="dark"
+              title="Reviewers see what the phone read."
+              lead="Each submission shows the recognised values beside the submitted ones, the worker's location for the audit trail and any comments."
+            />
+            <CheckList
+              tone="dark"
+              items={[
+                "Edited values are highlighted so a changed weight is easy to spot",
+                "Pickup and delivery postcodes give a road distance for haulage",
+                "Approving creates the activity record and keeps the link back to the evidence",
+                "Delivery notes for materials can also create an embodied carbon record for the project",
+              ]}
+            />
           </div>
+          <ProductLoop src="/marketing/loops/review.mp4" poster="/marketing/loops/review.jpg" label="Waste ticket review with recognised and submitted values" tone="dark" />
         </div>
-      </section>
+      </Section>
 
-      {/* ── Security isolation ────────────────────────────────────────────── */}
-      <section className="bg-[#FAFBF8] border-t border-[#E5E7EB]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-16">
-          <AnimateIn>
-            <div className="max-w-xl rounded-2xl border border-[#E5E7EB] bg-white p-8">
-              <h3 className="text-lg font-semibold text-[#111827] tracking-[-0.02em] mb-3">Field worker data isolation.</h3>
-              <p className="text-sm text-[#6B7280] leading-relaxed">
-                A field_worker role has zero access to org dashboards, calculations, or other users&apos; submissions.
-                They see only the reporting periods they were invited to and the status of their own submissions.
-                Access is enforced server-side on every API request, not from client-supplied headers.
-              </p>
-            </div>
-          </AnimateIn>
+      <Section tone="light">
+        <div className="grid gap-12 lg:grid-cols-2">
+          <SectionIntro
+            eyebrow="Access"
+            title="Subcontractors see their own work, nothing else."
+            lead="The field worker role can submit evidence and follow its own submissions. It has no access to dashboards, calculations or anyone else's data, and this is checked on the server for every request."
+          />
+          <CheckList
+            items={[
+              "Field workers are never counted as paid web users",
+              "Invites expire, and an admin can revoke access at any time",
+              "Location is recorded for the audit trail and only used for distances when you choose",
+            ]}
+          />
         </div>
-      </section>
+      </Section>
 
-      {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0B3B38]">
-        <FieldAppCtaBg />
-        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#F8FAFC] mb-4">
-              Put evidence capture in your team&apos;s pocket.
-            </h2>
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_32px_rgba(15,118,110,0.40)] hover:shadow-[0_0_48px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
-            >
-              Create organisation and send first invite
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </AnimateIn>
-        </div>
-      </section>
-
-    </main>
+      <ClosingCta title="Put evidence capture in every van and site cabin." lead="Invite your first field worker in the trial. There is no charge per device." />
+    </>
   );
 }

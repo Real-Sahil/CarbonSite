@@ -3,6 +3,28 @@
 @source "../app" "../components";
 
 @theme {
+  /* ── Marketing site (components/marketing/kit.tsx) ─────────────────────
+     Graphite ink for dark sections, a cool off-white for light ones and a
+     single ember accent shared with the product and the logo. Button fills
+     use accent (white text passes AA); accent text on dark uses accent-lit. */
+  --color-mk-ink:          #0B100E;
+  --color-mk-ink-2:        #131A17;
+  --color-mk-ink-3:        #1B2420;
+  --color-mk-paper:        #F3F5F2;
+  --color-mk-surface:      #FBFCFA;
+  --color-mk-line:         #DCE2DE;
+  --color-mk-line-dark:    #26302C;
+  --color-mk-text:         #0E1512;
+  --color-mk-text-2:       #414C47;
+  --color-mk-text-3:       #5F6A65;
+  --color-mk-on-dark:      #F1F4F2;
+  --color-mk-on-dark-2:    #B4BFBA;
+  --color-mk-on-dark-3:    #87938E;
+  --color-mk-accent:       #C2410C;
+  --color-mk-accent-hover: #9A3412;
+  --color-mk-accent-lit:   #FB8A4B;
+  --color-mk-accent-soft:  #FDEBDD;
+
   /* ── MetricOra design tokens — Direction 3: Data Field ────────────────── */
   /* Teal + Blue dual system — analytical, clean, enterprise BI */
 
@@ -87,17 +109,6 @@
   /* Font */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-
-  /* Marketing design tokens */
-  --color-mk-bg:        #0B3B38;
-  --color-mk-surface:   #F4F8F7;
-  --color-mk-accent:    #0F766E;
-  --color-mk-accent-hi: #0B5F59;
-  --color-mk-text:      #17201D;
-  --color-mk-muted:     #5F6F68;
-  --color-mk-faint:     #87958F;
-  --color-mk-border:    #E2ECEA;
-  --color-mk-line:      #E2ECEA;
 
   /* Border radius system (soft) */
   --radius-nav:    8px;
@@ -506,3 +517,23 @@
     color: #6B7280;
   }
 }
+
+/* Long-form marketing articles (blog posts, legal pages). */
+.mk-prose { color: var(--color-mk-text-2); font-size: 17px; line-height: 1.75; }
+.mk-prose > * + * { margin-top: 1.1em; }
+.mk-prose h2 { color: var(--color-mk-text); font-size: 26px; line-height: 1.25; letter-spacing: -0.02em; font-weight: 600; margin-top: 2em; text-wrap: balance; }
+.mk-prose h3 { color: var(--color-mk-text); font-size: 19px; line-height: 1.35; font-weight: 600; margin-top: 1.6em; }
+.mk-prose a { color: var(--color-mk-accent); text-decoration: underline; text-underline-offset: 3px; }
+.mk-prose strong { color: var(--color-mk-text); font-weight: 600; }
+.mk-prose ul, .mk-prose ol { padding-left: 1.3em; }
+.mk-prose ul { list-style: disc; }
+.mk-prose ol { list-style: decimal; }
+.mk-prose li + li { margin-top: 0.4em; }
+.mk-prose li::marker { color: var(--color-mk-accent); }
+.mk-prose pre { background: var(--color-mk-ink); color: var(--color-mk-on-dark); border-radius: 12px; padding: 18px 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 14px; line-height: 1.6; }
+.mk-prose :not(pre) > code { background: var(--color-mk-paper); border: 1px solid var(--color-mk-line); border-radius: 6px; padding: 0.1em 0.35em; font-size: 0.9em; }
+.mk-prose table { width: 100%; border-collapse: collapse; font-size: 15px; display: block; overflow-x: auto; }
+.mk-prose th, .mk-prose td { border-bottom: 1px solid var(--color-mk-line); padding: 10px 12px; text-align: left; vertical-align: top; }
+.mk-prose th { color: var(--color-mk-text); font-weight: 600; }
+.mk-prose section > * + * { margin-top: 1em; }
+.mk-prose section + section { margin-top: 2.2em; }

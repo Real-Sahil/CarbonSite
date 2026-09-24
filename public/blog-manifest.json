@@ -1,191 +1,29 @@
 [
   {
-    "slug": "emissions-data-journey",
-    "title": "From Field to Finance: The Complete Emissions Data Journey",
+    "slug": "location-and-market-based-scope-2",
+    "title": "Location-based and market-based Scope 2, with one office",
     "description": "",
-    "date": "2026-10-13",
-    "author": "CarbonSite Team",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "building-for-audit",
-    "title": "Building for Audit: How CarbonSite Ensures Immutability",
-    "description": "",
-    "date": "2026-09-29",
-    "author": "CarbonSite Team",
-    "readingTime": 9,
-    "keywords": []
-  },
-  {
-    "slug": "scope3-from-silence-to-data",
-    "title": "Scope 3 Emissions: From Supplier Silence to Collaborative Data",
-    "description": "",
-    "date": "2026-09-15",
-    "author": "CarbonSite Team",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "why-carbon-accounting-still-fails",
-    "title": "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
-    "description": "",
-    "date": "2026-09-01",
-    "author": "CarbonSite Team",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "anomaly-detection-carbon-data",
-    "title": "Anomaly Detection in Carbon Data: Catching the Outliers",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "building-for-audit-immutability",
-    "title": "Building for Audit: How CarbonSite Ensures Immutability",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "carbon-accounting-at-scale",
-    "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "open-source-carbon-accounting",
-    "title": "Open-Source Carbon Accounting: Why Transparency Matters",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "scope-3-emissions-supplier-data",
-    "title": "Scope 3 Emissions: From Supplier Silence to Collaborative Data",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "supplier-carbon-data-wrong",
-    "title": "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "why-carbon-accounting-fails",
-    "title": "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
-    "description": "",
-    "date": "2026-08-29",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "carbon-accounting-scale-dashboard",
-    "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
-    "description": "",
-    "date": "2026-02-12",
-    "author": "CarbonSite",
+    "date": "2026-09-24",
+    "author": "MetricOra",
     "readingTime": "5 min read",
     "keywords": []
   },
   {
-    "slug": "audit-immutability-carbon",
-    "title": "Building for Audit: How CarbonSite Ensures Immutability",
+    "slug": "spend-based-scope-3-sourced-factors",
+    "title": "Spend-based Scope 3 with factors you can source",
     "description": "",
-    "date": "2026-02-05",
-    "author": "CarbonSite",
+    "date": "2026-09-24",
+    "author": "MetricOra",
     "readingTime": "5 min read",
     "keywords": []
   },
   {
-    "slug": "supplier-data-quality-fix",
-    "title": "Why Your Supplier Carbon Data Is Wrong (And How to Fix It)",
+    "slug": "waste-ticket-to-reported-tonne",
+    "title": "From a waste ticket to a reported tonne",
     "description": "",
-    "date": "2024-10-08",
-    "author": "CarbonSite",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "data-journey-field-to-finance",
-    "title": "From Field to Finance: The Complete Emissions Data Journey",
-    "description": "",
-    "date": "2024-10-05",
-    "author": "CarbonSite",
-    "readingTime": 9,
-    "keywords": []
-  },
-  {
-    "slug": "performance-at-scale",
-    "title": "Carbon Accounting at Scale: Why Your Dashboard Feels Slow",
-    "description": "",
-    "date": "2024-10-02",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "audit-immutability-architecture",
-    "title": "Building for Audit: How CarbonSite Ensures Immutability",
-    "description": "",
-    "date": "2024-09-28",
-    "author": "CarbonSite",
-    "readingTime": 8,
-    "keywords": []
-  },
-  {
-    "slug": "anomaly-detection-carbon",
-    "title": "Anomaly Detection in Carbon Data: Catching the Outliers",
-    "description": "",
-    "date": "2024-09-25",
-    "author": "CarbonSite",
-    "readingTime": 6,
-    "keywords": []
-  },
-  {
-    "slug": "scope3-supplier-collaboration",
-    "title": "Scope 3 Emissions: From Supplier Silence to Collaborative Data",
-    "description": "",
-    "date": "2024-09-22",
-    "author": "CarbonSite",
-    "readingTime": 9,
-    "keywords": []
-  },
-  {
-    "slug": "open-source-transparency",
-    "title": "Open-Source Carbon Accounting: Why Transparency Matters",
-    "description": "",
-    "date": "2024-09-18",
-    "author": "CarbonSite",
-    "readingTime": 7,
-    "keywords": []
-  },
-  {
-    "slug": "field-workers-carbon-accounting",
-    "title": "Why Carbon Accounting Still Fails: A Field Worker's Perspective",
-    "description": "",
-    "date": "2024-09-15",
-    "author": "CarbonSite",
-    "readingTime": 8,
+    "date": "2026-09-24",
+    "author": "MetricOra",
+    "readingTime": "5 min read",
     "keywords": []
   }
 ]

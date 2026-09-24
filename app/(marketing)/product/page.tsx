@@ -1,174 +1,198 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { AnimateIn } from "@/components/marketing/animate-in";
-import { ScrollReveal } from "@/components/scroll-reveal";
-import { ScopeComparison } from "@/components/scope-comparison";
-import { ArrowUpRight, Layers } from "lucide-react";
-import { VideoBackground } from "@/components/ui/video-background";
-import { ProductCtaBg } from "@/components/marketing/section-backgrounds";
+import type { ReactNode } from "react";
+import {
+  ButtonLink,
+  CheckList,
+  ClosingCta,
+  Eyebrow,
+  H1,
+  H3,
+  Lead,
+  ProductLoop,
+  ProductShot,
+  Section,
+  SectionIntro,
+  TextLink,
+  type Tone,
+} from "@/components/marketing/kit";
 
 export const metadata: Metadata = {
-  title: "Product - MetricOra",
-  description: "Platform overview: field capture, import centre, review queue, calculation engine, snapshot publishing, and audit-ready reports.",
+  title: "Platform",
+  description:
+    "Evidence capture, carbon accounting, reporting and assurance, compliance, targets and supply-chain modules in one MetricOra dataset.",
+  alternates: { canonical: "/product" },
 };
 
-const STAGES = [
-  {
-    num: "01",
-    title: "Collect and import",
-    text: "Field workers use the mobile app to submit data from job sites. They can also work without internet — data saves on their phone and syncs later. Desktop users can upload spreadsheets (CSV or Excel). Bad data is flagged and can be fixed before it enters your system.",
-    tags: ["Mobile app", "Upload spreadsheets", "Auto-check for errors", "Offline ready"],
-  },
-  {
-    num: "02",
-    title: "Review and approve",
-    text: "All submissions go to a review queue. Your team checks the data, categorizes it, leaves comments, and approves or requests changes. Once approved, it becomes part of your official record.",
-    tags: ["Review queue", "View evidence", "Comment threads", "Full history"],
-  },
-  {
-    num: "03",
-    title: "Calculate emissions",
-    text: "Run a calculation for your reporting period. The system converts everything to standard units and calculates emissions using the latest standards (DEFRA 2025 and EPA). Every result includes which factors were used and when.",
-    tags: ["Latest standards", "Automatic conversion", "Full traceability", "Multiple scopes"],
-  },
-  {
-    num: "04",
-    title: "Lock in your results",
-    text: "Publish your calculation to lock it in. Once published, the numbers can't be accidentally changed. You can publish multiple versions, so your previous results are always available.",
-    tags: ["Locked records", "Version history", "No accidental changes", "Previous records"],
-  },
-  {
-    num: "05",
-    title: "Generate reports",
-    text: "Create branded reports in PDF or Excel for sharing with your team, board, or auditors. Every number in the report traces back to where it came from. You control who can see what.",
-    tags: ["PDF and Excel", "Full traceability", "Share easily", "Audit ready"],
-  },
-];
+function Feature({
+  id,
+  tone,
+  eyebrow,
+  title,
+  lead,
+  points,
+  media,
+  link,
+  flip,
+  video,
+}: {
+  id: string;
+  tone: Tone;
+  eyebrow: string;
+  title: string;
+  lead: string;
+  points: ReactNode[];
+  media: ReactNode;
+  link?: { href: string; label: string };
+  flip?: boolean;
+  video?: string;
+}) {
+  return (
+    <Section id={id} tone={tone} video={video} poster={video?.replace(".mp4", ".jpg")}>
+      <div className="grid items-center gap-14 lg:grid-cols-2">
+        <div className={flip ? "lg:order-2" : undefined}>
+          <div className="flex flex-col gap-6">
+            <SectionIntro eyebrow={eyebrow} title={title} lead={lead} tone={tone} />
+            <CheckList items={points} tone={tone} />
+            {link ? (
+              <TextLink href={link.href} tone={tone}>
+                {link.label}
+              </TextLink>
+            ) : null}
+          </div>
+        </div>
+        <div className={flip ? "lg:order-1" : undefined}>{media}</div>
+      </div>
+    </Section>
+  );
+}
 
-const ROLES = [
-  { role: "Admin", can: "Full access to settings, team, and all data. Manage who can do what." },
-  { role: "Editor", can: "Create and update records, run calculations, publish results, and generate reports." },
-  { role: "Reviewer", can: "Review and approve field submissions. Comment and ask questions." },
-  { role: "Viewer", can: "See records, dashboards, and published reports. Can't make changes." },
-  { role: "Auditor", can: "View only completed periods and final reports. Can't see work in progress." },
-  { role: "Field Worker", can: "Submit data from the job site. See only their own submissions and status." },
+const OPERATIONS = [
+  { title: "Supplier data requests", text: "Send a request by category and period. Suppliers answer in a portal without a full account, and you accept the answer before it becomes a record." },
+  { title: "Spend-based Scope 3", text: "Priced by the supplier's industry code against Defra UK multipliers, EPA USEEIO or ADEME ratios, converted at the ECB rate for the date and deflated to the factor's price year." },
+  { title: "Social value (TOMs)", text: "National TOMs commitments against contracts and periods, with delivery logged as activities." },
+  { title: "Embodied carbon and PAS 2080", text: "Material records from ICE factors or supplier EPDs, carbon management plans per project and a reduction opportunity log." },
+  { title: "Plant and telematics", text: "Plant register and ISO 15143-3 feeds for hours, idling and fuel, reconciled against approved diesel and HVO records." },
+  { title: "Environmental registers", text: "Permits, incidents, legal register, aspects and impacts, a waste duty-of-care register, water and biodiversity net gain." },
 ];
 
 export default function ProductPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#FAFBF8]">
-
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[60vh] flex items-end overflow-hidden bg-[#0B3B38]">
-        <VideoBackground src="/videos/hero-product.mp4" overlayOpacity={0.30} />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B3B38] to-transparent pointer-events-none" />
-
-        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
-          <AnimateIn>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-400/20 bg-teal-400/8 mb-8">
-              <Layers className="h-3.5 w-3.5 text-teal-300" />
-              <span className="text-xs text-teal-300 tracking-[0.1em] font-medium">Platform overview</span>
-            </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[20ch]">
-              One platform,{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-emerald-300">
-                end to end.
-              </span>
-            </h1>
-            <p className="text-base text-[#A8C4C2] leading-relaxed max-w-[50ch]">
-              Five stages from field evidence to audit-ready report. Each stage is purpose-built, traceable, and role-controlled.
-            </p>
-          </AnimateIn>
-        </div>
-      </section>
-
-      {/* ── Stages ───────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#F2F4EF]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <div className="border border-[#E5E7EB] divide-y divide-[#E5E7EB] rounded-2xl overflow-hidden">
-            {STAGES.map((stage, i) => (
-              <ScrollReveal key={stage.num} direction="up" delay={i * 0.08} duration={0.7}>
-                <div className="bg-white hover:bg-[#FAFBF8] transition-colors p-8 md:p-10 grid grid-cols-1 md:grid-cols-[80px_1fr] gap-6">
-                  <div className="text-[2.5rem] font-semibold bg-clip-text text-transparent bg-gradient-to-br from-teal-600/40 to-teal-600/10 tracking-[-0.05em] leading-none font-mono">
-                    {stage.num}
-                  </div>
-                  <div>
-                    <h2 className="text-base font-semibold text-[#111827] tracking-[-0.02em] mb-3">{stage.title}</h2>
-                    <p className="text-sm text-[#6B7280] leading-relaxed mb-5 max-w-[65ch]">{stage.text}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {stage.tags.map((tag) => (
-                        <span key={tag} className="text-[11px] px-2.5 py-1 rounded-full border border-teal-500/20 text-teal-700 bg-teal-50 tracking-wide">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
+    <>
+      <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-36 sm:pt-40">
+        <div className="flex max-w-3xl flex-col gap-6">
+          <Eyebrow tone="dark">Platform</Eyebrow>
+          <H1>One dataset from site evidence to board report.</H1>
+          <Lead tone="dark">
+            Evidence, calculation, reporting and compliance share the same records, so a figure in a tender answer, an SECR disclosure and the dashboard all
+            come from one published snapshot.
+          </Lead>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/sign-up">Start a 30-day trial</ButtonLink>
+            <ButtonLink href="/pricing" variant="secondary" tone="dark">
+              See pricing
+            </ButtonLink>
           </div>
         </div>
-      </section>
+      </Section>
 
-      {/* ── Role access control ──────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#FAFBF8]">
-        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-6 h-px bg-gradient-to-r from-teal-600 to-emerald-500" />
-              <span className="text-[10px] font-mono text-teal-700 uppercase tracking-[0.14em]">Access control</span>
+      <Feature
+        id="evidence"
+        tone="light"
+        eyebrow="Evidence capture"
+        title="Evidence checked before it counts."
+        lead="Field teams submit from the app, office teams import files, and nothing becomes an activity record until someone has reviewed it."
+        points={[
+          "Field app for tickets, delivery notes and fuel receipts, with on-device text recognition and an offline queue",
+          "CSV and Excel imports with row-level errors, duplicate warnings and no partial commits",
+          "Review screen shows what the phone read next to what was submitted, so edited values stand out",
+          "Claim, query or approve, with comments kept against the submission",
+        ]}
+        media={<ProductLoop src="/marketing/loops/review.mp4" poster="/marketing/loops/review.jpg" label="Reviewing a waste ticket submitted from site" />}
+        link={{ href: "/field-app", label: "About the field app" }}
+      />
+
+      <Feature
+        id="carbon"
+        tone="dark"
+        video="/marketing/loops/calc.mp4"
+        eyebrow="Carbon accounting"
+        title="Scope 1, 2 and 3 with named factors."
+        lead="Each calculation run uses one factor library and one methodology version, and stores the formula for every record."
+        points={[
+          "DEFRA 2025.2 and 2026.1, US EPA, EPA USEEIO 1.3, ADEME Base Carbone and Defra UK spend multipliers",
+          "Your own organisation factors are matched first, then the run's library",
+          "Location- and market-based Scope 2, with REGOs, PPAs, green tariffs and residual mix in GHG Protocol order",
+          "HVO and biomass handled with biogenic CO₂ kept outside the inventory",
+          "Monte Carlo uncertainty range and data-quality scores for every run",
+        ]}
+        media={<ProductLoop src="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" label="Calculation run detail" tone="dark" />}
+        link={{ href: "/methodology", label: "Read the methodology" }}
+        flip
+      />
+
+      <Feature
+        id="reporting"
+        tone="light"
+        eyebrow="Reporting and assurance"
+        title="Publish once, then report from the frozen figures."
+        lead="A published snapshot never changes. Recalculating creates a new version, and the dashboard tells you when live data has moved away from the last one."
+        points={[
+          "PDF reports with a CSV calculation trail, a SHA-256 checksum and a code to verify the report online",
+          "Hash-chained audit trail of imports, reviews, calculations, publications and downloads",
+          "Assurance readiness score and an evidence export for your verifier",
+          "Factor licence attribution printed on every report",
+        ]}
+        media={<ProductShot src="/marketing/screens/reports.jpg" alt="Reports page with published snapshots and generated reports" width={2400} height={1500} />}
+      />
+
+      <Feature
+        id="compliance"
+        tone="paper"
+        eyebrow="Compliance"
+        title="Know what each framework still needs."
+        lead="The crosswalk maps your data to each framework's disclosure points and marks what is covered, partial or missing."
+        points={[
+          "SECR, ESRS E1, GHG Protocol, GRI 305, IFRS S2 and CDP from the same dataset",
+          "ESRS E1 gap analysis with the next action for each disclosure",
+          "Regulatory calendar covering SBTi, ESOS and CSRD dates",
+          "Bid carbon pack with a PPN 006 Carbon Reduction Plan for public tenders",
+        ]}
+        media={<ProductShot src="/marketing/screens/esrs-e1.jpg" alt="ESRS E1 gap analysis with coverage and actions" width={2400} height={1500} />}
+        flip
+      />
+
+      <Feature
+        id="planning"
+        tone="light"
+        eyebrow="Targets and planning"
+        title="A base year you can defend, and a plan to beat it."
+        lead="Set the base year and recalculation threshold, then plan reductions against it with costs in pounds per tonne."
+        points={[
+          "Base year with structural changes and a restatement register",
+          "Decarbonisation pathway against a 1.5°C benchmark and your own target",
+          "Transition plan checklist aligned to ESRS E1-1 and the UK Transition Plan Taskforce",
+          "Internal carbon price applied to appraisals and the abatement cost curve",
+        ]}
+        media={<ProductShot src="/marketing/screens/base-year.jpg" alt="Base year and recalculation policy page" width={2400} height={1500} />}
+      />
+
+      <Section id="operations" tone="paper">
+        <SectionIntro
+          eyebrow="Supply chain and site operations"
+          title="The rest of what a contractor reports on."
+          lead="These modules sit on the same organisation, sites and people, so there is one place to manage access and one audit trail."
+        />
+        <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-3">
+          {OPERATIONS.map((o) => (
+            <div key={o.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+              <H3>{o.title}</H3>
+              <p className="text-[15px] leading-relaxed text-mk-text-2">{o.text}</p>
             </div>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-3">
-              Six roles, enforced server-side.
-            </h2>
-            <p className="text-sm text-[#6B7280] mb-12 max-w-[55ch]">
-              Role is checked on the organisation membership record, not from client-supplied headers or tokens.
-            </p>
-          </AnimateIn>
-          <div className="border border-[#E5E7EB] divide-y divide-[#E5E7EB] rounded-2xl overflow-hidden">
-            {ROLES.map((r) => (
-              <div key={r.role} className="grid grid-cols-1 md:grid-cols-[180px_1fr] hover:bg-[#F9FAFB] transition-colors">
-                <div className="px-6 py-4 border-r border-[#E5E7EB]">
-                  <code className="text-xs font-mono text-teal-700">{r.role}</code>
-                </div>
-                <div className="px-6 py-4">
-                  <p className="text-sm text-[#6B7280]">{r.can}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
-      </section>
+      </Section>
 
-      {/* ── Scope Comparison ─────────────────────────────────────────────── */}
-      <section className="bg-[#F2F4EF] border-t border-[#E5E7EB] py-24 px-6">
-        <div className="mx-auto max-w-7xl">
-          <ScopeComparison />
-        </div>
-      </section>
-
-      {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0B3B38]">
-        <ProductCtaBg />
-        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#F8FAFC] mb-4">
-              Start your first reporting period.
-            </h2>
-            <p className="text-base text-[#A8C4C2] mb-8 max-w-[45ch]">
-              Create an organisation, add facilities, invite your team. First calculation in under an hour.
-            </p>
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-white hover:text-[#0B3B38] text-white text-sm font-medium shadow-[0_0_32px_rgba(15,118,110,0.40)] hover:shadow-[0_0_48px_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
-            >
-              Create organisation
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </AnimateIn>
-        </div>
-      </section>
-
-    </main>
+      <ClosingCta title="See it with your own records." lead="The trial includes every Growth feature. Import a year of data and publish your first snapshot." />
+    </>
   );
 }

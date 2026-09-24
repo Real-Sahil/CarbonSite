@@ -42,6 +42,33 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
     ],
   },
+  // Old marketing URLs that were removed or renamed, and links still in the
+  // wild (old blog slugs, the comparison and case study pages).
+  async redirects() {
+    const oldPosts = [
+      "anomaly-detection-carbon-data", "anomaly-detection-carbon", "audit-immutability-architecture", "audit-immutability-carbon",
+      "building-for-audit-immutability", "building-for-audit", "carbon-accounting-at-scale", "carbon-accounting-scale-dashboard",
+      "data-journey-field-to-finance", "emissions-data-journey", "field-workers-carbon-accounting", "open-source-carbon-accounting",
+      "open-source-transparency", "performance-at-scale", "scope-3-emissions-supplier-data", "scope3-from-silence-to-data",
+      "scope3-supplier-collaboration", "supplier-carbon-data-wrong", "supplier-data-quality-fix", "why-carbon-accounting-fails",
+      "why-carbon-accounting-still-fails",
+    ];
+    return [
+      { source: "/calculation", destination: "/methodology", permanent: true },
+      { source: "/comparison", destination: "/pricing", permanent: true },
+      { source: "/public/comparison", destination: "/pricing", permanent: true },
+      { source: "/case-studies", destination: "/contact", permanent: true },
+      { source: "/case-studies/:slug*", destination: "/contact", permanent: true },
+      { source: "/demo", destination: "/contact", permanent: true },
+      { source: "/start", destination: "/sign-up", permanent: true },
+      { source: "/about", destination: "/contact", permanent: true },
+      { source: "/features", destination: "/product", permanent: true },
+      { source: "/solutions/field-app", destination: "/field-app", permanent: true },
+      { source: "/solutions/supply-chain", destination: "/product#operations", permanent: true },
+      { source: "/docs/:path*", destination: "/developer", permanent: true },
+      ...oldPosts.map((slug) => ({ source: `/blog/${slug}`, destination: "/blog", permanent: true })),
+    ];
+  },
   async headers() {
     return [
       // Prevent browser and CDN caching of all API routes.

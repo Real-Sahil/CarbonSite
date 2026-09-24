@@ -1,80 +1,73 @@
 import Link from "next/link";
-import { Leaf } from "lucide-react";
+import { LogoMark } from "@/components/ui/logo";
 
 const COLS = [
   {
     heading: "Platform",
     links: [
-      { href: "/product", label: "Product overview" },
-      { href: "/solutions/construction", label: "Construction" },
-      { href: "/solutions/waste-haulage", label: "Waste and haulage" },
+      { href: "/product", label: "Platform overview" },
       { href: "/field-app", label: "Field app" },
+      { href: "/pricing", label: "Pricing" },
+      { href: "/methodology", label: "Methodology" },
+    ],
+  },
+  {
+    heading: "Solutions",
+    links: [
+      { href: "/solutions/construction", label: "Main contractors" },
+      { href: "/solutions/waste-haulage", label: "Waste and haulage" },
+      { href: "/solutions/public-sector", label: "Public-sector suppliers" },
     ],
   },
   {
     heading: "Company",
     links: [
       { href: "/security", label: "Security" },
-      { href: "/resources", label: "Resources" },
+      { href: "/blog", label: "Blog" },
+      { href: "/resources", label: "Guides" },
+      { href: "/developer", label: "Developers" },
       { href: "/contact", label: "Contact" },
-      { href: "/sign-in", label: "Sign in" },
     ],
   },
   {
     heading: "Legal",
     links: [
-      { href: "/privacy", label: "Privacy Policy" },
-      { href: "/terms", label: "Terms of Service" },
-      { href: "/cookies", label: "Cookie Policy" },
-      { href: "/dpa", label: "DPA" },
-      { href: "/acceptable-use", label: "Acceptable Use" },
-      { href: "/eula", label: "Mobile EULA" },
-    ],
-  },
-  {
-    heading: "Standards",
-    links: [
-      { href: "https://ghgprotocol.org", label: "GHG Protocol", external: true },
-      { href: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting", label: "DEFRA 2025", external: true },
-      { href: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub", label: "EPA GHG Hub", external: true },
-      { href: "https://www.ipcc.ch/report/ar6/wg1/", label: "IPCC AR6", external: true },
+      { href: "/privacy", label: "Privacy policy" },
+      { href: "/terms", label: "Terms of service" },
+      { href: "/cookies", label: "Cookie policy" },
+      { href: "/dpa", label: "Data processing" },
+      { href: "/acceptable-use", label: "Acceptable use" },
+      { href: "/eula", label: "Mobile app licence" },
     ],
   },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="relative overflow-hidden bg-[#0B3B38] border-t border-white/10">
-      {/* Ambient mesh */}
-      <div className="absolute bottom-0 left-0 w-[500px] h-[300px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(15,118,110,0.15)_0%,transparent_70%)] pointer-events-none" />
-      <div className="absolute top-0 right-1/3 w-[400px] h-[250px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(21,128,61,0.08)_0%,transparent_70%)] pointer-events-none" />
-
-      <div className="relative mx-auto max-w-7xl px-6 md:px-10 pt-16 pb-10">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-14">
-          {/* Brand */}
-          <div>
-            <Link href="/" className="flex items-center gap-2 mb-4 w-fit">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#0F766E] shadow-[0_0_12px_rgba(15,118,110,0.35)]">
-                <Leaf className="h-3.5 w-3.5 text-white" />
-              </span>
-              <span className="text-[#F8FAFC] font-semibold text-[14px] tracking-tight">MetricOra</span>
+    <footer className="border-t border-white/10 bg-mk-ink text-mk-on-dark">
+      <div className="mx-auto w-full max-w-[1200px] px-5 pb-10 pt-16 sm:px-8">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-6">
+          <div className="col-span-2">
+            <Link href="/" className="flex w-fit items-center gap-2 text-[15px] font-semibold tracking-tight">
+              <LogoMark size={24} />
+              MetricOra
             </Link>
-            <p className="text-sm text-[#94A3B8] leading-relaxed max-w-[200px]">
-              GHG emissions tracking for construction and supply chains. DEFRA 2025. GHG Protocol Corporate Standard.
+            <p className="mt-4 max-w-[34ch] text-[14px] leading-relaxed text-mk-on-dark-2">
+              Evidence, carbon accounting and reporting for UK contractors and their supply chains.
+            </p>
+            <p className="mt-4 text-[14px] text-mk-on-dark-2">
+              <a href="mailto:hello@metricora.co.uk" className="hover:text-mk-on-dark">
+                hello@metricora.co.uk
+              </a>
             </p>
           </div>
-
           {COLS.map((col) => (
             <div key={col.heading}>
-              <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-[0.14em] mb-4">{col.heading}</div>
-              <ul className="flex flex-col gap-2.5">
+              <p className="mb-4 font-mono text-[12px] uppercase tracking-[0.12em] text-mk-on-dark-3">{col.heading}</p>
+              <ul className="grid gap-2.5">
                 {col.links.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
-                      {...("external" in link && link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                    >
+                    <Link href={link.href} className="text-[14px] text-mk-on-dark-2 transition-colors hover:text-mk-on-dark">
                       {link.label}
                     </Link>
                   </li>
@@ -83,18 +76,9 @@ export function SiteFooter() {
             </div>
           ))}
         </div>
-
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <span className="text-xs text-[#64748B]">
-            &copy; {new Date().getFullYear()} MetricOra Ltd. Calculations follow GHG Protocol Corporate Standard, IPCC AR6 GWPs.
-          </span>
-          <div className="flex items-center gap-2 flex-wrap">
-            {["GHG Protocol", "DEFRA 2025", "IPCC AR6", "SECR"].map((s) => (
-              <span key={s} className="text-[10px] text-teal-300/60 border border-teal-400/20 rounded-full px-2.5 py-0.5 tracking-wide">
-                {s}
-              </span>
-            ))}
-          </div>
+        <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-8 text-[13px] text-mk-on-dark-3 md:flex-row md:items-center md:justify-between">
+          <span>&copy; {new Date().getFullYear()} MetricOra Ltd.</span>
+          <span>Emission factors: DESNZ/DEFRA (Open Government Licence v3.0), US EPA, ADEME Base Carbone (Licence Ouverte 2.0).</span>
         </div>
       </div>
     </footer>

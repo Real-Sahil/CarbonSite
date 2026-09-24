@@ -1,58 +1,38 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
+import { getPosts } from "@/lib/blog/posts";
 
-// Import blog post utility if available
-const BLOG_POSTS = [
-  { slug: 'field-workers-carbon-accounting', date: '2026-01-15' },
-  { slug: 'open-source-transparency', date: '2026-01-22' },
-  { slug: 'scope3-supplier-collaboration', date: '2026-01-29' },
-  { slug: 'anomaly-detection-carbon', date: '2026-02-05' },
-  { slug: 'audit-immutability-architecture', date: '2026-02-12' },
-  { slug: 'performance-at-scale', date: '2026-02-19' },
-  { slug: 'data-journey-field-to-finance', date: '2026-02-26' },
-  { slug: 'supplier-data-quality-fix', date: '2026-03-05' },
-];
+const BASE = "https://www.metricora.co.uk";
 
-const CASE_STUDIES = [
-  { slug: 'logistics-waste-example', date: '2026-03-01' },
-];
-
-const STATIC_PAGES = [
-  { url: '', changefreq: 'weekly', priority: 1.0 },
-  { url: '/pricing', changefreq: 'monthly', priority: 0.9 },
-  { url: '/comparison', changefreq: 'monthly', priority: 0.9 },
-  { url: '/blog', changefreq: 'daily', priority: 0.8 },
-  { url: '/case-studies', changefreq: 'monthly', priority: 0.8 },
-  { url: '/features', changefreq: 'monthly', priority: 0.7 },
-  { url: '/about', changefreq: 'monthly', priority: 0.7 },
-  { url: '/contact', changefreq: 'yearly', priority: 0.6 },
+// Every public marketing page. Keep in step with app/(marketing).
+const PAGES: { path: string; priority: number; freq: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
+  { path: "", priority: 1, freq: "weekly" },
+  { path: "/product", priority: 0.9, freq: "monthly" },
+  { path: "/pricing", priority: 0.9, freq: "monthly" },
+  { path: "/field-app", priority: 0.8, freq: "monthly" },
+  { path: "/solutions/construction", priority: 0.8, freq: "monthly" },
+  { path: "/solutions/waste-haulage", priority: 0.8, freq: "monthly" },
+  { path: "/solutions/public-sector", priority: 0.8, freq: "monthly" },
+  { path: "/methodology", priority: 0.7, freq: "monthly" },
+  { path: "/security", priority: 0.7, freq: "monthly" },
+  { path: "/resources", priority: 0.6, freq: "monthly" },
+  { path: "/developer", priority: 0.5, freq: "monthly" },
+  { path: "/blog", priority: 0.6, freq: "weekly" },
+  { path: "/contact", priority: 0.6, freq: "yearly" },
+  { path: "/privacy", priority: 0.2, freq: "yearly" },
+  { path: "/terms", priority: 0.2, freq: "yearly" },
+  { path: "/cookies", priority: 0.2, freq: "yearly" },
+  { path: "/dpa", priority: 0.2, freq: "yearly" },
+  { path: "/acceptable-use", priority: 0.2, freq: "yearly" },
+  { path: "/eula", priority: 0.2, freq: "yearly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://metricora.co.uk';
-
-  // Static pages
-  const staticEntries = STATIC_PAGES.map(page => ({
-    url: `${baseUrl}${page.url}`,
-    lastModified: new Date().toISOString().split('T')[0],
-    changeFrequency: page.changefreq as 'weekly' | 'monthly' | 'daily' | 'yearly',
-    priority: page.priority,
-  }));
-
-  // Blog posts
-  const blogEntries = BLOG_POSTS.map(post => ({
-    url: `${baseUrl}/blog/${post.slug}`,
+  const pages = PAGES.map((p) => ({ url: `${BASE}${p.path}`, changeFrequency: p.freq, priority: p.priority }));
+  const posts = getPosts().map((post) => ({
+    url: `${BASE}/blog/${post.slug}`,
     lastModified: post.date,
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
+    changeFrequency: "yearly" as const,
+    priority: 0.5,
   }));
-
-  // Case studies
-  const caseStudyEntries = CASE_STUDIES.map(study => ({
-    url: `${baseUrl}/case-studies/${study.slug}`,
-    lastModified: study.date,
-    changeFrequency: 'monthly' as const,
-    priority: 0.75,
-  }));
-
-  return [...staticEntries, ...blogEntries, ...caseStudyEntries];
+  return [...pages, ...posts];
 }

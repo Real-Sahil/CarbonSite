@@ -1,0 +1,43 @@
+---
+title: "From a waste ticket to a reported tonne"
+excerpt: "What happens to a skip ticket between the site and the Scope 3 line of a report, and where each step is recorded."
+date: "2026-09-24"
+author: "MetricOra"
+tags: ["Waste", "Field capture", "Scope 3"]
+---
+
+A waste ticket is one of the most common pieces of carbon evidence on a construction site, and one of the easiest to lose. This article follows one through MetricOra, using the demo organisation we use for product screenshots.
+
+## 1. Capture on site
+
+A driver or site manager opens the MetricOra field app, chooses the site and takes a photo of the ticket. Text recognition runs on the phone, not on a server, and fills in the weight, EWC code, date, vehicle registration and carrier where it can read them. Each value carries a confidence score, and the worker corrects anything that is wrong before submitting.
+
+If there is no signal, the submission is saved on the phone and sent in the background later. Nothing is lost when the phone goes back in a pocket.
+
+## 2. Review in the office
+
+The submission lands in the review queue. The reviewer sees what the phone read next to what was submitted. In our demo data, one ticket was read as 6.7 tonnes but submitted as 6.1 tonnes. The reviewer did not approve it. They sent it back with a note asking for the net weight, and the note stays on the record.
+
+Approving a ticket does three things:
+
+- sets the emission category. Waste your own operations generate is Scope 3, category 5.
+- creates an activity record linked back to the submission and its evidence.
+- writes the decision to the audit trail.
+
+## 3. Calculation
+
+A calculation run uses one factor library and one methodology version for the whole period. For a mixed construction and demolition ticket in 2025, the stored result reads:
+
+```
+166.5 tonne × 4.68568 kg CO2e/tonne = 780.17 kg CO2e
+```
+
+The run also records why that factor was chosen (unit, country and activity type all matched) and any conversion it made, in this case from kilograms to tonnes. Those notes appear on the run before anything is published, so a reviewer can see them.
+
+## 4. Publication and reporting
+
+Publishing freezes the run as a versioned snapshot. The dashboard and every report for the period read from that snapshot, and the report comes with a CSV that lists each record, factor and formula. If a ticket turns up later, it goes into a new run and a new snapshot version. The published one does not change.
+
+## What this gives you
+
+When an auditor asks where a waste figure came from, you open the record. It shows the formula, the factor library, the reviewer's decision and the photo the driver took. That is the point of the whole chain: each number keeps its evidence attached.

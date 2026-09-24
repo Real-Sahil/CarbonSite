@@ -1,22 +1,17 @@
-export const metadata = {
-  title: "Terms of Service | MetricOra",
+import type { Metadata } from "next";
+import { LegalShell } from "@/components/marketing/legal-shell";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  alternates: { canonical: "/terms" },
   description: "Legal terms governing your use of MetricOra.",
 };
 
 export default function TermsPage() {
   return (
-    <div className="bg-white py-12 sm:py-16 lg:py-20">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900">Terms of Service</h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Last updated: August 2026
-          </p>
-        </div>
-
-        <div className="prose prose-lg max-w-none space-y-8 text-gray-700">
+    <LegalShell title="Terms of Service" updated="Last updated: August 2026">
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               1. Acceptance of Terms
             </h2>
             <p>
@@ -27,7 +22,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               2. License & Use Restrictions
             </h2>
             <p>
@@ -35,8 +30,8 @@ export default function TermsPage() {
               license to use the platform for calculating and tracking greenhouse
               gas (GHG) emissions in accordance with this agreement.
             </p>
-            <p className="mt-4">You agree NOT to:</p>
-            <ul className="list-inside list-disc space-y-2">
+            <p>You agree NOT to:</p>
+            <ul>
               <li>
                 Reverse engineer, decompile, or attempt to discover the source code
               </li>
@@ -61,7 +56,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               3. Accuracy of Data
             </h2>
             <p>
@@ -70,7 +65,7 @@ export default function TermsPage() {
               does not independently verify emissions calculations or the validity
               of underlying activity data. You represent that:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 All activity records, quantities, and supporting evidence are true
                 and complete to the best of your knowledge
@@ -87,14 +82,14 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               4. Calculation Methodology & Disclaimers
             </h2>
             <p>
               MetricOra uses published emission factors (DEFRA 2025, EPA GHG Hub
               2025, SustainMetrics) and the GHG Protocol framework. However:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 <strong>No Warranty:</strong> Calculations are provided "as-is"
                 without warranty of accuracy, completeness, or fitness for a
@@ -122,7 +117,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               5. Intellectual Property Rights
             </h2>
             <p>
@@ -130,7 +125,7 @@ export default function TermsPage() {
               software, features, and functionality. Your data and uploaded evidence
               files remain your property; we use them only to provide the service.
             </p>
-            <p className="mt-4">
+            <p>
               You grant us a limited license to store, process, and display your
               data within your organization and to authorized auditors/regulators
               as required by law.
@@ -138,7 +133,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               6. Limitation of Liability
             </h2>
             <p>
@@ -148,7 +143,7 @@ export default function TermsPage() {
                 LIABLE FOR:
               </strong>
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>
                 Indirect, incidental, special, consequential, or punitive damages
               </li>
@@ -166,21 +161,21 @@ export default function TermsPage() {
                 Third-party claims related to data you provided
               </li>
             </ul>
-            <p className="mt-4">
+            <p>
               Our total liability for any claim arising under this agreement shall
               not exceed the fees paid by you in the 12 months preceding the claim.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               7. Indemnification
             </h2>
             <p>
               You agree to defend, indemnify, and hold harmless MetricOra from
               any claims, damages, or costs (including legal fees) arising from:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>Your use or misuse of the platform</li>
               <li>Data you upload or activities you record</li>
               <li>Your violation of these terms or applicable laws</li>
@@ -191,7 +186,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               8. Service Availability & Uptime
             </h2>
             <p>
@@ -199,7 +194,7 @@ export default function TermsPage() {
               uninterrupted service. Scheduled maintenance, unforeseeable outages,
               or third-party service interruptions may affect availability.
             </p>
-            <p className="mt-4">
+            <p>
               In the event of an outage affecting data access for more than 24
               hours, we will use commercially reasonable efforts to restore service
               and provide a status update.
@@ -207,7 +202,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               9. Data Loss & Backup Responsibility
             </h2>
             <p>
@@ -215,7 +210,7 @@ export default function TermsPage() {
               for maintaining independent copies of critical data. We are not liable
               for data loss due to:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>Your deletion or modification of records</li>
               <li>Service outages or data center incidents</li>
               <li>Accidental or intentional misuse</li>
@@ -223,14 +218,14 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               10. Account Security & Passwords
             </h2>
             <p>
               You are responsible for maintaining the confidentiality of your login
               credentials. You agree to:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>Use a strong, unique password</li>
               <li>Enable two-factor authentication when available</li>
               <li>
@@ -238,21 +233,21 @@ export default function TermsPage() {
               </li>
               <li>Not share credentials with unauthorized parties</li>
             </ul>
-            <p className="mt-4">
+            <p>
               We are not liable for unauthorized access resulting from your failure
               to secure your credentials.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               11. Termination
             </h2>
             <p>
               Either party may terminate this agreement at any time with 30 days
               written notice. Upon termination:
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul>
               <li>Your access to the platform is revoked</li>
               <li>
                 Your data will be retained per our retention schedule (see Privacy
@@ -263,7 +258,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               12. Governing Law & Jurisdiction
             </h2>
             <p>
@@ -274,7 +269,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               13. Entire Agreement
             </h2>
             <p>
@@ -286,7 +281,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2>
               14. Severability
             </h2>
             <p>
@@ -297,19 +292,17 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900">15. Contact</h2>
+            <h2>15. Contact</h2>
             <p>
               Questions about these terms? Email{" "}
               <a
                 href="mailto:legal@metricora.co.uk"
-                className="font-semibold text-blue-600 hover:text-blue-700"
+               
               >
                 legal@metricora.co.uk
               </a>
             </p>
           </section>
-        </div>
-      </div>
-    </div>
+    </LegalShell>
   );
 }

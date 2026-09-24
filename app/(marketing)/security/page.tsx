@@ -1,179 +1,102 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { AnimateIn } from "@/components/marketing/animate-in";
-import { ArrowUpRight, ShieldCheck } from "lucide-react";
-import { SecurityHeroBg, SecurityCtaBg } from "@/components/marketing/section-backgrounds";
+import { Body, ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, ProductShot, Section, SectionIntro, CheckList } from "@/components/marketing/kit";
 
 export const metadata: Metadata = {
-  title: "Security - MetricOra",
-  description: "Multi-tenant data isolation, role-based access control, append-only audit logs, time-limited presigned URLs, and immutable calculation snapshots.",
+  title: "Security",
+  description: "How MetricOra isolates each organisation's data, controls access by role, records every change and backs up your records.",
+  alternates: { canonical: "/security" },
 };
 
 const CONTROLS = [
   {
-    area: "Multi-tenant isolation",
-    tag: "P0",
-    detail: "Every organisation's data is strictly scoped at the query level. No tenant can access another organisation's records, files, or calculations — isolation is enforced in the data layer, not just in route handlers.",
+    title: "Organisation isolation",
+    text: "Every record belongs to one organisation, and every query is scoped to it after the user's membership is checked on the server. Automated tests try to read and write across organisations on each change.",
   },
   {
-    area: "Role-based access control",
-    tag: "Core",
-    detail: "Six roles govern what each user can see and do: admin, editor, reviewer, viewer, auditor, and field worker. Role assignment is managed server-side. Client-supplied claims are never trusted for authorisation decisions.",
+    title: "Six roles",
+    text: "Admin, editor, reviewer, viewer, auditor and field worker. Roles are read from the membership record, never from anything the browser or phone sends.",
   },
   {
-    area: "Object storage access",
-    tag: "Core",
-    detail: "Evidence files, import data, and generated reports are stored in isolated object storage. Clients never receive raw storage keys or bucket credentials. All download links are short-lived, server-generated signed URLs issued only after authentication and membership verification.",
+    title: "Files and downloads",
+    text: "Evidence, imports and reports sit in private storage. Download links are created on the server after the access check and expire after an hour.",
   },
   {
-    area: "Append-only audit log",
-    tag: "Core",
-    detail: "Every authentication event, role change, data import, record mutation, calculation run, snapshot publication, report download, and submission review is permanently recorded. Audit rows are never modified or deleted, providing a tamper-evident trail for SECR and ISO 14064-1 compliance.",
+    title: "Append-only audit trail",
+    text: "Sign-ins, role changes, imports, record edits, calculation runs, publications, report downloads and reviews are recorded. Each entry includes a hash of the one before it, so a gap or edit shows.",
   },
   {
-    area: "Immutable calculation snapshots",
-    tag: "Core",
-    detail: "Publishing a snapshot locks the underlying calculation run. Reports produced from that snapshot will always reproduce the same figures. Recalculation produces a new versioned snapshot — prior versions are preserved and unchanged.",
+    title: "Immutable snapshots",
+    text: "Publishing freezes a calculation run. Reports from that snapshot always reproduce the same figures, and recalculating creates a new version.",
   },
   {
-    area: "Rate limiting",
-    tag: "Defence",
-    detail: "Authentication, upload, and mutation endpoints are rate-limited per IP address. Limits are enforced before any route handler executes. Requests that exceed the limit receive a 429 response with a Retry-After header.",
+    title: "Database access",
+    text: "The application connects to PostgreSQL through its own server code only. Row-level security denies the database's public API roles on every table.",
   },
   {
-    area: "Security headers",
-    tag: "Defence",
-    detail: "Every response carries security headers: clickjacking protection, content-type sniffing prevention, strict referrer policy, a permissions policy that restricts access to device APIs, and HSTS in production. Applied globally in middleware.",
+    title: "Rate limits and headers",
+    text: "Sign-in, upload and write endpoints are rate-limited. Responses carry frame protection, a strict referrer policy, a permissions policy and strict transport security.",
   },
   {
-    area: "Field worker isolation",
-    tag: "Core",
-    detail: "External users (subcontractors, suppliers, tipper hires) operate in a strictly limited mode. They can submit evidence for the reporting periods they were invited to and check the status of their own submissions — nothing else.",
+    title: "Backups",
+    text: "The database is dumped nightly, encrypted with AES-256 and stored privately, with daily copies kept 35 days and monthly copies kept longer. A restore is rehearsed every week.",
   },
 ];
 
-const TAG_STYLE: Record<string, string> = {
-  P0:      "text-red-600 border-red-300 bg-red-50",
-  Core:    "text-[#374151] border-[#E5E7EB] bg-[#F3F4F6]",
-  Defence: "text-amber-700 border-amber-300 bg-amber-50",
-};
-
 export default function SecurityPage() {
   return (
-    <main className="min-h-[100dvh] bg-[#FAFBF8]">
-
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[55vh] flex items-end overflow-hidden bg-[#0B3B38]">
-        <SecurityHeroBg />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0B3B38] to-transparent pointer-events-none" />
-
-        <div className="relative z-10 mx-auto max-w-7xl w-full px-6 md:px-10 pb-20 pt-36">
-          <AnimateIn>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-teal-400/20 bg-teal-400/8 mb-8">
-              <ShieldCheck className="h-3.5 w-3.5 text-teal-300" />
-              <span className="text-xs text-teal-300 tracking-[0.1em] font-medium">Security</span>
-            </div>
-            <h1 className="text-[clamp(2.8rem,6vw,4.5rem)] font-semibold tracking-[-0.04em] leading-[0.95] text-[#F8FAFC] mb-6 max-w-[18ch]">
-              Designed to be audited.
-            </h1>
-            <p className="text-base text-[#A8C4C2] leading-relaxed max-w-[50ch]">
-              Multi-tenant isolation, role-based access control, append-only audit logs, and immutable snapshots. Every control is enforced server-side.
-            </p>
-          </AnimateIn>
+    <>
+      <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-36 sm:pt-40">
+        <div className="flex max-w-3xl flex-col gap-6">
+          <Eyebrow tone="dark">Security</Eyebrow>
+          <H1>Built to be audited, including by your IT team.</H1>
+          <Lead tone="dark">Carbon figures end up in annual reports and tenders, so the controls around them need to be as checkable as the numbers.</Lead>
         </div>
-      </section>
+      </Section>
 
-      {/* ── Controls ─────────────────────────────────────────────────────── */}
-      <section className="bg-[#F2F4EF]">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <div className="flex items-center gap-3 mb-12 flex-wrap">
-              {Object.entries(TAG_STYLE).map(([tag, cls]) => (
-                <span key={tag} className={`text-[10px] px-2.5 py-1 rounded-full border tracking-wide ${cls}`}>{tag}</span>
-              ))}
-              <span className="text-[10px] text-[#9CA3AF]">classification key</span>
+      <Section tone="light">
+        <SectionIntro eyebrow="Controls" title="What protects your data." />
+        <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2">
+          {CONTROLS.map((c) => (
+            <div key={c.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+              <H3>{c.title}</H3>
+              <Body>{c.text}</Body>
             </div>
-          </AnimateIn>
-          <div className="border border-[#E5E7EB] divide-y divide-[#E5E7EB] rounded-2xl overflow-hidden">
-            {CONTROLS.map((control, i) => (
-              <AnimateIn key={control.area} delay={i * 0.04}>
-                <div className="grid grid-cols-1 md:grid-cols-[220px_80px_1fr] bg-white hover:bg-[#FAFBF8] transition-colors">
-                  <div className="px-6 py-5 border-r border-[#E5E7EB]">
-                    <span className="text-sm font-medium text-[#111827]">{control.area}</span>
-                  </div>
-                  <div className="px-6 py-5 border-r border-[#E5E7EB] flex items-start">
-                    <span className={`text-[10px] px-2.5 py-1 rounded-full border tracking-wide ${TAG_STYLE[control.tag]}`}>
-                      {control.tag}
-                    </span>
-                  </div>
-                  <div className="px-6 py-5">
-                    <p className="text-sm text-[#6B7280] leading-relaxed">{control.detail}</p>
-                  </div>
-                </div>
-              </AnimateIn>
-            ))}
+          ))}
+        </div>
+      </Section>
+
+      <Section tone="paper">
+        <div className="grid items-center gap-14 lg:grid-cols-2">
+          <div className="flex flex-col gap-6">
+            <SectionIntro
+              eyebrow="Where it runs"
+              title="Infrastructure and people."
+              lead="MetricOra is a hosted service. The web app runs on Vercel and data is held in a managed PostgreSQL database and private object storage."
+            />
+            <CheckList
+              items={[
+                "Sign-in sessions are stored in our own database, not a separate identity provider",
+                "Enterprise plans can sign in with SAML or OpenID Connect",
+                "Error monitoring uses Sentry's EU region",
+                "You choose how long evidence files are kept under Settings, then Data retention",
+                "Subject access exports and erasure requests are handled in the product",
+              ]}
+            />
+            <Body>Ask us for our data processing agreement, sub-processor list and hosting regions.</Body>
+            <div className="flex flex-wrap gap-3">
+              <ButtonLink href="/dpa" variant="secondary">
+                Data processing agreement
+              </ButtonLink>
+              <ButtonLink href="/contact" variant="secondary">
+                Ask a security question
+              </ButtonLink>
+            </div>
           </div>
+          <ProductShot src="/marketing/screens/audit-trail.jpg" alt="Audit trail listing reviews, imports and calculation runs" width={2400} height={1500} />
         </div>
-      </section>
+      </Section>
 
-      {/* ── Architecture note ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#FAFBF8] border-t border-[#E5E7EB]">
-        <div className="absolute top-0 right-0 w-[500px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(15,118,110,0.07)_0%,transparent_70%)] pointer-events-none" />
-
-        <div className="relative mx-auto max-w-7xl px-6 md:px-10 py-24">
-          <AnimateIn>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-              <div>
-                <h2 className="text-[clamp(1.8rem,3.5vw,2.4rem)] font-semibold tracking-[-0.04em] text-[#111827] mb-5">
-                  No external auth dependencies.
-                </h2>
-                <p className="text-sm text-[#6B7280] leading-relaxed mb-4">
-                  Authentication runs entirely on your own infrastructure. Session data lives in your database, not a third-party auth service, so you have full custody of who has access and when. Mobile clients use short-lived tokens with automatic renewal.
-                </p>
-                <p className="text-sm text-[#6B7280] leading-relaxed">
-                  Files are stored in isolated, access-controlled object storage. Each organisation&apos;s content is scoped to its own namespace. Download links expire after a short window and are only issued to authenticated, authorised users.
-                </p>
-              </div>
-              <div className="space-y-4">
-                {[
-                  "Cross-tenant access is a P0 security bug, enforced in the data layer.",
-                  "Audit rows are append-only. Never updated. Never deleted.",
-                  "Calculation results are immutable after publication.",
-                  "Field worker scope is zero, no org data, no other users.",
-                ].map((point) => (
-                  <div key={point} className="flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white px-5 py-4">
-                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-600 shadow-[0_0_6px_rgba(15,118,110,0.35)] shrink-0" />
-                    <p className="text-sm text-[#374151] leading-relaxed">{point}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </AnimateIn>
-        </div>
-      </section>
-
-      {/* ── CTA ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0B3B38]">
-        <SecurityCtaBg />
-        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-10 py-28">
-          <AnimateIn>
-            <h2 className="text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-0.04em] text-[#F8FAFC] mb-4">
-              Security questions? Talk to the team.
-            </h2>
-            <p className="text-sm text-[#A8C4C2] mb-8 max-w-[45ch]">
-              We&apos;re happy to walk through the controls architecture, data residency, and compliance positioning.
-            </p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#0F766E] hover:bg-[#0B5F59] text-white text-sm font-medium shadow-[0_0_32px_rgba(15,118,110,0.40)] hover:shadow-[0_0_48px_rgba(15,118,110,0.55)] transition-all active:scale-[0.97]"
-            >
-              Get in touch
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </AnimateIn>
-        </div>
-      </section>
-
-    </main>
+      <ClosingCta title="Walk through the controls with us." lead="We can take your IT or procurement team through access, retention and hosting on a call." />
+    </>
   );
 }

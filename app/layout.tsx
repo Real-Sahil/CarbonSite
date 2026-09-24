@@ -10,23 +10,22 @@ import "@designcodeio/threeui/style.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "MetricOra | Measure what matters.",
+    default: "MetricOra | Carbon evidence and reporting for UK contractors",
     template: "%s | MetricOra",
   },
   description:
-    "Multi-tenant GHG emissions tracking for construction and supply chains. Import activity data, run calculations to DEFRA 2025 and GHG Protocol standards, generate audit-ready reports.",
+    "Capture site evidence, calculate Scope 1, 2 and 3 with named DEFRA factors, and publish reports in which every figure can be traced.",
   metadataBase: new URL("https://www.metricora.co.uk"),
   openGraph: {
     type: "website",
     siteName: "MetricOra",
-    title: "MetricOra | Measure what matters.",
-    description:
-      "GHG emissions tracking for construction and supply chains. Audit-ready reports in minutes.",
+    title: "MetricOra | Carbon evidence and reporting for UK contractors",
+    description: "Every tonne traced to a ticket, a factor and a formula.",
     images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "MetricOra" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MetricOra | Measure what matters.",
+    title: "MetricOra | Carbon evidence and reporting for UK contractors",
     images: ["/og-default.png"],
   },
   icons: {
