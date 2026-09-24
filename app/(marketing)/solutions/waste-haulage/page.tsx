@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { SolutionPage } from "@/components/marketing/solution-page";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Waste and haulage",
   description:
     "Waste tickets, EWC codes, weights and routes captured on the phone, reviewed and turned into Scope 1 and Scope 3 records, with a duty-of-care register.",
   alternates: { canonical: "/solutions/waste-haulage" },
-};
+});
 
 export default function WasteHaulagePage() {
   return (

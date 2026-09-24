@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { LegalShell } from "@/components/marketing/legal-shell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "End-User Licence Agreement",
   alternates: { canonical: "/eula" },
   description: "MetricOra mobile application End-User Licence Agreement for iOS and Android.",
-};
+});
 
 export default function EulaPage() {
   return (

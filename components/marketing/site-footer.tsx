@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GooglePlayBadge, StripeNote } from "@/components/marketing/brand-marks";
 import { LogoMark } from "@/components/ui/logo";
 
 const COLS = [
@@ -60,6 +61,10 @@ export function SiteFooter() {
                 hello@metricora.co.uk
               </a>
             </p>
+            <div className="mt-6 flex flex-col items-start gap-3">
+              <GooglePlayBadge />
+              <StripeNote tone="dark" />
+            </div>
           </div>
           {COLS.map((col) => (
             <div key={col.heading}>

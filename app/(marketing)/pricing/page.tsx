@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { Check, Minus } from "lucide-react";
 import { PLAN_ANNUAL_TOTAL, PLAN_PRICES } from "@/lib/billing/limits";
 import { ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro } from "@/components/marketing/kit";
 import { cn } from "@/lib/utils";
+import { StripeNote } from "@/components/marketing/brand-marks";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Pricing",
   description: "Priced per organisation by sites and web users. Starter £99 a month, Growth £299 a month, Enterprise from £750 a month. 30-day trial.",
   alternates: { canonical: "/pricing" },
-};
+});
 
 type Tier = {
   name: string;
@@ -100,9 +102,32 @@ const FAQ = [
   },
 ];
 
+const pricingJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Product",
+      name: "MetricOra",
+      description: "Carbon evidence, accounting and reporting for UK contractors, priced per organisation.",
+      brand: { "@type": "Brand", name: "MetricOra" },
+      offers: [
+        { "@type": "Offer", name: "Starter, monthly", price: String(PLAN_PRICES.starter.monthly), priceCurrency: "GBP", url: "https://www.metricora.co.uk/pricing" },
+        { "@type": "Offer", name: "Starter, annual", price: String(PLAN_ANNUAL_TOTAL.starter), priceCurrency: "GBP", url: "https://www.metricora.co.uk/pricing" },
+        { "@type": "Offer", name: "Growth, monthly", price: String(PLAN_PRICES.growth.monthly), priceCurrency: "GBP", url: "https://www.metricora.co.uk/pricing" },
+        { "@type": "Offer", name: "Growth, annual", price: String(PLAN_ANNUAL_TOTAL.growth), priceCurrency: "GBP", url: "https://www.metricora.co.uk/pricing" },
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    },
+  ],
+};
+
 export default function PricingPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }} />
       <Section tone="dark" size="lg" video="/marketing/loops/reports.mp4" poster="/marketing/loops/reports.jpg" className="pt-36 sm:pt-40">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Pricing</Eyebrow>
@@ -157,7 +182,10 @@ export default function PricingPage() {
             </div>
           ))}
         </div>
-        <p className="mt-8 text-[14px] text-mk-text-3">Prices in GBP, excluding VAT. MetricOra is not currently VAT-registered.</p>
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-[14px] text-mk-text-3">Prices in GBP, excluding VAT. MetricOra is not currently VAT-registered.</p>
+          <StripeNote />
+        </div>
       </Section>
 
       <Section tone="light">

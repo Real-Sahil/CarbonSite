@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { SolutionPage } from "@/components/marketing/solution-page";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Main contractors",
   description:
     "Carbon accounting for UK main contractors: site fuel and plant, materials and embodied carbon, subcontractor evidence, waste and PAS 2080, in one inventory.",
   alternates: { canonical: "/solutions/construction" },
-};
+});
 
 export default function ConstructionPage() {
   return (

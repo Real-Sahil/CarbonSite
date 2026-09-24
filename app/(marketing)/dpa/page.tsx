@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { LegalShell } from "@/components/marketing/legal-shell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Data Processing Agreement",
   alternates: { canonical: "/dpa" },
   description: "MetricOra Data Processing Agreement under UK GDPR Article 28.",
-};
+});
 
 export default function DpaPage() {
   return (

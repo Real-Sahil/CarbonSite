@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { LegalShell } from "@/components/marketing/legal-shell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Terms of Service",
   alternates: { canonical: "/terms" },
   description: "Legal terms governing your use of MetricOra.",
-};
+});
 
 export default function TermsPage() {
   return (

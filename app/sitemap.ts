@@ -27,8 +27,11 @@ const PAGES: { path: string; priority: number; freq: MetadataRoute.Sitemap[numbe
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const pages = PAGES.map((p) => ({ url: `${BASE}${p.path}`, changeFrequency: p.freq, priority: p.priority }));
-  const posts = getPosts().map((post) => ({
+  const posts0 = getPosts();
+  // The newest article date stands in for the site's last content change.
+  const latest = posts0.reduce((d, p) => (p.date > d ? p.date : d), "2026-09-24");
+  const pages = PAGES.map((p) => ({ url: `${BASE}${p.path}`, lastModified: latest, changeFrequency: p.freq, priority: p.priority }));
+  const posts = posts0.map((post) => ({
     url: `${BASE}/blog/${post.slug}`,
     lastModified: post.date,
     changeFrequency: "yearly" as const,

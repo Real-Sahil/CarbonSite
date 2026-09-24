@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { SolutionPage } from "@/components/marketing/solution-page";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Public-sector suppliers",
   description:
     "A bid carbon pack with a PPN 006 Carbon Reduction Plan, published emissions figures and social value tracking from one MetricOra dataset.",
   alternates: { canonical: "/solutions/public-sector" },
-};
+});
 
 export default function PublicSectorPage() {
   return (

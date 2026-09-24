@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { METHODOLOGY_CHANGELOG } from "@/lib/calculation/methodology";
 import { Body, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, CheckList } from "@/components/marketing/kit";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Methodology",
   description:
     "How MetricOra calculates emissions: factor libraries and licences, factor selection, Scope 2 dual reporting, spend conversion, uncertainty and methodology versions.",
   alternates: { canonical: "/methodology" },
-};
+});
 
 const LIBRARIES = [
   { name: "DEFRA / DESNZ 2026.1", scope: "UK conversion factors, including heat and steam", licence: "Open Government Licence v3.0" },

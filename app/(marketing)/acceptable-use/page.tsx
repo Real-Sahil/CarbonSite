@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { LegalShell } from "@/components/marketing/legal-shell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Acceptable Use Policy",
   alternates: { canonical: "/acceptable-use" },
   description: "MetricOra Acceptable Use Policy governing permitted and prohibited uses of the platform.",
-};
+});
 
 export default function AcceptableUsePage() {
   return (

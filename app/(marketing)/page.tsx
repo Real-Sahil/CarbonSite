@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { PLAY_URL } from "@/components/marketing/brand-marks";
+import { PLAN_PRICES } from "@/lib/billing/limits";
+import { withSocial } from "@/lib/seo/page-meta";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -18,12 +21,12 @@ import {
   TextLink,
 } from "@/components/marketing/kit";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: { absolute: "MetricOra | Carbon evidence and reporting for UK contractors" },
   description:
     "Capture site paperwork, meter data and supplier spend, review it, calculate Scope 1, 2 and 3 with named DEFRA factors, and publish reports every figure of which can be traced.",
   alternates: { canonical: "/" },
-};
+});
 
 const STEPS = [
   {
@@ -76,16 +79,32 @@ const jsonLd = {
       url: "https://www.metricora.co.uk",
       logo: "https://www.metricora.co.uk/icon-512.png",
       email: "hello@metricora.co.uk",
+      sameAs: [PLAY_URL],
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebSite",
       name: "MetricOra",
+      url: "https://www.metricora.co.uk",
+      inLanguage: "en-GB",
+    },
+    {
+      "@type": "WebApplication",
+      name: "MetricOra",
+      url: "https://www.metricora.co.uk",
       applicationCategory: "BusinessApplication",
-      operatingSystem: "Web, Android",
+      operatingSystem: "Web",
       offers: [
-        { "@type": "Offer", name: "Starter", price: "99", priceCurrency: "GBP" },
-        { "@type": "Offer", name: "Growth", price: "299", priceCurrency: "GBP" },
+        { "@type": "Offer", name: "Starter", price: String(PLAN_PRICES.starter.monthly), priceCurrency: "GBP" },
+        { "@type": "Offer", name: "Growth", price: String(PLAN_PRICES.growth.monthly), priceCurrency: "GBP" },
       ],
+    },
+    {
+      "@type": "MobileApplication",
+      name: "MetricOra field app",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Android",
+      installUrl: PLAY_URL,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "GBP" },
     },
   ],
 };

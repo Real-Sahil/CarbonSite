@@ -38,6 +38,12 @@ export const metadata: Metadata = {
     shortcut: "/icon-48.png",
   },
   manifest: "/site.webmanifest",
+  // Set these on Vercel with the tokens from Google Search Console and Bing
+  // Webmaster Tools (HTML tag method) to verify the domain.
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.BING_SITE_VERIFICATION ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION } : undefined,
+  },
 };
 
 export default function RootLayout({

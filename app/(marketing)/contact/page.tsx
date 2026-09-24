@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { CheckList, Eyebrow, H1, H3, Lead, Section } from "@/components/marketing/kit";
 import { ContactForm } from "./contact-form";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Book a pilot",
   description: "Plan a MetricOra pilot around one live project and one reporting period, or ask us a question.",
   alternates: { canonical: "/contact" },
-};
+});
 
 const PREPARE = [
   { title: "One project or site", text: "A live UK site with a defined reporting period, usually the last full year." },

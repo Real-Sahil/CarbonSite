@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Body, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro } from "@/components/marketing/kit";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Guides",
   description: "Practical guides for a first MetricOra reporting period: planning a pilot, keeping evidence, and choosing a Scope 2 method.",
   alternates: { canonical: "/resources" },
-};
+});
 
 const GUIDES = [
   {

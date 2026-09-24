@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import type { ReactNode } from "react";
 import {
   ButtonLink,
@@ -16,12 +17,12 @@ import {
   type Tone,
 } from "@/components/marketing/kit";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Platform",
   description:
     "Evidence capture, carbon accounting, reporting and assurance, compliance, targets and supply-chain modules in one MetricOra dataset.",
   alternates: { canonical: "/product" },
-};
+});
 
 function Feature({
   id,

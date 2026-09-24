@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { LegalShell } from "@/components/marketing/legal-shell";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Privacy Policy",
   alternates: { canonical: "/privacy" },
   description: "How MetricOra collects, uses, and protects your data.",
-};
+});
 
 export default function PrivacyPage() {
   return (

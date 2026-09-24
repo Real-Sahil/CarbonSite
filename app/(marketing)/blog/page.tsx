@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { getPosts } from "@/lib/blog/posts";
 import { Eyebrow, H1, Lead, Section } from "@/components/marketing/kit";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Blog",
   description: "How MetricOra calculates, reviews and reports emissions, explained with worked examples.",
   alternates: { canonical: "/blog" },
-};
+});
 
 export default function BlogPage() {
   const posts = getPosts().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

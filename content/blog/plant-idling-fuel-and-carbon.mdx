@@ -1,0 +1,39 @@
+---
+title: "Idling plant: what field research says about fuel burnt for no work"
+excerpt: "Researchers who logged diesel construction equipment in the field found idle time drives fuel use and CO₂. Here is how to measure idling on your own sites and what to do with the numbers."
+date: "2026-09-24"
+author: "MetricOra"
+tags: ["Scope 1", "Plant", "Research"]
+---
+
+On most civils sites, red diesel and HVO in excavators, dumpers and generators are the biggest part of Scope 1. A share of that fuel is burnt with the engine running and the machine doing nothing.
+
+## What the research measured
+
+Phil Lewis, Michael Leming and William Rasdorf studied this with field data from 34 items of nonroad diesel construction equipment ([Lewis, Leming and Rasdorf, *Journal of Management in Engineering* 28(1), 31–38, 2012](https://doi.org/10.1061/(ASCE)ME.1943-5479.0000068)). They defined a machine's *operational efficiency* as working (non-idle) time divided by total engine time. They then modelled how fuel use and CO₂ change as that ratio falls. The same team also reported the effect of idling on air-quality pollutants from the same kind of equipment ([Lewis et al., *Transportation Research Record* 2270, 2012](https://doi.org/10.3141/2270-09)).
+
+Their measure is useful because it needs only two numbers that most modern machines already record: total engine hours and idle hours.
+
+## Measuring idling on your own sites
+
+**Use the telematics you already have.** Most machines from the last decade report engine hours, idle hours and fuel through the manufacturer's portal. The ISO 15143-3 (AEMP 2.0) standard makes those feeds readable across brands.
+
+**Work out operational efficiency per machine.** Divide working hours by total engine hours for each machine and period. A machine at 0.6 spent four hours in ten idling.
+
+**Reconcile against what you bought.** Telematics fuel is an estimate from the engine. The figure in your inventory should come from delivery notes and fuel receipts. Comparing the two by site shows where the records are incomplete.
+
+MetricOra's Plant module reads ISO 15143-3 snapshots or CSV period rows. It shows idle hours, fuel, carbon and HVO share per machine, and reconciles each site's burnt fuel against its approved diesel and HVO records. Readings are kept for monitoring only; the inventory stays on the fuel you can evidence. See [plant and telematics](/product#operations).
+
+## What to do with the numbers
+
+- Set an idle limit per machine class and review the worst performers each month.
+- Check that auto-idle and auto-shutdown are switched on and not overridden.
+- Plan work so machines are not left running while they wait for wagons.
+- Count the saving in fuel receipts, not in telematics, so it shows up in the reported figure.
+
+If you are moving plant onto HVO, the savings stack: less fuel burnt, and a lower factor on what remains. We cover how MetricOra treats HVO and biogenic CO₂ in the [methodology](/methodology). For how the fuel gets into the inventory in the first place, see [from a waste ticket to a reported tonne](/blog/waste-ticket-to-reported-tonne). The same review flow applies to fuel receipts.
+
+## Sources
+
+- Lewis, P., Leming, M. and Rasdorf, W. (2012). Impact of engine idling on fuel use and CO₂ emissions of nonroad diesel construction equipment. *Journal of Management in Engineering*, 28(1), 31–38. [doi:10.1061/(ASCE)ME.1943-5479.0000068](https://doi.org/10.1061/(ASCE)ME.1943-5479.0000068)
+- Lewis, P., Rasdorf, W., Frey, H. C. and Leming, M. (2012). Effects of engine idling on National Ambient Air Quality Standards criteria pollutant emissions from nonroad diesel construction equipment. *Transportation Research Record*, 2270. [doi:10.3141/2270-09](https://doi.org/10.3141/2270-09)

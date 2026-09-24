@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { withSocial } from "@/lib/seo/page-meta";
 import {
   Body,
   ButtonLink,
@@ -11,17 +12,15 @@ import {
   ProductLoop,
   Section,
   SectionIntro,
-  TextLink,
 } from "@/components/marketing/kit";
+import { GooglePlayBadge } from "@/components/marketing/brand-marks";
 
-const PLAY_URL = "https://play.google.com/store/apps/details?id=app.metricora.metricora_mobile";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Field app",
   description:
     "The MetricOra field app lets site teams and subcontractors photograph tickets, delivery notes and fuel receipts, read them on the phone and submit them offline.",
   alternates: { canonical: "/field-app" },
-};
+});
 
 const STEPS = [
   { title: "Open the invite", text: "An admin sends a time-limited invite link by text or email. Opening it on the phone signs the worker in to your organisation." },
@@ -56,11 +55,9 @@ export default function FieldAppPage() {
               Main contractors
             </ButtonLink>
           </div>
-          <div className="flex flex-col gap-1">
-            <TextLink href={PLAY_URL} tone="dark">
-              Get it on Google Play
-            </TextLink>
-            <p className="text-[14px] text-mk-on-dark-2">Available for Android now. The iPhone app is in App Store review.</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <GooglePlayBadge />
+            <p className="text-[14px] text-mk-on-dark-2">Android now. The iPhone app is in App Store review.</p>
           </div>
         </div>
       </Section>
