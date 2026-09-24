@@ -112,6 +112,7 @@ export default function PricingPage() {
       </Section>
 
       <Section tone="paper" className="-mt-px">
+        <h2 className="sr-only">Plans</h2>
         <div className="grid gap-6 lg:grid-cols-3">
           {TIERS.map((t) => (
             <div

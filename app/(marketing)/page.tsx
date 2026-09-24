@@ -90,6 +90,8 @@ const jsonLd = {
   ],
 };
 
+const STANDARDS = ["GHG Protocol Corporate Standard", "DEFRA 2025 and 2026 factors", "US EPA and USEEIO 1.3", "ADEME Base Carbone", "IPCC AR6 GWPs"];
+
 export default function HomePage() {
   return (
     <>
@@ -113,7 +115,7 @@ export default function HomePage() {
           </div>
           <ProductShot
             src="/marketing/screens/dashboard.jpg"
-            alt="MetricOra dashboard showing a 4,710 tCO2e footprint, a 12.2% fall on the previous year and a banner about unpublished changes"
+            alt="MetricOra dashboard showing a 4,710 tCO2e footprint, a 12.2% fall on the previous year, live Scope 1, 2 and 3 totals and a banner about unpublished changes"
             width={2400}
             height={1500}
             tone="dark"
@@ -123,13 +125,16 @@ export default function HomePage() {
       </Section>
 
       <div className="border-y border-mk-line bg-mk-paper">
-        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-8 gap-y-2 px-5 py-5 font-mono text-[12px] uppercase tracking-[0.1em] text-mk-text-3 sm:px-8">
-          <span className="text-mk-text-2">Built on</span>
-          <span>GHG Protocol Corporate Standard</span>
-          <span>DEFRA 2025 and 2026 factors</span>
-          <span>US EPA and USEEIO 1.3</span>
-          <span>ADEME Base Carbone</span>
-          <span>IPCC AR6 GWPs</span>
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-5 py-6 sm:px-8 lg:flex-row lg:items-center lg:gap-10">
+          <p className="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-mk-text-2">Built on</p>
+          <ul className="flex flex-col gap-2.5 text-[14px] text-mk-text-3 sm:flex-row sm:flex-wrap sm:gap-x-6">
+            {STANDARDS.map((s) => (
+              <li key={s} className="flex items-center gap-2 whitespace-nowrap">
+                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-mk-accent" />
+                {s}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 

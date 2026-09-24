@@ -53,7 +53,7 @@ function BackgroundVideo({ src, poster, tone }: { src: string; poster?: string; 
   const dark = tone === "dark";
   return (
     <div aria-hidden="true" className="absolute inset-0 -z-10">
-      <LoopVideo src={src} poster={poster} className={cn("h-full w-full scale-110 object-cover blur-[6px]", dark ? "opacity-40" : "opacity-20")} />
+      <LoopVideo decorative src={src} poster={poster} className={cn("h-full w-full scale-110 object-cover blur-[6px]", dark ? "opacity-40" : "opacity-20")} />
       <div
         className={cn(
           "absolute inset-0",

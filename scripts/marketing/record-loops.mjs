@@ -31,7 +31,7 @@ for (const [name, L] of Object.entries(loops)) {
   const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, storageState: STATE, recordVideo: { dir, size: { width: 1440, height: 900 } } });
   const t0 = Date.now();
   const p = await ctx.newPage();
-  await p.goto(O + L.url, { waitUntil: "networkidle" });
+  await p.goto(O + L.url, { waitUntil: "load" }); await p.waitForTimeout(3500);
   await p.waitForTimeout(1500);
   const s = (Date.now() - t0) / 1000;
   await L.act(p);
@@ -46,7 +46,8 @@ for (const [name, L] of Object.entries(loops)) {
 const shots = { dashboard: "/dashboard", submissions: "/submissions", "submission-review": `/submissions/${process.env.SUBMISSION_ID}`, "calc-run": `/calculations/${ids.runs.FY2025}`, record: `/records/${process.env.RECORD_ID}`, reports: "/reports", crosswalk: "/compliance/crosswalk", "esrs-e1": "/compliance/esrs-e1", deadlines: "/compliance/deadlines", assurance: "/compliance/assurance-readiness", "energy-contracts": "/settings/energy-instruments", "carbon-price": "/settings/carbon-price", boundary: "/boundary", analytics: "/analytics", calculations: "/calculations", records: "/records", "audit-trail": "/audit", "base-year": "/base-year", "transition-plan": "/transition-plan" };
 if (!only || only === "shots") {
   const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, storageState: STATE });
-  for (const [n, u] of Object.entries(shots)) { const p = await ctx.newPage(); await p.goto(O + u, { waitUntil: "networkidle" }); await p.waitForTimeout(1500); await p.screenshot({ path: `${TMP}/${n}.png` }); await p.close();
+  for (const [n, u] of Object.entries(shots)) { const p = await ctx.newPage(); // The dashboard holds an SSE stream open, so the network never goes idle.
+    await p.goto(O + u, { waitUntil: "load" }); await p.waitForTimeout(3500); await p.screenshot({ path: `${TMP}/${n}.png` }); await p.close();
     execSync(`${FF} -y -loglevel error -i ${TMP}/${n}.png -vf scale=2400:-2 -q:v 5 ${SHOTS}${n}.jpg`); }
   console.log("shots", Object.keys(shots).length);
 }
