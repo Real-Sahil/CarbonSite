@@ -211,13 +211,12 @@ export async function selectFactor(
   const best = rankCandidates(candidates, query)[0];
 
   const finalWarnings: string[] = naicsWarning ? [naicsWarning] : [];
-  if (
-    !query.geographyCountry &&
-    query.emissionCategoryId.startsWith("s2-")
-  ) {
+  // No country on the record, its facility or the organisation, yet the pick
+  // is one country's factor: it won an id tie-break, so say so.
+  if (!query.geographyCountry && best.factor.geographyCountry) {
     finalWarnings.push(
-      "No country set on record — global electricity factor used. " +
-        "Add a country to the record for location-specific accuracy.",
+      `No country on the record, its facility or the organisation, so the ${best.factor.geographyCountry} factor was used. ` +
+        "Set the facility's or organisation's country for location-specific accuracy.",
     );
   }
 

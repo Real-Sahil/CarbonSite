@@ -25,11 +25,21 @@ export async function GET(_req: NextRequest, { params }: Params) {
         type: true,
         startDate: true,
         endDate: true,
+        label: true,
       },
       orderBy: { startDate: "desc" },
     });
 
     const formatted = periods.map((p) => {
+      if (p.label?.trim()) {
+        return {
+          id: p.id,
+          label: p.label,
+          startDate: p.startDate.toISOString().split("T")[0],
+          endDate: p.endDate.toISOString().split("T")[0],
+          type: p.type,
+        };
+      }
       const year = p.startDate.getFullYear();
       let label = `${year}`;
 
@@ -75,6 +85,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     const end = new Date(body.endDate);
     if (start >= end) {
       return apiError("INVALID_DATE_RANGE", "startDate must be before endDate.", 422);
+    }
+
+    const duplicate = await prisma.reportingPeriod.findFirst({
+      where: { organizationId: orgId, type: body.type, startDate: start, endDate: end },
+      select: { label: true },
+    });
+    if (duplicate) {
+      return apiError("PERIOD_EXISTS", `A ${body.type} period with these dates already exists (${duplicate.label}).`, 409);
     }
 
     const period = await prisma.reportingPeriod.create({

@@ -59,6 +59,7 @@ import { BklitTrendArea, type TrendLineDatum } from "@/components/charts/bklit-t
 import { BklitDataGauge } from "@/components/charts/bklit-data-gauge";
 import { CalculationRunsLive } from "./calculation-runs-live";
 import { LiveDashboard } from "@/components/dashboard/LiveDashboard";
+import { hasFeature } from "@/lib/billing/limits";
 import { OnboardingChecklist } from "./onboarding-checklist";
 import { appraisalPrice, coveredCost, formatMoney, PRICE_TYPES, type PriceType } from "@/lib/carbon-price";
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
@@ -125,22 +126,27 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       return fallback();
     };
 
-  // Field workers and suppliers have no visibility into org emissions data — send them to their own submissions view.
-  if (role === "field_worker" || role === "supplier") {
-    redirect(`/orgs/${orgId}/submissions`);
-  }
+  // Field workers and suppliers have no visibility into org emissions data
+  // (the org layout sends them away first; kept as a second guard).
+  if (role === "field_worker") redirect("/app");
+  if (role === "supplier") redirect("/supplier-portal");
 
-  // Redirect new admins to the onboarding wizard on their first dashboard visit.
-  // The wizard itself and all sub-pages (settings, imports, etc.) are reachable
-  // without being trapped here — only the dashboard triggers the redirect.
-  const onboardingProgress = role === "admin"
-    ? await prisma.onboardingProgress.findUnique({
-        where: { organizationId: orgId },
-        select: { isComplete: true, completedSteps: true },
-      }).catch(onLoadFailure(() => null))
-    : null;
+  // Send admins of a brand-new organisation (no activity data yet) to the
+  // onboarding wizard. Once records exist the dashboard has something to
+  // show, so an unticked checklist step never locks an admin out of it.
+  const [onboardingProgress, hasActivity] = role === "admin"
+    ? await Promise.all([
+        prisma.onboardingProgress.findUnique({
+          where: { organizationId: orgId },
+          select: { isComplete: true, completedSteps: true },
+        }).catch(onLoadFailure(() => null)),
+        prisma.activityRecord.findFirst({ where: { organizationId: orgId }, select: { id: true } })
+          .then(Boolean)
+          .catch(onLoadFailure(() => true)),
+      ])
+    : [null, true];
 
-  if (role === "admin" && (!onboardingProgress || !onboardingProgress.isComplete)) {
+  if (role === "admin" && !onboardingProgress?.isComplete && !hasActivity) {
     redirect(`/orgs/${orgId}/onboarding`);
   }
 
@@ -152,6 +158,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     return <div className="p-8"><p className="text-sm text-red-600">Organisation not found or database is temporarily unavailable — please refresh.</p></div>;
   }
   const organization = org;
+  const liveDashboardEnabled = await prisma.organization
+    .findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } })
+    .then((o) => !!o && (o.isPilot || hasFeature(o.plan ?? "trial", "liveDashboard")))
+    .catch(() => false);
 
   const recentPeriods = await prisma.reportingPeriod.findMany({
     where: { organizationId: orgId },
@@ -1292,7 +1302,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         )}
       </section>
 
-      {/* ── Real-time dashboard stream ─────────────────────────────────── */}
+      {/* ── Real-time dashboard stream (plan feature; without it the stream
+          answers 402 and the panel would sit on "Connecting" retrying) ── */}
+      {liveDashboardEnabled && (
       <section aria-label="Live dashboard" className="mt-8">
         <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
           Live updates
@@ -1308,6 +1320,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           />
         </div>
       </section>
+      )}
 
       {industryData && (
         <section aria-label="Industry insights" className="mt-8">

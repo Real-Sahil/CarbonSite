@@ -20,7 +20,10 @@ export default async function AppEntryPage() {
 
   // The web app has no surface for field workers — every org page would
   // deny them. Point them at the mobile app instead of a dead end.
-  const nonFieldMembership = memberships.find((m) => m.role !== "field_worker");
+  const nonFieldMembership = memberships.find((m) => m.role !== "field_worker" && m.role !== "supplier");
+  if (!nonFieldMembership && memberships.some((m) => m.role === "supplier")) {
+    redirect("/supplier-portal");
+  }
   if (!nonFieldMembership && memberships.length > 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white p-8">

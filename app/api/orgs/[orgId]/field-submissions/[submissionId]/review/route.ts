@@ -176,9 +176,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       console.error("[field-submissions] Failed to dispatch review notification:", err),
     );
 
-    // Update supplier performance metrics after review
+    // Update supplier performance metrics after review. The supplier is the
+    // submitter's own organisation (an external supplier org they also belong
+    // to); their membership of this org says nothing about which supplier they
+    // work for, and using it recorded the org as its own supplier.
     const submitterMembership = await prisma.organizationMembership.findFirst({
-      where: { userId: submission.submittedByUserId, organizationId: orgId },
+      where: { userId: submission.submittedByUserId, organizationId: { not: orgId } },
+      orderBy: { createdAt: "asc" },
       select: { organizationId: true },
     });
 

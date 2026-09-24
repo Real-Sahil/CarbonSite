@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimit, POLICIES } from "@/lib/security/rate-limit";
+import { rateLimit, POLICIES, isCredentialAuthPath } from "@/lib/security/rate-limit";
 import { resolveClientIp } from "@/lib/security/client-ip";
 
 // Extract subdomain from the host header.
@@ -51,7 +51,7 @@ export function middleware(req: NextRequest) {
       // brute-force bucket.
       policy = POLICIES.tokenRefresh;
       bucket = "token_refresh";
-    } else if (pathname.startsWith("/api/auth")) {
+    } else if (isCredentialAuthPath(pathname)) {
       policy = POLICIES.auth;
       bucket = "auth";
     } else if (pathname.startsWith("/api/platform/")) {

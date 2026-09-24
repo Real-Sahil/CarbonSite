@@ -9,9 +9,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError } from "@/lib/validation/api";
+import { PRIMARY_SCOPE2_METHOD } from "@/lib/calculation/aggregate-filters";
 import { z } from "zod";
 
 const ReportRequestSchema = z.object({
@@ -25,6 +26,8 @@ const ReportRequestSchema = z.object({
   includeCharts: z.boolean().default(true),
   includeSummary: z.boolean().default(true),
   includeRecommendations: z.boolean().default(true),
+}).refine((q) => !(q.categoryIds?.length && q.facilityIds?.length), {
+  message: "Filter by category or by facility, not both.",
 });
 
 type ReportRequest = z.infer<typeof ReportRequestSchema>;
@@ -69,154 +72,87 @@ async function buildReportData(
     where: { id: { in: query.periodIds }, organizationId: orgId },
     select: { id: true, label: true },
   });
+  const periodIds = periods.map((p) => p.id);
 
-  // Build where clause for activity records
-  const whereClause: Record<string, unknown> = {
+  // Figures come from the live DashboardAggregate rows (the same numbers as
+  // the dashboard), never from raw activity amounts, which mix units. Each
+  // breakdown reads only its own dimension rows so nothing is counted twice.
+  const base = {
     organizationId: orgId,
-    reportingPeriodId: { in: query.periodIds },
-    reviewStatus: "approved",
+    reportingPeriodId: { in: periodIds },
+    snapshotId: null,
+    businessUnitId: null,
+    ...PRIMARY_SCOPE2_METHOD,
+    ...(query.scopes?.length ? { scope: { in: query.scopes } } : {}),
   };
+  const byCategoryIds = query.categoryIds?.length ? { in: query.categoryIds } : undefined;
+  const byFacilityIds = query.facilityIds?.length ? { in: query.facilityIds } : undefined;
+  const totalsWhere = byCategoryIds
+    ? { ...base, facilityId: null, emissionCategoryId: byCategoryIds }
+    : byFacilityIds
+      ? { ...base, emissionCategoryId: null, facilityId: byFacilityIds }
+      : { ...base, emissionCategoryId: null, facilityId: null };
 
-  if (query.categoryIds && query.categoryIds.length > 0) {
-    whereClause.emissionCategoryId = { in: query.categoryIds };
-  }
-  if (query.facilityIds && query.facilityIds.length > 0) {
-    whereClause.facilityId = { in: query.facilityIds };
-  }
+  const [totalRows, categoryRows, facilityRows] = await Promise.all([
+    prisma.dashboardAggregate.findMany({
+      where: totalsWhere,
+      select: { reportingPeriodId: true, scope: true, totalCo2e: true, recordCount: true },
+    }),
+    byFacilityIds
+      ? Promise.resolve([])
+      : prisma.dashboardAggregate.findMany({
+          where: { ...base, facilityId: null, emissionCategoryId: byCategoryIds ?? { not: null } },
+          select: { totalCo2e: true, recordCount: true, emissionCategory: { select: { name: true } } },
+        }),
+    byCategoryIds
+      ? Promise.resolve([])
+      : prisma.dashboardAggregate.findMany({
+          where: { ...base, emissionCategoryId: null, facilityId: byFacilityIds ?? { not: null } },
+          select: { totalCo2e: true, recordCount: true, facility: { select: { name: true } } },
+        }),
+  ]);
 
-  // Get summary totals from activity records
-  const totalAgg = await prisma.activityRecord.aggregate({
-    where: whereClause,
-    _sum: { amount: true },
-    _count: { id: true },
-  });
-
+  const scopeTotals = [1, 2, 3].map((scope) =>
+    totalRows.filter((r) => r.scope === scope).reduce((sum, r) => sum + Number(r.totalCo2e), 0),
+  );
+  const totalCo2e = scopeTotals[0] + scopeTotals[1] + scopeTotals[2];
   const summary = {
-    totalCo2e: totalAgg._sum?.amount ? Number(totalAgg._sum.amount) : 0,
-    scope1: 0,
-    scope2: 0,
-    scope3: 0,
-    recordCount: totalAgg._count.id || 0,
+    totalCo2e,
+    scope1: scopeTotals[0],
+    scope2: scopeTotals[1],
+    scope3: scopeTotals[2],
+    recordCount: totalRows.reduce((sum, r) => sum + r.recordCount, 0),
   };
 
-  // Get scope breakdown via raw SQL (activity records joined with categories)
-  const scopeBreakdown = await prisma.$queryRaw<
-    Array<{ scope: number; totalCo2e: number }>
-  >`
-    SELECT ec.scope, COALESCE(CAST(SUM(ar.amount) AS NUMERIC), 0) as totalCo2e
-    FROM activity_records ar
-    JOIN emission_categories ec ON ar.emission_category_id = ec.id
-    WHERE ar.organization_id = ${orgId}
-      AND ar.reporting_period_id = ANY(${query.periodIds}::uuid[])
-      AND ar.review_status = 'approved'
-      ${query.categoryIds && query.categoryIds.length > 0 ? `AND ar.emission_category_id = ANY(${query.categoryIds}::uuid[])` : ""}
-      ${query.facilityIds && query.facilityIds.length > 0 ? `AND ar.facility_id = ANY(${query.facilityIds}::uuid[])` : ""}
-    GROUP BY ec.scope
-    ORDER BY totalCo2e DESC
-  `;
+  const scopeData = [1, 2, 3]
+    .map((scope, i) => ({ scope, co2e: scopeTotals[i], percentage: totalCo2e > 0 ? (scopeTotals[i] / totalCo2e) * 100 : 0 }))
+    .filter((s) => s.co2e > 0)
+    .sort((a, b) => b.co2e - a.co2e);
 
-  const scopeData = scopeBreakdown.map((item) => {
-    const co2e = Number(item.totalCo2e);
-    return {
-      scope: item.scope,
-      co2e,
-      percentage: summary.totalCo2e > 0 ? (co2e / summary.totalCo2e) * 100 : 0,
-    };
-  });
-
-  // Get category breakdown
-  const categoryBreakdown = await prisma.activityRecord.groupBy({
-    by: ["emissionCategoryId"],
-    where: whereClause,
-    _sum: { amount: true },
-    _count: { id: true },
-  });
-
-  const categoryIdsBreakdown = categoryBreakdown
-    .map((c) => c.emissionCategoryId)
-    .filter(Boolean) as string[];
-  const categoriesBreakdown = await prisma.emissionCategory.findMany({
-    where: { id: { in: categoryIdsBreakdown } },
-    select: { id: true, name: true },
-  });
-  const categoryMapBreakdown = new Map(categoriesBreakdown.map((c) => [c.id, c.name]));
-
-  const categoryData = categoryBreakdown.map((item) => ({
-    name: item.emissionCategoryId ? categoryMapBreakdown.get(item.emissionCategoryId) || "Unknown" : "Unknown",
-    co2e: item._sum?.amount ? Number(item._sum.amount) : 0,
-    recordCount: item._count?.id || 0,
-  }));
-
-  // Trends by period
-  const trends = await Promise.all(
-    query.periodIds.map(async (periodId) => {
-      const scopeAgg = await prisma.$queryRaw<
-        Array<{ scope: number; totalCo2e: string }>
-      >`
-        SELECT ec.scope, COALESCE(CAST(SUM(ar.amount) AS NUMERIC), 0) as totalCo2e
-        FROM activity_records ar
-        JOIN emission_categories ec ON ar.emission_category_id = ec.id
-        WHERE ar.organization_id = ${orgId}
-          AND ar.reporting_period_id = ${periodId}
-          AND ar.review_status = 'approved'
-          ${query.categoryIds && query.categoryIds.length > 0 ? `AND ar.emission_category_id = ANY(${query.categoryIds}::uuid[])` : ""}
-          ${query.facilityIds && query.facilityIds.length > 0 ? `AND ar.facility_id = ANY(${query.facilityIds}::uuid[])` : ""}
-        GROUP BY ec.scope
-      `;
-
-      const period = periods.find((p) => p.id === periodId);
-      const scope1Total = scopeAgg.find(s => s.scope === 1)?.totalCo2e || "0";
-      const scope2Total = scopeAgg.find(s => s.scope === 2)?.totalCo2e || "0";
-      const scope3Total = scopeAgg.find(s => s.scope === 3)?.totalCo2e || "0";
-      const total = scopeAgg.reduce((sum, s) => sum + Number(s.totalCo2e), 0);
-
-      return {
-        period: period?.label || periodId,
-        co2e: total,
-        scope1: Number(scope1Total),
-        scope2: Number(scope2Total),
-        scope3: Number(scope3Total),
-      };
-    })
+  const sumBy = (rows: Array<{ name: string; co2e: number; recordCount: number }>) => {
+    const map = new Map<string, { name: string; co2e: number; recordCount: number }>();
+    for (const r of rows) {
+      const cur = map.get(r.name) ?? { name: r.name, co2e: 0, recordCount: 0 };
+      cur.co2e += r.co2e;
+      cur.recordCount += r.recordCount;
+      map.set(r.name, cur);
+    }
+    return [...map.values()].sort((a, b) => b.co2e - a.co2e);
+  };
+  const categoryData = sumBy(
+    categoryRows.map((r) => ({ name: r.emissionCategory?.name ?? "Unknown", co2e: Number(r.totalCo2e), recordCount: r.recordCount })),
+  );
+  const facilityData = sumBy(
+    facilityRows.map((r) => ({ name: r.facility?.name ?? "Unknown", co2e: Number(r.totalCo2e), recordCount: r.recordCount })),
   );
 
-  // Top contributors
-  const topRecords = await prisma.activityRecord.findMany({
-    where: whereClause,
-    select: {
-      amount: true,
-      emissionCategoryId: true,
-      facilityId: true,
-    },
-    orderBy: { amount: "desc" },
-    take: 10,
+  const trends = periods.map((period) => {
+    const rows = totalRows.filter((r) => r.reportingPeriodId === period.id);
+    const s = [1, 2, 3].map((scope) => rows.filter((r) => r.scope === scope).reduce((sum, r) => sum + Number(r.totalCo2e), 0));
+    return { period: period.label, co2e: s[0] + s[1] + s[2], scope1: s[0], scope2: s[1], scope3: s[2] };
   });
 
-  // Fetch category and facility names
-  const categoryIds = topRecords
-    .map((r) => r.emissionCategoryId)
-    .filter(Boolean) as string[];
-  const facilityIds = topRecords
-    .map((r) => r.facilityId)
-    .filter(Boolean) as string[];
-
-  const categories = await prisma.emissionCategory.findMany({
-    where: { id: { in: categoryIds } },
-    select: { id: true, name: true },
-  });
-  const facilities = await prisma.facility.findMany({
-    where: { id: { in: facilityIds } },
-    select: { id: true, name: true },
-  });
-
-  const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
-  const facilityMap = new Map(facilities.map((f) => [f.id, f.name]));
-
-  const topContributors = topRecords.map((r) => ({
-    facility: r.facilityId ? facilityMap.get(r.facilityId) || "Unknown" : "Unknown",
-    category: r.emissionCategoryId ? categoryMap.get(r.emissionCategoryId) || "Unknown" : "Unknown",
-    co2e: Number(r.amount),
-  }));
+  const topContributors = categoryData.slice(0, 10).map((c) => ({ facility: "All facilities", category: c.name, co2e: c.co2e }));
 
   // Generate recommendations based on data
   const recommendations: string[] = [];
@@ -227,9 +163,8 @@ async function buildReportData(
     recommendations.push("Scope 1 (fuel) is significant. Consider renewable energy transition.");
   }
   if (categoryData.length > 0) {
-    const topCategory = categoryData[0];
     recommendations.push(
-      `${topCategory.name} is the largest contributor. Target this area for reduction initiatives.`
+      `${categoryData[0].name} is the largest contributor. Target this area for reduction initiatives.`
     );
   }
 
@@ -242,7 +177,7 @@ async function buildReportData(
     breakdowns: {
       byScope: scopeData,
       byCategory: categoryData,
-      byFacility: [], // Would fetch facility data here
+      byFacility: facilityData,
     },
     topContributors,
     trends,
@@ -256,7 +191,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const body = await req.json();
     const query = ReportRequestSchema.parse(body);

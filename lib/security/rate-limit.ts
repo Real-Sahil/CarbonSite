@@ -64,8 +64,11 @@ export function resetRateLimitBucketsForTests() {
 
 // Route-class policies.
 export const POLICIES = {
-  // Auth endpoints: 5 attempts per 15 minutes per IP.
-  auth: { limit: 5, windowMs: 15 * 60_000 },
+  // Credential endpoints (sign-in, sign-up, password reset), per IP. A whole
+  // office signs in from one NAT address, so this bounds bulk abuse only;
+  // guessing one account's password is stopped by the per-account lockout
+  // (recordFailedLogin / isAccountLocked in rate-limit-async.ts).
+  auth: { limit: 30, windowMs: 15 * 60_000 },
   // Mobile session refresh: many field workers can share one site NAT IP,
   // so this is looser than `auth` but still bounded.
   tokenRefresh: { limit: 60, windowMs: 15 * 60_000 },
@@ -74,6 +77,12 @@ export const POLICIES = {
   mutation: { limit: 120, windowMs: 60_000 },
   read: { limit: 600, windowMs: 60_000 },
 } as const;
+
+/// Better Auth paths that take a credential or create an account. Session
+/// reads, sign-out and the like are ordinary traffic, never this bucket.
+export function isCredentialAuthPath(pathname: string): boolean {
+  return /^\/api\/auth\/(sign-in|sign-up|forget-password|request-password-reset|reset-password|two-factor|change-password|verify-email|send-verification-email)(\/|$)/.test(pathname);
+}
 
 // Clear in-memory lockout for account (used after successful login)
 export function clearAccountLockout(email: string) {

@@ -298,12 +298,12 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
 
               <div className="space-y-2">
                 <Label htmlFor="accountingSystem">Accounting System (Optional)</Label>
-                <Select value={formData.accountingSystem} onValueChange={(value) => handleChange({ target: { name: "accountingSystem", value } })}>
+                <Select value={formData.accountingSystem || "none"} onValueChange={(value) => handleChange({ target: { name: "accountingSystem", value: value === "none" ? "" : value } })}>
                   <SelectTrigger id="accountingSystem">
                     <SelectValue placeholder="Select or leave blank" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Not using integrated accounting</SelectItem>
+                    <SelectItem value="none">Not using integrated accounting</SelectItem>
                     <SelectItem value="Xero">Xero</SelectItem>
                     <SelectItem value="QuickBooks">QuickBooks</SelectItem>
                     <SelectItem value="SAP">SAP</SelectItem>

@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { FACILITY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
@@ -43,7 +43,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const searchParams = req.nextUrl.searchParams;
     const query = AnomalyQuerySchema.parse({

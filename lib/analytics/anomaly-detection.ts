@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 
@@ -32,7 +33,7 @@ export async function detectOutliers(
     SELECT DISTINCT ar.emission_category_id
     FROM activity_records ar
     WHERE ar.organization_id = ${organizationId}
-      ${reportingPeriodId ? `AND ar.reporting_period_id = ${reportingPeriodId}` : ''}
+      ${reportingPeriodId ? Prisma.sql`AND ar.reporting_period_id = ${reportingPeriodId}` : Prisma.empty}
   `;
 
   for (const cat of uniqueCategories) {
@@ -166,16 +167,15 @@ export async function detectUnusualPatterns(
 ): Promise<EmissionAnomaly[]> {
   const anomalies: EmissionAnomaly[] = [];
 
-  // Get scope breakdown via raw SQL
-  const scopeData = await prisma.$queryRaw<Array<{
-    scope: number;
-    total_co2e: string;
-  }>>`
-    SELECT scope, SUM(total_co2e) as total_co2e
-    FROM dashboard_aggregates
-    WHERE organization_id = ${organizationId}
-    GROUP BY scope
-  `;
+  // Scope rollup rows only: the per-category, facility and business-unit rows
+  // repeat the same CO2e, and market-based Scope 2 is never added to the total.
+  const scopeData = (
+    await prisma.dashboardAggregate.groupBy({
+      by: ["scope"],
+      where: { organizationId, snapshotId: null, ...SCOPE_ROLLUP_DIMENSIONS, facilityId: null },
+      _sum: { totalCo2e: true },
+    })
+  ).map((r) => ({ scope: r.scope, total_co2e: String(r._sum.totalCo2e ?? 0) }));
 
   if (scopeData.length === 0) return anomalies;
 

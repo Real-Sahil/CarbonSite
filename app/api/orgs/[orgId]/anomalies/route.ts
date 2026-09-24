@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireOrgMember } from '@/lib/auth/session';
+import { requireOrgMember, ROLE_GROUPS } from '@/lib/auth/session';
 import { handleRouteError } from '@/lib/validation/api';
 import { detectOutliers, detectTrendChanges } from '@/lib/analytics/anomaly-detection';
 import { z } from 'zod';
@@ -17,13 +17,13 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, 'viewer', 'reviewer', 'editor', 'admin', 'auditor');
+    await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const query = querySchema.parse({
-      reportingPeriodId: req.nextUrl.searchParams.get('reportingPeriodId'),
-      severity: req.nextUrl.searchParams.get('severity'),
-      limit: req.nextUrl.searchParams.get('limit'),
-      offset: req.nextUrl.searchParams.get('offset'),
+      reportingPeriodId: req.nextUrl.searchParams.get('reportingPeriodId') ?? undefined,
+      severity: req.nextUrl.searchParams.get('severity') ?? undefined,
+      limit: req.nextUrl.searchParams.get('limit') ?? undefined,
+      offset: req.nextUrl.searchParams.get('offset') ?? undefined,
     });
 
     // Detect both outliers and trend changes in parallel

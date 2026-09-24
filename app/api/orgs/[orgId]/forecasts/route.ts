@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -26,16 +26,16 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     const { searchParams } = new URL(req.url);
     const { type, limit = 50, offset = 0, supplierId, minScore, trend } = forecastQuerySchema.parse({
-      type: searchParams.get("type"),
-      limit: searchParams.get("limit"),
-      offset: searchParams.get("offset"),
-      supplierId: searchParams.get("supplierId"),
-      minScore: searchParams.get("minScore"),
-      trend: searchParams.get("trend"),
+      type: searchParams.get("type") ?? undefined,
+      limit: searchParams.get("limit") ?? undefined,
+      offset: searchParams.get("offset") ?? undefined,
+      supplierId: searchParams.get("supplierId") ?? undefined,
+      minScore: searchParams.get("minScore") ?? undefined,
+      trend: searchParams.get("trend") ?? undefined,
     });
 
     // If requesting supplier analytics (new endpoint)

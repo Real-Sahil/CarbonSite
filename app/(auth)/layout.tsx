@@ -11,7 +11,7 @@ const TRUST_ITEMS = [
 ];
 
 const FLOATING_STATS = [
-  { value: "DEFRA 2025", sub: "Factor library" },
+  { value: "DEFRA 2026", sub: "Factor library" },
   { value: "GHG Protocol", sub: "Standard" },
   { value: "ISO 14064", sub: "Compatible" },
 ];
@@ -48,7 +48,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           {/* Main copy */}
           <div className="flex-1 flex flex-col justify-center">
             <p className="text-[10px] text-amber-400 font-mono uppercase tracking-[0.14em] mb-5">
-              DEFRA 2025 · GHG Protocol · IPCC AR6
+              DEFRA 2026 · GHG Protocol · IPCC AR6
             </p>
             <h2 className="text-3xl xl:text-4xl font-semibold tracking-[-0.03em] leading-tight text-white mb-4">
               Carbon accounting

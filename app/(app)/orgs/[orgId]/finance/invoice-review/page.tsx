@@ -71,7 +71,11 @@ export default function InvoiceReviewPage() {
       params.append('limit', '100');
 
       const res = await fetch(`/api/orgs/${orgId}/invoices/anomalies?${params.toString()}`);
-      if (!res.ok) throw new Error('Failed to fetch anomalies');
+      if (!res.ok) {
+        // 402 carries the plan-upgrade message; show it rather than a generic failure.
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message || 'Failed to fetch anomalies');
+      }
 
       const data = await res.json();
       setAnomalies(data.anomalies || []);

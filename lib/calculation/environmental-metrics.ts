@@ -20,16 +20,20 @@ import { prisma } from "@/lib/db";
 import { normalizeUnit, UnitError } from "./units";
 import { selectFactor, buildFactorCache } from "./factor-selector";
 import { computeCo2e } from "./engine";
+import { defaultRunInputs } from "./default-run-inputs";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
 import type { ActivityRecord, EnvironmentalMetricType } from "@prisma/client";
 
 const WASTE_CATEGORY_CODE = "s3-waste";
 
-async function getDefaultFactorLibraryAndMethodology() {
-  const [factorLibrary, methodologyVersion] = await Promise.all([
-    prisma.factorLibrary.findFirst({ orderBy: { publishedAt: "desc" } }),
-    prisma.methodologyVersion.findFirst({ orderBy: { createdAt: "desc" } }),
-  ]);
+async function getDefaultFactorLibraryAndMethodology(orgId: string, reportingPeriodId: string) {
+  const inputs = await defaultRunInputs(orgId, reportingPeriodId);
+  const [factorLibrary, methodologyVersion] = inputs
+    ? await Promise.all([
+        prisma.factorLibrary.findUnique({ where: { id: inputs.factorLibraryId } }),
+        prisma.methodologyVersion.findUnique({ where: { id: inputs.methodologyVersionId } }),
+      ])
+    : [null, null];
   if (!factorLibrary || !methodologyVersion) {
     throw new Error("No factor library or methodology version seeded — cannot calculate waste CO2e.");
   }
@@ -52,7 +56,10 @@ export async function syncWasteRecordCalculation(
   const category = await prisma.emissionCategory.findUniqueOrThrow({
     where: { code: WASTE_CATEGORY_CODE },
   });
-  const { factorLibrary, methodologyVersion } = await getDefaultFactorLibraryAndMethodology();
+  const { factorLibrary, methodologyVersion } = await getDefaultFactorLibraryAndMethodology(
+    wasteRecord.organizationId,
+    wasteRecord.reportingPeriodId,
+  );
 
   const activityDate = wasteRecord.recordedAt;
   const amount = Number(wasteRecord.weightTonnes);

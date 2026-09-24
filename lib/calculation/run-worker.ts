@@ -1,3 +1,4 @@
+import { recordCountry } from "./geography";
 import { prisma } from "@/lib/db";
 import { calculationLogger } from "@/lib/logger";
 import { triggerFacilityRiskFlag } from "@/lib/automation/n8n-client";
@@ -212,6 +213,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
   // The org's own factors take precedence over the shared library.
   const customFactors = await loadOrgCustomFactors(orgId);
   const spendSupplementCaches = new Map<string, FactorCache | null>();
+  const orgCountry = (await prisma.organization.findUnique({ where: { id: orgId }, select: { hqCountry: true } }))?.hqCountry;
 
   const chunkDeadline = Date.now() + CHUNK_TIME_BUDGET_MS;
 
@@ -220,6 +222,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       where: { ...activityRecordWhere, calculations: { none: { calculationRunId } } },
       include: {
         emissionCategory: { select: { id: true, code: true, activityType: true, scope: true } },
+        facility: { select: { country: true } },
       },
       orderBy: { id: "asc" },
       take: BATCH_LOAD_SIZE,
@@ -276,6 +279,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         continue;
       }
 
+      const country = recordCountry(record.country, record.facility?.country, orgCountry);
       const matchHint = [record.fuelType, record.transportMode, record.refrigerantType]
         .filter(Boolean)
         .join(" ");
@@ -283,7 +287,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         organizationId: orgId,
         emissionCategoryId: record.emissionCategoryId,
         activityType: record.emissionCategory.activityType,
-        geographyCountry: record.country,
+        geographyCountry: country,
         activityDate,
         recordUnit: normalized.unit,
         matchHint,
@@ -291,7 +295,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       const libraryQuery = {
         emissionCategoryId: record.emissionCategoryId,
         activityType: record.emissionCategory.activityType,
-        geographyCountry: record.country,
+        geographyCountry: country,
         activityDate,
         factorLibraryId: run.factorLibraryId,
         scope2Method: record.scope2Method ?? undefined,

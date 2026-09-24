@@ -77,11 +77,12 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     );
   }
 
-  // Field workers and supplier accounts have no access to the org portal — redirect
-  // them to their own submissions view instead of showing a generic access-denied page.
-  if (membership && (membership.role === "field_worker" || membership.role === "supplier")) {
-    redirect(`/orgs/${orgId}/submissions`);
-  }
+  // Field workers and supplier accounts have no access to the org portal.
+  // Their own surfaces live outside this layout (anything under /orgs/[orgId]
+  // would redirect back here in a loop): /app points field workers at the
+  // mobile app, and suppliers have the supplier portal.
+  if (membership?.role === "field_worker") redirect("/app");
+  if (membership?.role === "supplier") redirect("/supplier-portal");
 
   if (layoutDbErr) {
     // Non-AuthError from Prisma (e.g. missing DB column) — show a recoverable error

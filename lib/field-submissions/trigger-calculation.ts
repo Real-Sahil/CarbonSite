@@ -5,6 +5,7 @@
 import { createHash } from "crypto";
 import { prisma } from "@/lib/db";
 import { dispatchCalculation } from "@/lib/jobs/dispatch";
+import { defaultRunInputs } from "@/lib/calculation/default-run-inputs";
 
 export async function scheduleCalculationForPeriod(
   orgId: string,
@@ -22,17 +23,17 @@ export async function scheduleCalculationForPeriod(
   });
   if (inFlight) return;
 
-  const [methodology, factorLibrary] = await Promise.all([
-    prisma.methodologyVersion.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }),
-    prisma.factorLibrary.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }),
-  ]);
-
-  if (!methodology || !factorLibrary) {
+  // The period's own library, never simply the newest row (which picked EPA
+  // factors for a UK organisation): lib/calculation/default-run-inputs.ts.
+  const inputs = await defaultRunInputs(orgId, reportingPeriodId);
+  if (!inputs) {
     console.warn(
       `[auto-calc] No methodology or factor library found — cannot auto-trigger run for period ${reportingPeriodId}`,
     );
     return;
   }
+  const methodology = { id: inputs.methodologyVersionId };
+  const factorLibrary = { id: inputs.factorLibraryId };
 
   const triggerHash = createHash("sha256")
     .update(

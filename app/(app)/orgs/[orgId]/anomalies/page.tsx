@@ -161,15 +161,15 @@ export default function AnomaliesPage() {
       {/* Filter */}
       <div className="flex items-center gap-4">
         <label className="text-sm font-medium text-gray-700">Filter by Severity:</label>
-        <Select value={severityFilter || ''} onValueChange={(value) => {
-          setSeverityFilter(value || null);
+        <Select value={severityFilter || 'all'} onValueChange={(value) => {
+          setSeverityFilter(value === 'all' ? null : value);
           setOffset(0);
         }}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="All Severities" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Severities</SelectItem>
+            <SelectItem value="all">All Severities</SelectItem>
             <SelectItem value="high">High</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="low">Low</SelectItem>

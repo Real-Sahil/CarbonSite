@@ -28,6 +28,20 @@ function mapSignUpError(err: { code?: string; message?: string } | null | undefi
   }
 }
 
+const HQ_COUNTRIES: Array<[string, string]> = [
+  ["GB", "United Kingdom"],
+  ["IE", "Ireland"],
+  ["US", "United States"],
+  ["FR", "France"],
+  ["DE", "Germany"],
+  ["NL", "Netherlands"],
+  ["ES", "Spain"],
+  ["IT", "Italy"],
+  ["BE", "Belgium"],
+  ["CA", "Canada"],
+  ["AU", "Australia"],
+];
+
 const INPUT_CLS =
   "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
 
@@ -40,6 +54,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [orgName, setOrgName] = useState("");
   const [industry, setIndustry] = useState("");
+  const [hqCountry, setHqCountry] = useState("GB");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -70,7 +85,7 @@ export default function SignUpPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ name: orgName.trim(), industry: industry.trim() || undefined })
+        body: JSON.stringify({ name: orgName.trim(), industry: industry.trim() || undefined, hqCountry })
       });
 
       if (!orgRes.ok) {
@@ -120,6 +135,15 @@ export default function SignUpPage() {
               Industry <span className="text-white/20 normal-case font-normal">(optional)</span>
             </label>
             <input id="industry" type="text" value={industry} onChange={(e) => setIndustry(e.target.value)} disabled={loading} placeholder="Construction, Logistics, Manufacturing..." className={INPUT_CLS} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="hqCountry" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">Country</label>
+            <select id="hqCountry" value={hqCountry} onChange={(e) => setHqCountry(e.target.value)} disabled={loading} className={INPUT_CLS}>
+              {HQ_COUNTRIES.map(([code, label]) => (
+                <option key={code} value={code} className="bg-zinc-900">{label}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-white/30">Sets the grid electricity and fuel factors used when a site has no country of its own.</p>
           </div>
           {error && (
             <div className="flex items-start gap-2 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-3.5 py-2.5" role="alert">

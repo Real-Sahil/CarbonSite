@@ -282,59 +282,49 @@ export default function EsrsE1GapPage() {
 
     async function fetchData() {
       try {
-        const [recordsRes, snapshotsRes, reportsRes, targetsRes, initiativesRes, complianceRes, sbtiRes, offsetsRes, pricesRes, planRes] =
+        // Org list endpoints answer { data: [...] } (records also carry total).
+        const get = async (path: string) => {
+          const res = await fetch(`/api/orgs/${orgId}${path}`);
+          return res.ok ? res.json() : null;
+        };
+        const list = <T,>(j: { data?: T[] } | null): T[] => (Array.isArray(j?.data) ? j!.data! : []);
+        const [allJson, approvedJson, snapshotsJson, reportsJson, targetsJson, initiativesJson, complianceJson, sbtiJson, offsetsJson, pricesJson, planJson, analyticsJson] =
           await Promise.all([
-            fetch(`/api/orgs/${orgId}/activity-records?limit=1&status=approved`),
-            fetch(`/api/orgs/${orgId}/calculation-runs?limit=1`),
-            fetch(`/api/orgs/${orgId}/reports?limit=5`),
-            fetch(`/api/orgs/${orgId}/targets`),
-            fetch(`/api/orgs/${orgId}/targets/initiatives`),
-            fetch(`/api/orgs/${orgId}/compliance`),
-            fetch(`/api/orgs/${orgId}/sbti`),
-            fetch(`/api/orgs/${orgId}/offsets?limit=1`),
-            fetch(`/api/orgs/${orgId}/carbon-prices`),
-            fetch(`/api/orgs/${orgId}/transition-plan`),
-          ]);
-
-        const [recordsJson, snapshotsJson, reportsJson, targetsJson, initiativesJson, complianceJson, sbtiJson, offsetsJson, pricesJson, planJson] =
-          await Promise.all([
-            recordsRes.ok ? recordsRes.json() : { records: [], pagination: {} },
-            snapshotsRes.ok ? snapshotsRes.json() : { runs: [] },
-            reportsRes.ok ? reportsRes.json() : { reports: [] },
-            targetsRes.ok ? targetsRes.json() : { targets: [] },
-            initiativesRes.ok ? initiativesRes.json() : { initiatives: [] },
-            complianceRes.ok ? complianceRes.json() : { records: [] },
-            sbtiRes.ok ? sbtiRes.json() : { target: null },
-            offsetsRes.ok ? offsetsRes.json() : { offsets: [] },
-            pricesRes.ok ? pricesRes.json() : { data: [] },
-            planRes.ok ? planRes.json() : null,
+            get(`/activity-records`),
+            get(`/activity-records?reviewStatus=approved`),
+            get(`/snapshots`),
+            get(`/reports`),
+            get(`/targets`),
+            get(`/initiatives`),
+            get(`/compliance`),
+            get(`/sbti`),
+            get(`/offsets`),
+            get(`/carbon-prices`),
+            get(`/transition-plan`),
+            get(`/performance/own`),
           ]);
         const planChecks: { id: string; status: string }[] = (planJson?.checklist || []).filter((c: { id: string }) => c.id !== 'taxonomy');
-        const prices: CarbonPrice[] = (pricesJson.data || []).map((p: CarbonPrice & { effectiveFrom: string; effectiveTo: string | null; pricePerTonne: string }) => ({
+        const prices: CarbonPrice[] = list<CarbonPrice & { effectiveFrom: string; effectiveTo: string | null; pricePerTonne: string }>(pricesJson).map((p) => ({
           ...p,
           pricePerTonne: Number(p.pricePerTonne),
           effectiveFrom: new Date(p.effectiveFrom),
           effectiveTo: p.effectiveTo ? new Date(p.effectiveTo) : null,
         }));
 
-        // Fetch category breakdown from performance/own or analytics
-        const analyticsRes = await fetch(`/api/orgs/${orgId}/performance/own`);
-        const analyticsJson = analyticsRes.ok ? await analyticsRes.json() : {};
-
-        // Parse scope/category data from records (rough proxy via category codes from a separate endpoint)
-        const catRes = await fetch(`/api/orgs/${orgId}/activity-records?limit=500&fields=emissionCategoryId`);
-        const catJson = catRes.ok ? await catRes.json() : { records: [] };
-        const catCodes: string[] = (catJson.records || []).map((r: { emissionCategoryCode?: string; category?: { code?: string } }) => r.emissionCategoryCode || r.category?.code || '');
+        // Categories present, from the most recent records.
+        type Rec = { emissionCategory?: { code?: string }; evidence?: unknown[] };
+        const recent = list<Rec>(allJson);
+        const catCodes: string[] = recent.map((r) => r.emissionCategory?.code || '');
 
         const scope1Codes = ['s1-stationary', 's1-mobile', 's1-fugitive'];
-        const scope2Codes = ['s2-electricity-lb', 's2-electricity-mb'];
+        const scope2Codes = ['s2-electricity-lb', 's2-electricity-mb', 's2-heat'];
         const scope3Codes = ['s3-business-travel','s3-commuting','s3-purchased-goods','s3-upstream-transport','s3-waste','s3-capital-goods','s3-fuel-energy','s3-upstream-leased','s3-downstream-transport','s3-processing-sold','s3-use-sold','s3-end-of-life','s3-downstream-leased','s3-franchises','s3-investments'];
-        const energyCodes = [...scope1Codes, 's2-electricity-lb', 's2-electricity-mb'];
+        const energyCodes = [...scope1Codes, ...scope2Codes];
 
-        const hasScope1 = catCodes.some((c) => scope1Codes.includes(c)) || analyticsJson.performance?.submissionCount > 0;
+        const hasScope1 = catCodes.some((c) => scope1Codes.includes(c)) || analyticsJson?.performance?.submissionCount > 0;
         const hasScope2 = catCodes.some((c) => scope2Codes.includes(c));
         const presentScope3 = scope3Codes.filter((c) => catCodes.includes(c));
-        const hasScope3 = presentScope3.length > 0 || catCodes.some((c) => c.startsWith('s3-'));
+        const hasScope3 = presentScope3.length > 0;
         const hasScope3AllCategories = presentScope3.length >= 12;
         const hasEnergyConsumption = catCodes.some((c) => energyCodes.includes(c));
 
@@ -344,13 +334,13 @@ export default function EsrsE1GapPage() {
           hasScope3,
           hasScope3AllCategories,
           scope3CategoryCount: presentScope3.length,
-          hasSbtiTarget: !!sbtiJson.target,
-          hasReductionTarget: (targetsJson.targets || []).length > 0,
-          hasReductionInitiatives: (initiativesJson.initiatives || []).length > 0,
-          hasPublishedSnapshot: (snapshotsJson.runs || snapshotsJson.snapshots || []).length > 0,
-          hasGhgReport: (reportsJson.reports || []).some((r: { type: string }) => ['ghg_protocol', 'csrd_esrs_e1'].includes(r.type)),
+          hasSbtiTarget: !!sbtiJson?.target,
+          hasReductionTarget: list(targetsJson).length > 0,
+          hasReductionInitiatives: list(initiativesJson).length > 0,
+          hasPublishedSnapshot: list(snapshotsJson).length > 0,
+          hasGhgReport: list<{ type: string }>(reportsJson).some((r) => ['ghg_protocol', 'csrd_esrs_e1'].includes(r.type)),
           hasEnergyConsumption,
-          hasOffsets: (offsetsJson.offsets || []).length > 0,
+          hasOffsets: list(offsetsJson).length > 0,
           carbonPriceGaps: prices.length > 0 ? e18Gaps(prices, new Date()) : null,
           transitionPlan: planJson?.plan
             ? {
@@ -359,10 +349,10 @@ export default function EsrsE1GapPage() {
                 total: planChecks.length,
               }
             : null,
-          hasComplianceCsrd: (complianceJson.records || []).some((r: { framework: string }) => r.framework === 'CSRD_ESRS_E1'),
-          totalRecords: recordsJson.pagination?.total ?? (recordsJson.records || []).length,
-          approvedRecords: (recordsJson.records || []).length,
-          hasEvidenceFiles: (catJson.records || []).some((r: { evidenceFiles?: unknown[] }) => r.evidenceFiles && (r.evidenceFiles as unknown[]).length > 0),
+          hasComplianceCsrd: list<{ framework: string }>(complianceJson).some((r) => r.framework === 'CSRD_ESRS_E1'),
+          totalRecords: allJson?.total ?? recent.length,
+          approvedRecords: approvedJson?.total ?? list(approvedJson).length,
+          hasEvidenceFiles: recent.some((r) => Array.isArray(r.evidence) && r.evidence.length > 0),
         };
 
         const built = buildDisclosures(org);

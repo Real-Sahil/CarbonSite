@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 
 interface AnalyticsEvent {
   type: "calculation_progress" | "analytics_updated" | "anomaly_detected" | "error" | "heartbeat";
@@ -35,7 +35,7 @@ export async function GET(
   { params }: { params: Promise<{ orgId: string }> }
 ) {
   const { orgId } = await params;
-  const auth = await requireOrgMember(orgId);
+  const auth = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
   if (!auth || !auth.session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

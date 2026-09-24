@@ -433,7 +433,7 @@ export default function SupplierSubmissionsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {periods.length === 0 ? (
-                          <SelectItem value="">No periods available</SelectItem>
+                          <SelectItem value="__none" disabled>No periods available</SelectItem>
                         ) : (
                           periods.map((period) => (
                             <SelectItem key={period.id} value={period.id}>

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { describe, expect, test, beforeEach, vi } from "vitest";
 import {
+  isCredentialAuthPath,
   rateLimit,
   rateLimitKey,
   resetRateLimitBucketsForTests,
@@ -212,5 +213,18 @@ describe("Rate limiting cold-start persistence", () => {
 
     expect(result?.status).toBe(429);
     expect(result?.headers.get("Retry-After")).toBeTruthy();
+  });
+});
+
+describe("isCredentialAuthPath", () => {
+  test("only credential endpoints share the strict auth bucket", () => {
+    expect(isCredentialAuthPath("/api/auth/sign-in/email")).toBe(true);
+    expect(isCredentialAuthPath("/api/auth/sign-up/email")).toBe(true);
+    expect(isCredentialAuthPath("/api/auth/request-password-reset")).toBe(true);
+    expect(isCredentialAuthPath("/api/auth/reset-password")).toBe(true);
+    expect(isCredentialAuthPath("/api/auth/get-session")).toBe(false);
+    expect(isCredentialAuthPath("/api/auth/sign-out")).toBe(false);
+    expect(isCredentialAuthPath("/api/auth/token")).toBe(false);
+    expect(isCredentialAuthPath("/api/auth/sign-inx")).toBe(false);
   });
 });

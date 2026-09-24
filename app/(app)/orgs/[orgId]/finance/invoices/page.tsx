@@ -241,12 +241,12 @@ export default function InvoicePage() {
               <label className="text-sm font-medium mb-2 block">
                 Severity
               </label>
-              <Select value={severityFilter} onValueChange={setSeverityFilter}>
+              <Select value={severityFilter || "all"} onValueChange={(v) => setSeverityFilter(v === "all" ? "" : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="critical">Critical</SelectItem>
                   <SelectItem value="warning">Warning</SelectItem>
                   <SelectItem value="info">Info</SelectItem>
@@ -258,12 +258,12 @@ export default function InvoicePage() {
               <label className="text-sm font-medium mb-2 block">
                 Anomaly Type
               </label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <Select value={typeFilter || "all"} onValueChange={(v) => setTypeFilter(v === "all" ? "" : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="duplicate">Duplicate</SelectItem>
                   <SelectItem value="qty_mismatch">Quantity Mismatch</SelectItem>
                   <SelectItem value="price_spike">Price Spike</SelectItem>
