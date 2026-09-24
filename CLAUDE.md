@@ -15,7 +15,7 @@ MetricOra is a multi-tenant GHG emissions tracking platform for small-to-mid-mar
 - **Database:** PostgreSQL via Prisma ORM. Dev: local Postgres. Prod: Supabase.
 - **Queue/Workers:** `pg-boss` — PostgreSQL-based job queue. No Docker. Uses the same Postgres instance.
 - **Rate Limiting:** Fixed-window counters backed by Redis (optional) with automatic Postgres fallback. Persists rate limits across serverless cold starts. Recommended for production.
-- **Object Storage:** Cloudflare R2 (S3-compatible, free tier — 10 GB/month, zero egress, no credit card). Dev: local filesystem adapter.
+- **Object Storage:** Supabase Storage (private bucket `carbonsite`), through the Storage API (`STORAGE_DRIVER=supabase`) or its S3-compatible endpoint (`r2` driver with `STORAGE_ENDPOINT`). A Postgres driver is the zero-infra fallback. Dev: local filesystem adapter.
 - **Email:** Resend (3k/month free, 100/day). Dev: log to console.
 - **Push Notifications:** Firebase Cloud Messaging (FCM) — free, Google account only.
 - **Document Parsing:** `xlsx` (CSV + Excel), `pdf-parse` (PDFs), `mammoth` (DOCX) — all npm, no Python, no Docker.
@@ -26,7 +26,7 @@ MetricOra is a multi-tenant GHG emissions tracking platform for small-to-mid-mar
 - **Flutter state:** Riverpod; routing: go_router; HTTP: Dio; offline: drift/SQLite; OCR: google_mlkit_text_recognition (on-device, free, offline)
 
 **No Docker. No paid subscriptions.** One deliberate exception: `api/forecast.py`, a stateless Prophet forecasting function deployed as a Vercel Python Function in this same project (no separate host, no Docker) — see "Forecasting" under Background Jobs below. Everything else is Node/TypeScript.
-External accounts required: Supabase (Postgres) + Cloudflare (R2) + Resend (email) + Google (FCM).
+External accounts required: Supabase (Postgres + Storage) + Resend (email) + Google (FCM). No Cloudflare account is used.
 Optional: Redis for production rate limiting (recommended but automatic Postgres fallback provided).
 
 ## Commands
@@ -91,7 +91,7 @@ lib/
   jobs/
     queues/index.ts        # pg-boss queue definitions (imports, calculations, reports, notifications)
     dispatch.ts            # dispatchX(): runs a job inline on Vercel, or enqueues in worker mode
-  storage/index.ts         # Cloudflare R2 client, presignUpload/Download, key conventions
+  storage/index.ts         # Storage drivers (Supabase in production), presignUpload/Download, key conventions
   validation/
     api.ts                 # handleRouteError(), apiError() — consistent { code, message, details? }
   calculation/
@@ -141,7 +141,7 @@ org/{orgId}/imports/{importId}/source.csv
 org/{orgId}/imports/{importId}/errors.csv
 org/{orgId}/reports/{reportId}/report.pdf
 ```
-All presigned URLs generated server-side after auth checks. Expiry: 1 hour (`PRESIGN_TTL` in `lib/storage/index.ts`, raised from 15 minutes to tolerate slow/interrupted downloads). Never expose raw R2 keys to clients.
+All presigned URLs generated server-side after auth checks. Expiry: 1 hour (`PRESIGN_TTL` in `lib/storage/index.ts`, raised from 15 minutes to tolerate slow/interrupted downloads). Never expose raw storage keys to clients.
 
 ### API Routes
 - Validate all input with Zod before touching the database.
@@ -248,7 +248,7 @@ Submissions are always written to local SQLite (`drift`) first. A background syn
 `ReviewTask.targetId` and `Comment.targetId` are polymorphic references (resolved in application code, not via Prisma FK relations). Query the specific resource table after reading `targetType`.
 
 ### Reporting
-Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Report totals must match dashboard totals for the same snapshot — this is a core trust invariant, guarded by `lib/calculation/__tests__/report-dashboard-reconciliation.test.ts`. Generated PDFs/CSVs stored in R2 with checksums. Download links are 1-hour signed URLs.
+Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Report totals must match dashboard totals for the same snapshot — this is a core trust invariant, guarded by `lib/calculation/__tests__/report-dashboard-reconciliation.test.ts`. Generated PDFs/CSVs stored in Supabase Storage with checksums. Download links are 1-hour signed URLs.
 
 **Embodied carbon from delivery notes** (`lib/embodied-carbon/delivery-notes.ts`): approving a `delivery_note` field submission also creates an `EmbodiedCarbonRecord` (source `delivery_note`) against the site's project. The material is matched from the note's description (`matchMaterial()`; the reviewer can change it or opt out), a supplier's own valid EPD replaces the library factor, A1-A3 comes from the factor and A4 from the actual delivery (tonnes x route km x the DEFRA HGV tonne.km factor for the date). Aggregates and asphalt use DEFRA's Material use factors (primary, or closed-loop when the note says recycled). Materials with no library factor (topsoil) and unconvertible quantities (bags, m2 of a per-kg product) create no record; the audit log says why. This is the project whole-life view; the Scope 3 inventory keeps its own ActivityRecord.
 
@@ -271,7 +271,7 @@ Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Rep
 - **Unpublished changes:** when live aggregates differ from the period's latest snapshot, the dashboard shows the signed difference above the headline with a link to review and publish the latest run.
 
 ### Backups
-`.github/workflows/backup.yml`: nightly `scripts/backup/dump.sh` (public schema, pg_dump custom format, AES-256 with `BACKUP_PASSPHRASE`, plus a row-count manifest) to R2 under `db/daily/` (and `db/monthly/` on the 1st); weekly `scripts/backup/restore-drill.sh` restores the latest into a throwaway PostgreSQL 17 (stub `auth` schema and Supabase roles) and fails if a table is missing or short of the manifest. Secrets are listed in the workflow header.
+`.github/workflows/backup.yml`: nightly `scripts/backup/dump.sh` (public schema, pg_dump custom format, AES-256 with `BACKUP_PASSPHRASE`, plus a row-count manifest) to the private Supabase Storage bucket `backups` (migration `20260924000033`, service role key only, `scripts/backup/storage.sh`) under `db/daily/` (pruned after 35 days by the workflow) and `db/monthly/` on the 1st; weekly `scripts/backup/restore-drill.sh` restores the latest into a throwaway PostgreSQL 17 (stub `auth` schema and Supabase roles) and fails if a table is missing or short of the manifest. Secrets are listed in the workflow header.
 
 ### Audit Log
 `AuditLog` is append-only via `writeAuditLog()` in `lib/db/audit.ts`. Never update or delete rows. Required events: auth, role changes, imports, record mutations, factor imports, calculation runs, snapshot publication, report publication, field submission submission/review.
@@ -331,7 +331,7 @@ Use deterministic fixture factor libraries. Do not use real customer evidence fi
 
 ## External Services (Free Accounts, No Docker)
 
-All services are free tier, no credit card required except Cloudflare R2.
+All services are free tier, no credit card required.
 
 ### Supabase (production database)
 - PostgreSQL database hosted on Supabase (supabase.com)
@@ -340,9 +340,9 @@ All services are free tier, no credit card required except Cloudflare R2.
 - Supabase provides: Postgres, real-time subscriptions, auth (optional), vector/pgvector support
 - For production migrations: `pnpm prisma migrate deploy`
 
-### Cloudflare R2 (object storage)
-- Free tier: 10 GB/month, zero egress fees, S3-compatible API
-- Keys: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT`
+### Supabase Storage (object storage)
+- Private bucket `carbonsite` (`STORAGE_BUCKET`), reached server-side with `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`; downloads are signed URLs, email logos go through `/api/public/orgs/{orgId}/branding/logo`
+- Private bucket `backups` holds the encrypted nightly database dumps
 - For local dev, `STORAGE_DRIVER=local` writes to `./uploads/` instead
 
 ### Resend (transactional email)

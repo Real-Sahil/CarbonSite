@@ -1,24 +1,26 @@
 name: Database backup
 
-# Nightly encrypted backup of the production database to Cloudflare R2, and a
-# weekly restore drill that proves the latest backup restores and matches its
-# row-count manifest. Supabase's free tier has no point-in-time recovery, so
-# this is the recovery path. A failure of either job emails the repository
-# owner (GitHub notifies on failed scheduled runs).
+# Nightly encrypted backup of the production database to a private Supabase
+# Storage bucket, and a weekly restore drill that proves the latest backup
+# restores and matches its row-count manifest. Supabase's free tier has no
+# point-in-time recovery, so this is the recovery path. A failure of either
+# job emails the repository owner (GitHub notifies on failed scheduled runs).
 #
 # Secrets (Settings -> Secrets and variables -> Actions):
 #   MIGRATION_DATABASE_URL or DATABASE_URL  Supabase session-mode pooler URL
-#   BACKUP_PASSPHRASE        long random passphrase; keep a copy outside GitHub,
-#                            without it the backups cannot be decrypted
-#   BACKUP_R2_ACCESS_KEY_ID, BACKUP_R2_SECRET_ACCESS_KEY
-#                            an R2 API token limited to the backup bucket
-#   BACKUP_R2_ENDPOINT       https://<account id>.r2.cloudflarestorage.com
-#   BACKUP_R2_BUCKET         e.g. metricora-backups
+#   BACKUP_PASSPHRASE          long random passphrase; keep a copy outside
+#                              GitHub, without it the backups cannot be decrypted
+#   SUPABASE_URL               https://<project ref>.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY  service role key (Project Settings -> API keys)
 #
-# Layout: db/daily/<stamp>.* (add an R2 lifecycle rule deleting after 35
-# days), db/monthly/<stamp>.* on the 1st of each month (kept), db/latest.txt.
+# Bucket: "backups" (private, created by migration 20260924000033). The
+# service role key reaches it through the Storage API; no other role can.
+# Layout: db/daily/<stamp>.* (pruned after 35 days by this workflow),
+# db/monthly/<stamp>.* on the 1st of each month (kept), db/latest.txt.
+# Supabase's free plan caps one upload at 50 MB and the project's storage at
+# 1 GB; the upload step fails loudly before either is a surprise.
 #
-# Restore by hand: download the .dump.gpg, then
+# Restore by hand: download the .dump.gpg from Storage -> backups, then
 #   gpg --decrypt metricora-<stamp>.dump.gpg > backup.dump
 #   pg_restore --no-owner --no-privileges --dbname "$TARGET_URL" backup.dump
 
@@ -39,11 +41,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: auto
-  R2_ENDPOINT: ${{ secrets.BACKUP_R2_ENDPOINT }}
-  R2_BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  BACKUP_BUCKET: backups
   BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check secrets
         run: |
-          for v in DATABASE_URL BACKUP_PASSPHRASE AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY R2_ENDPOINT R2_BUCKET; do
+          for v in DATABASE_URL BACKUP_PASSPHRASE SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY; do
             if [ -z "${!v}" ]; then echo "::error::Missing secret for $v (see the header of backup.yml)"; missing=1; fi
           done
           [ -z "$missing" ]
@@ -69,16 +69,25 @@ jobs:
           echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
       - name: Dump, count and encrypt
         run: OUT_DIR=backup-out scripts/backup/dump.sh
-      - name: Upload to R2
+      - name: Upload to Supabase Storage
         run: |
+          source scripts/backup/storage.sh
           STAMP="$(cat backup-out/latest.txt)"
-          put() { aws s3 cp "$1" "s3://$R2_BUCKET/$2" --endpoint-url "$R2_ENDPOINT" --only-show-errors; }
+          SIZE="$(stat -c %s "backup-out/metricora-$STAMP.dump.gpg")"
+          if [ "$SIZE" -gt $((50 * 1024 * 1024)) ]; then
+            echo "::error::Archive is $((SIZE / 1024 / 1024)) MB, over the 50 MB upload limit of Supabase's free plan. Raise the limit (Pro plan) or split the dump."
+            exit 1
+          fi
           for prefix in db/daily $( [ "$(date -u +%d)" = "01" ] && echo db/monthly ); do
-            put "backup-out/metricora-$STAMP.dump.gpg" "$prefix/metricora-$STAMP.dump.gpg"
-            put "backup-out/manifest-$STAMP.csv" "$prefix/manifest-$STAMP.csv"
+            storage_put "backup-out/metricora-$STAMP.dump.gpg" "$prefix/metricora-$STAMP.dump.gpg"
+            storage_put "backup-out/manifest-$STAMP.csv" "$prefix/manifest-$STAMP.csv"
           done
-          put backup-out/latest.txt db/latest.txt
-          echo "Uploaded $STAMP"
+          storage_put backup-out/latest.txt db/latest.txt
+          echo "Uploaded $STAMP ($((SIZE / 1024)) KB)"
+      - name: Prune daily backups older than 35 days
+        run: |
+          source scripts/backup/storage.sh
+          storage_prune db/daily 35
 
   drill:
     needs: [backup]
@@ -115,11 +124,11 @@ jobs:
           echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
       - name: Download the latest backup
         run: |
-          get() { aws s3 cp "s3://$R2_BUCKET/$1" "$2" --endpoint-url "$R2_ENDPOINT" --only-show-errors; }
-          get db/latest.txt latest.txt
+          source scripts/backup/storage.sh
+          storage_get db/latest.txt latest.txt
           STAMP="$(cat latest.txt)"
-          get "db/daily/metricora-$STAMP.dump.gpg" backup.dump.gpg
-          get "db/daily/manifest-$STAMP.csv" manifest.csv
+          storage_get "db/daily/metricora-$STAMP.dump.gpg" backup.dump.gpg
+          storage_get "db/daily/manifest-$STAMP.csv" manifest.csv
           echo "Backup $STAMP"
       - name: Restore and verify
         run: ARCHIVE=backup.dump.gpg MANIFEST=manifest.csv scripts/backup/restore-drill.sh
