@@ -10,7 +10,7 @@ import {
   createSubscription,
   updateSubscriptionPrice,
   cancelSubscriptionAtPeriodEnd,
-  getPriceId,
+  resolvePriceId,
   type SubscribablePlan,
 } from "@/lib/billing/stripe";
 
@@ -55,7 +55,7 @@ export async function POST(
       );
     }
 
-    const priceId = getPriceId(plan as SubscribablePlan, interval);
+    const priceId = await resolvePriceId(plan as SubscribablePlan, interval);
 
     // Already has a Stripe subscription (e.g. switching starter <-> growth) —
     // cancel_at_period_end may have been set previously; a fresh subscribe

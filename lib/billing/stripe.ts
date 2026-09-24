@@ -217,6 +217,38 @@ export function getSubscriptionPriceId(subscription: Stripe.Subscription): strin
   return subscription.items.data[0]?.price.id ?? null;
 }
 
+// Every price carries a lookup key, identical in the sandbox and the live
+// account (starter_monthly, starter_annual, growth_monthly, growth_annual).
+// Looking prices up by key means the prices always come from the account
+// STRIPE_SECRET_KEY belongs to, so switching test and live keys needs no
+// price ID changes. The STRIPE_PRICE_* env vars remain a fallback.
+export const PRICE_LOOKUP_KEYS: Record<SubscribablePlan, Record<BillingInterval, string>> = {
+  starter: { monthly: 'starter_monthly', annual: 'starter_annual' },
+  growth: { monthly: 'growth_monthly', annual: 'growth_annual' },
+};
+
+const resolvedPriceIds = new Map<string, string>();
+
+export async function resolvePriceId(plan: SubscribablePlan, interval: BillingInterval): Promise<string> {
+  const lookupKey = PRICE_LOOKUP_KEYS[plan][interval];
+  const cached = resolvedPriceIds.get(lookupKey);
+  if (cached) return cached;
+  const { data } = await getStripe().prices.list({ lookup_keys: [lookupKey], active: true, limit: 1 });
+  const priceId = data[0]?.id ?? getPriceId(plan, interval);
+  resolvedPriceIds.set(lookupKey, priceId);
+  return priceId;
+}
+
+// Plan for a subscription: by its price's lookup key, else by the env price IDs.
+export function planForSubscription(subscription: Stripe.Subscription): SubscribablePlan | null {
+  const price = subscription.items.data[0]?.price;
+  if (!price) return null;
+  for (const plan of Object.keys(PRICE_LOOKUP_KEYS) as SubscribablePlan[]) {
+    if (Object.values(PRICE_LOOKUP_KEYS[plan]).includes(price.lookup_key ?? '')) return plan;
+  }
+  return planForPriceId(price.id);
+}
+
 // Reverse lookup from a Stripe price ID back to our plan name, for syncing
 // webhook events (which carry Stripe's price ID, not our plan string) back
 // onto Organization.plan/BillingSubscription.plan.

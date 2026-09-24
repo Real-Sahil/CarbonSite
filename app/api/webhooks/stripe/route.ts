@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { constructWebhookEvent, getSubscriptionPriceId, planForPriceId, subscriptionGrantsPlan, webhookSecrets } from "@/lib/billing/stripe";
+import { constructWebhookEvent, planForSubscription, subscriptionGrantsPlan, webhookSecrets } from "@/lib/billing/stripe";
 import { securityLogger } from "@/lib/logger";
 
 // Stripe requires the exact raw request bytes to verify the signature —
@@ -106,8 +106,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     return;
   }
 
-  const priceId = getSubscriptionPriceId(subscription);
-  const plan = priceId ? planForPriceId(priceId) : null;
+  const plan = planForSubscription(subscription);
 
   await prisma.billingSubscription.update({
     where: { id: billing.id },
@@ -127,8 +126,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   });
 
   // Only move Organization.plan when the price maps to a plan we recognize
-  // (planForPriceId returns null if the env vars for it aren't configured,
-  // or the price doesn't match any of ours) — never silently blank a plan
+  // (planForSubscription returns null when the price has none of our lookup
+  // keys and matches no configured price ID) — never silently blank a plan
   // out from a webhook we can't fully interpret.
   // ...and only while the subscription is paid for: an incomplete (waiting on
   // 3-D Secure), past_due or unpaid subscription grants nothing new.
