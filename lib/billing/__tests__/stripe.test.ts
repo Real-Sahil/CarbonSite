@@ -61,3 +61,26 @@ describe("getSubscriptionPriceId", () => {
     expect(getSubscriptionPriceId(subscription)).toBeNull();
   });
 });
+
+describe("webhook secrets", () => {
+  // Offline: signing and verification are local HMAC, no API call.
+  beforeEach(() => vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_offline"));
+  afterEach(() => vi.unstubAllEnvs());
+
+  const payload = JSON.stringify({ id: "evt_test", object: "event", type: "customer.subscription.updated", data: { object: {} } });
+
+  it("splits a comma-separated list and drops blanks", async () => {
+    const { webhookSecrets } = await import("@/lib/billing/stripe");
+    expect(webhookSecrets(" whsec_a , whsec_b ,")).toEqual(["whsec_a", "whsec_b"]);
+    expect(webhookSecrets(undefined)).toEqual([]);
+  });
+
+  it("accepts an event signed by any configured secret and rejects others", async () => {
+    const { constructWebhookEvent } = await import("@/lib/billing/stripe");
+    const { default: StripeLib } = await import("stripe");
+    const header = StripeLib.webhooks.generateTestHeaderString({ payload, secret: "whsec_live" });
+    expect(constructWebhookEvent(payload, header, ["whsec_sandbox", "whsec_live"]).id).toBe("evt_test");
+    expect(() => constructWebhookEvent(payload, header, ["whsec_sandbox"])).toThrow();
+    expect(() => constructWebhookEvent(payload, header, [])).toThrow();
+  });
+});

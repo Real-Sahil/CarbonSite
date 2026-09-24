@@ -189,8 +189,24 @@ export async function cancelSubscriptionAtPeriodEnd(subscriptionId: string): Pro
   return getStripe().subscriptions.update(subscriptionId, { cancel_at_period_end: true });
 }
 
-export function constructWebhookEvent(rawBody: string, signature: string, webhookSecret: string): Stripe.Event {
-  return getStripe().webhooks.constructEvent(rawBody, signature, webhookSecret);
+// STRIPE_WEBHOOK_SECRET may list several signing secrets, comma-separated:
+// the sandbox and live endpoints both post to the same URL, and a secret
+// being rolled stays valid alongside its replacement. The event is accepted
+// if any of them verifies it.
+export function webhookSecrets(configured: string | undefined): string[] {
+  return (configured ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+export function constructWebhookEvent(rawBody: string, signature: string, webhookSecrets: string[]): Stripe.Event {
+  let lastError: unknown = new Error("No webhook signing secret configured");
+  for (const secret of webhookSecrets) {
+    try {
+      return getStripe().webhooks.constructEvent(rawBody, signature, secret);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError;
 }
 
 // A Stripe subscription price can be on either the subscription item or

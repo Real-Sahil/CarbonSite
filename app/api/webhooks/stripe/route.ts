@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
-import { constructWebhookEvent, getSubscriptionPriceId, planForPriceId, subscriptionGrantsPlan } from "@/lib/billing/stripe";
+import { constructWebhookEvent, getSubscriptionPriceId, planForPriceId, subscriptionGrantsPlan, webhookSecrets } from "@/lib/billing/stripe";
 import { securityLogger } from "@/lib/logger";
 
 // Stripe requires the exact raw request bytes to verify the signature —
@@ -14,12 +14,13 @@ import { securityLogger } from "@/lib/logger";
 // customer.subscription.updated, customer.subscription.deleted,
 // customer.subscription.trial_will_end, invoice.payment_succeeded,
 // invoice.payment_failed, invoice.payment_action_required. STRIPE_WEBHOOK_SECRET (documented in
-// DEPLOYMENT.md, previously unused) is what's verified against.
+// DEPLOYMENT.md) is what's verified against; it may list the sandbox and
+// live endpoints' secrets, comma-separated.
 export async function POST(req: NextRequest) {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secrets = webhookSecrets(process.env.STRIPE_WEBHOOK_SECRET);
   const signature = req.headers.get("stripe-signature");
 
-  if (!webhookSecret || !signature) {
+  if (secrets.length === 0 || !signature) {
     securityLogger.warn("Stripe webhook rejected: missing secret or signature header");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event;
   try {
-    event = constructWebhookEvent(rawBody, signature, webhookSecret);
+    event = constructWebhookEvent(rawBody, signature, secrets);
   } catch (err) {
     securityLogger.warn("Stripe webhook signature verification failed", {
       error: err instanceof Error ? err.message : String(err),
