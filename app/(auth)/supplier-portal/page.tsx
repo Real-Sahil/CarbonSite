@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireSession } from "@/lib/auth/session";
+import { requireSession, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +9,19 @@ import { format } from "date-fns";
 
 export const dynamic = "force-dynamic";
 
+async function sessionOrSignIn() {
+  try {
+    return await requireSession();
+  } catch (err) {
+    // A signed-out supplier (an expired session, a bookmarked link) is sent to
+    // sign in rather than shown a server error.
+    if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
+    throw err;
+  }
+}
+
 export default async function SupplierPortalPage() {
-  const { user } = await requireSession();
+  const { user } = await sessionOrSignIn();
 
   // Check if user is a supplier
   const supplierMembership = await prisma.organizationMembership.findFirst({
