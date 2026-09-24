@@ -10,6 +10,7 @@ const SCOPE_COLORS = ["#e76f51", "#f4a261", "#e9c46a"];
 export interface ScopeRingDatum {
   scope: number;
   label: string;
+  /** kg CO2e, as stored in DashboardAggregate; the ring shows tonnes. */
   value: number;
 }
 
@@ -35,8 +36,8 @@ export function BklitScopeRing({ data, height = 280 }: BklitScopeRingProps) {
 
   const ringData: RingData[] = rows.map((d, i) => ({
     label: d.label,
-    value: d.value,
-    maxValue: total,
+    value: d.value / 1000,
+    maxValue: total / 1000,
     color: SCOPE_COLORS[i % SCOPE_COLORS.length],
   }));
 
