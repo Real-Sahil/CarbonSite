@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import {
   estimateScope3Energy,
@@ -34,7 +34,7 @@ interface Params {
 export async function POST(req: NextRequest, { params }: { params: Promise<Params> }) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "editor", "viewer", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer");
 
     const body = await req.json();
     const { facilityId, categoryType, features, storeEstimate } = EstimateRequestSchema.parse(body);

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { Clock } from "lucide-react";
 import { Prisma } from "@prisma/client";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -45,7 +45,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
 
   let authErr: AuthError | null = null;
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
   } catch (err) {
     if (err instanceof AuthError) {
       authErr = err;

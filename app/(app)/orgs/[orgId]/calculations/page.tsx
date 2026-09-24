@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -88,7 +88,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
 
   let role = "viewer";
   try {
-    const { membership } = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     role = membership.role;
   } catch (err) {
     if (err instanceof AuthError) {

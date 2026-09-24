@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 
 const UpsertSchema = z.object({
@@ -23,7 +23,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "viewer", "auditor");
 
     const records = await prisma.complianceRecord.findMany({
       where: { organizationId: orgId },
@@ -42,7 +42,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = UpsertSchema.safeParse(await req.json());
     if (!body.success) {

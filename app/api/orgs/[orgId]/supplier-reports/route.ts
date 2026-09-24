@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -11,7 +11,7 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "auditor");
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") ?? "submitted";

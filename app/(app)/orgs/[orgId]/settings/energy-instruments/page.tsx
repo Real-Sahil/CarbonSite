@@ -10,7 +10,7 @@ export default async function EnergyInstrumentsPage({ params }: { params: Promis
 
   let canEdit = false;
   try {
-    const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "reviewer", "viewer", "auditor");
+    const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     canEdit = ROLE_GROUPS.editor.includes(membership.role);
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");

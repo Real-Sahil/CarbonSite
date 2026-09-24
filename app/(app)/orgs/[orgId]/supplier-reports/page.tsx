@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { SupplierReportsClient } from "./supplier-reports-client";
@@ -26,7 +26,7 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
 
   let role: string | undefined;
   try {
-    const { membership } = await requireOrgMember(orgId, "admin", "editor", "reviewer", "auditor");
+    const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "auditor");
     role = membership.role;
   } catch {
     redirect("/sign-in");

@@ -70,7 +70,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "reporting-periods", session.user.id),

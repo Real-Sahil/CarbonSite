@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
@@ -57,7 +57,7 @@ export default async function SubmissionsPage({
   let slaOverdueCount = 0;
 
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const where = {
       organizationId: orgId,

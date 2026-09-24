@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { nanoid } from "nanoid";
@@ -29,7 +29,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
   try {
     // The segment carries the supplier's email address.
     const { orgId, supplierId: supplierEmail } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const email = decodeURIComponent(supplierEmail);
     const profile = await prisma.supplierProfile.findUnique({
@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ orgI
   try {
     // The segment carries the supplier's email address.
     const { orgId, supplierId: supplierEmail } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const email = decodeURIComponent(supplierEmail);
     const body = UpsertSchema.parse(await req.json());

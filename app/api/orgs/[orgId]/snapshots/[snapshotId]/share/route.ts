@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
@@ -24,7 +24,7 @@ type Params = { params: Promise<{ orgId: string; snapshotId: string }> };
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId, snapshotId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const snapshot = await prisma.publishedSnapshot.findFirst({
       where: { id: snapshotId, organizationId: orgId },
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, snapshotId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const snapshot = await prisma.publishedSnapshot.findFirst({
       where: { id: snapshotId, organizationId: orgId },

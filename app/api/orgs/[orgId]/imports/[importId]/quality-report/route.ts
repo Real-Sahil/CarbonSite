@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireOrgMember } from '@/lib/auth/session';
+import { requireOrgMember, ROLE_GROUPS } from '@/lib/auth/session';
 import { handleRouteError } from '@/lib/validation/api';
 import { prisma } from '@/lib/db';
 import { scoreImportQuality, calculateMetrics } from '@/lib/data-quality/quality-scorer';
@@ -15,7 +15,7 @@ export async function GET(
 ) {
   try {
     const { orgId, importId } = await params;
-    await requireOrgMember(orgId, 'viewer', 'reviewer', 'editor', 'admin', 'auditor');
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     paramSchema.parse({ importId });
 

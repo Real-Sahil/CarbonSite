@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { verifyRetirement } from "@/lib/data-sources/offsets-db";
@@ -25,7 +25,7 @@ const BodySchema = z.object({
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId, offsetId } = await params;
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const offset = await prisma.carbonOffset.findFirst({
       where: { id: offsetId, organizationId: orgId },

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -18,14 +18,7 @@ export async function GET(
       orgId: string;
       importId: string;
     };
-    const { session } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-    );
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "import-error-download", session.user.id),
       limit: 60,

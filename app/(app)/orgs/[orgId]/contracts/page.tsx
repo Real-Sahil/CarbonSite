@@ -4,7 +4,7 @@ import { HEADLINE_ONLY } from "@/lib/project-carbon/sql";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Building2 } from "lucide-react";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import type { OrgRole } from "@prisma/client";
 import {
@@ -71,23 +71,7 @@ export default async function ContractsPage({ params }: Props) {
 
   let role: OrgRole;
   try {
-    const result = await requireOrgMember(
-      orgId,
-      "admin",
-      "sustainability_director",
-      "sustainability_manager",
-      "operations_manager",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-      "contract_manager",
-      "project_manager",
-      "site_manager",
-      "supervisor",
-      "employee",
-      "client_viewer",
-    );
+    const result = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
     role = result.membership.role;
   } catch (err) {
     if (err instanceof AuthError) {

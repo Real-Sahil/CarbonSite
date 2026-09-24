@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError } from "@/lib/validation/api";
 
@@ -15,7 +15,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const sites = await prisma.site.findMany({
       where: { organizationId: orgId },
@@ -52,7 +52,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     const body = quickCreateSiteSchema.parse(await req.json());
 
     const site = await prisma.$transaction(async (tx) => {

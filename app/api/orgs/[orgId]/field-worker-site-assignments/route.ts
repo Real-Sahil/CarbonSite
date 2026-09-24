@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -24,7 +24,7 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const assignments = await prisma.fieldWorkerSiteAssignment.findMany({
       where: { organizationId: orgId },
@@ -58,7 +58,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "field-worker-site-assignments", session.user.id),
       limit: 60,

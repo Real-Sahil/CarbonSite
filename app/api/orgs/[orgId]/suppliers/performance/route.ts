@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
@@ -21,7 +21,7 @@ export async function GET(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer");
 
     // Fetch all supplier performance data for this organization
     const performances = await prisma.supplierPerformance.findMany({

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 
@@ -14,7 +14,7 @@ type Params = { params: Promise<{ orgId: string; projectId: string; scanId: stri
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, projectId, scanId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor", "sustainability_director");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const scan = await prisma.ecologicalScan.findFirst({
       where: { id: scanId, projectId, organizationId: orgId },

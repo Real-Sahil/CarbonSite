@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import {
   Card,
@@ -35,7 +35,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
 
   let authErr: AuthError | null = null;
   try {
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   } catch (err) {
     if (err instanceof AuthError) {
       authErr = err;

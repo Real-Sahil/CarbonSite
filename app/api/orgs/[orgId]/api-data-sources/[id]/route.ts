@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
@@ -11,7 +11,7 @@ type Params = { params: Promise<{ orgId: string; id: string }> };
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     const { orgId, id } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const source = await prisma.apiDataSource.findUnique({
       where: { id },

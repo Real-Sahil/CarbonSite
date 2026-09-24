@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { dispatchXeroSync } from "@/lib/jobs/dispatch";
 import { requireFeature } from "@/lib/billing/limits";
@@ -14,7 +14,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const gate = await requireFeature(orgId, "accountingIntegrations");
     if (gate) return gate;

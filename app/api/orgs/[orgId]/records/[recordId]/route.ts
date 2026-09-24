@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -23,7 +23,7 @@ export async function PATCH(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "record-update", session.user.id),
       limit: 60,
@@ -95,7 +95,7 @@ export async function DELETE(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "record-delete", session.user.id),
       limit: 30,

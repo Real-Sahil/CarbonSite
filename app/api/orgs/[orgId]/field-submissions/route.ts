@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createFieldSubmissionSchema } from "@/lib/validation/records";
@@ -55,13 +55,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    const { session, membership } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "field_worker",
-    );
+    const { session, membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "field_worker");
 
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
@@ -193,13 +187,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     const { version, json } = await withApiVersion(req);
     // field_workers can submit; org members can also submit on behalf
-    const { session, membership } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "field_worker",
-    );
+    const { session, membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "field_worker");
 
     // Accept both JSON (no photo) and multipart/form-data (photo attached).
     const contentType = req.headers.get("content-type") ?? "";

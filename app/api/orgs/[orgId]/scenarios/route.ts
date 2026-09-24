@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import type { Prisma } from "@prisma/client";
 
@@ -28,7 +28,7 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const runs = await prisma.scenarioRun.findMany({
       where: { organizationId: orgId },
@@ -56,7 +56,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const body = createScenarioSchema.parse(await req.json());
 

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import {
   registerDevice,
@@ -27,7 +27,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    const user = await requireOrgMember(orgId, "admin", "editor");
+    const user = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const searchParams = req.nextUrl.searchParams;
     const cursor = searchParams.get("cursor") || undefined;

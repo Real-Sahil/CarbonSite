@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 
@@ -19,7 +19,7 @@ const ReviewSchema = z.discriminatedUnion("action", [
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { orgId, reportId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const body = await req.json();
     const parsed = ReviewSchema.safeParse(body);
@@ -188,7 +188,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, reportId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "auditor");
 
     const report = await prisma.supplierReport.findUnique({
       where: { id: reportId, organizationId: orgId },

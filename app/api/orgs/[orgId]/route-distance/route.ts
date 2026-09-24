@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { getOrCreateRouteDistance } from "@/lib/geo/route-distance";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -14,7 +14,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "route-distance", session.user.id),
       limit: 30,

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { canEditSharedLibraries } from "@/lib/auth/shared-libraries";
 import { prisma } from "@/lib/db";
 import { OperationsSetup } from "./setup-actions";
@@ -19,7 +19,7 @@ export default async function OperationsSettingsPage({
   let userId = "";
 
   try {
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     userId = session.user.id;
   } catch (err) {
     if (err instanceof AuthError) {

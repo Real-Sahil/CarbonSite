@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { loadWasteRegister, registerToCsv } from "@/lib/waste/register";
 
@@ -16,7 +16,7 @@ const querySchema = z.object({
 export async function GET(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     const q = querySchema.parse(Object.fromEntries(req.nextUrl.searchParams));
     const { rows } = await loadWasteRegister(orgId, {
       reportingPeriodId: q.reportingPeriodId,

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError } from "@/lib/validation/api";
@@ -27,7 +27,7 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const sources = await prisma.apiDataSource.findMany({
       where: { organizationId: orgId },
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = await req.json();
     const validated = CreateApiDataSourceSchema.parse(body);

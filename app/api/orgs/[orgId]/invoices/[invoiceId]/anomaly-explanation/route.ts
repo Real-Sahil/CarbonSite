@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion } from "@/lib/api/versioned-handler";
 import { explainAnomaly } from "@/lib/explainability/forecast-explainer";
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     const { orgId, invoiceId } = await params;
     const { version, json } = await withApiVersion(req);
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     // Fetch the invoice record
     const invoice = await prisma.invoiceRecord.findFirst({

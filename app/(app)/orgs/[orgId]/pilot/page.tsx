@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { GenerateKitForm } from "./generate-kit-form";
 
@@ -13,7 +13,7 @@ export default async function PilotPage({ params }: PilotPageProps) {
   let authErr: AuthError | null = null;
   try {
     // Authorization: admin or editor only
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   } catch (err) {
     if (err instanceof AuthError) {
       authErr = err;

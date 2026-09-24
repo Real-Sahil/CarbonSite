@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Download } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { loadWasteRegister } from "@/lib/waste/register";
 
 type Search = { period?: string; site?: string; gaps?: string };
@@ -27,7 +27,7 @@ export default async function WasteRegisterPage({
   const { orgId } = await params;
   const sp = await searchParams;
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
   } catch (err) {
     if (err instanceof AuthError) redirect("/sign-in");
     throw err;

@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { detectAnomaliesInBatch } from "@/lib/ml/anomaly-detector";
 
@@ -23,7 +23,7 @@ export async function POST(
     const { orgId } = await params;
 
     // Authorize
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     // Parse request
     const body = await req.json();

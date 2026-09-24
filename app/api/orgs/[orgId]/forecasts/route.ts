@@ -112,7 +112,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = await req.json();
     const { forecastType, lookbackMonths = 24, forecastMonths = 12, supplierId, triggerType = "refresh" } = z

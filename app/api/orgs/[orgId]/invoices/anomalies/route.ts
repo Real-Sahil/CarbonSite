@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { requireFeature } from "@/lib/billing/limits";
@@ -38,7 +38,7 @@ export async function GET(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const gate = await requireFeature(orgId, "invoiceAnomalyDetection");
     if (gate) return gate;
@@ -116,7 +116,7 @@ export async function PATCH(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const gate = await requireFeature(orgId, "invoiceAnomalyDetection");
     if (gate) return gate;

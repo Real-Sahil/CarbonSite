@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { keys, presignUpload, sanitizeStorageFilename } from "@/lib/storage";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
@@ -16,7 +16,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const files = await prisma.evidenceFile.findMany({
       where: { organizationId: orgId },
@@ -37,7 +37,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "field_worker");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "field_worker");
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "evidence_upload", session.user.id),
       limit: 40,

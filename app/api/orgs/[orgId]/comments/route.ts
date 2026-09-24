@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -15,13 +15,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = (await params) as { orgId: string };
-    const { session } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "auditor",
-    );
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "auditor");
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "comments", session.user.id),
       limit: 30,

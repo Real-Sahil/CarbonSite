@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { updateSvCommitmentSchema } from "@/lib/validation/org";
@@ -13,11 +13,7 @@ type RouteContext = { params: Promise<{ orgId: string; commitmentId: string }> }
 export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { orgId, commitmentId } = await params;
-    await requireOrgMember(
-      orgId,
-      "admin", "sustainability_director", "sustainability_manager",
-      "contract_manager", "editor", "reviewer", "viewer", "auditor",
-    );
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders, "contract_manager");
 
     const commitment = await prisma.svCommitment.findUnique({
       where: { id: commitmentId },

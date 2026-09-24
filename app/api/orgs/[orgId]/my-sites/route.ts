@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
 // GET /api/orgs/[orgId]/my-sites
@@ -19,13 +19,7 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    const { session, membership } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "field_worker",
-    );
+    const { session, membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "field_worker");
 
     const isFieldWorker = membership.role === "field_worker";
 

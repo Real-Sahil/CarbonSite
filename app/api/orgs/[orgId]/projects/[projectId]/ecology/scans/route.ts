@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { runEcologicalScan } from "@/lib/ecology/scan";
@@ -29,7 +29,7 @@ const CreateScanBody = z.object({
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, projectId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor", "sustainability_director");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const project = await prisma.project.findFirst({
       where: { id: projectId, organizationId: orgId },
@@ -100,7 +100,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId, projectId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "sustainability_director");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const project = await prisma.project.findFirst({
       where: { id: projectId, organizationId: orgId },

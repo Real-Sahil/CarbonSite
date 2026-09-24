@@ -1,4 +1,4 @@
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { CalendarDays } from "lucide-react";
@@ -11,7 +11,7 @@ export default async function ReportingPeriodsPage({ params }: Props) {
   const { orgId } = await params;
 
   try {
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");

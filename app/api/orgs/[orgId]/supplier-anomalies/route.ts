@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireOrgMember } from '@/lib/auth/session';
+import { requireOrgMember, ROLE_GROUPS } from '@/lib/auth/session';
 import { handleRouteError } from '@/lib/validation/api';
 import { z } from 'zod';
 import { getUnacknowledgedAnomalies, acknowledgeAnomaly } from '@/lib/suppliers/anomaly-detector';
@@ -18,7 +18,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, 'admin', 'editor');
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const severity = req.nextUrl.searchParams.get('severity') as 'warning' | 'critical' | null;
 
@@ -42,7 +42,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId } = await params;
-    const user = await requireOrgMember(orgId, 'admin', 'editor');
+    const user = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/');

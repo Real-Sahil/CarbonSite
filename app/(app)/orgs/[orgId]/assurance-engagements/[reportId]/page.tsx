@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { asSections, lookupPeople } from "@/lib/structured-forms/people";
 import { isLockedStatus } from "@/lib/structured-forms/workflows";
@@ -19,7 +19,7 @@ export default async function AssuranceEngagementDetailPage({ params }: PageProp
   let canEdit = false;
   let isAdmin = false;
   try {
-    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const result = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     canEdit = ["admin", "editor"].includes(result.membership.role);
     isAdmin = result.membership.role === "admin";
   } catch (err) {

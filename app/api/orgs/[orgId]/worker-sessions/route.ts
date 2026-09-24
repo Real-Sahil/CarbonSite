@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { nanoid } from "nanoid";
@@ -24,7 +24,7 @@ const PingSchema = z.object({
 export async function GET(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const { searchParams } = new URL(req.url);
     const active = searchParams.get("active") === "true";
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orgI
 export async function POST(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "field_worker");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer", "field_worker");
 
     const body = StartSchema.parse(await req.json());
 
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "field_worker");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer", "field_worker");
 
     const body = PingSchema.parse(await req.json());
 

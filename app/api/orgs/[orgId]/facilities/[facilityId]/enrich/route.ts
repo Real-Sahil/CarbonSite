@@ -19,7 +19,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { getFloodRiskAtPoint } from "@/lib/data-sources/ea-flood-monitoring";
@@ -37,7 +37,7 @@ export async function POST(
 ) {
   try {
     const { orgId, facilityId } = await params;
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const facility = await prisma.facility.findFirst({
       where: { id: facilityId, organizationId: orgId },

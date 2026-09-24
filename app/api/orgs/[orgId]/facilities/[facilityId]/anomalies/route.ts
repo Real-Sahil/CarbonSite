@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { detectFacilityTrendAnomalies, detectDuplicateRecords } from "@/lib/ml/anomaly-detector";
 
@@ -17,7 +17,7 @@ export async function GET(
     const timeWindow = parseInt(req.nextUrl.searchParams.get("timeWindow") || "90");
 
     // Authorize
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer");
 
     // Run trend anomaly detection
     const trendAnomalies = await detectFacilityTrendAnomalies(orgId, facilityId, timeWindow);

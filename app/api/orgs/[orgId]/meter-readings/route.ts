@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { getMeterReadings } from "@/lib/iot/meter-processor";
 
@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "viewer");
 
     const searchParams = req.nextUrl.searchParams;
     const cursor = searchParams.get("cursor") || undefined;

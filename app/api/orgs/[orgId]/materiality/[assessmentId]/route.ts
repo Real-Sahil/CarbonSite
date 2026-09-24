@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 
@@ -20,7 +20,7 @@ const PatchSchema = z.object({
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgId: string; assessmentId: string }> }) {
   try {
     const { orgId, assessmentId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const assessment = await prisma.materialityAssessment.findUnique({
       where: { id: assessmentId },
@@ -43,7 +43,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ orgId: string; assessmentId: string }> }) {
   try {
     const { orgId, assessmentId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const assessment = await prisma.materialityAssessment.findUnique({ where: { id: assessmentId }, select: { organizationId: true } });
     if (!assessment || assessment.organizationId !== orgId) return apiError("NOT_FOUND", "Assessment not found", 404);

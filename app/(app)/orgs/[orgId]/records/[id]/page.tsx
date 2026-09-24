@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
@@ -32,7 +32,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
 
   let role: OrgRole;
   try {
-    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const result = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     role = result.membership.role;
   } catch (err) {
     if (err instanceof AuthError) {

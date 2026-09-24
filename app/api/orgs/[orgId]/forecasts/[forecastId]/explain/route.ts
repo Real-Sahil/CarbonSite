@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { generateForecastExplanation } from "@/lib/ml/forecast-explainability";
 
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { orgId, forecastId } = await params;
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer");
 
     const forecast = await prisma.forecast.findFirst({
       where: {

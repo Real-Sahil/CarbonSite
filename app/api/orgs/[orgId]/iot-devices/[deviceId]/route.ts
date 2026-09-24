@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import {
   getDeviceWithCredentials,
@@ -23,7 +23,7 @@ export async function GET(
 ) {
   try {
     const { orgId, deviceId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "viewer");
 
     const device = await getDeviceWithCredentials(orgId, deviceId);
 

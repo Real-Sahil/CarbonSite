@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const snapshots = await prisma.publishedSnapshot.findMany({
       where: { organizationId: orgId },
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     const { version, json } = await withApiVersion(req);
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = createSnapshotSchema.parse(await req.json());
 

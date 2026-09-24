@@ -22,7 +22,7 @@ const querySchema = z.object({
 export async function GET(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const query = querySchema.parse({
       slaHours: req.nextUrl.searchParams.get("slaHours") ?? DEFAULT_SLA_HOURS,

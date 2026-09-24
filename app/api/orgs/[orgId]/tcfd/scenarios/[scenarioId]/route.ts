@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 
@@ -22,7 +22,7 @@ export async function GET(
 ) {
   try {
     const { orgId, scenarioId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "viewer", "auditor");
 
     const scenario = await prisma.tcfdScenario.findFirst({
       where: { id: scenarioId, organizationId: orgId },
@@ -48,7 +48,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId, scenarioId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const existing = await prisma.tcfdScenario.findFirst({
       where: { id: scenarioId, organizationId: orgId },

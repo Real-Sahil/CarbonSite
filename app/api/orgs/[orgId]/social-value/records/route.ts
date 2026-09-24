@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -16,11 +16,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(
-      orgId,
-      "admin", "sustainability_director", "sustainability_manager",
-      "editor", "reviewer", "viewer", "auditor", "contract_manager",
-    );
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders, "contract_manager");
 
     const { searchParams } = new URL(req.url);
     const contractId = searchParams.get("contractId") ?? undefined;
@@ -53,11 +49,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(
-      orgId,
-      "admin", "sustainability_director", "sustainability_manager",
-      "contract_manager", "editor",
-    );
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "contract_manager");
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "sv-records-create", session.user.id),
       limit: 60,

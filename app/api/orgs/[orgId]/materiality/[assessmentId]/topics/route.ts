@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { nanoid } from "nanoid";
@@ -25,7 +25,7 @@ const BulkSchema = z.object({ topics: z.array(TopicSchema).min(1) });
 export async function POST(req: NextRequest, { params }: { params: Promise<{ orgId: string; assessmentId: string }> }) {
   try {
     const { orgId, assessmentId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const assessment = await prisma.materialityAssessment.findUnique({
       where: { id: assessmentId },

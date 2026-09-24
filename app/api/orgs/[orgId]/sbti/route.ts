@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { loadSbtiPathway } from "@/lib/calculation/sbti-actuals";
@@ -27,7 +27,7 @@ type Params = { params: Promise<{ orgId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "sustainability_director", "sustainability_manager", "editor", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "viewer", "auditor");
 
     const target = await prisma.sbtiTarget.findUnique({ where: { organizationId: orgId } });
     if (!target) {

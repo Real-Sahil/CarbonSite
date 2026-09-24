@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 
@@ -27,7 +27,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId, riskId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const existing = await prisma.tcfdRiskAssessment.findFirst({
       where: { id: riskId, organizationId: orgId },
@@ -65,7 +65,7 @@ export async function DELETE(
 ) {
   try {
     const { orgId, riskId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const existing = await prisma.tcfdRiskAssessment.findFirst({
       where: { id: riskId, organizationId: orgId },

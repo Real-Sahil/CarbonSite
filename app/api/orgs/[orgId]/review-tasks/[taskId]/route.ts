@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { updateReviewTaskSchema } from "@/lib/validation/records";
 
@@ -11,7 +11,7 @@ type Params = { params: Promise<{ orgId: string; taskId: string }> };
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { orgId, taskId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const task = await prisma.reviewTask.findUnique({
       where: { id: taskId },

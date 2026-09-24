@@ -20,7 +20,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
 
   let role;
   try {
-    role = (await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "reviewer", "viewer", "auditor")).membership.role;
+    role = (await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders)).membership.role;
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
     return <p className="p-8 text-sm text-red-600">You do not have access to the transition plan.</p>;

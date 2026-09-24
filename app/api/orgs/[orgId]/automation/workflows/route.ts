@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion } from "@/lib/api/versioned-handler";
 import { z } from "zod";
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     const { version, json } = await withApiVersion(req);
 
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     // Check if n8n is configured
     const n8nConfigured = !!process.env.N8N_WEBHOOK_URL;

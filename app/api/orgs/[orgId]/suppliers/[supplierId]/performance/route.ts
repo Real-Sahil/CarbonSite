@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 
 export async function GET(
@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { orgId, supplierId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer");
 
     const performance = await prisma.supplierPerformance.findUnique({
       where: {

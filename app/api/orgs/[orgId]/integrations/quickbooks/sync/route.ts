@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
 import { requireFeature } from "@/lib/billing/limits";
@@ -16,7 +16,7 @@ export async function POST(
     const { orgId } = await params;
     const fromDate = req.nextUrl.searchParams.get("fromDate") || undefined;
 
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const gate = await requireFeature(orgId, "accountingIntegrations");
     if (gate) return gate;

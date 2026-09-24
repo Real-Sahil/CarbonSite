@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError } from "@/lib/validation/api";
 import { createCarbonSignalSchema } from "@/lib/validation/org";
@@ -14,7 +14,7 @@ type RouteContext = { params: Promise<{ orgId: string }> };
 export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "sustainability_director", "sustainability_manager", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const { searchParams } = new URL(req.url);
     const signalType = searchParams.get("signalType") ?? undefined;
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 export async function POST(req: NextRequest, { params }: RouteContext) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "sustainability_director", "sustainability_manager", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = createCarbonSignalSchema.parse(await req.json());
 

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { MsEditor } from "./ms-editor";
 
@@ -15,7 +15,7 @@ export default async function MethodStatementDetailPage({ params }: PageProps) {
   let canEdit = false;
   let isAdmin = false;
   try {
-    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const result = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     canEdit = ["admin", "editor"].includes(result.membership.role);
     isAdmin = result.membership.role === "admin";
   } catch (err) {

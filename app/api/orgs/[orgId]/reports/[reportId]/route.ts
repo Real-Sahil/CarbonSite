@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { presignDownload, deleteObject } from "@/lib/storage";
@@ -12,14 +12,7 @@ type Params = { params: Promise<{ orgId: string; reportId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, reportId } = await params;
-    const { session } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-    );
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const report = await prisma.report.findUnique({
       where: { id: reportId },

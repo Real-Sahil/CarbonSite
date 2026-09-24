@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
@@ -11,7 +11,7 @@ type Params = { params: Promise<{ orgId: string; assignmentId: string }> };
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, assignmentId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const assignment = await prisma.fieldWorkerSiteAssignment.findFirst({
       where: { id: assignmentId, organizationId: orgId },

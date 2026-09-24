@@ -12,7 +12,7 @@ type Params = { params: Promise<{ orgId: string; evidenceId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, evidenceId } = await params;
-    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "reviewer", "auditor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "auditor");
 
     const evidence = await prisma.evidenceFile.findUnique({
       where: { id: evidenceId },

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { TrendingDown, Target, CheckCircle, AlertTriangle, Info } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { loadSbtiPathway } from "@/lib/calculation/sbti-actuals";
 import { SbtiSetTargetButton, STATUS_CONFIG, type SbtiTarget } from "./sbti-actions";
 
@@ -12,7 +12,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
 
   let canEdit = false;
   try {
-    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const result = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     canEdit = ["admin", "editor"].includes(result.membership.role);
   } catch (err) {
     if (err instanceof AuthError) redirect("/sign-in");

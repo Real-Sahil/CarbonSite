@@ -1,4 +1,4 @@
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { BarChart3 } from "lucide-react";
 import { AnalyticsSummary } from "@/components/analytics/AnalyticsSummary";
@@ -15,7 +15,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   const { orgId } = await params;
 
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer");
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");

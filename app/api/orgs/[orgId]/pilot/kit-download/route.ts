@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { getObject } from "@/lib/storage";
 import { z } from "zod";
@@ -25,7 +25,7 @@ export async function GET(
     const { orgId } = await params;
 
     // Authorization: admin or editor only
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     // Parse and validate query parameter
     const { searchParams } = new URL(req.url);

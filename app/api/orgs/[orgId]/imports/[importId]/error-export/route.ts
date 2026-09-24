@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { presignDownload } from "@/lib/storage";
 
@@ -11,7 +11,7 @@ type Params = { params: Promise<{ orgId: string; importId: string }> };
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, importId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "viewer");
 
     const batch = await prisma.importBatch.findUnique({
       where: { id: importId },

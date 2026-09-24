@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { Droplets } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { WaterAddButtons, DeleteWaterButton, SOURCE_OPTIONS } from "./water-actions";
 
 const METRIC_LABELS: Record<string, string> = {
@@ -17,7 +17,7 @@ export default async function WaterPage({ params }: { params: Promise<{ orgId: s
 
   let canEdit = false;
   try {
-    const result = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const result = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     canEdit = ["admin", "editor"].includes(result.membership.role);
   } catch (err) {
     if (err instanceof AuthError) redirect("/sign-in");

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireOrgMember } from '@/lib/auth/session';
+import { requireOrgMember, ROLE_GROUPS } from '@/lib/auth/session';
 import { suggestCategory } from '@/lib/calculation/category-suggester';
 import { handleRouteError } from '@/lib/validation/api';
 import { z } from 'zod';
@@ -32,7 +32,7 @@ export async function POST(
     const { orgId } = await params;
 
     // Require editor+ role to use AI suggestions
-    await requireOrgMember(orgId, 'admin', 'editor');
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = await req.json();
     const { ocrText } = SuggestCategorySchema.parse(body);

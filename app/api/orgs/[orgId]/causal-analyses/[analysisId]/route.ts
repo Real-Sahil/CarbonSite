@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { withApiVersion } from "@/lib/api/versioned-handler";
 
@@ -13,7 +13,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { orgId, analysisId } = await params;
     const { version, json } = await withApiVersion(_req);
 
-    await requireOrgMember(orgId, "admin", "editor", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "viewer", "auditor");
 
     const run = await prisma.causalInferenceRun.findUnique({
       where: { id: analysisId },

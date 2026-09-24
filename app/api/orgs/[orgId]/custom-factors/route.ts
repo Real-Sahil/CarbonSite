@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireOrgMember } from '@/lib/auth/session';
+import { requireOrgMember, ROLE_GROUPS } from '@/lib/auth/session';
 import { handleRouteError } from '@/lib/validation/api';
 import { z } from 'zod';
 import { createCustomFactor, getOrgCustomFactorLibrary, updateCustomFactor, deleteCustomFactor } from '@/lib/calculation/custom-factors';
@@ -33,7 +33,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, 'admin', 'editor');
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const scope = req.nextUrl.searchParams.get('scope');
     const categoryId = req.nextUrl.searchParams.get('categoryId');
@@ -59,7 +59,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    const user = await requireOrgMember(orgId, 'admin', 'editor');
+    const user = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = await req.json();
     const data = CustomFactorSchema.parse(body);
@@ -82,7 +82,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, 'admin', 'editor');
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const url = new URL(req.url);
     // This route has no [factorId] segment, so the id comes as ?id=.

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { reviewFieldSubmissionSchema } from "@/lib/validation/records";
@@ -19,7 +19,7 @@ type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { orgId, submissionId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const submission = await prisma.fieldSubmission.findFirst({
       where: { id: submissionId, organizationId: orgId },

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createCommentSchema } from "@/lib/validation/records";
 
@@ -11,7 +11,7 @@ type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId, submissionId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const submission = await prisma.fieldSubmission.findUnique({
       where: { id: submissionId },

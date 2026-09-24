@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import {
@@ -23,7 +23,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
 
   let isAdminOrEditor = false;
   try {
-    const { membership } = await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     isAdminOrEditor = membership.role === "admin" || membership.role === "editor";
   } catch (err) {
     if (err instanceof AuthError) {

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -23,15 +23,7 @@ export async function GET(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-      "field_worker",
-    );
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders, "field_worker");
 
     const businessUnits = await prisma.businessUnit.findMany({
       where: { organizationId: orgId },
@@ -51,7 +43,7 @@ export async function POST(
   try {
     const { orgId } = await params;
     const { version, json } = await withApiVersion(req);
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "business-units", session.user.id),
       limit: 30,

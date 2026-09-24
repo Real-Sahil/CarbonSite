@@ -1,4 +1,4 @@
-import { requireOrgMember } from '@/lib/auth/session';
+import { requireOrgMember, ROLE_GROUPS } from '@/lib/auth/session';
 import { prisma } from '@/lib/db';
 import { handleRouteError } from '@/lib/validation/api';
 import { predictScope3Emission } from '@/lib/jobs/workers/scope3-estimator';
@@ -10,7 +10,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, 'viewer');
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const body = await req.json();
     const { emissionCategoryId, facilityId } = body;

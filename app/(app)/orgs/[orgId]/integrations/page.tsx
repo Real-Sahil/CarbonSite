@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import {
   Card,
   CardContent,
@@ -36,7 +36,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
 
   let authErr: AuthError | null = null;
   try {
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   } catch (err) {
     if (err instanceof AuthError) { authErr = err; }
     else { return <div className="p-8"><p className="text-sm text-red-600">Failed to load page. The database may be updating — try refreshing in a moment.</p></div>; }

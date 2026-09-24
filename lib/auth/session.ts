@@ -219,6 +219,15 @@ export const ROLE_GROUPS = {
   reviewers: [
     "admin", "sustainability_director", "sustainability_manager", "reviewer",
   ] as import("@prisma/client").OrgRole[],
+  // Editors plus reviewers: who may approve, reject or publish.
+  reviewersAndEditors: [
+    "admin", "sustainability_director", "sustainability_manager", "editor", "reviewer",
+  ] as import("@prisma/client").OrgRole[],
+  // Everyone who may read the inventory itself (records, calculations,
+  // snapshots, reports): the editors, reviewers, viewers and auditors.
+  dataReaders: [
+    "admin", "sustainability_director", "sustainability_manager", "editor", "reviewer", "viewer", "auditor",
+  ] as import("@prisma/client").OrgRole[],
   // SECURITY: field_worker and supplier are intentionally absent.
   // field_worker — sees only own submissions via /field-submissions (own-only WHERE clause).
   // supplier — sees only own EPDs via /supplier-portal/epds (own-only WHERE clause).

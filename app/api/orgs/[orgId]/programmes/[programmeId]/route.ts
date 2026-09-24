@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 
@@ -21,7 +21,7 @@ const PatchSchema = z.object({
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgId: string; programmeId: string }> }) {
   try {
     const { orgId, programmeId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const programme = await prisma.programme.findUnique({
       where: { id: programmeId },
@@ -41,7 +41,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ org
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ orgId: string; programmeId: string }> }) {
   try {
     const { orgId, programmeId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const programme = await prisma.programme.findUnique({ where: { id: programmeId }, select: { organizationId: true } });
     if (!programme || programme.organizationId !== orgId) return apiError("NOT_FOUND", "Programme not found", 404);

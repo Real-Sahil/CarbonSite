@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { calculateEmbodiedCarbon } from "@/lib/embodied-carbon/engine";
@@ -26,7 +26,7 @@ export async function GET(
 ) {
   const { orgId } = await params;
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const records = await prisma.embodiedCarbonRecord.findMany({
       where: { organizationId: orgId },
@@ -55,7 +55,7 @@ export async function POST(
 ) {
   const { orgId } = await params;
   try {
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     const userId = session.user.id;
 
     const body = await req.json();

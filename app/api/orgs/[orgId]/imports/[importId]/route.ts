@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { deleteObject } from "@/lib/storage";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
@@ -19,7 +19,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const batch = await prisma.importBatch.findFirst({
       where: { id: importId, organizationId: orgId },

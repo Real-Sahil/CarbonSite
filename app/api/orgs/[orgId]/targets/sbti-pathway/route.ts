@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { calculateSBTiPathway } from "@/lib/calculation/sbti-calculator";
 import { handleRouteError } from "@/lib/validation/api";
 import { prisma } from "@/lib/db";
@@ -21,7 +21,7 @@ const sbtiRequestSchema = z.object({
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = await req.json();
     const input = sbtiRequestSchema.parse(body);

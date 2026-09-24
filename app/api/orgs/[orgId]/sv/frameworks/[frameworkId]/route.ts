@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { updateSvFrameworkSchema } from "@/lib/validation/org";
@@ -12,11 +12,7 @@ type RouteContext = { params: Promise<{ orgId: string; frameworkId: string }> };
 export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { orgId, frameworkId } = await params;
-    await requireOrgMember(
-      orgId,
-      "admin", "sustainability_director", "sustainability_manager",
-      "contract_manager", "editor", "reviewer", "viewer", "auditor",
-    );
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders, "contract_manager");
 
     const framework = await prisma.svFramework.findUnique({
       where: { id: frameworkId },

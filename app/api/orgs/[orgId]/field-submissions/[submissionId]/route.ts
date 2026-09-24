@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { presignDownload } from "@/lib/storage";
 import { updateFieldSubmissionSchema } from "@/lib/validation/records";
@@ -27,10 +27,7 @@ export async function GET(
     if (deprecationWarning) {
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
-    const { session, membership } = await requireOrgMember(
-      orgId,
-      "admin", "editor", "reviewer", "viewer", "auditor", "field_worker",
-    );
+    const { session, membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders, "field_worker");
 
     const submission = await prisma.fieldSubmission.findFirst({
       where: {
@@ -148,7 +145,7 @@ export async function PATCH(
       console.warn(`[API v${version}] ${deprecationWarning}`);
     }
 
-    await requireOrgMember(orgId, "admin", "editor", "reviewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const rawBody = await req.json().catch(() => null);
     if (!rawBody) return apiError("INVALID_BODY", "Request body must be valid JSON.", 400);

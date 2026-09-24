@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError } from "@/lib/validation/api";
 import { withApiVersion } from "@/lib/api/versioned-handler";
@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     const { version, json } = await withApiVersion(_req);
 
-    await requireOrgMember(orgId, "admin", "editor", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "viewer", "auditor");
 
     const runs = await prisma.causalInferenceRun.findMany({
       where: { organizationId: orgId },
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
     const { version, json } = await withApiVersion(req);
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = createCausalAnalysisSchema.parse(await req.json());
 

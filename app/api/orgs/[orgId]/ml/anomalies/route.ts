@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { detectAnomaliesInBatch, detectFacilityTrendAnomalies } from "@/lib/ml/anomaly-detector";
 
@@ -10,7 +10,7 @@ interface Params {
 export async function POST(req: NextRequest, { params }: { params: Promise<Params> }) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "viewer", "reviewer", "editor", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const body = await req.json();
     const { recordIds, facilityId, timeWindowDays } = body as {

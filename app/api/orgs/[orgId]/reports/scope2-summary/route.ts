@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
 const querySchema = z.object({
@@ -16,16 +16,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(
-      orgId,
-      "admin",
-      "sustainability_director",
-      "sustainability_manager",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-    );
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const searchParams = new URL(req.url).searchParams;
     const reportingPeriodId = searchParams.get("reportingPeriodId");

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { putObject, keys } from "@/lib/storage";
 import { createHash } from "crypto";
@@ -12,7 +12,7 @@ type Params = { params: Promise<{ orgId: string; importId: string }> };
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId, importId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const batch = await prisma.importBatch.findUnique({
       where: { id: importId },

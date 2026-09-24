@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
@@ -28,13 +28,7 @@ const resubmitSchema = z.object({
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId, submissionId } = await params;
-    const { session, membership } = await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "field_worker",
-    );
+    const { session, membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors, "field_worker");
 
     const original = await prisma.fieldSubmission.findUnique({
       where: { id: submissionId },

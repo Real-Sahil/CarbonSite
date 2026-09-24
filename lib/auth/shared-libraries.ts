@@ -1,6 +1,6 @@
 import type { PlatformRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 
 const SHARED_LIBRARY_ROLES: PlatformRole[] = ["platform_owner", "platform_support"];
 
@@ -15,7 +15,7 @@ export async function canEditSharedLibraries(userId: string): Promise<boolean> {
  * enough: an edit here changes every other tenant's calculations.
  */
 export async function requireSharedLibraryEditor(orgId: string) {
-  const ctx = await requireOrgMember(orgId, "admin", "editor");
+  const ctx = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   if (!(await canEditSharedLibraries(ctx.session.user.id))) {
     throw new AuthError("SHARED_LIBRARY_READ_ONLY", 403);
   }

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { searchByRegistrationNumber, searchByName } from "@/lib/data-sources/gleif";
@@ -18,7 +18,7 @@ type Params = { params: Promise<{ orgId: string; entityId: string }> };
 export async function POST(_req: NextRequest, { params }: Params) {
   try {
     const { orgId, entityId } = await params;
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const entity = await prisma.legalEntity.findFirst({
       where: { id: entityId, organizationId: orgId },

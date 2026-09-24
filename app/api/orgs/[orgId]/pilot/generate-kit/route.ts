@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgMember, AuthError } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import {
   generateExecutiveSummary,
   generateSustainabilityManagerGuide,
@@ -60,7 +60,7 @@ export async function POST(
     const { orgId } = await params;
 
     // Authorization: admin or editor role only (PDFs are sensitive setup docs)
-    const auth = await requireOrgMember(orgId, "admin", "editor");
+    const auth = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     // Parse and validate request body
     const body = await req.json();
@@ -303,7 +303,7 @@ export async function GET(
     const { orgId } = await params;
 
     // Authorization: admin or editor only
-    await requireOrgMember(orgId, "admin", "editor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     // Verify organization exists
     const org = await prisma.organization.findUnique({

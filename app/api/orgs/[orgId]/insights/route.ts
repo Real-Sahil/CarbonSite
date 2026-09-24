@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
 // GET /api/orgs/[orgId]/insights
@@ -14,7 +14,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, "admin", "editor", "viewer");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "viewer");
 
     const [latestSnapshot, offsets, targets, recentRecords] = await Promise.all([
       prisma.publishedSnapshot.findFirst({

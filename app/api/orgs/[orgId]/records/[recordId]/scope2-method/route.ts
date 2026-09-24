@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { Scope2Method } from "@prisma/client";
@@ -25,14 +25,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId, recordId } = await params;
-    const { session } = await requireOrgMember(
-      orgId,
-      "admin",
-      "sustainability_director",
-      "sustainability_manager",
-      "editor",
-      "reviewer",
-    );
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const record = await resolveRecord(orgId, recordId);
     if (!record) return apiError("NOT_FOUND", "Activity record not found.", 404);

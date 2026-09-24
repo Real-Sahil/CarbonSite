@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { Layers, Plus, Package } from "lucide-react";
@@ -34,7 +34,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
   const { orgId } = await params;
 
   try {
-    await requireOrgMember(orgId, "admin", "editor", "reviewer", "viewer", "auditor");
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");

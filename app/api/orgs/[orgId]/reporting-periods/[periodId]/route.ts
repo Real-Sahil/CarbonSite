@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
@@ -25,15 +25,7 @@ export async function GET(
 ) {
   try {
     const { orgId, periodId } = await params;
-    await requireOrgMember(
-      orgId,
-      "admin",
-      "editor",
-      "reviewer",
-      "viewer",
-      "auditor",
-      "field_worker",
-    );
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders, "field_worker");
 
     const period = await resolvePeriod(orgId, periodId);
     if (!period) {
@@ -52,7 +44,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId, periodId } = await params;
-    const { session } = await requireOrgMember(orgId, "admin", "editor");
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     const limited = await rateLimitRequest(req, {
       key: rateLimitKey(orgId, "reporting-period-update", session.user.id),
       limit: 30,
