@@ -2544,6 +2544,16 @@ model ApiKey {
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
 
+/// Stripe webhook events already handled. Stripe delivers at least once and
+/// retries; the event id is recorded before handling so a repeat is skipped.
+model StripeWebhookEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now()) @map("processed_at") @db.Timestamptz(3)
+
+  @@map("stripe_webhook_events")
+}
+
 model BillingSubscription {
   id                     String    @id @default(cuid())
   organizationId         String    @unique @map("organization_id")

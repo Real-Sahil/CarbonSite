@@ -16,16 +16,17 @@ function getStripe(): Stripe {
 
 export { getStripe };
 
+// One Stripe customer per organisation. The idempotency key makes a retried
+// or doubled request (two tabs, a timeout) return the same customer instead
+// of creating a second one; the search catches one created more than 24h ago
+// whose id was never stored.
 export async function createOrGetStripeCustomer(orgId: string, email: string) {
-  // Create a new Stripe customer for the organization
-  const customer = await getStripe().customers.create({
-    email,
-    metadata: {
-      organizationId: orgId,
-    },
-  });
-
-  return customer;
+  const found = await getStripe().customers.search({ query: `metadata['organizationId']:'${orgId.replace(/'/g, "")}'`, limit: 1 });
+  if (found.data[0]) return found.data[0];
+  return getStripe().customers.create(
+    { email, metadata: { organizationId: orgId } },
+    { idempotencyKey: `metricora-customer-${orgId}` },
+  );
 }
 
 export async function createSetupIntent(customerId: string) {
@@ -125,18 +126,48 @@ export function getPriceId(plan: SubscribablePlan, interval: BillingInterval): s
   return priceId;
 }
 
+// 'default_incomplete' leaves a first payment that needs the customer's bank
+// to confirm it (3-D Secure, required for most UK and EU cards under SCA) as
+// an incomplete subscription with a client secret, instead of failing it.
+// The plan is only granted once Stripe reports it active (the webhook).
 export async function createSubscription(params: {
   customerId: string;
   priceId: string;
   paymentMethodId: string;
+  idempotencyKey: string;
 }): Promise<Stripe.Subscription> {
-  return getStripe().subscriptions.create({
-    customer: params.customerId,
-    items: [{ price: params.priceId }],
-    default_payment_method: params.paymentMethodId,
-    payment_behavior: 'error_if_incomplete',
-    expand: ['latest_invoice.payment_intent'],
-  });
+  return getStripe().subscriptions.create(
+    {
+      customer: params.customerId,
+      items: [{ price: params.priceId }],
+      default_payment_method: params.paymentMethodId,
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
+    },
+    { idempotencyKey: params.idempotencyKey },
+  );
+}
+
+/** Client secret of the first invoice's payment when the bank must confirm it, else null. */
+export function pendingPaymentClientSecret(subscription: Stripe.Subscription): string | null {
+  if (subscription.status !== 'incomplete') return null;
+  const invoice = subscription.latest_invoice;
+  if (!invoice || typeof invoice === 'string') return null;
+  const pi = invoice.payment_intent;
+  if (!pi || typeof pi === 'string') return null;
+  return pi.status === 'requires_action' || pi.status === 'requires_confirmation' ? pi.client_secret : null;
+}
+
+/** Stripe-hosted page where the customer updates cards, downloads invoices and cancels. */
+export async function createBillingPortalSession(customerId: string, returnUrl: string): Promise<string> {
+  const session = await getStripe().billingPortal.sessions.create({ customer: customerId, return_url: returnUrl });
+  return session.url;
+}
+
+/** Statuses that pay for a plan. incomplete, past_due, unpaid and canceled do not. */
+export function subscriptionGrantsPlan(status: Stripe.Subscription.Status): boolean {
+  return status === 'active' || status === 'trialing';
 }
 
 export async function updateSubscriptionPrice(

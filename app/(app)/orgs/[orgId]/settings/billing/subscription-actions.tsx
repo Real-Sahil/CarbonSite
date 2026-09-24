@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PLAN_LABELS } from "@/lib/billing/limits";
 import { Loader2 } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
 
 type SubscribablePlan = "starter" | "growth";
 
@@ -43,9 +44,41 @@ export function SubscriptionActions({
         setError(body?.message ?? "Could not start the subscription.");
         return;
       }
+      // The bank wants the customer to confirm the first payment (3-D Secure).
+      if (body?.clientSecret) {
+        const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+        const stripe = key ? await loadStripe(key) : null;
+        if (!stripe) {
+          setError("Card confirmation could not load. Refresh and try again.");
+          return;
+        }
+        const { error: confirmError } = await stripe.confirmCardPayment(body.clientSecret);
+        if (confirmError) {
+          setError(confirmError.message ?? "Your bank did not confirm the payment.");
+          return;
+        }
+      }
       onChanged();
     } catch {
       setError("Network error. Could not start the subscription.");
+    } finally {
+      setPending(null);
+    }
+  }
+
+  async function manageBilling() {
+    setError(null);
+    setPending("portal");
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/billing/portal`, { method: "POST" });
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body?.url) {
+        setError(body?.message ?? "Could not open billing management.");
+        return;
+      }
+      window.location.href = body.url;
+    } catch {
+      setError("Network error. Could not open billing management.");
     } finally {
       setPending(null);
     }
@@ -91,6 +124,12 @@ export function SubscriptionActions({
             Subscribe to {PLAN_LABELS[plan]}
           </Button>
         ))}
+        {hasPaymentMethod && (
+          <Button size="sm" variant="outline" disabled={pending !== null} onClick={manageBilling}>
+            {pending === "portal" && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+            Invoices and billing details
+          </Button>
+        )}
         {hasActiveSubscription && (
           <Button size="sm" variant="ghost" disabled={pending !== null} onClick={cancel}>
             {pending === "cancel" && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}

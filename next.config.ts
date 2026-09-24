@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
   // Browser Sentry (instrumentation-client.ts) reuses the server DSN.
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN ?? process.env.SENTRY_DSN ?? "",
+    // Vercel holds the key as STRIPE_PUBLISHABLE_KEY; the card form reads the public name.
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? process.env.STRIPE_PUBLISHABLE_KEY ?? "",
     NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? "",
     NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? "",
   },

@@ -5,6 +5,8 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import {
+  pendingPaymentClientSecret,
+  subscriptionGrantsPlan,
   createSubscription,
   updateSubscriptionPrice,
   cancelSubscriptionAtPeriodEnd,
@@ -65,7 +67,11 @@ export async function POST(
           customerId: billing.stripeCustomerId,
           priceId,
           paymentMethodId: billing.defaultPaymentMethodId,
+          // Same org, price and card within a day is the same request retried.
+          idempotencyKey: `metricora-sub-${orgId}-${priceId}-${billing.defaultPaymentMethodId}`,
         });
+    const clientSecret = pendingPaymentClientSecret(subscription);
+    const paid = subscriptionGrantsPlan(subscription.status);
 
     const updated = await prisma.billingSubscription.update({
       where: { id: billing.id },
@@ -75,11 +81,14 @@ export async function POST(
         currentPeriodStart: new Date(subscription.current_period_start * 1000),
         currentPeriodEnd: new Date(subscription.current_period_end * 1000),
         nextBillingDate: new Date(subscription.current_period_end * 1000),
-        trialEndsAt: null,
+          trialEndsAt: paid ? null : billing.trialEndsAt,
       },
     });
 
-    await prisma.organization.update({ where: { id: orgId }, data: { plan } });
+    // Only a paid subscription changes the plan; one waiting on the bank
+    // (3-D Secure) or a failed card leaves the org where it was until the
+    // webhook reports it active.
+    if (paid) await prisma.organization.update({ where: { id: orgId }, data: { plan } });
 
     await writeAuditLog({
       organizationId: orgId,
@@ -94,6 +103,8 @@ export async function POST(
       plan,
       status: subscription.status,
       currentPeriodEnd: updated.currentPeriodEnd,
+      // Present when the customer's bank must confirm the first payment.
+      clientSecret,
     });
   } catch (err) {
     return handleRouteError(err);
