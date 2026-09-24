@@ -141,6 +141,11 @@ export function mapCategoryToESRSConcept(
       concept: "IndirectEnergyRelatedGHGEmissionsMarketBased",
       scope: "2-MB",
     },
+    // Purchased heat counts under the location-based Scope 2 total.
+    "s2-heat": {
+      concept: "IndirectEnergyRelatedGHGEmissionsLocationBased",
+      scope: "2-LB",
+    },
     "s3-business-travel": {
       concept: "OtherIndirectGHGEmissionsUpstreamTransportation",
       scope: "3",

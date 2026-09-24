@@ -23,23 +23,36 @@ const CPI: Record<string, Record<number, number>> = {
     2018: 105.9, 2019: 107.8, 2020: 108.7, 2021: 111.6, 2022: 121.7, 2023: 130.5, 2024: 133.9,
     2025: 138.4,
   },
-  // 2016-2024 checked against the BLS CUUR0000SA0 series report (monthly and
-  // half-year averages, downloaded 23 September 2026): each is the mean of the
-  // two half-year averages. 2012-2015 not yet rechecked (the report starts in
-  // 2016). BLS did not publish October 2025, so 2025 is the mean of its
-  // half-year averages (320.229, 324.000), the same method.
+  // Checked against the BLS public API (series CUUR0000SA0, 24 September
+  // 2026): 2012-2024 are the means of the twelve monthly values, and 2025 is
+  // BLS's published annual average (period M13), which averages the eleven
+  // months it published (there was no October 2025 figure).
   USD: {
     2012: 229.594, 2013: 232.957, 2014: 236.736, 2015: 237.017, 2016: 240.007, 2017: 245.12,
     2018: 251.107, 2019: 255.657, 2020: 258.811, 2021: 270.97, 2022: 292.655, 2023: 304.702, 2024: 313.689,
-    2025: 322.115,
+    2025: 321.943,
   },
   // Eurostat export of 6 February 2026 (data/sources/eurostat-prc_hicp_aind-EA-FR.csv).
-  // The euro area series covers spend in euros from any member state; France
-  // (FR) is in the same file if a France-only index is ever wanted.
+  // The euro area series covers spend in euros from any member state.
   EUR: {
     2012: 98.05, 2013: 99.38, 2014: 99.81, 2015: 100.0, 2016: 100.23, 2017: 101.78,
     2018: 103.56, 2019: 104.8, 2020: 105.06, 2021: 107.78, 2022: 116.82, 2023: 123.15, 2024: 126.07,
     2025: 128.75,
+  },
+};
+
+// A country's own index, used when the factor is priced in that country's
+// economy (its geographyCountry), e.g. ADEME's French spend ratios. Same
+// source file as EUR above (geo FR).
+const COUNTRY_INDEX: Record<string, { currency: string; label: string; index: Record<number, number> }> = {
+  FR: {
+    currency: "EUR",
+    label: "France HICP",
+    index: {
+      2012: 98.33, 2013: 99.31, 2014: 99.91, 2015: 100.0, 2016: 100.31, 2017: 101.47,
+      2018: 103.6, 2019: 104.95, 2020: 105.5, 2021: 107.68, 2022: 114.04, 2023: 120.5, 2024: 123.29,
+      2025: 124.43,
+    },
   },
 };
 
@@ -56,8 +69,19 @@ export type Deflation = {
  * Null when there is no index for the currency. A year outside the table uses
  * the nearest published year and says so.
  */
-export function deflateSpend(amount: number, currency: string, spendYear: number, priceYear: number): Deflation | null {
-  const index = CPI[currency.toUpperCase()];
+export function deflateSpend(
+  amount: number,
+  currency: string,
+  spendYear: number,
+  priceYear: number,
+  /** The factor's country; its own index is used when there is one for this currency. */
+  country?: string | null,
+): Deflation | null {
+  const cur = currency.toUpperCase();
+  const own = country ? COUNTRY_INDEX[country.toUpperCase()] : undefined;
+  const useOwn = own != null && own.currency === cur;
+  const index = useOwn ? own.index : CPI[cur];
+  const label = useOwn ? own.label : cur === "EUR" ? "euro area HICP" : "CPI";
   if (!index) return null;
   const years = Object.keys(index).map(Number);
   const [first, last] = [Math.min(...years), Math.max(...years)];
@@ -68,7 +92,7 @@ export function deflateSpend(amount: number, currency: string, spendYear: number
   return {
     amount: amount * ratio,
     ratio,
-    note: `Adjusted ${spendYear} ${currency} spend to ${priceYear} prices (× ${ratio.toFixed(4)}, CPI).`,
+    note: `Adjusted ${spendYear} ${currency} spend to ${priceYear} prices (× ${ratio.toFixed(4)}, ${label}).`,
     warning: clamped.length
       ? `No ${currency} CPI figure yet for ${clamped.join(" and ")}; used ${clamped.map(clamp).join(" and ")} instead. The inflation adjustment is approximate until the index is updated.`
       : undefined,

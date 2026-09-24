@@ -123,6 +123,24 @@ const registry: Record<string, UnitConversion> = {
   mj: { toCanonical: 0.277778, canonical: "kWh" },
   therm: { toCanonical: 29.3071, canonical: "kWh" },
 
+  // Energy on a net calorific value basis (NCV, French "PCI"): a separate
+  // dimension, never converted to or from gross kWh, because the ratio
+  // depends on the fuel (about 1.11 for natural gas). Bills in the UK and
+  // France are gross; industrial fuel data is often net.
+  kwh_ncv: { toCanonical: 1, canonical: "kWh_ncv" },
+  "kwh ncv": { toCanonical: 1, canonical: "kWh_ncv" },
+  "kwh (net cv)": { toCanonical: 1, canonical: "kWh_ncv" },
+  "kwh pci": { toCanonical: 1, canonical: "kWh_ncv" },
+  mwh_ncv: { toCanonical: 1000, canonical: "kWh_ncv" },
+  "mwh pci": { toCanonical: 1000, canonical: "kWh_ncv" },
+  gj_ncv: { toCanonical: 277.778, canonical: "kWh_ncv" },
+  "gj pci": { toCanonical: 277.778, canonical: "kWh_ncv" },
+  mj_ncv: { toCanonical: 0.277778, canonical: "kWh_ncv" },
+  "mj pci": { toCanonical: 0.277778, canonical: "kWh_ncv" },
+  // Tonne of oil equivalent: 41.868 GJ net by definition (IEA/Eurostat).
+  toe: { toCanonical: 11630, canonical: "kWh_ncv" },
+  tep: { toCanonical: 11630, canonical: "kWh_ncv" },
+
   // Mass - canonical: kg
   kg: { toCanonical: 1, canonical: "kg" },
   kgs: { toCanonical: 1, canonical: "kg" },

@@ -21,6 +21,7 @@ const CATEGORIES: EmissionCategory[] = [
   { code: "s1-fugitive", name: "Fugitive Emissions", scope: 1 },
   { code: "s2-electricity-lb", name: "Electricity (Location-Based)", scope: 2 },
   { code: "s2-electricity-mb", name: "Electricity (Market-Based)", scope: 2 },
+  { code: "s2-heat", name: "Heat, Steam & Cooling", scope: 2 },
   { code: "s3-business-travel", name: "Business Travel", scope: 3 },
   { code: "s3-commuting", name: "Commuting", scope: 3 },
   { code: "s3-purchased-goods", name: "Purchased Goods & Services", scope: 3 },

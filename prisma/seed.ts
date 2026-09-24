@@ -13,6 +13,16 @@ async function main() {
       notes: "GHG Protocol Corporate Standard, GWP values from IPCC AR6",
     },
   });
+  // Seeded after v2026-01 so it is the newest (runs use the newest row).
+  await prisma.methodologyVersion.upsert({
+    where: { name: "ghg-protocol-v2026-02" },
+    update: {},
+    create: {
+      name: "ghg-protocol-v2026-02",
+      gwpVersion: "AR6",
+      notes: "Adds industry-priced spend from the currency's spend library, the France HICP for French spend factors, and net-CV fuel units",
+    },
+  });
 
   // Emission categories (MVP scope — seeded globally, no per-org custom categories)
   const categories = [
@@ -21,6 +31,7 @@ async function main() {
     { scope: 1, code: "s1-fugitive", name: "Fugitive Emissions (Refrigerants)", activityType: "fugitive_refrigerants" },
     { scope: 2, code: "s2-electricity-lb", name: "Purchased Electricity (Location-Based)", activityType: "purchased_electricity_location" },
     { scope: 2, code: "s2-electricity-mb", name: "Purchased Electricity (Market-Based)", activityType: "purchased_electricity_market" },
+    { scope: 2, code: "s2-heat", name: "Purchased Heat, Steam & Cooling", activityType: "purchased_heat" },
     { scope: 3, code: "s3-business-travel", name: "Business Travel", activityType: "business_travel" },
     { scope: 3, code: "s3-commuting", name: "Employee Commuting", activityType: "employee_commuting" },
     { scope: 3, code: "s3-purchased-goods", name: "Purchased Goods & Services", activityType: "purchased_goods_spend" },

@@ -315,6 +315,7 @@ function getXbrlCategoryMapping(categoryCode: string): string {
     "s1-fugitive": "es-nfrs:DirectGHGEmissions",
     "s2-electricity-lb": "es-nfrs:EnergyIndirectGHGEmissions",
     "s2-electricity-mb": "es-nfrs:EnergyIndirectGHGEmissions",
+    "s2-heat": "es-nfrs:EnergyIndirectGHGEmissions",
     "s3-business-travel": "es-nfrs:OtherIndirectGHGEmissions",
     "s3-commuting": "es-nfrs:OtherIndirectGHGEmissions",
     "s3-purchased-goods": "es-nfrs:OtherIndirectGHGEmissions",

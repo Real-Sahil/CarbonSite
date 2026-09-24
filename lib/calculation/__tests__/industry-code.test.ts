@@ -4,7 +4,7 @@ import type { EmissionFactor } from "@prisma/client";
 
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 import { selectFactor, type FactorCache } from "../factor-selector";
-import { isUnverifiedFactor, nafDivision, naicsCode, pickIndustry } from "../industry-code";
+import { industryMissingWarning, isUnverifiedFactor, nafDivision, naicsCode, pickIndustry, ukSicDigits } from "../industry-code";
 
 const f = (id: string, activityType: string | null, over: Partial<EmissionFactor> = {}) =>
   ({
@@ -67,5 +67,34 @@ describe("industry codes", () => {
     expect(s?.selectionReason).toBe("NAF 79 matched");
     expect(await selectFactor(eur, cache)).toBeNull();
     expect(await selectFactor({ ...eur, industryCode: "99" }, cache)).toBeNull();
+  });
+
+  it("reads UK SIC 2007 codes in the usual spellings", () => {
+    expect(["41.20", "41201", "SIC 41.20", "F41.20", "UK SIC 2007 41201"].map(ukSicDigits)).toEqual(["4120", "41201", "4120", "4120", "41201"]);
+    expect(ukSicDigits("01.11")).toBe("0111");
+    expect(ukSicDigits("46")).toBe("46");
+    expect(ukSicDigits("236220")).toBeNull();
+  });
+
+  it("prices GBP spend by the UK SIC group with the longest matching prefix", async () => {
+    const gb = { geographyCountry: "GB", inputUnit: "GBP" };
+    const cache: FactorCache = new Map([["lib:cat", [
+      f("s20a", "uksic_20A", gb), f("s203", "uksic_20.3", gb), f("s41", "uksic_41.2", gb), f("s43", "uksic_42.99", gb),
+      f("s101", "uksic_10.1", gb), f("s102", "uksic_10.2-3", gb), f("generic", "purchased_goods_spend", gb),
+    ]]]);
+    const q = { ...query, geographyCountry: "GB", recordUnit: "GBP" };
+    expect((await selectFactor({ ...q, industryCode: "20.13" }, cache))?.factor.id).toBe("s20a");
+    expect((await selectFactor({ ...q, industryCode: "20301" }, cache))?.factor.id).toBe("s203");
+    expect((await selectFactor({ ...q, industryCode: "41201" }, cache))?.selectionReason).toBe("UK SIC 41.2 matched");
+    expect((await selectFactor({ ...q, industryCode: "43.21" }, cache))?.factor.id).toBe("s43");
+    expect((await selectFactor({ ...q, industryCode: "10.39" }, cache))?.factor.id).toBe("s102");
+  });
+
+  it("never guesses a group from a division several groups share, and says so", async () => {
+    const cache: FactorCache = new Map([["lib:cat", [f("s101", "uksic_10.1", { inputUnit: "GBP" }), f("s102", "uksic_10.2-3", { inputUnit: "GBP" }), f("generic", "purchased_goods_spend", { inputUnit: "GBP" })]]]);
+    const s = await selectFactor({ ...query, recordUnit: "GBP", industryCode: "10" }, cache);
+    expect(s?.factor.id).toBe("generic");
+    expect(s?.warnings?.join(" ")).toContain("No UK spend multiplier covers SIC 10");
+    expect(industryMissingWarning("UK SIC", null)).toMatch(/UK SIC 2007 code/);
   });
 });

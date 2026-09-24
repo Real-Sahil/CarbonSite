@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { factorAttribution, withAttribution } from "./attribution";
+import { runFactorAttribution } from "./attribution-load";
 import { Prisma, type Scope2Method } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { putObject, keys } from "@/lib/storage";
@@ -87,7 +88,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       const rendered = await renderForType(report);
       const { pdfkitData, xmlBuffer } = rendered;
       // OGL v3 requires attribution wherever DEFRA/DESNZ factors are reused.
-      const attribution = factorAttribution(report.snapshot.calculationRun.factorLibrary);
+      const attribution = await runFactorAttribution(report.snapshot.calculationRunId, report.snapshot.calculationRun.factorLibrary);
       const html = withAttribution(rendered.html, attribution);
       if (pdfkitData) pdfkitData.factorAttribution = attribution ?? undefined;
       reportLogger.info("Report rendering complete", {
@@ -102,7 +103,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         && report.type !== "ecology_scan" && report.type !== "ecology_survey"
         && report.type !== "transition_plan") {
         const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
-        csvBuffer = buildCsv(calculations, report);
+        csvBuffer = buildCsv(calculations, report, attribution);
         reportLogger.info("CSV buffer built", {
           reportId,
           csvSizeBytes: csvBuffer.length,
@@ -704,7 +705,7 @@ type CalcRow = {
   formula: string;
 };
 
-function buildCsv(calculations: CalcRow[], report: { organization: { name: string }; reportingPeriod: { label: string }; snapshot: { version: number; calculationRun: { factorLibrary: { name: string; version: string; license?: string | null }; methodologyVersion: { name: string; gwpVersion: string } } } }): Buffer {
+function buildCsv(calculations: CalcRow[], report: { organization: { name: string }; reportingPeriod: { label: string }; snapshot: { version: number; calculationRun: { factorLibrary: { name: string; version: string; license?: string | null }; methodologyVersion: { name: string; gwpVersion: string } } } }, attribution: string | null = factorAttribution(report.snapshot.calculationRun.factorLibrary)): Buffer {
   const esc2 = (v: string | number | null | undefined) => {
     const s = String(v ?? "");
     return /[",\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
@@ -716,7 +717,7 @@ function buildCsv(calculations: CalcRow[], report: { organization: { name: strin
     `# ${report.organization.name} — GHG emissions export`,
     `# Period: ${report.reportingPeriod.label} | Snapshot v${report.snapshot.version} | Factors: ${factorLib} | Methodology: ${methodology} (GWP ${gwp})`,
     `# Scope 2 is listed under both methods. Totals use location_based; do not add market_based to them.`,
-    ...(factorAttribution(report.snapshot.calculationRun.factorLibrary) ? [`# ${factorAttribution(report.snapshot.calculationRun.factorLibrary)}`] : []),
+    ...(attribution ? [`# ${attribution}`] : []),
     ["scope","scope2_method","category_code","category_name","facility","source_description","original_amount","original_unit","normalized_amount","normalized_unit","factor_library_version","methodology","co2_kg","ch4_kg_co2e","n2o_kg_co2e","biogenic_co2_kg","total_kg_co2e","total_t_co2e","formula"].join(","),
   ];
   for (const calc of calculations) {

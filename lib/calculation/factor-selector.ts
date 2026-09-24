@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import type { EmissionFactor } from "@prisma/client";
 import { areUnitsCompatible } from "./units";
 import { industryMissingWarning, pickIndustry } from "./industry-code";
+import { pickHeatNetwork } from "./heat-network";
 
 // Pre-loaded factor table keyed by "factorLibraryId:emissionCategoryId".
 // Build once at the start of a calculation run and pass to selectFactor.
@@ -170,6 +171,14 @@ export async function selectFactor(
   }
   const naicsWarning = industry.kind === "excluded" ? industryMissingWarning(industry.scheme, industry.code) : null;
   candidates = industry.candidates;
+  if (candidates.length === 0) return null;
+
+  // Named heat/cooling networks: only the one the record names.
+  const network = pickHeatNetwork(candidates, query.matchHint);
+  if (network.kind === "matched") {
+    return { factor: network.factor, selectionReason: `heat network named on the record (${network.factor.externalId})`, warnings: [] };
+  }
+  candidates = network.candidates;
   if (candidates.length === 0) return null;
 
   // When market-based Scope 2 is requested, prefer factors with "market" in

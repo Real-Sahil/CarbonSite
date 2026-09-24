@@ -27,6 +27,17 @@ export type MethodologyChange = { name: string; effective: string; gwp: string; 
 /** Newest first. The first entry must match the newest methodology_versions row. */
 export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
   {
+    name: "ghg-protocol-v2026-02",
+    effective: "2026-09-24",
+    gwp: "AR6",
+    changes: [
+      "Spend that names its supplier's industry code is priced from the sourced spend library for its currency (Defra UK multipliers by UK SIC for GBP, EPA USEEIO by NAICS for USD, ADEME by NAF for EUR) when the run's library has no industry factor, instead of a generic spend factor.",
+      "EUR spend is deflated with the euro area HICP, or France's own HICP for French spend factors; the US 2025 CPI is BLS's published annual average.",
+      "Fuel quantities on a net calorific value basis (kWh PCI, GJ/MJ PCI, toe) are their own unit and match only net-CV factors.",
+      "Purchased heat, steam and cooling (s2-heat) counts toward location-based Scope 2.",
+    ],
+  },
+  {
     name: "ghg-protocol-v2026-01",
     effective: "2026-08-07",
     gwp: "AR6",

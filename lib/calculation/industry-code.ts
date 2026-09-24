@@ -4,11 +4,18 @@
 // NAICS factors are never picked: 1016 equally good candidates would
 // otherwise fall to the id tie-break and price all spend as the first
 // industry in the list.
+//
+// Three schemes, one per library: NAICS-6 (EPA USEEIO, "naics_<code>"), NAF
+// division (ADEME spend ratios, "naf_<2 digits>") and UK SIC 2007 product
+// groups (Defra UK spend multipliers, "uksic_<group>", matched on the longest
+// SIC prefix the group covers).
 
 import type { EmissionFactor } from "@prisma/client";
+import { groupPrefixes } from "../factors/uk-spend";
 
 const NAICS_ACTIVITY = /^naics_(\d{6})$/;
 const NAF_ACTIVITY = /^naf_(\d{2})$/;
+const UKSIC_ACTIVITY = /^uksic_(.+)$/;
 
 /** The 6-digit NAICS code in "236220", "NAICS 236220" or "naics_236220"; null otherwise. */
 export function naicsCode(raw: string | null | undefined): string | null {
@@ -32,12 +39,45 @@ export function nafDivision(raw: string | null | undefined): string | null {
 }
 
 export const isNafFactor = (f: Pick<EmissionFactor, "activityType">) => NAF_ACTIVITY.test(f.activityType ?? "");
-export const isIndustryFactor = (f: Pick<EmissionFactor, "activityType">) => isNaicsFactor(f) || isNafFactor(f);
+export const isUkSicFactor = (f: Pick<EmissionFactor, "activityType">) => UKSIC_ACTIVITY.test(f.activityType ?? "");
+export const isIndustryFactor = (f: Pick<EmissionFactor, "activityType">) => isNaicsFactor(f) || isNafFactor(f) || isUkSicFactor(f);
+
+export type IndustryScheme = "NAICS" | "NAF" | "UK SIC";
+
+/**
+ * The digits of a UK SIC 2007 (or NACE) code: "41.20" and "41201" give
+ * "4120" and "41201", "SIC 01.11" gives "0111". Null for a 6-digit NAICS
+ * code or anything without at least 2 digits.
+ */
+export function ukSicDigits(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  if (/^\d{6}$/.test(s)) return null;
+  const m = s.match(/^(?:(?:UK\s*)?SIC(?:\s*2007)?[\s_:-]*)?[A-U]?\s*(\d{1,2})(?:\.(\d{1,3}))?(?:\/\d)?[A-Z]?$/i)
+    ?? s.match(/^(?:(?:UK\s*)?SIC(?:\s*2007)?[\s_:-]*)?(\d{2})(\d{1,3})$/i);
+  if (!m) return null;
+  const div = m[1].padStart(2, "0");
+  return div + (m[2] ?? "");
+}
+
+/** The UK SIC group factor covering the code, by its longest matching prefix. */
+function ukSicMatch<T extends Pick<EmissionFactor, "activityType">>(factors: T[], digits: string): T | undefined {
+  let best: { f: T; len: number } | undefined;
+  for (const f of factors) {
+    const key = f.activityType!.match(UKSIC_ACTIVITY)![1];
+    let prefixes: string[];
+    try { prefixes = groupPrefixes(key); } catch { continue; }
+    for (const p of prefixes) {
+      if (digits.startsWith(p) && (!best || p.length > best.len)) best = { f, len: p.length };
+    }
+  }
+  return best?.f;
+}
 
 export type IndustryPick<T> =
-  | { kind: "matched"; factor: T; code: string; scheme: "NAICS" | "NAF" }
+  | { kind: "matched"; factor: T; code: string; scheme: IndustryScheme }
   | { kind: "not_applicable"; candidates: T[] }
-  | { kind: "excluded"; candidates: T[]; code: string | null; scheme: "NAICS" | "NAF" };
+  | { kind: "excluded"; candidates: T[]; code: string | null; scheme: IndustryScheme };
 
 /**
  * Among one category's candidates: the factor for the record's industry code
@@ -47,7 +87,8 @@ export type IndustryPick<T> =
 export function pickIndustry<T extends Pick<EmissionFactor, "activityType">>(candidates: T[], industryCode: string | null | undefined): IndustryPick<T> {
   const naicsFactors = candidates.filter(isNaicsFactor);
   const nafFactors = candidates.filter(isNafFactor);
-  if (!naicsFactors.length && !nafFactors.length) return { kind: "not_applicable", candidates };
+  const ukSicFactors = candidates.filter(isUkSicFactor);
+  if (!naicsFactors.length && !nafFactors.length && !ukSicFactors.length) return { kind: "not_applicable", candidates };
   const rest = candidates.filter((f) => !isIndustryFactor(f));
   const naics = naicsCode(industryCode);
   if (naicsFactors.length) {
@@ -60,13 +101,23 @@ export function pickIndustry<T extends Pick<EmissionFactor, "activityType">>(can
     const exact = division ? nafFactors.filter((f) => f.activityType === `naf_${division}`)[0] : undefined;
     if (exact && division) return { kind: "matched", factor: exact, code: division, scheme: "NAF" };
   }
-  return naicsFactors.length
-    ? { kind: "excluded", candidates: rest, code: naics, scheme: "NAICS" }
-    : { kind: "excluded", candidates: rest, code: division, scheme: "NAF" };
+  const sic = ukSicDigits(industryCode);
+  if (ukSicFactors.length && sic) {
+    const hit = ukSicMatch(ukSicFactors, sic);
+    if (hit) return { kind: "matched", factor: hit, code: hit.activityType!.replace(UKSIC_ACTIVITY, "$1"), scheme: "UK SIC" };
+  }
+  if (naicsFactors.length) return { kind: "excluded", candidates: rest, code: naics, scheme: "NAICS" };
+  if (nafFactors.length) return { kind: "excluded", candidates: rest, code: division, scheme: "NAF" };
+  return { kind: "excluded", candidates: rest, code: sic, scheme: "UK SIC" };
 }
 
 /** Warning for a spend record that could not use its library's industry-priced factors. */
-export function industryMissingWarning(scheme: "NAICS" | "NAF", code: string | null): string {
+export function industryMissingWarning(scheme: IndustryScheme, code: string | null): string {
+  if (scheme === "UK SIC") {
+    return code
+      ? `No UK spend multiplier covers SIC ${code}. Give the supplier's full SIC 2007 class (e.g. 41.20 or 41201); a 2-digit division only matches when one group covers all of it.`
+      : "This library prices spend by industry. Add the supplier's UK SIC 2007 code (industry code, e.g. 41.20) to the record to use it.";
+  }
   if (scheme === "NAF") {
     return code
       ? `No spend factor for NAF/SIC division ${code} in this library. Check the code.`

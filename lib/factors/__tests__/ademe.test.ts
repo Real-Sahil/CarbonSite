@@ -1,12 +1,13 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { buildAdemeFactors, buildAdemeMigrationSql, nafFromComment } from "../ademe";
+import { buildAdemeFactors, buildAdemeMigrationSql, isoCountry, nafFromComment } from "../ademe";
 
 const COLS = [
   "Type Ligne", "Identifiant de l'élément", "Type de l'élément", "Statut de l'élément", "Nom base français", "Nom base anglais",
   "Nom attribut français", "Nom attribut anglais", "Nom frontière français", "Nom frontière anglais", "Code de la catégorie",
   "Unité français", "Localisation géographique", "Date de modification", "Période de validité", "Commentaire français",
   "Type poste", "Nom poste français", "Total poste non décomposé", "CO2b",
+  "Sous-localisation géographique français", "Sous-localisation géographique anglais",
 ];
 type R = Partial<Record<(typeof COLS)[number], string>>;
 const el = (r: R): R => ({ "Type Ligne": "Elément", "Type de l'élément": "Facteur d'émission", "Statut de l'élément": "Valide générique", "Localisation géographique": "France continentale", "Date de modification": "2025-04-24", ...r });
@@ -21,6 +22,16 @@ const FILE = csv([
   el({ "Identifiant de l'élément": "3", "Nom base français": "Gazole routier", "Nom base anglais": "Road diesel", "Code de la catégorie": "Combustibles > Fossiles > Liquides", "Unité français": "kgCO2e/litre", "Total poste non décomposé": "3.1" }),
   poste("3", "Combustion", "2.5", "0.13"), poste("3", "Amont", "0.6"),
   el({ "Identifiant de l'élément": "4", "Nom base français": "Gaz naturel", "Code de la catégorie": "Combustibles > Fossiles > Gazeux", "Unité français": "kgCO2e/kWh PCI", "Total poste non décomposé": "0.243" }),
+  poste("4", "Combustion", "0.205"),
+  el({ "Identifiant de l'élément": "10", "Nom base français": "Gaz naturel", "Code de la catégorie": "Combustibles > Fossiles > Gazeux", "Unité français": "kgCO2e/GJ PCI", "Total poste non décomposé": "67.5" }),
+  poste("10", "Combustion", "56.9"),
+  el({ "Identifiant de l'élément": "11", "Nom base français": "Fioul lourd", "Code de la catégorie": "Combustibles > Fossiles > Liquides", "Unité français": "kgCO2e/tep PCI", "Total poste non décomposé": "3900" }),
+  poste("11", "Combustion", "3489"),
+  el({ "Identifiant de l'élément": "12", "Nom base français": "Électricité", "Nom attribut français": "mix moyen", "Code de la catégorie": "Electricité > Mix réseau électrique > Autres pays du monde", "Unité français": "kgCO2e/kWh", "Localisation géographique": "Autre pays du monde", "Sous-localisation géographique français": "Canada", "Sous-localisation géographique anglais": "Canada", "Total poste non décomposé": "0.186", "Période de validité": "déc-17" }),
+  el({ "Identifiant de l'élément": "13", "Nom base français": "Électricité", "Nom attribut français": "mix moyen", "Code de la catégorie": "Electricité > Mix réseau électrique > Autres pays du monde", "Unité français": "kgCO2e/kWh", "Localisation géographique": "Autre pays du monde", "Sous-localisation géographique français": "Allemagne", "Total poste non décomposé": "0.461" }),
+  el({ "Identifiant de l'élément": "14", "Nom base français": "Réseau de chaleur", "Nom attribut français": "Autres réseaux de chaleurs", "Nom frontière français": "2021", "Code de la catégorie": "Réseaux de chaleur / froid > Autre", "Unité français": "kgCO2e/kWh", "Total poste non décomposé": "0.385" }),
+  el({ "Identifiant de l'élément": "15", "Nom base français": "Réseau de chaleur", "Nom attribut français": "92, Courbevoie, Réseau de La Défense", "Nom frontière français": "2021", "Code de la catégorie": "Réseaux de chaleur / froid > Île-de-France", "Unité français": "kgCO2e/kWh", "Sous-localisation géographique français": "Île-de-France, Courbevoie", "Total poste non décomposé": "0.12" }),
+  el({ "Identifiant de l'élément": "16", "Nom base français": "Changement d'affectation des sols direct (culture vers imperméabilisés)", "Code de la catégorie": "UTCF > Changement d'affectation des sols", "Unité français": "kgCO2e/ha", "Total poste non décomposé": "190000" }),
   el({ "Identifiant de l'élément": "5", "Nom base français": "Agences de voyage – 2023", "Code de la catégorie": "Achats de services > Ratios monétaires", "Unité français": "kgCO2e/keuro (2023) HT", "Total poste non décomposé": "164", "Commentaire français": "NAF-N79 - Agences" }),
   el({ "Identifiant de l'élément": "6", "Nom base français": "Agences de voyage – 2022", "Code de la catégorie": "Achats de services > Ratios monétaires", "Unité français": "kgCO2e/keuro (2022) HT", "Total poste non décomposé": "170", "Commentaire français": "NAF-N79 - Agences" }),
   el({ "Identifiant de l'élément": "7", "Nom base français": "Autocar", "Code de la catégorie": "Transport de personnes > Routier", "Unité français": "kgCO2e/passager.km", "Total poste non décomposé": "0.04" }),
@@ -38,11 +49,35 @@ describe("ADEME Base Carbone import", () => {
     expect(byId("ademe-2")).toMatchObject({ effectiveStart: "2024-01-01", effectiveEnd: null });
   });
 
-  it("takes fuel combustion only, in stationary and (per litre) mobile, and skips net-CV energy units", () => {
+  it("takes fuel combustion only, in stationary and (per litre) mobile", () => {
     expect(byId("ademe-3")).toMatchObject({ categoryCode: "s1-stationary", inputUnit: "litre", co2e: 2.5, biogenicCo2: 0.13 });
     expect(byId("ademe-3-mobile").categoryCode).toBe("s1-mobile");
-    expect(b.factors.some((f) => f.externalId === "ademe-4")).toBe(false);
-    expect(b.skipped["fuel: net CV (PCI), GJ, MJ or tep unit"]).toBe(1);
+  });
+
+  it("loads net-CV (PCI) fuels per kWh_ncv, preferring the per-kWh row and converting tep", () => {
+    expect(byId("ademe-4")).toMatchObject({ inputUnit: "kWh_ncv", co2e: 0.205 });
+    expect(b.factors.some((f) => f.externalId === "ademe-10")).toBe(false);
+    expect(b.skipped["fuel: same factor in another unit"]).toBe(1);
+    expect(byId("ademe-11").co2e).toBeCloseTo(3489 / 11630, 10);
+    expect(byId("ademe-11").usageNotes).toMatch(/Converted from kgCO2e\/tep PCI/);
+  });
+
+  it("maps other countries' grid electricity to ISO codes, never to a deprecated code", () => {
+    expect(byId("ademe-12")).toMatchObject({ categoryCode: "s2-electricity-lb", geographyCountry: "CA", co2e: 0.186, effectiveEnd: null });
+    expect(byId("ademe-13").geographyCountry).toBe("DE");
+    expect(isoCountry("Corée du sud")).toBe("KR");
+    expect(isoCountry("La Réunion")).toBe("RE");
+  });
+
+  it("loads the default heat network under s2-heat and named networks apart from it", () => {
+    expect(byId("ademe-14")).toMatchObject({ categoryCode: "s2-heat", activityType: "purchased_heat", inputUnit: "kWh", co2e: 0.385 });
+    expect(byId("ademe-15")).toMatchObject({ activityType: "heat_network" });
+    expect(byId("ademe-15").usageNotes).toMatch(/^Heat network "92, Courbevoie, Réseau de La Défense" \(/);
+  });
+
+  it("leaves land use change out, and says why", () => {
+    expect(b.factors.some((f) => f.externalId === "ademe-16")).toBe(false);
+    expect(b.skipped["land use change (UTCF): per hectare, GHG Protocol Land Sector standard"]).toBe(1);
   });
 
   it("keeps the latest spend year per EUR, with its price year and NAF division", () => {
@@ -68,5 +103,8 @@ describe("ADEME Base Carbone import", () => {
     expect(sql).toMatch(/--\s+1 status Archivé/);
     expect(sql).toContain("WHERE NOT EXISTS");
     expect(sql).toContain("DATE '2024-01-01', NULL::date");
+    expect(sql).toContain(`INSERT INTO "emission_categories" ("id", "scope", "code", "name", "activity_type")`);
+    expect(sql).toContain("'s2-heat', 'Purchased Heat, Steam & Cooling'");
+    expect(buildAdemeMigrationSql({ ...b, factors: b.factors.filter((f) => f.categoryCode !== "s2-heat") }, "f.csv", 10)).not.toContain("emission_categories\" (");
   });
 });

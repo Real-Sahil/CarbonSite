@@ -48,7 +48,7 @@ describe("spend adjusted to the factor's price year", () => {
 describe("published price indices", () => {
   it("includes 2025 for GBP (ONS D7BT) and USD (BLS CPI-U)", () => {
     expect(deflateSpend(1000, "GBP", 2025, 2022)!.ratio).toBeCloseTo(121.7 / 138.4, 10);
-    expect(deflateSpend(1000, "USD", 2025, 2022)!.ratio).toBeCloseTo(292.655 / 322.115, 10);
+    expect(deflateSpend(1000, "USD", 2025, 2022)!.ratio).toBeCloseTo(292.655 / 321.943, 10);
     expect(deflateSpend(1000, "USD", 2025, 2022)!.warning).toBeUndefined();
   });
 
@@ -58,5 +58,13 @@ describe("published price indices", () => {
     expect(d.amount).toBeCloseTo(956.5, 1);
     expect(d.warning).toBeUndefined();
     expect(deflateSpend(1000, "EUR", 2022, 2015)!.ratio).toBeCloseTo(100 / 116.82, 10);
+  });
+
+  it("uses France's own HICP for a French factor priced in euros, and the euro area for others", () => {
+    const fr = deflateSpend(1000, "EUR", 2025, 2023, "FR")!;
+    expect(fr.ratio).toBeCloseTo(120.5 / 124.43, 10);
+    expect(fr.note).toMatch(/France HICP/);
+    expect(deflateSpend(1000, "EUR", 2025, 2023, "DE")!.ratio).toBeCloseTo(123.15 / 128.75, 10);
+    expect(deflateSpend(1000, "GBP", 2025, 2023, "FR")!.note).toMatch(/CPI/);
   });
 });

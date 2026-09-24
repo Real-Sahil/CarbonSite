@@ -27,13 +27,19 @@ import { calculateDataQualityScore, calculateConfidenceInterval } from "./qualit
 import { assessTemporalRepresentativeness } from "./temporal-representativeness";
 import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
 import type { ActivityRecord } from "@prisma/client";
-import { industryMissingWarning, isNaicsFactor, isNafFactor, isUnverifiedFactor, nafDivision, naicsCode, UNVERIFIED_FACTOR_WARNING } from "./industry-code";
+import { industryMissingWarning, isNaicsFactor, isNafFactor, isUkSicFactor, isUnverifiedFactor, nafDivision, naicsCode, ukSicDigits, UNVERIFIED_FACTOR_WARNING, type IndustryScheme } from "./industry-code";
+import { selectSpendSupplement } from "./spend-supplement";
 
 /** How this library prices the category's spend by industry, if it does. */
-function libraryPricesByIndustry(cache: FactorCache, libraryId: string, categoryId: string): "NAICS" | "NAF" | null {
+function libraryPricesByIndustry(cache: FactorCache, libraryId: string, categoryId: string): IndustryScheme | null {
   const bucket = cache.get(`${libraryId}:${categoryId}`) ?? [];
-  return bucket.some(isNaicsFactor) ? "NAICS" : bucket.some(isNafFactor) ? "NAF" : null;
+  return bucket.some(isNaicsFactor) ? "NAICS" : bucket.some(isNafFactor) ? "NAF" : bucket.some(isUkSicFactor) ? "UK SIC" : null;
 }
+
+const isIndustrySelection = (s: FactorSelection | null) => !!s && /^(NAICS|NAF|UK SIC) \S+ matched$/.test(s.selectionReason);
+
+const industryCodeFor = (scheme: IndustryScheme, raw: string | null) =>
+  scheme === "NAICS" ? naicsCode(raw) : scheme === "NAF" ? nafDivision(raw) : ukSicDigits(raw);
 
 // A single HTTP request (in JOB_PROCESSING_MODE=inline, the only mode that
 // works on a Vercel-only deployment — see CLAUDE.md) cannot safely run the
@@ -205,6 +211,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
 
   // The org's own factors take precedence over the shared library.
   const customFactors = await loadOrgCustomFactors(orgId);
+  const spendSupplementCaches = new Map<string, FactorCache | null>();
 
   const chunkDeadline = Date.now() + CHUNK_TIME_BUDGET_MS;
 
@@ -299,9 +306,14 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       if (hvo != null && !custom && !hvoSelection) {
         unitWarnings.push("The fuel is HVO but the factor library has no HVO factor for this unit, so the category's usual fuel factor was used. Record HVO in litres.");
       }
-      const factorSelection: FactorSelection | null = custom
+      let factorSelection: FactorSelection | null = custom
         ? { factor: customFactorAsLibraryFactor(custom.factor, run.factorLibraryId), selectionReason: custom.reason, warnings: [] }
         : hvoSelection ?? await selectFactor(libraryQuery, factorCache);
+      // Spend with a supplier industry code that the run's library cannot price
+      // by industry: the sourced spend library for the record's currency.
+      if (!custom && !hvoSelection && record.industryCode && !isIndustrySelection(factorSelection)) {
+        factorSelection = (await selectSpendSupplement(record.unit, run.factorLibraryId, libraryQuery, spendSupplementCaches)) ?? factorSelection;
+      }
 
       if (!factorSelection) {
         // No factor found — include the record with zero CO2e and a warning
@@ -337,7 +349,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
               ...unitWarnings,
               `No emission factor found for category ${record.emissionCategory.code}`,
               ...((scheme) => (scheme
-                ? [industryMissingWarning(scheme, scheme === "NAICS" ? naicsCode(record.industryCode) : nafDivision(record.industryCode))]
+                ? [industryMissingWarning(scheme, industryCodeFor(scheme, record.industryCode))]
                 : []))(libraryPricesByIndustry(factorCache, run.factorLibraryId, record.emissionCategoryId)),
             ],
             dataQualityScore: qualityScore.score,
@@ -500,7 +512,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       if (isCurrencyUnit(factor.inputUnit)) {
         const spendYear = (record.activityDate ?? record.startDate ?? activityDate).getUTCFullYear();
         const deflated = factor.priceBaseYear != null
-          ? deflateSpend(amountForFactor, factor.inputUnit, spendYear, factor.priceBaseYear)
+          ? deflateSpend(amountForFactor, factor.inputUnit, spendYear, factor.priceBaseYear, factor.geographyCountry)
           : null;
         if (deflated) {
           amountForFactor = deflated.amount;

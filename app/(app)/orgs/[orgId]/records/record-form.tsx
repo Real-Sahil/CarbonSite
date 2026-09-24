@@ -191,7 +191,7 @@ export function CreateRecordForm({
           list="record-industry-codes"
           value={industryCode}
           onChange={(e) => setIndustryCode(e.target.value)}
-          placeholder="For spend, e.g. 236220 or 41.20"
+          placeholder="For spend: NAICS 236220, UK SIC 41.20 or NAF 41.20Z"
           className="w-44"
         />
         <datalist id="record-industry-codes">
