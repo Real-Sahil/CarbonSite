@@ -130,6 +130,71 @@ jobs:
       - name: Run smoke tests
         run: pnpm playwright test
 
+  e2e-local:
+    name: E2E — pilot cycle on a local app
+    runs-on: ubuntu-latest
+    needs: web
+    timeout-minutes: 25
+    # The whole user cycle (tests/e2e/pilot-cycle.spec.ts) against a production
+    # build on a throwaway, migrated and seeded Postgres: sign-up, records,
+    # calculation totals, publish, PDF report, field submission approval,
+    # role boundaries and a cross-tenant attempt.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: metricora
+          POSTGRES_PASSWORD: metricora
+          POSTGRES_DB: metricora_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://metricora:metricora@localhost:5432/metricora_e2e
+      DIRECT_URL: postgresql://metricora:metricora@localhost:5432/metricora_e2e
+      STORAGE_DRIVER: local
+      STORAGE_ENDPOINT: https://example.r2.cloudflarestorage.com
+      STORAGE_ACCESS_KEY_ID: placeholder
+      STORAGE_SECRET_ACCESS_KEY: placeholder
+      STORAGE_BUCKET: metricora
+      BETTER_AUTH_SECRET: placeholder-secret-32-chars-minimum!!
+      BETTER_AUTH_URL: http://localhost:3000
+      EMAIL_DRIVER: console
+      TRUSTED_ORIGINS: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      JOB_PROCESSING_MODE: inline
+      ROUTING_PROVIDER: none
+      E2E_LOCAL: "1"
+      PLAYWRIGHT_BASE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - run: pnpm prisma migrate deploy
+      - run: pnpm prisma db seed
+      - run: pnpm build
+      - name: Start the app
+        run: |
+          nohup pnpm start > next.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/sign-in && exit 0; sleep 2; done
+          cat next.log; exit 1
+      - name: Install Playwright browsers
+        run: pnpm playwright install chromium --with-deps
+      - name: Run the pilot cycle
+        run: pnpm playwright test tests/e2e/pilot-cycle.spec.ts
+      - name: App log on failure
+        if: failure()
+        run: tail -200 next.log
+
   forecast:
     name: Forecast — Python unit tests
     runs-on: ubuntu-latest
