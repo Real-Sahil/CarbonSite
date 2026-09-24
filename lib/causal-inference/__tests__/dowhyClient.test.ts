@@ -8,6 +8,16 @@ import {
   listModels,
 } from "../models";
 
+// Seeded generator (mulberry32) so the synthetic data, and so each
+// assertion's margin, is the same on every run.
+let seed = 0x5eed;
+function random(): number {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+
 describe("DoWhy Causal Inference", () => {
   describe("estimateCausalEffect", () => {
     /**
@@ -23,8 +33,8 @@ describe("DoWhy Causal Inference", () => {
       for (let i = 0; i < 25; i++) {
         data.push({
           treatment: 0,
-          outcome: 2 + Math.random() * 3, // 2-5% baseline reduction (no upgrade effect)
-          baseline_emissions: 100 + Math.random() * 200,
+          outcome: 2 + random() * 3, // 2-5% baseline reduction (no upgrade effect)
+          baseline_emissions: 100 + random() * 200,
         });
       }
 
@@ -32,8 +42,8 @@ describe("DoWhy Causal Inference", () => {
       for (let i = 0; i < 25; i++) {
         data.push({
           treatment: 1,
-          outcome: 12 + Math.random() * 4, // 12-16% reduction (includes upgrade effect ~10%)
-          baseline_emissions: 100 + Math.random() * 200,
+          outcome: 12 + random() * 4, // 12-16% reduction (includes upgrade effect ~10%)
+          baseline_emissions: 100 + random() * 200,
         });
       }
 
@@ -56,8 +66,8 @@ describe("DoWhy Causal Inference", () => {
       for (let i = 0; i < 50; i++) {
         data.push({
           treatment: i < 25 ? 0 : 1,
-          outcome: (i < 25 ? 5 : 15) + Math.random() * 2, // Add variance
-          confounder1: 100 + Math.random() * 20,
+          outcome: (i < 25 ? 5 : 15) + random() * 2, // Add variance
+          confounder1: 100 + random() * 20,
         });
       }
 
@@ -118,8 +128,8 @@ describe("DoWhy Causal Inference", () => {
         .map((_, i) => ({
           treatment: i % 2,
           outcome: 10 + i,
-          confounder1: 100 + Math.random() * 50,
-          confounder2: 200 + Math.random() * 50,
+          confounder1: 100 + random() * 50,
+          confounder2: 200 + random() * 50,
         }));
 
       const result = client.estimateCausalEffect(data);
@@ -212,11 +222,11 @@ describe("DoWhy Causal Inference", () => {
 
       // Treatment effect is small (1-2 units) compared to variance (50+ units)
       for (let i = 0; i < 50; i++) {
-        const baseOutcome = 100 + Math.random() * 50; // High variance
+        const baseOutcome = 100 + random() * 50; // High variance
         data.push({
           treatment: i < 25 ? 0 : 1,
           outcome: baseOutcome + (i < 25 ? 0 : 1.5), // Tiny treatment effect
-          conf: 100 + Math.random() * 20,
+          conf: 100 + random() * 20,
         });
       }
 
