@@ -266,6 +266,13 @@ Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Rep
 
 **Bid carbon pack** (`bid_carbon_pack` report, `lib/bids/carbon-pack.ts`): the carbon section of a tender in one PDF: a PPN 006 Carbon Reduction Plan, emissions trend across published snapshots, up to five featured contracts (emissions, intensity, budget, waste diversion, TOMs social value), assurance status and model answers. Every figure comes from published snapshots or org records; nothing is estimated or written by an LLM, and a section with no data is left out. `bidPackReadiness()` runs from the report form's Validate button and blocks a pack with no base year, director sign-off or net zero year by 2050.
 
+### Data quality guards
+- **Duplicates** (`lib/data-quality/duplicates.ts`): a record with the same category, amount, unit, date, facility and supplier as an existing one is refused with 409 `POSSIBLE_DUPLICATE` unless sent with `allowDuplicate` (the record form asks); imports flag such rows, and rows repeated within the file, as warnings. Facility names are unique per org (case-insensitive, 409 `FACILITY_EXISTS`).
+- **Unpublished changes:** when live aggregates differ from the period's latest snapshot, the dashboard shows the signed difference above the headline with a link to review and publish the latest run.
+
+### Backups
+`.github/workflows/backup.yml`: nightly `scripts/backup/dump.sh` (public schema, pg_dump custom format, AES-256 with `BACKUP_PASSPHRASE`, plus a row-count manifest) to R2 under `db/daily/` (and `db/monthly/` on the 1st); weekly `scripts/backup/restore-drill.sh` restores the latest into a throwaway PostgreSQL 17 (stub `auth` schema and Supabase roles) and fails if a table is missing or short of the manifest. Secrets are listed in the workflow header.
+
 ### Audit Log
 `AuditLog` is append-only via `writeAuditLog()` in `lib/db/audit.ts`. Never update or delete rows. Required events: auth, role changes, imports, record mutations, factor imports, calculation runs, snapshot publication, report publication, field submission submission/review.
 

@@ -68,10 +68,20 @@ export async function POST(
       }
     }
 
+    // One site, one facility: a second "Leeds depot" splits its records and
+    // its totals across two rows with nothing to show they are the same place.
+    const sameName = await prisma.facility.findFirst({
+      where: { organizationId: orgId, name: { equals: body.name.trim(), mode: "insensitive" } },
+      select: { id: true, name: true },
+    });
+    if (sameName) {
+      return apiError("FACILITY_EXISTS", `A facility called "${sameName.name}" already exists.`, 409, { facilityId: sameName.id });
+    }
+
     const facility = await prisma.facility.create({
       data: {
         organizationId: orgId,
-        name: body.name,
+        name: body.name.trim(),
         country: body.country ?? null,
         region: body.region ?? null,
         addressLine: body.addressLine ?? null,

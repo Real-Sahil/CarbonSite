@@ -75,6 +75,8 @@ test("period, facility and approved records", async () => {
   const facility = await api.post(org("/facilities"), { data: { name: "Leeds depot", country: "GB" } });
   expect(facility.status()).toBe(201);
   facilityId = (await facility.json()).id;
+  const sameSite = await api.post(org("/facilities"), { data: { name: "leeds depot ", country: "GB" } });
+  expect(sameSite.status()).toBe(409);
 
   const records = [
     { code: "s2-electricity-lb", amount: 120000, unit: "kWh" },
@@ -95,6 +97,13 @@ test("period, facility and approved records", async () => {
     const review = await api.patch(org(`/activity-records/${id}/review`), { data: { reviewStatus: "approved" } });
     expect(review.status(), `approve ${code}`).toBe(200);
   }
+
+  // The same electricity line again is caught before it is counted twice.
+  const again = await api.post(org("/activity-records"), {
+    data: { reportingPeriodId: periodId, facilityId, emissionCategoryId: cat["s2-electricity-lb"], activityDate: "2025-06-30", amount: 120000, unit: "kWh" },
+  });
+  expect(again.status()).toBe(409);
+  expect((await again.json()).code).toBe("POSSIBLE_DUPLICATE");
 });
 
 test("calculation on DEFRA 2025.2 matches the hand-worked total", async () => {

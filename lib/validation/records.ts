@@ -24,6 +24,8 @@ export const createActivityRecordSchema = z.object({
   fuelType: z.string().max(100).optional(),
   refrigerantType: z.string().max(100).optional(),
   industryCode: z.string().trim().max(20).optional(),
+  /** Save even though a record with the same line already exists. */
+  allowDuplicate: z.boolean().optional(),
   scope2Method: z.enum(["location_based", "market_based"]).optional(),
   assumptionNotes: z.string().max(2000).optional(),
   // How the figure was obtained. Defaults to the weakest tier so nothing is

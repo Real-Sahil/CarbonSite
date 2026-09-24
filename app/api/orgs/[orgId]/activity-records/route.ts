@@ -6,6 +6,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createActivityRecordSchema } from "@/lib/validation/records";
+import { duplicateKey, findExistingDuplicates } from "@/lib/data-quality/duplicates";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -109,6 +110,29 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
       if (!bu || bu.organizationId !== orgId) {
         return apiError("NOT_FOUND", "Business unit not found.", 404);
+      }
+    }
+
+    // The same line entered twice would be counted twice. Ask first; a
+    // genuine repeat is sent again with allowDuplicate.
+    if (!body.allowDuplicate) {
+      const candidate = {
+        emissionCategoryId: body.emissionCategoryId,
+        amount: body.amount,
+        unit: body.unit,
+        activityDate: body.activityDate,
+        facilityId: body.facilityId,
+        supplierName: body.supplierName,
+      };
+      const key = duplicateKey(candidate);
+      const existingId = key ? (await findExistingDuplicates(orgId, [candidate])).get(key) : undefined;
+      if (existingId) {
+        return apiError(
+          "POSSIBLE_DUPLICATE",
+          "A record with the same category, amount, unit, date and facility already exists. Save anyway only if this is a separate activity.",
+          409,
+          { existingRecordId: existingId },
+        );
       }
     }
 

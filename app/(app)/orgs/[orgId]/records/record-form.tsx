@@ -34,6 +34,8 @@ export function CreateRecordForm({
   const [businessUnitId] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("");
+  // The date selects the factor version and lets a repeat of the same line be caught.
+  const [activityDate, setActivityDate] = useState("");
   const [sourceDescription, setSourceDescription] = useState("");
   const [industryCode, setIndustryCode] = useState("");
   const [industryOptions, setIndustryOptions] = useState<{ code: string; title: string; scheme: string }[]>([]);
@@ -79,22 +81,33 @@ export function CreateRecordForm({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/orgs/${orgId}/activity-records`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reportingPeriodId: periodId,
-          emissionCategoryId: categoryId,
-          facilityId: facilityId || undefined,
-          businessUnitId: businessUnitId || undefined,
-          amount: parseFloat(amount),
-          unit,
-          sourceDescription: sourceDescription || undefined,
-          industryCode: industryCode.trim() || undefined,
-          // The network name as published selects its factor (heat-network.ts).
-          fuelType: isHeat ? heatNetwork.trim() || undefined : undefined,
-        }),
-      });
+      const save = (allowDuplicate: boolean) =>
+        fetch(`/api/orgs/${orgId}/activity-records`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reportingPeriodId: periodId,
+            emissionCategoryId: categoryId,
+            facilityId: facilityId || undefined,
+            businessUnitId: businessUnitId || undefined,
+            amount: parseFloat(amount),
+            unit,
+            activityDate: activityDate || undefined,
+            sourceDescription: sourceDescription || undefined,
+            industryCode: industryCode.trim() || undefined,
+            // The network name as published selects its factor (heat-network.ts).
+            fuelType: isHeat ? heatNetwork.trim() || undefined : undefined,
+            allowDuplicate,
+          }),
+        });
+      let res = await save(false);
+      if (res.status === 409) {
+        const conflict = await res.clone().json().catch(() => ({}));
+        if (conflict.code === "POSSIBLE_DUPLICATE") {
+          if (!window.confirm(conflict.message)) return;
+          res = await save(true);
+        }
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.message ?? "Failed to create record.");
@@ -178,6 +191,16 @@ export function CreateRecordForm({
           onChange={(e) => setUnit(e.target.value)}
           placeholder="e.g. kWh"
           className="w-24"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="record-activity-date" className="text-xs text-[#374151] tracking-[-0.36px]">Date</label>
+        <Input
+          id="record-activity-date"
+          type="date"
+          value={activityDate}
+          onChange={(e) => setActivityDate(e.target.value)}
+          className="w-40"
         />
       </div>
       {facilities.length > 0 && (

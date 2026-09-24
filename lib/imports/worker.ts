@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getObject, putObject, keys } from "@/lib/storage";
 import { parseSpreadsheet } from "./parser";
 import { mapColumns, validateRow, buildErrorCsv } from "./validator";
+import { duplicateKey, findExistingDuplicates, type DuplicateKeyInput } from "@/lib/data-quality/duplicates";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 
 export async function processImportBatch(importBatchId: string, orgId: string): Promise<void> {
@@ -93,6 +94,30 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
     const validatedRows = rows.map((row) =>
       validateRow(row, columnMap, categoryCodeIndex, facilityNameIndex, businessUnitNameIndex),
     );
+
+    // Likely duplicates: a row repeated within the file, or a row matching a
+    // record the organisation already has. Warnings, not errors: a genuine
+    // repeat (two identical deliveries on one day) can still be committed.
+    const existingDuplicates = await findExistingDuplicates(
+      orgId,
+      validatedRows.filter((v) => v.errors.length === 0).map((v) => v.data as DuplicateKeyInput),
+    );
+    const firstRowByKey = new Map<string, number>();
+    validatedRows.forEach((v, i) => {
+      if (v.errors.length > 0) return;
+      const key = duplicateKey(v.data as DuplicateKeyInput);
+      if (!key) return;
+      const earlier = firstRowByKey.get(key);
+      if (earlier !== undefined) {
+        v.warnings.push({ field: "row", message: `Same category, amount, unit, date and facility as row ${earlier} of this file. Remove it if it is the same line twice.` });
+      } else {
+        firstRowByKey.set(key, i + 2);
+      }
+      const existingId = existingDuplicates.get(key);
+      if (existingId) {
+        v.warnings.push({ field: "row", message: `Matches an existing record (${existingId}). Committing it will count this activity twice.` });
+      }
+    });
 
     const errorRows: { rowNumber: number; errors: (typeof validatedRows)[0]["errors"]; warnings: (typeof validatedRows)[0]["warnings"] }[] = [];
 

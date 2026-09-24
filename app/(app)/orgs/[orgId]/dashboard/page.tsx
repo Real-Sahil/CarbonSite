@@ -274,6 +274,14 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       ])
     : [{ _sum: { totalCo2e: null } }, { _sum: { totalCo2e: null } }];
 
+  const latestPeriodRun = currentPeriod && latestSnapshot
+    ? await prisma.calculationRun.findFirst({
+        where: { organizationId: orgId, reportingPeriodId: currentPeriod.id, status: "succeeded" },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, finishedAt: true },
+      }).catch(onLoadFailure(() => null))
+    : null;
+
   const liveTotalCo2e = Number(liveTotalAgg._sum.totalCo2e ?? 0);
   const snapshotTotalCo2e = Number(snapshotTotalAgg._sum.totalCo2e ?? 0);
   // 0.5 kg absorbs Decimal rounding without masking a real restatement.
@@ -1223,6 +1231,36 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
 
+      {/* ── Unpublished changes: live figures moved since the last publish ── */}
+      {snapshotDiverges && latestSnapshot && (() => {
+        const deltaKg = liveTotalCo2e - snapshotTotalCo2e;
+        const deltaT = Math.abs(deltaKg) / 1000;
+        return (
+          <div
+            role="status"
+            className="mt-2 mb-4 flex flex-col gap-3 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="tracking-[-0.42px]">
+              <AlertTriangle aria-hidden="true" className="inline h-4 w-4 mr-2 align-text-bottom" />
+              <span className="font-medium">
+                Unpublished changes: {deltaKg >= 0 ? "+" : "\u2212"}
+                {deltaT.toLocaleString("en-GB", { maximumFractionDigits: deltaT < 10 ? 2 : 1 })} tCO2e
+              </span>{" "}
+              since snapshot v{latestSnapshot.version} ({formatKgCo2e(snapshotTotalCo2e)}). The figures below are live
+              ({formatKgCo2e(liveTotalCo2e)}); reports still use the published snapshot until you publish again.
+            </p>
+            {latestPeriodRun && (
+              <Link
+                href={`/orgs/${orgId}/calculations/${latestPeriodRun.id}`}
+                className="shrink-0 rounded-full bg-[#f97316] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#ea580c]"
+              >
+                Review and publish
+              </Link>
+            )}
+          </div>
+        );
+      })()}
+
       {/* ── Carbon footprint hero ─────────────────────────────────────────── */}
       <section
         aria-label="Carbon footprint summary"
@@ -1914,15 +1952,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 on this page carry a carbon cost of{" "}
                 <span className="font-medium text-[#111827]">{formatMoney(carbonPriceCost.cost, carbonPrice.currency)}</span>.{" "}
                 <Link href={`/orgs/${orgId}/settings/carbon-price`} className="underline underline-offset-2">Carbon price</Link>
-              </div>
-            )}
-            {snapshotDiverges && latestSnapshot && (
-              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
-                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
-                These are live figures ({formatKgCo2e(liveTotalCo2e)}). Reports are
-                generated from published snapshot v{latestSnapshot.version}, which
-                totals {formatKgCo2e(snapshotTotalCo2e)}. Publish a new snapshot to
-                make reports match what you see here.
               </div>
             )}
             {zeroCo2eCalcCount > 0 && (
