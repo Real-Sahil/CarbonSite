@@ -11,17 +11,6 @@
         "-c",
         "export PATH=\"$HOME/.local/bin:$PATH\"; command -v graphify-mcp >/dev/null 2>&1 || { command -v uv >/dev/null 2>&1 || pip install -q uv >&2; uv tool install -q --with mcp graphifyy >&2; }; exec graphify-mcp graphify-out/graph.json"
       ]
-    },
-    "magic": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@21st-dev/magic@latest"
-      ],
-      "env": {
-        "API_KEY": "${MAGIC_MCP_API_KEY}"
-      }
     }
   }
 }
