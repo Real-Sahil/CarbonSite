@@ -179,7 +179,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         {/* Text search */}
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 pointer-events-none" />
           <input
             type="text"
             value={search}
@@ -190,7 +190,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
           {search && (
             <button
               onClick={() => changeSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600"
             >
               <X className="h-3 w-3" />
             </button>
@@ -259,10 +259,10 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <p className="text-sm font-medium text-slate-900 truncate">
-                          {m.name ?? <em className="text-slate-400 font-normal">No name</em>}
+                          {m.name ?? <em className="text-slate-500 font-normal">No name</em>}
                         </p>
                         {isCurrentUser && (
-                          <span className="text-[10px] text-slate-400 shrink-0">(you)</span>
+                          <span className="text-[10px] text-slate-500 shrink-0">(you)</span>
                         )}
                       </div>
                       <p className="text-xs text-slate-500 truncate">{m.email}</p>

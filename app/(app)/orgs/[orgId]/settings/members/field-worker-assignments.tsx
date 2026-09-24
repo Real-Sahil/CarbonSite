@@ -347,7 +347,7 @@ export function FieldWorkerAssignments({
                               </div>
                               <p className="text-xs text-slate-500 truncate">{assignment.workerEmail}</p>
                               <p className="mt-1 text-xs font-medium text-slate-700 truncate">{assignment.siteLabel}</p>
-                              <p className="mt-0.5 text-[10px] text-slate-400">
+                              <p className="mt-0.5 text-[10px] text-slate-500">
                                 by {assignment.assignedByLabel} on{" "}
                                 {new Date(assignment.createdAt).toLocaleDateString("en-GB", {
                                   day: "numeric",

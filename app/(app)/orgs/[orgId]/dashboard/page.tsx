@@ -1149,7 +1149,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 href={item.href}
                 className="flex items-start gap-2.5 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 hover:bg-[#F3F4F6] hover:border-[#D1D5DB] transition-colors"
               >
-                <ArrowRight className="h-3.5 w-3.5 text-[#9CA3AF] mt-0.5 shrink-0" aria-hidden="true" />
+                <ArrowRight className="h-3.5 w-3.5 text-[#6B7280] mt-0.5 shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-xs font-medium text-[#111827] tracking-[-0.36px]">{item.label}</p>
                   <p className="text-[11px] text-[#6B7280] tracking-[-0.33px] mt-0.5 leading-snug">{item.description}</p>
@@ -1208,7 +1208,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               href={`/orgs/${orgId}/dashboard`}
               className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                 !selectedContractId
-                  ? "bg-[#f97316] text-white"
+                  ? "bg-[#c2410c] text-white"
                   : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
               }`}
             >
@@ -1220,7 +1220,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 href={`/orgs/${orgId}/dashboard?contractId=${contract.id}`}
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
-                    ? "bg-[#f97316] text-white"
+                    ? "bg-[#c2410c] text-white"
                     : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
                 }`}
               >
@@ -1252,7 +1252,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {latestPeriodRun && (
               <Link
                 href={`/orgs/${orgId}/calculations/${latestPeriodRun.id}`}
-                className="shrink-0 rounded-full bg-[#f97316] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#ea580c]"
+                className="shrink-0 rounded-full bg-[#c2410c] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#9a3412]"
               >
                 Review and publish
               </Link>
@@ -1266,17 +1266,17 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         aria-label="Carbon footprint summary"
         className="mt-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
       >
-        <div className="rounded-[14px] border border-[#f97316] bg-[#f97316] p-[21px] text-white md:col-span-2 xl:col-span-1">
+        <div className="rounded-[14px] border border-[#c2410c] bg-[#c2410c] p-[21px] text-white md:col-span-2 xl:col-span-1">
           <div className="flex items-center gap-2">
-            <Leaf aria-hidden="true" className="h-4 w-4 text-white/85" />
-            <p className="text-xs font-normal uppercase tracking-wide text-white/85">
+            <Leaf aria-hidden="true" className="h-4 w-4 text-white" />
+            <p className="text-xs font-normal uppercase tracking-wide text-white">
               Total footprint
             </p>
           </div>
           <p className="mt-3 text-4xl font-normal tracking-[-0.4px]">
             {currentFootprint > 0 ? formatKgCo2e(currentFootprint) : "—"}
           </p>
-          <p className="mt-1 text-xs text-white/85 tracking-[-0.36px]">
+          <p className="mt-1 text-xs text-white tracking-[-0.36px]">
             {currentFootprint > 0
               ? `Scopes 1–3 · ${currentPeriod?.label ?? "current period"}`
               : "Run a calculation to populate your footprint"}
@@ -1344,7 +1344,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           answers 402 and the panel would sit on "Connecting" retrying) ── */}
       {liveDashboardEnabled && (
       <section aria-label="Live dashboard" className="mt-8">
-        <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
+        <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">
           Live updates
         </p>
         <div className="rounded-[14px] border border-[#E5E7EB] bg-white p-6">
@@ -1362,7 +1362,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       {industryData && (
         <section aria-label="Industry insights" className="mt-8">
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
+          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">
             {industryData.type === "construction" && "Embodied carbon"}
             {industryData.type === "logistics" && "Logistics insights"}
             {industryData.type === "facilities_management" && "Building energy"}
@@ -1476,7 +1476,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       {hasEnvironmentalData && (
         <section aria-label="Water and waste" className="mt-8">
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
+          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">
             Water &amp; waste (ESRS E3 / E5)
           </p>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -1513,7 +1513,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </section>
       )}
 
-      <p className="mt-8 mb-3 text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
+      <p className="mt-8 mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">
         Operations
       </p>
 
@@ -1612,7 +1612,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   href={`/orgs/${orgId}/dashboard`}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     !selectedFacilityId
-                      ? "bg-[#f97316] text-white"
+                      ? "bg-[#c2410c] text-white"
                       : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
                   }`}
                 >
@@ -1624,7 +1624,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     href={`/orgs/${orgId}/dashboard?facilityId=${fac.id}`}
                     className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                       selectedFacilityId === fac.id
-                        ? "bg-[#f97316] text-white"
+                        ? "bg-[#c2410c] text-white"
                         : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
                     }`}
                   >
@@ -1676,7 +1676,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                           <div className="flex items-center justify-end gap-2">
                             <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#FFF7ED]">
                               <div
-                                className="h-full rounded-full bg-[#f97316]"
+                                className="h-full rounded-full bg-[#c2410c]"
                                 style={{ width: `${share}%` }}
                               />
                             </div>
@@ -1781,7 +1781,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                         )}
                       </div>
                       <div className="mt-2 pt-2 border-t border-[#E5E7EB]">
-                        <p className="text-xs text-[#9CA3AF]">{formatKgCo2e(priorVal)} in {priorPeriod.label}</p>
+                        <p className="text-xs text-[#6B7280]">{formatKgCo2e(priorVal)} in {priorPeriod.label}</p>
                       </div>
                     </div>
                   );
@@ -1988,7 +1988,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
-          <CardHeader className="border-b border-[#E5E7EB] bg-[#f97316] text-white">
+          <CardHeader className="border-b border-[#E5E7EB] bg-[#c2410c] text-white">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
@@ -2144,7 +2144,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 </a>
               ))}
               {pilotKitData?.data?.generatedAt && (
-                <div className="pt-1 text-xs text-[#9CA3AF]">
+                <div className="pt-1 text-xs text-[#6B7280]">
                   Generated {new Date(pilotKitData.data.generatedAt).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "short",
@@ -2534,7 +2534,7 @@ function ProgressRow({
         <p className="shrink-0 text-sm font-normal text-[#111827] tracking-[-0.42px]">{value}</p>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#FFF7ED]">
-        <div className="h-full rounded-full bg-[#f97316]" style={{ width }} />
+        <div className="h-full rounded-full bg-[#c2410c]" style={{ width }} />
       </div>
     </div>
   );
@@ -2558,7 +2558,7 @@ function PipelineRow({
         <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">{count.toLocaleString("en-GB")}</span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#FFF7ED]">
-        <div className="h-full rounded-full bg-[#f97316]" style={{ width }} />
+        <div className="h-full rounded-full bg-[#c2410c]" style={{ width }} />
       </div>
     </div>
   );

@@ -120,7 +120,7 @@ export default async function WaterPage({ params }: { params: Promise<{ orgId: s
                     {r.isWaterStressedArea ? (
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Stressed</span>
                     ) : (
-                      <span className="text-xs text-gray-400">-</span>
+                      <span className="text-xs text-gray-500">-</span>
                     )}
                   </td>
                   <td className="py-3 px-4 text-gray-500 tabular-nums">

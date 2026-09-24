@@ -186,11 +186,11 @@ export default async function ContractsPage({ params }: Props) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               All contracts
-              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">
+              <span className="ml-2 text-xs font-normal text-[#6B7280]">
                 ({contracts.length})
               </span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               {contracts.length} contract{contracts.length !== 1 ? "s" : ""} in this organisation.
             </CardDescription>
           </CardHeader>
@@ -208,15 +208,15 @@ export default async function ContractsPage({ params }: Props) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Name</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Client</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Value</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Start</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">End</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Projects</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">CO2e</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Name</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Client</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Value</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Start</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">End</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Projects</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">CO2e</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>

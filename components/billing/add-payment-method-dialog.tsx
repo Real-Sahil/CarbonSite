@@ -85,7 +85,7 @@ export function AddPaymentMethodDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Payment Method</DialogTitle>
+          <DialogTitle>Add payment method</DialogTitle>
           <DialogDescription>
             Enter your card details to add a new payment method to your organization.
           </DialogDescription>

@@ -64,13 +64,13 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
     <div className="min-h-screen bg-[#F8F9FA]">
       <div className="border-b border-[#E5E7EB] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8">
-          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-[#f97316] hover:text-orange-600 mb-4">
+          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-[#c2410c] hover:text-orange-600 mb-4">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Back to Integrations</span>
           </Link>
           <div className="mb-2 flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-[#f97316]" />
-            <span className="text-sm font-semibold text-[#f97316] uppercase tracking-widest">Accounting Software</span>
+            <BarChart3 className="h-5 w-5 text-[#c2410c]" />
+            <span className="text-sm font-semibold text-[#c2410c] uppercase tracking-widest">Accounting Software</span>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Connect Your Accounting Platform</h1>
           <p className="text-slate-500">
@@ -118,7 +118,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   <XeroConnectButton orgId={orgId} connected={xeroConnected} />
                   <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your Xero password.{" "}
-                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#f97316] hover:underline">
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2410c] hover:underline">
                       Use your own Xero app
                     </Link>
                   </p>
@@ -129,7 +129,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-slate-900 flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-[#f97316]" />
+                    <Zap className="h-5 w-5 text-[#c2410c]" />
                     Automatic Sync
                   </CardTitle>
                 </CardHeader>
@@ -143,7 +143,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-slate-900 flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-[#f97316]" />
+                    <Lock className="h-5 w-5 text-[#c2410c]" />
                     Enterprise Security
                   </CardTitle>
                 </CardHeader>
@@ -157,7 +157,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E5E7EB] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-slate-900 flex items-center gap-2">
-                    <RotateCw className="h-5 w-5 text-[#f97316]" />
+                    <RotateCw className="h-5 w-5 text-[#c2410c]" />
                     Recalculate Anytime
                   </CardTitle>
                 </CardHeader>
@@ -174,28 +174,28 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <h3 className="text-lg font-semibold text-slate-900 mb-6">How Xero Integration Works</h3>
               <div className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">1</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">1</div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Invoice Sync</h4>
                     <p className="text-sm text-slate-600">We pull vendor invoices, bills, and expenses from your Xero account. Data syncs automatically twice daily.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">2</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">2</div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Anomaly Detection</h4>
                     <p className="text-sm text-slate-600">Duplicate invoices, price spikes, and missing receipts are flagged for review before they enter your calculations.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">3</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">3</div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Scope 3 Calculation</h4>
                     <p className="text-sm text-slate-600">Spend amounts are automatically mapped to emission categories and converted to tonnes CO₂e.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">4</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">4</div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Immutable Audit Trail</h4>
                     <p className="text-sm text-slate-600">Every invoice and sync event is logged. Show auditors which invoices contributed to your emissions total.</p>
@@ -242,7 +242,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   <QuickBooksConnectButton orgId={orgId} connected={quickbooksConnected} />
                   <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your QuickBooks password.{" "}
-                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#f97316] hover:underline">
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2410c] hover:underline">
                       Use your own QuickBooks app
                     </Link>
                   </p>
@@ -331,7 +331,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   <SageConnectButton orgId={orgId} connected={sageConnected} />
                   <p className="text-xs text-slate-500">
                     Secure OAuth login. We never store your Sage password.{" "}
-                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#f97316] hover:underline">
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2410c] hover:underline">
                       Use your own Sage app
                     </Link>
                   </p>

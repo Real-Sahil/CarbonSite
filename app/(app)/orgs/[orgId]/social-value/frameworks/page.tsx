@@ -93,22 +93,22 @@ export default async function FrameworksPage({ params }: Props) {
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}
                       {fw.version && (
-                        <span className="text-xs text-[#9CA3AF]">v{fw.version}</span>
+                        <span className="text-xs text-[#6B7280]">v{fw.version}</span>
                       )}
                     </div>
                     {fw.description && (
-                      <CardDescription className="text-xs text-[#9CA3AF] mt-0.5 max-w-[60ch]">
+                      <CardDescription className="text-xs text-[#6B7280] mt-0.5 max-w-[60ch]">
                         {fw.description}
                       </CardDescription>
                     )}
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-[#9CA3AF]">
+                      <span className="text-xs text-[#6B7280]">
                         <span className="font-medium text-[#374151]">{fw.themes.length}</span> themes
                       </span>
-                      <span className="text-xs text-[#9CA3AF]">
+                      <span className="text-xs text-[#6B7280]">
                         <span className="font-medium text-[#374151]">{fw._count.commitments}</span> commitments
                       </span>
-                      <span className="text-xs font-mono text-[#9CA3AF]">{fw.slug}</span>
+                      <span className="text-xs font-mono text-[#6B7280]">{fw.slug}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
@@ -124,20 +124,20 @@ export default async function FrameworksPage({ params }: Props) {
               </CardHeader>
               <CardContent className="p-0">
                 {fw.themes.length === 0 ? (
-                  <p className="px-6 py-4 text-xs text-[#9CA3AF]">No themes defined yet.</p>
+                  <p className="px-6 py-4 text-xs text-[#6B7280]">No themes defined yet.</p>
                 ) : (
                   <div className="divide-y divide-[#F3F4F6]">
                     {fw.themes.map((theme) => (
                       <details key={theme.id} className="group">
                         <summary className="flex items-center justify-between px-6 py-3 cursor-pointer hover:bg-[#F9FAFB] list-none">
                           <div className="flex items-center gap-3">
-                            <ChevronDown className="h-3.5 w-3.5 text-[#9CA3AF] group-open:rotate-180 transition-transform" />
+                            <ChevronDown className="h-3.5 w-3.5 text-[#6B7280] group-open:rotate-180 transition-transform" />
                             <span className="text-sm font-medium text-[#111827]">{theme.name}</span>
                             {theme.code && (
-                              <span className="text-xs text-[#9CA3AF] font-mono">{theme.code}</span>
+                              <span className="text-xs text-[#6B7280] font-mono">{theme.code}</span>
                             )}
                           </div>
-                          <span className="text-xs text-[#9CA3AF]">
+                          <span className="text-xs text-[#6B7280]">
                             {theme.outcomes.length} outcomes
                           </span>
                         </summary>
@@ -148,11 +148,11 @@ export default async function FrameworksPage({ params }: Props) {
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2">
                                     {outcome.code && (
-                                      <span className="text-xs font-mono text-[#f97316]">{outcome.code}</span>
+                                      <span className="text-xs font-mono text-[#c2410c]">{outcome.code}</span>
                                     )}
                                     <span className="text-xs text-[#374151]">{outcome.name}</span>
                                   </div>
-                                  <div className="flex items-center gap-3 text-xs text-[#9CA3AF] flex-shrink-0">
+                                  <div className="flex items-center gap-3 text-xs text-[#6B7280] flex-shrink-0">
                                     {outcome.measures.length > 0 && (
                                       <span>{outcome.measures.length} measures</span>
                                     )}

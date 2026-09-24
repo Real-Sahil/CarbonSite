@@ -228,7 +228,7 @@ export function AnomalyHighlightingPanel({
                       )}
                     </div>
                     <ChevronDown
-                      className={`w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0 transition-transform ${
+                      className={`w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0 transition-transform ${
                         isExpanded ? '' : '-rotate-90'
                       }`}
                     />

@@ -133,7 +133,7 @@ export function LiveDashboard({
         </>
       ) : (
         <>
-          <WifiOff className="w-4 h-4 text-gray-400" />
+          <WifiOff className="w-4 h-4 text-gray-500" />
           <span className="text-xs text-gray-500">
             {reconnectCount > 0 ? `Reconnecting... (attempt ${reconnectCount})` : 'Offline'}
           </span>

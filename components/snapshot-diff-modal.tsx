@@ -184,7 +184,7 @@ export function SnapshotDiffModal({
           <Button
             onClick={onConfirm}
             disabled={loading || !!error}
-            className="bg-[#f97316] text-white hover:bg-[#f97316]/90"
+            className="bg-[#c2410c] text-white hover:bg-[#c2410c]/90"
           >
             Publish new snapshot
           </Button>

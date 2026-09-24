@@ -109,7 +109,7 @@ export function SubscriptionActions({
   return (
     <div className="flex flex-col gap-2">
       {hasPaymentMethod === false && (
-        <p className="text-xs text-gray-500">Add a payment method above before subscribing to a paid plan.</p>
+        <p className="text-xs text-gray-500">Add a payment method (Payment methods, below) before subscribing to a paid plan.</p>
       )}
       <div className="flex flex-wrap items-center gap-2">
         {subscribablePlans.map((plan) => (

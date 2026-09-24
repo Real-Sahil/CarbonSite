@@ -170,7 +170,7 @@ export function CarbonPrices({
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap text-slate-600">
                       {p.effectiveFrom} to {p.effectiveTo ?? "open"}
-                      {!p.inForce && <span className="ml-1.5 text-xs text-slate-400">(not now)</span>}
+                      {!p.inForce && <span className="ml-1.5 text-xs text-slate-500">(not now)</span>}
                     </td>
                     {canEdit && (
                       <td className="px-4 py-2 text-right">

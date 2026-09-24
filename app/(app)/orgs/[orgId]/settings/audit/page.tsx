@@ -175,7 +175,7 @@ export default function AuditLogPage() {
 
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-[340px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#9CA3AF] pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6B7280] pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -226,31 +226,31 @@ export default function AuditLogPage() {
           <tbody className="divide-y divide-[#E5E7EB]">
             {filtered.length === 0 && !loading && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#9CA3AF]">
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#6B7280]">
                   No audit entries found.
                 </td>
               </tr>
             )}
             {filtered.map((log) => (
               <tr key={log.id} className="hover:bg-[#F9FAFB] transition-colors">
-                <td className="px-4 py-2.5 text-xs font-mono text-[#9CA3AF] whitespace-nowrap">
+                <td className="px-4 py-2.5 text-xs font-mono text-[#6B7280] whitespace-nowrap">
                   {formatTime(log.createdAt)}
                 </td>
                 <td className="px-4 py-2.5 whitespace-nowrap">
                   <ActionBadge action={log.action} />
                 </td>
                 <td className="px-4 py-2.5 text-xs text-[#374151]">
-                  <span className="text-[#9CA3AF]">{log.resourceType}/</span>
+                  <span className="text-[#6B7280]">{log.resourceType}/</span>
                   <span className="font-mono">{log.resourceId.slice(0, 8)}</span>
                 </td>
                 <td className="px-4 py-2.5 text-xs text-[#374151]">
                   {log.actor ? (
                     <span title={log.actor.email}>{log.actor.name ?? log.actor.email}</span>
                   ) : (
-                    <span className="text-[#9CA3AF]">System</span>
+                    <span className="text-[#6B7280]">System</span>
                   )}
                 </td>
-                <td className="px-4 py-2.5 text-xs font-mono text-[#9CA3AF] max-w-[260px] truncate">
+                <td className="px-4 py-2.5 text-xs font-mono text-[#6B7280] max-w-[260px] truncate">
                   {Object.keys(log.metadata ?? {}).length > 0
                     ? JSON.stringify(log.metadata)
                     : ""}
@@ -262,7 +262,7 @@ export default function AuditLogPage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-xs text-[#9CA3AF]">
+        <p className="text-xs text-[#6B7280]">
           Page {page} {loading ? "(loading...)" : ""}
         </p>
         <div className="flex items-center gap-2">

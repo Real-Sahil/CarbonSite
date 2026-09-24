@@ -340,7 +340,7 @@ function FeatureCell({ value, isHighlight }: { value: boolean | string; isHighli
   if (value === false) {
     return (
       <div className={`flex items-center justify-center ${isHighlight ? 'bg-blue-50' : ''}`}>
-        <X className="w-5 h-5 text-gray-400" />
+        <X className="w-5 h-5 text-gray-500" />
       </div>
     );
   }
@@ -469,7 +469,7 @@ export default function ComparisonPage() {
             <span className="text-gray-700">Shipped</span>
           </div>
           <div className="flex items-center gap-2">
-            <X className="w-4 h-4 text-gray-400" />
+            <X className="w-4 h-4 text-gray-500" />
             <span className="text-gray-700">Not available</span>
           </div>
           <div className="flex items-center gap-2">

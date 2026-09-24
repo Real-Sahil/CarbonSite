@@ -172,7 +172,7 @@ export function SBTiForm({
             {/* Scope Breakdown (Optional) */}
             <div className="space-y-3 border-t pt-4">
               <p className="text-sm font-medium">Emissions Breakdown (Optional)</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-gray-500">
                 Provide scope breakdown for tailored recommendations
               </p>
               <div className="grid gap-4 md:grid-cols-3">

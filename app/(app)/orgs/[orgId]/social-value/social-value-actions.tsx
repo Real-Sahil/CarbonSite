@@ -617,13 +617,13 @@ export function SocialValueTargetsSection({
           <Table>
             <TableHeader>
               <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Contract</TableHead>
-                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
-                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Baseline</TableHead>
-                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Target</TableHead>
-                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Actual</TableHead>
-                <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Progress</TableHead>
-                {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />}
+                <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Contract</TableHead>
+                <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
+                <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Baseline</TableHead>
+                <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Target</TableHead>
+                <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Actual</TableHead>
+                <TableHead className="text-xs font-medium text-[#6B7280] py-3">Progress</TableHead>
+                {canEdit && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -636,7 +636,7 @@ export function SocialValueTargetsSection({
                   <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
                     <TableCell className="text-sm text-[#374151] py-3.5 pl-6">{target.contractName}</TableCell>
                     <TableCell className="text-sm text-[#374151] py-3.5">{target.periodLabel}</TableCell>
-                    <TableCell className="text-right text-sm text-[#9CA3AF] tabular-nums py-3.5">
+                    <TableCell className="text-right text-sm text-[#6B7280] tabular-nums py-3.5">
                       {target.baselinePounds !== null ? formatGbp(target.baselinePounds) : "—"}
                     </TableCell>
                     <TableCell className="text-right text-sm font-medium text-[#111827] tabular-nums py-3.5">
@@ -649,11 +649,11 @@ export function SocialValueTargetsSection({
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-24 rounded-full bg-[#F3F4F6] overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${onTrack ? "bg-emerald-500" : "bg-[#f97316]"}`}
+                            className={`h-full rounded-full ${onTrack ? "bg-emerald-500" : "bg-[#c2410c]"}`}
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="text-xs text-[#9CA3AF] tabular-nums">{pct}%</span>
+                        <span className="text-xs text-[#6B7280] tabular-nums">{pct}%</span>
                       </div>
                     </TableCell>
                     {canEdit && (

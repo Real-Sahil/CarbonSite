@@ -94,7 +94,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-[#9CA3AF]">
+        <div className="p-8 text-sm text-[#6B7280]">
           You do not have permission to view calculation runs.
         </div>
       );
@@ -187,7 +187,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
           <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
             Calculation runs
           </h1>
-          <p className="mt-1 text-sm text-[#9CA3AF] max-w-[65ch]">
+          <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
             Deterministic emission calculations from approved activity records. Results are immutable per run.
           </p>
 
@@ -243,7 +243,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                 <Calculator className="h-7 w-7 text-[#111827]" />
               </div>
               <h3 className="text-base font-semibold text-[#111827] mb-2">No calculation runs yet</h3>
-              <p className="text-sm text-[#9CA3AF] max-w-sm">
+              <p className="text-sm text-[#6B7280] max-w-sm">
                 An admin or editor must trigger a calculation from approved activity records.
               </p>
             </div>
@@ -254,7 +254,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-semibold text-[#111827]">
                   All runs
-                  <span className="ml-2 text-xs font-normal text-[#9CA3AF]">
+                  <span className="ml-2 text-xs font-normal text-[#6B7280]">
                     ({runs.length})
                   </span>
                 </CardTitle>
@@ -268,7 +268,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                   </div>
                 )}
               </div>
-              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                 Each run applies one factor library and methodology version to a reporting period.
               </CardDescription>
             </CardHeader>
@@ -277,15 +277,15 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Factor library</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Methodology</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Triggered by</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Started</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Duration</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Records</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Factor library</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Methodology</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Triggered by</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Started</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Duration</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Records</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -304,7 +304,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                           </TableCell>
                           <TableCell className="text-sm text-[#374151] py-3.5">
                             {run.factorLibrary.name}{" "}
-                            <span className="text-[#9CA3AF]">{run.factorLibrary.version}</span>
+                            <span className="text-[#6B7280]">{run.factorLibrary.version}</span>
                             {(() => {
                               const replacement = supersedingLibrary(run.factorLibrary, factorLibraries);
                               return replacement ? (
@@ -337,19 +337,19 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                          <TableCell className="text-sm text-[#6B7280] py-3.5">
                             {run.triggeredBy ? (run.triggeredBy.name ?? run.triggeredBy.email) : "System"}
                           </TableCell>
-                          <TableCell className="text-sm text-[#9CA3AF] py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
                             {formatTimestamp(run.startedAt)}
                           </TableCell>
-                          <TableCell className="text-sm text-[#9CA3AF] py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
                             {run.status === "running"
                               ? <span className="text-blue-600">{formatDuration(run.startedAt, null)}</span>
                               : formatDuration(run.startedAt, run.finishedAt)
                             }
                           </TableCell>
-                          <TableCell className="text-sm text-[#9CA3AF] py-3.5 text-right tabular-nums">
+                          <TableCell className="text-sm text-[#6B7280] py-3.5 text-right tabular-nums">
                             {run.status === "running" && run.totalRecordCount != null
                               ? `${run.processedRecordCount.toLocaleString("en-GB")} / ${run.totalRecordCount.toLocaleString("en-GB")}`
                               : run._count.calculations.toLocaleString("en-GB")}
@@ -358,7 +358,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                             {run.status === "succeeded" && (
                               <Link
                                 href={`/orgs/${orgId}/calculations/${run.id}`}
-                                className="inline-flex items-center gap-1 text-xs font-medium text-[#f97316] hover:text-[#ea580c] hover:underline underline-offset-2"
+                                className="inline-flex items-center gap-1 text-xs font-medium text-[#c2410c] hover:text-[#9a3412] hover:underline underline-offset-2"
                               >
                                 View &amp; publish
                               </Link>

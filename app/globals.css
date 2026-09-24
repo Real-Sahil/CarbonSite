@@ -49,7 +49,7 @@
   /* Text */
   --color-text-primary:   #17201D;
   --color-text-secondary: #5F6F68;
-  --color-text-muted:     #87958F;
+  --color-text-muted:     #66756F;
 
   /* Sidebar */
   --color-sidebar-bg:           #FFFFFF;
@@ -57,7 +57,7 @@
   --color-sidebar-text:         #5F6F68;
   --color-sidebar-text-active:  #0F766E;
   --color-sidebar-bg-active:    #E6F4F1;
-  --color-sidebar-label:        #87958F;
+  --color-sidebar-label:        #66756F;
 
   /* Scope colours — GHG Protocol scopes mapped to Direction 3 palette */
   --color-scope-1: #0F766E;

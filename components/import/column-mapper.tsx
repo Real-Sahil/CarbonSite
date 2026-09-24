@@ -137,7 +137,7 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
                       )}
                     </div>
                     {preview != null && preview !== "" && (
-                      <span className="text-[10px] text-[#9CA3AF] truncate block mt-0.5">
+                      <span className="text-[10px] text-[#6B7280] truncate block mt-0.5">
                         e.g. {String(preview).slice(0, 40)}
                       </span>
                     )}
@@ -153,7 +153,7 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
                         className={[
                           "h-9 sm:h-7 text-xs w-full",
                           !isMapped
-                            ? "border-[#E5E7EB] text-[#9CA3AF]"
+                            ? "border-[#E5E7EB] text-[#6B7280]"
                             : isRequired
                             ? "border-emerald-400 text-[#111827]"
                             : "border-[#D1D5DB] text-[#111827]",
@@ -163,7 +163,7 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={SKIP_VALUE}>
-                          <span className="text-[#9CA3AF] italic">Skip this column</span>
+                          <span className="text-[#6B7280] italic">Skip this column</span>
                         </SelectItem>
                         {/* Required fields first */}
                         {fields
@@ -199,7 +199,7 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
                       </SelectContent>
                     </Select>
                     {field && (
-                      <span className="text-[10px] text-[#9CA3AF] mt-0.5 block truncate">
+                      <span className="text-[10px] text-[#6B7280] mt-0.5 block truncate">
                         {field.description}
                       </span>
                     )}
@@ -212,7 +212,7 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 text-[10px] text-[#9CA3AF]">
+      <div className="flex items-center gap-4 text-[10px] text-[#6B7280]">
         <span className="flex items-center gap-1">
           <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Auto-detected
         </span>

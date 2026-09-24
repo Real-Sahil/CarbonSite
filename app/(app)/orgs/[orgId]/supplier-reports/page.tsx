@@ -157,7 +157,7 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
                 className={[
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                   isActive
-                    ? "bg-[#fff7ed] text-[#f97316] border border-[#fed7aa]"
+                    ? "bg-[#fff7ed] text-[#c2410c] border border-[#fed7aa]"
                     : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent",
                 ].join(" ")}
               >
@@ -165,7 +165,7 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
                 {count > 0 && (
                   <span className={[
                     "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                    isActive ? "bg-[#fed7aa] text-[#f97316]" : "bg-slate-100 text-slate-500",
+                    isActive ? "bg-[#fed7aa] text-[#c2410c]" : "bg-slate-100 text-slate-500",
                   ].join(" ")}>
                     {count}
                   </span>

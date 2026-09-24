@@ -81,7 +81,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
             value="forever"
             checked={mode === "forever"}
             onChange={() => handleModeChange("forever")}
-            className="mt-0.5 accent-[#f97316]"
+            className="mt-0.5 accent-[#c2410c]"
           />
           <div>
             <span className="text-sm font-medium text-[#111827]">Keep forever</span>
@@ -98,7 +98,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
             value="custom"
             checked={mode === "custom"}
             onChange={() => handleModeChange("custom")}
-            className="mt-0.5 accent-[#f97316]"
+            className="mt-0.5 accent-[#c2410c]"
           />
           <div className="flex-1">
             <span className="text-sm font-medium text-[#111827]">
@@ -123,7 +123,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
                 onClick={() => handlePreset(opt.value)}
                 className={`rounded-full px-3 py-1 text-xs transition-colors border ${
                   days === String(opt.value)
-                    ? "bg-[#f97316] text-white border-[#f97316]"
+                    ? "bg-[#c2410c] text-white border-[#f97316]"
                     : "border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
                 }`}
               >
@@ -144,7 +144,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
                 setSaved(false);
                 setError(null);
               }}
-              className="w-24 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-sm text-[#111827] focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-24 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-sm text-[#111827] focus:border-[#c2410c] focus:outline-none focus:ring-1 focus:ring-[#c2410c]"
             />
             <span className="text-sm text-[#6B7280]">days</span>
             {days && !isNaN(numDays) && numDays >= 90 && (

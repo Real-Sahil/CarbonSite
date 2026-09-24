@@ -48,7 +48,7 @@ export default function OrgError({
           <button
             onClick={handleReset}
             disabled={resetCount > 2}
-            className="px-5 py-2.5 bg-[#f97316] text-white rounded-lg text-sm font-medium hover:bg-[#ea580c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 bg-[#c2410c] text-white rounded-lg text-sm font-medium hover:bg-[#9a3412] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {resetCount > 2 ? "Please refresh page" : "Try again"}
           </button>

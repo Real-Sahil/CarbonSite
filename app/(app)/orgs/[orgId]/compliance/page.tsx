@@ -110,7 +110,7 @@ export default function CompliancePage() {
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15 disabled:opacity-50";
 
   const hasGuidance = (r: ComplianceRecord) =>
     r.notes || r.owner || r.actionSteps || r.externalLink;
@@ -124,7 +124,7 @@ export default function CompliancePage() {
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add framework
@@ -195,7 +195,7 @@ export default function CompliancePage() {
             {error && <p className="col-span-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
             <div className="col-span-2 flex gap-3">
               <button type="submit" disabled={saving}
-                className="rounded-lg bg-[#f97316] px-4 py-2 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
+                className="rounded-lg bg-[#c2410c] px-4 py-2 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
                 {saving ? "Saving..." : "Save"}
               </button>
               <button type="button" onClick={() => setShowAdd(false)}
@@ -214,7 +214,7 @@ export default function CompliancePage() {
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#fff7ed] flex items-center justify-center">
-              <ShieldCheck className="h-5 w-5 text-[#f97316]" />
+              <ShieldCheck className="h-5 w-5 text-[#c2410c]" />
             </div>
             <p className="text-sm font-medium text-gray-700">No compliance records</p>
             <p className="text-xs text-gray-500 mt-1">Add your first regulatory framework to start tracking obligations.</p>
@@ -306,7 +306,7 @@ export default function CompliancePage() {
                                   href={r.externalLink}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-sm text-[#f97316] hover:underline inline-flex items-center gap-1"
+                                  className="text-sm text-[#c2410c] hover:underline inline-flex items-center gap-1"
                                 >
                                   {r.externalLink}
                                   <ExternalLink className="h-3 w-3" />

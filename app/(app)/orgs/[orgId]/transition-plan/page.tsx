@@ -121,7 +121,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
               <span className={`mt-0.5 w-16 shrink-0 rounded-full border px-2 py-0.5 text-center text-xs font-medium ${TONE[c.status]}`}>{LABEL[c.status]}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-[#111827]">
-                  {c.label} <span className="ml-1 text-xs font-normal text-[#9CA3AF]">{c.code}</span>
+                  {c.label} <span className="ml-1 text-xs font-normal text-[#6B7280]">{c.code}</span>
                 </p>
                 <p className="mt-0.5 text-sm text-[#374151]">{c.detail}</p>
               </div>

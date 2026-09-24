@@ -141,7 +141,7 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
               <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
                 Snapshot v{snapshot.version} — {snapshot.periodLabel}
               </h1>
-              <p className="mt-1 text-sm text-[#9CA3AF] max-w-[65ch]">
+              <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
                 Auditor review and sign-off for this published snapshot. Once approved, the assurance record is appended to the audit trail.
               </p>
             </div>
@@ -178,21 +178,21 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
               <div className="flex flex-col gap-4">
                 <dl className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   <div>
-                    <dt className="text-xs font-medium text-[#9CA3AF] mb-0.5 flex items-center gap-1">
+                    <dt className="text-xs font-medium text-[#6B7280] mb-0.5 flex items-center gap-1">
                       <User className="h-3 w-3" /> Auditor
                     </dt>
                     <dd className="text-sm text-[#111827]">{assurance.auditorName}</dd>
                   </div>
                   {assurance.signedAt && (
                     <div>
-                      <dt className="text-xs font-medium text-[#9CA3AF] mb-0.5 flex items-center gap-1">
+                      <dt className="text-xs font-medium text-[#6B7280] mb-0.5 flex items-center gap-1">
                         <Calendar className="h-3 w-3" /> Signed at
                       </dt>
                       <dd className="text-sm text-[#111827] tabular-nums">{formatDate(assurance.signedAt)}</dd>
                     </div>
                   )}
                   <div>
-                    <dt className="text-xs font-medium text-[#9CA3AF] mb-0.5 flex items-center gap-1">
+                    <dt className="text-xs font-medium text-[#6B7280] mb-0.5 flex items-center gap-1">
                       <Calendar className="h-3 w-3" /> Recorded at
                     </dt>
                     <dd className="text-sm text-[#111827] tabular-nums">{formatDate(assurance.createdAt)}</dd>
@@ -201,7 +201,7 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
 
                 {assurance.notes && (
                   <div className="rounded-md bg-[#f9fafb] border border-[#E5E7EB] px-4 py-3">
-                    <p className="text-xs font-medium text-[#9CA3AF] mb-1">Auditor notes</p>
+                    <p className="text-xs font-medium text-[#6B7280] mb-1">Auditor notes</p>
                     <p className="text-sm text-[#374151] whitespace-pre-wrap">{assurance.notes}</p>
                   </div>
                 )}
@@ -218,14 +218,14 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
                       <RotateCcw className="h-3.5 w-3.5" />
                       {submitting === "retract" ? "Retracting..." : "Retract assurance"}
                     </Button>
-                    <p className="text-xs text-[#9CA3AF] mt-1.5">
+                    <p className="text-xs text-[#6B7280] mt-1.5">
                       Retracting removes the assurance record. This action is recorded in the audit log.
                     </p>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-3 text-sm text-[#9CA3AF]">
+              <div className="flex items-center gap-3 text-sm text-[#6B7280]">
                 <Clock className="h-4 w-4 shrink-0" />
                 No assurance decision has been recorded for this snapshot.
               </div>
@@ -240,7 +240,7 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
               <CardTitle className="text-sm font-semibold text-[#111827]">
                 {assurance ? "Revise decision" : "Submit assurance decision"}
               </CardTitle>
-              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                 {assurance
                   ? "You can update your previous decision. The audit log will record the change."
                   : "Review the snapshot data, then record your assurance decision."}
@@ -249,7 +249,7 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
             <CardContent className="px-6 py-5 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="assurance-notes" className="text-xs font-medium text-[#374151]">
-                  Notes <span className="text-[#9CA3AF] font-normal">(optional)</span>
+                  Notes <span className="text-[#6B7280] font-normal">(optional)</span>
                 </Label>
                 <Textarea
                   id="assurance-notes"
@@ -295,7 +295,7 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-[#9CA3AF] mb-0.5">{label}</dt>
+      <dt className="text-xs font-medium text-[#6B7280] mb-0.5">{label}</dt>
       <dd className="text-sm text-[#111827]">{value}</dd>
     </div>
   );

@@ -265,7 +265,7 @@ export function EvidenceWidget({
               </>
             ) : (
               <>
-                <Upload className="h-8 w-8 text-gray-400" />
+                <Upload className="h-8 w-8 text-gray-500" />
                 <div>
                   <p className="text-sm font-medium text-gray-900">
                     Drag files here or{" "}

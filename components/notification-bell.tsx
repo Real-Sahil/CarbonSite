@@ -138,7 +138,7 @@ export function NotificationBell({ orgId }: { orgId: string }) {
         >
           <Bell className="h-4 w-4" />
           {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 grid min-w-4 h-4 place-items-center rounded-full bg-amber-500 px-1 text-[9px] font-semibold leading-none text-white shadow-[0_0_8px_rgba(245,158,11,0.6)]">
+            <span className="absolute -right-0.5 -top-0.5 grid min-w-4 h-4 place-items-center rounded-full bg-[#c2410c] px-1 text-[9px] font-semibold leading-none text-white shadow-[0_0_8px_rgba(245,158,11,0.6)]">
               {badge}
             </span>
           )}
@@ -170,7 +170,7 @@ export function NotificationBell({ orgId }: { orgId: string }) {
             </div>
           ) : items.length === 0 ? (
             <div className="px-4 py-10 text-center">
-              <Bell className="mx-auto h-6 w-6 text-slate-400" />
+              <Bell className="mx-auto h-6 w-6 text-slate-500" />
               <p className="mt-2 text-xs text-slate-500">You&apos;re all caught up.</p>
             </div>
           ) : (

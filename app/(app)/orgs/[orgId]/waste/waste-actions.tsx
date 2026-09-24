@@ -81,7 +81,7 @@ function AddRecordModal({
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15 disabled:opacity-50";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -128,7 +128,7 @@ function AddRecordModal({
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={form.hazardous}
               onChange={(e) => setForm((f) => ({ ...f, hazardous: e.target.checked }))}
-              className="h-4 w-4 rounded border-gray-300 text-[#f97316] focus:ring-[#f97316]/30" />
+              className="h-4 w-4 rounded border-gray-300 text-[#c2410c] focus:ring-[#c2410c]/30" />
             Hazardous waste (ESRS E5 disclosure)
           </label>
           <div className="grid grid-cols-2 gap-4">
@@ -199,7 +199,7 @@ function AddRecordModal({
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading || !form.facilityId || !form.reportingPeriodId}
-            className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
+            className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : "Save waste record"}
           </button>
         </form>
@@ -278,7 +278,7 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
             </div>
           )}
           <button onClick={handleUpload} disabled={!file || loading}
-            className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
+            className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
             {loading ? "Uploading..." : "Upload"}
           </button>
         </div>
@@ -303,7 +303,7 @@ export function WasteAddButtons({ orgId, facilities, periods }: {
           Bulk upload
         </button>
         <button onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors">
+          className="inline-flex items-center gap-2 rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors">
           <Plus className="h-4 w-4" />
           Add waste record
         </button>

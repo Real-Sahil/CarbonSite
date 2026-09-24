@@ -85,11 +85,11 @@ export default async function SignalsPage({ params, searchParams }: Props) {
             <div className="mt-6 flex gap-6">
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-[#111827] tabular-nums">{signals.length}</span>
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">signals</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">signals</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-[#111827] tabular-nums">{signalTypes.length}</span>
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">types</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">types</span>
               </div>
             </div>
           )}
@@ -101,27 +101,27 @@ export default async function SignalsPage({ params, searchParams }: Props) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               Signals
-              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({signals.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#6B7280]">({signals.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Up to 200 most recent shown, ordered by recorded date.
             </CardDescription>
           </CardHeader>
           <CardContent className={signals.length === 0 ? "py-10" : "p-0"}>
             {signals.length === 0 ? (
               <div className="text-center">
-                <p className="text-sm text-[#9CA3AF]">No signals ingested yet. Connect an integration or manually ingest a signal.</p>
+                <p className="text-sm text-[#6B7280]">No signals ingested yet. Connect an integration or manually ingest a signal.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Signal type</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Source</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Region</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Value</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Recorded</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Signal type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Source</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Region</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Value</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Recorded</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -131,12 +131,12 @@ export default async function SignalsPage({ params, searchParams }: Props) {
                           <span className="text-sm font-mono font-medium text-[#111827]">{s.signalType}</span>
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">{s.source}</TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] py-3.5">{s.region ?? "-"}</TableCell>
+                        <TableCell className="text-sm text-[#6B7280] py-3.5">{s.region ?? "-"}</TableCell>
                         <TableCell className="text-right text-sm font-semibold text-[#111827] tabular-nums py-3.5">
                           {Number(s.value).toLocaleString("en-GB", { maximumFractionDigits: 6 })}{" "}
-                          <span className="text-xs font-normal text-[#9CA3AF]">{s.unit}</span>
+                          <span className="text-xs font-normal text-[#6B7280]">{s.unit}</span>
                         </TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] tabular-nums py-3.5 pr-6">
+                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5 pr-6">
                           {new Date(s.recordedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                         </TableCell>
                       </TableRow>

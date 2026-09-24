@@ -153,7 +153,7 @@ export function CausalAnalysisResults({
               {isSignificant ? (
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
               ) : (
-                <AlertCircle className="h-4 w-4 text-gray-400" />
+                <AlertCircle className="h-4 w-4 text-gray-500" />
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">

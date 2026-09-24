@@ -57,7 +57,7 @@ export function PublishSnapshotButton({
       <Button
         onClick={handleClick}
         disabled={isPending}
-        className="bg-[#f97316] text-white hover:bg-[#f97316]/90"
+        className="bg-[#c2410c] text-white hover:bg-[#c2410c]/90"
         size="sm"
       >
         {isPending ? "Publishing…" : "Publish snapshot"}

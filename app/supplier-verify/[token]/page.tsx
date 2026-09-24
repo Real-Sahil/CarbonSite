@@ -172,7 +172,7 @@ function RequestCard({ request, token }: { request: RequestDisplayInfo; token: s
   const [isOpen, setIsOpen] = useState(false);
 
   const statusIcons: Record<string, React.ReactNode> = {
-    sent: <Clock className="h-5 w-5 text-slate-400" />,
+    sent: <Clock className="h-5 w-5 text-slate-500" />,
     opened: <Clock className="h-5 w-5 text-blue-500" />,
     submitted: <Clock className="h-5 w-5 text-amber-500" />,
     flagged: <AlertTriangle className="h-5 w-5 text-orange-600" />,
@@ -284,7 +284,7 @@ function RequestCard({ request, token }: { request: RequestDisplayInfo; token: s
               {request.canSubmit && (
                 <div className="pt-2">
                   <Link href={`/supplier-data/${token}?requestId=${request.id}`}>
-                    <Button className="w-full bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-600 hover:to-amber-500 text-white">
+                    <Button className="w-full bg-[#c2410c] hover:bg-[#9a3412] text-white">
                       {request.status === "flagged" || request.status === "rejected" ? "Resubmit Data" : "Submit Data"}
                     </Button>
                   </Link>

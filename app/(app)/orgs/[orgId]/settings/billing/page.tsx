@@ -149,7 +149,7 @@ export default function BillingPage() {
           {plan === "enterprise" && (
             <a
               href="mailto:hello@metricora.co.uk?subject=Enterprise%20enquiry"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#f97316] px-4 py-2 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#c2410c] px-4 py-2 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors shrink-0"
             >
               Contact sales
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -171,7 +171,7 @@ export default function BillingPage() {
             <SubscriptionActions
               orgId={orgId}
               currentPlan={plan}
-              hasActiveSubscription={data?.subscription?.status === "active"}
+              hasActiveSubscription={data?.subscription?.status === "active" && plan !== "trial"}
               onChanged={refetchUsage}
             />
           </div>
@@ -181,7 +181,7 @@ export default function BillingPage() {
       {/* Pilot toggle */}
       <PilotToggle orgId={orgId} initialIsPilot={isPilot} />
 
-      {/* Payment Methods */}
+      {/* Payment methods */}
       <PaymentMethodsSection orgId={orgId} />
 
       {/* Usage meters */}
@@ -221,11 +221,11 @@ export default function BillingPage() {
                 {PLANS.map((p) => (
                   <th
                     key={p}
-                    className={`py-3 px-4 text-center font-semibold ${p === plan ? "text-[#f97316]" : "text-gray-700"}`}
+                    className={`py-3 px-4 text-center font-semibold ${p === plan ? "text-[#c2410c]" : "text-gray-700"}`}
                   >
                     {PLAN_LABELS[p]}
                     {p === plan && (
-                      <span className="ml-1.5 text-[10px] font-medium text-[#f97316] uppercase tracking-wide">current</span>
+                      <span className="ml-1.5 text-[10px] font-medium text-[#c2410c] uppercase tracking-wide">current</span>
                     )}
                   </th>
                 ))}
@@ -262,7 +262,7 @@ export default function BillingPage() {
                       {hasFeature(p, f.key) ? (
                         <Check className="h-4 w-4 mx-auto text-emerald-600" />
                       ) : (
-                        <XIcon className="h-4 w-4 mx-auto text-gray-400" />
+                        <XIcon className="h-4 w-4 mx-auto text-gray-500" />
                       )}
                     </td>
                   ))}
@@ -276,7 +276,7 @@ export default function BillingPage() {
       <p className="text-xs text-gray-500">
         Switch between Starter and Growth any time above. For Enterprise —
         custom contracts, SSO, and dedicated support — contact{" "}
-        <a href="mailto:hello@metricora.co.uk" className="text-[#f97316] hover:underline">
+        <a href="mailto:hello@metricora.co.uk" className="text-[#c2410c] hover:underline">
           hello@metricora.co.uk
         </a>
         .

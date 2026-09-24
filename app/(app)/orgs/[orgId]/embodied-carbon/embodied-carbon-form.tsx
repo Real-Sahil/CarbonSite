@@ -208,7 +208,7 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
                 onClick={() => toggleStage(stage)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   active
-                    ? "bg-[#f97316] text-white border-[#f97316]"
+                    ? "bg-[#c2410c] text-white border-[#f97316]"
                     : "bg-white text-zinc-600 border-[#E5E7EB] hover:border-[#f97316]"
                 }`}
               >

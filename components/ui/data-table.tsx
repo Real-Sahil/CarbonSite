@@ -146,7 +146,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className="text-xs font-medium text-[#9CA3AF] py-3 first:pl-6 last:pr-6"
+                      className="text-xs font-medium text-[#6B7280] py-3 first:pl-6 last:pr-6"
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : canSort ? (
@@ -181,7 +181,7 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="py-16 text-center text-sm text-[#9CA3AF]"
+                  className="py-16 text-center text-sm text-[#6B7280]"
                 >
                   {emptyMessage}
                 </TableCell>
@@ -209,7 +209,7 @@ export function DataTable<TData, TValue>({
 
       {(onPreviousPage || onNextPage) && (
         <div className="flex items-center justify-between px-6 py-3 border-t border-[#E5E7EB]">
-          <span className="text-xs text-[#9CA3AF]">
+          <span className="text-xs text-[#6B7280]">
             {totalCount != null
               ? `${pageRowCount ?? data.length} of ${totalCount.toLocaleString("en-GB")} records`
               : `${pageRowCount ?? data.length} records`}

@@ -465,7 +465,7 @@ export function CreateReportForm({
                   const checked = bidContractIds.includes(c.id);
                   const full = !checked && bidContractIds.length >= MAX_BID_CONTRACTS;
                   return (
-                    <label key={c.id} className={`flex items-center gap-2 text-sm ${full ? "text-[#9CA3AF]" : "text-[#111827]"}`}>
+                    <label key={c.id} className={`flex items-center gap-2 text-sm ${full ? "text-[#6B7280]" : "text-[#111827]"}`}>
                       <input
                         id={`bid-contract-${c.id}`}
                         type="checkbox"

@@ -206,7 +206,7 @@ export function InviteLinkGenerator({
         <div className="flex items-center gap-3 flex-wrap mt-1">
           <div className="flex flex-col gap-1">
             <label htmlFor="invite-email" className="text-xs text-[#555555]">
-              Send invite by email <span className="text-[#9CA3AF]">(optional)</span>
+              Send invite by email <span className="text-[#6B7280]">(optional)</span>
             </label>
             <Input
               id="invite-email"

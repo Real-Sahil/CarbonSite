@@ -82,13 +82,13 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
     <div className="min-h-screen bg-[#F8F9FA]">
       <div className="border-b border-[#E5E7EB] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8">
-          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-[#f97316] hover:text-orange-600 mb-4">
+          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-[#c2410c] hover:text-orange-600 mb-4">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Back to Integrations</span>
           </Link>
           <div className="mb-2 flex items-center gap-2">
-            <Truck className="h-5 w-5 text-[#f97316]" />
-            <span className="text-sm font-semibold text-[#f97316] uppercase tracking-widest">Supplier Management</span>
+            <Truck className="h-5 w-5 text-[#c2410c]" />
+            <span className="text-sm font-semibold text-[#c2410c] uppercase tracking-widest">Supplier Management</span>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Invite Suppliers to Collaborate</h1>
           <p className="text-slate-500">
@@ -113,7 +113,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
             <CardContent>
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">1</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">1</div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">You Send Invitation</h4>
                     <p className="text-sm text-slate-600">Create an invitation with the supplier&apos;s email and send them a secure link.</p>
@@ -121,7 +121,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">2</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">2</div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Supplier Submits Data</h4>
                     <p className="text-sm text-slate-600">They fill out a simple form with facility info, emissions data, and can upload supporting documents. No account needed.</p>
@@ -129,7 +129,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">3</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">3</div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Your Team Reviews</h4>
                     <p className="text-sm text-slate-600">Submissions appear in your review queue. You can approve, request clarifications, or reject with feedback.</p>
@@ -137,7 +137,7 @@ export default async function SuppliersPage({ params }: SuppliersPageProps) {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#f97316] font-semibold text-sm flex-shrink-0">4</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">4</div>
                   <div>
                     <h4 className="font-semibold text-slate-900 mb-1">Data Powers Your Reports</h4>
                     <p className="text-sm text-slate-600">Approved supplier data is included in your Scope 3 calculations and audit-ready reports.</p>

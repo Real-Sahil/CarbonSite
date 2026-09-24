@@ -130,7 +130,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15 disabled:opacity-50";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15 disabled:opacity-50";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -159,7 +159,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
           </div>
 
           <div className="rounded-lg bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3">
-            <p className="text-xs font-medium text-[#f97316] mb-2">Baseline emissions (tCO2e)</p>
+            <p className="text-xs font-medium text-[#c2410c] mb-2">Baseline emissions (tCO2e)</p>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { key: "baselineScope1Tco2e", label: "Scope 1", required: true },
@@ -167,12 +167,12 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
                 { key: "baselineScope3Tco2e", label: "Scope 3 (opt.)", required: false },
               ].map(({ key, label, required }) => (
                 <div key={key}>
-                  <label className="block text-xs text-[#ea580c] mb-1">{label}</label>
+                  <label className="block text-xs text-[#c2410c] mb-1">{label}</label>
                   <input type="number" min={0} step="0.01"
                     value={form[key as keyof typeof form] as string}
                     onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                     required={required}
-                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-sm text-[#111827] outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20"
+                    className="w-full rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-sm text-[#111827] outline-none focus:border-[#c2410c] focus:ring-1 focus:ring-[#c2410c]/20"
                     placeholder="0" />
                 </div>
               ))}
@@ -187,7 +187,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
               <div className="flex-1">
                 <label className="block text-xs text-gray-500 mb-1">Pathway to model</label>
                 <select value={calcPathway} onChange={(e) => setCalcPathway(e.target.value as typeof calcPathway)}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20">
+                  className="w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-1 focus:ring-[#c2410c]/20">
                   <option value="1.5C">1.5°C (4.2%/year)</option>
                   <option value="2C">2°C (3.0%/year)</option>
                   <option value="2.5C">2.5°C (2.0%/year)</option>
@@ -213,7 +213,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
                 )}
                 <button type="button"
                   onClick={() => setForm((f) => ({ ...f, nearTermReductionPct: suggestion!.totalReductionPercent.toFixed(1) }))}
-                  className="mt-2 text-xs font-medium text-[#f97316] hover:text-[#ea580c]">
+                  className="mt-2 text-xs font-medium text-[#c2410c] hover:text-[#9a3412]">
                   Use this % for near-term reduction
                 </button>
               </div>
@@ -264,7 +264,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
           <button type="submit" disabled={loading}
-            className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
+            className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : existing ? "Update target" : "Set SBTi target"}
           </button>
         </form>
@@ -280,7 +280,7 @@ export function SbtiSetTargetButton({ orgId, existing }: { orgId: string; existi
   return (
     <>
       <button onClick={() => setShowModal(true)}
-        className="inline-flex items-center gap-2 rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] transition-colors">
+        className="inline-flex items-center gap-2 rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors">
         <Target className="h-4 w-4" />
         {existing ? "Edit target" : "Set SBTi target"}
       </button>

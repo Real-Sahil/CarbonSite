@@ -102,9 +102,9 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">Payment Methods</h3>
+          <h3 className="text-lg font-semibold text-slate-900">Payment methods</h3>
           <p className="text-sm text-slate-600 mt-1">
-            Manage your payment methods for billing
+            Cards used for your subscription
           </p>
         </div>
         <Button
@@ -112,7 +112,7 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
           className="gap-2"
         >
           <CreditCard className="h-4 w-4" />
-          Add Payment Method
+          Add payment method
         </Button>
       </div>
 

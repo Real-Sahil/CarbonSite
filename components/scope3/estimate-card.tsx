@@ -47,7 +47,7 @@ export function Scope3EstimateCard({
             </span>
           </div>
           <Progress value={confidence} className="h-2" />
-          <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+          <div className="flex justify-between text-xs text-gray-600 dark:text-gray-500">
             <span>Lower: {estimate.estimatedCo2eLower.toFixed(1)} kg</span>
             <span>Upper: {estimate.estimatedCo2eUpper.toFixed(1)} kg</span>
           </div>
@@ -59,7 +59,7 @@ export function Scope3EstimateCard({
           <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
             {estimate.recommendedAmount.toFixed(2)} {estimate.recommendedUnit}
           </p>
-          <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-xs text-gray-600 dark:text-gray-500">
             {estimate.suggestedRecordDescription}
           </p>
         </div>

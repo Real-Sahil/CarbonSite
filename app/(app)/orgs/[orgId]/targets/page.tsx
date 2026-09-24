@@ -187,9 +187,9 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               Reduction targets{" "}
-              <span className="ml-1 text-xs font-normal text-[#9CA3AF]">({targets.length})</span>
+              <span className="ml-1 text-xs font-normal text-[#6B7280]">({targets.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Targets compare a baseline period with a target period.
             </CardDescription>
           </CardHeader>
@@ -209,12 +209,12 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Type</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Baseline</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Target period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Reduction</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Created by</TableHead>
-                      {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Actions</TableHead>}
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Baseline</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Target period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Reduction</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Created by</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -228,7 +228,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                         <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
                           {Number(target.reductionAmount).toLocaleString("en-GB")} kgCO2e
                         </TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                        <TableCell className="text-sm text-[#6B7280] py-3.5">
                           {target.createdBy.name ?? target.createdBy.email}
                         </TableCell>
                         {canEdit && (
@@ -253,9 +253,9 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               Reduction initiatives{" "}
-              <span className="ml-1 text-xs font-normal text-[#9CA3AF]">({initiatives.length})</span>
+              <span className="ml-1 text-xs font-normal text-[#6B7280]">({initiatives.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Operational actions planned or underway to reduce emissions.
             </CardDescription>
           </CardHeader>
@@ -282,14 +282,14 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Name</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Linked to</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Owner</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Starts</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Expected impact</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Cost</TableHead>
-                      {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Actions</TableHead>}
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Name</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Linked to</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Owner</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Starts</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Expected impact</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Cost</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -312,7 +312,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                               )}
                             </div>
                           ) : (
-                            <span className="text-xs text-[#9CA3AF]">Org-wide</span>
+                            <span className="text-xs text-[#6B7280]">Org-wide</span>
                           )}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">

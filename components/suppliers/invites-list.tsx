@@ -54,7 +54,7 @@ export function SupplierInvitesList({
 
     return {
       label: "Pending",
-      color: "bg-[#fff7ed] text-[#f97316] border-[#fed7aa]",
+      color: "bg-[#fff7ed] text-[#c2410c] border-[#fed7aa]",
       icon: <Clock className="h-4 w-4" />,
     };
   };
@@ -63,7 +63,7 @@ export function SupplierInvitesList({
     <Card className="border-[#E5E7EB] bg-white shadow-sm">
       <CardHeader>
         <CardTitle className="text-slate-900 flex items-center gap-2">
-          <Users className="h-5 w-5 text-[#f97316]" />
+          <Users className="h-5 w-5 text-[#c2410c]" />
           Supplier Invitations
         </CardTitle>
         <CardDescription>
@@ -73,7 +73,7 @@ export function SupplierInvitesList({
       <CardContent>
         {invites.length === 0 ? (
           <div className="text-center py-8">
-            <Truck className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+            <Truck className="h-12 w-12 text-slate-500 mx-auto mb-3" />
             <p className="text-slate-500">No suppliers invited yet</p>
             <p className="text-sm text-slate-500 mt-1">
               Send your first invitation above to get started

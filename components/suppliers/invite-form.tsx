@@ -100,7 +100,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
     <Card className="border-[#E5E7EB] bg-white shadow-sm">
       <CardHeader>
         <CardTitle className="text-slate-900 flex items-center gap-2">
-          <Mail className="h-5 w-5 text-[#f97316]" />
+          <Mail className="h-5 w-5 text-[#c2410c]" />
           Send Supplier Invitation
         </CardTitle>
         <CardDescription>
@@ -173,7 +173,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               value={formData.email}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f97316]"
+              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#c2410c]"
             />
           </div>
 
@@ -188,7 +188,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               placeholder="e.g., Acme Supply Co."
               value={formData.companyName}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#f97316]"
+              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#c2410c]"
             />
           </div>
 
@@ -201,7 +201,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               id="supplier-category"
               value={formData.category}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 focus:outline-none focus:border-[#f97316]"
+              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 focus:outline-none focus:border-[#c2410c]"
             >
               <option value="">Select category</option>
               <option value="logistics">Logistics & Transport</option>
@@ -238,7 +238,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#f97316] hover:bg-orange-600 text-white font-semibold disabled:opacity-50"
+            className="w-full bg-[#c2410c] hover:bg-orange-600 text-white font-semibold disabled:opacity-50"
           >
             {isLoading ? (
               <>
@@ -259,7 +259,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
           <h4 className="font-semibold text-slate-900 mb-3">Comparison:</h4>
           <div className="grid gap-4 text-sm">
             <div>
-              <div className="font-medium text-[#f97316] mb-1">Magic Link</div>
+              <div className="font-medium text-[#c2410c] mb-1">Magic Link</div>
               <ul className="space-y-1 text-slate-600 text-xs">
                 <li>✓ No account creation required</li>
                 <li>✓ Faster onboarding</li>
@@ -268,7 +268,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               </ul>
             </div>
             <div>
-              <div className="font-medium text-[#f97316] mb-1">Create Account</div>
+              <div className="font-medium text-[#c2410c] mb-1">Create Account</div>
               <ul className="space-y-1 text-slate-600 text-xs">
                 <li>✓ Persistent login access</li>
                 <li>✓ Can return to view submissions</li>

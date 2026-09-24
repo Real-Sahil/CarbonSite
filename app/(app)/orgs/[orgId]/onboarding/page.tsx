@@ -192,7 +192,7 @@ export default function OnboardingPage() {
       <div className="max-w-2xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-medium tracking-widest uppercase text-[#f97316] mb-3">
+          <p className="text-xs font-medium tracking-widest uppercase text-[#c2410c] mb-3">
             Setup
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mb-2">
@@ -256,7 +256,7 @@ export default function OnboardingPage() {
                     ) : (
                       <span
                         className={`text-xs font-semibold ${
-                          isActive ? "text-[#f97316]" : "text-[#9CA3AF]"
+                          isActive ? "text-[#c2410c]" : "text-[#6B7280]"
                         }`}
                       >
                         {i + 1}
@@ -269,7 +269,7 @@ export default function OnboardingPage() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <Icon
                         className={`h-3.5 w-3.5 shrink-0 ${
-                          done ? "text-emerald-600" : isActive ? "text-[#f97316]" : "text-[#9CA3AF]"
+                          done ? "text-emerald-600" : isActive ? "text-[#c2410c]" : "text-[#6B7280]"
                         }`}
                       />
                       <p
@@ -292,7 +292,7 @@ export default function OnboardingPage() {
                         <Link href={def.href(orgId)}>
                           <Button
                             size="sm"
-                            className="h-7 px-3 text-xs bg-gradient-to-r from-orange-500 to-amber-400 text-white border-0 hover:from-orange-400 hover:to-amber-300"
+                            className="h-7 px-3 text-xs bg-[#c2410c] text-white border-0 hover:bg-[#9a3412]"
                           >
                             {def.cta}
                             <ArrowRight className="ml-1 h-3 w-3" />
@@ -302,7 +302,7 @@ export default function OnboardingPage() {
                       <button
                         onClick={() => markStepDone(def.id)}
                         disabled={isMarking}
-                        className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors disabled:opacity-40 flex items-center gap-0.5"
+                        className="text-xs text-[#6B7280] hover:text-[#6B7280] transition-colors disabled:opacity-40 flex items-center gap-0.5"
                         title="Mark as done"
                       >
                         {isMarking ? (
@@ -325,7 +325,7 @@ export default function OnboardingPage() {
           <button
             onClick={skipAll}
             disabled={skipping}
-            className="text-xs text-[#9CA3AF] hover:text-[#6B7280] transition-colors inline-flex items-center gap-1 disabled:opacity-40"
+            className="text-xs text-[#6B7280] hover:text-[#6B7280] transition-colors inline-flex items-center gap-1 disabled:opacity-40"
           >
             {skipping ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
             Skip setup and go to dashboard

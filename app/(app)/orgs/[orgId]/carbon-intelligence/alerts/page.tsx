@@ -94,11 +94,11 @@ export default async function AlertsPage({ params, searchParams }: Props) {
           <div className="mt-6 flex gap-6">
             <a href={`/orgs/${orgId}/carbon-intelligence/alerts`} className={`flex items-baseline gap-2 pb-0.5 border-b-2 ${!showResolved ? "border-[#111827]" : "border-transparent hover:border-[#E5E7EB]"}`}>
               <span className="text-xl font-bold text-[#111827] tabular-nums">{openCount}</span>
-              <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Open</span>
+              <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Open</span>
             </a>
             <a href={`/orgs/${orgId}/carbon-intelligence/alerts?resolved=true`} className={`flex items-baseline gap-2 pb-0.5 border-b-2 ${showResolved ? "border-[#111827]" : "border-transparent hover:border-[#E5E7EB]"}`}>
               <span className="text-xl font-bold text-[#111827] tabular-nums">{resolvedCount}</span>
-              <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Resolved</span>
+              <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Resolved</span>
             </a>
           </div>
         </div>
@@ -109,16 +109,16 @@ export default async function AlertsPage({ params, searchParams }: Props) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               {showResolved ? "Resolved" : "Open"} alerts
-              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({alerts.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#6B7280]">({alerts.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Up to 100 shown.
             </CardDescription>
           </CardHeader>
           <CardContent className={alerts.length === 0 ? "py-10" : "p-0"}>
             {alerts.length === 0 ? (
               <div className="text-center">
-                <p className="text-sm text-[#9CA3AF]">
+                <p className="text-sm text-[#6B7280]">
                   {showResolved ? "No resolved alerts." : "No open alerts. All clear."}
                 </p>
               </div>
@@ -127,18 +127,18 @@ export default async function AlertsPage({ params, searchParams }: Props) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Alert</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Type</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Severity</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Raised</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Alert</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Severity</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Raised</TableHead>
                       {showResolved && (
                         <>
-                          <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Resolved</TableHead>
-                          <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">By</TableHead>
+                          <TableHead className="text-xs font-medium text-[#6B7280] py-3">Resolved</TableHead>
+                          <TableHead className="text-xs font-medium text-[#6B7280] py-3">By</TableHead>
                         </>
                       )}
                       {canManage && !showResolved && (
-                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />
+                        <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />
                       )}
                     </TableRow>
                   </TableHeader>
@@ -147,7 +147,7 @@ export default async function AlertsPage({ params, searchParams }: Props) {
                       <TableRow key={a.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
                         <TableCell className="py-3.5 pl-6 max-w-[280px]">
                           <p className="text-sm font-medium text-[#111827] truncate">{a.title}</p>
-                          <p className="text-xs text-[#9CA3AF] truncate">{a.message}</p>
+                          <p className="text-xs text-[#6B7280] truncate">{a.message}</p>
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">
                           <span className="font-mono text-xs">{a.alertType}</span>
@@ -157,12 +157,12 @@ export default async function AlertsPage({ params, searchParams }: Props) {
                             {a.severity}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] tabular-nums py-3.5">
+                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5">
                           {new Date(a.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                         </TableCell>
                         {showResolved && (
                           <>
-                            <TableCell className="text-sm text-[#9CA3AF] tabular-nums py-3.5">
+                            <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5">
                               {a.resolvedAt
                                 ? new Date(a.resolvedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
                                 : "-"}

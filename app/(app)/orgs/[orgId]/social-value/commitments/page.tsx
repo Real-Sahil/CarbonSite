@@ -165,15 +165,15 @@ export default async function CommitmentsPage({ params }: Props) {
           {commitments.length > 0 && (
             <div className="mt-6 flex gap-6">
               <div className="flex items-baseline gap-2">
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Active</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Active</span>
                 <span className="text-xl font-bold text-[#111827] tabular-nums">{totalActive}</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Completed</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Completed</span>
                 <span className="text-xl font-bold text-[#111827] tabular-nums">{totalCompleted}</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Total</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Total</span>
                 <span className="text-xl font-bold text-[#111827] tabular-nums">{commitments.length}</span>
               </div>
             </div>
@@ -186,9 +186,9 @@ export default async function CommitmentsPage({ params }: Props) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               All commitments
-              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({commitments.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#6B7280]">({commitments.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Up to 100 commitments shown, ordered by status then date.
             </CardDescription>
           </CardHeader>
@@ -200,14 +200,14 @@ export default async function CommitmentsPage({ params }: Props) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Commitment</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Contract</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Framework</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Target</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Delivered</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Activities</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Commitment</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Contract</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Framework</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Target</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Delivered</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Activities</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -224,17 +224,17 @@ export default async function CommitmentsPage({ params }: Props) {
                             {c.title}
                           </Link>
                           {c.owner && (
-                            <span className="text-xs text-[#9CA3AF]">{c.owner.name}</span>
+                            <span className="text-xs text-[#6B7280]">{c.owner.name}</span>
                           )}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">
-                          {c.contract?.name ?? <span className="text-[#9CA3AF]">-</span>}
+                          {c.contract?.name ?? <span className="text-[#6B7280]">-</span>}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">
-                          {c.framework?.name ?? <span className="text-[#9CA3AF]">-</span>}
+                          {c.framework?.name ?? <span className="text-[#6B7280]">-</span>}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">
-                          {c.reportingPeriod?.label ?? <span className="text-[#9CA3AF]">-</span>}
+                          {c.reportingPeriod?.label ?? <span className="text-[#6B7280]">-</span>}
                         </TableCell>
                         <TableCell className="py-3.5">
                           <Badge variant={STATUS_VARIANTS[c.status] ?? "outline"} className="text-xs">
@@ -246,7 +246,7 @@ export default async function CommitmentsPage({ params }: Props) {
                             ? formatGbp(Number(c.monetisedValue))
                             : c.targetValue != null
                             ? `${Number(c.targetValue).toLocaleString("en-GB")} ${c.targetUnit ?? ""}`
-                            : <span className="text-[#9CA3AF]">-</span>}
+                            : <span className="text-[#6B7280]">-</span>}
                         </TableCell>
                         <TableCell className="text-right py-3.5">
                           {c.progressPct != null ? (
@@ -257,15 +257,15 @@ export default async function CommitmentsPage({ params }: Props) {
                               <div className="flex items-center gap-2">
                                 <div className="w-16 h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
                                   <div
-                                    className="h-full rounded-full bg-[#f97316]"
+                                    className="h-full rounded-full bg-[#c2410c]"
                                     style={{ width: `${c.progressPct}%` }}
                                   />
                                 </div>
-                                <span className="text-xs text-[#9CA3AF] tabular-nums">{c.progressPct}%</span>
+                                <span className="text-xs text-[#6B7280] tabular-nums">{c.progressPct}%</span>
                               </div>
                             </div>
                           ) : (
-                            <span className="text-sm text-[#9CA3AF]">-</span>
+                            <span className="text-sm text-[#6B7280]">-</span>
                           )}
                         </TableCell>
                         <TableCell className="py-3.5 pr-6">
@@ -306,7 +306,7 @@ function EmptyState({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
       {canEdit && (
         <Link
           href={`/orgs/${orgId}/social-value/frameworks`}
-          className="text-sm text-[#f97316] hover:underline"
+          className="text-sm text-[#c2410c] hover:underline"
         >
           Set up a framework first
         </Link>

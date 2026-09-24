@@ -108,7 +108,7 @@ export default async function OffsetsPage({ params }: { params: Promise<{ orgId:
                         <ShieldCheck className="h-3 w-3" /> Verified
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-400">-</span>
+                      <span className="text-xs text-gray-500">-</span>
                     )}
                   </td>
                   <td className="py-3 pl-4 pr-6">

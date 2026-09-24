@@ -9,6 +9,16 @@ import { format } from "date-fns";
 
 export const dynamic = "force-dynamic";
 
+const STATUS_LABELS: Record<string, string> = {
+  sent: "Awaiting your data",
+  opened: "In progress",
+  submitted: "Submitted",
+  flagged: "Needs attention",
+  approved: "Approved",
+  rejected: "Returned",
+  converted: "Approved",
+};
+
 async function sessionOrSignIn() {
   try {
     return await requireSession();
@@ -43,13 +53,6 @@ export default async function SupplierPortalPage() {
     redirect("/sign-in");
   }
 
-  // Get supplier's last login
-  const lastSession = await prisma.session.findFirst({
-    where: { userId: user.id },
-    select: { createdAt: true },
-    orderBy: { createdAt: "desc" },
-  });
-
   // Get supplier's assigned data requests
   const requests = await prisma.supplierDataRequest.findMany({
     where: {
@@ -76,7 +79,7 @@ export default async function SupplierPortalPage() {
 
   const getStatusLabel = (status: string, expiresAt: Date) => {
     if (expiresAt < new Date() && status !== "submitted") return "Expired";
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    return STATUS_LABELS[status] ?? status;
   };
 
   return (
@@ -84,7 +87,7 @@ export default async function SupplierPortalPage() {
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900">Data Submission Portal</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Data submission portal</h1>
           <p className="mt-2 text-zinc-600">Welcome, {user.name || user.email}</p>
           <p className="text-sm text-zinc-500">{supplierMembership.organization.name}</p>
         </div>
@@ -93,7 +96,7 @@ export default async function SupplierPortalPage() {
         <div className="mb-8 grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-600">Total Requests</CardTitle>
+              <CardTitle className="text-sm font-medium text-zinc-600">Total requests</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{requests.length}</div>
@@ -101,7 +104,7 @@ export default async function SupplierPortalPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-600">Awaiting Submission</CardTitle>
+              <CardTitle className="text-sm font-medium text-zinc-600">Awaiting submission</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -121,7 +124,7 @@ export default async function SupplierPortalPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-600">Needs Attention</CardTitle>
+              <CardTitle className="text-sm font-medium text-zinc-600">Needs attention</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-amber-600">
@@ -137,14 +140,14 @@ export default async function SupplierPortalPage() {
             <CardContent className="py-12">
               <div className="text-center">
                 <p className="text-zinc-500">No data requests assigned yet.</p>
-                <p className="mt-1 text-sm text-zinc-400">Check back later or contact your administrator.</p>
+                <p className="mt-1 text-sm text-zinc-500">Check back later or contact your administrator.</p>
               </div>
             </CardContent>
           </Card>
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Your Data Requests</CardTitle>
+              <CardTitle>Your data requests</CardTitle>
               <CardDescription>Review and submit emissions data for each category and period</CardDescription>
             </CardHeader>
             <CardContent>
@@ -162,7 +165,6 @@ export default async function SupplierPortalPage() {
                   <tbody>
                     {requests.map((request) => {
                       const categoryName = request.categoryCode.replace(/^s\d-/, "").replace(/-/g, " ");
-                      const isExpired = request.expiresAt < new Date() && request.status !== "submitted";
                       const statusColor = getStatusColor(request.status, request.expiresAt);
                       const statusLabel = getStatusLabel(request.status, request.expiresAt);
 
@@ -173,17 +175,17 @@ export default async function SupplierPortalPage() {
                           </td>
                           <td className="px-4 py-3 text-zinc-600">{request.reportingPeriod.label}</td>
                           <td className="px-4 py-3 text-zinc-600">
-                            {format(new Date(request.expiresAt), "MMM d, yyyy")}
+                            {format(new Date(request.expiresAt), "d MMM yyyy")}
                           </td>
                           <td className="px-4 py-3">
                             <Badge variant={statusColor}>{statusLabel}</Badge>
                           </td>
                           <td className="px-4 py-3">
-                            <Link href={`/supplier-portal/${request.id}`}>
-                              <Button variant="ghost" size="sm">
+                            <Button asChild variant="ghost" size="sm">
+                              <Link href={`/supplier-portal/${request.id}`}>
                                 {request.status === "approved" ? "View" : "Review"}
-                              </Button>
-                            </Link>
+                              </Link>
+                            </Button>
                           </td>
                         </tr>
                       );

@@ -42,7 +42,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             <select
               value={activeSegment}
               onChange={(e) => router.push(`/orgs/${orgId}/settings/${e.target.value}`)}
-              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#c2410c]/40"
               aria-label="Settings section"
             >
               {TABS.map((tab) => (
@@ -65,7 +65,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                   className={cn(
                     "px-4 py-2 text-sm font-normal tracking-[-0.42px] border-b-2 -mb-px transition-colors whitespace-nowrap",
                     isActive
-                      ? "border-teal-600 text-teal-700"
+                      ? "border-[#c2410c] text-[#c2410c]"
                       : "border-transparent text-[#6B7280] hover:text-[#374151]",
                   )}
                 >

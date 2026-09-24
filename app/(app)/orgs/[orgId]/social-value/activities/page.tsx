@@ -153,16 +153,16 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
           {activities.length > 0 && (
             <div className="mt-6 flex gap-6">
               <div className="flex items-baseline gap-2">
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Pending review</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Pending review</span>
                 <span className="text-xl font-bold text-[#111827] tabular-nums">{pendingCount}</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Approved</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Approved</span>
                 <span className="text-xl font-bold text-[#111827] tabular-nums">{approvedCount}</span>
               </div>
               {totalApprovedMonetised > 0 && (
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Approved value</span>
+                  <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Approved value</span>
                   <span className="text-xl font-bold text-[#111827] tabular-nums">
                     {formatGbp(totalApprovedMonetised)}
                   </span>
@@ -176,7 +176,7 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
         {/* Filter strip */}
         {(commitmentId || status) && (
-          <div className="mb-4 flex items-center gap-2 text-xs text-[#9CA3AF]">
+          <div className="mb-4 flex items-center gap-2 text-xs text-[#6B7280]">
             <span>Filters active:</span>
             {commitmentId && (
               <Badge variant="outline" className="text-xs gap-1">
@@ -190,7 +190,7 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
                 <Link href={`/orgs/${orgId}/social-value/activities${commitmentId ? `?commitmentId=${commitmentId}` : ""}`} className="ml-1 hover:text-red-600">x</Link>
               </Badge>
             )}
-            <Link href={`/orgs/${orgId}/social-value/activities`} className="text-[#9CA3AF] hover:text-[#374151] underline ml-2">
+            <Link href={`/orgs/${orgId}/social-value/activities`} className="text-[#6B7280] hover:text-[#374151] underline ml-2">
               Clear all
             </Link>
           </div>
@@ -200,9 +200,9 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               Activities
-              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({activities.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#6B7280]">({activities.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Up to 100 activities shown.
             </CardDescription>
           </CardHeader>
@@ -214,14 +214,14 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Activity</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Commitment</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Date</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Quantity</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Value</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Submitted by</TableHead>
-                      {canReview && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />}
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Activity</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Commitment</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Date</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Quantity</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Value</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Submitted by</TableHead>
+                      {canReview && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -230,7 +230,7 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
                         <TableCell className="py-3.5 pl-6 max-w-[240px]">
                           <span className="text-sm font-medium text-[#111827] truncate block">{a.title}</span>
                           {a.facility && (
-                            <span className="text-xs text-[#9CA3AF]">{a.facility.name}</span>
+                            <span className="text-xs text-[#6B7280]">{a.facility.name}</span>
                           )}
                           {a.aiExtracted && (
                             <span className="text-xs text-[#6366f1] font-medium">AI extracted</span>
@@ -245,10 +245,10 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
                               {a.commitment.title}
                             </Link>
                           ) : (
-                            <span className="text-[#9CA3AF]">-</span>
+                            <span className="text-[#6B7280]">-</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] tabular-nums py-3.5">
+                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5">
                           {new Date(a.activityDate).toLocaleDateString("en-GB", {
                             day: "2-digit",
                             month: "short",
@@ -263,15 +263,15 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
                         <TableCell className="text-right text-sm tabular-nums text-[#374151] py-3.5">
                           {a.quantityValue != null
                             ? `${Number(a.quantityValue).toLocaleString("en-GB")} ${a.quantityUnit ?? ""}`
-                            : <span className="text-[#9CA3AF]">-</span>}
+                            : <span className="text-[#6B7280]">-</span>}
                         </TableCell>
                         <TableCell className="text-right text-sm font-semibold text-[#111827] tabular-nums py-3.5">
                           {a.monetisedValue != null
                             ? formatGbp(Number(a.monetisedValue))
-                            : <span className="font-normal text-[#9CA3AF]">-</span>}
+                            : <span className="font-normal text-[#6B7280]">-</span>}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">
-                          {a.submittedBy?.name ?? <span className="text-[#9CA3AF]">-</span>}
+                          {a.submittedBy?.name ?? <span className="text-[#6B7280]">-</span>}
                         </TableCell>
                         {canReview && (
                           <TableCell className="py-3.5 pr-6">

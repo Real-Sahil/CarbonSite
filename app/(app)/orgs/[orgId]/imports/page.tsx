@@ -29,7 +29,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-[#9CA3AF]">
+        <div className="p-8 text-sm text-[#6B7280]">
           You do not have permission to view imports.
         </div>
       );
@@ -101,7 +101,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
               <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
                 Imports
               </h1>
-              <p className="mt-1 text-sm text-[#9CA3AF] max-w-[65ch]">
+              <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
                 Upload, validate, and commit activity data. CSV and XLSX templates accepted up to 50 MB.
               </p>
             </div>
@@ -125,7 +125,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">Upload a file</CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Select a reporting period and template, then drop or browse for your data file.
             </CardDescription>
           </CardHeader>
@@ -141,10 +141,10 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
               <CardTitle className="text-sm font-semibold text-[#111827]">
                 Import batches
                 {importStats.total > 0 && (
-                  <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({importStats.total.toLocaleString("en-GB")})</span>
+                  <span className="ml-2 text-xs font-normal text-[#6B7280]">({importStats.total.toLocaleString("en-GB")})</span>
                 )}
               </CardTitle>
-              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                 Source files and validation exports stored using organisation-scoped keys.
               </CardDescription>
             </CardHeader>

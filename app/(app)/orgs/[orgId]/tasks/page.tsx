@@ -177,11 +177,11 @@ export default async function TasksPage({ params }: Props) {
                       <CardTitle className="text-sm font-semibold text-[#111827] capitalize">
                         {status.replace("_", " ")}
                       </CardTitle>
-                      <Badge variant="outline" className="text-xs font-normal text-[#9CA3AF] border-[#E5E7EB]">
+                      <Badge variant="outline" className="text-xs font-normal text-[#6B7280] border-[#E5E7EB]">
                         {bucket.length}
                       </Badge>
                     </div>
-                    <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+                    <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                       {status === "open" && "Tasks awaiting action."}
                       {status === "completed" && "Tasks that have been resolved."}
                       {status === "blocked" && "Tasks blocked pending external input."}
@@ -192,12 +192,12 @@ export default async function TasksPage({ params }: Props) {
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Type</TableHead>
-                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Target</TableHead>
-                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Assigned to</TableHead>
-                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Created by</TableHead>
-                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Age</TableHead>
-                            <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Status</TableHead>
+                            <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Type</TableHead>
+                            <TableHead className="text-xs font-medium text-[#6B7280] py-3">Target</TableHead>
+                            <TableHead className="text-xs font-medium text-[#6B7280] py-3">Assigned to</TableHead>
+                            <TableHead className="text-xs font-medium text-[#6B7280] py-3">Created by</TableHead>
+                            <TableHead className="text-xs font-medium text-[#6B7280] py-3">Age</TableHead>
+                            <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -217,10 +217,10 @@ export default async function TasksPage({ params }: Props) {
                               <TableCell className="text-sm text-[#374151] py-3.5">
                                 {task.assignee.name ?? task.assignee.email}
                               </TableCell>
-                              <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                              <TableCell className="text-sm text-[#6B7280] py-3.5">
                                 {task.createdBy.name ?? "-"}
                               </TableCell>
-                              <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                              <TableCell className="text-sm text-[#6B7280] py-3.5">
                                 {formatAge(task.createdAt)}
                               </TableCell>
                               <TableCell className="py-3.5 pr-6">

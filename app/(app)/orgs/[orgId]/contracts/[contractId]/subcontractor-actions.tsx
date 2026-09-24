@@ -161,7 +161,7 @@ export function SubmissionRow({
       <td className="py-3.5 pl-6 text-sm font-medium text-[#111827]">
         {submission.subcontractorName}
         {submission.contactEmail && (
-          <div className="text-xs font-normal text-[#9CA3AF]">{submission.contactEmail}</div>
+          <div className="text-xs font-normal text-[#6B7280]">{submission.contactEmail}</div>
         )}
       </td>
       <td className="py-3.5 text-sm text-[#374151]">{submission.reportingPeriodLabel}</td>

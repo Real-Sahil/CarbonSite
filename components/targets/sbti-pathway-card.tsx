@@ -36,25 +36,25 @@ export function SBTiPathwayCard({ pathway }: SBTiPathwayCardProps) {
           {/* Main Metrics Grid */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Baseline</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-500">Baseline</p>
               <p className="text-lg font-bold">{(pathway.baselineEmissions / 1000).toFixed(1)} t</p>
               <p className="text-xs text-gray-500">{pathway.baselineYear}</p>
             </div>
 
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Target</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-500">Target</p>
               <p className="text-lg font-bold">{(pathway.targetEmissions / 1000).toFixed(1)} t</p>
               <p className="text-xs text-gray-500">{pathway.targetYear}</p>
             </div>
 
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Reduction</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-500">Reduction</p>
               <p className="text-lg font-bold text-red-600 dark:text-red-400">-{pathway.totalReductionPercent}%</p>
               <p className="text-xs text-gray-500">{(pathway.totalReductionNeeded / 1000).toFixed(0)} t CO₂e</p>
             </div>
 
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Annual Rate</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-500">Annual Rate</p>
               <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{reductionPercentPerYear}%</p>
               <p className="text-xs text-gray-500">{pathway.yearsToTarget} years</p>
             </div>
@@ -68,7 +68,7 @@ export function SBTiPathwayCard({ pathway }: SBTiPathwayCardProps) {
                 <div key={target.year} className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium">{target.year}</span>
-                    <span className="text-gray-600 dark:text-gray-400">
+                    <span className="text-gray-600 dark:text-gray-500">
                       {(target.targetEmissions / 1000).toFixed(1)} t
                     </span>
                   </div>
@@ -141,7 +141,7 @@ export function SBTiComparison({ pathways }: SBTiComparisonProps) {
             <div key={pathway.pathway} className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="font-medium">{pathway.pathway}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-gray-600 dark:text-gray-500">
                   {pathway.totalReductionPercent}% reduction at {pathway.annualReductionRate}%/year
                 </p>
               </div>

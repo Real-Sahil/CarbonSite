@@ -12,7 +12,7 @@ const STATE_CONFIG: Record<string, { label: string; className: string }> = {
   parsing:         { label: "Parsing",           className: "bg-blue-50 text-blue-700 border-transparent animate-pulse" },
   needs_attention: { label: "Needs attention",   className: "bg-amber-50 text-amber-700 border-transparent" },
   ready_to_commit: { label: "Ready to commit",   className: "bg-[#FFF7ED] text-[#111827] border-transparent" },
-  committed:       { label: "Committed",         className: "bg-[#f97316] text-white border-transparent" },
+  committed:       { label: "Committed",         className: "bg-[#c2410c] text-white border-transparent" },
   failed:          { label: "Failed",            className: "bg-red-50 text-red-700 border-transparent" },
 };
 
@@ -95,7 +95,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
       id: "template",
       header: "Template",
       cell: ({ row }) => (
-        <span className="text-sm text-[#9CA3AF]">{row.original.templateKey}</span>
+        <span className="text-sm text-[#6B7280]">{row.original.templateKey}</span>
       ),
     },
     {
@@ -111,7 +111,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
       id: "rows",
       header: "Rows",
       cell: ({ row }) => (
-        <span className="text-sm text-[#9CA3AF] tabular-nums">
+        <span className="text-sm text-[#6B7280] tabular-nums">
           {(row.original.rowCount ?? row.original._count.stagedRecords).toLocaleString("en-GB")}
         </span>
       ),
@@ -137,7 +137,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
 
         return (
           <div>
-            <div className="text-sm text-[#9CA3AF]">
+            <div className="text-sm text-[#6B7280]">
               {batch.errorCount > 0 && (
                 <span className="text-red-600">
                   {batch.errorCount} error{batch.errorCount !== 1 ? "s" : ""}
@@ -152,13 +152,13 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
                 </span>
               )}
               {batch.errorCount === 0 && batch.warningCount === 0 && (
-                <span className="text-[#9CA3AF]">None</span>
+                <span className="text-[#6B7280]">None</span>
               )}
             </div>
             {inlineErrors.length > 0 && (
               <ul className="mt-1.5 space-y-0.5">
                 {inlineErrors.map((err, i) => (
-                  <li key={i} className="text-xs text-[#9CA3AF]">
+                  <li key={i} className="text-xs text-[#6B7280]">
                     <span className="font-medium text-[#374151]">Row {err.row}:</span> {err.msg}
                   </li>
                 ))}
@@ -186,7 +186,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
       id: "uploadedBy",
       header: "Uploaded by",
       cell: ({ row }) => (
-        <span className="text-sm text-[#9CA3AF]">
+        <span className="text-sm text-[#6B7280]">
           {row.original.createdBy
             ? (row.original.createdBy.name ?? row.original.createdBy.email)
             : "System"}

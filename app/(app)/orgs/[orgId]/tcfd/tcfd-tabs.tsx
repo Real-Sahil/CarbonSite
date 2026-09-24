@@ -40,7 +40,7 @@ function riskScore(likelihood: number, impact: number) {
 
 function riskBadge(score: number) {
   if (score >= 20) return <Badge variant="destructive">Critical</Badge>;
-  if (score >= 12) return <Badge className="bg-orange-500 text-white">High</Badge>;
+  if (score >= 12) return <Badge className="bg-[#c2410c] text-white">High</Badge>;
   if (score >= 6) return <Badge className="bg-yellow-500 text-black">Medium</Badge>;
   return <Badge variant="secondary">Low</Badge>;
 }

@@ -136,7 +136,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
           <Card className="border-[#E5E7EB] shadow-none">
             <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
               <CardTitle className="text-sm font-semibold text-[#111827]">Add a record</CardTitle>
-              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                 Manually create an activity record with unit, period, and category.
               </CardDescription>
             </CardHeader>
@@ -168,10 +168,10 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
             <CardTitle className="text-sm font-semibold text-[#111827]">
               Records
               {totalCount > 0 && (
-                <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({totalCount.toLocaleString("en-GB")})</span>
+                <span className="ml-2 text-xs font-normal text-[#6B7280]">({totalCount.toLocaleString("en-GB")})</span>
               )}
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Records are created from imports, manual entry, or approved field submissions.
             </CardDescription>
           </CardHeader>

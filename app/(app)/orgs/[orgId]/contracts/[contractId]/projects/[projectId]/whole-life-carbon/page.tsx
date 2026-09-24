@@ -26,7 +26,7 @@ interface Assessment {
 }
 
 const MODULES = [
-  { key: "aStagesKgCo2e", label: "A1-A5", sub: "Product & construction", color: "bg-[#f97316]" },
+  { key: "aStagesKgCo2e", label: "A1-A5", sub: "Product & construction", color: "bg-[#c2410c]" },
   { key: "b4ReplacementKgCo2e", label: "B4", sub: "Replacement", color: "bg-amber-400" },
   { key: "b6OperationalEnergyKgCo2e", label: "B6", sub: "Operational energy (measured)", color: "bg-blue-400" },
   { key: "b7OperationalWaterKgCo2e", label: "B7", sub: "Operational water", color: "bg-cyan-400" },
@@ -79,7 +79,7 @@ function SettingsModal({
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/15";
+  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -111,7 +111,7 @@ function SettingsModal({
             <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputCls} resize-none`} />
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#ea580c] disabled:opacity-60 transition-colors">
+          <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : "Save settings"}
           </button>
         </form>
@@ -192,7 +192,7 @@ export default function WholeLifeCarbonPage() {
       ) : !result ? (
         <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
-            <Layers className="h-5 w-5 text-[#f97316]" />
+            <Layers className="h-5 w-5 text-[#c2410c]" />
           </div>
           <p className="text-sm font-medium text-gray-700">No whole-life carbon data yet</p>
           <p className="text-xs text-gray-500 mt-1">Add embodied carbon records for this project to see a breakdown.</p>

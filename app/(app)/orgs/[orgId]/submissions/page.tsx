@@ -173,12 +173,12 @@ export default async function SubmissionsPage({
                   href={filterHref(filter.value)}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     active
-                      ? "bg-[#f97316] text-white"
+                      ? "bg-[#c2410c] text-white"
                       : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
                   }`}
                 >
                   {filter.label}
-                  <span className={`ml-1.5 ${active ? "text-[#FED7AA]" : "text-[#9CA3AF]"}`}>
+                  <span className={`ml-1.5 ${active ? "text-[#FED7AA]" : "text-[#6B7280]"}`}>
                     {count.toLocaleString("en-GB")}
                   </span>
                 </Link>

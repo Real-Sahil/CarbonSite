@@ -100,7 +100,7 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
       {/* Divider */}
       <div className="flex items-center gap-3">
         <div className="flex-1 border-t border-slate-200" />
-        <span className="text-xs text-slate-400">or join on web</span>
+        <span className="text-xs text-slate-500">or join on web</span>
         <div className="flex-1 border-t border-slate-200" />
       </div>
 

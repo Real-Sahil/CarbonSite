@@ -148,11 +148,11 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB] flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-sm font-semibold text-[#111827]">Target trajectory</CardTitle>
-              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                 {pathway ? "Expected vs. actual, from your committed SBTi pathway." : "No SBTi target set yet."}
               </CardDescription>
             </div>
-            <Link href={`/orgs/${orgId}/sbti`} className="text-xs font-medium text-[#f97316] hover:text-[#ea580c] flex items-center gap-1">
+            <Link href={`/orgs/${orgId}/sbti`} className="text-xs font-medium text-[#c2410c] hover:text-[#9a3412] flex items-center gap-1">
               {pathway ? "View full trajectory" : "Set a target"} <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
@@ -160,7 +160,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
             {!pathway ? (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF7ED]">
-                  <Target className="h-6 w-6 text-[#f97316]" />
+                  <Target className="h-6 w-6 text-[#c2410c]" />
                 </div>
                 <p className="text-sm text-[#374151] max-w-sm">
                   Set a Science-Based Target to see a real target line here, checked against your actual
@@ -189,9 +189,9 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                     },
                   ].map(({ label, value, unit }) => (
                     <div key={label} className="rounded-lg border border-[#E5E7EB] p-4">
-                      <div className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide mb-1">{label}</div>
+                      <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">{label}</div>
                       <div className="text-xl font-semibold text-[#111827] tabular-nums">{value}</div>
-                      {unit && <div className="text-xs text-[#9CA3AF] mt-0.5">{unit}</div>}
+                      {unit && <div className="text-xs text-[#6B7280] mt-0.5">{unit}</div>}
                     </div>
                   ))}
                 </div>
@@ -213,7 +213,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                       );
                     })}
                     {pathway.alerts.length > 2 && (
-                      <p className="text-xs text-[#9CA3AF]">
+                      <p className="text-xs text-[#6B7280]">
                         +{pathway.alerts.length - 2} more on the{" "}
                         <Link href={`/orgs/${orgId}/sbti`} className="underline">full trajectory page</Link>.
                       </p>
@@ -230,11 +230,11 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB] flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-sm font-semibold text-[#111827]">Data you're trusting this on</CardTitle>
-              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                 {currentPeriod ? `Completeness for ${currentPeriod.label}.` : "No reporting period found."}
               </CardDescription>
             </div>
-            <Link href={`/orgs/${orgId}/completeness`} className="text-xs font-medium text-[#f97316] hover:text-[#ea580c] flex items-center gap-1">
+            <Link href={`/orgs/${orgId}/completeness`} className="text-xs font-medium text-[#c2410c] hover:text-[#9a3412] flex items-center gap-1">
               View full matrix <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
@@ -255,7 +255,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                   <div className="text-3xl font-semibold text-[#111827] tabular-nums">
                     {completenessSummary.completenessPercent.toFixed(0)}%
                   </div>
-                  <div className="text-xs text-[#9CA3AF]">of required cells have approved data</div>
+                  <div className="text-xs text-[#6B7280]">of required cells have approved data</div>
                 </div>
                 <div className="flex gap-4 text-sm">
                   <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" />{completenessSummary.green} green</span>
@@ -272,14 +272,14 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB] flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-sm font-semibold text-[#111827]">Cheapest initiatives first</CardTitle>
-              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                 Ranked by {currency} per tCO2e abated. A gap badge means this measure also closes a red or amber
                 completeness cell.
                 {netPrice != null && ` Net figures take off your internal carbon price of ${formatMoney(netPrice, currency, 2)}/tCO2e.`}
                 {unconverted.length > 0 && ` Left out, currency not convertible: ${unconverted.join(", ")}.`}
               </CardDescription>
             </div>
-            <Link href={`/orgs/${orgId}/scenarios`} className="text-xs font-medium text-[#f97316] hover:text-[#ea580c] flex items-center gap-1">
+            <Link href={`/orgs/${orgId}/scenarios`} className="text-xs font-medium text-[#c2410c] hover:text-[#9a3412] flex items-center gap-1">
               View full curve <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
@@ -287,7 +287,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
             {topInitiatives.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF7ED]">
-                  <TrendingDown className="h-6 w-6 text-[#f97316]" />
+                  <TrendingDown className="h-6 w-6 text-[#c2410c]" />
                 </div>
                 <p className="text-sm text-[#374151] max-w-sm">
                   No initiatives with an estimated impact yet.{" "}
@@ -320,7 +320,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                             </Badge>
                           )}
                         </div>
-                        <div className="text-xs text-[#9CA3AF] mt-0.5">
+                        <div className="text-xs text-[#6B7280] mt-0.5">
                           {entry.abatementTco2e.toFixed(1)} tCO2e/yr abated
                         </div>
                       </div>
@@ -337,7 +337,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                           );
                         })()}
                         {entry.paybackYears != null && (
-                          <div className="text-xs text-[#9CA3AF]">pays back in {entry.paybackYears.toFixed(1)}y</div>
+                          <div className="text-xs text-[#6B7280]">pays back in {entry.paybackYears.toFixed(1)}y</div>
                         )}
                       </div>
                     </div>

@@ -127,7 +127,7 @@ export default function RootPage() {
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 border border-amber-200">
                         <Icon className="h-4.5 w-4.5 text-amber-600" />
                       </div>
-                      <span className="text-[10px] font-mono text-[#9CA3AF] tracking-widest">{cap.n}</span>
+                      <span className="text-[10px] font-mono text-[#6B7280] tracking-widest">{cap.n}</span>
                     </div>
                     <h3 className="text-sm font-semibold text-[#111827] tracking-[-0.02em] mb-2">{cap.title}</h3>
                     <p className="text-sm text-[#6B7280] leading-relaxed">{cap.text}</p>
@@ -225,7 +225,7 @@ export default function RootPage() {
                         ["Date", "25 Aug 2026"],
                       ].map(([label, value]) => (
                         <div key={label}>
-                          <p className="text-[10px] text-[#9CA3AF] mb-0.5">{label}</p>
+                          <p className="text-[10px] text-[#6B7280] mb-0.5">{label}</p>
                           <p className="text-sm font-medium text-[#111827]">{value}</p>
                         </div>
                       ))}

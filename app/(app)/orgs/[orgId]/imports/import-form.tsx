@@ -237,7 +237,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
           <a
             href={`/api/orgs/${orgId}/imports/template`}
             download="metricora-import-template.xlsx"
-            className="flex items-center gap-1 text-xs text-[#f97316] hover:text-[#ea580c] transition-colors"
+            className="flex items-center gap-1 text-xs text-[#c2410c] hover:text-[#9a3412] transition-colors"
             tabIndex={busy ? -1 : 0}
           >
             <Download aria-hidden="true" className="h-3 w-3" />

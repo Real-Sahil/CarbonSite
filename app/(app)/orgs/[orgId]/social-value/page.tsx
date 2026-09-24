@@ -222,7 +222,7 @@ export default async function SocialValuePage({ params }: Props) {
           {records.length > 0 && (
             <div className="mt-6 flex flex-col gap-4">
               <div className="inline-flex items-baseline gap-2">
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">Total social value delivered</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Total social value delivered</span>
                 <span className="text-2xl font-bold text-[#111827] tabular-nums">{formatGbp(totalPounds)}</span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -233,10 +233,10 @@ export default async function SocialValuePage({ params }: Props) {
                       key={theme.code}
                       className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1"
                     >
-                      <span className="text-xs font-semibold text-[#f97316]">
+                      <span className="text-xs font-semibold text-[#c2410c]">
                         {theme.code}
                       </span>
-                      <span className="text-xs text-[#9CA3AF] leading-[1.4]">
+                      <span className="text-xs text-[#6B7280] leading-[1.4]">
                         {theme.name}
                       </span>
                       <span className="text-sm font-semibold text-[#111827] tabular-nums mt-1">
@@ -256,28 +256,28 @@ export default async function SocialValuePage({ params }: Props) {
         <div className="bg-white border-b border-[#E5E7EB]">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-5">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="h-3.5 w-3.5 text-[#9CA3AF]" />
-              <span className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide">Commitments tracker</span>
+              <TrendingUp className="h-3.5 w-3.5 text-[#6B7280]" />
+              <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">Commitments tracker</span>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="flex flex-col gap-0.5">
                 <span className="text-2xl font-bold text-[#111827] tabular-nums">{svActiveCommitments}</span>
-                <span className="text-xs text-[#9CA3AF]">active commitments</span>
+                <span className="text-xs text-[#6B7280]">active commitments</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-2xl font-bold text-[#111827] tabular-nums">{svApprovedCount}</span>
-                <span className="text-xs text-[#9CA3AF]">approved activities</span>
+                <span className="text-xs text-[#6B7280]">approved activities</span>
               </div>
               {svApprovedMonetised > 0 && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-2xl font-bold text-[#111827] tabular-nums">{formatGbp(svApprovedMonetised)}</span>
-                  <span className="text-xs text-[#9CA3AF]">approved value delivered</span>
+                  <span className="text-xs text-[#6B7280]">approved value delivered</span>
                 </div>
               )}
               {(svPendingCount as number) > 0 && (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-2xl font-bold text-[#f97316] tabular-nums">{svPendingCount as number}</span>
-                  <span className="text-xs text-[#9CA3AF]">activities pending review</span>
+                  <span className="text-2xl font-bold text-[#c2410c] tabular-nums">{svPendingCount as number}</span>
+                  <span className="text-xs text-[#6B7280]">activities pending review</span>
                 </div>
               )}
             </div>
@@ -302,7 +302,7 @@ export default async function SocialValuePage({ params }: Props) {
           <Card className="border-[#E5E7EB] shadow-none">
             <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
               <CardTitle className="text-sm font-semibold text-[#111827]">Add social value record</CardTitle>
-              <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
                 Record the social value delivered against a TOMS measure for a contract and reporting period.
               </CardDescription>
             </CardHeader>
@@ -322,9 +322,9 @@ export default async function SocialValuePage({ params }: Props) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               Targets
-              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({targetsForClient.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#6B7280]">({targetsForClient.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Social value targets per contract and reporting period, tracked against value delivered.
             </CardDescription>
           </CardHeader>
@@ -344,9 +344,9 @@ export default async function SocialValuePage({ params }: Props) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               Records
-              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({records.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#6B7280]">({records.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Social value records submitted for this organisation. Up to 200 most recent shown.
             </CardDescription>
           </CardHeader>
@@ -358,20 +358,20 @@ export default async function SocialValuePage({ params }: Props) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Date added</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Contract</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Theme</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Measure</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Quantity</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right">Value</TableHead>
-                      {canEdit && <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />}
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Date added</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Contract</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Theme</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Measure</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Quantity</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Value</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {records.map((record) => (
                       <TableRow key={record.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                        <TableCell className="text-sm text-[#9CA3AF] tabular-nums py-3.5 pl-6">
+                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5 pl-6">
                           {record.createdAt.toLocaleDateString("en-GB", {
                             day: "2-digit",
                             month: "short",
@@ -383,7 +383,7 @@ export default async function SocialValuePage({ params }: Props) {
                         <TableCell className="py-3.5">
                           <span className="text-sm font-medium text-[#111827]">{record.measure.theme.code}</span>
                           {" "}
-                          <span className="text-xs text-[#9CA3AF]">{record.measure.theme.name}</span>
+                          <span className="text-xs text-[#6B7280]">{record.measure.theme.name}</span>
                         </TableCell>
                         <TableCell className="py-3.5">
                           <span className="text-sm font-medium text-[#374151]">{record.measure.tomsCode}</span>

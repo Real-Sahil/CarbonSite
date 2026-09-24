@@ -71,13 +71,13 @@ export default async function IntegrationsPage({ params }: Props) {
             <div className="mt-6 flex gap-6">
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-[#111827] tabular-nums">{credentials.length}</span>
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">credentials</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">credentials</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-[#111827] tabular-nums">
                   {credentials.filter((c) => c.isActive).length}
                 </span>
-                <span className="text-xs text-[#9CA3AF] uppercase tracking-wide font-medium">active</span>
+                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">active</span>
               </div>
             </div>
           )}
@@ -89,29 +89,29 @@ export default async function IntegrationsPage({ params }: Props) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">
               Credentials
-              <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({credentials.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#6B7280]">({credentials.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               API keys are encrypted with AES-256-GCM and never returned in responses.
             </CardDescription>
           </CardHeader>
           <CardContent className={credentials.length === 0 ? "py-10" : "p-0"}>
             {credentials.length === 0 ? (
               <div className="text-center">
-                <p className="text-sm text-[#9CA3AF]">No credentials configured. Add an API key to start ingesting carbon signals automatically.</p>
+                <p className="text-sm text-[#6B7280]">No credentials configured. Add an API key to start ingesting carbon signals automatically.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Provider</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Label</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Scopes</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Last validated</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Added</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6" />
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Provider</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Label</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Scopes</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Last validated</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Added</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -120,7 +120,7 @@ export default async function IntegrationsPage({ params }: Props) {
                         <TableCell className="py-3.5 pl-6">
                           <span className="text-sm font-mono font-medium text-[#111827]">{c.provider}</span>
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">{c.label ?? <span className="text-[#9CA3AF]">-</span>}</TableCell>
+                        <TableCell className="text-sm text-[#374151] py-3.5">{c.label ?? <span className="text-[#6B7280]">-</span>}</TableCell>
                         <TableCell className="py-3.5">
                           {c.scopes.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
@@ -129,7 +129,7 @@ export default async function IntegrationsPage({ params }: Props) {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-sm text-[#9CA3AF]">-</span>
+                            <span className="text-sm text-[#6B7280]">-</span>
                           )}
                         </TableCell>
                         <TableCell className="py-3.5">
@@ -137,12 +137,12 @@ export default async function IntegrationsPage({ params }: Props) {
                             {c.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] tabular-nums py-3.5">
+                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5">
                           {c.lastValidatedAt
                             ? new Date(c.lastValidatedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
                             : "-"}
                         </TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] tabular-nums py-3.5">
+                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5">
                           {new Date(c.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                         </TableCell>
                         <TableCell className="py-3.5 pr-6">

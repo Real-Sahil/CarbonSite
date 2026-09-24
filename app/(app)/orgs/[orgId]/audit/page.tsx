@@ -140,7 +140,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">Event filters</CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Filter directly against stored audit rows. Page size: {PAGE_SIZE} events per page.
             </CardDescription>
           </CardHeader>
@@ -173,7 +173,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                 <Input name="since" type="date" defaultValue={validDate(filters.since) ?? ""} />
               </Field>
               <div className="flex items-end gap-2">
-                <Button type="submit" className="w-full lg:w-auto bg-[#f97316] hover:bg-[#ea580c] text-white">Apply</Button>
+                <Button type="submit" className="w-full lg:w-auto bg-[#c2410c] hover:bg-[#9a3412] text-white">Apply</Button>
                 <Button asChild variant="outline" className="w-full lg:w-auto border-[#E5E7EB] text-[#374151]">
                   <a href={`/orgs/${orgId}/audit`}>Clear</a>
                 </Button>
@@ -185,7 +185,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">Events</CardTitle>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Audit entries are append-only records created by server-side workflows.
             </CardDescription>
           </CardHeader>
@@ -198,17 +198,17 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Time</TableHead>
-                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Action</TableHead>
-                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Actor</TableHead>
-                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Resource</TableHead>
-                        <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Metadata</TableHead>
+                        <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Time</TableHead>
+                        <TableHead className="text-xs font-medium text-[#6B7280] py-3">Action</TableHead>
+                        <TableHead className="text-xs font-medium text-[#6B7280] py-3">Actor</TableHead>
+                        <TableHead className="text-xs font-medium text-[#6B7280] py-3">Resource</TableHead>
+                        <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Metadata</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {logs.map((log) => (
                         <TableRow key={log.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                          <TableCell className="whitespace-nowrap text-sm text-[#9CA3AF] tabular-nums py-3.5 pl-6">
+                          <TableCell className="whitespace-nowrap text-sm text-[#6B7280] tabular-nums py-3.5 pl-6">
                             <time dateTime={log.createdAt.toISOString()}>
                               {log.createdAt.toLocaleString("en-GB", {
                                 day: "numeric",
@@ -228,7 +228,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                           <TableCell className="py-3.5">
                             <div className="max-w-64">
                               <p className="text-sm font-medium text-[#111827]">{formatLabel(log.resourceType)}</p>
-                              <p className="truncate text-xs text-[#9CA3AF]" title={log.resourceId}>
+                              <p className="truncate text-xs text-[#6B7280]" title={log.resourceId}>
                                 {log.resourceId}
                               </p>
                             </div>

@@ -206,11 +206,11 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-normal tracking-tight transition-all",
           isCollapsed ? "justify-center px-2" : indent ? "ml-1" : "",
           isActive
-            ? "bg-[#fff7ed] text-[#f97316] border border-[#fed7aa]"
+            ? "bg-[#fff7ed] text-[#c2410c] border border-[#fed7aa]"
             : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent",
         )}
       >
-        <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#f97316]" : "text-slate-400")} aria-hidden="true" />
+        <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#c2410c]" : "text-slate-500")} aria-hidden="true" />
         {!isCollapsed && item.label}
       </Link>
     );
@@ -243,7 +243,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                 aria-expanded={isOpen}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors",
-                  isActive ? "text-[#f97316]" : "text-slate-400 hover:text-slate-600",
+                  isActive ? "text-[#c2410c]" : "text-slate-500 hover:text-slate-600",
                 )}
               >
                 <GroupIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -315,12 +315,12 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <button className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-slate-100 transition-colors" onClick={handleSignOut} title="Sign out">
                 <Avatar className="h-7 w-7 shrink-0">
                   <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                  <AvatarFallback className="bg-[#fff7ed] text-[#f97316] text-[10px] font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
+                  <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-[10px] font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
                 </Avatar>
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">
-              {user.name ?? user.email}<br /><span className="text-slate-400">Click to sign out</span>
+              {user.name ?? user.email}<br /><span className="text-slate-500">Click to sign out</span>
             </TooltipContent>
           </Tooltip>
         ) : (
@@ -329,13 +329,13 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-slate-100 transition-colors text-left">
                 <Avatar className="h-7 w-7 shrink-0">
                   <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                  <AvatarFallback className="bg-[#fff7ed] text-[#f97316] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
+                  <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   {user.name && <p className="text-xs font-medium text-slate-700 truncate">{user.name}</p>}
                   <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
                 </div>
-                <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-500 shrink-0" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-slate-200 shadow-lg">
@@ -401,13 +401,13 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
                   <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-slate-100 transition-colors text-left">
                     <Avatar className="h-7 w-7 shrink-0">
                       <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                      <AvatarFallback className="bg-[#fff7ed] text-[#f97316] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
+                      <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       {user.name && <p className="text-xs font-medium text-slate-700 truncate">{user.name}</p>}
                       <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
                     </div>
-                    <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-500 shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-slate-200 shadow-lg">

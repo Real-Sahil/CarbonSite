@@ -98,7 +98,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
           </p>
           <a
             href=""
-            className="inline-block rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-sm text-white hover:from-orange-400 hover:to-amber-300 transition-all"
+            className="inline-block rounded-xl bg-[#c2410c] px-4 py-2 text-sm text-white hover:bg-[#9a3412] transition-all"
           >
             Refresh
           </a>
@@ -149,7 +149,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
           </p>
           <a
             href=""
-            className="inline-block rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-sm text-white hover:from-orange-400 hover:to-amber-300 transition-all"
+            className="inline-block rounded-xl bg-[#c2410c] px-4 py-2 text-sm text-white hover:bg-[#9a3412] transition-all"
           >
             Refresh
           </a>

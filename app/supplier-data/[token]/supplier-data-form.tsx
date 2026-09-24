@@ -210,7 +210,7 @@ export function SupplierDataForm({
           <Leaf className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
           <div className="text-sm text-slate-600">
             <p>{guidance.hint}</p>
-            <p className="mt-0.5 text-slate-400">{guidance.example}</p>
+            <p className="mt-0.5 text-slate-500">{guidance.example}</p>
           </div>
         </div>
       )}
@@ -274,7 +274,7 @@ export function SupplierDataForm({
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="description">
                 Description{" "}
-                <span className="font-normal text-slate-400">(optional)</span>
+                <span className="font-normal text-slate-500">(optional)</span>
               </Label>
               <Textarea
                 id="description"
@@ -285,7 +285,7 @@ export function SupplierDataForm({
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={loading}
               />
-              <p className="text-right text-xs text-slate-400">
+              <p className="text-right text-xs text-slate-500">
                 {description.length}/500
               </p>
             </div>
@@ -304,7 +304,7 @@ export function SupplierDataForm({
               {loading ? "Submitting..." : "Submit data"}
             </Button>
 
-            <p className="flex items-start gap-2 text-xs text-slate-400">
+            <p className="flex items-start gap-2 text-xs text-slate-500">
               <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-600" />
               Your data is only used for {orgName}&apos;s GHG inventory and is
               not shared with third parties.

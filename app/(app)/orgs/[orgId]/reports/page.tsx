@@ -89,7 +89,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-[#9CA3AF]">
+        <div className="p-8 text-sm text-[#6B7280]">
           You do not have permission to view reports.
         </div>
       );
@@ -167,7 +167,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                 <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Reporting</span>
               </div>
               <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Reports</h1>
-              <p className="mt-1 text-sm text-[#9CA3AF] max-w-[65ch]">
+              <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
                 Generate PDF and CSV reports from published snapshots. Totals are guaranteed to match dashboard figures for the same snapshot.
               </p>
             </div>
@@ -191,13 +191,13 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
-              <Layers className="h-4 w-4 text-[#9CA3AF]" />
+              <Layers className="h-4 w-4 text-[#6B7280]" />
               <CardTitle className="text-sm font-semibold text-[#111827]">
                 Published snapshots
-                <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({snapshots.length})</span>
+                <span className="ml-2 text-xs font-normal text-[#6B7280]">({snapshots.length})</span>
               </CardTitle>
             </div>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               Immutable links between a reporting period and a calculation run. Dashboards and reports read from these.
             </CardDescription>
           </CardHeader>
@@ -213,13 +213,13 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Version</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Published by</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Published at</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Calculation run</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Assurance</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 text-right pr-6">Reports</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Version</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Published by</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Published at</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Calculation run</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Assurance</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right pr-6">Reports</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -231,10 +231,10 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                         <TableCell className="text-sm text-[#374151] py-3.5">
                           {snapshot.reportingPeriod.label}
                         </TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                        <TableCell className="text-sm text-[#6B7280] py-3.5">
                           {snapshot.publishedBy.name ?? snapshot.publishedBy.email}
                         </TableCell>
-                        <TableCell className="text-sm text-[#9CA3AF] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
                           {formatTimestamp(snapshot.publishedAt)}
                         </TableCell>
                         <TableCell className="py-3.5">
@@ -253,7 +253,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                             Review
                           </Link>
                         </TableCell>
-                        <TableCell className="py-3.5 text-right pr-6 text-sm text-[#9CA3AF] tabular-nums">
+                        <TableCell className="py-3.5 text-right pr-6 text-sm text-[#6B7280] tabular-nums">
                           {snapshot._count.reports.toLocaleString("en-GB")}
                         </TableCell>
                       </TableRow>
@@ -270,10 +270,10 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-[#9CA3AF]" />
+                <FileText className="h-4 w-4 text-[#6B7280]" />
                 <CardTitle className="text-sm font-semibold text-[#111827]">
                   Reports
-                  <span className="ml-2 text-xs font-normal text-[#9CA3AF]">({reports.length})</span>
+                  <span className="ml-2 text-xs font-normal text-[#6B7280]">({reports.length})</span>
                 </CardTitle>
               </div>
               {hasInFlight && (
@@ -286,7 +286,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                 </div>
               )}
             </div>
-            <CardDescription className="text-xs text-[#9CA3AF] mt-0.5">
+            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
               PDF and CSV outputs generated asynchronously from published snapshots.
             </CardDescription>
           </CardHeader>
@@ -313,13 +313,13 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pl-6">Type</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Snapshot</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Requested by</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3">Requested at</TableHead>
-                      <TableHead className="text-xs font-medium text-[#9CA3AF] py-3 pr-6">Download</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Snapshot</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Requested by</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Requested at</TableHead>
+                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Download</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -336,7 +336,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                           <TableCell className="text-sm text-[#374151] py-3.5">
                             {report.reportingPeriod.label}
                           </TableCell>
-                          <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                          <TableCell className="text-sm text-[#6B7280] py-3.5">
                             v{report.snapshot.version}
                           </TableCell>
                           <TableCell className="py-3.5">
@@ -348,10 +348,10 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                               {cfg.label}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-sm text-[#9CA3AF] py-3.5">
+                          <TableCell className="text-sm text-[#6B7280] py-3.5">
                             {report.createdBy.name ?? report.createdBy.email}
                           </TableCell>
-                          <TableCell className="text-sm text-[#9CA3AF] py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
                             {formatTimestamp(report.createdAt)}
                           </TableCell>
                           <TableCell className="py-3.5 pr-6">
@@ -418,7 +418,7 @@ function EmptyState({
         <Icon className="h-6 w-6 text-[#111827]" />
       </div>
       <h3 className="text-sm font-semibold text-[#111827] mb-1">{title}</h3>
-      <p className="text-sm text-[#9CA3AF] max-w-sm">{description}</p>
+      <p className="text-sm text-[#6B7280] max-w-sm">{description}</p>
     </div>
   );
 }
