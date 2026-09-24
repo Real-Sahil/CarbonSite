@@ -1,0 +1,125 @@
+name: Database backup
+
+# Nightly encrypted backup of the production database to Cloudflare R2, and a
+# weekly restore drill that proves the latest backup restores and matches its
+# row-count manifest. Supabase's free tier has no point-in-time recovery, so
+# this is the recovery path. A failure of either job emails the repository
+# owner (GitHub notifies on failed scheduled runs).
+#
+# Secrets (Settings -> Secrets and variables -> Actions):
+#   MIGRATION_DATABASE_URL or DATABASE_URL  Supabase session-mode pooler URL
+#   BACKUP_PASSPHRASE        long random passphrase; keep a copy outside GitHub,
+#                            without it the backups cannot be decrypted
+#   BACKUP_R2_ACCESS_KEY_ID, BACKUP_R2_SECRET_ACCESS_KEY
+#                            an R2 API token limited to the backup bucket
+#   BACKUP_R2_ENDPOINT       https://<account id>.r2.cloudflarestorage.com
+#   BACKUP_R2_BUCKET         e.g. metricora-backups
+#
+# Layout: db/daily/<stamp>.* (add an R2 lifecycle rule deleting after 35
+# days), db/monthly/<stamp>.* on the 1st of each month (kept), db/latest.txt.
+#
+# Restore by hand: download the .dump.gpg, then
+#   gpg --decrypt metricora-<stamp>.dump.gpg > backup.dump
+#   pg_restore --no-owner --no-privileges --dbname "$TARGET_URL" backup.dump
+
+on:
+  schedule:
+    - cron: "30 2 * * *"   # backup, daily 02:30 UTC
+    - cron: "0 5 * * 0"    # restore drill, Sundays 05:00 UTC
+  workflow_dispatch:
+    inputs:
+      job:
+        description: What to run
+        type: choice
+        options: [backup, drill, both]
+        default: both
+
+concurrency:
+  group: database-backup
+  cancel-in-progress: false
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: auto
+  R2_ENDPOINT: ${{ secrets.BACKUP_R2_ENDPOINT }}
+  R2_BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
+  BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+
+jobs:
+  backup:
+    if: github.event.schedule == '30 2 * * *' || (github.event_name == 'workflow_dispatch' && inputs.job != 'drill')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL || secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secrets
+        run: |
+          for v in DATABASE_URL BACKUP_PASSPHRASE AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY R2_ENDPOINT R2_BUCKET; do
+            if [ -z "${!v}" ]; then echo "::error::Missing secret for $v (see the header of backup.yml)"; missing=1; fi
+          done
+          [ -z "$missing" ]
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo apt-get install -y -q postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -q postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+      - name: Dump, count and encrypt
+        run: OUT_DIR=backup-out scripts/backup/dump.sh
+      - name: Upload to R2
+        run: |
+          STAMP="$(cat backup-out/latest.txt)"
+          put() { aws s3 cp "$1" "s3://$R2_BUCKET/$2" --endpoint-url "$R2_ENDPOINT" --only-show-errors; }
+          for prefix in db/daily $( [ "$(date -u +%d)" = "01" ] && echo db/monthly ); do
+            put "backup-out/metricora-$STAMP.dump.gpg" "$prefix/metricora-$STAMP.dump.gpg"
+            put "backup-out/manifest-$STAMP.csv" "$prefix/manifest-$STAMP.csv"
+          done
+          put backup-out/latest.txt db/latest.txt
+          echo "Uploaded $STAMP"
+
+  drill:
+    needs: [backup]
+    # After a manual backup in the same dispatch; on its own schedule the
+    # backup job is skipped, which must not block the drill.
+    if: >-
+      always() && needs.backup.result != 'failure' &&
+      (github.event.schedule == '0 5 * * 0' || (github.event_name == 'workflow_dispatch' && inputs.job != 'backup'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: restore
+          POSTGRES_PASSWORD: restore
+          POSTGRES_DB: restore
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      RESTORE_URL: postgresql://restore:restore@localhost:5432/restore
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo apt-get install -y -q postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -q postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+      - name: Download the latest backup
+        run: |
+          get() { aws s3 cp "s3://$R2_BUCKET/$1" "$2" --endpoint-url "$R2_ENDPOINT" --only-show-errors; }
+          get db/latest.txt latest.txt
+          STAMP="$(cat latest.txt)"
+          get "db/daily/metricora-$STAMP.dump.gpg" backup.dump.gpg
+          get "db/daily/manifest-$STAMP.csv" manifest.csv
+          echo "Backup $STAMP"
+      - name: Restore and verify
+        run: ARCHIVE=backup.dump.gpg MANIFEST=manifest.csv scripts/backup/restore-drill.sh
