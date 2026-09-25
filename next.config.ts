@@ -12,15 +12,13 @@ import type { NextConfig } from "next";
 
 // Tesseract runs its OCR in a worker thread that requires its own package
 // files by relative path ("require('..')"), so file tracing cannot see them.
-// pnpm installs packages as symlinks into node_modules/.pnpm, so the real
-// directories are listed as well as the links. node-fetch is not needed:
-// the worker uses the runtime's fetch.
+// pnpm installs packages as symlinks into node_modules/.pnpm. Only the real
+// directories are listed: globbing through a top-level symlink puts files
+// under a symlinked directory, which Vercel rejects as an invalid package.
+// node-fetch is not needed: the worker uses the runtime's fetch.
 const OCR_FILES = [
-  "./node_modules/tesseract.js/**/*",
-  // createWorker("eng", 1) runs the LSTM engine: only the *-lstm cores load.
-  "./node_modules/tesseract.js-core/package.json",
-  "./node_modules/tesseract.js-core/tesseract-core*-lstm*",
   "./node_modules/.pnpm/tesseract.js@*/node_modules/tesseract.js/**/*",
+  // createWorker("eng", 1) runs the LSTM engine: only the *-lstm cores load.
   "./node_modules/.pnpm/tesseract.js-core@*/node_modules/tesseract.js-core/package.json",
   "./node_modules/.pnpm/tesseract.js-core@*/node_modules/tesseract.js-core/tesseract-core*-lstm*",
   "./node_modules/.pnpm/bmp-js@*/node_modules/bmp-js/**/*",
@@ -28,8 +26,8 @@ const OCR_FILES = [
   "./node_modules/.pnpm/regenerator-runtime@0.13*/node_modules/regenerator-runtime/**/*",
   "./node_modules/.pnpm/wasm-feature-detect@*/node_modules/wasm-feature-detect/**/*",
   "./node_modules/.pnpm/zlibjs@*/node_modules/zlibjs/**/*",
-  "./node_modules/@tesseract.js-data/eng/4.0.0_best_int/**/*",
-  "./node_modules/@tesseract.js-data/eng/package.json",
+  "./node_modules/.pnpm/@tesseract.js-data+eng@*/node_modules/@tesseract.js-data/eng/4.0.0_best_int/**/*",
+  "./node_modules/.pnpm/@tesseract.js-data+eng@*/node_modules/@tesseract.js-data/eng/package.json",
 ];
 
 const nextConfig: NextConfig = {

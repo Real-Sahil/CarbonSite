@@ -1,4 +1,5 @@
 import { createRequire } from "module";
+import fs from "fs";
 import os from "os";
 import path from "path";
 import type { ParsedRow, ParseResult } from "../parser";
@@ -37,11 +38,21 @@ async function pdfParse(buffer: Buffer): Promise<{ text: string }> {
 // English data ships with the app (@tesseract.js-data/eng, best_int, 2.9 MB)
 // instead of being fetched from a CDN at run time, and worker errors are
 // caught rather than left to crash the process.
+// Not require.resolve: the bundler turns that into a module id. The data is
+// traced into the function from its real pnpm directory
+// (outputFileTracingIncludes), so the top-level link may not exist there.
+function engDataDir(): string {
+  const nm = path.join(process.cwd(), "node_modules");
+  const linked = path.join(nm, "@tesseract.js-data", "eng");
+  if (fs.existsSync(path.join(linked, "4.0.0_best_int"))) return linked;
+  const store = path.join(nm, ".pnpm");
+  const dir = fs.existsSync(store) ? fs.readdirSync(store).find((d) => d.startsWith("@tesseract.js-data+eng@")) : undefined;
+  return dir ? path.join(store, dir, "node_modules", "@tesseract.js-data", "eng") : linked;
+}
+
 async function ocrText(buffer: Buffer): Promise<string> {
   const Tesseract = await import("tesseract.js");
-  // Not require.resolve: the bundler turns that into a module id. The data
-  // directory is traced into the function by outputFileTracingIncludes.
-  const pkgDir = path.join(process.cwd(), "node_modules", "@tesseract.js-data", "eng");
+  const pkgDir = engDataDir();
   let workerError: unknown = null;
   const worker = await Tesseract.createWorker("eng", 1, {
     langPath: path.join(pkgDir, "4.0.0_best_int"),
