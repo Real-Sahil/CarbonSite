@@ -209,10 +209,14 @@ model Organization {
   acquisitionSource            String?               @map("acquisition_source")
   acquisitionMedium            String?               @map("acquisition_medium")
   acquisitionCampaign          String?               @map("acquisition_campaign")
+  /// Local part of the organisation's bill inbox address
+  /// (<token>@BILL_INBOX_DOMAIN). Null until an editor turns the inbox on.
+  billInboxToken               String?               @unique @map("bill_inbox_token")
   createdAt                    DateTime              @default(now()) @map("created_at")
   updatedAt                    DateTime              @updatedAt @map("updated_at")
 
   memberships                    OrganizationMembership[]
+  billInboxItems                 BillInboxItem[]
   facilities                     Facility[]
   businessUnits                  BusinessUnit[]
   contracts                      Contract[]
@@ -1129,9 +1133,35 @@ model EvidenceFile {
   socialValueRecords SocialValueRecord[]      @relation("SocialValueEvidence")
   classifications    EvidenceClassification[]
   ocrCorrections     OcrCorrection[]
+  billInboxItems     BillInboxItem[]
 
   @@index([organizationId])
   @@map("evidence_files")
+}
+
+/// A bill or receipt emailed to the organisation's bill inbox. The file is
+/// stored as evidence; a person reads it, matches it to a record and
+/// attaches it, or dismisses it.
+model BillInboxItem {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  evidenceFileId String    @map("evidence_file_id")
+  /// Resend's id for the received email (retried webhooks dedupe on it).
+  emailId        String    @map("email_id")
+  fromAddress    String    @map("from_address")
+  senderUserId   String?   @map("sender_user_id")
+  subject        String?
+  /// pending | attached | dismissed
+  status         String    @default("pending")
+  receivedAt     DateTime  @default(now()) @map("received_at") @db.Timestamptz(6)
+  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  evidenceFile EvidenceFile @relation(fields: [evidenceFileId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, emailId, evidenceFileId])
+  @@index([organizationId, status, receivedAt])
+  @@map("bill_inbox_items")
 }
 
 model ActivityRecordEvidence {
