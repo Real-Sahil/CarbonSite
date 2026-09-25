@@ -12,6 +12,7 @@ import {
   approveSubmissionInTx,
 } from "@/lib/field-submissions/approve";
 import { scheduleCalculationForPeriod } from "@/lib/field-submissions/trigger-calculation";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const bulkReviewSchema = z.discriminatedUnion("action", [
   z.object({
@@ -40,6 +41,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
     const body = bulkReviewSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { assigneeUserId: body.action === "assign" ? body.assigneeUserId : undefined });
+    if (refError) return refError;
 
     const submissions = await prisma.fieldSubmission.findMany({
       where: {

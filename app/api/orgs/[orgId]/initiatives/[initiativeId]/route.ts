@@ -6,6 +6,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { updateInitiativeSchema } from "@/lib/validation/records";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ orgId: string; initiativeId: string }> }) {
   try {
@@ -21,6 +22,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     }
 
     const body = updateInitiativeSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     if (body.facilityId) {
       const facility = await prisma.facility.findFirst({

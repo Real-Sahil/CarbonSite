@@ -16,6 +16,7 @@ import {
   deriveActionStatus,
   notificationTargetHours,
 } from "@/lib/environment/incidents";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -112,6 +113,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (limited) return limited;
 
     const body = createIncidentSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     for (const [field, table] of [
       ["facilityId", "facility"],

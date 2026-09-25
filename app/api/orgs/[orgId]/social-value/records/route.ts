@@ -10,6 +10,7 @@ import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { createSocialValueRecordSchema } from "@/lib/validation/org";
 import { Decimal } from "@prisma/client/runtime/library";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 export async function GET(
   req: NextRequest,
@@ -61,6 +62,8 @@ export async function POST(
     if (limited) return limited;
 
     const body = createSocialValueRecordSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { reportingPeriodId: body.reportingPeriodId, evidenceFileId: body.evidenceFileId });
+    if (refError) return refError;
 
     // Verify contract belongs to org
     const contract = await prisma.contract.findUnique({ where: { id: body.contractId } });

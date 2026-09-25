@@ -12,6 +12,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createSpeciesRecordSchema } from "@/lib/validation/ecology";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -86,6 +87,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (limited) return limited;
 
     const body = createSpeciesRecordSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { siteId: body.siteId, projectId: body.projectId });
+    if (refError) return refError;
 
     if (body.assessmentId) {
       const assessment = await prisma.biodiversityAssessment.findFirst({

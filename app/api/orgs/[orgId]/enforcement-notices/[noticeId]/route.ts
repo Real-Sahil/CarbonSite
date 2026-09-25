@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const PatchSchema = z.object({
   status: z.enum(["open", "appealed", "complied", "extended", "withdrawn", "overdue"]).optional(),
@@ -49,6 +50,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     if (!notice || notice.organizationId !== orgId) return apiError("NOT_FOUND", "Notice not found", 404);
 
     const body = PatchSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
     const updated = await prisma.enforcementNotice.update({
       where: { id: noticeId },
       data: {

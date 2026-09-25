@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const PatchSchema = z.object({
   name: z.string().min(1).optional(),
@@ -47,6 +48,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     if (!programme || programme.organizationId !== orgId) return apiError("NOT_FOUND", "Programme not found", 404);
 
     const body = PatchSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { programmeManagerUserId: body.programmeManagerUserId });
+    if (refError) return refError;
     const updated = await prisma.programme.update({
       where: { id: programmeId },
       data: {

@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { nanoid } from "nanoid";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const CreateSchema = z.object({
   reference: z.string().min(1).max(100),
@@ -85,6 +86,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = CreateSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { facilityId: body.facilityId, siteId: body.siteId, projectId: body.projectId, ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     const existing = await prisma.hsIncidentReport.findFirst({
       where: { organizationId: orgId, reference: body.reference },

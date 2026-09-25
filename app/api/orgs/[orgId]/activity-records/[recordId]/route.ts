@@ -6,6 +6,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { updateActivityRecordSchema } from "@/lib/validation/records";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string; recordId: string }> };
 
@@ -59,6 +60,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const body = updateActivityRecordSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { facilityId: body.facilityId, businessUnitId: body.businessUnitId });
+    if (refError) return refError;
 
     const record = await prisma.activityRecord.update({
       where: { id: recordId },

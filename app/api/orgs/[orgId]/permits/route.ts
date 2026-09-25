@@ -14,6 +14,7 @@ import {
   summarisePermitRegister,
   daysUntil,
 } from "@/lib/environment/permits";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -87,6 +88,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (limited) return limited;
 
     const body = createPermitSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     if (body.facilityId) {
       const facility = await prisma.facility.findFirst({

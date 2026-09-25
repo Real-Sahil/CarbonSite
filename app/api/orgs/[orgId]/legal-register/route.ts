@@ -15,6 +15,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError } from "@/lib/validation/api";
 import { createLegalRegisterEntrySchema } from "@/lib/validation/environment";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -74,6 +75,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (limited) return limited;
 
     const body = createLegalRegisterEntrySchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     const entry = await prisma.legalRegisterEntry.create({
       data: {

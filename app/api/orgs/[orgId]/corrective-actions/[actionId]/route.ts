@@ -6,6 +6,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { updateCorrectiveActionSchema } from "@/lib/validation/environment";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string; actionId: string }> };
 
@@ -30,6 +31,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!existing) return apiError("NOT_FOUND", "Corrective action not found.", 404);
 
     const body = updateCorrectiveActionSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { assignedToUserId: body.assignedToUserId });
+    if (refError) return refError;
 
     // Verification is a second pair of eyes. The person who did the work
     // cannot be the person who confirms it worked, which is the whole point of

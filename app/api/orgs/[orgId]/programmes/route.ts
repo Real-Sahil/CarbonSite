@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { nanoid } from "nanoid";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const CreateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -58,6 +59,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = CreateSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { programmeManagerUserId: body.programmeManagerUserId });
+    if (refError) return refError;
 
     const existing = await prisma.programme.findFirst({ where: { organizationId: orgId, name: body.name } });
     if (existing) return apiError("CONFLICT", "Programme name already exists", 409);

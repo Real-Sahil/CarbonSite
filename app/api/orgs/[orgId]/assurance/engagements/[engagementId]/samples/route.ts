@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { generateSamplingPlanSchema, createManualSampleSchema } from "@/lib/validation/assurance";
 import { buildSamplingPlan, suggestMaterialityThreshold } from "@/lib/assurance/sampling";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string; engagementId: string }> };
 
@@ -189,6 +190,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
     }
 
     const body = createManualSampleSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { activityRecordId: body.activityRecordId });
+    if (refError) return refError;
 
     if (body.emissionCalculationId) {
       const calc = await prisma.emissionCalculation.findFirst({

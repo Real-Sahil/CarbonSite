@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { nanoid } from "nanoid";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const CreateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -53,6 +54,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = CreateSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { reportingPeriodId: body.reportingPeriodId });
+    if (refError) return refError;
 
     const assessment = await prisma.materialityAssessment.create({
       data: {

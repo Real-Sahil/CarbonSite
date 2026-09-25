@@ -6,6 +6,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createEvidenceRequestSchema } from "@/lib/validation/assurance";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string; engagementId: string }> };
 
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const body = createEvidenceRequestSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     const duplicate = await prisma.evidenceRequest.findUnique({
       where: { engagementId_reference: { engagementId, reference: body.reference } },

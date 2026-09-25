@@ -47,6 +47,7 @@ const db = vi.hoisted(() => {
     svMeasure: model(),
     facility: model(),
     tcfdRiskAssessment: model(),
+    programme: model(),
     $transaction: vi.fn(),
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
@@ -394,5 +395,21 @@ describe("climate risk owners", () => {
     expect(res.status).toBe(404);
     expect(db.organizationMembership.findFirst.mock.calls[0][0].where).toEqual({ userId: "user-b", organizationId: ORG_A });
     expect(db.tcfdRiskAssessment.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("programme managers", () => {
+  it("will not name a user from another organisation as programme manager", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/programmes/[programmeId]/route");
+    db.programme.findUnique.mockResolvedValue({ organizationId: ORG_A });
+    db.organizationMembership.findFirst.mockResolvedValue(null);
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}/programmes/prog-a`, { programmeManagerUserId: "user-b" }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A, programmeId: "prog-a" }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.organizationMembership.findFirst.mock.calls[0][0].where).toEqual({ userId: "user-b", organizationId: ORG_A });
+    expect(db.programme.update).not.toHaveBeenCalled();
   });
 });

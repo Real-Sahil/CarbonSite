@@ -7,6 +7,7 @@ import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { updateWasteRecordSchema } from "@/lib/validation/environmental";
 import { syncWasteRecordCalculation, rebuildEnvironmentalMetricAggregates } from "@/lib/calculation/environmental-metrics";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string; recordId: string }> };
 
@@ -41,6 +42,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
     const body = parsed.data;
 
+    const refError = await orgRefsError(orgId, { projectId: body.projectId });
+    if (refError) return refError;
     if (body.facilityId) {
       const facility = await prisma.facility.findFirst({ where: { id: body.facilityId, organizationId: orgId } });
       if (!facility) return apiError("NOT_FOUND", "Facility not found.", 404);

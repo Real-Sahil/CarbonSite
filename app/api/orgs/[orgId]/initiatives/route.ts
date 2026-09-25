@@ -6,6 +6,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createInitiativeSchema } from "@/lib/validation/records";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -39,6 +40,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const body = createInitiativeSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     // Verify owner is a member of this org if specified
     if (body.ownerUserId) {

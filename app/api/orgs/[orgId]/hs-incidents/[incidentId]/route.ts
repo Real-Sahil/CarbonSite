@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const PatchSchema = z.object({
   status: z.enum(["reported", "investigating", "action_required", "closed"]).optional(),
@@ -61,6 +62,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     }
 
     const body = PatchSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId, methodStatementId: body.methodStatementId });
+    if (refError) return refError;
     const updated = await prisma.hsIncidentReport.update({
       where: { id: incidentId },
       data: {

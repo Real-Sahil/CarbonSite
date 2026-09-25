@@ -6,6 +6,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { updateEvidenceRequestSchema } from "@/lib/validation/assurance";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string; engagementId: string; requestId: string }> };
 
@@ -22,6 +23,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!existing) return apiError("NOT_FOUND", "Evidence request not found.", 404);
 
     const body = updateEvidenceRequestSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     if (body.status === "not_available" && !body.unavailabilityReason?.trim() && !existing.unavailabilityReason) {
       return apiError(

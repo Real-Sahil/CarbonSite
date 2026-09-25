@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { updatePermitSchema, createPermitConditionSchema } from "@/lib/validation/environment";
 import { permitUrgency, daysUntil } from "@/lib/environment/permits";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string; permitId: string }> };
 
@@ -66,6 +67,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!existing) return apiError("NOT_FOUND", "Permit not found.", 404);
 
     const body = updatePermitSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { facilityId: body.facilityId, siteId: body.siteId, ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     if (body.reference && body.reference !== existing.reference) {
       const duplicate = await prisma.environmentalPermit.findFirst({

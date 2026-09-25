@@ -154,6 +154,7 @@ All presigned URLs generated server-side after auth checks. Expiry: 1 hour (`PRE
 - **Shared reference data** (factor libraries, embodied materials, framework datapoints) is read by every tenant. Org routes must never write it. Imports go through `requireSharedLibraryEditor()` in `lib/auth/shared-libraries.ts` (platform owner/support only). Per-org text about a shared row lives in its own org-scoped table (e.g. `OrganizationDatapointNarrative`). An org's own factors live in `OrganizationEmissionFactor`: the factor import writes there unless a platform editor picks a shared library.
 - **Passwords set by an admin:** hash with `hashTemporaryPassword()` from `lib/auth/temporary-password.ts` (Better Auth's format; bcrypt/SHA-256 can never sign in). Never set a password on an account that exists outside the org: check `accountBelongsOnlyToOrg()`. Invite acceptance takes the org from the invite, never the request body.
 - **Errors:** `handleRouteError()` returns a generic 500 with a Sentry reference, never the raw message.
+- **Ids from the request:** any project, site, facility, business unit, period, contract, permit, method statement, activity record, evidence file or `*UserId` a route stores must be checked with `orgRefsError(orgId, {...})` (`lib/security/org-refs.ts`; social value uses `svRefsError()`). Never spread a request body with id fields into a write unchecked.
 - **Regression tests:** `tests/security/cross-tenant-writes.test.ts`.
 
 ### Authorization (RBAC)

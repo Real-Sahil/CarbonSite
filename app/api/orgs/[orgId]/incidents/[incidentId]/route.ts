@@ -14,6 +14,7 @@ import {
   deriveActionStatus,
   assessNotificationTimeliness,
 } from "@/lib/environment/incidents";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 type Params = { params: Promise<{ orgId: string; incidentId: string }> };
 
@@ -82,6 +83,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!existing) return apiError("NOT_FOUND", "Incident not found.", 404);
 
     const body = updateIncidentSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { ownerUserId: body.ownerUserId });
+    if (refError) return refError;
 
     // Closing an incident that still has open actions, no recorded root cause,
     // or an unreported notifiable event is the commonest way a register stops

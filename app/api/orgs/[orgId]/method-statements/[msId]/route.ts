@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const PatchSchema = z.object({
   status: z.enum(["draft", "review", "approved", "issued", "signed_off", "superseded"]).optional(),
@@ -56,6 +57,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     if (!ms || ms.organizationId !== orgId) return apiError("NOT_FOUND", "Method statement not found", 404);
 
     const body = PatchSchema.parse(await req.json());
+    const refError = await orgRefsError(orgId, { projectId: body.projectId, siteId: body.siteId, signedOffByUserId: body.signedOffByUserId });
+    if (refError) return refError;
 
     // Locked revisions can only have status changed, not content edited
     if (ms.lockedAt && body.sectionsJson !== undefined) {
