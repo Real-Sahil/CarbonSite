@@ -196,7 +196,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     });
     await prisma.activityRecord.update({
       where: { id: recordId },
-      data: { evidenceStatus: evidenceCount > 0 ? "partial" : "missing" },
+      data: { evidenceStatus: evidenceCount > 0 ? "complete" : "missing" },
     });
 
     await writeAuditLog({
@@ -268,7 +268,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     });
     await prisma.activityRecord.update({
       where: { id: recordId },
-      data: { evidenceStatus: evidenceCount > 0 ? "partial" : "missing" },
+      data: { evidenceStatus: evidenceCount > 0 ? "complete" : "missing" },
     });
 
     await writeAuditLog({

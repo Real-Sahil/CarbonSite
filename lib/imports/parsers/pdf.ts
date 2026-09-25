@@ -1,4 +1,6 @@
 import { createRequire } from "module";
+import os from "os";
+import path from "path";
 import type { ParsedRow, ParseResult } from "../parser";
 
 // ---------------------------------------------------------------------------
@@ -17,20 +19,61 @@ import type { ParsedRow, ParseResult } from "../parser";
 // This prevents serverless environments from failing on non-PDF routes.
 async function pdfParse(buffer: Buffer): Promise<{ text: string }> {
   const require = createRequire(import.meta.url);
-  const pdfParseModule = require("pdf-parse") as (buffer: Buffer, options?: unknown) => Promise<{ text: string }>;
-  return pdfParseModule(buffer);
+  // pdf-parse 2.x exports a PDFParse class; 1.x exported a function.
+  type Parser = { getText(): Promise<{ text: string }>; destroy(): Promise<void> };
+  const mod = require("pdf-parse") as
+    | ((b: Buffer) => Promise<{ text: string }>)
+    | { PDFParse: new (opts: { data: Buffer }) => Parser };
+  if (typeof mod === "function") return mod(buffer);
+  const parser = new mod.PDFParse({ data: buffer });
+  try {
+    return { text: (await parser.getText()).text };
+  } finally {
+    await parser.destroy();
+  }
 }
 
-// Lazy import so Tesseract's 2 MB WASM is only loaded when actually needed.
+// Lazy import so Tesseract's WASM is only loaded when actually needed. The
+// English data ships with the app (@tesseract.js-data/eng, best_int, 2.9 MB)
+// instead of being fetched from a CDN at run time, and worker errors are
+// caught rather than left to crash the process.
 async function ocrText(buffer: Buffer): Promise<string> {
   const Tesseract = await import("tesseract.js");
-  const worker = await Tesseract.createWorker("eng");
+  // Not require.resolve: the bundler turns that into a module id. The data
+  // directory is traced into the function by outputFileTracingIncludes.
+  const pkgDir = path.join(process.cwd(), "node_modules", "@tesseract.js-data", "eng");
+  let workerError: unknown = null;
+  const worker = await Tesseract.createWorker("eng", 1, {
+    langPath: path.join(pkgDir, "4.0.0_best_int"),
+    gzip: true,
+    cachePath: os.tmpdir(),
+    errorHandler: (err: unknown) => {
+      workerError = err;
+    },
+  });
   try {
     const { data } = await worker.recognize(buffer);
+    if (workerError) throw workerError;
     return data.text;
   } finally {
     await worker.terminate();
   }
+}
+
+/**
+ * Plain text of a document: the PDF text layer when it has one, else OCR.
+ * Images go straight to OCR. Used by "Add from a bill".
+ */
+export async function documentText(buffer: Buffer, mimeType: string): Promise<{ text: string; method: "pdf-text" | "ocr" }> {
+  if (mimeType === "application/pdf") {
+    try {
+      const data = await pdfParse(buffer);
+      if (data.text.trim().length > 40) return { text: data.text, method: "pdf-text" };
+    } catch {
+      // Encrypted or scanned: fall through to OCR.
+    }
+  }
+  return { text: await ocrText(buffer), method: "ocr" };
 }
 
 // ---------------------------------------------------------------------------

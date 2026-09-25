@@ -26,6 +26,7 @@ export type AuditAction =
   | "reporting_period.updated"
   | "comment.created"
   | "evidence.uploaded"
+  | "evidence.extracted"
   | "evidence.attached"
   | "evidence.download_requested"
   | "evidence.downloaded"

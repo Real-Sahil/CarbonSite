@@ -25,11 +25,28 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: Boolean(process.env.SENTRY_AUTH_TOKEN),
   // chromium-min ships no binaries — it downloads from a CDN URL at runtime into /tmp.
   // This keeps Lambda well under Vercel's 50 MB limit. No outputFileTracingIncludes needed.
-  serverExternalPackages: ["@sparticuz/chromium-min", "puppeteer-core", "puppeteer", "pdfkit", "sharp"],
+  // Bill and PDF reading runs OCR on the server: ship Tesseract's worker, its
+  // WASM core and the English data with the routes that use them (loaded by
+  // path at run time, so file tracing cannot see them).
+  outputFileTracingIncludes: {
+    "/api/orgs/[orgId]/evidence/bill": [
+      "./node_modules/tesseract.js/**/*",
+      "./node_modules/tesseract.js-core/**/*",
+      "./node_modules/@tesseract.js-data/eng/4.0.0_best_int/**/*",
+      "./node_modules/@tesseract.js-data/eng/package.json",
+    ],
+    "/api/orgs/[orgId]/imports/**/*": [
+      "./node_modules/tesseract.js/**/*",
+      "./node_modules/tesseract.js-core/**/*",
+      "./node_modules/@tesseract.js-data/eng/4.0.0_best_int/**/*",
+      "./node_modules/@tesseract.js-data/eng/package.json",
+    ],
+  },
+  serverExternalPackages: ["@sparticuz/chromium-min", "puppeteer-core", "puppeteer", "pdfkit", "sharp", "pdf-parse", "tesseract.js"],
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals || [];
-      config.externals.push("@sparticuz/chromium-min", "puppeteer", "puppeteer-core", "sharp");
+      config.externals.push("@sparticuz/chromium-min", "puppeteer", "puppeteer-core", "sharp", "pdf-parse", "tesseract.js");
     }
     return config;
   },
