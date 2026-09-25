@@ -74,6 +74,16 @@ export default async function EngagementDetailPage({ params }: PageProps) {
   });
   if (!engagement) notFound();
 
+  // The pack covers the engagement's snapshot, else the period's latest one.
+  const packSnapshot = engagement.snapshotId
+    ? { id: engagement.snapshotId }
+    : await prisma.publishedSnapshot.findFirst({
+        where: { organizationId: orgId, reportingPeriodId: engagement.reportingPeriodId },
+        orderBy: { version: "desc" },
+        select: { id: true },
+      });
+  const canDownloadPack = ["admin", "sustainability_director", "sustainability_manager", "reviewer", "auditor"].includes(role!);
+
   const readiness = checkSignOffReadiness({
     findings: engagement.findings,
     evidenceRequests: engagement.evidenceRequests,
@@ -89,12 +99,23 @@ export default async function EngagementDetailPage({ params }: PageProps) {
           <ArrowLeft className="h-3.5 w-3.5" />
           All engagements
         </Link>
-        <Link
-          href={`/orgs/${orgId}/assurance-engagements/${engagementId}`}
-          className="text-sm font-medium text-zinc-700 underline-offset-2 hover:underline"
-        >
-          Open engagement report
-        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          {packSnapshot && canDownloadPack && (
+            <a
+              href={`/api/orgs/${orgId}/snapshots/${packSnapshot.id}/assurance-pack?engagementId=${engagementId}`}
+              className="text-sm font-medium text-zinc-700 underline-offset-2 hover:underline"
+              title="Calculations, factors, evidence files, sample results and the audit trail, with a SHA-256 manifest"
+            >
+              Download assurance pack (ZIP)
+            </a>
+          )}
+          <Link
+            href={`/orgs/${orgId}/assurance-engagements/${engagementId}`}
+            className="text-sm font-medium text-zinc-700 underline-offset-2 hover:underline"
+          >
+            Open engagement report
+          </Link>
+        </div>
       </div>
 
       <EngagementWorkspace

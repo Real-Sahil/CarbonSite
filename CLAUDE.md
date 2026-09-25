@@ -292,6 +292,8 @@ Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Rep
 - **Field app availability:** Android is live on Google Play (`app.metricora.metricora_mobile`); iOS (`app.metricora.metricoraMobile`) is in App Store review. Do not link or claim the App Store until it is approved.
 - Removed pages (comparison, case studies, `/calculation`, the old blog posts) redirect in `next.config.ts`.
 
+**Assurance pack** (`lib/assurance/pack.ts`): `GET /api/orgs/{orgId}/snapshots/{snapshotId}/assurance-pack[?engagementId=]` (admin, sustainability leads, reviewer, auditor; audit-logged) streams a ZIP built with `archiver`: README (snapshot, run, libraries, methodology, evidence tier split of the headline), `calculations.csv` (every stored calculation in the run with factor, selection reason, formula, warnings, provenance, tier), `factors.csv`, `evidence-index.csv` plus `evidence/` (files up to `MAX_EVIDENCE_BYTES`, 200 MB), `samples.csv` for an engagement, `audit-log.csv` from the period start with the hash chain, and `manifest.sha256`. Nothing is recalculated. Linked from the engagement page and Trace a figure.
+
 ### Data quality guards
 - **Duplicates** (`lib/data-quality/duplicates.ts`): a record with the same category, amount, unit, date, facility and supplier as an existing one is refused with 409 `POSSIBLE_DUPLICATE` unless sent with `allowDuplicate` (the record form asks); imports flag such rows, and rows repeated within the file, as warnings. Facility names are unique per org (case-insensitive, 409 `FACILITY_EXISTS`).
 - **Unpublished changes:** when live aggregates differ from the period's latest snapshot, the dashboard shows the signed difference above the headline with a link to review and publish the latest run.

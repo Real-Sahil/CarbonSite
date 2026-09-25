@@ -114,6 +114,7 @@ export type AuditAction =
   | "species_record.created"
   | "species_record.updated"
   | "assurance.engagement_created"
+  | "assurance.pack_downloaded"
   | "assurance.engagement_updated"
   | "assurance.engagement_signed"
   | "assurance.evidence_request_created"

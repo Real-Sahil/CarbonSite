@@ -165,6 +165,13 @@ export default function LineagePage() {
           {s.factorLibrary ? ` Factors: ${s.factorLibrary}.` : ""}
           {s.methodology ? ` Method: ${s.methodology}.` : ""}
         </p>
+        <a
+          href={`/api/orgs/${orgId}/snapshots/${s.id}/assurance-pack`}
+          className="mt-2 inline-block text-sm font-medium text-[#111827] underline underline-offset-2"
+          title="Admins, reviewers and auditors: calculations, factors, evidence files and the audit trail in one ZIP"
+        >
+          Download assurance pack (ZIP)
+        </a>
       </header>
 
       {data.tiers ? (
