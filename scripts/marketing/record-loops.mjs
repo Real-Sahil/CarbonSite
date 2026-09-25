@@ -1,7 +1,7 @@
 // Records the product loops and stills used on the marketing site from a
 // running local build signed in to the demo tenant (Northgate Civils Ltd).
 // Usage: ORG_ID=... STATE=admin-storage.json FFMPEG=/path/to/ffmpeg \
-//   RUN_ID=... RECORD_ID=... SUBMISSION_ID=... node scripts/marketing/record-loops.mjs [loopName|shots]
+//   RUN_ID=... RECORD_ID=... SUBMISSION_ID=... PLAN_ID=... node scripts/marketing/record-loops.mjs [loopName|shots]
 // ffmpeg is not a project dependency; `npx ffmpeg-static` provides one.
 import { chromium } from "playwright";
 import { readdirSync, rmSync, mkdirSync } from "node:fs";
@@ -23,7 +23,19 @@ const loops = {
   record: { url: `/records/${process.env.RECORD_ID}`, act: async (p) => { await p.waitForTimeout(1500); await glide(p, 600, 5000); await p.waitForTimeout(2000); await glide(p, 0, 3500); } },
   compliance: { url: "/compliance/crosswalk", act: async (p) => { await p.waitForTimeout(1500); await glide(p, 1100, 8000); await p.waitForTimeout(1000); await glide(p, 0, 4000); } },
   reports: { url: "/reports", act: async (p) => { await p.waitForTimeout(1500); await glide(p, 700, 6000); await p.waitForTimeout(1500); await glide(p, 0, 3500); } },
+  // The guided Carbon Reduction Plan, section by section (PLAN_ID = a plan in the demo tenant).
+  plan: {
+    url: `/carbon-reduction-plan/${process.env.PLAN_ID}`,
+    act: async (p) => {
+      for (const section of ["Supplier and boundary", "Emissions", "Baseline", "Net zero and targets", "Reduction projects", "Declaration", "Check and generate"]) {
+        await p.click(`nav >> text=${section}`);
+        await p.waitForTimeout(2600);
+      }
+    },
+  },
 };
+// Sections of the guided plan captured as stills: file name -> section label.
+const planShots = { "crp-emissions": "Emissions", "crp-baseline": "Baseline", "crp-check": "Check and generate" };
 const only = process.argv[2];
 for (const [name, L] of Object.entries(loops)) {
   if (only && only !== name) continue;
@@ -50,5 +62,21 @@ if (!only || only === "shots") {
     await p.goto(O + u, { waitUntil: "load" }); await p.waitForTimeout(3500); await p.screenshot({ path: `${TMP}/${n}.png` }); await p.close();
     execSync(`${FF} -y -loglevel error -i ${TMP}/${n}.png -vf scale=2400:-2 -q:v 5 ${SHOTS}${n}.jpg`); }
   console.log("shots", Object.keys(shots).length);
+}
+if (process.env.PLAN_ID && (!only || only === "shots" || only === "planshots")) {
+  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, storageState: STATE });
+    const p = await ctx.newPage();
+    await p.goto(`${O}/carbon-reduction-plan/${process.env.PLAN_ID}`, { waitUntil: "load" }); await p.waitForTimeout(3500);
+    for (const [n, section] of Object.entries(planShots)) {
+      await p.click(`nav >> text=${section}`); await p.waitForTimeout(1500);
+      await p.screenshot({ path: `${TMP}/${n}.png` });
+      execSync(`${FF} -y -loglevel error -i ${TMP}/${n}.png -vf scale=2400:-2 -q:v 5 ${SHOTS}${n}.jpg`);
+    }
+    await p.goto(`${O}/reports`, { waitUntil: "load" }); await p.waitForTimeout(2500);
+    await p.screenshot({ path: `${TMP}/report-picker.png` });
+    execSync(`${FF} -y -loglevel error -i ${TMP}/report-picker.png -vf scale=2400:-2 -q:v 5 ${SHOTS}report-picker.jpg`);
+    await p.close();
+    console.log("plan shots", Object.keys(planShots).length + 1);
+  await ctx.close();
 }
 await b.close();

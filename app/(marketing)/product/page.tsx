@@ -145,7 +145,7 @@ export default function ProductPage() {
           "Assurance readiness score and an evidence export for your verifier",
           "Factor licence attribution printed on every report",
         ]}
-        media={<ProductShot src="/marketing/screens/reports.jpg" alt="Reports page with published snapshots and generated reports" width={2400} height={1500} />}
+        media={<ProductShot src="/marketing/screens/crp-check.jpg" alt="Carbon Reduction Plan check listing each PPN 006 item as complete, with one recommendation outstanding" width={2400} height={1500} />}
       />
 
       <Feature

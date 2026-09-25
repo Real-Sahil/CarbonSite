@@ -50,8 +50,8 @@ const STEPS = [
   {
     step: "Publish",
     text: "Publishing freezes a versioned snapshot. Reports and the dashboard read from it, with a CSV calculation trail for your auditor.",
-    img: "/marketing/screens/reports.jpg",
-    alt: "Reports page listing published snapshots and generated reports",
+    img: "/marketing/screens/report-picker.jpg",
+    alt: "Reports page with published snapshots, the recommended report types and generated PPN 006 and bid carbon pack reports",
   },
 ];
 
@@ -212,11 +212,14 @@ export default function HomePage() {
 
       <Section tone="paper">
         <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.3fr]">
-          <SectionIntro
-            eyebrow="Start here"
-            title="The three documents most contractors need."
-            lead="New accounts see these first. ESRS, CDP, CBAM, NHS Evergreen, BREEAM and National TOMs reports are there when a client asks for them."
-          />
+          <div className="flex flex-col gap-8">
+            <SectionIntro
+              eyebrow="Start here"
+              title="The three documents most contractors need."
+              lead="New accounts see these first. ESRS, CDP, CBAM, NHS Evergreen, BREEAM and National TOMs reports are there when a client asks for them."
+            />
+            <ProductLoop src="/marketing/loops/plan.mp4" poster="/marketing/loops/plan.jpg" label="Guided Carbon Reduction Plan, section by section from boundary to sign-off" />
+          </div>
           <ol className="grid gap-4">
             {FIRST_DOCUMENTS.map((d, i) => (
               <li key={d.title} className="flex gap-4 rounded-[12px] border border-mk-line bg-mk-surface p-6">

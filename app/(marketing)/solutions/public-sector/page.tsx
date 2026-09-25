@@ -16,7 +16,7 @@ export default function PublicSectorPage() {
         eyebrow: "Public-sector suppliers",
         title: "The carbon and social value answers every tender asks for.",
         lead: "Central government contracts over £5 million a year ask for a Carbon Reduction Plan under PPN 006, and most frameworks score social value. MetricOra keeps both beside the records you already hold.",
-        heroVideo: "/marketing/loops/reports.mp4",
+        heroVideo: "/marketing/loops/plan.mp4",
         problems: [
           {
             problem: "Rewriting the Carbon Reduction Plan for every bid",
@@ -46,14 +46,14 @@ export default function PublicSectorPage() {
             "Model answers built only from your published figures",
             "Emissions reports with the auditor's CSV calculation trail",
           ],
-          media: { kind: "loop", src: "/marketing/loops/reports.mp4", label: "Reports page with published snapshots and generated reports" },
+          media: { kind: "loop", src: "/marketing/loops/plan.mp4", label: "Guided Carbon Reduction Plan, section by section from boundary to sign-off" },
         },
         detail: {
           eyebrow: "Planning",
           title: "Targets that match the plan you submit.",
           lead: "The base year, targets and transition plan in MetricOra are the ones printed in the Carbon Reduction Plan, so they stay consistent between bids.",
           points: ["Base year with a recalculation threshold and restatement log", "Transition plan checklist with board approval", "Internal carbon price for tender appraisals"],
-          media: { kind: "shot", src: "/marketing/screens/base-year.jpg", alt: "Base year and recalculation policy" },
+          media: { kind: "shot", src: "/marketing/screens/crp-baseline.jpg", alt: "Baseline step of the Carbon Reduction Plan comparing each scope with the base year" },
         },
         closing: { title: "Have your next Carbon Reduction Plan ready before the tender lands.", lead: "Publish a year of data in the trial and generate the plan from it." },
       }}
