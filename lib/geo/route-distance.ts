@@ -255,3 +255,94 @@ function hashRoute(
     .update([organizationId, pickupPostcode, deliveryPostcode, ROUTING_PROVIDER].join(":"))
     .digest("hex");
 }
+
+export type DistrictDistance = { km: number | null; method: string };
+
+/**
+ * Road km from the centre of a postcode district (outward code, e.g. "HD9")
+ * to a full site postcode, for commuting. The district's centre comes from
+ * postcodes.io's outcode lookup and is cached like a postcode; the route is
+ * cached per organisation like any other. When the router is unavailable the
+ * straight-line distance x 1.3 is used and not cached, so a later import
+ * retries the road route. An unknown district gives no distance.
+ */
+export async function getDistrictRoadKm(params: {
+  organizationId: string;
+  district: string;
+  sitePostcode: string;
+}): Promise<DistrictDistance> {
+  const district = normalizeUkPostcode(params.district);
+  const site = normalizeUkPostcode(params.sitePostcode);
+  if (!/^[A-Z]{1,2}\d[A-Z\d]?$/.test(district)) return { km: null, method: "not a postcode district" };
+  if (!isLikelyUkPostcode(site)) {
+    throw new RouteDistanceError("INVALID_POSTCODE_FORMAT", "The site needs a full UK postcode.", 422);
+  }
+
+  const routeHash = hashRoute(params.organizationId, district, site);
+  const existing = await prisma.routeDistance.findUnique({ where: { routeHash } });
+  if (existing) return { km: Number(existing.distanceKm), method: existing.calculationMethod };
+
+  const [from, to] = await Promise.all([getOrCreateDistrictGeocode(district), getOrCreatePostcodeGeocode(site)]);
+  if (!from) return { km: null, method: "district not found" };
+
+  const coords = {
+    pickupLat: Number(from.latitude),
+    pickupLng: Number(from.longitude),
+    deliveryLat: Number(to.latitude),
+    deliveryLng: Number(to.longitude),
+  };
+  let route;
+  try {
+    route = await calculateRoadRoute(coords);
+  } catch {
+    return { km: Math.round(greatCircleKm(coords) * 1.3 * 10) / 10, method: "straight line x 1.3 (router unavailable)" };
+  }
+  await prisma.routeDistance.create({
+    data: {
+      organizationId: params.organizationId,
+      pickupPostcode: district,
+      deliveryPostcode: site,
+      pickupGeocodeId: from.id,
+      deliveryGeocodeId: to.id,
+      distanceKm: route.distanceKm,
+      durationSeconds: route.durationSeconds,
+      provider: route.provider,
+      providerRouteId: route.providerRouteId,
+      routeHash,
+      calculationMethod: `district_centre_${route.calculationMethod}`,
+    },
+  });
+  return { km: route.distanceKm, method: `district_centre_${route.calculationMethod}` };
+}
+
+async function getOrCreateDistrictGeocode(district: string) {
+  const existing = await prisma.postcodeGeocode.findUnique({ where: { normalizedPostcode: district } });
+  if (existing) return existing;
+  const response = await fetch(`${POSTCODES_BASE_URL}/outcodes/${encodeURIComponent(district)}`);
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new RouteDistanceError("POSTCODE_LOOKUP_UNAVAILABLE", "The postcode lookup is unavailable. Try again shortly.", 502);
+  }
+  const body = (await response.json()) as { result?: { outcode?: string; latitude?: number; longitude?: number } };
+  if (!body.result?.latitude || !body.result.longitude) return null;
+  return prisma.postcodeGeocode.upsert({
+    where: { normalizedPostcode: district },
+    create: {
+      normalizedPostcode: district,
+      displayPostcode: body.result.outcode ?? district,
+      latitude: body.result.latitude,
+      longitude: body.result.longitude,
+      provider: `${POSTCODE_PROVIDER} outcode`,
+      providerPlaceId: body.result.outcode ?? district,
+    },
+    update: {},
+  });
+}
+
+function greatCircleKm(p: { pickupLat: number; pickupLng: number; deliveryLat: number; deliveryLng: number }) {
+  const rad = Math.PI / 180;
+  const dLat = (p.deliveryLat - p.pickupLat) * rad;
+  const dLng = (p.deliveryLng - p.pickupLng) * rad;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(p.pickupLat * rad) * Math.cos(p.deliveryLat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(a));
+}

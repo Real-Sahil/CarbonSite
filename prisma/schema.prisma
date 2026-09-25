@@ -352,6 +352,8 @@ model Organization {
   hsIncidents                    HsIncidentReport[]               @relation("OrgHsIncidents")
   methodStatements               MethodStatement[]                @relation("OrgMethodStatements")
   workerSessions                 WorkerSession[]                  @relation("OrgWorkerSessions")
+  commuteSurveys                 CommuteSurvey[]                  @relation("OrgCommuteSurveys")
+  commuteImports                 CommuteImport[]                  @relation("OrgCommuteImports")
   tnfdScenarios                  TnfdScenario[]                   @relation("OrgTnfdScenarios")
   materialityAssessments         MaterialityAssessment[]          @relation("OrgMaterialityAssessments")
   enforcementNotices             EnforcementNotice[]              @relation("OrgEnforcementNotices")
@@ -1131,6 +1133,7 @@ model EvidenceFile {
   batchEvidence      ImportBatchEvidence[]
   submissionFiles    FieldSubmissionFile[]
   socialValueRecords SocialValueRecord[]      @relation("SocialValueEvidence")
+  commuteImports     CommuteImport[]          @relation("CommuteImportEvidence")
   classifications    EvidenceClassification[]
   ocrCorrections     OcrCorrection[]
   billInboxItems     BillInboxItem[]
@@ -2257,6 +2260,8 @@ model Site {
   hsIncidents             HsIncidentReport[]          @relation("SiteHsIncidents")
   methodStatements        MethodStatement[]           @relation("SiteMethodStatements")
   workerSessions          WorkerSession[]             @relation("SiteWorkerSessions")
+  commuteSurveys          CommuteSurvey[]             @relation("SiteCommuteSurveys")
+  commuteImports          CommuteImport[]             @relation("SiteCommuteImports")
   enforcementNotices      EnforcementNotice[]         @relation("SiteEnforcementNotices")
 
   @@index([organizationId, projectId])
@@ -6035,6 +6040,66 @@ model WorkerSession {
   @@index([organizationId, userId, startedAt])
   @@index([organizationId, overdueAlert])
   @@map("worker_sessions")
+}
+
+// ─── Employee commuting (Scope 3 Category 7) ─────────────────────────────────
+
+/// One anonymous travel survey per site: the link is shared with the people
+/// who work there and their answers set the site's commuting mode split.
+model CommuteSurvey {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  siteId          String   @map("site_id")
+  token           String   @unique
+  isOpen          Boolean  @default(true) @map("is_open")
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization            @relation("OrgCommuteSurveys", fields: [organizationId], references: [id], onDelete: Cascade)
+  site         Site                    @relation("SiteCommuteSurveys", fields: [siteId], references: [id], onDelete: Cascade)
+  responses    CommuteSurveyResponse[]
+
+  @@unique([organizationId, siteId])
+  @@map("commute_surveys")
+}
+
+/// One answer. Nothing identifies the person: mode, people in the vehicle
+/// and whether they work for the organisation or a subcontractor.
+model CommuteSurveyResponse {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  surveyId       String   @map("survey_id")
+  mode           String
+  occupancy      Int      @default(1)
+  workforce      String
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  survey CommuteSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, surveyId])
+  @@map("commute_survey_responses")
+}
+
+/// A month of a site's attendance turned into commuting records. Holds the
+/// aggregate summary (no names or full postcodes) and the records it made.
+model CommuteImport {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  siteId          String   @map("site_id")
+  month           DateTime @db.Date
+  evidenceFileId  String   @map("evidence_file_id")
+  summary         Json     @default("{}")
+  recordIds       String[] @map("record_ids")
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization @relation("OrgCommuteImports", fields: [organizationId], references: [id], onDelete: Cascade)
+  site         Site         @relation("SiteCommuteImports", fields: [siteId], references: [id], onDelete: Cascade)
+  evidenceFile EvidenceFile @relation("CommuteImportEvidence", fields: [evidenceFileId], references: [id])
+
+  @@unique([organizationId, siteId, month])
+  @@map("commute_imports")
 }
 
 // ─── Programme (roll-up above Project) ────────────────────────────────────────

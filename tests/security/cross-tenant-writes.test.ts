@@ -48,6 +48,10 @@ const db = vi.hoisted(() => {
     facility: model(),
     tcfdRiskAssessment: model(),
     programme: model(),
+    site: model(),
+    commuteSurvey: model(),
+    commuteImport: model(),
+    activityRecord: model(),
     $transaction: vi.fn(),
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
@@ -411,5 +415,30 @@ describe("programme managers", () => {
     expect(res.status).toBe(404);
     expect(db.organizationMembership.findFirst.mock.calls[0][0].where).toEqual({ userId: "user-b", organizationId: ORG_A });
     expect(db.programme.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("employee commuting", () => {
+  it("will not start a travel survey for another organisation's site", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/commuting/surveys/route");
+    db.site.findFirst.mockResolvedValue(null); // the site belongs to org B
+
+    const res = await POST(post("/x", { siteId: "site-of-b" }), { params: Promise.resolve({ orgId: ORG_A }) });
+
+    expect(res.status).toBe(404);
+    expect(db.site.findFirst.mock.calls[0][0].where).toEqual({ id: "site-of-b", organizationId: ORG_A });
+    expect(db.commuteSurvey.create).not.toHaveBeenCalled();
+  });
+
+  it("will not delete another organisation's commuting import or its records", async () => {
+    const { DELETE } = await import("@/app/api/orgs/[orgId]/commuting/imports/[importId]/route");
+    db.commuteImport.findFirst.mockResolvedValue(null); // the import belongs to org B
+
+    const res = await DELETE(post("/x", {}, "DELETE"), { params: Promise.resolve({ orgId: ORG_A, importId: "import-of-b" }) });
+
+    expect(res.status).toBe(404);
+    expect(db.commuteImport.findFirst.mock.calls[0][0].where).toEqual({ id: "import-of-b", organizationId: ORG_A });
+    expect(db.activityRecord.deleteMany).not.toHaveBeenCalled();
+    expect(db.commuteImport.delete).not.toHaveBeenCalled();
   });
 });
