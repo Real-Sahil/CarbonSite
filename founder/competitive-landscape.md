@@ -28,7 +28,7 @@ Key: **Y** yes, **P** partial, **N** no, **?** not known. MetricOra cells come f
 | Scope 1, 2, 3 inventory | Y | Y [src](https://www.sustainablecontractor.co.uk/) | Y | P | Y | Y | Y [src](https://trackzero.eco/platform/) | Y | Y | N | N |
 | PPN 006 CRP | Y (guided, readiness checks) | Y | Y | ? | Y | Y | Y [src](https://trackzero.eco/solutions/ppn0621/) | Y | Y | N | N |
 | SECR | Y | Y | Y | ? | ? | ? | Y | ? | ? | N | N |
-| PPN 026 Social Value Model | **N** | ? | ? | ? | ? | ? | ? | ? | ? | ? | Y (claims guidance) [src](https://www.socialvalueportal.com/news-and-insights/ppn-026-what-the-governments-new-social-value-guidance-means-for-you) |
+| PPN 026 Social Value Model | Y (contract KPIs, delivery evidence, bid pack) | ? | ? | ? | ? | ? | ? | ? | ? | ? | Y (claims guidance) [src](https://www.socialvalueportal.com/news-and-insights/ppn-026-what-the-governments-new-social-value-guidance-means-for-you) |
 | National TOMs | Y (Growth) | Y (TOMs v5) [src](https://www.sustainablecontractor.co.uk/) | Y | Y | Y | Y | N | N | Y | Y | Y (owner) |
 | Offline mobile field capture | Y (Android live, iOS in review) | N | N | Y (mobile forms) | N | N | N | N | N | ? | N |
 | On-device OCR, per-field confidence | Y (ML Kit, confidence dots) | N | N | N | N | N | N | N | N | N | N |
@@ -57,14 +57,14 @@ Key: **Y** yes, **P** partial, **N** no, **?** not known. MetricOra cells come f
 |---|---|---|---|---|
 | 1 | Field-first capture | Camera, on-device OCR, waste tickets, delivery notes, fuel receipts, meter readings, GPS, timestamp, offline queue (drift) | Invoices: server-side PDF parse, not photo-to-record | iOS app not yet approved |
 | 2 | Evidence intelligence | OCR field extraction (weight, EWC, date, reg, supplier) with per-field confidence; material matching on delivery notes; duplicate detection | Project/supplier identification relies on the user picking the project | Low-confidence items are not flagged in the web review queue |
-| 3 | Unified impact engine | Carbon, waste, water, ecology, TOMs social value, H&S | ESG (ESRS/TCFD/TNFD pages exist but are separate modules) | Economic impact; PPN 026 jobs and skills |
+| 3 | Unified impact engine | Carbon, waste, water, ecology, TOMs and PPN 026 social value, H&S | ESG (ESRS/TCFD/TNFD pages exist but are separate modules) | Economic impact |
 | 4 | Evidence graph | Record to calculation to factor to snapshot to report, with formula and selection reason stored; lineage page; report checksums and QR verification | Source photo link is shown per record, not as one traversable graph | A single "click a report figure, see the tickets" view |
-| 5 | Procurement intelligence | PPN 006 guided CRP, SECR, bid carbon pack, TOMs committed vs delivered | Client-specific frameworks | PPN 026 model and KPI tracking |
+| 5 | Procurement intelligence | PPN 006 guided CRP, SECR, bid carbon pack, TOMs committed vs delivered, PPN 026 contract KPIs with delivery evidence | Client-specific frameworks | PPN 026 sub-criteria (due in autumn 2026 guidance); jobs and pay capture from the field app |
 | 6 | Supply chain intelligence | Supplier data requests, supplier portal, subcontractor field workers | Supplier performance page | Supplier social value and compliance scoring in one view |
 | 7 | Framework engine | Versioned factor libraries with effective dates, methodology versions, ESRS datapoints | Framework crosswalk | Generic configurable frameworks (evidence rules and reporting rules as data) |
 | 8 | Evidence quality | Data origin (metered, invoiced, supplier-specific, calculated, estimated and more), evidence status (missing, partial, complete), pedigree score with confidence interval per calculation | Scattered across screens | One Verified / Partially verified / Estimated label on every figure, rolled up to reports |
 
-**Honest read:** pillars 1, 4 and 8 are real and uncommon. Pillars 3, 5 and 7 are partly there. The biggest missing piece is PPN 026, which has a hard date: 1 January 2027.
+**Honest read:** pillars 1, 4 and 8 are real and uncommon. Pillars 3, 5 and 7 are partly there. PPN 026 contract KPIs shipped on 25 September 2026; its sub-criteria follow when the autumn guidance is published.
 
 ## 4. Positioning
 
@@ -80,7 +80,7 @@ Key: **Y** yes, **P** partial, **N** no, **?** not known. MetricOra cells come f
 | Social value platforms | Social Value Portal, Loop, Impact Reporting, SV Consultancy | No GHG engine, or carbon as a side metric; bidder-side fees | "One dataset answers PPN 006, PPN 026 and TOMs." |
 | Combined tender tools | Flotilla, CareZero | Tender output without site evidence underneath | "The same pack, with every number traceable to source." |
 
-**Do not say:** "carbon calculator", "AI-powered" as the headline, "verified" for figures that are only estimated, or anything about PPN 026 until it is shipped.
+**Do not say:** "carbon calculator", "AI-powered" as the headline, "verified" for figures that are only estimated, or PPN 026 sub-criteria before the autumn guidance is loaded.
 
 ## 5. Threats
 

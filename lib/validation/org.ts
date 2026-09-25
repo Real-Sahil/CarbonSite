@@ -483,6 +483,7 @@ export const updateSvFrameworkSchema = createSvFrameworkSchema.partial();
 export const createSvCommitmentSchema = z.object({
   contractId: z.string().min(1).optional(),
   frameworkId: z.string().min(1).optional(),
+  outcomeId: z.string().min(1).optional(),
   ownerUserId: z.string().min(1).optional(),
   title: z.string().min(1).max(300),
   description: z.string().max(5000).optional(),

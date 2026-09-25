@@ -9,6 +9,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { createSvActivitySchema } from "@/lib/validation/org";
+import { svRefsError } from "@/lib/social-value/refs";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export async function GET(
@@ -77,18 +78,13 @@ export async function POST(
 
     const body = createSvActivitySchema.parse(await req.json());
 
-    if (body.commitmentId) {
-      const commitment = await prisma.svCommitment.findUnique({ where: { id: body.commitmentId } });
-      if (!commitment || commitment.organizationId !== orgId) {
-        return apiError("NOT_FOUND", "Commitment not found.", 404);
-      }
-    }
-    if (body.facilityId) {
-      const facility = await prisma.facility.findUnique({ where: { id: body.facilityId } });
-      if (!facility || facility.organizationId !== orgId) {
-        return apiError("NOT_FOUND", "Facility not found.", 404);
-      }
-    }
+    const refError = await svRefsError(orgId, {
+      commitmentId: body.commitmentId,
+      measureId: body.measureId,
+      facilityId: body.facilityId,
+      reportingPeriodId: body.reportingPeriodId,
+    });
+    if (refError) return apiError("NOT_FOUND", refError, 404);
 
     const activity = await prisma.svActivity.create({
       data: {

@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { updateSvCommitmentSchema } from "@/lib/validation/org";
+import { svRefsError } from "@/lib/social-value/refs";
 import { Decimal } from "@prisma/client/runtime/library";
 
 type RouteContext = { params: Promise<{ orgId: string; commitmentId: string }> };
@@ -61,11 +62,30 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     }
 
     const body = updateSvCommitmentSchema.parse(await req.json());
+    // Every id in the body must be this organisation's, and a criterion must sit
+    // in the framework the commitment ends up with.
+    const refError = await svRefsError(orgId, {
+      contractId: body.contractId,
+      frameworkId: body.frameworkId,
+      outcomeId: body.outcomeId,
+      reportingPeriodId: body.reportingPeriodId,
+      ownerUserId: body.ownerUserId,
+    });
+    if (refError) return apiError("NOT_FOUND", refError, 404);
+    const frameworkAfter = body.frameworkId ?? commitment.frameworkId;
+    const outcomeAfter = body.outcomeId ?? (body.frameworkId && body.frameworkId !== commitment.frameworkId ? null : commitment.outcomeId);
+    if (outcomeAfter) {
+      const inFramework = frameworkAfter
+        ? await prisma.svOutcome.count({ where: { id: outcomeAfter, theme: { frameworkId: frameworkAfter } } })
+        : 0;
+      if (!inFramework) return apiError("VALIDATION_ERROR", "That criterion belongs to a different framework.", 400);
+    }
 
     const updated = await prisma.svCommitment.update({
       where: { id: commitmentId },
       data: {
         ...body,
+        outcomeId: outcomeAfter,
         targetValue: body.targetValue != null ? new Decimal(body.targetValue) : undefined,
         monetisedValue: body.monetisedValue != null ? new Decimal(body.monetisedValue) : undefined,
         targetDate: body.targetDate ? new Date(body.targetDate) : undefined,

@@ -5,6 +5,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Building2, CheckCircle2, MinusCircle } from "lucide-react";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { loadContractPpn026 } from "@/lib/social-value/ppn026-load";
+import { ppn026MinimumWeighting } from "@/lib/social-value/ppn026";
+import { Ppn026Panel } from "./ppn026-panel";
 import { prisma } from "@/lib/db";
 import type { OrgRole } from "@prisma/client";
 import {
@@ -183,6 +186,8 @@ export default async function ContractDetailPage({ params }: Props) {
       AND ar.site_id IS NULL
       AND ${HEADLINE_ONLY}
   `;
+
+  const ppn026 = await loadContractPpn026(orgId, contractId);
 
   const totalKgCo2e =
     Number(co2eResult[0]?.total_co2e ?? 0) +
@@ -403,6 +408,32 @@ export default async function ContractDetailPage({ params }: Props) {
           )}
         </CardContent>
       </Card>
+
+      {ppn026 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">PPN 026 Social Value Model</CardTitle>
+            <CardDescription>
+              Good Jobs and Skills KPIs committed on this contract, with delivery and evidence. Carbon is reported separately under PPN 006.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Ppn026Panel
+              orgId={orgId}
+              contractId={contractId}
+              canEdit={canEdit}
+              installed={!!ppn026.framework}
+              version={ppn026.framework?.version ?? null}
+              frameworkId={ppn026.framework?.id ?? null}
+              minimumWeighting={ppn026MinimumWeighting(ppn026.contractValue)}
+              criteria={ppn026.criteria}
+              checks={ppn026.checks}
+              criterionIds={ppn026.criterionIds}
+              unassigned={ppn026.unassigned ?? 0}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

@@ -40,6 +40,12 @@ const db = vi.hoisted(() => {
     report: model(),
     reportingPeriod: model(),
     carbonReductionPlan: model(),
+    svCommitment: model(),
+    svActivity: model(),
+    svFramework: model(),
+    svOutcome: model(),
+    svMeasure: model(),
+    facility: model(),
     $transaction: vi.fn(),
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
@@ -326,5 +332,50 @@ describe("carbon reduction plans", () => {
     expect(res.status).toBe(404);
     expect(db.report.findFirst.mock.calls[0][0].where).toEqual({ id: "report-b", organizationId: ORG_A, reportingPeriodId: "p1" });
     expect(db.carbonReductionPlan.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("social value commitments and activities", () => {
+  it("will not move a commitment onto another organisation's contract", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/sv/commitments/[commitmentId]/route");
+    db.svCommitment.findUnique.mockResolvedValue({ id: "cm-a", organizationId: ORG_A, frameworkId: null, outcomeId: null });
+    db.contract.findFirst.mockResolvedValue(null);
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}/sv/commitments/cm-a`, { contractId: "contract-b" }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A, commitmentId: "cm-a" }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.contract.findFirst.mock.calls[0][0].where).toEqual({ id: "contract-b", organizationId: ORG_A });
+    expect(db.svCommitment.update).not.toHaveBeenCalled();
+  });
+
+  it("will not link a KPI to another organisation's criterion", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/sv/commitments/route");
+    db.svFramework.findFirst.mockResolvedValue({ id: "fw-a" });
+    db.svOutcome.findFirst.mockResolvedValue(null);
+
+    const res = await POST(post(`/api/orgs/${ORG_A}/sv/commitments`, { title: "Apprentices", frameworkId: "fw-a", outcomeId: "outcome-b" }), {
+      params: Promise.resolve({ orgId: ORG_A }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.svOutcome.findFirst.mock.calls[0][0].where).toEqual({ id: "outcome-b", theme: { framework: { organizationId: ORG_A } } });
+    expect(db.svCommitment.create).not.toHaveBeenCalled();
+  });
+
+  it("will not log delivery against another organisation's commitment or reporting period", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/sv/activities/[activityId]/route");
+    db.svActivity.findUnique.mockResolvedValue({ id: "act-a", organizationId: ORG_A, status: "submitted" });
+    db.svCommitment.findFirst.mockResolvedValue(null);
+    db.reportingPeriod.findFirst.mockResolvedValue({ id: "p-a" });
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}/sv/activities/act-a`, { commitmentId: "cm-b" }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A, activityId: "act-a" }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.svCommitment.findFirst.mock.calls[0][0].where).toEqual({ id: "cm-b", organizationId: ORG_A });
+    expect(db.svActivity.update).not.toHaveBeenCalled();
   });
 });

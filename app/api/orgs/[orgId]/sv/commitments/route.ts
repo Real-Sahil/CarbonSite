@@ -9,6 +9,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { createSvCommitmentSchema } from "@/lib/validation/org";
+import { svRefsError } from "@/lib/social-value/refs";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export async function GET(
@@ -80,17 +81,16 @@ export async function POST(
 
     const body = createSvCommitmentSchema.parse(await req.json());
 
-    if (body.contractId) {
-      const contract = await prisma.contract.findUnique({ where: { id: body.contractId } });
-      if (!contract || contract.organizationId !== orgId) {
-        return apiError("NOT_FOUND", "Contract not found.", 404);
-      }
-    }
-    if (body.frameworkId) {
-      const framework = await prisma.svFramework.findUnique({ where: { id: body.frameworkId } });
-      if (!framework || framework.organizationId !== orgId) {
-        return apiError("NOT_FOUND", "Framework not found.", 404);
-      }
+    const refError = await svRefsError(orgId, {
+      contractId: body.contractId,
+      frameworkId: body.frameworkId,
+      outcomeId: body.outcomeId,
+      reportingPeriodId: body.reportingPeriodId,
+      ownerUserId: body.ownerUserId,
+    });
+    if (refError) return apiError("NOT_FOUND", refError, 404);
+    if (body.outcomeId && !body.frameworkId) {
+      return apiError("VALIDATION_ERROR", "A criterion needs its framework.", 400);
     }
 
     const commitment = await prisma.svCommitment.create({
@@ -98,6 +98,7 @@ export async function POST(
         organizationId: orgId,
         contractId: body.contractId,
         frameworkId: body.frameworkId,
+        outcomeId: body.outcomeId,
         ownerUserId: body.ownerUserId,
         title: body.title,
         description: body.description,

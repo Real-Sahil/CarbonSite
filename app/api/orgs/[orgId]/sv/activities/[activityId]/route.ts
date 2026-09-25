@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { updateSvActivitySchema } from "@/lib/validation/org";
+import { svRefsError } from "@/lib/social-value/refs";
 import { Decimal } from "@prisma/client/runtime/library";
 
 type RouteContext = { params: Promise<{ orgId: string; activityId: string }> };
@@ -54,6 +55,13 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     }
 
     const body = updateSvActivitySchema.parse(await req.json());
+    const refError = await svRefsError(orgId, {
+      commitmentId: body.commitmentId,
+      measureId: body.measureId,
+      facilityId: body.facilityId,
+      reportingPeriodId: body.reportingPeriodId,
+    });
+    if (refError) return apiError("NOT_FOUND", refError, 404);
 
     const updated = await prisma.svActivity.update({
       where: { id: activityId },

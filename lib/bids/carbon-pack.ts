@@ -6,6 +6,7 @@
 // checks instead.
 
 import { z } from "zod";
+import { PPN026_SLUG, summarisePpn026, type KpiSummary } from "@/lib/social-value/ppn026";
 import { prisma } from "@/lib/db";
 import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-method";
 import { CATEGORY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
@@ -82,6 +83,9 @@ export type BidPackData = {
     /// National TOMs on this contract, for periods ending on or before the
     /// snapshot's period end: the committed target beside what was delivered.
     socialValue: ContractSocialValue;
+    /// PPN 026 contract KPIs (Good Jobs and Skills): target beside approved
+    /// delivery dated on or before the snapshot's period end.
+    ppn026: KpiSummary[];
     wasteTonnes: number;
     diversionRate: number | null;
   }[];
@@ -300,7 +304,7 @@ async function loadContractEvidence(
   const ids = contracts.map((c) => c.id);
   const toDate = { reportingPeriod: { endDate: { lte: periodEnd } } };
 
-  const [calcs, budgets, social, waste, svTargets] = await Promise.all([
+  const [calcs, budgets, social, waste, svTargets, ppnKpis] = await Promise.all([
     prisma.emissionCalculation.findMany({
       where: { organizationId: orgId, calculationRunId, activityRecord: { contractId: { in: ids } } },
       select: {
@@ -328,6 +332,23 @@ async function loadContractEvidence(
     prisma.socialValueTarget.findMany({
       where: { organizationId: orgId, contractId: { in: ids }, ...toDate },
       select: { contractId: true, targetPounds: true },
+    }),
+    prisma.svCommitment.findMany({
+      where: { organizationId: orgId, contractId: { in: ids }, framework: { slug: PPN026_SLUG }, status: { not: "cancelled" } },
+      select: {
+        id: true,
+        contractId: true,
+        title: true,
+        status: true,
+        targetValue: true,
+        targetUnit: true,
+        outcome: { select: { code: true } },
+        activities: {
+          where: { activityDate: { lte: periodEnd } },
+          select: { status: true, quantityValue: true, quantityUnit: true, evidenceUrls: true },
+        },
+      },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
 
@@ -371,6 +392,24 @@ async function loadContractEvidence(
           social.filter((r) => r.contractId === c.id),
           svTargets.filter((tg) => tg.contractId === c.id),
         ),
+        ppn026: summarisePpn026(
+          ppnKpis
+            .filter((k) => k.contractId === c.id)
+            .map((k) => ({
+              id: k.id,
+              title: k.title,
+              outcomeCode: k.outcome?.code ?? null,
+              targetValue: num(k.targetValue),
+              targetUnit: k.targetUnit,
+              status: k.status,
+              activities: k.activities.map((a) => ({
+                status: a.status,
+                quantityValue: num(a.quantityValue),
+                quantityUnit: a.quantityUnit,
+                evidenceCount: a.evidenceUrls.length,
+              })),
+            })),
+        ).flatMap((cr) => cr.kpis.map((k) => ({ ...k, title: `${cr.name}: ${k.title}` }))),
         wasteTonnes: w?.tonnes ?? 0,
         diversionRate: w && w.tonnes > 0 ? w.diverted / w.tonnes : null,
       };

@@ -6386,9 +6386,10 @@ model SvOutcome {
   sortOrder    Int      @default(0) @map("sort_order")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  theme      SvTheme       @relation("ThemeOutcomes", fields: [themeId], references: [id], onDelete: Cascade)
-  indicators SvIndicator[] @relation("OutcomeIndicators")
-  measures   SvMeasure[]   @relation("OutcomeMeasures")
+  theme       SvTheme        @relation("ThemeOutcomes", fields: [themeId], references: [id], onDelete: Cascade)
+  indicators  SvIndicator[]  @relation("OutcomeIndicators")
+  measures    SvMeasure[]    @relation("OutcomeMeasures")
+  commitments SvCommitment[] @relation("OutcomeCommitments")
 
   @@unique([themeId, code])
   @@index([themeId])
@@ -6431,6 +6432,9 @@ model SvCommitment {
   organizationId    String             @map("organization_id")
   contractId        String?            @map("contract_id")
   frameworkId       String?            @map("framework_id")
+  /// The framework criterion this commitment answers (a PPN 026 award
+  /// criterion, a TOMs outcome). Must sit in `frameworkId`.
+  outcomeId         String?            @map("outcome_id")
   ownerUserId       String?            @map("owner_user_id")
   title             String
   description       String?
@@ -6447,12 +6451,14 @@ model SvCommitment {
   organization    Organization     @relation("OrgSvCommitments", fields: [organizationId], references: [id], onDelete: Cascade)
   contract        Contract?        @relation("ContractSvCommitments", fields: [contractId], references: [id], onDelete: SetNull)
   framework       SvFramework?     @relation("FrameworkCommitments", fields: [frameworkId], references: [id], onDelete: SetNull)
+  outcome         SvOutcome?       @relation("OutcomeCommitments", fields: [outcomeId], references: [id], onDelete: SetNull)
   owner           User?            @relation("SvCommitmentOwner", fields: [ownerUserId], references: [id])
   reportingPeriod ReportingPeriod? @relation("PeriodSvCommitments", fields: [reportingPeriodId], references: [id])
   activities      SvActivity[]     @relation("CommitmentActivities")
 
   @@index([organizationId, status])
   @@index([organizationId, contractId])
+  @@index([outcomeId])
   @@map("sv_commitments")
 }
 

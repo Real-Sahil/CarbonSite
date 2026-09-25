@@ -68,6 +68,7 @@ function pack(over: Partial<BidPackData> = {}): BidPackData {
       id: "c1", name: "A2 resurfacing", client: "National Highways", reference: "NH-9", value: 4_000_000, currency: "GBP",
       startDate: new Date("2024-04-01"), endDate: null, tonnes: 80, tonnesPerMillion: 20, budgetTonnes: 120,
       socialValuePounds: 250_000, wasteTonnes: 300, diversionRate: 0.94,
+      ppn026: [{ id: "k1", title: "Training and retraining: Apprenticeship starts", target: 12, unit: "starts", delivered: 9, progressPct: 75, approvedEntries: 3, pendingEntries: 1, entriesWithEvidence: 3 }],
       socialValue: {
         targetPounds: 400_000,
         themes: [{ code: "NT1", name: "Jobs", pounds: 180_000 }, { code: "NT3", name: "Growth", pounds: 70_000 }],
@@ -184,7 +185,7 @@ describe("social value per contract", () => {
 describe("pack document", () => {
   it("renders the CRP, evidence and sign-off without placeholders", () => {
     const html = renderBidCarbonPackHtml(pack());
-    for (const s of ["Carbon Reduction Plan", "Declaration and sign-off", "Jo Bloggs", "A2 resurfacing", "Model answers", "KCC-123", "Social value committed (TOMs)", "63% of commitment", "Largest TOMs measures", "Answer for this contract"]) {
+    for (const s of ["Carbon Reduction Plan", "Declaration and sign-off", "Jo Bloggs", "A2 resurfacing", "Model answers", "KCC-123", "Social value committed (TOMs)", "63% of commitment", "Largest TOMs measures", "Answer for this contract", "PPN 026 KPIs (Good Jobs and Skills)", "Apprenticeship starts", "9 (75%)", "3 of 3"]) {
       expect(html).toContain(s);
     }
     expect(html).not.toMatch(/undefined|NaN|null/);

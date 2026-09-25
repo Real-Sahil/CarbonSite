@@ -169,6 +169,14 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
     </table>`
         : ""
     }
+    ${
+      c.ppn026?.length
+        ? `<table>
+      <tr><th>PPN 026 KPIs (Good Jobs and Skills)</th><th class="num">Target</th><th class="num">Delivered</th><th class="num">Evidenced</th></tr>
+      ${c.ppn026.map((k) => `<tr><td>${esc(k.title)}</td><td class="num">${k.target != null ? `${k.target.toLocaleString("en-GB", { maximumFractionDigits: 1 })} ${esc(k.unit ?? "")}` : "-"}</td><td class="num">${k.delivered.toLocaleString("en-GB", { maximumFractionDigits: 1 })}${k.progressPct != null ? ` (${k.progressPct}%)` : ""}</td><td class="num">${k.entriesWithEvidence} of ${k.approvedEntries}</td></tr>`).join("")}
+    </table>`
+        : ""
+    }
     <div class="answer"><p class="muted">Answer for this contract</p><p>${esc(contractAnswer(c, d.snapshot.periodLabel))}</p></div>
   </div>`,
     )
