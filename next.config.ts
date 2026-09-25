@@ -10,6 +10,28 @@ import type { NextConfig } from "next";
 // handleRouteError(), browser errors from instrumentation-client.ts, and
 // source maps are uploaded after the build by scripts/upload-sourcemaps.mjs.
 
+// Tesseract runs its OCR in a worker thread that requires its own package
+// files by relative path ("require('..')"), so file tracing cannot see them.
+// pnpm installs packages as symlinks into node_modules/.pnpm, so the real
+// directories are listed as well as the links. node-fetch is not needed:
+// the worker uses the runtime's fetch.
+const OCR_FILES = [
+  "./node_modules/tesseract.js/**/*",
+  // createWorker("eng", 1) runs the LSTM engine: only the *-lstm cores load.
+  "./node_modules/tesseract.js-core/package.json",
+  "./node_modules/tesseract.js-core/tesseract-core*-lstm*",
+  "./node_modules/.pnpm/tesseract.js@*/node_modules/tesseract.js/**/*",
+  "./node_modules/.pnpm/tesseract.js-core@*/node_modules/tesseract.js-core/package.json",
+  "./node_modules/.pnpm/tesseract.js-core@*/node_modules/tesseract.js-core/tesseract-core*-lstm*",
+  "./node_modules/.pnpm/bmp-js@*/node_modules/bmp-js/**/*",
+  "./node_modules/.pnpm/is-url@*/node_modules/is-url/**/*",
+  "./node_modules/.pnpm/regenerator-runtime@0.13*/node_modules/regenerator-runtime/**/*",
+  "./node_modules/.pnpm/wasm-feature-detect@*/node_modules/wasm-feature-detect/**/*",
+  "./node_modules/.pnpm/zlibjs@*/node_modules/zlibjs/**/*",
+  "./node_modules/@tesseract.js-data/eng/4.0.0_best_int/**/*",
+  "./node_modules/@tesseract.js-data/eng/package.json",
+];
+
 const nextConfig: NextConfig = {
   // Browser Sentry (instrumentation-client.ts) reuses the server DSN.
   env: {
@@ -28,19 +50,17 @@ const nextConfig: NextConfig = {
   // Bill and PDF reading runs OCR on the server: ship Tesseract's worker, its
   // WASM core and the English data with the routes that use them (loaded by
   // path at run time, so file tracing cannot see them).
+  // Keys are globs matched against route paths, so "[orgId]" would be a
+  // character class and never match: use wildcards for dynamic segments.
+  outputFileTracingExcludes: {
+    "/api/orgs/*/evidence/bill": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
+    "/api/orgs/*/bill-inbox/*": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
+    "/api/orgs/*/imports/**/*": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
+  },
   outputFileTracingIncludes: {
-    "/api/orgs/[orgId]/evidence/bill": [
-      "./node_modules/tesseract.js/**/*",
-      "./node_modules/tesseract.js-core/**/*",
-      "./node_modules/@tesseract.js-data/eng/4.0.0_best_int/**/*",
-      "./node_modules/@tesseract.js-data/eng/package.json",
-    ],
-    "/api/orgs/[orgId]/imports/**/*": [
-      "./node_modules/tesseract.js/**/*",
-      "./node_modules/tesseract.js-core/**/*",
-      "./node_modules/@tesseract.js-data/eng/4.0.0_best_int/**/*",
-      "./node_modules/@tesseract.js-data/eng/package.json",
-    ],
+    "/api/orgs/*/evidence/bill": OCR_FILES,
+    "/api/orgs/*/bill-inbox/*": OCR_FILES,
+    "/api/orgs/*/imports/**/*": OCR_FILES,
   },
   serverExternalPackages: ["@sparticuz/chromium-min", "puppeteer-core", "puppeteer", "pdfkit", "sharp", "pdf-parse", "tesseract.js"],
   webpack: (config, { isServer }) => {
