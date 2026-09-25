@@ -1,3 +1,4 @@
+import { paymentState } from "./dunning";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getUsageSummary, type UsageEventType } from "./usage";
@@ -169,7 +170,7 @@ export async function requireActiveBilling(orgId: string): Promise<NextResponse 
       select: {
         plan: true,
         isPilot: true,
-        billingSubscription: { select: { status: true, trialEndsAt: true } },
+        billingSubscription: { select: { status: true, trialEndsAt: true, paymentFailedAt: true } },
       },
     });
   } catch {
@@ -200,6 +201,17 @@ export async function requireActiveBilling(orgId: string): Promise<NextResponse 
       {
         code: "SUBSCRIPTION_CANCELED",
         message: "This organisation's subscription has ended. Subscribe again to continue.",
+      },
+      { status: 402 },
+    );
+  }
+
+  const payment = paymentState(sub?.paymentFailedAt !== undefined ? { status: sub.status, paymentFailedAt: sub.paymentFailedAt } : null);
+  if (payment.state === "blocked") {
+    return NextResponse.json(
+      {
+        code: "PAYMENT_OVERDUE",
+        message: "The latest payment for this organisation has not gone through. Update the card in Settings, Billing to continue. Your data stays readable.",
       },
       { status: 402 },
     );

@@ -170,6 +170,14 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
         link: `${orgBase}/supply-chain/suppliers/${data.resourceId}`,
       };
     }
+    case "payment_failed": {
+      const days = num(data.metadata?.graceDays, 14);
+      return {
+        title: "Payment failed",
+        body: `The latest MetricOra payment did not go through. Update the card within ${days} days to keep adding records, calculating and generating reports.`,
+        link: `${orgBase}/settings/billing`,
+      };
+    }
     case "carbon_budget_forecast": {
       const project = str(data.metadata?.projectName, "A project");
       const over = data.metadata?.status === "over";

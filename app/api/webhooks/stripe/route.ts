@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { constructWebhookEvent, planForSubscription, subscriptionGrantsPlan, webhookSecrets } from "@/lib/billing/stripe";
 import { securityLogger } from "@/lib/logger";
+import { dispatchNotification } from "@/lib/jobs/dispatch";
+import { PAYMENT_GRACE_DAYS } from "@/lib/billing/dunning";
 
 // Stripe requires the exact raw request bytes to verify the signature —
 // req.json() would re-serialize and break it, so this reads text() and
@@ -177,6 +179,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<v
     data: {
       lastPaymentStatus: "succeeded",
       lastPaymentDate: new Date(),
+      paymentFailedAt: null,
     },
   });
 }
@@ -185,10 +188,33 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
   const billing = await findBillingByCustomerId(customerIdOf(invoice.customer!));
   if (!billing) return;
 
+  const firstFailure = !billing.paymentFailedAt;
   await prisma.billingSubscription.update({
     where: { id: billing.id },
-    data: { lastPaymentStatus: "failed" },
+    data: { lastPaymentStatus: "failed", ...(firstFailure ? { paymentFailedAt: new Date() } : {}) },
   });
+  // Tell the organisation's admins once per unpaid failure, in the app and by
+  // push; Stripe's own failed-payment emails go to the billing contact.
+  if (firstFailure) {
+    const admins = await prisma.organizationMembership.findMany({
+      where: { organizationId: billing.organizationId, role: "admin", terminatedAt: null },
+      select: { userId: true },
+    });
+    for (const a of admins) {
+      await dispatchNotification({
+        type: "payment_failed",
+        recipientUserId: a.userId,
+        orgId: billing.organizationId,
+        resourceId: billing.id,
+        metadata: { graceDays: PAYMENT_GRACE_DAYS },
+      }).catch((err) =>
+        securityLogger.warn("Failed to notify admin of failed payment", {
+          organizationId: billing.organizationId,
+          error: err instanceof Error ? err.message : String(err),
+        }),
+      );
+    }
+  }
 
   await writeAuditLog({
     organizationId: billing.organizationId,

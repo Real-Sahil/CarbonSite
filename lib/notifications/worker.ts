@@ -375,6 +375,14 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       });
     })
 
+    .with({ type: "payment_failed" }, async (d) => {
+      await sendPushToUser(d.recipientUserId, {
+        title: "MetricOra payment failed",
+        body: `Update the card within ${(d.metadata?.graceDays as number) ?? 14} days to keep adding and calculating data.`,
+        data: { type: "payment_failed", orgId: d.orgId },
+      });
+    })
+
     .exhaustive();
 
   notificationLogger.info("Notification processed", {

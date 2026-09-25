@@ -2599,6 +2599,9 @@ model BillingSubscription {
   defaultPaymentMethodId String?   @map("default_payment_method_id")
   lastPaymentStatus      String?   @map("last_payment_status")
   lastPaymentDate        DateTime? @map("last_payment_date")
+  /// First failed renewal not yet paid; cleared when an invoice is paid.
+  /// Drives the grace period in lib/billing/dunning.ts.
+  paymentFailedAt        DateTime? @map("payment_failed_at")
   nextBillingDate        DateTime? @map("next_billing_date")
   createdAt              DateTime  @default(now()) @map("created_at")
   updatedAt              DateTime  @updatedAt @map("updated_at")

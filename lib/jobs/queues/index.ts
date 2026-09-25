@@ -28,7 +28,8 @@ export type NotificationJobData = {
     | "enforcement_notice_overdue"
     | "discharge_reading_exceedance"
     | "supplier_certification_expiring"
-    | "carbon_budget_forecast";
+    | "carbon_budget_forecast"
+    | "payment_failed";
   recipientUserId: string;
   orgId: string;
   resourceId: string;
