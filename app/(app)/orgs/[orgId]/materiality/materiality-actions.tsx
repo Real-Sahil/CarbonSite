@@ -38,6 +38,8 @@ export function NewAssessmentButton({ orgId }: { orgId: string }) {
         setForm({ name: "", esrsScope: "", methodologyNotes: "", stakeholderInput: "" });
         router.refresh();
       }
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSaving(false);
     }

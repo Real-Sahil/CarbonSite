@@ -105,6 +105,8 @@ export default function CompliancePage() {
         externalLink: "",
       });
       load();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSaving(false);
     }

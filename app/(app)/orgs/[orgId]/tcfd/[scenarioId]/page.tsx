@@ -198,6 +198,8 @@ export default function TcfdScenarioPage() {
         const data = await res.json();
         setScenario(data.scenario);
       }
+    } catch {
+      // Network failure: The page shows its not-found state.
     } finally {
       setLoading(false);
     }

@@ -172,6 +172,8 @@ export function RecordsTable({ orgId, canManageRecords }: RecordsTableProps) {
         setData(json.data);
         setNextCursor(json.nextCursor ?? null);
         if (json.total != null) setTotal(json.total);
+      } catch {
+        // Network failure: Keep the current page; the table stays usable.
       } finally {
         setIsLoading(false);
       }

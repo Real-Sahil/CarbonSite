@@ -34,6 +34,8 @@ export function NewProgrammeButton({ orgId }: { orgId: string }) {
         setForm({ name: "", description: "", clientName: "", startDate: "", endDate: "" });
         router.refresh();
       }
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSubmitting(false);
     }

@@ -49,6 +49,8 @@ export function NewTnfdScenarioButton({ orgId }: { orgId: string }) {
         setForm({ name: "", description: "", gbfTarget: "", timeHorizon: "medium_term", sectorScope: "", riskRating: "" });
         router.refresh();
       }
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSaving(false);
     }

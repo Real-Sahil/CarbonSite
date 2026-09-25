@@ -48,6 +48,8 @@ export function ReportIncidentButton({ orgId }: { orgId: string }) {
         setForm({ reference: "", incidentType: "near_miss", occurredAt: new Date().toISOString().slice(0, 16), description: "", lostTimeDays: 0, riddorReportable: false, ppeWorn: true });
         router.refresh();
       }
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSubmitting(false);
     }

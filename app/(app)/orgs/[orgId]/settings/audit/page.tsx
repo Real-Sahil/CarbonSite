@@ -84,6 +84,8 @@ export default function AuditLogPage() {
         setLogs(json.data.map(({ timestamp, ...rest }) => ({ ...rest, createdAt: timestamp })));
         const total = json.pagination?.total ?? 0;
         setHasNextPage((targetPage - 1) * PAGE_SIZE + json.data.length < total);
+      } catch {
+        // Network failure: Keep the rows already shown.
       } finally {
         setLoading(false);
       }
@@ -102,7 +104,10 @@ export default function AuditLogPage() {
       const qs = new URLSearchParams({ format });
       if (actionFilter) qs.set("action", actionFilter);
       const res = await fetch(`/api/orgs/${orgId}/audit-logs/export?${qs}`);
-      if (!res.ok) throw new Error("Export failed");
+      if (!res.ok) {
+        window.alert("Export failed. Please try again.");
+        return;
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -110,6 +115,8 @@ export default function AuditLogPage() {
       a.download = `audit-${orgId}-${Date.now()}.${format}`;
       a.click();
       URL.revokeObjectURL(url);
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setExporting(false);
     }

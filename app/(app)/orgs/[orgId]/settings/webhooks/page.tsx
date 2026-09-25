@@ -131,6 +131,8 @@ export default function WebhooksPage() {
     try {
       await fetch(`/api/orgs/${orgId}/webhooks/${webhookId}`, { method: "DELETE" });
       setWebhooks((w) => w.filter((x) => x.id !== webhookId));
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setDeletingId(null);
     }
@@ -149,6 +151,8 @@ export default function WebhooksPage() {
           wh.map((w) => (w.id === webhook.id ? { ...w, enabled: !w.enabled } : w)),
         );
       }
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setTogglingId(null);
     }

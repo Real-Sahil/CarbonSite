@@ -52,9 +52,14 @@ export default function ApiKeysPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/orgs/${orgId}/api-keys`);
-      if (!res.ok) throw new Error("Failed to fetch keys");
+      if (!res.ok) {
+        setError("Couldn't load API keys. Refresh to try again.");
+        return;
+      }
       const json = await res.json();
       setKeys(json.data);
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -97,6 +102,8 @@ export default function ApiKeysPage() {
     try {
       await fetch(`/api/orgs/${orgId}/api-keys/${keyId}`, { method: "DELETE" });
       setKeys((k) => k.filter((x) => x.id !== keyId));
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setDeletingId(null);
     }

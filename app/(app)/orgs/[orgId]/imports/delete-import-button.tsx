@@ -20,6 +20,8 @@ export function DeleteImportButton({ orgId, importId }: DeleteImportButtonProps)
     try {
       const res = await fetch(`/api/orgs/${orgId}/imports/${importId}`, { method: "DELETE" });
       if (res.ok) router.refresh();
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }

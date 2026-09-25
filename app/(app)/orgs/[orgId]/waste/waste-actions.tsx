@@ -76,6 +76,8 @@ function AddRecordModal({
         return;
       }
       onSaved();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -233,6 +235,8 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
       const data = await res.json();
       setResult(data);
       if (res.ok && (data as { created: number }).created > 0) onDone();
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }

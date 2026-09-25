@@ -37,6 +37,8 @@ export function CalculationRunContinuation({ orgId, runIds, intervalMs = 4000 }:
           ),
         );
         router.refresh();
+      } catch {
+        // Network failure: Next tick retries.
       } finally {
         inFlightRef.current = false;
       }

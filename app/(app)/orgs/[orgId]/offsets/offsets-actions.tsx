@@ -63,6 +63,8 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
         return;
       }
       onSaved();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -186,6 +188,8 @@ export function OffsetRowActions({ orgId, id, retirementRef, retirementVerified 
         body: JSON.stringify({ projectId: retirementRef }),
       });
       router.refresh();
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setVerifying(false);
     }

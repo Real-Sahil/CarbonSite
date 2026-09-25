@@ -353,6 +353,8 @@ export function DeleteScanButton({
         { method: "DELETE" }
       );
       router.refresh();
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setDeleting(false);
     }

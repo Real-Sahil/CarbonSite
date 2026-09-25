@@ -31,6 +31,8 @@ export function LookupLeiButton({
       };
       setResult(data);
       if (data.found) router.refresh();
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }

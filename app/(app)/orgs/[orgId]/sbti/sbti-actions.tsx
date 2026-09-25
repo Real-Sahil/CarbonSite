@@ -125,6 +125,8 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
         return;
       }
       onSaved();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }

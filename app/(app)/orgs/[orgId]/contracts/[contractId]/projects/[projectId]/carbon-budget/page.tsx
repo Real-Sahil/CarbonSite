@@ -107,6 +107,8 @@ function SetBudgetModal({
         return;
       }
       onSaved();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -228,6 +230,8 @@ function PhaseRow({
       }
       setEditing(false);
       onUpdated();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSaving(false);
     }

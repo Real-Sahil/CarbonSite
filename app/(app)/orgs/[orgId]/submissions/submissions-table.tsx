@@ -91,6 +91,8 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
         const json = await res.json();
         setData(json.data);
         setNextCursor(json.nextCursor ?? null);
+      } catch {
+        // Network failure: Keep the current page; the table stays usable.
       } finally {
         setIsLoading(false);
       }

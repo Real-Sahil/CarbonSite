@@ -62,6 +62,8 @@ export function ImportBatchActions({
         a.click();
         URL.revokeObjectURL(url);
       }
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setLoading(null);
     }

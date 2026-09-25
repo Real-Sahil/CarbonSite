@@ -99,11 +99,17 @@ export default function OnboardingPage() {
   const [steps, setSteps] = useState<StepState[]>([]);
   const [loading, setLoading] = useState(true);
   const [markingStep, setMarkingStep] = useState<StepId | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [stepError, setStepError] = useState<string | null>(null);
 
   const fetchProgress = useCallback(async () => {
+    setLoadError(false);
     try {
       const res = await fetch(`/api/orgs/${orgId}/onboarding`);
-      if (!res.ok) return;
+      if (!res.ok) {
+        setLoadError(true);
+        return;
+      }
       const data = await res.json();
       setSteps(data.steps ?? []);
       if (data.isComplete) {
@@ -112,8 +118,11 @@ export default function OnboardingPage() {
         // onboarding" response from before completion. router.push() would
         // reuse that cache and bounce straight back here; a full page load
         // forces the server to re-check completion against current data.
-        window.location.href = `/orgs/${orgId}/dashboard`;
+        window.location.assign(`/orgs/${orgId}/dashboard`);
       }
+    } catch {
+      // Network failure (Safari reports "Load failed"): offer a retry.
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -141,7 +150,7 @@ export default function OnboardingPage() {
         return;
       }
       // Hard navigation — see the comment in fetchProgress() above.
-      window.location.href = `/orgs/${orgId}/dashboard`;
+      window.location.assign(`/orgs/${orgId}/dashboard`);
     } catch {
       setSkipError("Couldn't skip setup. Please try again.");
       setSkipping(false);
@@ -150,13 +159,17 @@ export default function OnboardingPage() {
 
   const markStepDone = async (stepId: StepId) => {
     setMarkingStep(stepId);
+    setStepError(null);
     try {
       const res = await fetch(`/api/orgs/${orgId}/onboarding`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ step: stepId }),
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setStepError("Couldn't save that step. Please try again.");
+        return;
+      }
       const data = await res.json();
       setSteps(
         STEP_DEFS.map((s) => ({
@@ -166,8 +179,10 @@ export default function OnboardingPage() {
       );
       if (data.isComplete) {
         // Hard navigation — see the comment in fetchProgress() above.
-        window.location.href = `/orgs/${orgId}/dashboard`;
+        window.location.assign(`/orgs/${orgId}/dashboard`);
       }
+    } catch {
+      setStepError("Couldn't save that step. Check your connection and try again.");
     } finally {
       setMarkingStep(null);
     }
@@ -183,6 +198,24 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-[#6B7280]" />
+      </div>
+    );
+  }
+
+  if (loadError && steps.length === 0) {
+    return (
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-3 px-6 text-center">
+        <p className="text-sm text-[#374151]">Couldn&apos;t load your setup progress. Check your connection and try again.</p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true);
+            void fetchProgress();
+          }}
+          className="rounded-md border border-[#D1D5DB] bg-white px-3 py-1.5 text-sm font-medium text-[#111827] hover:bg-[#F3F4F6]"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -319,6 +352,10 @@ export default function OnboardingPage() {
             );
           })}
         </div>
+
+        {stepError && (
+          <p role="alert" className="mt-4 text-sm text-red-600">{stepError}</p>
+        )}
 
         {/* Skip link */}
         <div className="mt-8 text-center">

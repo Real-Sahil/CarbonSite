@@ -47,6 +47,8 @@ export function RecordNoticeButton({ orgId }: { orgId: string }) {
         setForm({ reference: "", issuingBody: "", noticeType: "improvement_notice", issuedAt: new Date().toISOString().slice(0, 10), complianceDeadline: "", subject: "", requirements: "" });
         router.refresh();
       }
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSubmitting(false);
     }

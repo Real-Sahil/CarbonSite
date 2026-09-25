@@ -22,6 +22,10 @@ if (dsn) {
       // A deploy replaced the chunk this tab was built against; a reload fixes it.
       /Loading chunk [\d]+ failed/,
       /ChunkLoadError/,
+      // A fetch cut off by the network or by the tab going to the background
+      // (Safari/iOS "Load failed", Chrome "Failed to fetch", Firefox
+      // "NetworkError ..."). Nothing to fix server-side; pages show a retry.
+      /^(TypeError: )?(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.)$/,
     ],
   });
 }

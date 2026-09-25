@@ -29,6 +29,8 @@ export function NewMethodStatementButton({ orgId }: { orgId: string }) {
         setForm({ title: "", version: "1.0", methodText: "", riskAssessmentText: "", ppeRequired: "" });
         router.push(`/orgs/${orgId}/method-statements/${data.id}`);
       }
+    } catch {
+      window.alert("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
