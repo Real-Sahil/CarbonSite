@@ -335,6 +335,7 @@ model Organization {
   energyInstruments              EnergyInstrument[]
   internalCarbonPrices           InternalCarbonPrice[]
   transitionPlan                 TransitionPlan?
+  carbonReductionPlans           CarbonReductionPlan[]
   environmentalMetricAggregates  EnvironmentalMetricAggregate[]
   onboardingProgress             OnboardingProgress?
   tcfdScenarios                  TcfdScenario[]                   @relation("OrgTcfdScenarios")
@@ -691,6 +692,7 @@ model ReportingPeriod {
   materialityAssessments        MaterialityAssessment[]        @relation("PeriodMaterialityAssessments")
   svActivities                  SvActivity[]                   @relation("SvActivityPeriod")
   svCommitments                 SvCommitment[]                 @relation("PeriodSvCommitments")
+  carbonReductionPlans          CarbonReductionPlan[]
 
   @@index([organizationId, startDate, endDate])
   @@map("reporting_periods")
@@ -919,6 +921,30 @@ model InternalCarbonPrice {
 /// decarbonisation levers, actuals) come from the org's own records; this row
 /// holds the narrative and the approval. Any edit after approval returns the
 /// plan to draft; the audit log keeps each approval.
+/// A PPN 006 Carbon Reduction Plan being prepared for one reporting period,
+/// filled in through the guided flow. `sections` holds the plan's own text
+/// and choices (boundary, baseline rationale, targets, measures, sign-off);
+/// every emissions figure is read from the period's published snapshot and
+/// the active base year when the report is generated, never stored here.
+model CarbonReductionPlan {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  reportingPeriodId String   @map("reporting_period_id")
+  status            String   @default("draft")
+  sections          Json     @default("{}")
+  lastReportId      String?  @map("last_report_id")
+  createdByUserId   String   @map("created_by_user_id")
+  updatedByUserId   String   @map("updated_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, reportingPeriodId])
+  @@map("carbon_reduction_plans")
+}
+
 model TransitionPlan {
   id                      String    @id @default(cuid())
   organizationId          String    @unique @map("organization_id")

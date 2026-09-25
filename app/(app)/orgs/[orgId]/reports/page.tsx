@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { FileText, Layers, Clock, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { CreateReportForm } from "./report-form";
+import { hasFeature } from "@/lib/billing/limits";
 import { ReportDownloadActions } from "./report-download-actions";
 import { StatusPoller } from "@/components/ui/status-poller";
 
@@ -144,6 +145,8 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
     );
   }
   const [snapshots, reports, contracts] = dbResult;
+  const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } });
+  const bidPackIncluded = !!org?.isPilot || hasFeature(org?.plan ?? "trial", "bidCarbonPack");
   const hasInFlight = reports.some((r) => r.status === "queued" || r.status === "generating");
   const stats = {
     total: reports.length,
@@ -300,6 +303,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                   label: `${s.reportingPeriod.label} v${s.version}`,
                 }))}
                 contracts={contracts}
+                bidPackIncluded={bidPackIncluded}
               />
             </div>
             {reports.length === 0 ? (

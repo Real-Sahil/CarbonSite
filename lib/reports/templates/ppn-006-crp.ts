@@ -49,6 +49,96 @@ export interface Ppn006CrpData {
   netZeroYear?: number;
   // Optional notes / methodology
   methodologyNotes?: string;
+  /// Sections written in the guided plan (lib/crp/plan.ts). Absent for a plan
+  /// generated straight from the report form.
+  plan?: {
+    companyNumber: string;
+    publicationUrl: string;
+    description: string;
+    boundaryApproach: string;
+    sitesIncluded: string;
+    exclusions: { item: string; reason: string }[];
+    baselineRationale: string;
+    baselineDetails: string;
+    scope3: { label: string; tonnes: number | null; status: string; explanation: string }[];
+    sbtiValidated: boolean;
+    trajectoryNote: string;
+    completed: { name: string; year: string; description: string; savingTco2e: string }[];
+    planned: { name: string; year: string; description: string; savingTco2e: string }[];
+    futureNote: string;
+    boardApproved: boolean;
+  };
+}
+
+const SCOPE3_STATUS_LABEL: Record<string, string> = {
+  reported: "Reported",
+  not_relevant: "Not relevant",
+  not_yet_measured: "Not yet measured",
+};
+
+function planSections(data: Ppn006CrpData): { supplier: string; baseline: string; scope3: string; projects: string } {
+  const p = data.plan;
+  if (!p) return { supplier: "", baseline: "", scope3: "", projects: "" };
+  const para = (t: string) => (t ? `<p>${esc(t).replace(/\n/g, "<br />")}</p>` : "");
+  const measureRows = (rows: typeof p.completed) =>
+    rows
+      .map(
+        (m) => `<tr><td>${esc(m.name)}</td><td>${esc(m.year)}</td><td>${esc(m.description)}</td><td class="num">${m.savingTco2e !== "" ? `${Number(m.savingTco2e).toLocaleString("en-GB", { maximumFractionDigits: 1 })} tCO2e` : ""}</td></tr>`,
+      )
+      .join("");
+  const supplier = `
+  <div class="section">
+    <h2>Supplier and scope of this plan</h2>
+    <table>
+      <tr><td style="width:34%">Supplier name</td><td>${esc(data.orgName)}</td></tr>
+      ${p.companyNumber ? `<tr><td>Company number</td><td>${esc(p.companyNumber)}</td></tr>` : ""}
+      <tr><td>Reporting period</td><td>${esc(data.periodLabel)}</td></tr>
+      <tr><td>Organisational boundary</td><td>${esc(p.boundaryApproach)}</td></tr>
+      <tr><td>Published at</td><td>${esc(p.publicationUrl)}</td></tr>
+    </table>
+    ${para(p.description)}
+    <h3 class="sub">Sites and activities covered</h3>
+    ${para(p.sitesIncluded)}
+    ${
+      p.exclusions.length
+        ? `<h3 class="sub">Exclusions</h3><table><thead><tr><th>Excluded</th><th>Reason</th></tr></thead><tbody>${p.exclusions.map((e) => `<tr><td>${esc(e.item)}</td><td>${esc(e.reason)}</td></tr>`).join("")}</tbody></table>`
+        : ""
+    }
+  </div>`;
+  const baseline = `
+  <div class="section">
+    <h2>Baseline emissions footprint</h2>
+    <p>Baseline year: <strong>${data.baselineYear ?? "not set"}</strong>. Baseline emissions are a record of the greenhouse gases produced in the past, before any carbon reduction strategies, and are the reference point against which emissions reduction is measured.</p>
+    <h3 class="sub">Why this baseline year was chosen</h3>
+    ${para(p.baselineRationale)}
+    ${p.baselineDetails ? `<h3 class="sub">Additional details</h3>${para(p.baselineDetails)}` : ""}
+  </div>`;
+  const scope3 = `
+  <div class="section">
+    <h2>Scope 3 categories required by PPN 006</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Status</th><th style="text-align:right">Emissions</th><th>Notes</th></tr></thead>
+      <tbody>${p.scope3
+        .map(
+          (c) => `<tr><td>${esc(c.label)}</td><td>${esc(SCOPE3_STATUS_LABEL[c.status] ?? c.status)}</td><td class="num">${c.tonnes != null ? fmtTCo2e(c.tonnes * 1000) : "None recorded"}</td><td>${esc(c.explanation)}</td></tr>`,
+        )
+        .join("")}</tbody>
+    </table>
+  </div>`;
+  const projects = `
+  <div class="section">
+    <h2>Carbon reduction projects</h2>
+    <h3 class="sub">Completed carbon reduction initiatives</h3>
+    <p>The following measures have been completed since the ${data.baselineYear ?? ""} baseline. Savings are estimated by ${esc(data.orgName)}.</p>
+    ${p.completed.length ? `<table><thead><tr><th>Measure</th><th>Year</th><th>Description</th><th style="text-align:right">Est. saving a year</th></tr></thead><tbody>${measureRows(p.completed)}</tbody></table>` : `<p class="note-text">No completed measures recorded.</p>`}
+    <h3 class="sub">Planned carbon reduction initiatives</h3>
+    <p>In the future we will implement further measures such as:</p>
+    ${p.planned.length ? `<table><thead><tr><th>Measure</th><th>Year</th><th>Description</th><th style="text-align:right">Est. saving a year</th></tr></thead><tbody>${measureRows(p.planned)}</tbody></table>` : `<p class="note-text">No planned measures recorded.</p>`}
+    ${para(p.futureNote)}
+    ${p.sbtiValidated ? `<p>Our targets have been validated by the Science Based Targets initiative.</p>` : ""}
+    ${para(p.trajectoryNote)}
+  </div>`;
+  return { supplier, baseline, scope3, projects };
 }
 
 function fmtTCo2e(kg: number): string {
@@ -159,10 +249,15 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
         .join("")
     : `<tr><td colspan="3" class="empty">No reduction target has been set. Add one under Targets before submitting this plan.</td></tr>`;
 
+  const extra = planSections(data);
   const signatureSection = data.signatoryName
     ? `
       <div class="section sig-section">
-        <h2>Attestation</h2>
+        <h2>Declaration and sign off</h2>
+        <p>This Carbon Reduction Plan has been completed in accordance with PPN 006 and associated guidance and reporting standard for Carbon Reduction Plans.</p>
+        <p>Emissions have been reported and recorded in accordance with the published reporting standard for Carbon Reduction Plans and the GHG Reporting Protocol corporate standard, and use the appropriate Government emission conversion factors for greenhouse gas company reporting (${esc(data.factorLibrary)}).</p>
+        <p>Scope 1 and Scope 2 emissions have been reported in accordance with SECR requirements, and the required subset of Scope 3 emissions have been reported in accordance with the published reporting standard for Carbon Reduction Plans and the Corporate Value Chain (Scope 3) Standard.</p>
+        ${data.plan?.boardApproved ? `<p>This Carbon Reduction Plan has been reviewed and signed off by the board of directors (or equivalent management body).</p>` : ""}
         <p>I confirm the information in this Carbon Reduction Plan is accurate and a fair representation of the carbon emissions of ${esc(data.orgName)}.</p>
         <div class="sig-block">
           <div class="sig-line"></div>
@@ -244,8 +339,9 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
     margin: 20px 0;
   }
   .commitment-box strong { color: #083b10; }
+  h3.sub { font-size: 10.5pt; font-weight: 700; color: #083b10; margin: 14px 0 6px; }
 
-  .sig-section { margin-top: 48px; }
+  .sig-section { margin-top: 48px; page-break-inside: avoid; }
   .sig-block { margin-top: 24px; max-width: 320px; }
   .sig-line { border-bottom: 1.5px solid #222; height: 40px; margin-bottom: 6px; }
   .sig-name { font-weight: 600; font-size: 10pt; }
@@ -333,6 +429,9 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
     </p>
   </div>
 
+  ${extra.supplier}
+  ${extra.baseline}
+
   <!-- Emission breakdown -->
   <div class="section">
     <h2>Greenhouse Gas Emissions</h2>
@@ -357,6 +456,8 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
     </table>
   </div>
 
+  ${extra.scope3}
+
   <!-- Reduction targets -->
   <div class="section">
     <h2>Reduction Targets</h2>
@@ -368,6 +469,7 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
     </table>
   </div>
 
+  ${extra.projects}
   ${methodologySection}
   ${signatureSection}
 

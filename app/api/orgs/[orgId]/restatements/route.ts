@@ -173,5 +173,7 @@ async function snapshotTotal(
     },
     _sum: { totalCo2e: true },
   });
-  return Number(rows._sum.totalCo2e ?? 0);
+  // kg in DashboardAggregate; restatements are recorded in tonnes, like the
+  // figures a person types in.
+  return Number(rows._sum.totalCo2e ?? 0) / 1000;
 }

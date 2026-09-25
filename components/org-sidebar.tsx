@@ -129,6 +129,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
     { label: "Impact reports", icon: BarChart2, sections: [
       { items: [
         { label: "Reports", href: `/orgs/${orgId}/reports`, icon: BarChart2, roles: CORE_ROLES },
+        { label: "Carbon Reduction Plan", href: `/orgs/${orgId}/carbon-reduction-plan`, icon: ClipboardCheck, roles: CORE_ROLES },
       ]},
       { label: "Compliance", items: [
         { label: "Compliance",         href: `/orgs/${orgId}/compliance`,                       icon: ShieldCheck,    roles: CORE_ROLES },

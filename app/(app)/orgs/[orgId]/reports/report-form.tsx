@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { FormEvent, useState, useTransition } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -99,8 +101,17 @@ const MAX_BID_CONTRACTS = 5;
 // formula), which is the auditor's appendix.
 export const DEFAULT_REPORT_TYPE = "ghg_protocol";
 
+// The three documents most customers need are shown first: the PPN 006
+// Carbon Reduction Plan for public tenders, the SECR disclosure for the
+// Directors' Report, and the GHG Protocol report. The bid carbon pack joins
+// them on plans that include it. Everything else is one click away under
+// "Show all report types", so the list is short for someone new to it.
+export const CORE_REPORT_TYPES = ["ghg_protocol", "ppn_006_crp", "secr", "bid_carbon_pack"] as const;
+
 const REPORT_TYPE_OPTIONS = [
   { value: "ghg_protocol",     label: "GHG Protocol emissions report (recommended)" },
+  { value: "ppn_006_crp",      label: "Carbon Reduction Plan (PPN 006, public tenders)" },
+  { value: "secr",             label: "SECR (Directors' Report energy and carbon)" },
   { value: "bid_carbon_pack",  label: "Bid carbon pack (tender evidence)" },
   { value: "transition_plan",  label: "Climate transition plan (ESRS E1-1)" },
   { value: "inventory",        label: "Inventory" },
@@ -108,9 +119,6 @@ const REPORT_TYPE_OPTIONS = [
   { value: "audit_package",    label: "Audit package" },
   { value: "cdp",              label: "CDP Climate Change (C5, C6, C7)" },
   { value: "cbam",             label: "CBAM Embedded Emissions (EU/UK)" },
-  { value: "secr",             label: "SECR (Streamlined Energy & Carbon)" },
-  { value: "ppn_06_21",        label: "PPN 06/21 Carbon Reduction Plan" },
-  { value: "ppn_006_crp",      label: "PPN 006 CRP (Procurement Compliance)" },
   { value: "nhs_evergreen",    label: "NHS Evergreen Level 1" },
   { value: "breeam_evidence",  label: "BREEAM Evidence Pack" },
   { value: "national_toms",    label: "National TOMS Social Value" },
@@ -120,17 +128,28 @@ const REPORT_TYPE_OPTIONS = [
   { value: "contract_carbon",  label: "Contract Carbon Report" },
   { value: "ecology_survey",  label: "Ecology Survey (BNG/Biodiversity Net Gain)" },
   { value: "ecology_scan",    label: "Ecology Scan (NBN Atlas / MAGIC / FC Woodland)" },
+  { value: "ppn_06_21",        label: "PPN 06/21 Carbon Reduction Plan (superseded by PPN 006)" },
 ];
+
+/** Core types this organisation's plan can generate, in display order. */
+export function coreReportTypes(bidPackIncluded: boolean): string[] {
+  return CORE_REPORT_TYPES.filter((t) => t !== "bid_carbon_pack" || bidPackIncluded);
+}
 
 export function CreateReportForm({
   orgId,
   snapshots,
   contracts = [],
+  bidPackIncluded = true,
 }: {
   orgId: string;
   snapshots: SnapshotOption[];
   contracts?: ContractOption[];
+  /** False on plans without the bid carbon pack; it then moves out of the core list. */
+  bidPackIncluded?: boolean;
 }) {
+  const core = coreReportTypes(bidPackIncluded);
+  const [showAll, setShowAll] = useState(false);
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -294,12 +313,39 @@ export function CreateReportForm({
             disabled={!canCreate}
             className={selectClass}
           >
-            {REPORT_TYPE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
+            {showAll || !core.includes(reportType) ? (
+              <>
+                <optgroup label="Recommended">
+                  {REPORT_TYPE_OPTIONS.filter((o) => core.includes(o.value)).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="More frameworks">
+                  {REPORT_TYPE_OPTIONS.filter((o) => !core.includes(o.value)).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              </>
+            ) : (
+              REPORT_TYPE_OPTIONS.filter((o) => core.includes(o.value)).map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))
+            )}
           </select>
+          <button
+            type="button"
+            onClick={() => setShowAll((v) => !v)}
+            className="mt-1 text-xs font-medium text-[#c2410c] hover:underline"
+            aria-expanded={showAll}
+          >
+            {showAll ? "Show recommended only" : `Show all report types (${REPORT_TYPE_OPTIONS.length})`}
+          </button>
         </Field>
 
         {isBidPack ? (
@@ -377,6 +423,16 @@ export function CreateReportForm({
         )}
         {submitError && <p className="text-sm text-red-600 lg:col-span-5">{submitError}</p>}
       </form>
+
+      {reportType === "ppn_006_crp" && (
+        <div className="rounded-[14px] border border-[#fed7aa] bg-[#fff7ed] px-4 py-3 text-sm text-[#7c2d12]">
+          For a complete plan with your boundary, baseline rationale, targets, reduction projects and director sign-off, use the{" "}
+          <Link href={`/orgs/${orgId}/carbon-reduction-plan`} className="font-medium underline">
+            guided Carbon Reduction Plan
+          </Link>
+          . Generating here prints figures only.
+        </div>
+      )}
 
       {/* SECR intensity metrics collapsible */}
       {reportType === "secr" && (

@@ -38,6 +38,8 @@ const db = vi.hoisted(() => {
     publishedSnapshot: model(),
     contract: model(),
     report: model(),
+    reportingPeriod: model(),
+    carbonReductionPlan: model(),
     $transaction: vi.fn(),
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
@@ -282,5 +284,47 @@ describe("reports", () => {
     expect(db.report.create).not.toHaveBeenCalled();
     const where = (db.contract.findFirst.mock.calls[0] ?? db.contract.count.mock.calls[0])[0].where;
     expect(where.organizationId).toBe(ORG_A);
+  });
+});
+
+describe("carbon reduction plans", () => {
+  it("cannot be started for another organisation's reporting period", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/carbon-reduction-plans/route");
+    db.reportingPeriod.findFirst.mockResolvedValue(null);
+
+    const res = await POST(post(`/api/orgs/${ORG_A}/carbon-reduction-plans`, { reportingPeriodId: "period-b" }), {
+      params: Promise.resolve({ orgId: ORG_A }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.reportingPeriod.findFirst.mock.calls[0][0].where).toEqual({ id: "period-b", organizationId: ORG_A });
+    expect(db.carbonReductionPlan.create).not.toHaveBeenCalled();
+  });
+
+  it("cannot be edited through another organisation's URL", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/carbon-reduction-plans/[planId]/route");
+    db.carbonReductionPlan.findFirst.mockResolvedValue(null);
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}/carbon-reduction-plans/plan-b`, { sections: {} }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A, planId: "plan-b" }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.carbonReductionPlan.findFirst.mock.calls[0][0].where).toEqual({ id: "plan-b", organizationId: ORG_A });
+    expect(db.carbonReductionPlan.update).not.toHaveBeenCalled();
+  });
+
+  it("will not link a report from another organisation or period", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/carbon-reduction-plans/[planId]/route");
+    db.carbonReductionPlan.findFirst.mockResolvedValue({ id: "plan-a", organizationId: ORG_A, reportingPeriodId: "p1" });
+    db.report.findFirst.mockResolvedValue(null);
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}/carbon-reduction-plans/plan-a`, { lastReportId: "report-b" }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A, planId: "plan-a" }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.report.findFirst.mock.calls[0][0].where).toEqual({ id: "report-b", organizationId: ORG_A, reportingPeriodId: "p1" });
+    expect(db.carbonReductionPlan.update).not.toHaveBeenCalled();
   });
 });

@@ -6,6 +6,8 @@ import { splitScope2 } from "./aggregation";
 import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
 import { renderSecrHtml, type SecrData } from "./templates/secr";
 import { secrEnergyFromCalculations } from "./secr-energy";
+import { parseSections as parseCrpSections, planTargets, BOUNDARY_APPROACHES, type CrpSections } from "@/lib/crp/plan";
+import { PPN_SCOPE3_CATEGORIES } from "@/lib/bids/carbon-pack";
 import { renderPpn0621Html, type Ppn0621Data } from "./templates/ppn-0621";
 import { renderNhsEvergreenHtml, type NhsEvergreenData } from "./templates/nhs-evergreen";
 import { renderNationalTomsHtml, type NationalTomsData, type TomsThemeSummary } from "./templates/national-toms";
@@ -545,7 +547,19 @@ const handlers: Record<string, ReportHandler> = {
 
     // Targets given on the report form win; otherwise the organisation's
     // science-based target (near term and net zero) is printed.
-    const crpTargets = Array.isArray(opts.targets)
+    // A plan prepared in the guided flow supplies its own sections. It must
+    // belong to this organisation and this report's period.
+    const planRow = typeof opts.crpPlanId === "string"
+      ? await withQueryTimeout(
+          prisma.carbonReductionPlan.findFirst({
+            where: { id: opts.crpPlanId, organizationId: orgId, reportingPeriodId: report.reportingPeriodId },
+            select: { sections: true },
+          }),
+        )
+      : null;
+    const plan = planRow ? parseCrpSections(planRow.sections) : null;
+
+    const crpTargets = plan ? planTargets(plan) : Array.isArray(opts.targets)
       ? (opts.targets as Array<{ year: number; reductionPct: number; description?: string }>)
       : sbti
         ? [
@@ -573,11 +587,21 @@ const handlers: Record<string, ReportHandler> = {
       scope3BaselineKg: optKg(opts.baselineScope3Kg) ?? baseKg(baseYear?.currentScope3Co2e ?? baseYear?.originalScope3Co2e),
       scopeRows,
       targets: crpTargets,
-      signatoryName: opts.signatoryName as string | undefined,
-      signatoryTitle: opts.signatoryTitle as string | undefined,
-      signatoryDate: opts.signatoryDate as string | undefined,
-      netZeroYear: opts.netZeroYear !== undefined ? Number(opts.netZeroYear) : (sbti?.netZeroYear ?? 2050),
+      signatoryName: plan ? plan.declaration.signatoryName || undefined : (opts.signatoryName as string | undefined),
+      signatoryTitle: plan ? plan.declaration.signatoryTitle || undefined : (opts.signatoryTitle as string | undefined),
+      signatoryDate: plan
+        ? plan.declaration.signedDate
+          ? new Date(`${plan.declaration.signedDate}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
+          : undefined
+        : (opts.signatoryDate as string | undefined),
+      netZeroYear:
+        plan && plan.targets.netZeroYear !== ""
+          ? Number(plan.targets.netZeroYear)
+          : opts.netZeroYear !== undefined
+            ? Number(opts.netZeroYear)
+            : (sbti?.netZeroYear ?? 2050),
       methodologyNotes: opts.methodologyNotes as string | undefined,
+      plan: plan ? crpPlanForTemplate(plan, agg) : undefined,
     };
     return { html: renderPpn006CrpHtml(data), pdfkitData: basePdfData };
   },
@@ -864,3 +888,40 @@ const defaultHandler: ReportHandler = async (ctx) => {
   const html = renderReportHtml(ctx.basePdfData);
   return { html, pdfkitData: ctx.basePdfData };
 };
+
+/** The guided plan's sections in the shape the PPN 006 template prints. */
+function crpPlanForTemplate(p: CrpSections, agg: Aggregation): NonNullable<Ppn006CrpData["plan"]> {
+  const kgByCode = new Map<string, number>();
+  for (const c of agg.catTotals.values()) {
+    const code = agg.catCodeMap.get(c.name);
+    if (code) kgByCode.set(code, (kgByCode.get(code) ?? 0) + c.totalKg);
+  }
+  const named = (rows: CrpSections["measures"]["completed"]) =>
+    rows.filter((m) => m.name.trim()).map((m) => ({ name: m.name, year: String(m.year), description: m.description, savingTco2e: String(m.savingTco2e) }));
+  return {
+    companyNumber: p.organisation.companyNumber,
+    publicationUrl: p.organisation.publicationUrl,
+    description: p.organisation.description,
+    boundaryApproach: BOUNDARY_APPROACHES.find((b) => b.value === p.organisation.boundaryApproach)?.label ?? p.organisation.boundaryApproach,
+    sitesIncluded: p.organisation.sitesIncluded,
+    exclusions: p.organisation.exclusions.filter((e) => e.item.trim()).map((e) => ({ item: e.item, reason: e.reason })),
+    baselineRationale: p.baseline.rationale,
+    baselineDetails: p.baseline.additionalDetails,
+    scope3: PPN_SCOPE3_CATEGORIES.map((c) => {
+      const row = p.scope3.find((r) => r.code === c.code);
+      const kg = kgByCode.get(c.code);
+      return {
+        label: c.label,
+        tonnes: kg != null && kg > 0 ? kg / 1000 : null,
+        status: kg != null && kg > 0 ? "reported" : (row?.status ?? "not_yet_measured"),
+        explanation: row?.explanation ?? "",
+      };
+    }),
+    sbtiValidated: p.targets.sbtiValidated,
+    trajectoryNote: p.targets.trajectoryNote,
+    completed: named(p.measures.completed),
+    planned: named(p.measures.planned),
+    futureNote: p.measures.futureNote,
+    boardApproved: p.declaration.boardApproved,
+  };
+}

@@ -79,8 +79,10 @@ export async function computePeriodTotals(
   });
 
   const totals: ScopeTotals = { ...ZERO_TOTALS };
+  // DashboardAggregate holds kg; base years, recalculations and restatements
+  // are stored and shown in tonnes.
   for (const row of aggregates) {
-    const value = Number(row._sum.totalCo2e ?? 0);
+    const value = Number(row._sum.totalCo2e ?? 0) / 1000;
     if (row.scope === 1) totals.scope1 += value;
     else if (row.scope === 2) totals.scope2 += value;
     else if (row.scope === 3) totals.scope3 += value;

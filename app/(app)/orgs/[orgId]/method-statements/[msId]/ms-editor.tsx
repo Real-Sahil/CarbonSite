@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, Menu, X, Save, AlertCircle, CheckCircle2,
   Plus, Trash2, Copy, Printer
 } from "lucide-react";
+import { CheckGroup, FieldRow, inputCls, labelCls, textareaCls } from "@/components/structured-forms/ms-fields";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -218,45 +219,6 @@ function parseSections(raw: unknown): MsSections {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-
-const inputCls = "w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 disabled:opacity-50 disabled:bg-gray-50";
-const labelCls = "block text-xs font-medium text-gray-600 mb-1";
-const textareaCls = `${inputCls} resize-none`;
-
-function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className={labelCls}>{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function CheckGroup({
-  label, options, selected, onChange, disabled,
-}: {
-  label: string; options: string[]; selected: string[]; onChange: (v: string[]) => void; disabled: boolean;
-}) {
-  return (
-    <div>
-      <p className={labelCls}>{label} <span className="font-normal text-gray-400">(Select all that apply)</span></p>
-      <div className="grid grid-cols-2 gap-1 mt-1">
-        {options.map((opt) => (
-          <label key={opt} className={`flex items-center gap-2 text-sm cursor-pointer rounded px-2 py-1 hover:bg-gray-50 ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}>
-            <input type="checkbox" className="h-3.5 w-3.5 accent-gray-800"
-              checked={selected.includes(opt)}
-              disabled={disabled}
-              onChange={(e) => {
-                if (e.target.checked) onChange([...selected, opt]);
-                else onChange(selected.filter((v) => v !== opt));
-              }} />
-            {opt}
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function RiskBadge({ level }: { level: string }) {
   const cls = level === "high" ? "bg-red-100 text-red-700"
