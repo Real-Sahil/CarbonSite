@@ -60,20 +60,49 @@ async function ocrText(buffer: Buffer): Promise<string> {
   }
 }
 
+/** Why a document could not be read, in words the person can act on. */
+export class DocumentReadError extends Error {
+  constructor(
+    readonly code: "SCANNED_PDF" | "READ_TIMEOUT" | "UNREADABLE",
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+const PDF_TEXT_BUDGET_MS = 30_000;
+const OCR_BUDGET_MS = 200_000;
+
+function within<T>(ms: number, work: Promise<T>, onTimeout: () => Error): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return Promise.race([
+    work,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(onTimeout()), ms);
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 /**
- * Plain text of a document: the PDF text layer when it has one, else OCR.
- * Images go straight to OCR. Used by "Add from a bill".
+ * Plain text of a document: the PDF text layer, or OCR for a photo. Used by
+ * "Add from a bill" and the bill inbox. A PDF without a text layer (a scan)
+ * is refused rather than sent to OCR: Tesseract reads images, not PDFs, and
+ * given PDF bytes it runs until the function times out.
  */
 export async function documentText(buffer: Buffer, mimeType: string): Promise<{ text: string; method: "pdf-text" | "ocr" }> {
   if (mimeType === "application/pdf") {
+    let text = "";
     try {
-      const data = await pdfParse(buffer);
-      if (data.text.trim().length > 40) return { text: data.text, method: "pdf-text" };
-    } catch {
-      // Encrypted or scanned: fall through to OCR.
+      text = (await within(PDF_TEXT_BUDGET_MS, pdfParse(buffer), () => new DocumentReadError("READ_TIMEOUT", "Reading this PDF took too long. Try a photo or screenshot of the bill instead."))).text;
+    } catch (err) {
+      if (err instanceof DocumentReadError) throw err;
+      throw new DocumentReadError("UNREADABLE", "This PDF could not be opened (it may be password protected). Upload a photo or screenshot of the bill instead.");
     }
+    if (text.trim().length > 40) return { text, method: "pdf-text" };
+    throw new DocumentReadError("SCANNED_PDF", "This PDF is a scan with no text in it. Upload a photo or screenshot of the page instead, and it will be read with text recognition.");
   }
-  return { text: await ocrText(buffer), method: "ocr" };
+  const text = await within(OCR_BUDGET_MS, ocrText(buffer), () => new DocumentReadError("READ_TIMEOUT", "Reading this photo took too long. Try a sharper, cropped photo of the bill."));
+  return { text, method: "ocr" };
 }
 
 // ---------------------------------------------------------------------------

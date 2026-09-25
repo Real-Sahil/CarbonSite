@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
+import { DocumentReadError } from "@/lib/imports/parsers/pdf";
 import { storeEvidenceFile } from "@/lib/evidence/store";
 import { READABLE_BILL_TYPES, readBill } from "@/lib/evidence/read-bill";
 
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
     const extraction = await readBill(orgId, session.user.id, { id: stored.id, mimeType: file.type }, buffer);
     return NextResponse.json({ evidenceId: stored.id, filename: file.name, ...extraction });
   } catch (err) {
+    if (err instanceof DocumentReadError) return apiError(err.code, err.message, 422);
     return handleRouteError(err);
   }
 }

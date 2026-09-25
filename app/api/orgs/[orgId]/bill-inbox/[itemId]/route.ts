@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { DocumentReadError } from "@/lib/imports/parsers/pdf";
 import { getObject } from "@/lib/storage";
 import { readBill } from "@/lib/evidence/read-bill";
 import { BILL_EXTRACTOR_VERSION } from "@/lib/evidence/bill-extractor";
@@ -45,6 +46,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const read = await readBill(orgId, session.user.id, { id: item.evidenceFile.id, mimeType: item.evidenceFile.mimeType }, buffer);
     return NextResponse.json({ evidenceId: item.evidenceFile.id, ...read });
   } catch (err) {
+    if (err instanceof DocumentReadError) return apiError(err.code, err.message, 422);
     return handleRouteError(err);
   }
 }
@@ -74,6 +76,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
     return NextResponse.json({ id: item.id, status });
   } catch (err) {
+    if (err instanceof DocumentReadError) return apiError(err.code, err.message, 422);
     return handleRouteError(err);
   }
 }
