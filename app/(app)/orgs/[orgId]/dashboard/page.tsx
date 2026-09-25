@@ -1168,7 +1168,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           <span className="text-sm text-emerald-700">You have read-only access to all emissions data and audit trails.</span>
           <div className="ml-auto flex items-center gap-2">
             <Link href={`/orgs/${orgId}/settings/audit`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Audit log</Link>
-            <Link href={`/orgs/${orgId}/lineage`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Data lineage</Link>
+            <Link href={`/orgs/${orgId}/lineage`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Trace a figure</Link>
           </div>
         </div>
       )}
@@ -2010,7 +2010,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     Ranked from current calculation aggregates.
                   </p>
                 </div>
-                <Badge variant="outline">{currentPeriod?.label ?? "No period"}</Badge>
+                <div className="flex items-center gap-2">
+                  <Link href={`/orgs/${orgId}/lineage`} className="text-xs text-[#374151] underline underline-offset-2 hover:text-[#111827]">
+                    Trace to source
+                  </Link>
+                  <Badge variant="outline">{currentPeriod?.label ?? "No period"}</Badge>
+                </div>
               </div>
               <div className="mt-4 space-y-3">
                 {topCategoryAggregates.length > 0 ? (

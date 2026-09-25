@@ -1,489 +1,297 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { ChevronRight, Download, FileText, AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { AlertCircle, ChevronRight, FileText, Loader2 } from "lucide-react";
+import { EVIDENCE_TIER_LABEL, EVIDENCE_TIER_ORDER, type EvidenceTier, type TierSplit } from "@/lib/data-quality/evidence-tier";
 
-const formatDate = (date: Date | string) => {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleString("en-GB", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-interface CalculationDetail {
-  id: string;
-  totalCo2e: number;
+type Category = { id: string; code: string; name: string; scope: number; kgCo2e: number; recordCount: number };
+type Item = {
+  calculationId: string;
+  kgCo2e: number;
   formula: string;
   factorValue: number | null;
-  normalizedAmount: number;
-  normalizedUnit: string;
+  factorSource: string;
   selectionReason: string | null;
-  dataQualityScore: number;
-  activityRecord: ActivityRecordDetail;
-}
-
-interface ActivityRecordDetail {
-  id: string;
-  amount: number;
-  unit: string;
-  sourceDescription: string | null;
-  createdAt: Date;
-  importBatch?: {
+  normalized: string;
+  warnings: string[];
+  record: {
     id: string;
-    sourceFilename: string;
-    createdAt: Date;
-    createdBy?: { name: string | null; email: string } | null;
-  } | null;
-  fieldSubmissionId?: string | null;
-  fieldSubmissionDocumentType?: string;
-  fieldSubmissionCreatedAt?: Date;
-  submittedByName?: string | null;
-  submittedByEmail?: string;
-  evidence: Array<{ id: string; filename: string; mimeType: string }>;
-}
+    amount: number;
+    unit: string;
+    activityDate: string;
+    description: string | null;
+    facility: string | null;
+    source: string;
+    tier: EvidenceTier;
+    tierReasons: string[];
+    evidence: { id: string; filename: string; mimeType: string }[];
+  };
+};
+type Lineage = {
+  snapshot: { id: string; version: number; publishedAt: string; periodLabel: string; factorLibrary: string | null; methodology: string | null } | null;
+  tiers: TierSplit | null;
+  categories: Category[];
+  records: { categoryId: string; nextCursor: string | null; items: Item[] } | null;
+};
 
-interface AggregateDetail {
-  id: string;
-  scope: number;
-  totalCo2e: number;
-  recordCount: number;
-  emissionCategory?: { id: string; name: string; code: string } | null;
-  facility?: { id: string; name: string } | null;
-  calculations: CalculationDetail[];
-}
-
-interface LineageResponse {
-  aggregates: AggregateDetail[];
-  count: number;
-}
+const t = (kg: number) => (kg / 1000).toLocaleString("en-GB", { maximumFractionDigits: 2 });
+const TIER_BAR: Record<EvidenceTier, string> = { verified: "bg-emerald-500", partial: "bg-amber-400", estimated: "bg-slate-300" };
+const TIER_CHIP: Record<EvidenceTier, string> = {
+  verified: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  partial: "border-amber-200 bg-amber-50 text-amber-800",
+  estimated: "border-slate-200 bg-slate-50 text-slate-700",
+};
 
 export default function LineagePage() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const orgId = params.orgId as string;
-  const snapshotId = searchParams.get("snapshotId");
-  const reportingPeriodId = searchParams.get("reportingPeriodId");
+  const { orgId } = useParams<{ orgId: string }>();
+  const search = useSearchParams();
+  const router = useRouter();
+  const snapshotId = search.get("snapshotId");
+  const categoryId = search.get("categoryId");
 
-  const [lineageData, setLineageData] = useState<LineageResponse | null>(null);
+  const [data, setData] = useState<Lineage | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [more, setMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedAggregate, setSelectedAggregate] =
-    useState<AggregateDetail | null>(null);
-  const [selectedCalculation, setSelectedCalculation] =
-    useState<CalculationDetail | null>(null);
+  const url = useCallback(
+    (c?: string | null) => {
+      const q = new URLSearchParams();
+      if (snapshotId) q.set("snapshotId", snapshotId);
+      if (categoryId) q.set("categoryId", categoryId);
+      if (c) q.set("cursor", c);
+      return `/api/orgs/${orgId}/lineage?${q}`;
+    },
+    [orgId, snapshotId, categoryId],
+  );
 
   useEffect(() => {
-    const fetchLineage = async () => {
+    let live = true;
+    (async () => {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        const params = new URLSearchParams();
-        if (snapshotId) params.append("snapshotId", snapshotId);
-        if (reportingPeriodId)
-          params.append("reportingPeriodId", reportingPeriodId);
-
-        const res = await fetch(
-          `/api/orgs/${orgId}/lineage?${params.toString()}`,
-        );
-        if (!res.ok) {
-          throw new Error("Failed to fetch lineage data");
-        }
-
-        const data: LineageResponse = await res.json();
-        setLineageData(data);
-        setError(null);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An error occurred loading lineage",
-        );
+        const res = await fetch(url());
+        if (!res.ok) throw new Error();
+        const d = (await res.json()) as Lineage;
+        if (!live) return;
+        setData(d);
+        setItems(d.records?.items ?? []);
+        setCursor(d.records?.nextCursor ?? null);
+      } catch {
+        if (live) setError("Couldn't load the figures. Check your connection and try again.");
       } finally {
-        setLoading(false);
+        if (live) setLoading(false);
       }
+    })();
+    return () => {
+      live = false;
     };
+  }, [url]);
 
-    if (orgId) fetchLineage();
-  }, [orgId, snapshotId, reportingPeriodId]);
+  async function loadMore() {
+    if (!cursor) return;
+    setMore(true);
+    try {
+      const res = await fetch(url(cursor));
+      if (res.ok) {
+        const d = (await res.json()) as Lineage;
+        setItems((prev) => [...prev, ...(d.records?.items ?? [])]);
+        setCursor(d.records?.nextCursor ?? null);
+      }
+    } catch {
+      // Keep what is shown; the button stays for another try.
+    } finally {
+      setMore(false);
+    }
+  }
 
-  if (loading) {
+  const go = (cat: string | null) => {
+    const q = new URLSearchParams();
+    if (snapshotId) q.set("snapshotId", snapshotId);
+    if (cat) q.set("categoryId", cat);
+    router.push(`/orgs/${orgId}/lineage${q.size ? `?${q}` : ""}`);
+  };
+
+  if (loading && !data) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
-          <p className="text-gray-600">Loading lineage data...</p>
-        </div>
+      <div className="flex min-h-[60dvh] items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-[#6B7280]" />
+      </div>
+    );
+  }
+  if (error || !data) {
+    return (
+      <div className="flex min-h-[60dvh] flex-col items-center justify-center gap-2 px-6 text-center">
+        <AlertCircle className="h-6 w-6 text-red-600" />
+        <p className="text-sm text-[#374151]">{error ?? "Couldn't load the figures."}</p>
+      </div>
+    );
+  }
+  if (!data.snapshot) {
+    return (
+      <div className="mx-auto max-w-3xl p-8">
+        <h1 className="text-2xl font-semibold text-[#111827]">Trace a figure</h1>
+        <p className="mt-2 text-sm text-[#374151]">Nothing is published yet. Calculate a period and publish it, then every figure can be traced here to its source.</p>
       </div>
     );
   }
 
-  if (error || !lineageData) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-          <AlertCircle className="mx-auto mb-3 h-8 w-8 text-red-600" />
-          <p className="text-red-900">
-            {error || "No lineage data available"}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const s = data.snapshot;
+  const selected = data.categories.find((c) => c.id === categoryId) ?? null;
+  const totalKg = data.categories.reduce((a, c) => a + c.kgCo2e, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Data Lineage</h1>
-          <p className="mt-2 text-gray-600">
-            Trace emissions calculations back to source records and evidence
-          </p>
-        </div>
+    <div className="mx-auto flex max-w-[1100px] flex-col gap-8 px-4 py-8 sm:px-8">
+      <header>
+        <nav className="mb-2 flex items-center gap-1 text-xs text-[#6B7280]">
+          <button type="button" onClick={() => go(null)} className="hover:underline">
+            {s.periodLabel}, snapshot v{s.version}
+          </button>
+          {selected ? (
+            <>
+              <ChevronRight className="h-3 w-3" />
+              <span className="text-[#111827]">{selected.name}</span>
+            </>
+          ) : null}
+        </nav>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#111827]">Trace a figure</h1>
+        <p className="mt-1 max-w-[70ch] text-sm text-[#374151]">
+          Every published figure, from the category total down to the record, the factor, the formula and the ticket or invoice behind it.
+          {s.factorLibrary ? ` Factors: ${s.factorLibrary}.` : ""}
+          {s.methodology ? ` Method: ${s.methodology}.` : ""}
+        </p>
+      </header>
 
-        {lineageData.count === 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
-            <p className="text-gray-500">No emissions data found for this period</p>
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {lineageData.aggregates.map((aggregate) => (
-              <AggregateCard
-                key={aggregate.id}
-                aggregate={aggregate}
-                onSelect={() => setSelectedAggregate(aggregate)}
-              />
+      {data.tiers ? (
+        <section aria-labelledby="tiers" className="flex flex-col gap-3">
+          <h2 id="tiers" className="text-sm font-semibold text-[#111827]">Evidence behind the headline total</h2>
+          <div className="flex h-2.5 overflow-hidden rounded-full bg-[#F3F4F6]">
+            {EVIDENCE_TIER_ORDER.map((k) => (
+              <div key={k} className={TIER_BAR[k]} style={{ width: `${data.tiers![k].percent}%` }} />
             ))}
           </div>
-        )}
-
-        {selectedAggregate && (
-          <AggregateModal
-            aggregate={selectedAggregate}
-            onClose={() => setSelectedAggregate(null)}
-            onSelectCalculation={(calc) => {
-              setSelectedCalculation(calc);
-              setSelectedAggregate(null);
-            }}
-          />
-        )}
-
-        {selectedCalculation && (
-          <CalculationModal
-            calculation={selectedCalculation}
-            onClose={() => setSelectedCalculation(null)}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-interface AggregateCardProps {
-  aggregate: AggregateDetail;
-  onSelect: () => void;
-}
-
-function AggregateCard({ aggregate, onSelect }: AggregateCardProps) {
-  return (
-    <button
-      onClick={onSelect}
-      className="rounded-lg border border-gray-200 bg-white p-4 text-left shadow-sm transition hover:border-blue-300 hover:shadow-md"
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="inline-block rounded bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
-              Scope {aggregate.scope}
-            </span>
-            {aggregate.emissionCategory && (
-              <span className="text-sm font-medium text-gray-700">
-                {aggregate.emissionCategory.name}
-              </span>
-            )}
-          </div>
-          {aggregate.facility && (
-            <p className="mt-1 text-sm text-gray-600">
-              {aggregate.facility.name}
-            </p>
-          )}
-        </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-gray-900">
-            {aggregate.totalCo2e.toFixed(2)}
-          </div>
-          <p className="text-sm text-gray-500">tCO₂e</p>
-          <p className="mt-1 text-xs text-gray-500">
-            {aggregate.recordCount} {aggregate.recordCount === 1 ? "record" : "records"}
+          <dl className="grid gap-3 sm:grid-cols-3">
+            {EVIDENCE_TIER_ORDER.map((k) => (
+              <div key={k} className="flex items-baseline gap-2">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${TIER_BAR[k]}`} aria-hidden />
+                <dt className="text-sm text-[#374151]">{EVIDENCE_TIER_LABEL[k]}</dt>
+                <dd className="ml-auto text-sm tabular-nums text-[#111827]">
+                  {data.tiers![k].percent.toFixed(0)}%
+                  <span className="ml-1 text-xs text-[#6B7280]">{data.tiers![k].records.toLocaleString("en-GB")} records</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <p className="text-xs text-[#6B7280]">
+            Verified: metered, invoiced or supplier data with evidence attached, approved in review. Partially verified: one of those is missing. Estimated: estimates and proxies, or records with neither evidence nor approval.
           </p>
-        </div>
-      </div>
-      <div className="mt-3 flex items-center text-sm text-blue-600">
-        View calculations <ChevronRight className="ml-1 h-4 w-4" />
-      </div>
-    </button>
-  );
-}
+        </section>
+      ) : null}
 
-interface AggregateModalProps {
-  aggregate: AggregateDetail;
-  onClose: () => void;
-  onSelectCalculation: (calc: CalculationDetail) => void;
-}
-
-function AggregateModal({
-  aggregate,
-  onClose,
-  onSelectCalculation,
-}: AggregateModalProps) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Calculations</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-600"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="mb-6 rounded-lg bg-gray-50 p-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs font-medium text-gray-500">CATEGORY</p>
-              <p className="text-sm font-medium text-gray-900">
-                {aggregate.emissionCategory?.name || "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-500">TOTAL CO2E</p>
-              <p className="text-sm font-medium text-gray-900">
-                {aggregate.totalCo2e.toFixed(2)} tCO₂e
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {aggregate.calculations.map((calc) => (
-            <button
-              key={calc.id}
-              onClick={() => onSelectCalculation(calc)}
-              className="w-full rounded border border-gray-200 p-3 text-left transition hover:border-blue-300 hover:bg-blue-50"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    {calc.totalCo2e.toFixed(4)} tCO₂e
-                  </p>
-                  <p className="mt-1 text-xs text-gray-500">
-                    {calc.normalizedAmount.toFixed(2)} {calc.normalizedUnit}
-                  </p>
-                  {calc.selectionReason && (
-                    <p className="mt-1 text-xs text-gray-600">
-                      {calc.selectionReason}
-                    </p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <div className="text-xs font-medium text-gray-600">
-                    Quality: {calc.dataQualityScore}%
-                  </div>
-                  <ChevronRight className="mt-1 h-4 w-4 text-gray-500" />
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface CalculationModalProps {
-  calculation: CalculationDetail;
-  onClose: () => void;
-}
-
-function CalculationModal({ calculation, onClose }: CalculationModalProps) {
-  const rec = calculation.activityRecord;
-  const sourceType = rec.importBatch
-    ? "Import"
-    : rec.fieldSubmissionId
-      ? "Field Submission"
-      : "Manual Entry";
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Calculation Details</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-600"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          <section>
-            <h3 className="mb-3 text-sm font-semibold text-gray-900">
-              CALCULATION RESULT
-            </h3>
-            <div className="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4 lg:grid-cols-3">
-              <div>
-                <p className="text-xs font-medium text-gray-500">TOTAL CO2E</p>
-                <p className="text-lg font-bold text-gray-900">
-                  {calculation.totalCo2e.toFixed(4)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500">NORMALIZED AMOUNT</p>
-                <p className="text-sm font-medium text-gray-900">
-                  {calculation.normalizedAmount.toFixed(2)}{" "}
-                  {calculation.normalizedUnit}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500">QUALITY SCORE</p>
-                <p className="text-sm font-medium text-gray-900">
-                  {calculation.dataQualityScore}%
-                </p>
-              </div>
-            </div>
-            <div className="mt-3 rounded bg-blue-50 p-3">
-              <p className="text-xs font-medium text-blue-900">FORMULA</p>
-              <code className="mt-1 block break-all font-mono text-xs text-blue-800">
-                {calculation.formula}
-              </code>
-            </div>
-          </section>
-
-          <section>
-            <h3 className="mb-3 text-sm font-semibold text-gray-900">
-              SOURCE ACTIVITY
-            </h3>
-            <div className="space-y-3 rounded-lg border border-gray-200 p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500">AMOUNT</p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {rec.amount} {rec.unit}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-medium text-gray-500">SOURCE</p>
-                  <p className="text-sm font-medium text-gray-900">{sourceType}</p>
-                </div>
-              </div>
-              {rec.sourceDescription && (
-                <div>
-                  <p className="text-xs font-medium text-gray-500">DESCRIPTION</p>
-                  <p className="mt-1 text-sm text-gray-700">
-                    {rec.sourceDescription}
-                  </p>
-                </div>
-              )}
-              <div>
-                <p className="text-xs font-medium text-gray-500">RECORDED</p>
-                <p className="text-xs text-gray-600">
-                  {formatDate(rec.createdAt)}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <h3 className="mb-3 text-sm font-semibold text-gray-900">
-              LINEAGE ORIGIN
-            </h3>
-            {rec.importBatch ? (
-              <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <div className="flex items-start gap-3">
-                  <FileText className="mt-1 h-4 w-4 text-gray-500" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {rec.importBatch.sourceFilename}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-600">
-                      Imported {formatDate(rec.importBatch.createdAt)}
-                    </p>
-                    {rec.importBatch.createdBy && (
-                      <p className="mt-1 text-xs text-gray-600">
-                        by {rec.importBatch.createdBy.name || rec.importBatch.createdBy.email}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : rec.fieldSubmissionId ? (
-              <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <div className="flex items-start gap-3">
-                  <FileText className="mt-1 h-4 w-4 text-gray-500" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {rec.fieldSubmissionDocumentType || "Field Submission"}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-600">
-                      Submitted by{" "}
-                      {rec.submittedByName || rec.submittedByEmail}
-                    </p>
-                    {rec.fieldSubmissionCreatedAt && (
-                      <p className="text-xs text-gray-600">
-                        {formatDate(rec.fieldSubmissionCreatedAt)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <p className="text-sm text-gray-600">Manual entry</p>
-              </div>
-            )}
-          </section>
-
-          {rec.evidence.length > 0 && (
-            <section>
-              <h3 className="mb-3 text-sm font-semibold text-gray-900">
-                EVIDENCE FILES ({rec.evidence.length})
-              </h3>
-              <div className="space-y-2">
-                {rec.evidence.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center justify-between rounded border border-gray-200 p-3"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Download className="h-4 w-4 text-gray-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {file.filename}
-                        </p>
-                        <p className="text-xs text-gray-500">{file.mimeType}</p>
-                      </div>
-                    </div>
-                  </div>
+      {!selected ? (
+        <section aria-labelledby="cats" className="flex flex-col gap-3">
+          <h2 id="cats" className="text-sm font-semibold text-[#111827]">Category totals</h2>
+          <div className="overflow-x-auto rounded-[14px] border border-[#E5E7EB]">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-[#F9FAFB] text-left text-xs text-[#374151]">
+                  <th className="py-2.5 pl-4 font-normal">Category</th>
+                  <th className="py-2.5 font-normal text-right">tCO₂e</th>
+                  <th className="py-2.5 font-normal text-right">Share</th>
+                  <th className="py-2.5 pr-4 font-normal text-right">Records</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.categories.map((c) => (
+                  <tr key={c.id} className="border-t border-[#F3F4F6] hover:bg-[#F9FAFB]">
+                    <td className="py-2.5 pl-4">
+                      <button type="button" onClick={() => go(c.id)} className="text-left text-[#111827] underline-offset-2 hover:underline">
+                        <span className="mr-2 text-xs text-[#6B7280]">Scope {c.scope}</span>
+                        {c.name}
+                      </button>
+                    </td>
+                    <td className="py-2.5 text-right tabular-nums">{t(c.kgCo2e)}</td>
+                    <td className="py-2.5 text-right tabular-nums text-[#6B7280]">{totalKg > 0 ? `${((c.kgCo2e / totalKg) * 100).toFixed(1)}%` : "-"}</td>
+                    <td className="py-2.5 pr-4 text-right tabular-nums">{c.recordCount.toLocaleString("en-GB")}</td>
+                  </tr>
                 ))}
-              </div>
-            </section>
-          )}
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={onClose}
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            Close
-          </button>
-        </div>
-      </div>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : (
+        <section aria-labelledby="recs" className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="recs" className="text-sm font-semibold text-[#111827]">
+              {selected.name}: {t(selected.kgCo2e)} tCO₂e from {selected.recordCount.toLocaleString("en-GB")} records, largest first
+            </h2>
+            <button type="button" onClick={() => go(null)} className="text-xs text-[#374151] underline underline-offset-2">
+              All categories
+            </button>
+          </div>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#6B7280]" /> : null}
+          <ol className="flex flex-col gap-3">
+            {items.map((it) => (
+              <li key={it.calculationId} className="rounded-[14px] border border-[#E5E7EB] bg-white p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-[#111827]">{it.record.description ?? "Activity record"}</p>
+                    <p className="text-xs text-[#6B7280]">
+                      {new Date(it.record.activityDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      {it.record.facility ? `, ${it.record.facility}` : ""}. {it.record.source}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span title={it.record.tierReasons.join(". ") || undefined} className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${TIER_CHIP[it.record.tier]}`}>
+                      {EVIDENCE_TIER_LABEL[it.record.tier]}
+                    </span>
+                    <span className="text-sm font-semibold tabular-nums text-[#111827]">{t(it.kgCo2e)} t</span>
+                  </div>
+                </div>
+                <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
+                  <div className="flex gap-2"><dt className="text-[#6B7280]">Activity</dt><dd className="tabular-nums">{it.record.amount.toLocaleString("en-GB")} {it.record.unit} ({it.normalized})</dd></div>
+                  <div className="flex gap-2"><dt className="text-[#6B7280]">Factor</dt><dd>{it.factorValue != null ? it.factorValue.toLocaleString("en-GB", { maximumSignificantDigits: 6 }) : "-"} from {it.factorSource}</dd></div>
+                  <div className="flex gap-2 sm:col-span-2"><dt className="text-[#6B7280]">Formula</dt><dd className="font-mono break-all">{it.formula}</dd></div>
+                  {it.selectionReason ? <div className="flex gap-2 sm:col-span-2"><dt className="text-[#6B7280]">Why this factor</dt><dd>{it.selectionReason}</dd></div> : null}
+                  {it.warnings.length ? <div className="flex gap-2 sm:col-span-2"><dt className="text-amber-700">Warnings</dt><dd className="text-amber-800">{it.warnings.join(" ")}</dd></div> : null}
+                </dl>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {it.record.evidence.length ? (
+                    it.record.evidence.map((e) => (
+                      <a
+                        key={e.id}
+                        href={`/api/orgs/${orgId}/evidence/${e.id}/download`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md border border-[#E5E7EB] px-2 py-1 text-xs text-[#111827] hover:bg-[#F9FAFB]"
+                      >
+                        <FileText className="h-3.5 w-3.5" /> {e.filename}
+                      </a>
+                    ))
+                  ) : (
+                    <span className="text-xs text-[#6B7280]">No evidence file attached.</span>
+                  )}
+                  <Link href={`/orgs/${orgId}/records/${it.record.id}`} className="ml-auto text-xs text-[#374151] underline underline-offset-2">
+                    Open record
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ol>
+          {cursor ? (
+            <div>
+              <button type="button" disabled={more} onClick={loadMore} className="rounded-md border border-[#D1D5DB] px-3 py-1.5 text-sm text-[#111827] disabled:opacity-50">
+                {more ? "Loading..." : "Show more"}
+              </button>
+            </div>
+          ) : null}
+        </section>
+      )}
     </div>
   );
 }

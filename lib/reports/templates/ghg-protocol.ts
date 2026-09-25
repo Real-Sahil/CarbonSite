@@ -46,6 +46,8 @@ export interface GhgProtocolData {
   baselineTonnes?: number;
   reductionPct?: number;
   recordCount: number;
+  /** Share of the headline total by evidence tier (percent of kg CO2e). */
+  evidenceTiers?: { verified: number; partial: number; estimated: number };
 }
 
 function fmt(d: Date) {
@@ -302,6 +304,18 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
   <!-- Gas breakdown -->
   <p class="section-title">Per-Gas Breakdown (GWP AR6)</p>
   ${gasTableHtml}
+
+  ${
+    data.evidenceTiers
+      ? `<p class="section-title">Evidence Behind These Figures</p>
+  <table>
+    <tr><th>Evidence tier</th><th class="num">Share of total</th></tr>
+    <tr><td>Verified: metered, invoiced or supplier data with evidence attached, approved in review</td><td class="num">${data.evidenceTiers.verified.toFixed(1)}%</td></tr>
+    <tr><td>Partially verified: one of those is missing</td><td class="num">${data.evidenceTiers.partial.toFixed(1)}%</td></tr>
+    <tr><td>Estimated: estimates and proxies, or records with neither evidence nor approval</td><td class="num">${data.evidenceTiers.estimated.toFixed(1)}%</td></tr>
+  </table>`
+      : ""
+  }
 
   <!-- Reporting assurance note -->
   <div style="margin-top:24px;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">

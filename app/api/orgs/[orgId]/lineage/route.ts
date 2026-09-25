@@ -1,310 +1,179 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
-import { z } from "zod";
+import { CATEGORY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
+import { HEADLINE_ONLY } from "@/lib/project-carbon/sql";
+import { evidenceTier, summariseTiers, tierReasons, type TierInput } from "@/lib/data-quality/evidence-tier";
 
-const lineageQuerySchema = z.object({
-  snapshotId: z.string().optional(),
-  reportingPeriodId: z.string().optional(),
-  categoryId: z.string().optional(),
-  facilityId: z.string().optional(),
+const querySchema = z.object({
+  snapshotId: z.string().min(1).optional(),
+  reportingPeriodId: z.string().min(1).optional(),
+  categoryId: z.string().min(1).optional(),
+  facilityId: z.string().min(1).optional(),
+  cursor: z.string().min(1).optional(),
 });
 
-type LineageQuery = z.infer<typeof lineageQuerySchema>;
+const PAGE = 50;
 
-interface LineageActivityRecord {
-  id: string;
-  amount: number;
-  unit: string;
-  sourceDescription: string | null;
-  createdAt: Date;
-  importBatch?: {
-    id: string;
-    sourceFilename: string;
-    createdAt: Date;
-    createdBy?: { name: string | null; email: string } | null;
-  } | null;
-  fieldSubmissionId?: string | null;
-  fieldSubmissionDocumentType?: string | null;
-  fieldSubmissionCreatedAt?: Date | null;
-  submittedByName?: string | null;
-  submittedByEmail?: string;
-  evidence: Array<{ id: string; filename: string; mimeType: string }>;
-}
-
-interface LineageCalculation {
-  id: string;
-  totalCo2e: number;
-  formula: string;
-  factorValue: number | null;
-  normalizedAmount: number;
-  normalizedUnit: string;
-  selectionReason: string | null;
-  dataQualityScore: number;
-  activityRecord: LineageActivityRecord;
-}
-
-interface LineageAggregate {
-  id: string;
-  scope: number;
-  totalCo2e: number;
-  recordCount: number;
-  emissionCategory?: { id: string; name: string; code: string } | null;
-  facility?: { id: string; name: string } | null;
-  calculations: LineageCalculation[];
-}
-
-async function fetchLineageData(
-  orgId: string,
-  query: LineageQuery,
-): Promise<LineageAggregate[]> {
-  interface WhereClause {
-    organizationId: string;
-    snapshotId?: string;
-    reportingPeriodId?: string;
-    emissionCategoryId?: string;
-    facilityId?: string;
-  }
-  const whereClause: WhereClause = {
-    organizationId: orgId,
-  };
-
-  if (query.snapshotId) {
-    whereClause.snapshotId = query.snapshotId;
-  } else if (query.reportingPeriodId) {
-    whereClause.reportingPeriodId = query.reportingPeriodId;
-  } else {
-    // No selection: trace the organisation's most recently published snapshot.
-    const latest = await prisma.publishedSnapshot.findFirst({
-      where: { organizationId: orgId },
-      orderBy: { publishedAt: "desc" },
-      select: { id: true },
-    });
-    if (!latest) return [];
-    whereClause.snapshotId = latest.id;
-  }
-
-  if (query.categoryId) {
-    whereClause.emissionCategoryId = query.categoryId;
-  }
-
-  if (query.facilityId) {
-    whereClause.facilityId = query.facilityId;
-  }
-
-  const aggregates = await prisma.dashboardAggregate.findMany({
-    where: whereClause,
-    include: {
-      emissionCategory: { select: { id: true, name: true, code: true } },
-      facility: { select: { id: true, name: true } },
-    },
-  });
-
-  if (aggregates.length === 0) {
-    return [];
-  }
-
-  // Get calculation run IDs from snapshots linked to these aggregates
-  const calculationRunIds = new Set<string>();
-  for (const agg of aggregates) {
-    if (agg.snapshotId) {
-      const snapshot = await prisma.publishedSnapshot.findUnique({
-        where: { id: agg.snapshotId },
-        select: { calculationRunId: true },
-      });
-      if (snapshot) {
-        calculationRunIds.add(snapshot.calculationRunId);
-      }
-    } else {
-      // If no snapshot, find latest calculation run for the period
-      const calcRun = await prisma.calculationRun.findFirst({
-        where: {
-          organizationId: orgId,
-          reportingPeriodId: agg.reportingPeriodId,
-          status: "succeeded",
-        },
-        orderBy: { createdAt: "desc" },
-        select: { id: true },
-      });
-      if (calcRun) {
-        calculationRunIds.add(calcRun.id);
-      }
-    }
-  }
-
-  // Fetch calculations for these runs with full lineage data
-  const calculations = await prisma.emissionCalculation.findMany({
-    where: {
-      organizationId: orgId,
-      calculationRunId: {
-        in: Array.from(calculationRunIds),
-      },
-    },
-    include: {
-      activityRecord: {
-        include: {
-          importBatch: {
-            select: {
-              id: true,
-              sourceFilename: true,
-              createdAt: true,
-              createdBy: {
-                select: { name: true, email: true },
-              },
-            },
-          },
-          evidence: {
-            include: {
-              evidenceFile: {
-                select: { id: true, filename: true, mimeType: true },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  // Fetch field submissions for activity records that have them
-  const fieldSubmissionIds = new Set(
-    calculations
-      .map((c) => c.activityRecord.fieldSubmissionId)
-      .filter((id): id is string => id !== null && id !== undefined),
-  );
-
-  let fieldSubmissionMap = new Map();
-  if (fieldSubmissionIds.size > 0) {
-    const fieldSubmissions = await prisma.fieldSubmission.findMany({
-      where: {
-        organizationId: orgId,
-        id: {
-          in: Array.from(fieldSubmissionIds),
-        },
-      },
-      include: {
-        submittedBy: { select: { name: true, email: true } },
-        files: {
-          include: {
-            evidenceFile: { select: { id: true, filename: true } },
-          },
-        },
-      },
-    });
-    fieldSubmissionMap = new Map(
-      fieldSubmissions.map((fs) => [
-        fs.id,
-        {
-          documentType: fs.documentType,
-          createdAt: fs.createdAt,
-          submittedByName: fs.submittedBy.name,
-          submittedByEmail: fs.submittedBy.email,
-          files: fs.files.map((f) => ({
-            id: f.evidenceFile.id,
-            filename: f.evidenceFile.filename,
-          })),
-        },
-      ]),
-    );
-  }
-
-  // Group calculations by aggregate
-  const aggMap = new Map<string, LineageAggregate>();
-
-  for (const agg of aggregates) {
-    const lineageCalcs = calculations
-      .filter((calc) => {
-        const rec = calc.activityRecord;
-        let matches = true;
-        if (query.categoryId) {
-          matches = rec.emissionCategoryId === query.categoryId;
-        }
-        if (query.facilityId) {
-          matches = matches && rec.facilityId === query.facilityId;
-        }
-        return matches;
-      })
-      .map((calc) => {
-        const fsData =
-          calc.activityRecord.fieldSubmissionId &&
-          fieldSubmissionMap.get(calc.activityRecord.fieldSubmissionId);
-        return {
-          id: calc.id,
-          totalCo2e: Number(calc.totalCo2e),
-          formula: calc.formula,
-          factorValue: calc.factorValue ? Number(calc.factorValue) : null,
-          normalizedAmount: Number(calc.normalizedAmount),
-          normalizedUnit: calc.normalizedUnit,
-          selectionReason: calc.selectionReason,
-          dataQualityScore: calc.dataQualityScore,
-          activityRecord: {
-            id: calc.activityRecord.id,
-            amount: Number(calc.activityRecord.amount),
-            unit: calc.activityRecord.unit,
-            sourceDescription: calc.activityRecord.sourceDescription,
-            createdAt: calc.activityRecord.createdAt,
-            importBatch: calc.activityRecord.importBatch,
-            fieldSubmissionId: calc.activityRecord.fieldSubmissionId,
-            fieldSubmissionDocumentType: fsData?.documentType || undefined,
-            fieldSubmissionCreatedAt: fsData?.createdAt || undefined,
-            submittedByName: fsData?.submittedByName || undefined,
-            submittedByEmail: fsData?.submittedByEmail || undefined,
-            evidence: calc.activityRecord.evidence.map((e) => ({
-              id: e.evidenceFile.id,
-              filename: e.evidenceFile.filename,
-              mimeType: e.evidenceFile.mimeType,
-            })),
-          } as LineageActivityRecord,
-        };
-      });
-
-    if (lineageCalcs.length > 0) {
-      aggMap.set(agg.id, {
-        id: agg.id,
-        scope: agg.scope,
-        totalCo2e: Number(agg.totalCo2e),
-        recordCount: agg.recordCount,
-        emissionCategory: agg.emissionCategory,
-        facility: agg.facility,
-        calculations: lineageCalcs,
-      });
-    }
-  }
-
-  return Array.from(aggMap.values());
-}
-
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ orgId: string }> },
-) {
+/**
+ * Figure to source for one published snapshot: the headline split by evidence
+ * tier, the category totals the dashboard and reports show, and, for a chosen
+ * category, the calculations behind it (largest first) with the record, the
+ * factor, the formula and the evidence files. Everything is scoped to the org
+ * and to the snapshot's own calculation run.
+ */
+export async function GET(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
+    const q = querySchema.parse(Object.fromEntries(req.nextUrl.searchParams));
 
-    const searchParams = req.nextUrl.searchParams;
-    const query = lineageQuerySchema.parse({
-      snapshotId: searchParams.get("snapshotId") || undefined,
-      reportingPeriodId: searchParams.get("reportingPeriodId") || undefined,
-      categoryId: searchParams.get("categoryId") || undefined,
-      facilityId: searchParams.get("facilityId") || undefined,
+    const snapshot = await prisma.publishedSnapshot.findFirst({
+      where: {
+        organizationId: orgId,
+        ...(q.snapshotId ? { id: q.snapshotId } : {}),
+        ...(q.reportingPeriodId ? { reportingPeriodId: q.reportingPeriodId } : {}),
+      },
+      orderBy: { publishedAt: "desc" },
+      select: {
+        id: true,
+        version: true,
+        publishedAt: true,
+        calculationRunId: true,
+        reportingPeriod: { select: { id: true, label: true } },
+        calculationRun: { select: { factorLibrary: { select: { name: true, version: true } }, methodologyVersion: { select: { name: true } } } },
+      },
     });
+    if (!snapshot) {
+      if (q.snapshotId) return apiError("NOT_FOUND", "Snapshot not found.", 404);
+      return NextResponse.json({ snapshot: null, tiers: null, categories: [], records: null });
+    }
+    const runId = snapshot.calculationRunId;
 
-    if (!query.snapshotId && !query.reportingPeriodId) {
-      return apiError(
-        "MISSING_PARAMETER",
-        "Either snapshotId or reportingPeriodId is required",
-        400,
-      );
+    const [tierRows, categoryRows] = await Promise.all([
+      prisma.$queryRaw<Array<{ data_origin: TierInput["dataOrigin"]; evidence_status: string; review_status: string; kg: number; n: number }>>`
+        SELECT ar.data_origin, ar.evidence_status::text AS evidence_status, ar.review_status::text AS review_status,
+               COALESCE(SUM(ec.total_co2e), 0)::float AS kg, COUNT(*)::int AS n
+        FROM emission_calculations ec
+        JOIN activity_records ar ON ar.id = ec.activity_record_id
+        JOIN emission_categories cat ON cat.id = ar.emission_category_id
+        WHERE ec.organization_id = ${orgId}
+          AND ec.calculation_run_id = ${runId}
+          AND ${HEADLINE_ONLY}
+        GROUP BY 1, 2, 3
+      `,
+      prisma.dashboardAggregate.findMany({
+        where: { organizationId: orgId, snapshotId: snapshot.id, ...CATEGORY_BREAKDOWN_DIMENSIONS },
+        select: {
+          scope: true,
+          totalCo2e: true,
+          recordCount: true,
+          emissionCategory: { select: { id: true, code: true, name: true } },
+        },
+        orderBy: { totalCo2e: "desc" },
+      }),
+    ]);
+
+    const tiers = summariseTiers(
+      tierRows.map((r) => ({ dataOrigin: r.data_origin, evidenceStatus: r.evidence_status, reviewStatus: r.review_status, totalCo2e: r.kg, count: r.n })),
+    );
+
+    let records = null;
+    if (q.categoryId) {
+      const rows = await prisma.emissionCalculation.findMany({
+        where: {
+          organizationId: orgId,
+          calculationRunId: runId,
+          activityRecord: { emissionCategoryId: q.categoryId, ...(q.facilityId ? { facilityId: q.facilityId } : {}) },
+        },
+        orderBy: [{ totalCo2e: "desc" }, { id: "asc" }],
+        take: PAGE + 1,
+        ...(q.cursor ? { cursor: { id: q.cursor }, skip: 1 } : {}),
+        select: {
+          id: true,
+          totalCo2e: true,
+          formula: true,
+          factorValue: true,
+          factorLibraryVersion: true,
+          selectionReason: true,
+          normalizedAmount: true,
+          normalizedUnit: true,
+          warnings: true,
+          organizationEmissionFactorId: true,
+          activityRecord: {
+            select: {
+              id: true,
+              amount: true,
+              unit: true,
+              activityDate: true,
+              sourceDescription: true,
+              supplierName: true,
+              dataOrigin: true,
+              evidenceStatus: true,
+              reviewStatus: true,
+              fieldSubmissionId: true,
+              facility: { select: { name: true } },
+              importBatch: { select: { id: true, sourceFilename: true } },
+              evidence: { select: { evidenceFile: { select: { id: true, filename: true, mimeType: true } } } },
+            },
+          },
+        },
+      });
+      const more = rows.length > PAGE;
+      const page = more ? rows.slice(0, PAGE) : rows;
+      records = {
+        categoryId: q.categoryId,
+        nextCursor: more ? page[page.length - 1].id : null,
+        items: page.map((c) => {
+          const r = c.activityRecord;
+          const tierInput = { dataOrigin: r.dataOrigin, evidenceStatus: r.evidenceStatus, reviewStatus: r.reviewStatus };
+          return {
+            calculationId: c.id,
+            kgCo2e: Number(c.totalCo2e),
+            formula: c.formula,
+            factorValue: c.factorValue != null ? Number(c.factorValue) : null,
+            factorSource: c.organizationEmissionFactorId ? "Organisation factor" : c.factorLibraryVersion,
+            selectionReason: c.selectionReason,
+            normalized: `${Number(c.normalizedAmount).toLocaleString("en-GB", { maximumFractionDigits: 3 })} ${c.normalizedUnit}`,
+            warnings: Array.isArray(c.warnings) ? (c.warnings as Prisma.JsonArray).map(String) : [],
+            record: {
+              id: r.id,
+              amount: Number(r.amount),
+              unit: r.unit,
+              activityDate: r.activityDate,
+              description: r.supplierName ?? r.sourceDescription,
+              facility: r.facility?.name ?? null,
+              source: r.fieldSubmissionId ? "Field app" : r.importBatch ? `Import: ${r.importBatch.sourceFilename}` : "Entered in the web app",
+              ...tierInput,
+              tier: evidenceTier(tierInput),
+              tierReasons: tierReasons(tierInput),
+              evidence: r.evidence.map((e) => e.evidenceFile),
+            },
+          };
+        }),
+      };
     }
 
-    const lineageData = await fetchLineageData(orgId, query);
-
     return NextResponse.json({
-      aggregates: lineageData,
-      count: lineageData.length,
+      snapshot: {
+        id: snapshot.id,
+        version: snapshot.version,
+        publishedAt: snapshot.publishedAt,
+        periodId: snapshot.reportingPeriod.id,
+        periodLabel: snapshot.reportingPeriod.label,
+        factorLibrary: snapshot.calculationRun.factorLibrary ? `${snapshot.calculationRun.factorLibrary.name} ${snapshot.calculationRun.factorLibrary.version}` : null,
+        methodology: snapshot.calculationRun.methodologyVersion?.name ?? null,
+      },
+      tiers,
+      categories: categoryRows
+        .filter((c) => c.emissionCategory)
+        .map((c) => ({ ...c.emissionCategory!, scope: c.scope, kgCo2e: Number(c.totalCo2e), recordCount: c.recordCount })),
+      records,
     });
   } catch (err) {
     return handleRouteError(err);

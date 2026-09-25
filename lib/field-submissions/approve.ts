@@ -204,6 +204,9 @@ export async function approveSubmissionInTx(
         activityDate,
         reviewStatus: "approved",
         evidenceStatus: evidenceFileIds.length > 0 ? "complete" : "missing",
+        // Quantities read from a ticket, receipt or delivery note are
+        // invoiced primary data, not estimates.
+        dataOrigin: "invoiced",
         pickupPostcode: submission.pickupPostcode,
         deliveryPostcode: submission.deliveryPostcode,
         pickupLat: submission.pickupLat,

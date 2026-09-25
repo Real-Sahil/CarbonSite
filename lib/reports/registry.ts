@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { summariseTiers } from "@/lib/data-quality/evidence-tier";
+import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-method";
 import type { ReportData } from "./template";
 import { renderReportHtml } from "./template";
 import type { Aggregation, CalculationRow } from "./aggregation";
@@ -471,6 +473,7 @@ const handlers: Record<string, ReportHandler> = {
       n2oKg: agg.hasN2o ? agg.totalN2oKg : undefined,
       biogenicCo2Kg: agg.hasBiogenic ? agg.totalBiogenicKg : undefined,
       recordCount: calcs.length,
+      evidenceTiers: headlineEvidenceTiers(calcs),
       categories: ghgCategoryRows,
       baselineYear: opts.baselineYear as string | undefined,
       baselineTonnes,
@@ -930,4 +933,19 @@ function crpPlanForTemplate(p: CrpSections, agg: Aggregation): NonNullable<Ppn00
     futureNote: p.measures.futureNote,
     boardApproved: p.declaration.boardApproved,
   };
+}
+
+/** Percent of the headline total (market-based Scope 2 left out) by evidence tier. */
+function headlineEvidenceTiers(calcs: ReportContext["calcs"]) {
+  const split = summariseTiers(
+    calcs
+      .filter((c) => countsTowardHeadline(scope2MethodOf(c.activityRecord)))
+      .map((c) => ({
+        dataOrigin: c.activityRecord.dataOrigin,
+        evidenceStatus: c.activityRecord.evidenceStatus,
+        reviewStatus: c.activityRecord.reviewStatus,
+        totalCo2e: Number(c.totalCo2e),
+      })),
+  );
+  return { verified: split.verified.percent, partial: split.partial.percent, estimated: split.estimated.percent };
 }

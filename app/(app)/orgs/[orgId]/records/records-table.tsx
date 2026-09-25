@@ -12,6 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RecordActions } from "./record-actions";
 import { RecordEvidenceActions } from "./record-evidence-actions";
 import { cn } from "@/lib/utils";
+import { EvidenceTierBadge } from "@/components/evidence-tier-badge";
+import type { TierInput } from "@/lib/data-quality/evidence-tier";
 
 const REVIEW_LABELS: Record<string, string> = {
   draft: "Draft",
@@ -31,6 +33,7 @@ interface RecordRow {
   country: string | null;
   reviewStatus: string;
   evidenceStatus: string;
+  dataOrigin: TierInput["dataOrigin"];
   emissionCategory: { scope: number | string; name: string };
   reportingPeriod: { label: string };
   facility: { name: string } | null;
@@ -321,8 +324,8 @@ export function RecordsTable({ orgId, canManageRecords }: RecordsTableProps) {
             }))}
             canManage={canManageRecords}
           />
-          <div className="text-xs text-[#6B7280]">
-            {row.original.evidenceStatus.replaceAll("_", " ")}
+          <div className="mt-1">
+            <EvidenceTierBadge record={row.original} />
           </div>
         </div>
       ),

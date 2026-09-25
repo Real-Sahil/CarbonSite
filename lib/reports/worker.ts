@@ -10,6 +10,7 @@ import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
 import type { ReportData } from "./template";
 import { scope2MethodOf } from "@/lib/calculation/scope2-method";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
+import { evidenceTier, type TierInput } from "@/lib/data-quality/evidence-tier";
 import { getReportHandler, hasTypedTemplate, type ReportContext, type ReportResult } from "./registry";
 import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHeader, addVerificationLine } from "./pdf-generator";
 import { generateAuditNarrative } from "./narrative-generator";
@@ -719,7 +720,7 @@ type CalcRow = {
     scope2Method?: Scope2Method | null;
     emissionCategory: { code: string; name: string; scope: number };
     facility: { name: string } | null;
-  };
+  } & TierInput;
   originalAmount: unknown;
   originalUnit: string;
   normalizedAmount: unknown;
@@ -747,7 +748,7 @@ function buildCsv(calculations: CalcRow[], report: { organization: { name: strin
     `# Period: ${report.reportingPeriod.label} | Snapshot v${report.snapshot.version} | Factors: ${factorLib} | Methodology: ${methodology} (GWP ${gwp})`,
     `# Scope 2 is listed under both methods. Totals use location_based; do not add market_based to them.`,
     ...(attribution ? [`# ${attribution}`] : []),
-    ["scope","scope2_method","category_code","category_name","facility","source_description","original_amount","original_unit","normalized_amount","normalized_unit","factor_library_version","methodology","co2_kg","ch4_kg_co2e","n2o_kg_co2e","biogenic_co2_kg","total_kg_co2e","total_t_co2e","formula"].join(","),
+    ["scope","scope2_method","category_code","category_name","facility","source_description","original_amount","original_unit","normalized_amount","normalized_unit","factor_library_version","methodology","co2_kg","ch4_kg_co2e","n2o_kg_co2e","biogenic_co2_kg","total_kg_co2e","total_t_co2e","formula","data_origin","evidence_status","review_status","evidence_tier"].join(","),
   ];
   for (const calc of calculations) {
     const kg = Number(calc.totalCo2e);
@@ -771,6 +772,10 @@ function buildCsv(calculations: CalcRow[], report: { organization: { name: strin
       kg.toFixed(6),
       (kg / 1000).toFixed(6),
       esc2(calc.formula),
+      calc.activityRecord.dataOrigin,
+      calc.activityRecord.evidenceStatus,
+      calc.activityRecord.reviewStatus,
+      evidenceTier(calc.activityRecord),
     ].join(","));
   }
   return Buffer.from(lines.join("\n"), "utf-8");

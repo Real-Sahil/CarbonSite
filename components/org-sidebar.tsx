@@ -144,6 +144,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       ]},
       { label: "Audit", items: [
         { label: "Audit trail",    href: `/orgs/${orgId}/audit`,             icon: Clock, roles: CORE_ROLES },
+        { label: "Trace a figure", href: `/orgs/${orgId}/lineage`,            icon: Eye,   roles: CORE_ROLES },
         { label: "Data lineage",   href: `/orgs/${orgId}/audit/data-lineage`, icon: Eye,   roles: ["admin", "auditor"] },
       ]},
     ]},
