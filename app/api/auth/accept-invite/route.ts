@@ -11,20 +11,24 @@ import { acceptInviteSchema } from "@/lib/validation/org";
 export async function POST(req: NextRequest) {
   try {
     const body = acceptInviteSchema.parse(await req.json());
+
+    // Demo reviewer access for Google Play / App Store review only: set
+    // DEMO_REVIEWER_TOKEN (24+ characters) on Vercel and give reviewers the
+    // link. Checked before the rate limit, because store reviewers share
+    // network addresses and retry the same link.
+    const demoToken = process.env.DEMO_REVIEWER_TOKEN;
+    if (demoToken && demoToken.length >= 24 && body.token === demoToken) {
+      return handleDemoReviewerLogin(body.name ?? "Reviewer");
+    }
+
     // Rate-limit by IP, not by token — prevents enumeration via per-token buckets.
+    // Sites share one connection, so a crew joining together needs headroom.
     const limited = await rateLimitRequest(req, {
       key: "invite_accept",
-      limit: 5,
+      limit: 20,
       windowMs: 15 * 60_000,
     });
     if (limited) return limited;
-
-    // Demo reviewer bypass — for Google Play / App Store reviewers only.
-    // Token is set via DEMO_REVIEWER_TOKEN env var. Never expires, always reusable.
-    const demoToken = process.env.DEMO_REVIEWER_TOKEN;
-    if (demoToken && body.token === demoToken) {
-      return handleDemoReviewerLogin(body.name ?? "Reviewer");
-    }
 
     // 1. Look up and validate the invite link
     const invite = await prisma.inviteLink.findUnique({
@@ -228,13 +232,14 @@ async function handleDemoReviewerLogin(name: string) {
   // Session expires 10 years out — effectively permanent for reviewers.
   const sessionExpiresAt = new Date(now.getTime() + 10 * 365 * 86_400_000);
 
-  // Upsert demo org
+  // Upsert demo org. A pilot, so billing never blocks the reviewer.
   const org = await prisma.organization.upsert({
     where: { id: DEMO_ORG_ID },
-    update: {},
+    update: { isPilot: true },
     create: {
       id: DEMO_ORG_ID,
       name: DEMO_ORG_NAME,
+      isPilot: true,
     },
   });
 
@@ -283,6 +288,8 @@ async function handleDemoReviewerLogin(name: string) {
     },
   });
 
+  await ensureDemoWorkspace(DEMO_ORG_ID, DEMO_USER_ID, now);
+
   // Always issue a fresh session token so multiple review cycles work
   const sessionToken = randomUUID();
   await prisma.session.create({
@@ -299,5 +306,54 @@ async function handleDemoReviewerLogin(name: string) {
     sessionToken,
     org: { id: org.id, name: org.name },
     role: "field_worker",
+  });
+}
+
+/**
+ * Gives the demo reviewer something to use: a site they are assigned to (the
+ * app lists it under Projects) and a reporting period covering today, so a
+ * photographed ticket can be submitted end to end.
+ */
+async function ensureDemoWorkspace(orgId: string, userId: string, now: Date) {
+  const year = now.getUTCFullYear();
+  const periodId = `demo-reviewer-period-${year}`;
+  await prisma.reportingPeriod.upsert({
+    where: { id: periodId },
+    update: {},
+    create: {
+      id: periodId,
+      organizationId: orgId,
+      type: "year",
+      label: `FY${year}`,
+      startDate: new Date(Date.UTC(year, 0, 1)),
+      endDate: new Date(Date.UTC(year, 11, 31)),
+    },
+  });
+  await prisma.contract.upsert({
+    where: { id: "demo-reviewer-contract" },
+    update: {},
+    create: { id: "demo-reviewer-contract", organizationId: orgId, name: "Demo highways contract", createdByUserId: userId },
+  });
+  await prisma.project.upsert({
+    where: { id: "demo-reviewer-project" },
+    update: {},
+    create: { id: "demo-reviewer-project", organizationId: orgId, contractId: "demo-reviewer-contract", name: "Demo road scheme" },
+  });
+  await prisma.site.upsert({
+    where: { id: "demo-reviewer-site" },
+    update: {},
+    create: {
+      id: "demo-reviewer-site",
+      organizationId: orgId,
+      projectId: "demo-reviewer-project",
+      name: "Demo site compound",
+      city: "Demo",
+      country: "GB",
+    },
+  });
+  await prisma.fieldWorkerSiteAssignment.upsert({
+    where: { organizationId_userId_siteId: { organizationId: orgId, userId, siteId: "demo-reviewer-site" } },
+    update: {},
+    create: { organizationId: orgId, userId, siteId: "demo-reviewer-site", assignedByUserId: userId },
   });
 }

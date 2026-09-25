@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/endpoints.dart';
 import '../../core/utils/error_sanitizer.dart';
+import 'invite_errors.dart';
 
 class InviteScreen extends StatefulWidget {
   final String token;
@@ -70,46 +72,16 @@ class _InviteScreenState extends State<InviteScreen> {
   }
 
   String _friendlyError(Object e) {
-    // Sanitize the error message first to remove sensitive data
-    final sanitized = ErrorSanitizer.sanitize(e.toString());
-    final msg = sanitized.toLowerCase();
-
-    if (msg.contains('already a member') || msg.contains('already_member')) {
-      return 'This invite was already used on another device or install. '
-          'Ask your administrator to send a new invite link to sign in again.';
+    if (e is DioException) {
+      final data = e.response?.data;
+      final code = data is Map ? data['code']?.toString() : null;
+      return inviteErrorMessage(
+        status: e.response?.statusCode,
+        code: code,
+        raw: ErrorSanitizer.sanitize('${e.type} ${e.error ?? ''} ${e.message ?? ''}'),
+      );
     }
-
-    if (msg.contains('404') ||
-        msg.contains('invalid') ||
-        msg.contains('expired') ||
-        msg.contains('already_used')) {
-      return 'This invite link is invalid or has already been used. Ask your administrator to send a new one.';
-    }
-
-    if (msg.contains('connection refused') ||
-        msg.contains('localhost') ||
-        msg.contains('127.0.0.1') ||
-        msg.contains('os error: 111') ||
-        msg.contains('os error: 61') ||
-        msg.contains('failed host lookup') ||
-        msg.contains('no address associated') ||
-        msg.contains('no route to host') ||
-        msg.contains('os error: 7') ||
-        msg.contains('os error: 65')) {
-      return 'Could not reach the server. Make sure you pasted the full invite link from your administrator.';
-    }
-
-    if (msg.contains('socketexception') ||
-        msg.contains('network is unreachable') ||
-        msg.contains('network unreachable')) {
-      return 'No internet connection. Check your network and try again.';
-    }
-
-    if (msg.contains('500') || msg.contains('502') || msg.contains('503')) {
-      return 'The server is temporarily unavailable. Try again in a moment.';
-    }
-
-    return 'Something went wrong. Please try again or ask your administrator to resend the invite link.';
+    return inviteErrorMessage(raw: ErrorSanitizer.sanitize(e.toString()));
   }
 
   @override

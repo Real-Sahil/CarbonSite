@@ -174,7 +174,10 @@ String normalizeBaseUrl(String value) {
     throw ArgumentError(
         'MetricOra API base URL must use HTTPS outside localhost.');
   }
-  return uri.replace(path: trimTrailingSlash(uri.path)).toString();
+  // The bare domain redirects to www (308), and a redirected POST is not
+  // followed, so an invite opened on the bare domain could never be accepted.
+  final host = uri.host == 'metricora.co.uk' ? 'www.metricora.co.uk' : uri.host;
+  return uri.replace(host: host, path: trimTrailingSlash(uri.path)).toString();
 }
 
 String trimTrailingSlash(String path) {
