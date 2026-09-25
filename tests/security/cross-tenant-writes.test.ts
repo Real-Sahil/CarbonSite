@@ -46,6 +46,7 @@ const db = vi.hoisted(() => {
     svOutcome: model(),
     svMeasure: model(),
     facility: model(),
+    tcfdRiskAssessment: model(),
     $transaction: vi.fn(),
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
@@ -377,5 +378,21 @@ describe("social value commitments and activities", () => {
     expect(res.status).toBe(404);
     expect(db.svCommitment.findFirst.mock.calls[0][0].where).toEqual({ id: "cm-b", organizationId: ORG_A });
     expect(db.svActivity.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("climate risk owners", () => {
+  it("will not name a user from another organisation as a risk owner", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/tcfd/risks/[riskId]/route");
+    db.tcfdRiskAssessment.findFirst.mockResolvedValue({ id: "risk-a", organizationId: ORG_A });
+    db.organizationMembership.findFirst.mockResolvedValue(null);
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}/tcfd/risks/risk-a`, { ownerUserId: "user-b" }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A, riskId: "risk-a" }),
+    });
+
+    expect(res.status).toBe(404);
+    expect(db.organizationMembership.findFirst.mock.calls[0][0].where).toEqual({ userId: "user-b", organizationId: ORG_A });
+    expect(db.tcfdRiskAssessment.update).not.toHaveBeenCalled();
   });
 });

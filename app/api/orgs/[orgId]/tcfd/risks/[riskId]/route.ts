@@ -35,6 +35,13 @@ export async function PATCH(
     if (!existing) return apiError("NOT_FOUND", "Risk not found", 404);
 
     const body = UpdateRiskSchema.parse(await req.json());
+    if (body.ownerUserId) {
+      const owner = await prisma.organizationMembership.findFirst({
+        where: { userId: body.ownerUserId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!owner) return apiError("NOT_FOUND", "Owner is not a member of this organisation.", 404);
+    }
 
     const risk = await prisma.tcfdRiskAssessment.update({
       where: { id: riskId },

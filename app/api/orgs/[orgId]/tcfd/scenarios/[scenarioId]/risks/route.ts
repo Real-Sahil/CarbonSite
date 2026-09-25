@@ -36,6 +36,14 @@ export async function POST(
 
     const body = CreateRiskSchema.parse(await req.json());
 
+    if (body.ownerUserId) {
+      const owner = await prisma.organizationMembership.findFirst({
+        where: { userId: body.ownerUserId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!owner) return apiError("NOT_FOUND", "Owner is not a member of this organisation.", 404);
+    }
+
     const risk = await prisma.tcfdRiskAssessment.create({
       data: {
         organizationId: orgId,
