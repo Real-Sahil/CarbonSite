@@ -44,6 +44,7 @@ export function Ppn026Panel(p: Props) {
   const [logFor, setLogFor] = useState<string | null>(null);
   const [kpi, setKpi] = useState({ criterion: p.criteria[0]?.code ?? "jobs", title: "", target: "", unit: "" });
   const [entry, setEntry] = useState({ date: new Date().toISOString().slice(0, 10), quantity: "", evidence: "", note: "" });
+  const [file, setFile] = useState<File | null>(null);
 
   async function run(key: string, fn: () => Promise<string | null>, done?: () => void) {
     setBusy(key);
@@ -181,17 +182,32 @@ export function Ppn026Panel(p: Props) {
             const k = p.criteria.flatMap((c) => c.kpis).find((x) => x.id === logFor);
             void run(
               "log",
-              () =>
-                send(`/api/orgs/${p.orgId}/sv/activities`, {
+              async () => {
+                let evidenceUrl = entry.evidence;
+                if (file) {
+                  try {
+                    const body = new FormData();
+                    body.append("file", file);
+                    const up = await fetch(`/api/orgs/${p.orgId}/sv/activities/evidence`, { method: "POST", body });
+                    const d = (await up.json().catch(() => ({}))) as { url?: string; message?: string };
+                    if (!up.ok || !d.url) return d.message ?? "Couldn't upload the evidence file.";
+                    evidenceUrl = d.url;
+                  } catch {
+                    return NETWORK;
+                  }
+                }
+                return send(`/api/orgs/${p.orgId}/sv/activities`, {
                   commitmentId: logFor,
                   title: k?.title ?? "Delivery",
                   description: entry.note || undefined,
                   activityDate: entry.date,
                   quantityValue: Number(entry.quantity),
                   quantityUnit: unitFor(logFor) || undefined,
-                  evidenceUrls: entry.evidence ? [entry.evidence] : undefined,
-                }),
+                  evidenceUrls: evidenceUrl ? [evidenceUrl] : undefined,
+                });
+              },
               () => {
+                setFile(null);
                 setLogFor(null);
                 setEntry({ date: new Date().toISOString().slice(0, 10), quantity: "", evidence: "", note: "" });
               },
@@ -208,8 +224,9 @@ export function Ppn026Panel(p: Props) {
             <input id="ppn026-qty" type="number" min="0" step="any" required className={inputCls} value={entry.quantity} onChange={(e) => setEntry({ ...entry, quantity: e.target.value })} />
           </div>
           <div className="sm:col-span-2">
-            <label htmlFor="ppn026-evidence" className={labelCls}>Evidence link</label>
-            <input id="ppn026-evidence" type="url" placeholder="Link to payroll extract, training record or timesheet" className={inputCls} value={entry.evidence} onChange={(e) => setEntry({ ...entry, evidence: e.target.value })} />
+            <label htmlFor="ppn026-file" className={labelCls}>Evidence file</label>
+            <input id="ppn026-file" type="file" accept="application/pdf,image/*,.csv,.xlsx,.docx" className="block w-full text-sm text-[#374151] file:mr-3 file:rounded-md file:border file:border-[#D1D5DB] file:bg-white file:px-3 file:py-1.5 file:text-sm" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            <input id="ppn026-evidence" type="url" aria-label="Or a link to the evidence" placeholder="Or a link to the payroll extract, training record or timesheet" className={`${inputCls} mt-2`} value={entry.evidence} onChange={(e) => setEntry({ ...entry, evidence: e.target.value })} />
           </div>
           <div className="sm:col-span-3">
             <label htmlFor="ppn026-note" className={labelCls}>Note</label>
