@@ -9,13 +9,31 @@ interface InvitePageProps {
   searchParams: Promise<{ webform?: string }>;
 }
 
+// iPadOS Safari sends a desktop Mac user agent by default, so a Mac agent is
+// treated as a possible iPad here; MobileAppInvite checks for a touch screen
+// and sends a real Mac to the web form.
 function isMobileUserAgent(ua: string): boolean {
-  return /android|iphone|ipad|ipod/i.test(ua);
+  return /android|iphone|ipad|ipod|macintosh/i.test(ua);
 }
 
 export default async function InvitePage({ params, searchParams }: InvitePageProps) {
   const { token } = await params;
   const { webform } = await searchParams;
+
+  // The store reviewers' demo link (DEMO_REVIEWER_TOKEN) is not an invite
+  // row: it only opens the app, which signs in to the demo organisation.
+  const demoToken = process.env.DEMO_REVIEWER_TOKEN;
+  if (demoToken && demoToken.length >= 24 && token === demoToken) {
+    return (
+      <main className="min-h-screen bg-slate-50 px-4 py-10">
+        <div className="mx-auto flex max-w-md flex-col gap-6">
+          <h1 className="text-2xl font-bold text-slate-950">MetricOra demo</h1>
+          <MobileAppInvite token={token} orgName="MetricOra Demo" appOnly />
+        </div>
+      </main>
+    );
+  }
+
   const invite = await prisma.inviteLink.findUnique({
     where: { token },
     include: { organization: { select: { id: true, name: true } } },

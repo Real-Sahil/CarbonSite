@@ -7,15 +7,26 @@ import { Button } from "@/components/ui/button";
 interface MobileAppInviteProps {
   token: string;
   orgName: string;
+  /** No web form to fall back to (the store reviewers' demo link). */
+  appOnly?: boolean;
 }
 
-export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
+export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppInviteProps) {
   const [opening, setOpening] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
+  const [android, setAndroid] = useState(false);
 
   // Auto-attempt to open the app on mount for a true magic-link experience.
   // The page stays visible as a fallback while the OS tries to hand off.
   useEffect(() => {
+    const ua = navigator.userAgent;
+    // A Mac agent without a touch screen is a real Mac, not an iPad in
+    // desktop mode: it has no app, so show the web form.
+    if (!appOnly && /Macintosh/.test(ua) && navigator.maxTouchPoints === 0) {
+      window.location.replace("?webform=1");
+      return;
+    }
+    setAndroid(/android/i.test(ua));
     const url = `metricora://app/invite/${token}?server=${encodeURIComponent(window.location.origin)}`;
     setOpening(true);
     window.location.href = url;
@@ -24,7 +35,7 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
       setShowFallback(true);
     }, 2500);
     return () => clearTimeout(t);
-  }, [token]);
+  }, [token, appOnly]);
 
   function handleOpenApp() {
     const url = `metricora://app/invite/${token}?server=${encodeURIComponent(window.location.origin)}`;
@@ -79,24 +90,28 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
             App not installed?
           </p>
           <p className="text-sm text-slate-500">
-            Download the MetricOra app, then tap{" "}
+            Install the MetricOra app on this device, then tap{" "}
             <strong>Open MetricOra App</strong> again.
           </p>
-          <a
-            href={
-              process.env.NEXT_PUBLIC_MOBILE_INSTALL_URL ??
-              "https://play.google.com/store/apps/details?id=app.metricora.metricora_mobile"
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-[#0F766E] hover:text-[#0B5F59] font-medium"
-          >
-            Get the MetricOra app
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+          {android && (
+            <a
+              href={
+                process.env.NEXT_PUBLIC_MOBILE_INSTALL_URL ??
+                "https://play.google.com/store/apps/details?id=app.metricora.metricora_mobile"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-[#0F766E] hover:text-[#0B5F59] font-medium"
+            >
+              Get the MetricOra app on Google Play
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
         </div>
       )}
 
+      {!appOnly && (
+      <>
       {/* Divider */}
       <div className="flex items-center gap-3">
         <div className="flex-1 border-t border-slate-200" />
@@ -114,6 +129,8 @@ export function MobileAppInvite({ token, orgName }: MobileAppInviteProps) {
         </a>
         .
       </p>
+      </>
+      )}
     </div>
   );
 }
