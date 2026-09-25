@@ -36,6 +36,7 @@ const TIERS: Tier[] = [
       { name: "Up to 3 sites and 5 web users", included: true },
       { name: "Unlimited field workers on the mobile app", included: true },
       { name: "Scope 1, 2 and 3 with DEFRA, EPA, ADEME and spend factors", included: true },
+      { name: "Guided PPN 006 Carbon Reduction Plan and SECR report", included: true },
       { name: "Emissions reports with the auditor's CSV calculation trail", included: true },
       { name: "Email support", included: true },
       { name: "Social value (TOMs) tracking", included: false },

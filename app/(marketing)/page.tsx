@@ -24,7 +24,7 @@ import {
 export const metadata: Metadata = withSocial({
   title: { absolute: "MetricOra | Carbon evidence and reporting for UK contractors" },
   description:
-    "Capture site paperwork, meter data and supplier spend, review it, calculate Scope 1, 2 and 3 with named DEFRA factors, and publish reports every figure of which can be traced.",
+    "Carbon figures that hold up when a tender evaluator, verifier or main contractor checks them. Guided PPN 006 Carbon Reduction Plan, SECR and GHG Protocol reports from one set of reviewed records.",
   alternates: { canonical: "/" },
 });
 
@@ -109,6 +109,42 @@ const jsonLd = {
   ],
 };
 
+const CHECKERS = [
+  {
+    who: "Tender evaluators",
+    asks: "Is the Carbon Reduction Plan complete, signed and consistent with your other answers?",
+    answer:
+      "The guided PPN 006 plan checks what an evaluator looks for before it can be generated: all five required Scope 3 categories reported or explained, a baseline and why it was chosen, net zero by 2050, and a director's sign-off.",
+  },
+  {
+    who: "Auditors and verifiers",
+    asks: "Can you show me how this total was calculated?",
+    answer:
+      "Every emissions report ships with a CSV calculation trail: each record's amount, factor, library and formula. Published figures cannot be edited; a correction creates a new version, and the change is logged.",
+  },
+  {
+    who: "Main contractors and clients",
+    asks: "What did this contract emit, and what social value did it deliver?",
+    answer:
+      "Activity is recorded against the contract it belongs to, so the bid carbon pack can show a contract's carbon, waste and National TOMs delivery side by side, from the same records.",
+  },
+];
+
+const FIRST_DOCUMENTS = [
+  {
+    title: "Carbon Reduction Plan (PPN 006)",
+    text: "For central government contracts of £5 million a year or more. A guided plan in the Cabinet Office format, section by section, with a check of every required item before you generate it.",
+  },
+  {
+    title: "SECR report",
+    text: "For the Directors' Report of large companies. UK energy in kWh taken from your records, Scope 1 and 2, an intensity ratio and your efficiency measures.",
+  },
+  {
+    title: "GHG Protocol report",
+    text: "Scope 1, 2 and 3 for customers, lenders and your board, with location- and market-based Scope 2 side by side.",
+  },
+];
+
 const STANDARDS = ["GHG Protocol Corporate Standard", "DEFRA 2025 and 2026 factors", "US EPA and USEEIO 1.3", "ADEME Base Carbone", "IPCC AR6 GWPs"];
 
 export default function HomePage() {
@@ -120,10 +156,10 @@ export default function HomePage() {
         <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.15fr]">
           <div className="flex flex-col gap-6">
             <Eyebrow tone="dark">Carbon evidence and reporting</Eyebrow>
-            <H1>Every tonne traced to a ticket, a factor and a formula.</H1>
+            <H1>Carbon figures that hold up when someone checks them.</H1>
             <Lead tone="dark">
-              MetricOra takes site paperwork, meter readings and supplier spend through review, calculation and publication, so the number in your report can be
-              checked line by line.
+              Your Carbon Reduction Plan, SECR disclosure and tender answers come from one set of reviewed records. When an evaluator, verifier or main
+              contractor asks where a number came from, you can show the ticket, the factor and the formula.
             </Lead>
             <div className="flex flex-wrap gap-3">
               <ButtonLink href="/sign-up">Start a 30-day trial</ButtonLink>
@@ -156,6 +192,44 @@ export default function HomePage() {
           </ul>
         </div>
       </div>
+
+      <Section tone="light">
+        <SectionIntro
+          eyebrow="Who checks your numbers"
+          title="Written for the person who checks it."
+          lead="Carbon figures are read by people whose job is to find the weak one. Each of them gets what they look for."
+        />
+        <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line md:grid-cols-3">
+          {CHECKERS.map((c) => (
+            <div key={c.who} className="flex flex-col gap-3 bg-mk-surface p-7">
+              <H3>{c.who}</H3>
+              <p className="text-[15px] font-medium text-mk-text">{c.asks}</p>
+              <Body>{c.answer}</Body>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section tone="paper">
+        <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.3fr]">
+          <SectionIntro
+            eyebrow="Start here"
+            title="The three documents most contractors need."
+            lead="New accounts see these first. ESRS, CDP, CBAM, NHS Evergreen, BREEAM and National TOMs reports are there when a client asks for them."
+          />
+          <ol className="grid gap-4">
+            {FIRST_DOCUMENTS.map((d, i) => (
+              <li key={d.title} className="flex gap-4 rounded-[12px] border border-mk-line bg-mk-surface p-6">
+                <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
+                <div className="flex flex-col gap-1.5">
+                  <H3>{d.title}</H3>
+                  <Body>{d.text}</Body>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Section>
 
       <Section tone="light">
         <SectionIntro

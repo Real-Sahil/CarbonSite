@@ -20,7 +20,7 @@ export default function PublicSectorPage() {
         problems: [
           {
             problem: "Rewriting the Carbon Reduction Plan for every bid",
-            answer: "The bid carbon pack includes a PPN 006 Carbon Reduction Plan built from your published snapshots, base year and targets, so the figures match every other document you submit.",
+            answer: "A guided PPN 006 plan takes you through the Cabinet Office template section by section and checks each required item before it is generated. Next year's plan starts from this year's text, and the figures come from your published snapshots, so they match every other document you submit.",
           },
           {
             problem: "Tender carbon sections take days",
