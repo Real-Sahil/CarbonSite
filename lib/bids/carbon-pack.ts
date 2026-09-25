@@ -79,11 +79,20 @@ export type BidPackData = {
     tonnesPerMillion: number | null;
     budgetTonnes: number | null;
     socialValuePounds: number;
+    /// National TOMs on this contract, for periods ending on or before the
+    /// snapshot's period end: the committed target beside what was delivered.
+    socialValue: ContractSocialValue;
     wasteTonnes: number;
     diversionRate: number | null;
   }[];
   socialValuePounds: number;
   signatory: { name: string | null; title: string | null; date: string | null };
+};
+
+export type ContractSocialValue = {
+  targetPounds: number | null;
+  themes: { code: string; name: string; pounds: number }[];
+  measures: { code: string; name: string; quantity: number; unit: string; pounds: number }[];
 };
 
 const DIVERTED = new Set(["recycle", "recovery"]);
@@ -274,7 +283,7 @@ export async function loadBidPackData(orgId: string, snapshotId: string, rawOpti
           }
         : null,
     },
-    contracts: await loadContractEvidence(orgId, snapshot.calculationRun.id, contracts, contractIds),
+    contracts: await loadContractEvidence(orgId, snapshot.calculationRun.id, contracts, contractIds, periodEnd),
     socialValuePounds: Number(svPeriod._sum.valuePounds ?? 0),
     signatory: { name: opts.signatoryName || null, title: opts.signatoryTitle || null, date: opts.signatoryDate || null },
   };
@@ -285,11 +294,13 @@ async function loadContractEvidence(
   calculationRunId: string,
   contracts: Awaited<ReturnType<typeof prisma.contract.findMany>>,
   requestedOrder: string[],
+  periodEnd: Date,
 ): Promise<BidPackData["contracts"]> {
   if (contracts.length === 0) return [];
   const ids = contracts.map((c) => c.id);
+  const toDate = { reportingPeriod: { endDate: { lte: periodEnd } } };
 
-  const [calcs, budgets, social, waste] = await Promise.all([
+  const [calcs, budgets, social, waste, svTargets] = await Promise.all([
     prisma.emissionCalculation.findMany({
       where: { organizationId: orgId, calculationRunId, activityRecord: { contractId: { in: ids } } },
       select: {
@@ -301,14 +312,22 @@ async function loadContractEvidence(
       where: { organizationId: orgId, project: { contractId: { in: ids } } },
       select: { totalBudgetTco2e: true, project: { select: { contractId: true } } },
     }),
-    prisma.socialValueRecord.groupBy({
-      by: ["contractId"],
-      where: { organizationId: orgId, contractId: { in: ids } },
-      _sum: { valuePounds: true },
+    prisma.socialValueRecord.findMany({
+      where: { organizationId: orgId, contractId: { in: ids }, ...toDate },
+      select: {
+        contractId: true,
+        quantity: true,
+        valuePounds: true,
+        measure: { select: { tomsCode: true, name: true, unit: true, theme: { select: { code: true, name: true, sortOrder: true } } } },
+      },
     }),
     prisma.wasteRecord.findMany({
       where: { organizationId: orgId, project: { contractId: { in: ids } } },
       select: { weightTonnes: true, disposalRoute: true, project: { select: { contractId: true } } },
+    }),
+    prisma.socialValueTarget.findMany({
+      where: { organizationId: orgId, contractId: { in: ids }, ...toDate },
+      select: { contractId: true, targetPounds: true },
     }),
   ]);
 
@@ -347,7 +366,11 @@ async function loadContractEvidence(
         tonnes,
         tonnesPerMillion: value && value > 0 ? tonnes / (value / 1_000_000) : null,
         budgetTonnes: budget.get(c.id) ?? null,
-        socialValuePounds: Number(social.find((s) => s.contractId === c.id)?._sum.valuePounds ?? 0),
+        socialValuePounds: social.filter((r) => r.contractId === c.id).reduce((sum, r) => sum + Number(r.valuePounds), 0),
+        socialValue: summariseSocialValue(
+          social.filter((r) => r.contractId === c.id),
+          svTargets.filter((tg) => tg.contractId === c.id),
+        ),
         wasteTonnes: w?.tonnes ?? 0,
         diversionRate: w && w.tonnes > 0 ? w.diverted / w.tonnes : null,
       };
@@ -356,6 +379,66 @@ async function loadContractEvidence(
 }
 
 // ── Pure helpers (unit tested) ────────────────────────────────────────────────
+
+type SvRecord = {
+  quantity: { toString(): string };
+  valuePounds: { toString(): string };
+  measure: { tomsCode: string; name: string; unit: string; theme: { code: string; name: string; sortOrder: number } };
+};
+
+/** TOMs delivered by theme (framework order) and the five largest measures, beside the committed target. */
+export function summariseSocialValue(records: SvRecord[], targets: { targetPounds: { toString(): string } }[]): ContractSocialValue {
+  const themes = new Map<string, { code: string; name: string; order: number; pounds: number }>();
+  const measures = new Map<string, { code: string; name: string; quantity: number; unit: string; pounds: number }>();
+  for (const r of records) {
+    const pounds = Number(r.valuePounds);
+    const th = themes.get(r.measure.theme.code) ?? { code: r.measure.theme.code, name: r.measure.theme.name, order: r.measure.theme.sortOrder, pounds: 0 };
+    th.pounds += pounds;
+    themes.set(th.code, th);
+    const m = measures.get(r.measure.tomsCode) ?? { code: r.measure.tomsCode, name: r.measure.name, quantity: 0, unit: r.measure.unit, pounds: 0 };
+    m.quantity += Number(r.quantity);
+    m.pounds += pounds;
+    measures.set(m.code, m);
+  }
+  return {
+    targetPounds: targets.length ? targets.reduce((sum, tg) => sum + Number(tg.targetPounds), 0) : null,
+    themes: [...themes.values()].sort((a, b) => a.order - b.order).map(({ code, name, pounds }) => ({ code, name, pounds })),
+    measures: [...measures.values()].sort((a, b) => b.pounds - a.pounds).slice(0, 5),
+  };
+}
+
+const fmtGbp = (v: number) => `£${Math.round(v).toLocaleString("en-GB")}`;
+
+/**
+ * One answer per featured contract that puts its carbon, waste and social
+ * value side by side, for a tender question about comparable work. Built only
+ * from the pack's figures; a clause with no figure is left out.
+ */
+export function contractAnswer(c: BidPackData["contracts"][number], periodLabel: string): string {
+  const parts: string[] = [];
+  const intro = `On ${c.name}${c.client ? ` for ${c.client}` : ""} we recorded ${fmtT(c.tonnes)} tCO2e in ${periodLabel}`;
+  const carbon: string[] = [];
+  if (c.tonnesPerMillion != null) carbon.push(`${fmtT(c.tonnesPerMillion)} tCO2e per £1m of contract value`);
+  if (c.budgetTonnes != null) carbon.push(`against a carbon budget of ${fmtT(c.budgetTonnes)} tCO2e`);
+  parts.push(`${intro}${carbon.length ? `, ${carbon.join(", ")}` : ""}.`);
+  if (c.wasteTonnes > 0 && c.diversionRate != null) {
+    parts.push(`${(c.diversionRate * 100).toFixed(0)}% of ${fmtT(c.wasteTonnes)} t of waste was diverted from landfill.`);
+  }
+  const sv = c.socialValue;
+  if (c.socialValuePounds > 0) {
+    const vs = sv.targetPounds != null && sv.targetPounds > 0 ? ` against a commitment of ${fmtGbp(sv.targetPounds)} (${Math.round((c.socialValuePounds / sv.targetPounds) * 100)}%)` : "";
+    const top = sv.measures.slice(0, 3).map((m) => `${m.name} (${m.code})`);
+    parts.push(
+      `We have delivered ${fmtGbp(c.socialValuePounds)} of social value measured with the National TOMs${vs}${top.length ? `, led by ${listNames(top)}` : ""}.`,
+    );
+  } else if (sv.targetPounds != null && sv.targetPounds > 0) {
+    parts.push(`We have committed ${fmtGbp(sv.targetPounds)} of social value under the National TOMs; delivery is recorded as it happens.`);
+  }
+  if (c.socialValuePounds > 0 || (sv.targetPounds ?? 0) > 0) {
+    parts.push("Carbon and social value are recorded against the same contract, so both figures come from one set of records.");
+  }
+  return parts.join(" ");
+}
 
 const fmtT = (v: number) => v.toLocaleString("en-GB", { maximumFractionDigits: v < 10 ? 2 : 1 });
 const pct = (v: number) => `${Math.abs(v * 100).toFixed(1)}%`;
@@ -500,6 +583,19 @@ export function bidAnswers(d: BidPackData): { question: string; answer: string }
     out.push({
       question: "How do you measure and manage carbon on contracts like this one?",
       answer: `Every contract's activity data is recorded against it and calculated with the same method as our corporate inventory. Examples: ${lines.join("; ")}.`,
+    });
+  }
+
+  const withSv = d.contracts.filter((c) => c.socialValuePounds > 0);
+  if (withSv.length) {
+    const delivered = withSv.reduce((sum, c) => sum + c.socialValuePounds, 0);
+    const lines = withSv.slice(0, 3).map((c) => {
+      const tg = c.socialValue.targetPounds;
+      return `${c.name}: ${fmtGbp(c.socialValuePounds)}${tg ? ` of ${fmtGbp(tg)} committed` : ""}`;
+    });
+    out.push({
+      question: "What social value have you delivered on comparable contracts?",
+      answer: `We measure social value with the National TOMs and record it against each contract as it is delivered. On the contracts featured here we have delivered ${fmtGbp(delivered)} to date: ${lines.join("; ")}.`,
     });
   }
 

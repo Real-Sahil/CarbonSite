@@ -24,6 +24,8 @@ import {
   bidPackReadiness,
   loadBidPackData,
   scopeTotalsFromRollup,
+  summariseSocialValue,
+  contractAnswer,
   type BidPackData,
 } from "../carbon-pack";
 import { renderBidCarbonPackHtml } from "@/lib/reports/templates/bid-carbon-pack";
@@ -66,6 +68,14 @@ function pack(over: Partial<BidPackData> = {}): BidPackData {
       id: "c1", name: "A2 resurfacing", client: "National Highways", reference: "NH-9", value: 4_000_000, currency: "GBP",
       startDate: new Date("2024-04-01"), endDate: null, tonnes: 80, tonnesPerMillion: 20, budgetTonnes: 120,
       socialValuePounds: 250_000, wasteTonnes: 300, diversionRate: 0.94,
+      socialValue: {
+        targetPounds: 400_000,
+        themes: [{ code: "NT1", name: "Jobs", pounds: 180_000 }, { code: "NT3", name: "Growth", pounds: 70_000 }],
+        measures: [
+          { code: "NT1", name: "Local employment", quantity: 4, unit: "FTE", pounds: 180_000 },
+          { code: "NT18", name: "Spend with local SMEs", quantity: 70_000, unit: "£", pounds: 70_000 },
+        ],
+      },
     }],
     socialValuePounds: 400_000,
     signatory: { name: "Jo Bloggs", title: "Managing Director", date: "2026-03-10" },
@@ -125,10 +135,56 @@ describe("model answers", () => {
   });
 });
 
+describe("social value per contract", () => {
+  const rec = (code: string, theme: string, order: number, qty: number, pounds: number) => ({
+    quantity: qty, valuePounds: pounds,
+    measure: { tomsCode: code, name: `Measure ${code}`, unit: "FTE", theme: { code: theme, name: `Theme ${theme}`, sortOrder: order } },
+  });
+
+  it("sums delivery by theme in framework order and ranks measures by value", () => {
+    const sv = summariseSocialValue(
+      [rec("NT3", "T2", 2, 1, 10), rec("NT1", "T1", 1, 2, 50), rec("NT1", "T1", 1, 1, 25), rec("NT9", "T2", 2, 5, 40)],
+      [{ targetPounds: 100 }, { targetPounds: 60 }],
+    );
+    expect(sv.targetPounds).toBe(160);
+    expect(sv.themes).toEqual([{ code: "T1", name: "Theme T1", pounds: 75 }, { code: "T2", name: "Theme T2", pounds: 50 }]);
+    expect(sv.measures.map((m) => [m.code, m.quantity, m.pounds])).toEqual([["NT1", 3, 75], ["NT9", 5, 40], ["NT3", 1, 10]]);
+  });
+
+  it("has no target when none was set, rather than a zero commitment", () => {
+    expect(summariseSocialValue([], []).targetPounds).toBeNull();
+  });
+
+  it("answers for one contract with carbon, waste and TOMs side by side", () => {
+    const text = contractAnswer(pack().contracts[0], "FY2025");
+    expect(text).toContain("On A2 resurfacing for National Highways we recorded 80 tCO2e in FY2025");
+    expect(text).toContain("20 tCO2e per £1m");
+    expect(text).toContain("against a carbon budget of 120 tCO2e");
+    expect(text).toContain("94% of 300 t of waste");
+    expect(text).toContain("£250,000 of social value measured with the National TOMs against a commitment of £400,000 (63%)");
+    expect(text).toContain("Local employment (NT1)");
+    expect(text).not.toMatch(/undefined|NaN|null/);
+  });
+
+  it("states a commitment without delivery, and nothing about social value when neither exists", () => {
+    const c = pack().contracts[0];
+    const committed = contractAnswer({ ...c, socialValuePounds: 0, socialValue: { targetPounds: 50_000, themes: [], measures: [] } }, "FY2025");
+    expect(committed).toContain("We have committed £50,000");
+    const none = contractAnswer({ ...c, socialValuePounds: 0, socialValue: { targetPounds: null, themes: [], measures: [] } }, "FY2025");
+    expect(none).not.toContain("social value");
+  });
+
+  it("adds a social value model answer only when a featured contract delivered some", () => {
+    expect(bidAnswers(pack()).map((a) => a.question)).toContain("What social value have you delivered on comparable contracts?");
+    const c = { ...pack().contracts[0], socialValuePounds: 0 };
+    expect(bidAnswers(pack({ contracts: [c] })).map((a) => a.question)).not.toContain("What social value have you delivered on comparable contracts?");
+  });
+});
+
 describe("pack document", () => {
   it("renders the CRP, evidence and sign-off without placeholders", () => {
     const html = renderBidCarbonPackHtml(pack());
-    for (const s of ["Carbon Reduction Plan", "Declaration and sign-off", "Jo Bloggs", "A2 resurfacing", "Model answers", "KCC-123"]) {
+    for (const s of ["Carbon Reduction Plan", "Declaration and sign-off", "Jo Bloggs", "A2 resurfacing", "Model answers", "KCC-123", "Social value committed (TOMs)", "63% of commitment", "Largest TOMs measures", "Answer for this contract"]) {
       expect(html).toContain(s);
     }
     expect(html).not.toMatch(/undefined|NaN|null/);

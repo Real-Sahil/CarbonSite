@@ -6,3 +6,4 @@
 - 2026-09-24 (pricing-strategy): Plans in code today: trial, starter, growth, enterprise. Prices in code: Starter £49/mo (£39/mo annual), Growth £149/mo (£119/mo annual), Enterprise contact sales, 30-day trial.
 - 2026-09-24 (pricing-strategy): Prices are wanted in GBP, monthly and annual.
 - 2026-09-24 (stripe setup): MetricOra is not VAT-registered. Head office: Holmfirth, UK.
+- 2026-09-25 (competitor-matrix): Founder confirmed the live prices: Starter £99/mo or £990/yr, Growth £299/mo or £2,990/yr, Enterprise from £750/mo billed annually. Replaces the £49/£149 line above.

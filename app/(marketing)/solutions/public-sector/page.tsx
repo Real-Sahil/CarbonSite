@@ -42,7 +42,8 @@ export default function PublicSectorPage() {
           points: [
             "Bid carbon pack with a PPN 006 Carbon Reduction Plan",
             "Emissions trend across your published years",
-            "Featured contracts and model answers you have written",
+            "Each featured contract with its carbon and National TOMs delivered against commitment, side by side",
+            "Model answers built only from your published figures",
             "Emissions reports with the auditor's CSV calculation trail",
           ],
           media: { kind: "loop", src: "/marketing/loops/reports.mp4", label: "Reports page with published snapshots and generated reports" },

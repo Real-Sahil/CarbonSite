@@ -5,7 +5,7 @@
 // value, assurance and model answers. Sections with no data are omitted.
 
 import { esc, brandStyles, brandLogoHtml, svgHBars } from "./shared";
-import { bidAnswers, change, STANDARD_LABELS, type BidPackData, type ScopeTotals } from "@/lib/bids/carbon-pack";
+import { bidAnswers, change, contractAnswer, STANDARD_LABELS, type BidPackData, type ScopeTotals } from "@/lib/bids/carbon-pack";
 
 const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 const fmtT = (n: number | null | undefined) =>
@@ -144,7 +144,7 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
     ? `
 <section class="page-break">
   ${h("Contract delivery evidence")}
-  <p>Emissions recorded against each contract in ${esc(d.snapshot.periodLabel)}, calculated with the same method as the corporate inventory. Waste and social value are to date.</p>
+  <p>Emissions recorded against each contract in ${esc(d.snapshot.periodLabel)}, calculated with the same method as the corporate inventory. Waste is to date; social value covers reporting periods up to the end of ${esc(d.snapshot.periodLabel)}, against the contract's National TOMs commitment.</p>
   ${d.contracts
     .map(
       (c) => `
@@ -157,8 +157,19 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
       ${c.tonnesPerMillion != null ? `<tr><td>Carbon intensity</td><td class="num">${fmtT(c.tonnesPerMillion)} tCO₂e per £1m</td></tr>` : ""}
       ${c.budgetTonnes != null ? `<tr><td>Carbon budget</td><td class="num">${fmtT(c.budgetTonnes)} tCO₂e</td></tr>` : ""}
       ${c.wasteTonnes > 0 ? `<tr><td>Waste handled</td><td class="num">${fmtT(c.wasteTonnes)} t, ${((c.diversionRate ?? 0) * 100).toFixed(0)}% diverted from landfill</td></tr>` : ""}
-      ${c.socialValuePounds > 0 ? `<tr><td>Social value delivered (TOMs)</td><td class="num">${fmtMoney(c.socialValuePounds)}</td></tr>` : ""}
+      ${c.socialValue.targetPounds != null ? `<tr><td>Social value committed (TOMs)</td><td class="num">${fmtMoney(c.socialValue.targetPounds)}</td></tr>` : ""}
+      ${c.socialValuePounds > 0 ? `<tr><td>Social value delivered (TOMs)</td><td class="num">${fmtMoney(c.socialValuePounds)}${c.socialValue.targetPounds ? `, ${Math.round((c.socialValuePounds / c.socialValue.targetPounds) * 100)}% of commitment` : ""}</td></tr>` : ""}
+      ${c.socialValue.themes.map((th) => `<tr><td class="indent">${esc(th.code)} ${esc(th.name)}</td><td class="num">${fmtMoney(th.pounds)}</td></tr>`).join("")}
     </table>
+    ${
+      c.socialValue.measures.length
+        ? `<table>
+      <tr><th>Largest TOMs measures</th><th class="num">Quantity</th><th class="num">Value</th></tr>
+      ${c.socialValue.measures.map((m) => `<tr><td>${esc(m.code)} ${esc(m.name)}</td><td class="num">${m.unit === "£" ? fmtMoney(m.quantity) : `${m.quantity.toLocaleString("en-GB", { maximumFractionDigits: 1 })} ${esc(m.unit)}`}</td><td class="num">${fmtMoney(m.pounds)}</td></tr>`).join("")}
+    </table>`
+        : ""
+    }
+    <div class="answer"><p class="muted">Answer for this contract</p><p>${esc(contractAnswer(c, d.snapshot.periodLabel))}</p></div>
   </div>`,
     )
     .join("")}
@@ -170,7 +181,7 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
       ? `
 <section>
   ${h("Social value")}
-  <p>Social value recorded against National TOMs measures across all contracts in ${esc(d.snapshot.periodLabel)}: <strong>${fmtMoney(d.socialValuePounds)}</strong>. Contract-level National TOMs reports are available on request.</p>
+  <p>Social value recorded against National TOMs measures across all contracts in ${esc(d.snapshot.periodLabel)}: <strong>${fmtMoney(d.socialValuePounds)}</strong>. ${d.contracts.some((c) => c.socialValuePounds > 0) ? "Featured contracts are broken down by TOMs theme and measure under Contract delivery evidence." : "Contract-level National TOMs reports are available on request."}</p>
 </section>`
       : "";
 
@@ -230,6 +241,9 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
   table.sign td:first-child { width: 40%; color: #4b5d63 }
   table.sign td:last-child { height: 28px }
   .contract { margin-bottom: 14px; page-break-inside: avoid }
+  .contract td.indent { padding-left: 18px; color: #5b6b70 }
+  .answer { margin-top: 8px; padding: 8px 10px; background: #f6f8f7; border-left: 3px solid #c2410c }
+  .answer p { margin: 2px 0 }
   .qa { margin-bottom: 12px; page-break-inside: avoid }
   .qa .q { font-weight: 700; color: #16323d }
   footer { font-size: 8pt; color: #6b7a7f; text-align: center; padding: 18px; border-top: 1px solid #dde6e8; margin-top: 30px }
