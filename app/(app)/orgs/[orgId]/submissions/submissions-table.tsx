@@ -26,6 +26,7 @@ interface Submission {
   reportingPeriod: { label: string };
   facility: { name: string } | null;
   emissionCategoryId: string | null;
+  lowConfidenceFields?: string[];
 }
 
 interface OrgMember {
@@ -247,6 +248,14 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
           className="hover:underline underline-offset-2 text-[#111827]"
         >
           {DOC_TYPE_LABELS[row.original.documentType] ?? row.original.documentType}
+          {row.original.lowConfidenceFields?.length ? (
+            <span
+              title={`Read with low confidence: ${row.original.lowConfidenceFields.join(", ")}`}
+              className="ml-2 inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-800"
+            >
+              Check {row.original.lowConfidenceFields.length} field{row.original.lowConfidenceFields.length === 1 ? "" : "s"}
+            </span>
+          ) : null}
         </Link>
       ),
     },

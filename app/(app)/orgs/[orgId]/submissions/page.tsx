@@ -6,6 +6,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import type { FieldSubmissionStatus } from "@prisma/client";
 import { SubmissionsTable } from "./submissions-table";
+import { ocrFieldChecks } from "@/lib/field-submissions/ocr-confidence";
 import { ClipboardList } from "lucide-react";
 
 interface SubmissionsPageProps {
@@ -50,6 +51,7 @@ export default async function SubmissionsPage({
     reportingPeriod: { label: string };
     facility: { name: string } | null;
     emissionCategoryId: string | null;
+    lowConfidenceFields: string[];
   }[] = [];
   let statusCounts = new Map<string, number>();
   let hasMore = false;
@@ -114,6 +116,13 @@ export default async function SubmissionsPage({
       reportingPeriod: { label: s.reportingPeriod?.label ?? "" },
       facility: s.facility ? { name: s.facility.name } : null,
       emissionCategoryId: s.emissionCategoryId,
+      lowConfidenceFields: ocrFieldChecks(
+        s.ocrExtractedData as Record<string, unknown> | null,
+        s.formData as Record<string, unknown> | null,
+        new Set(["autoExtracted", "resubmittedFromId", "raw"]),
+      )
+        .filter((r) => r.low)
+        .map((r) => r.key),
     }));
   } catch (err) {
     if (err instanceof AuthError) {

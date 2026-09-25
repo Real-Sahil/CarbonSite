@@ -15,6 +15,7 @@ import { identifyDeliveryPostcode, validatePostcode } from "@/lib/geo/postcode-v
 import { presignDownload } from "@/lib/storage";
 import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
 import { recordUsage } from "@/lib/billing/usage";
+import { ocrFieldChecks, sanitiseOcrConfidence } from "@/lib/field-submissions/ocr-confidence";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -167,6 +168,15 @@ export async function GET(req: NextRequest, { params }: Params) {
           reportingPeriod: submission.reportingPeriod,
           facility: submission.facility,
           emissionCategoryId: submission.emissionCategoryId,
+          // Fields the app read with low confidence and nobody corrected, for
+          // the review queue's "check first" flag.
+          lowConfidenceFields: ocrFieldChecks(
+            submission.ocrExtractedData as Record<string, unknown> | null,
+            submission.formData as Record<string, unknown> | null,
+            new Set(["autoExtracted", "resubmittedFromId", "raw"]),
+          )
+            .filter((r) => r.low)
+            .map((r) => r.key),
           scope: submission.emissionCategory?.scope ?? null,
           co2eKg: submission.activityRecordId
             ? co2eByRecord.get(submission.activityRecordId) ?? null
@@ -226,6 +236,14 @@ export async function POST(req: NextRequest, { params }: Params) {
       if (embeddedOcr && typeof embeddedOcr === "object" && !Array.isArray(embeddedOcr)) {
         rawBody.ocrExtractedData = rawBody.ocrExtractedData ?? embeddedOcr;
         delete (rawBody.formData as Record<string, unknown>)["__ocrExtracted__"];
+      }
+      // Per-field OCR confidence (0-1) travels the same way; kept beside the
+      // OCR values under __confidence so reviewers see the weak fields.
+      const embeddedConfidence = (rawBody.formData as Record<string, unknown>)["__ocrConfidence__"];
+      delete (rawBody.formData as Record<string, unknown>)["__ocrConfidence__"];
+      const confidence = sanitiseOcrConfidence(embeddedConfidence);
+      if (confidence && rawBody.ocrExtractedData && typeof rawBody.ocrExtractedData === "object" && !Array.isArray(rawBody.ocrExtractedData)) {
+        rawBody.ocrExtractedData = { ...(rawBody.ocrExtractedData as Record<string, unknown>), __confidence: confidence };
       }
     }
 

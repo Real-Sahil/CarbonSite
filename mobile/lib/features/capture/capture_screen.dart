@@ -526,6 +526,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     // Using a namespaced key avoids colliding with real form fields.
     if (_ocrExtracted.isNotEmpty) {
       formData['__ocrExtracted__'] = Map<String, dynamic>.from(_ocrExtracted);
+      // Per-field confidence for the values OCR filled in, so the web review
+      // queue can point reviewers at the weak ones first.
+      formData['__ocrConfidence__'] = {
+        for (final key in _ocrExtracted.keys)
+          if (_fieldConfidence[key] != null) key: _fieldConfidence[key],
+      };
     }
 
     // Include the resubmission link if this is a correction.

@@ -19,6 +19,7 @@ import { SubmissionEvidenceDownloads } from "../evidence-download-actions";
 import { SubmissionCommentActions } from "../comment-actions";
 import { SubmissionClaimBanner } from "../claim-banner";
 import { deliveryDescription, matchMaterial } from "@/lib/embodied-carbon/delivery-notes";
+import { ocrFieldChecks } from "@/lib/field-submissions/ocr-confidence";
 
 interface SubmissionDetailPageProps {
   params: Promise<{ orgId: string; id: string }>;
@@ -234,24 +235,16 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
 
   // Side-by-side verification rows: OCR value vs what the worker submitted.
   const IGNORED_KEYS = new Set(["autoExtracted", "resubmittedFromId", "raw"]);
-  const comparisonKeys = [
-    ...new Set([...Object.keys(ocrData ?? {}), ...Object.keys(formData ?? {})]),
-  ].filter((key) => !IGNORED_KEYS.has(key));
-  const comparisonRows = comparisonKeys
-    .map((key) => {
-      const ocrValue = ocrData?.[key];
-      const formValue = formData?.[key];
-      const ocrText = ocrValue == null || ocrValue === "" ? null : String(ocrValue);
-      const formText = formValue == null || formValue === "" ? null : String(formValue);
-      if (ocrText == null && formText == null) return null;
-      const mismatch =
-        ocrText != null &&
-        formText != null &&
-        ocrText.trim().toLowerCase() !== formText.trim().toLowerCase();
-      return { key, ocrText, formText, mismatch };
-    })
-    .filter((row): row is NonNullable<typeof row> => row !== null);
+  const comparisonRows = ocrFieldChecks(ocrData, formData, IGNORED_KEYS).map((r) => ({
+    key: r.key,
+    ocrText: r.ocr,
+    formText: r.submitted,
+    mismatch: r.edited,
+    low: r.low,
+    confidence: r.confidence,
+  }));
   const mismatchCount = comparisonRows.filter((row) => row.mismatch).length;
+  const lowCount = comparisonRows.filter((row) => row.low).length;
 
   // Flag submissions whose capture date falls outside the booked period —
   // the server silently books out-of-range dates into the latest period.
@@ -513,10 +506,15 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                     {mismatchCount} field{mismatchCount !== 1 ? "s" : ""} differ
                   </span>
                 )}
+                {lowCount > 0 && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-normal text-red-800">
+                    {lowCount} low confidence
+                  </span>
+                )}
               </CardTitle>
               <CardDescription>
-                What the OCR read from the photo vs. what the field worker submitted.
-                Highlighted rows changed after auto-extraction — verify against the photo below.
+                What the app read from the photo against what the field worker submitted, weakest first.
+                Red rows were read with low confidence and not corrected; amber rows were changed after reading. Check both against the photo below.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -527,11 +525,12 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                       <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#374151]">Field</th>
                       <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#374151]">Read from photo</th>
                       <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#374151]">Submitted</th>
+                      <th className="px-3 py-2 text-right text-xs font-normal uppercase tracking-wide text-[#374151]">Read confidence</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#e5e7eb]">
                     {comparisonRows.map((row) => (
-                      <tr key={row.key} className={row.mismatch ? "bg-amber-50" : undefined}>
+                      <tr key={row.key} className={row.low ? "bg-red-50" : row.mismatch ? "bg-amber-50" : undefined}>
                         <td className="px-3 py-2 text-xs text-[#374151] tracking-[-0.36px] capitalize">
                           {row.key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
                         </td>
@@ -540,6 +539,9 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                         </td>
                         <td className={`px-3 py-2 tracking-[-0.42px] ${row.mismatch ? "font-medium text-amber-900" : "text-[#374151]"}`}>
                           {row.formText ?? <span className="text-[#999] italic">not provided</span>}
+                        </td>
+                        <td className={`px-3 py-2 text-right text-xs tabular-nums ${row.low ? "font-medium text-red-800" : "text-[#6B7280]"}`}>
+                          {row.confidence != null ? `${Math.round(row.confidence * 100)}%` : "-"}
                         </td>
                       </tr>
                     ))}
