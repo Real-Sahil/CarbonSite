@@ -14,6 +14,7 @@ import { FileText } from "lucide-react";
 import type { OrgRole } from "@prisma/client";
 import { CreateRecordForm } from "./record-form";
 import { AddFromBill } from "./add-from-bill";
+import { MatchBills } from "./match-bills";
 import { BulkRecordActions } from "./bulk-record-actions";
 import { RecordsTable } from "./records-table";
 
@@ -148,6 +149,20 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
                 categories={categories.map((c) => ({ id: c.id, scope: c.scope, label: c.name, code: c.code }))}
                 facilities={facilities.map((f) => ({ id: f.id, label: f.name }))}
               />
+            </CardContent>
+          </Card>
+        )}
+
+        {canCreateRecords && (
+          <Card className="border-[#E5E7EB] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+              <CardTitle className="text-sm font-semibold text-[#111827]">Attach bills to existing records</CardTitle>
+              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+                Imported the figures already? Upload the bills behind them. Each one is matched to its record by quantity, supplier and dates, and attached when you confirm.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6 py-5">
+              <MatchBills orgId={orgId} />
             </CardContent>
           </Card>
         )}
