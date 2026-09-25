@@ -1,13 +1,21 @@
 # Generates the demo tenant activity CSVs (Northgate Civils Ltd, fictional) used
 # for marketing captures. Import them through Imports with template ghg_protocol_v1.
 import csv, json
-H=["Amount","Unit","Category Code","Activity Date","Start Date","End Date","Source Description","Facility","Business Unit","Supplier","Country","Region","Fuel Type","Transport Mode","Refrigerant Type","Distance","Distance Unit","Spend Amount","Spend Currency","Scope 2 Method","Assumption Notes","Industry Code"]
+H=["Amount","Unit","Category Code","Activity Date","Start Date","End Date","Source Description","Facility","Business Unit","Supplier","Country","Region","Fuel Type","Transport Mode","Refrigerant Type","Distance","Distance Unit","Spend Amount","Spend Currency","Scope 2 Method","Assumption Notes","Industry Code","Data Origin"]
 Q=[("01-01","03-31"),("04-01","06-30"),("07-01","09-30"),("10-01","12-31")]
 season=[1.25,0.85,0.75,1.15]
+# How each figure was obtained, as a real contractor would hold it: meter
+# reads, supplier invoices and logs, mileage claims worked out from distance,
+# and a commuting survey scaled up (an estimate).
+def origin(desc):
+    if "meter" in desc: return "metered"
+    if "survey" in desc: return "estimated"
+    if "mileage claims" in desc: return "calculated"
+    return "invoiced"
 def rows(y,k):
     out=[]
     def add(amount,unit,cat,q,desc,fac,sup="",fuel="",mode="",refr="",spend="",cur="",s2="",ind="",note=""):
-        s,e=Q[q]; out.append([round(amount,1) if amount!="" else "",unit,cat,f"{y}-{e}",f"{y}-{s}",f"{y}-{e}",desc,fac,"",sup,"GB","",fuel,mode,refr,"","",spend,cur,s2,note,ind])
+        s,e=Q[q]; out.append([round(amount,1) if amount!="" else "",unit,cat,f"{y}-{e}",f"{y}-{s}",f"{y}-{e}",desc,fac,"",sup,"GB","",fuel,mode,refr,"","",spend,cur,s2,note,ind,origin(desc)])
     for q in range(4):
         # fleet diesel
         add(38000*k,"litres","s1-mobile",q,"Fleet diesel, fuel card","Leeds depot","Certas Energy","diesel")
