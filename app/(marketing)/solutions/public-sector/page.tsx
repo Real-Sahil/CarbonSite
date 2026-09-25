@@ -5,7 +5,7 @@ import { SolutionPage } from "@/components/marketing/solution-page";
 export const metadata: Metadata = withSocial({
   title: "Public-sector suppliers",
   description:
-    "A bid carbon pack with a PPN 006 Carbon Reduction Plan, published emissions figures and social value tracking from one MetricOra dataset.",
+    "A PPN 006 Carbon Reduction Plan, PPN 026 social value KPIs and National TOMs from one MetricOra dataset, with a bid carbon pack built from published figures.",
   alternates: { canonical: "/solutions/public-sector" },
 });
 
@@ -15,7 +15,7 @@ export default function PublicSectorPage() {
       c={{
         eyebrow: "Public-sector suppliers",
         title: "The carbon and social value answers every tender asks for.",
-        lead: "Central government contracts over £5 million a year ask for a Carbon Reduction Plan under PPN 006, and most frameworks score social value. MetricOra keeps both beside the records you already hold.",
+        lead: "Central government contracts over £5 million a year ask for a Carbon Reduction Plan under PPN 006, and from January 2027 contracts of £1 million or more score social value on jobs and skills under PPN 026. MetricOra keeps both beside the records you already hold.",
         heroVideo: "/marketing/loops/plan.mp4",
         problems: [
           {
@@ -34,6 +34,10 @@ export default function PublicSectorPage() {
             problem: "Social value tracked in another system",
             answer: "National TOMs commitments are held against contracts and periods, and delivery is logged as it happens, next to the carbon figures for the same contract.",
           },
+          {
+            problem: "PPN 026 commitments you have to prove during the contract",
+            answer: "Add the PPN 026 Social Value Model to a contract, set a KPI against each award criterion you committed to (Good Jobs and Skills), and log delivery with the payroll extract, training record or timesheet attached. A check flags contracts of £5 million or more with fewer than three KPIs.",
+          },
         ],
         feature: {
           eyebrow: "Reports",
@@ -42,7 +46,7 @@ export default function PublicSectorPage() {
           points: [
             "Bid carbon pack with a PPN 006 Carbon Reduction Plan",
             "Emissions trend across your published years",
-            "Each featured contract with its carbon and National TOMs delivered against commitment, side by side",
+            "Each featured contract with its carbon, National TOMs and PPN 026 KPIs delivered against commitment, side by side",
             "Model answers built only from your published figures",
             "Emissions reports with the auditor's CSV calculation trail",
           ],
