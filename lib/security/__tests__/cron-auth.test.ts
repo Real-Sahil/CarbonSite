@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { isAuthorizedCronRequest } from "../cron-auth";
 
 const SECRET = "s".repeat(40);
-const url = "https://app.example/api/admin/schedule/monitors/worker-sessions";
+const url = "https://app.example/api/admin/schedule/monitors/permit-expiry";
 
 afterEach(() => vi.unstubAllEnvs());
 

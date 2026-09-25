@@ -134,15 +134,6 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
         link: `${orgBase}/compliance/permits/${data.resourceId}`,
       };
     }
-    case "worker_session_overdue": {
-      const workerName = str(data.metadata?.workerName, "A worker");
-      const minutes = num(data.metadata?.minutesSinceLastPing, 30);
-      return {
-        title: "Worker welfare check overdue",
-        body: `${workerName} has not responded to a welfare ping in ${minutes} minutes. Check their status.`,
-        link: `${orgBase}/hs/worker-sessions/${data.resourceId}`,
-      };
-    }
     case "enforcement_notice_overdue": {
       const ref = str(data.metadata?.noticeRef, "an enforcement notice");
       return {

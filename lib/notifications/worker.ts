@@ -325,16 +325,6 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       });
     })
 
-    .with({ type: "worker_session_overdue" }, async (d) => {
-      const workerName = (d.metadata?.workerName as string) ?? "A worker";
-      const minutes = (d.metadata?.minutesSinceLastPing as number) ?? 30;
-      await sendPushToUser(d.recipientUserId, {
-        title: "Worker welfare check overdue",
-        body: `${workerName} has not responded in ${minutes} minutes. Check their status immediately.`,
-        data: { type: "worker_session_overdue", sessionId: d.resourceId, orgId: d.orgId },
-      });
-    })
-
     .with({ type: "enforcement_notice_overdue" }, async (d) => {
       const ref = (d.metadata?.noticeRef as string) ?? "an enforcement notice";
       await sendPushToUser(d.recipientUserId, {

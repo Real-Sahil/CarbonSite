@@ -1,7 +1,6 @@
 /**
  * Scheduled monitoring jobs. Called by the Supabase pg_cron schedule in
- * migrations 20260922000010, 20260923000005 and 20260923000016 (worker sessions every 5
- * minutes, the rest daily). Each job only alerts once per record or per
+ * migrations 20260922000010, 20260923000005 and 20260923000016 (daily). Each job only alerts once per record or per
  * threshold day, so a repeated or late call is safe.
  */
 
@@ -12,7 +11,6 @@ import {
   dispatchEnforcementNoticeMonitoring,
   dispatchPermitExpiryMonitoring,
   dispatchSubmissionSlaMonitoring,
-  dispatchWorkerSessionMonitoring,
 } from "@/lib/jobs/dispatch";
 import { processCarbonBudgetAlerts } from "@/lib/project-carbon/burndown-alerts";
 
@@ -20,7 +18,6 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
-  "worker-sessions": dispatchWorkerSessionMonitoring,
   "submission-sla": dispatchSubmissionSlaMonitoring,
   "permit-expiry": dispatchPermitExpiryMonitoring,
   "enforcement-notices": dispatchEnforcementNoticeMonitoring,

@@ -24,7 +24,6 @@ export type NotificationJobData = {
     | "submission_sla_overdue"
     | "permit_expiry_warning"
     | "permit_condition_due"
-    | "worker_session_overdue"
     | "enforcement_notice_overdue"
     | "discharge_reading_exceedance"
     | "supplier_certification_expiring"
@@ -125,7 +124,6 @@ export async function enqueueCausalAnalysis(data: CausalAnalysisJobData) {
 
 export type SubmissionSlaMonitoringJobData      = Record<string, never>;
 export type PermitExpiryMonitoringJobData       = Record<string, never>;
-export type WorkerSessionMonitoringJobData      = Record<string, never>;
 export type EnforcementNoticeMonitoringJobData  = Record<string, never>;
 
 export async function enqueueForecasting(data: ForecastingJobData) {
@@ -141,11 +139,6 @@ export async function enqueueSubmissionSlaMonitoring(data: SubmissionSlaMonitori
 export async function enqueuePermitExpiryMonitoring(data: PermitExpiryMonitoringJobData) {
   await ensureBossStarted();
   await boss.send("permit-expiry-monitoring", data, retry);
-}
-
-export async function enqueueWorkerSessionMonitoring(data: WorkerSessionMonitoringJobData) {
-  await ensureBossStarted();
-  await boss.send("worker-session-monitoring", data, retry);
 }
 
 export async function enqueueEnforcementNoticeMonitoring(data: EnforcementNoticeMonitoringJobData) {

@@ -15,7 +15,6 @@ import {
   enqueueDbtTransform,
   enqueueSubmissionSlaMonitoring,
   enqueuePermitExpiryMonitoring,
-  enqueueWorkerSessionMonitoring,
   enqueueEnforcementNoticeMonitoring,
   type CalculationJobData,
   type DsarJobData,
@@ -44,7 +43,6 @@ import type { DbtTransformJobData } from "@/lib/jobs/workers/dbt-transform";
 import { processAccountPolicies } from "@/workers/account-policies";
 import { processSubmissionSlaMonitoring } from "@/workers/submission-sla-monitoring";
 import { processPermitExpiryMonitoring } from "@/workers/permit-expiry-monitoring";
-import { processWorkerSessionMonitoring } from "@/workers/worker-session-monitoring";
 import { processEnforcementNoticeMonitoring } from "@/workers/enforcement-notice-monitoring";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
 import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
@@ -244,16 +242,6 @@ export async function dispatchPermitExpiryMonitoring() {
   }
 
   await processPermitExpiryMonitoring();
-  return "processed" as const;
-}
-
-export async function dispatchWorkerSessionMonitoring() {
-  if (mode === "worker") {
-    await enqueueWorkerSessionMonitoring({});
-    return "queued" as const;
-  }
-
-  await processWorkerSessionMonitoring();
   return "processed" as const;
 }
 

@@ -16,7 +16,6 @@ import type {
   InvoiceAnomalyJobData,
   SubmissionSlaMonitoringJobData,
   PermitExpiryMonitoringJobData,
-  WorkerSessionMonitoringJobData,
   EnforcementNoticeMonitoringJobData,
 } from "@/lib/jobs/queues/index";
 import { enqueueInvoiceAnomalyDetection } from "@/lib/jobs/queues/index";
@@ -34,7 +33,6 @@ import type { ForecastingJobData } from "@/lib/jobs/workers/forecasting";
 import { processCausalAnalysisRun } from "@/lib/jobs/workers/causal-analysis";
 import { processSubmissionSlaMonitoring } from "@/workers/submission-sla-monitoring";
 import { processPermitExpiryMonitoring } from "@/workers/permit-expiry-monitoring";
-import { processWorkerSessionMonitoring } from "@/workers/worker-session-monitoring";
 import { processEnforcementNoticeMonitoring } from "@/workers/enforcement-notice-monitoring";
 import { syncXeroInvoices } from "@/lib/integrations/xero";
 import { syncQuickBooksInvoices } from "@/lib/integrations/quickbooks";
@@ -317,18 +315,8 @@ async function start() {
   );
   await boss.schedule("permit-expiry-monitoring", "0 7 * * *", {});
 
-  // ── Worker Session Monitoring ─────────────────────────────────────────────
-  const workerSessionLogger = getLogger("worker-session-monitoring");
-  await boss.work<WorkerSessionMonitoringJobData>(
-    "worker-session-monitoring",
-    { localConcurrency: 1 },
-    async (_jobs: Job<WorkerSessionMonitoringJobData>[]) => {
-      workerSessionLogger.info("running worker session welfare check");
-      await processWorkerSessionMonitoring();
-      workerSessionLogger.info("finished worker session welfare check");
-    },
-  );
-  await boss.schedule("worker-session-monitoring", "*/15 * * * *", {});
+  // Lone-worker check-ins were removed; drop the schedule an older worker left.
+  await boss.unschedule("worker-session-monitoring").catch(() => undefined);
 
   // ── Enforcement Notice Monitoring ─────────────────────────────────────────
   const enforcementNoticeLogger = getLogger("enforcement-notice-monitoring");
@@ -349,7 +337,7 @@ async function start() {
       "dbt-transform", "invoice-anomaly", "xero-sync", "quickbooks-sync",
       "sage-sync", "supplier-performance", "forecasting", "causal-analysis",
       "submission-sla-monitoring", "permit-expiry-monitoring",
-      "worker-session-monitoring", "enforcement-notice-monitoring",
+      "enforcement-notice-monitoring",
     ],
   });
 }
