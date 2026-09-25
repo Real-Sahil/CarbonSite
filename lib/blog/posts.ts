@@ -15,6 +15,8 @@ export interface BlogPostMeta {
 
 export interface BlogPost extends BlogPostMeta {
   content: string;
+  /// Question and answer pairs from the front matter, published as FAQPage data.
+  faq: { q: string; a: string }[];
 }
 
 // Resolve blog directory path reliably in Next.js context
@@ -81,6 +83,7 @@ export function getPost(slug: string): BlogPost | null {
       tags: data.tags || [],
       image: data.image,
       content,
+      faq: Array.isArray(data.faq) ? data.faq.filter((f: { q?: unknown; a?: unknown }) => typeof f?.q === 'string' && typeof f?.a === 'string') : [],
     };
   } catch (error) {
     console.error(`[getPost] Error reading ${slug}:`, error);

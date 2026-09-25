@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import { getPost, getPostSlugs, getPosts } from "@/lib/blog/posts";
 import { formatDate } from "@/lib/utils/date";
 import * as BlogComponents from "@/components/blog/BlogMdxComponents";
@@ -65,6 +66,18 @@ export default async function BlogPostPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }} />
+      {post.faq.length > 0 ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: post.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+            }),
+          }}
+        />
+      ) : null}
       <Section tone="dark" className="pt-36 sm:pt-40">
         <div className="flex max-w-3xl flex-col gap-5">
           <Eyebrow tone="dark">{post.tags[0] ?? "Article"}</Eyebrow>
@@ -79,6 +92,8 @@ export default async function BlogPostPage({ params }: Props) {
         <article className="mk-prose mx-auto max-w-[68ch]">
           <MDXRemote
             source={post.content}
+            // GitHub-flavoured Markdown for the articles' comparison tables.
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
             components={{
               Callout: BlogComponents.Callout,
               ComparisonTable: BlogComponents.ComparisonTable,

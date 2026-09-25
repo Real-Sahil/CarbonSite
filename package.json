@@ -117,6 +117,7 @@
     "react-markdown": "^10.1.0",
     "react-use-measure": "^2.1.7",
     "recharts": "^3.8.1",
+    "remark-gfm": "^4.0.1",
     "resend": "^6.12.4",
     "rfc4648": "^1.5.4",
     "simple-statistics": "^7.10.2",

@@ -1,0 +1,85 @@
+---
+title: "Scope 1, 2 and 3 emissions for construction contractors, explained"
+excerpt: "The GHG Protocol sorts emissions into three scopes. Here is what falls in each for a UK contractor, with the data source for each line and the factors used to convert it."
+date: "2026-09-25"
+author: "MetricOra"
+tags: ["Scope 1", "Scope 2", "Scope 3", "Construction"]
+faq:
+  - q: "What are Scope 1 emissions for a contractor?"
+    a: "Direct emissions from sources the company owns or controls: diesel, gas oil and HVO burnt in owned or controlled plant, generators and vehicles, gas burnt in offices and depots, and refrigerant leaks from air conditioning."
+  - q: "What are Scope 2 emissions?"
+    a: "Indirect emissions from purchased electricity, heat, steam and cooling used by the company, including site supplies and offices. They are reported location-based (grid average) and market-based (contracts and certificates)."
+  - q: "What is included in Scope 3 for a contractor?"
+    a: "All other value-chain emissions. The 15 GHG Protocol categories include purchased goods such as concrete and steel, subcontracted work, waste from site, transport of materials, business travel and employee commuting."
+  - q: "Is plant hired with an operator Scope 1 or Scope 3?"
+    a: "It depends on control. Under the operational control approach, fuel you buy and control for hired plant is usually Scope 1. Fuel bought and controlled by a subcontractor is their Scope 1 and your Scope 3. State the rule you use and apply it consistently."
+  - q: "Which scopes are mandatory in the UK?"
+    a: "SECR requires Scope 1 and Scope 2 from energy use. PPN 006 Carbon Reduction Plans add five Scope 3 categories: upstream and downstream transport, waste, business travel and commuting."
+---
+
+The GHG Protocol Corporate Standard splits an organisation's emissions into three scopes, so that each tonne is counted once and by the right party. For a contractor, drawing the line is mostly a question of **who controls the activity**.
+
+## Scope 1: direct emissions
+
+Sources the company owns or controls.
+
+| Source | Typical data | Factor (DEFRA 2026) |
+|---|---|---|
+| Diesel in plant and vehicles | fuel receipts, bulk deliveries (litres) | 2.58354 kg CO₂e per litre (average biofuel blend) |
+| Gas oil in generators | delivery notes (litres) | per litre, gas oil |
+| HVO | fuel receipts (litres) | 0.03558 kg CO₂e per litre, biogenic CO₂ reported separately |
+| Natural gas in offices and depots | gas bills (kWh) | 0.18231 kg CO₂e per kWh (gross CV) |
+| Refrigerant leaks | service records (kg topped up) | the gas's global warming potential |
+
+Fuel is often the largest Scope 1 line. Idle time is a large, avoidable part of it: see [idling plant](/blog/plant-idling-fuel-and-carbon).
+
+## Scope 2: purchased energy
+
+Electricity, heat, steam and cooling that the company buys and uses. That includes temporary builders' supplies on site and permanent supplies at offices and yards.
+
+Scope 2 is reported two ways. **Location-based** uses the grid average: 0.13096 kg CO₂e per kWh in the 2026 UK factors. **Market-based** reflects your contracts, such as REGO-backed tariffs and PPAs, with a residual mix for the rest. Headline totals normally use one method and show the other beside it. See [location-based and market-based Scope 2](/blog/location-and-market-based-scope-2) and [what changed in the 2026 factors](/blog/uk-ghg-conversion-factors-2026-what-changed).
+
+## Scope 3: the value chain
+
+Everything else the company causes but does not control. For contractors the material categories are usually:
+
+- **Category 1, purchased goods and services**: concrete, steel, aggregates, asphalt, timber, and subcontracted labour and services. Often the largest part of the footprint. Supplier or quantity data is best; spend-based factors are the fallback. See [spend-based Scope 3 with factors you can source](/blog/spend-based-scope-3-sourced-factors).
+- **Category 2, capital goods**: plant and vehicles bought.
+- **Category 4, upstream transportation**: deliveries to site you pay for.
+- **Category 5, waste generated in operations**: skips and muck-away, from waste transfer notes and weighbridge tickets. See [from a waste ticket to a reported tonne](/blog/waste-ticket-to-reported-tonne).
+- **Categories 6 and 7, business travel and employee commuting**.
+
+The embodied carbon of materials installed on a project is also tracked project by project under PAS 2080: see [embodied carbon and data quality](/blog/embodied-carbon-data-quality).
+
+## Drawing the boundary
+
+- **Choose a consolidation approach**, usually operational control, and apply it to joint ventures and subsidiaries.
+- **Decide how hired plant is treated.** Fuel you buy for hired plant is usually your Scope 1. Fuel a subcontractor buys is your Scope 3.
+- **Write it down.** The boundary statement is the first thing a verifier reads.
+
+## Which scopes are required
+
+| Framework | Scopes |
+|---|---|
+| SECR | Scope 1 and 2 from UK energy use, see [our SECR guide](/blog/secr-reporting-guide-for-contractors) |
+| PPN 006 Carbon Reduction Plan | Scope 1, 2 and Scope 3 categories 4, 5, 6, 7, 9, see [our PPN 006 guide](/blog/ppn-006-carbon-reduction-plan-guide) |
+| SBTi near-term targets | Scope 1 and 2, plus Scope 3 when it is 40% or more of the total |
+
+MetricOra records all three scopes, including all 15 Scope 3 categories. It calculates each record with a named factor and stores the formula. See the [platform](/product#carbon).
+
+## Frequently asked questions
+
+**What is Scope 1 for a contractor?** Fuel burnt in plant, generators and vehicles you control, gas in your buildings, and refrigerant leaks.
+
+**What is Scope 2?** Purchased electricity, heat and cooling, reported location-based and market-based.
+
+**What is Scope 3?** The rest of the value chain: materials, subcontractors, waste, transport, travel and commuting.
+
+**Is hired plant Scope 1 or 3?** It depends on who controls the fuel; state your rule.
+
+## Sources
+
+- [GHG Protocol Corporate Accounting and Reporting Standard](https://ghgprotocol.org/corporate-standard)
+- [GHG Protocol Corporate Value Chain (Scope 3) Standard](https://ghgprotocol.org/corporate-value-chain-scope-3-standard)
+- [UK Government GHG conversion factors for company reporting](https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting)
+- [SBTi Corporate Net-Zero Standard](https://sciencebasedtargets.org/net-zero)
