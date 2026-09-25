@@ -796,6 +796,8 @@ class _RecentTile extends StatelessWidget {
         return Icons.local_shipping_outlined;
       case 'fuel_receipt':
         return Icons.local_gas_station_outlined;
+      case 'social_value':
+        return Icons.groups_outlined;
       default:
         return Icons.description_outlined;
     }
@@ -809,6 +811,8 @@ class _RecentTile extends StatelessWidget {
         return 'Delivery Note';
       case 'fuel_receipt':
         return 'Fuel Receipt';
+      case 'social_value':
+        return 'Social Value';
       default:
         return 'Document';
     }

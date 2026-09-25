@@ -1180,6 +1180,9 @@ enum FieldDocumentType {
   delivery_note
   fuel_receipt
   water_meter_reading
+  /// PPN 026 delivery (jobs, pay, training) logged against a contract KPI.
+  /// Approval creates an SvActivity, never an ActivityRecord.
+  social_value
   other
 
   @@map("field_document_type")
@@ -6489,6 +6492,8 @@ model SvActivity {
   aiExtracted       Boolean          @default(false) @map("ai_extracted")
   aiConfidence      Decimal?         @map("ai_confidence") @db.Decimal(5, 4)
   aiRawResponse     Json?            @map("ai_raw_response")
+  /// The field app submission this entry was approved from, if any.
+  fieldSubmissionId String?          @unique @map("field_submission_id")
   createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 

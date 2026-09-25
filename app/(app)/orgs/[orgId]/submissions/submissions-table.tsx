@@ -63,6 +63,8 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   waste_ticket: "Waste ticket",
   delivery_note: "Delivery note",
   fuel_receipt: "Fuel receipt",
+  water_meter_reading: "Water meter reading",
+  social_value: "Social value",
   other: "Other",
 };
 

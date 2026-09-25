@@ -23,6 +23,8 @@ interface SubmissionReviewActionsProps {
   emissionCategories: { id: string; scope: number; name: string }[];
   facilities: { id: string; name: string }[];
   disabled?: boolean;
+  /** False for water readings and social value entries, which carry no emission category. */
+  categoryRequired?: boolean;
   /** Delivery notes: library materials and the automatic match for the embodied carbon record. */
   embodied?: {
     materials: { id: string; name: string; category: string }[];
@@ -42,6 +44,7 @@ export function SubmissionReviewActions({
   emissionCategories,
   facilities,
   disabled,
+  categoryRequired = true,
   embodied,
 }: SubmissionReviewActionsProps) {
   const { execute, error, isPending, setError } = useSafeMutation();
@@ -52,7 +55,7 @@ export function SubmissionReviewActions({
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleAction(action: "approved" | "rejected" | "needs_info") {
-    if (action === "approved" && !emissionCategoryId) {
+    if (action === "approved" && categoryRequired && !emissionCategoryId) {
       setError("Assign an emission category before approving.");
       return;
     }
@@ -64,7 +67,7 @@ export function SubmissionReviewActions({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action,
-          emissionCategoryId: emissionCategoryId || undefined,
+          emissionCategoryId: (categoryRequired && emissionCategoryId) || undefined,
           facilityId: facilityId || undefined,
           reviewNote: reviewNote || undefined,
           ...(embodied ? { embodiedMaterialId: embodiedChoice === EMBODIED_NONE ? null : embodiedChoice } : {}),
@@ -93,7 +96,7 @@ export function SubmissionReviewActions({
     <div className="flex flex-col gap-4">
       {emissionCategories.length > 0 && (
         <div className="flex flex-wrap gap-4">
-          <div className="flex flex-col gap-1">
+          {categoryRequired && <div className="flex flex-col gap-1">
             <label className="text-xs text-[#374151] tracking-[-0.36px]">Emission category</label>
             <Select value={emissionCategoryId} onValueChange={setEmissionCategoryId} disabled={disabled}>
               <SelectTrigger className="w-56">
@@ -105,7 +108,7 @@ export function SubmissionReviewActions({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </div>}
           {facilities.length > 0 && (
             <div className="flex flex-col gap-1">
               <label className="text-xs text-[#374151] tracking-[-0.36px]">Facility (optional)</label>

@@ -226,6 +226,7 @@ class _SubmissionDetailScreenState extends State<SubmissionDetailScreen> {
       case 'waste_ticket': return 'Waste Ticket';
       case 'delivery_note': return 'Delivery Note';
       case 'fuel_receipt': return 'Fuel Receipt';
+      case 'social_value': return 'Social Value';
       default: return 'Document';
     }
   }

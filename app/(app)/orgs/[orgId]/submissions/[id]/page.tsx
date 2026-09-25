@@ -20,6 +20,7 @@ import { SubmissionCommentActions } from "../comment-actions";
 import { SubmissionClaimBanner } from "../claim-banner";
 import { deliveryDescription, matchMaterial } from "@/lib/embodied-carbon/delivery-notes";
 import { ocrFieldChecks } from "@/lib/field-submissions/ocr-confidence";
+import { socialValueEntry } from "@/lib/social-value/field-capture";
 
 interface SubmissionDetailPageProps {
   params: Promise<{ orgId: string; id: string }>;
@@ -47,6 +48,8 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   waste_ticket: "Waste ticket",
   delivery_note: "Delivery note",
   fuel_receipt: "Fuel receipt",
+  water_meter_reading: "Water meter reading",
+  social_value: "Social value",
   other: "Other",
 };
 
@@ -199,10 +202,37 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
       )
     : null;
 
+  // Social value entries: the contract KPI they count towards, its delivery
+  // so far, and the delivery entry created on approval.
+  const isSocialValue = submission.documentType === "social_value";
+  const svParsed = isSocialValue ? socialValueEntry((submission.formData ?? {}) as Record<string, unknown>) : null;
+  const svEntry = svParsed && "entry" in svParsed ? svParsed.entry : null;
+  const [svKpi, svActivity] = isSocialValue
+    ? await Promise.all([
+        svEntry
+          ? prisma.svCommitment.findFirst({
+              where: { id: svEntry.commitmentId, organizationId: orgId },
+              select: {
+                title: true,
+                targetValue: true,
+                targetUnit: true,
+                outcome: { select: { name: true } },
+                activities: { where: { status: "approved" }, select: { quantityValue: true } },
+              },
+            })
+          : Promise.resolve(null),
+        prisma.svActivity.findFirst({ where: { organizationId: orgId, fieldSubmissionId: id }, select: { id: true } }),
+      ])
+    : [null, null];
+  const svDelivered = svKpi ? svKpi.activities.reduce((sum, a) => sum + Number(a.quantityValue ?? 0), 0) : 0;
+
   // Calculate what (if anything) blocks approval — shown as a banner so
   // admins know exactly what to fix before clicking Approve.
   let preApprovalIssue: { code: string; message: string } | null = null;
-  if (!isResolved) {
+  if (!isResolved && isSocialValue) {
+    if (svParsed && "error" in svParsed) preApprovalIssue = { code: "INVALID_FORM_DATA", message: svParsed.error };
+    else if (!svKpi) preApprovalIssue = { code: "INVALID_FORM_DATA", message: "The KPI this entry names no longer exists on the contract." };
+  } else if (!isResolved && submission.documentType !== "water_meter_reading") {
     if (!submission.emissionCategoryId) {
       preApprovalIssue = {
         code: "MISSING_CATEGORY",
@@ -248,7 +278,10 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
 
   // Flag submissions whose capture date falls outside the booked period —
   // the server silently books out-of-range dates into the latest period.
-  const captureDate = submission.deviceSubmittedAt ?? submission.createdAt;
+  // Social value entries are booked by the date the delivery happened.
+  const captureDate = svEntry?.activityDate
+    ? new Date(`${svEntry.activityDate}T00:00:00Z`)
+    : (submission.deviceSubmittedAt ?? submission.createdAt);
   const periodMismatch =
     captureDate < submission.reportingPeriod.startDate ||
     captureDate > submission.reportingPeriod.endDate;
@@ -321,7 +354,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
       )}
 
       <div className="flex flex-col gap-[21px]">
-        <div className="grid gap-[21px] md:grid-cols-2">
+        <div className={cn("grid gap-[21px]", !isSocialValue && "md:grid-cols-2")}>
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Submission details</CardTitle>
@@ -350,6 +383,26 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               {submission.contract && (
                 <DetailRow label="Contract" value={submission.contract.name} />
               )}
+              {isSocialValue && svEntry && (
+                <>
+                  <DetailRow label="KPI" value={svKpi ? `${svKpi.title}${svKpi.outcome ? ` (${svKpi.outcome.name})` : ""}` : "Not found"} />
+                  <DetailRow label="Quantity" value={`${svEntry.quantity.toLocaleString("en-GB")}${svKpi?.targetUnit ? ` ${svKpi.targetUnit}` : ""}`} />
+                  {svEntry.activityDate && <DetailRow label="Delivered on" value={new Date(`${svEntry.activityDate}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />}
+                  {svEntry.note && <DetailRow label="Note" value={svEntry.note} />}
+                  {svKpi && (
+                    <DetailRow
+                      label="KPI so far"
+                      value={`${svDelivered.toLocaleString("en-GB")}${svKpi.targetValue != null ? ` of ${Number(svKpi.targetValue).toLocaleString("en-GB")}` : ""}${svKpi.targetUnit ? ` ${svKpi.targetUnit}` : ""} approved`}
+                    />
+                  )}
+                  {svActivity && submission.contractId && (
+                    <p className="text-xs text-[#374151] tracking-[-0.36px]">
+                      Added to the contract&apos;s delivery log.{" "}
+                      <Link href={`/orgs/${orgId}/contracts/${submission.contractId}`} className="underline underline-offset-2">Open the contract</Link>
+                    </p>
+                  )}
+                </>
+              )}
               {submission.emissionCategory && (
                 <DetailRow
                   label="Category"
@@ -359,7 +412,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               {submission.facility && (
                 <DetailRow label="Facility" value={submission.facility.name} />
               )}
-              {formData && Object.entries(formData).map(([key, value]) => (
+              {formData && !isSocialValue && Object.entries(formData).map(([key, value]) => (
                 value != null && value !== "" ? (
                   <DetailRow
                     key={key}
@@ -374,7 +427,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             </CardContent>
           </Card>
 
-          <Card>
+          {!isSocialValue && <Card>
             <CardHeader>
               <CardTitle className="text-base">Route & distance</CardTitle>
               <CardDescription>
@@ -413,11 +466,11 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 <p className="text-sm text-[#374151] italic tracking-[-0.42px]">No location captured</p>
               )}
             </CardContent>
-          </Card>
+          </Card>}
         </div>
 
         {/* Postcode audit trail card — shows what was on the ticket, not internal pipeline details */}
-        {(submission.deliveryPostcode ||
+        {!isSocialValue && (submission.deliveryPostcode ||
           submission.pickupPostcode ||
           submission.postcodeValidationStatus) && (
           <Card>
@@ -801,7 +854,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           </CardContent>
         </Card>
 
-        {!isResolved && (
+        {!isResolved && !isSocialValue && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Edit submission values</CardTitle>
@@ -839,7 +892,9 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             <CardHeader>
               <CardTitle className="text-base">Review actions</CardTitle>
               <CardDescription>
-                Approve to create a committed activity record, or reject with a note.
+                {isSocialValue
+                  ? "Approve to add this delivery, with its evidence, to the contract KPI. Reject with a note if it does not count."
+                  : "Approve to create a committed activity record, or reject with a note."}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -851,6 +906,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 emissionCategories={emissionCategories}
                 facilities={facilities}
                 disabled={isResolved}
+                categoryRequired={!isSocialValue && submission.documentType !== "water_meter_reading"}
                 embodied={
                   embodiedMatch
                     ? {

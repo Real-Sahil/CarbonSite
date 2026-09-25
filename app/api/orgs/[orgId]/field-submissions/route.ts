@@ -13,7 +13,8 @@ import { calculateGpsDistanceKm } from "@/lib/geo/gps-distance";
 import { getOrCreateRouteDistance, RouteDistanceError } from "@/lib/geo/route-distance";
 import { identifyDeliveryPostcode, validatePostcode } from "@/lib/geo/postcode-validator";
 import { presignDownload } from "@/lib/storage";
-import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
+import { requireActiveBilling, requireFeature, requireWithinUsageLimit } from "@/lib/billing/limits";
+import { socialValueSubmissionError } from "@/lib/social-value/field-capture";
 import { recordUsage } from "@/lib/billing/usage";
 import { ocrFieldChecks, sanitiseOcrConfidence } from "@/lib/field-submissions/ocr-confidence";
 
@@ -327,9 +328,13 @@ export async function POST(req: NextRequest, { params }: Params) {
         return apiError("NOT_FOUND", "Reporting period not found.", 404);
       }
     } else {
-      const submissionDate = body.deviceSubmittedAt
-        ? new Date(body.deviceSubmittedAt)
-        : new Date();
+      // Social value entries are booked by the date the delivery happened.
+      const deliveredOn = body.documentType === "social_value" ? (body.formData as Record<string, unknown>).activityDate : undefined;
+      const submissionDate = typeof deliveredOn === "string" && /^\d{4}-\d{2}-\d{2}$/.test(deliveredOn)
+        ? new Date(`${deliveredOn}T00:00:00Z`)
+        : body.deviceSubmittedAt
+          ? new Date(body.deviceSubmittedAt)
+          : new Date();
       const covering = await prisma.reportingPeriod.findFirst({
         where: {
           organizationId: orgId,
@@ -370,6 +375,17 @@ export async function POST(req: NextRequest, { params }: Params) {
       if (existing) {
         return json(existing, { status: 200, version });
       }
+    }
+
+    // Social value entries count towards a KPI on the site's contract, and
+    // need the plan that includes social value. Checked after the idempotency
+    // lookup so a retried entry that already landed still returns it.
+    if (body.documentType === "social_value") {
+      if (!siteId) return apiError("SITE_REQUIRED", "Choose a site for this social value entry.", 422);
+      const planGate = await requireFeature(orgId, "socialValue");
+      if (planGate) return planGate;
+      const svError = await socialValueSubmissionError(orgId, contractId, body.formData as Record<string, unknown>);
+      if (svError) return apiError("INVALID_SOCIAL_VALUE", svError, 422);
     }
 
     // Gated after the idempotency check above, not before it: a retried

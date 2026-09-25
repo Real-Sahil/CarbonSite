@@ -7,13 +7,14 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
+import { socialValueSubmissionError } from "@/lib/social-value/field-capture";
 
 type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 
 const resubmitSchema = z.object({
   formData: z.record(z.unknown()),
   ocrExtractedData: z.record(z.unknown()).optional(),
-  documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "other"]).optional(),
+  documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "water_meter_reading", "social_value", "other"]).optional(),
   gpsLat: z.number().optional(),
   gpsLng: z.number().optional(),
   pickupPostcode: z.string().max(20).optional(),
@@ -98,6 +99,11 @@ export async function POST(req: NextRequest, { params }: Params) {
           422,
         );
       }
+    }
+
+    if ((body.documentType ?? original.documentType) === "social_value") {
+      const svError = await socialValueSubmissionError(orgId, original.contractId, body.formData);
+      if (svError) return apiError("INVALID_SOCIAL_VALUE", svError, 422);
     }
 
     const newSubmission = await prisma.fieldSubmission.create({

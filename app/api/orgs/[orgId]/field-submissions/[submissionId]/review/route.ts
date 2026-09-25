@@ -12,6 +12,7 @@ import {
   approvalBlocker,
   approveSubmissionInTx,
 } from "@/lib/field-submissions/approve";
+import { SocialValueApprovalError } from "@/lib/social-value/field-capture";
 import { scheduleCalculationForPeriod } from "@/lib/field-submissions/trigger-calculation";
 
 type Params = { params: Promise<{ orgId: string; submissionId: string }> };
@@ -55,9 +56,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       if (blocker) {
         return apiError(blocker.code, blocker.message, 422);
       }
-      // Water meter readings promote to a WaterRecord, not an
-      // ActivityRecord — they never carry an EmissionCategory.
-      if (submission.documentType !== "water_meter_reading") {
+      // Water meter readings promote to a WaterRecord and social value
+      // entries to an SvActivity, not an ActivityRecord: neither carries an
+      // EmissionCategory.
+      if (submission.documentType !== "water_meter_reading" && submission.documentType !== "social_value") {
         const category = await prisma.emissionCategory.findUnique({
           where: { id: emissionCategoryId! },
           select: { id: true },
@@ -73,7 +75,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         ...(body.formData ? { formData: body.formData } : {}),
       };
 
-      const result = await prisma.$transaction(async (tx) => {
+      let result;
+      try {
+        result = await prisma.$transaction(async (tx) => {
         if (body.ocrExtractedData || body.formData) {
           await tx.fieldSubmission.update({
             where: { id: submissionId },
@@ -91,8 +95,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           reviewerUserId: session.user.id,
           reviewNote: body.reviewNote,
           embodiedMaterialId: body.embodiedMaterialId,
+          origin: req.nextUrl.origin,
         });
       });
+      } catch (err) {
+        if (err instanceof SocialValueApprovalError) return apiError("INVALID_FORM_DATA", err.message, 422);
+        throw err;
+      }
       activityRecordId = result.activityRecordId;
       updated = result.submission;
 
@@ -109,7 +118,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         });
       }
 
-      if (activityRecordId) {
+      if (result.svActivityId) {
+        await writeAuditLog({
+          organizationId: orgId,
+          actorUserId: session.user.id,
+          action: "sv_activity.create",
+          resourceType: "sv_activity",
+          resourceId: result.svActivityId,
+          metadata: { fromFieldSubmission: submissionId },
+        });
+      } else if (activityRecordId) {
         await writeAuditLog({
           organizationId: orgId,
           actorUserId: session.user.id,
@@ -131,7 +149,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
       // Auto-trigger a calculation run so the approved record is reflected
       // on the dashboard without requiring a manual run.
-      scheduleCalculationForPeriod(
+      if (!result.svActivityId) scheduleCalculationForPeriod(
         orgId,
         submission.reportingPeriodId,
         session.user.id,

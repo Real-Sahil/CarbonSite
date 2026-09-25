@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
+import { SocialValueApprovalError } from "@/lib/social-value/field-capture";
 import {
   approvalBlocker,
   approveSubmissionInTx,
@@ -114,15 +115,23 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           skipped.push({ id: submission.id, reason: blocker.message });
           continue;
         }
-        const result = await prisma.$transaction((tx) =>
-          approveSubmissionInTx(tx, {
-            orgId,
-            submission,
-            emissionCategoryId: submission.emissionCategoryId,
-            reviewerUserId: session.user.id,
-            reviewNote: body.reviewNote,
-          }),
-        );
+        let result;
+        try {
+          result = await prisma.$transaction((tx) =>
+            approveSubmissionInTx(tx, {
+              orgId,
+              submission,
+              emissionCategoryId: submission.emissionCategoryId,
+              reviewerUserId: session.user.id,
+              reviewNote: body.reviewNote,
+              origin: req.nextUrl.origin,
+            }),
+          );
+        } catch (err) {
+          if (!(err instanceof SocialValueApprovalError)) throw err;
+          skipped.push({ id: submission.id, reason: err.message });
+          continue;
+        }
         approved.push(submission.id);
         notifiable.push({
           submissionId: submission.id,
@@ -149,9 +158,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         await writeAuditLog({
           organizationId: orgId,
           actorUserId: session.user.id,
-          action: "record.created",
-          resourceType: result.activityRecordId ? "activity_record" : "water_record",
-          resourceId: result.activityRecordId ?? submission.id,
+          action: result.svActivityId ? "sv_activity.create" : "record.created",
+          resourceType: result.svActivityId ? "sv_activity" : result.activityRecordId ? "activity_record" : "water_record",
+          resourceId: result.svActivityId ?? result.activityRecordId ?? submission.id,
           metadata: { fromFieldSubmission: submission.id, bulk: true },
         });
       }

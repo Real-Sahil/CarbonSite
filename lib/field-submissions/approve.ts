@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { isValid as isValidUkPostcode } from "postcode";
 import { convertBetween } from "@/lib/calculation/units";
 import { recordDeliveryEmbodiedCarbon, type EmbodiedOutcome } from "@/lib/embodied-carbon/delivery-notes";
+import { approveSocialValueInTx, socialValueEntry } from "@/lib/social-value/field-capture";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -93,6 +94,12 @@ export function approvalBlocker(
   emissionCategoryId: string | null | undefined,
   facilityId?: string | null,
 ): ApprovalIssue | null {
+  // Social value entries become an SvActivity against a contract KPI: no
+  // emission category, amount or unit of their own.
+  if (submission.documentType === "social_value") {
+    const parsed = socialValueEntry((submission.formData ?? {}) as Record<string, unknown>);
+    return "error" in parsed ? { code: "INVALID_FORM_DATA", message: parsed.error } : null;
+  }
   // Water meter readings never get an EmissionCategory — water has no GHG
   // Protocol scope, so they promote to a WaterRecord, not an ActivityRecord.
   if (!emissionCategoryId && submission.documentType !== "water_meter_reading") {
@@ -137,8 +144,12 @@ export async function approveSubmissionInTx(
     reviewNote?: string;
     /** Delivery notes: undefined = match the material automatically, null = record no embodied carbon. */
     embodiedMaterialId?: string | null;
+    /** App origin, for the evidence links a social value entry keeps. */
+    origin?: string;
   },
 ): Promise<{
+  /** Social value entries only: the approved delivery entry created. */
+  svActivityId?: string;
   /** Delivery notes only: the embodied carbon record created, or why none was. */
   embodied?: EmbodiedOutcome;
   // Null exactly when this submission promoted to a WaterRecord instead of
@@ -159,8 +170,19 @@ export async function approveSubmissionInTx(
 
   let activityRecordId: string | null = submission.activityRecordId;
   let embodied: EmbodiedOutcome | undefined;
+  let svActivityId: string | undefined;
 
-  if (submission.documentType === "water_meter_reading") {
+  if (submission.documentType === "social_value") {
+    ({ svActivityId } = await approveSocialValueInTx(tx, {
+      orgId,
+      submission,
+      facilityId: facilityId ?? null,
+      evidenceFileIds,
+      origin: opts.origin ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://www.metricora.co.uk",
+      reviewerUserId,
+    }));
+    activityRecordId = null;
+  } else if (submission.documentType === "water_meter_reading") {
     if (!facilityId) {
       throw new Error("Water meter reading submissions require a facility to be assigned before approval.");
     }
@@ -309,5 +331,5 @@ export async function approveSubmissionInTx(
     },
   });
 
-  return { activityRecordId, submission: updated, ...(embodied ? { embodied } : {}) };
+  return { activityRecordId, submission: updated, ...(embodied ? { embodied } : {}), ...(svActivityId ? { svActivityId } : {}) };
 }

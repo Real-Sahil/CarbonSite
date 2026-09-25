@@ -222,6 +222,70 @@ Future<List<FieldSubmission>> getMySubmissions(String orgId) async {
 }
 
 // ---------------------------------------------------------------------------
+// Social value (contract KPIs a field worker logs delivery against)
+// ---------------------------------------------------------------------------
+
+/// One open social value KPI on a site's contract, e.g. "Apprenticeship
+/// starts" (PPN 026 Skills: training and retraining).
+class SocialValueKpi {
+  final String id;
+  final String title;
+  final String? unit;
+  final double? target;
+  final String? criterion;
+
+  const SocialValueKpi({
+    required this.id,
+    required this.title,
+    this.unit,
+    this.target,
+    this.criterion,
+  });
+
+  factory SocialValueKpi.fromJson(Map<String, dynamic> json) => SocialValueKpi(
+        id: json['id'] as String? ?? '',
+        title: json['title'] as String? ?? 'KPI',
+        unit: json['unit'] as String?,
+        target: (json['target'] as num?)?.toDouble(),
+        criterion: json['criterion'] as String?,
+      );
+}
+
+class SiteSocialValue {
+  /// False when the organisation's plan does not include social value.
+  final bool enabled;
+  final String? contractName;
+  final List<SocialValueKpi> kpis;
+
+  const SiteSocialValue({
+    required this.enabled,
+    this.contractName,
+    this.kpis = const [],
+  });
+
+  factory SiteSocialValue.fromJson(Map<String, dynamic> json) => SiteSocialValue(
+        enabled: json['enabled'] as bool? ?? false,
+        contractName: json['contractName'] as String?,
+        kpis: (json['kpis'] as List? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(SocialValueKpi.fromJson)
+            .where((k) => k.id.isNotEmpty)
+            .toList(),
+      );
+}
+
+/// GET /api/orgs/{orgId}/my-sites/{siteId}/social-value
+Future<SiteSocialValue> getSiteSocialValue(String orgId, String siteId) async {
+  final client = await getClient();
+  final response =
+      await client.get('/api/orgs/$orgId/my-sites/$siteId/social-value');
+  final raw = response.data;
+  return raw is Map<String, dynamic>
+      ? SiteSocialValue.fromJson(raw)
+      : const SiteSocialValue(enabled: false);
+}
+
+// ---------------------------------------------------------------------------
 // Evidence upload helpers (used by SyncService)
 // ---------------------------------------------------------------------------
 

@@ -223,6 +223,16 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   // Step 1 -> 2: type chosen, take photo, run OCR
   // ---------------------------------------------------------------------
 
+  /// Social value is a form against a contract KPI, not a document scan.
+  void _openSocialValue() {
+    final siteId = _selectedSiteId;
+    final query = <String, String>{
+      if (siteId != null && siteId.isNotEmpty) 'projectId': siteId,
+      if (_selectedSiteLabel != null) 'projectLabel': _selectedSiteLabel!,
+    };
+    context.pushReplacement(Uri(path: '/social-value', queryParameters: query.isEmpty ? null : query).toString());
+  }
+
   Future<void> _onTypeSelected(DocumentType type) async {
     setState(() => _documentType = type);
 
@@ -753,6 +763,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                     label: 'Water Meter',
                     caption: 'Withdrawal / consumption reading',
                     onTap: () => _onTypeSelected(DocumentType.waterMeterReading),
+                  ),
+                  _TypeCard(
+                    icon: Icons.groups_outlined,
+                    label: 'Social Value',
+                    caption: 'Jobs, pay, training',
+                    onTap: _openSocialValue,
                   ),
                   _TypeCard(
                     icon: Icons.description_outlined,

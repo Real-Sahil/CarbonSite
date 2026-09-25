@@ -6,6 +6,7 @@ import '../../features/auth/invite_screen.dart';
 import '../../features/auth/pin_lock_screen.dart';
 import '../../features/auth/pin_setup_screen.dart';
 import '../../features/capture/capture_screen.dart';
+import '../../features/capture/social_value_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/submissions/home_screen.dart';
 import '../../features/submissions/submission_detail_screen.dart';
@@ -161,6 +162,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
+          // Corrections to a social value entry reopen the social value form.
+          if (extra?['documentType'] == 'social_value') {
+            return SocialValueScreen(
+              projectId: state.uri.queryParameters['projectId'],
+              projectLabel: state.uri.queryParameters['projectLabel'],
+              resubmittedFromId: extra?['resubmittedFromId'] as String?,
+            );
+          }
           return CaptureScreen(
             projectId: state.uri.queryParameters['projectId'],
             projectLabel: state.uri.queryParameters['projectLabel'],
@@ -168,6 +177,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             documentType: extra?['documentType'] as String?,
           );
         },
+      ),
+      GoRoute(
+        path: '/social-value',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => SocialValueScreen(
+          projectId: state.uri.queryParameters['projectId'],
+          projectLabel: state.uri.queryParameters['projectLabel'],
+        ),
       ),
       GoRoute(
         path: '/submissions/:id',
