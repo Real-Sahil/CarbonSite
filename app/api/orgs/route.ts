@@ -26,6 +26,9 @@ export async function POST(req: NextRequest) {
           name: body.name,
           industry: body.industry ?? null,
           hqCountry: body.hqCountry ?? null,
+          acquisitionSource: body.acquisition?.source ?? null,
+          acquisitionMedium: body.acquisition?.medium ?? null,
+          acquisitionCampaign: body.acquisition?.campaign ?? null,
         },
       });
 

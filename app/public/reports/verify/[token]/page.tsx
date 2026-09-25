@@ -259,6 +259,11 @@ export default function ReportVerificationPage({ params }: { params: Promise<{ t
               <p className="text-xs text-zinc-500 text-center mt-2">
                 Token: <code className="font-mono">{tokenValue.slice(0, 8)}...</code>
               </p>
+              <p className="text-xs text-zinc-500 text-center mt-2">
+                <a href="https://www.metricora.co.uk/?ref=verify" className="underline underline-offset-2 hover:text-zinc-800">
+                  What is MetricOra?
+                </a>
+              </p>
             </div>
           </div>
         </div>

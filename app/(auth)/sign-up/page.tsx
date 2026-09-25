@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
+import { acquisitionFromParams, referrerSource } from "@/lib/marketing/acquisition";
 import { ArrowRight, Building2 } from "lucide-react";
 
 type Step = "account" | "org";
@@ -85,7 +86,16 @@ export default function SignUpPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ name: orgName.trim(), industry: industry.trim() || undefined, hqCountry })
+        body: JSON.stringify({
+          name: orgName.trim(),
+          industry: industry.trim() || undefined,
+          hqCountry,
+          acquisition:
+            acquisitionFromParams(
+              new URLSearchParams(window.location.search),
+              referrerSource(document.referrer, window.location.hostname),
+            ) ?? undefined,
+        })
       });
 
       if (!orgRes.ok) {
@@ -99,7 +109,9 @@ export default function SignUpPage() {
       }
 
       const org = await orgRes.json();
-      router.push(`/orgs/${org.id}/dashboard`);
+      // "Start your Carbon Reduction Plan" on the marketing site links here with ?start=crp.
+      const startCrp = new URLSearchParams(window.location.search).get("start") === "crp";
+      router.push(startCrp ? `/orgs/${org.id}/carbon-reduction-plan` : `/orgs/${org.id}/dashboard`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create account. Please try again.");
     } finally {

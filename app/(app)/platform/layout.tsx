@@ -8,7 +8,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
           className="text-base font-light tracking-[-0.48px] text-[#111827]"
           
         >
-          Fluid Platform
+          MetricOra Platform
         </span>
         <Link
           href="/"

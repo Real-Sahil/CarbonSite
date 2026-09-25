@@ -63,6 +63,9 @@ export default async function PlatformPage() {
         <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
           Super-admin view of all organisations on the platform.
         </p>
+        <Link href="/platform/growth" className="mt-3 inline-block text-sm text-[#111827] underline underline-offset-2">
+          Growth: trials, activation and paying by source
+        </Link>
       </div>
 
       {/* Stats row */}

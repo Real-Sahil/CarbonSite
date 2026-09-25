@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { acquisitionSchema } from "@/lib/marketing/acquisition";
 import {
   EVIDENCE_MAX_BYTES,
   isAllowedEvidenceMimeType,
@@ -27,13 +28,19 @@ export const orgRoleSchema = z.enum([
 
 // ─── Organization ────────────────────────────────────────────────────────────
 
-export const createOrgSchema = z.object({
+const orgFieldsSchema = z.object({
   name: z.string().min(2).max(100),
   industry: z.string().optional(),
   hqCountry: z.string().optional(),
 });
 
-export const updateOrgSchema = createOrgSchema.partial();
+// Acquisition is accepted on creation only; a malformed one is dropped, never
+// a reason to refuse the sign-up.
+export const createOrgSchema = orgFieldsSchema.extend({
+  acquisition: acquisitionSchema.optional().catch(undefined),
+});
+
+export const updateOrgSchema = orgFieldsSchema.partial();
 
 // ─── Facility ────────────────────────────────────────────────────────────────
 

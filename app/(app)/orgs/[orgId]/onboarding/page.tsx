@@ -237,6 +237,22 @@ export default function OnboardingPage() {
           </p>
         </div>
 
+        {/* Carbon Reduction Plan shortcut */}
+        <div className="mb-8 flex flex-col gap-3 rounded-lg border border-[#FED7AA] bg-[#FFF7ED] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-[#111827]">Bidding for public contracts?</p>
+            <p className="text-xs text-[#6B7280] mt-0.5">
+              The guided Carbon Reduction Plan walks you through PPN 006 section by section and tells you what is still missing.
+            </p>
+          </div>
+          <Link
+            href={`/orgs/${orgId}/carbon-reduction-plan`}
+            className="shrink-0 rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1F2937]"
+          >
+            Start your Carbon Reduction Plan
+          </Link>
+        </div>
+
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">

@@ -47,6 +47,8 @@ export const crpSectionsSchema = z.object({
       boundaryApproach: z.enum(["operational_control", "financial_control", "equity_share"]).default("operational_control"),
       sitesIncluded: text(2000),
       exclusions: z.array(z.object({ id: z.string().min(1).max(40), item: text(200), reason: text(500) })).max(20).default([]),
+      /** Opt-in footer line linking the published plan to its verification page. */
+      showVerificationLine: z.boolean().default(false),
     })
     .default({}),
   baseline: z

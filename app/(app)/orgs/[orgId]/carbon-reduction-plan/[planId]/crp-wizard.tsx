@@ -563,6 +563,7 @@ export function CrpWizard({
         the plan, from the same published figures.
       </Note>
       <CheckRow id="crp-secr" label="Also generate the SECR report for this period" checked={s.secr.include} disabled={disabled} onChange={(v) => update((p) => ({ ...p, secr: { ...p.secr, include: v } }))} />
+      <CheckRow id="crp-verify-line" label="Add a footer line to the plan: &quot;Figures calculated from records in MetricOra&quot;, linking to its verification page, so an evaluator can check the published copy" checked={s.organisation.showVerificationLine} disabled={disabled} onChange={(v) => update((p) => ({ ...p, organisation: { ...p.organisation, showVerificationLine: v } }))} />
       {s.secr.include ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2">

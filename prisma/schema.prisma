@@ -204,6 +204,11 @@ model Organization {
   /// How long (in days) to keep field submission evidence files. NULL = keep forever.
   evidenceRetentionDays        Int?                  @map("evidence_retention_days")
   evidenceRetentionNotifiedAt  DateTime?             @map("evidence_retention_notified_at") @db.Timestamptz(6)
+  /// Where the trial came from (?ref or utm_source, else the referrer host),
+  /// sent by the sign-up form. Never set after creation.
+  acquisitionSource            String?               @map("acquisition_source")
+  acquisitionMedium            String?               @map("acquisition_medium")
+  acquisitionCampaign          String?               @map("acquisition_campaign")
   createdAt                    DateTime              @default(now()) @map("created_at")
   updatedAt                    DateTime              @updatedAt @map("updated_at")
 
@@ -358,6 +363,7 @@ model Organization {
   geographicImpacts              GeographicImpact[]               @relation("OrgGeographicImpacts")
   externalApiCredentials         ExternalApiCredential[]          @relation("OrgExternalApiCredentials")
 
+  @@index([acquisitionSource])
   @@map("organizations")
 }
 

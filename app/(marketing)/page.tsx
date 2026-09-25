@@ -219,6 +219,9 @@ export default function HomePage() {
               lead="New accounts see these first. ESRS, CDP, CBAM, NHS Evergreen, BREEAM and National TOMs reports are there when a client asks for them."
             />
             <ProductLoop src="/marketing/loops/plan.mp4" poster="/marketing/loops/plan.jpg" label="Guided Carbon Reduction Plan, section by section from boundary to sign-off" />
+            <div>
+              <ButtonLink href="/sign-up?start=crp">Start your Carbon Reduction Plan</ButtonLink>
+            </div>
           </div>
           <ol className="grid gap-4">
             {FIRST_DOCUMENTS.map((d, i) => (

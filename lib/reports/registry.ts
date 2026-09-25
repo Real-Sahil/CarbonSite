@@ -66,6 +66,8 @@ export type ReportResult = {
   html: string;
   pdfkitData?: ReportData;
   xmlBuffer?: Buffer;
+  /** Stamp the opt-in "Figures calculated from records in MetricOra" line. */
+  verificationLine?: boolean;
 };
 
 type ReportHandler = (ctx: ReportContext) => Promise<ReportResult>;
@@ -603,7 +605,11 @@ const handlers: Record<string, ReportHandler> = {
       methodologyNotes: opts.methodologyNotes as string | undefined,
       plan: plan ? crpPlanForTemplate(plan, agg) : undefined,
     };
-    return { html: renderPpn006CrpHtml(data), pdfkitData: basePdfData };
+    return {
+      html: renderPpn006CrpHtml(data),
+      pdfkitData: basePdfData,
+      verificationLine: plan?.organisation.showVerificationLine ?? false,
+    };
   },
 
   bid_carbon_pack: async (ctx) => {

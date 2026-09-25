@@ -4,7 +4,7 @@
 
 import PDFDocument from "pdfkit";
 import type PDFKit from "pdfkit";
-import { PDFDocument as PdfLib, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument as PdfLib, PDFString, StandardFonts, rgb } from "pdf-lib";
 import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
 
@@ -870,5 +870,42 @@ export async function addQrCodeToFooter(pdfBytes: Buffer, meta: QrMeta): Promise
     });
   }
 
+  return Buffer.from(await doc.save());
+}
+
+/** Wording of the opt-in line; it states only where the figures were calculated. */
+export const VERIFICATION_LINE_TEXT = "Figures calculated from records in MetricOra. Verify this report:";
+
+/**
+ * Opt-in footer line on the last page linking to the report's public
+ * verification page (PPN 006 plans are published on the supplier's site, so
+ * an evaluator can check the document they are reading).
+ */
+export async function addVerificationLine(pdfBytes: Buffer, verificationUrl: string): Promise<Buffer> {
+  const doc = await PdfLib.load(pdfBytes);
+  const pages = doc.getPages();
+  const page = pages[pages.length - 1];
+  if (!page) return pdfBytes;
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const size = 7;
+  const x = 18;
+  const y = 24;
+  const gray = rgb(0.42, 0.45, 0.5);
+  const link = rgb(0.76, 0.25, 0.05);
+  page.drawText(VERIFICATION_LINE_TEXT, { x, y, size, font, color: gray });
+  const urlX = x + font.widthOfTextAtSize(VERIFICATION_LINE_TEXT, size) + 3;
+  const maxUrlWidth = page.getSize().width - urlX - 18 - 50 - 60; // clear of the QR code and its label
+  let shown = verificationUrl;
+  while (shown.length > 20 && font.widthOfTextAtSize(shown, size) > maxUrlWidth) shown = shown.slice(0, -2);
+  if (shown !== verificationUrl) shown = `${shown.slice(0, -3)}...`;
+  page.drawText(shown, { x: urlX, y, size, font, color: link });
+  const annot = doc.context.obj({
+    Type: "Annot",
+    Subtype: "Link",
+    Rect: [urlX, y - 2, urlX + font.widthOfTextAtSize(shown, size), y + size],
+    Border: [0, 0, 0],
+    A: { Type: "Action", S: "URI", URI: PDFString.of(verificationUrl) },
+  });
+  page.node.addAnnot(doc.context.register(annot));
   return Buffer.from(await doc.save());
 }

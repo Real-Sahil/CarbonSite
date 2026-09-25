@@ -10,8 +10,8 @@ import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
 import type { ReportData } from "./template";
 import { scope2MethodOf } from "@/lib/calculation/scope2-method";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
-import { getReportHandler, hasTypedTemplate, type ReportContext } from "./registry";
-import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHeader } from "./pdf-generator";
+import { getReportHandler, hasTypedTemplate, type ReportContext, type ReportResult } from "./registry";
+import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHeader, addVerificationLine } from "./pdf-generator";
 import { generateAuditNarrative } from "./narrative-generator";
 import { llmClient } from "@/lib/llm/client";
 
@@ -236,6 +236,11 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
         qrCodeUrl: verificationUrl,
       });
 
+      if (rendered.verificationLine) {
+        pdfBuffer = await addVerificationLine(pdfBuffer, verificationUrl);
+        reportLogger.info("Verification line added", { reportId });
+      }
+
       // Add logo to header for HTML-rendered reports (ecology_scan, ecology_survey, etc.)
       // PDFKit reports already embed the logo in generateReportPdf
       const brandingKey = report.organization.branding?.reportHeaderLogoKey
@@ -409,7 +414,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
   }
 }
 
-async function renderForType(report: ReportWithIncludes): Promise<{ html: string; pdfkitData?: ReportData; xmlBuffer?: Buffer }> {
+async function renderForType(report: ReportWithIncludes): Promise<ReportResult> {
   const orgId = report.organizationId;
   const runId = report.snapshot.calculationRunId;
   const opts = (report.options ?? {}) as Record<string, unknown>;
