@@ -26,10 +26,11 @@ export async function GET(
     const periodStart = sub?.currentPeriodStart ?? new Date(now.getFullYear(), now.getMonth(), 1);
     const periodEnd = sub?.currentPeriodEnd ?? new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-    const [usageTotals, memberCount, facilityCount] = await Promise.all([
+    const [usageTotals, memberCount, facilityCount, frameworkCount] = await Promise.all([
       getUsageSummary(orgId, periodStart, periodEnd),
       prisma.organizationMembership.count({ where: { organizationId: orgId } }),
       prisma.facility.count({ where: { organizationId: orgId } }),
+      prisma.msFrameworkAdoption.count({ where: { organizationId: orgId, status: { not: "withdrawn" } } }),
     ]);
 
     const limits = getLimits(org.plan);
@@ -48,6 +49,7 @@ export async function GET(
         ...usageTotals,
         members: memberCount,
         facilities: facilityCount,
+        frameworks: frameworkCount,
       },
       limits: {
         fieldSubmissionsPerMonth: limits.fieldSubmissionsPerMonth,
@@ -57,6 +59,7 @@ export async function GET(
         apiRequestsPerMonth: limits.apiRequestsPerMonth,
         members: limits.members,
         facilities: limits.facilities,
+        frameworks: limits.frameworks,
       },
     });
   } catch (err) {

@@ -6,6 +6,7 @@ const db = vi.hoisted(() => {
   const model = () => ({ findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn(), upsert: vi.fn(), delete: vi.fn(), groupBy: vi.fn() });
   return {
     organizationMembership: model(),
+    organization: model(),
     msFrameworkAdoption: model(),
     msRequirementStatus: model(),
     msEvidenceLink: model(),
@@ -139,5 +140,35 @@ describe("guidance review", () => {
     const res = await PUT(req({ interpretation: "Applies to our depot only; sites are covered by client permits." }, "PUT"), params("6.1.3"));
     expect(res.status).toBe(200);
     expect(db.msRequirementStatus.upsert.mock.calls[0][0].create).toMatchObject({ organizationId: "org-a", interpretation: expect.stringContaining("depot only") });
+  });
+});
+
+describe("plan limit on adopted frameworks", () => {
+  const p = { params: Promise.resolve({ orgId: "org-a" }) };
+
+  it("refuses a second framework on Starter, counting only frameworks not withdrawn in the caller's organisation", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/management-systems/route");
+    db.organization.findUnique.mockResolvedValue({ plan: "starter", isPilot: false });
+    db.msFrameworkAdoption.findUnique.mockResolvedValue(null);
+    db.msFrameworkAdoption.count.mockResolvedValue(1);
+    const res = await POST(req({ frameworkSlug: "iso-45001-2018" }), p);
+    expect(res.status).toBe(402);
+    expect((await res.json()).code).toBe("PLAN_LIMIT_REACHED");
+    expect(db.msFrameworkAdoption.count.mock.calls[0][0].where).toEqual({ organizationId: "org-a", status: { not: "withdrawn" } });
+    expect(db.msFrameworkAdoption.create).not.toHaveBeenCalled();
+  });
+
+  it("allows a framework already adopted, and pilots, without counting", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/management-systems/route");
+    db.organization.findUnique.mockResolvedValue({ plan: "starter", isPilot: false });
+    db.msFrameworkAdoption.findUnique.mockResolvedValue({ id: "adopt-1", status: "implementing" });
+    db.msFrameworkAdoption.update.mockResolvedValue({ id: "adopt-1", status: "implementing" });
+    expect((await POST(req({ frameworkSlug: "iso-14001-2015" }), p)).status).toBe(200);
+    expect(db.msFrameworkAdoption.count).not.toHaveBeenCalled();
+
+    db.organization.findUnique.mockResolvedValue({ plan: "starter", isPilot: true });
+    db.msFrameworkAdoption.findUnique.mockResolvedValue(null);
+    db.msFrameworkAdoption.create.mockResolvedValue({ id: "adopt-2" });
+    expect((await POST(req({ frameworkSlug: "iso-45001-2018" }), p)).status).toBe(201);
   });
 });

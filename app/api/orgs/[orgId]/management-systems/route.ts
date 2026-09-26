@@ -7,6 +7,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { requireCapacity } from "@/lib/billing/limits";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { getFramework } from "@/lib/management-systems/catalogue";
 import { catalogueSummary, loadAdoptions } from "@/lib/management-systems/load";
@@ -35,6 +36,12 @@ export async function POST(req: NextRequest, { params }: Params) {
     const existing = await prisma.msFrameworkAdoption.findUnique({
       where: { organizationId_frameworkSlug: { organizationId: orgId, frameworkSlug } },
     });
+    // Each plan adopts a set number of frameworks at once; withdrawn ones
+    // do not count, and adopting one already in use costs nothing.
+    if (!existing || existing.status === "withdrawn") {
+      const blocked = await requireCapacity(orgId, "frameworks");
+      if (blocked) return blocked;
+    }
     // Adopting again brings a withdrawn framework back with its history intact.
     const adoption = existing
       ? await prisma.msFrameworkAdoption.update({

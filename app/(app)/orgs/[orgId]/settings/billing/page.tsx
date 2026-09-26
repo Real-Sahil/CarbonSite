@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowUpRight, Zap, FileText, Upload, Calculator, Key, Users, Building2, Check, X as XIcon } from "lucide-react";
+import { ArrowUpRight, Award, Zap, FileText, Upload, Calculator, Key, Users, Building2, Check, X as XIcon } from "lucide-react";
 import { getLimits, hasFeature, PLAN_LABELS, PLAN_PRICES, usagePercent, type PlanFeature } from "@/lib/billing/limits";
 import { PaymentMethodsSection } from "./payment-methods-section";
 import { SubscriptionActions } from "./subscription-actions";
@@ -35,6 +35,7 @@ const METER_CONFIG = [
   { key: "api.request",               limitKey: "apiRequestsPerMonth",      label: "API requests",      icon: Key },
   { key: "members",                   limitKey: "members",                  label: "Team members",      icon: Users },
   { key: "facilities",                limitKey: "facilities",               label: "Facilities",        icon: Building2 },
+  { key: "frameworks",                limitKey: "frameworks",               label: "Management system frameworks", icon: Award },
 ];
 
 const PLANS: Plan[] = ["trial", "starter", "growth", "enterprise"];

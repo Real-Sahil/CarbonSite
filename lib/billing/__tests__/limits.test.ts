@@ -33,6 +33,15 @@ describe("getLimits", () => {
   });
 });
 
+describe("management system frameworks", () => {
+  it("allows 1 on Starter, 5 on Growth, 3 in the trial and all on Enterprise", () => {
+    expect(getLimits("starter").frameworks).toBe(1);
+    expect(getLimits("growth").frameworks).toBe(5);
+    expect(getLimits("trial").frameworks).toBe(3);
+    expect(getLimits("enterprise").frameworks).toBe(Infinity);
+  });
+});
+
 describe("usagePercent", () => {
   it("returns 0 for Infinity limit", () => {
     expect(usagePercent(1000, Infinity)).toBe(0);

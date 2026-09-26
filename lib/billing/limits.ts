@@ -19,6 +19,8 @@ export interface PlanLimits {
   apiRequestsPerMonth: number;
   members: number;
   facilities: number;
+  /** Management system frameworks adopted at once (ISO 14001, ISO 45001, UK GDPR, ...); withdrawn ones are not counted. */
+  frameworks: number;
 }
 
 const PLAN_LIMITS: Record<Plan, PlanLimits> = {
@@ -30,6 +32,7 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     apiRequestsPerMonth: 1_000,
     members: 3,
     facilities: 2,
+    frameworks: 3,
   },
   // Priced per organisation by sites and web users (founder/pricing-strategy.md).
   // Field workers and supplier logins are not counted as members.
@@ -41,6 +44,7 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     apiRequestsPerMonth: 10_000,
     members: 5,
     facilities: 3,
+    frameworks: 1,
   },
   growth: {
     fieldSubmissionsPerMonth: 5_000,
@@ -50,6 +54,7 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     apiRequestsPerMonth: 100_000,
     members: 25,
     facilities: 15,
+    frameworks: 5,
   },
   enterprise: {
     fieldSubmissionsPerMonth: Infinity,
@@ -59,6 +64,7 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     apiRequestsPerMonth: Infinity,
     members: Infinity,
     facilities: Infinity,
+    frameworks: Infinity,
   },
 };
 
@@ -308,18 +314,19 @@ export async function requireWithinUsageLimit(orgId: string, eventType: UsageEve
   return null;
 }
 
-// Web users and sites, the two things plans are priced on. Field workers and
-// supplier accounts are unlimited on every plan, so they are not counted.
+// Web users and sites, the two things plans are priced on, and management
+// system frameworks adopted. Field workers and supplier accounts are
+// unlimited on every plan, so they are not counted.
 const UNCOUNTED_ROLES = ["field_worker", "supplier"] as const;
 
 /**
- * Blocks adding one more web user or facility beyond the plan's limit
+ * Blocks adding one more web user, facility or adopted framework beyond the plan's limit
  * (402 PLAN_LIMIT_REACHED), or null to proceed. Pilots are exempt.
  * `adding` is the role being added, for members: an unlimited role passes.
  */
 export async function requireCapacity(
   orgId: string,
-  resource: "members" | "facilities",
+  resource: "members" | "facilities" | "frameworks",
   adding?: string,
 ): Promise<NextResponse | null> {
   if (resource === "members" && adding && (UNCOUNTED_ROLES as readonly string[]).includes(adding)) return null;
@@ -332,14 +339,20 @@ export async function requireCapacity(
       ? await prisma.organizationMembership.count({
           where: { organizationId: orgId, terminatedAt: null, role: { notIn: [...UNCOUNTED_ROLES] } },
         })
-      : await prisma.facility.count({ where: { organizationId: orgId } });
+      : resource === "facilities"
+        ? await prisma.facility.count({ where: { organizationId: orgId } })
+        : await prisma.msFrameworkAdoption.count({ where: { organizationId: orgId, status: { not: "withdrawn" } } });
   if (used < limit) return null;
   const plan = org.plan as Plan;
-  const noun = resource === "members" ? "web users" : "sites";
+  const noun = resource === "members" ? "web users" : resource === "facilities" ? "sites" : limit === 1 ? "management system framework" : "management system frameworks";
+  const tail =
+    resource === "frameworks"
+      ? "Withdraw one you no longer use, or upgrade to adopt more."
+      : "Upgrade to add more; field workers and supplier logins are not counted.";
   return NextResponse.json(
     {
       code: "PLAN_LIMIT_REACHED",
-      message: `The ${PLAN_LABELS[plan] ?? plan} plan includes ${limit} ${noun}. Upgrade to add more; field workers and supplier logins are not counted.`,
+      message: `The ${PLAN_LABELS[plan] ?? plan} plan includes ${limit} ${noun}. ${tail}`,
       details: { resource, limit, used, plan },
     },
     { status: 402 },

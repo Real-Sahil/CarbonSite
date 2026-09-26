@@ -38,6 +38,7 @@ const TIERS: Tier[] = [
       { name: "Scope 1, 2 and 3 with DEFRA, EPA, ADEME and spend factors", included: true },
       { name: "Guided PPN 006 Carbon Reduction Plan and SECR report", included: true },
       { name: "Emissions reports with the auditor's CSV calculation trail", included: true },
+      { name: "One management system framework, such as ISO 14001, with shared registers", included: true },
       { name: "Email support", included: true },
       { name: "Social value (TOMs) tracking", included: false },
       { name: "Bid carbon pack and PAS 2080", included: false },
@@ -59,6 +60,7 @@ const TIERS: Tier[] = [
       { name: "Social value (TOMs) tracking", included: true },
       { name: "Bid carbon pack, PAS 2080 and project carbon budgets", included: true },
       { name: "Accounting sync (Xero, QuickBooks, Sage)", included: true },
+      { name: "Up to 5 management system frameworks, for example ISO 9001, 14001 and 45001 as one system", included: true },
       { name: "Priority support and an onboarding call", included: true },
     ],
   },
@@ -72,6 +74,7 @@ const TIERS: Tier[] = [
     features: [
       { name: "Unlimited sites, entities and users", included: true },
       { name: "Everything in Growth", included: true },
+      { name: "Every management system framework in the catalogue", included: true },
       { name: "Single sign-on (SAML or OpenID Connect)", included: true },
       { name: "Invoice anomaly detection", included: true },
       { name: "Live dashboard updates", included: true },
@@ -88,6 +91,10 @@ const FAQ = [
   {
     q: "Who counts as a web user?",
     a: "Anyone who signs in to the web app: admins, editors, reviewers, viewers and auditors. Field workers using the mobile app and supplier portal logins are never counted.",
+  },
+  {
+    q: "What counts as a management system framework?",
+    a: "Each standard or law you adopt in Management systems, such as ISO 14001, ISO 45001, ISO 27001 or UK GDPR. Starter includes one, Growth five and Enterprise all of them; the trial includes three. The registers for risks, policies, audits, corrective actions and management reviews are shared by every framework and are not counted. A framework you withdraw stops counting and keeps its history.",
   },
   {
     q: "Can I change plan or cancel?",
