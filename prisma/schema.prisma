@@ -6968,18 +6968,24 @@ enum MsEvidenceKind {
 
 /// An organisation working towards, or certified against, a framework.
 model MsFrameworkAdoption {
-  id                String           @id @default(cuid())
-  organizationId    String           @map("organization_id")
-  frameworkSlug     String           @map("framework_slug")
-  status            MsAdoptionStatus @default(implementing)
-  scope             String?
-  targetDate        DateTime?        @map("target_date") @db.Date
-  certificationBody String?          @map("certification_body")
-  certificateNumber String?          @map("certificate_number")
-  certifiedUntil    DateTime?        @map("certified_until") @db.Date
-  adoptedByUserId   String           @map("adopted_by_user_id")
-  createdAt         DateTime         @default(now()) @map("created_at")
-  updatedAt         DateTime         @updatedAt @map("updated_at")
+  id                       String           @id @default(cuid())
+  organizationId           String           @map("organization_id")
+  frameworkSlug            String           @map("framework_slug")
+  status                   MsAdoptionStatus @default(implementing)
+  scope                    String?
+  targetDate               DateTime?        @map("target_date") @db.Date
+  certificationBody        String?          @map("certification_body")
+  certificateNumber        String?          @map("certificate_number")
+  certifiedUntil           DateTime?        @map("certified_until") @db.Date
+  /// A competent person in the organisation reviewed MetricOra's guidance for this framework.
+  guidanceReviewedByUserId String?          @map("guidance_reviewed_by_user_id")
+  guidanceReviewedAt       DateTime?        @map("guidance_reviewed_at")
+  guidanceReviewNote       String?          @map("guidance_review_note")
+  /// Catalogue fingerprint when reviewed; a later catalogue change asks for a new review.
+  guidanceReviewedVersion  String?          @map("guidance_reviewed_version")
+  adoptedByUserId          String           @map("adopted_by_user_id")
+  createdAt                DateTime         @default(now()) @map("created_at")
+  updatedAt                DateTime         @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -6998,6 +7004,8 @@ model MsRequirementStatus {
   dueOn           DateTime?          @map("due_on") @db.Date
   /// How the organisation meets it, or why it does not apply.
   notes           String?
+  /// The organisation's own reading of the requirement; shown to its team in place of MetricOra's guidance.
+  interpretation  String?
   updatedByUserId String             @map("updated_by_user_id")
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt @map("updated_at")

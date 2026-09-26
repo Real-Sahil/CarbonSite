@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { FRAMEWORKS, assessableRequirements, getFramework, headingCodes, sharedRequirements, type CatalogueFramework } from "./catalogue";
+import { FRAMEWORKS, assessableRequirements, catalogueFingerprint, getFramework, headingCodes, sharedRequirements, type CatalogueFramework } from "./catalogue";
 import { readiness, type Readiness, type RequirementState } from "./readiness";
 import { evidenceHref, KIND_LABELS } from "./evidence";
 import { loadSignals, type Signal } from "./signals";
@@ -63,6 +63,8 @@ export type RequirementView = {
   ownerName: string | null;
   dueOn: string | null;
   notes: string | null;
+  /** The organisation's own reading, shown in place of MetricOra's guidance. */
+  interpretation: string | null;
   updatedAt: string | null;
   signals: Signal[];
   evidence: Array<{ id: string; kind: string; kindLabel: string; label: string; note: string | null; href: string | null; createdAt: string }>;
@@ -78,6 +80,7 @@ export type FrameworkView = {
     certificationBody: string | null;
     certificateNumber: string | null;
     certifiedUntil: string | null;
+    guidanceReview: { byName: string; at: string; note: string | null; current: boolean } | null;
   } | null;
   readiness: Readiness | null;
   requirements: RequirementView[];
@@ -133,6 +136,7 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
       ownerName: s?.ownerUserId ? (memberName.get(s.ownerUserId) ?? null) : null,
       dueOn: iso(s?.dueOn ?? null),
       notes: s?.notes ?? null,
+      interpretation: s?.interpretation ?? null,
       updatedAt: s ? s.updatedAt.toISOString() : null,
       signals: (r.signals ?? []).flatMap((k) => (signals.has(k) ? [signals.get(k)!] : [])),
       evidence: links
@@ -169,6 +173,15 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
           certificationBody: adoption.certificationBody,
           certificateNumber: adoption.certificateNumber,
           certifiedUntil: iso(adoption.certifiedUntil),
+          guidanceReview:
+            adoption.guidanceReviewedAt && adoption.guidanceReviewedByUserId
+              ? {
+                  byName: memberName.get(adoption.guidanceReviewedByUserId) ?? "A former member",
+                  at: adoption.guidanceReviewedAt.toISOString().slice(0, 10),
+                  note: adoption.guidanceReviewNote,
+                  current: adoption.guidanceReviewedVersion === catalogueFingerprint(framework),
+                }
+              : null,
         }
       : null,
     readiness: adoption ? readiness(framework, stateMap, evidenceCounts) : null,

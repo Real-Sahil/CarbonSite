@@ -110,6 +110,8 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
         </p>
       </div>
 
+      <GuidanceNote orgId={orgId} base={base} adoption={adoption} canEdit={canEdit} />
+
       {error && <p role="alert" className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
       {!adoption || adoption.status === "withdrawn" ? (
@@ -336,7 +338,7 @@ function RequirementCard({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [form, setForm] = useState({ status: q.status, ownerUserId: q.ownerUserId ?? "", dueOn: q.dueOn ?? "", notes: q.notes ?? "" });
+  const [form, setForm] = useState({ status: q.status, ownerUserId: q.ownerUserId ?? "", dueOn: q.dueOn ?? "", notes: q.notes ?? "", interpretation: q.interpretation ?? "" });
   const reqUrl = `${base}/requirements/${encodeURIComponent(q.code)}`;
 
   function save(e: React.FormEvent) {
@@ -349,6 +351,7 @@ function RequirementCard({
         ownerUserId: form.ownerUserId || null,
         dueOn: form.dueOn || null,
         notes: form.notes.trim() || null,
+        interpretation: form.interpretation.trim() || null,
       });
       if (!res.ok) return setError(res.message ?? "Could not save.");
       setSaved(true);
@@ -381,7 +384,21 @@ function RequirementCard({
 
       {open && (
         <div className="flex flex-col gap-5 border-t border-[#E5E7EB] p-4">
-          {q.guidance && <p className="max-w-[80ch] text-sm leading-relaxed text-[#374151]">{q.guidance}</p>}
+          {q.interpretation && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-emerald-800">Your organisation&apos;s interpretation</p>
+              <p className="mt-1 max-w-[80ch] whitespace-pre-wrap text-sm leading-relaxed text-[#111827]">{q.interpretation}</p>
+            </div>
+          )}
+          {q.guidance &&
+            (q.interpretation ? (
+              <details className="text-sm text-[#374151]">
+                <summary className="cursor-pointer text-xs font-medium text-[#6B7280]">MetricOra guidance</summary>
+                <p className="mt-2 max-w-[80ch] leading-relaxed">{q.guidance}</p>
+              </details>
+            ) : (
+              <p className="max-w-[80ch] text-sm leading-relaxed text-[#374151]">{q.guidance}</p>
+            ))}
           {q.url && (
             <a href={q.url} target="_blank" rel="noreferrer" className="self-start text-sm text-[#111827] underline underline-offset-2">
               Read the official text
@@ -480,6 +497,11 @@ function RequirementCard({
                 <Label htmlFor={`no-${q.code}`}>{form.status === "not_applicable" ? "Why it does not apply (required)" : "How you meet it"}</Label>
                 <Textarea id={`no-${q.code}`} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
               </div>
+              <div className="flex flex-col gap-1.5 sm:col-span-3">
+                <Label htmlFor={`in-${q.code}`}>Your interpretation (optional)</Label>
+                <Textarea id={`in-${q.code}`} value={form.interpretation} onChange={(e) => setForm({ ...form, interpretation: e.target.value })} rows={3} />
+                <p className="text-xs text-[#6B7280]">Written by your competent person. Your team sees it in place of MetricOra&apos;s guidance.</p>
+              </div>
               {error && <p role="alert" className="text-sm text-red-600 sm:col-span-3">{error}</p>}
               <div className="flex items-center gap-3 sm:col-span-3">
                 <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : "Save"}</Button>
@@ -570,5 +592,71 @@ function AddEvidence({ orgId, reqUrl, onError }: { orgId: string; reqUrl: string
         </>
       )}
     </form>
+  );
+}
+
+function GuidanceNote({ base, adoption, canEdit }: { orgId: string; base: string; adoption: FrameworkView["adoption"]; canEdit: boolean }) {
+  const router = useRouter();
+  const [note, setNote] = useState("");
+  const [signing, setSigning] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const review = adoption?.guidanceReview ?? null;
+  const active = !!adoption && adoption.status !== "withdrawn";
+
+  function send(body: object) {
+    setError(null);
+    startTransition(async () => {
+      const res = await fetch(base, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (!res.ok) return setError("Could not save the review.");
+      setSigning(false);
+      setNote("");
+      router.refresh();
+    });
+  }
+
+  return (
+    <section aria-label="About this guidance" className="flex flex-col gap-3 rounded-[14px] border border-[#E5E7EB] bg-[#F9FAFB] p-4 text-sm text-[#374151]">
+      <p className="max-w-[90ch]">
+        The guidance on this page is MetricOra&apos;s summary to help you work through the framework. It is not legal advice and does not
+        replace the official text. A competent person in your organisation should review it and decide how each requirement applies to you:
+        they can record the organisation&apos;s own interpretation on any requirement, which your team then sees in its place.
+      </p>
+      {active && (
+        <div className="flex flex-wrap items-center gap-3">
+          {review ? (
+            <p className={review.current ? "text-emerald-800" : "text-amber-800"}>
+              {review.current ? "Guidance reviewed" : "Guidance reviewed, but MetricOra has updated it since"} by {review.byName} on {review.at}
+              {review.note ? `: ${review.note}` : "."}
+            </p>
+          ) : (
+            <p className="text-amber-800">Not yet reviewed by your organisation.</p>
+          )}
+          {canEdit && !signing && (
+            <Button size="sm" variant="outline" onClick={() => setSigning(true)}>
+              {review?.current ? "Review again" : "Record review"}
+            </Button>
+          )}
+          {canEdit && review && !signing && (
+            <button type="button" onClick={() => send({ guidanceReviewed: false })} disabled={isPending} className="text-xs text-[#6B7280] underline underline-offset-2">
+              Withdraw review
+            </button>
+          )}
+        </div>
+      )}
+      {signing && (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="gr-note">Note (optional)</Label>
+          <Textarea id="gr-note" value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="e.g. Reviewed against our licensed copy; interpretations recorded on 6.1.2 and 9.1.2" className="bg-white" />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => send({ guidanceReviewed: true, guidanceReviewNote: note.trim() || null })} disabled={isPending}>
+              {isPending ? "Saving…" : "I have reviewed this guidance"}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setSigning(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+      {error && <p role="alert" className="text-red-600">{error}</p>}
+    </section>
   );
 }

@@ -69,3 +69,20 @@ export function sharedRequirements(slug: string, code: string): Array<{ framewor
           .map((requirement) => ({ framework, requirement })),
   );
 }
+
+/**
+ * A short fingerprint of what MetricOra says about a framework (codes, titles,
+ * guidance, links). A guidance review signed off against one fingerprint is
+ * shown as out of date once the catalogue changes. Pure, so it runs anywhere.
+ */
+export function catalogueFingerprint(framework: CatalogueFramework): string {
+  const text = JSON.stringify(framework.requirements.map((r) => [r.code, r.title, r.guidance ?? "", r.officialText ?? "", r.url ?? ""]));
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 16777619) >>> 0;
+    h2 = Math.imul(h2 ^ c, 2246822519) >>> 0;
+  }
+  return `${framework.edition}#${h1.toString(16).padStart(8, "0")}${h2.toString(16).padStart(8, "0")}`;
+}

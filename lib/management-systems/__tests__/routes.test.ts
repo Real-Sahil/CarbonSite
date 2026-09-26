@@ -106,3 +106,38 @@ describe("requirement status", () => {
     });
   });
 });
+
+describe("guidance review", () => {
+  it("records who reviewed MetricOra's guidance against the current catalogue, and can withdraw it", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/management-systems/[slug]/route");
+    const { catalogueFingerprint, getFramework } = await import("../catalogue");
+    db.msFrameworkAdoption.findUnique.mockResolvedValue({ id: "adopt-1" });
+    db.msFrameworkAdoption.update.mockImplementation(async ({ data }) => ({ id: "adopt-1", status: "implementing", ...data }));
+    const p = { params: Promise.resolve({ orgId: "org-a", slug: "iso-14001-2015" }) };
+
+    expect((await PATCH(req({ guidanceReviewed: true, guidanceReviewNote: "Checked against our copy" }, "PATCH"), p)).status).toBe(200);
+    expect(db.msFrameworkAdoption.update.mock.calls[0][0].data).toMatchObject({
+      guidanceReviewedByUserId: "user-a",
+      guidanceReviewNote: "Checked against our copy",
+      guidanceReviewedVersion: catalogueFingerprint(getFramework("iso-14001-2015")!),
+    });
+
+    await PATCH(req({ guidanceReviewed: false }, "PATCH"), p);
+    expect(db.msFrameworkAdoption.update.mock.calls[1][0].data).toMatchObject({ guidanceReviewedByUserId: null, guidanceReviewedVersion: null });
+  });
+
+  it("changes the fingerprint when MetricOra's guidance changes, so an old review shows as out of date", async () => {
+    const { catalogueFingerprint, getFramework } = await import("../catalogue");
+    const f = getFramework("iso-14001-2015")!;
+    const edited = { ...f, requirements: f.requirements.map((r) => (r.code === "6.1.2" ? { ...r, guidance: `${r.guidance} Updated.` } : r)) };
+    expect(catalogueFingerprint(edited)).not.toBe(catalogueFingerprint(f));
+    expect(catalogueFingerprint(f)).toBe(catalogueFingerprint(getFramework("iso-14001-2015")!));
+  });
+
+  it("saves the organisation's own interpretation on a requirement", async () => {
+    const { PUT } = await import("@/app/api/orgs/[orgId]/management-systems/[slug]/requirements/[code]/route");
+    const res = await PUT(req({ interpretation: "Applies to our depot only; sites are covered by client permits." }, "PUT"), params("6.1.3"));
+    expect(res.status).toBe(200);
+    expect(db.msRequirementStatus.upsert.mock.calls[0][0].create).toMatchObject({ organizationId: "org-a", interpretation: expect.stringContaining("depot only") });
+  });
+});

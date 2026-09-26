@@ -57,6 +57,10 @@ export default async function ManagementSystemsPage({ params }: { params: Promis
           from your own records, and the evidence you have linked. Clauses shared between standards, such as internal audit and
           management review, are shown against each other so the work is done once.
         </p>
+        <p className="mt-2 max-w-[70ch] text-xs text-[#6B7280]">
+          MetricOra&apos;s guidance is a summary, not legal advice. Your organisation&apos;s competent person reviews it on each framework
+          page and can replace it with your own interpretation.
+        </p>
       </div>
 
       {active.length > 0 && (

@@ -9,6 +9,7 @@ import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { loadFrameworkView } from "@/lib/management-systems/load";
+import { catalogueFingerprint, getFramework } from "@/lib/management-systems/catalogue";
 import { MS_EDITORS, MS_READERS, adoptionUpdateSchema } from "@/lib/management-systems/access";
 
 type Params = { params: Promise<{ orgId: string; slug: string }> };
@@ -35,14 +36,22 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     });
     if (!adoption) return apiError("NOT_FOUND", "This framework has not been adopted.", 404);
 
-    const updated = await prisma.msFrameworkAdoption.update({ where: { id: adoption.id }, data: body });
+    const { guidanceReviewed, ...fields } = body;
+    const framework = getFramework(slug);
+    const review =
+      guidanceReviewed === true && framework
+        ? { guidanceReviewedByUserId: session.user.id, guidanceReviewedAt: new Date(), guidanceReviewedVersion: catalogueFingerprint(framework) }
+        : guidanceReviewed === false
+          ? { guidanceReviewedByUserId: null, guidanceReviewedAt: null, guidanceReviewedVersion: null, guidanceReviewNote: null }
+          : {};
+    const updated = await prisma.msFrameworkAdoption.update({ where: { id: adoption.id }, data: { ...fields, ...review } });
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
       action: "management_system.adoption_updated",
       resourceType: "MsFrameworkAdoption",
       resourceId: adoption.id,
-      metadata: { frameworkSlug: slug, changed: Object.keys(body), status: updated.status },
+      metadata: { frameworkSlug: slug, changed: Object.keys(body), status: updated.status, guidanceReviewed: guidanceReviewed ?? null },
     });
     return Response.json(updated);
   } catch (err) {

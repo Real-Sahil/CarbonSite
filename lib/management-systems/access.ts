@@ -24,6 +24,9 @@ export const adoptionUpdateSchema = z.object({
   certificationBody: z.string().max(200).nullable().optional(),
   certificateNumber: z.string().max(100).nullable().optional(),
   certifiedUntil: optionalDate,
+  /** true: the caller signs off that they reviewed MetricOra's guidance; false withdraws the sign-off. */
+  guidanceReviewed: z.boolean().optional(),
+  guidanceReviewNote: z.string().max(2000).nullable().optional(),
 });
 
 export const requirementUpdateSchema = z
@@ -32,6 +35,7 @@ export const requirementUpdateSchema = z
     ownerUserId: z.string().min(1).nullable().optional(),
     dueOn: optionalDate,
     notes: z.string().max(5000).nullable().optional(),
+    interpretation: z.string().max(10000).nullable().optional(),
   })
   .refine((b) => Object.keys(b).length > 0, "Nothing to update");
 
