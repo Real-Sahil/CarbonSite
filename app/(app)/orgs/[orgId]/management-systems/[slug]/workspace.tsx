@@ -33,6 +33,13 @@ const EVIDENCE_KINDS: [string, string][] = [
   ["hs_incident_report", "H&S incident"],
   ["method_statement", "Method statement"],
   ["reduction_target", "Reduction target"],
+  ["ms_policy", "Policy"],
+  ["ms_risk", "Risk or opportunity"],
+  ["ms_interested_party", "Interested party"],
+  ["ms_audit", "Internal audit"],
+  ["ms_audit_finding", "Audit finding"],
+  ["ms_corrective_action", "Corrective action"],
+  ["ms_management_review", "Management review"],
   ["url", "Link to a web page"],
   ["note", "Written note"],
 ];

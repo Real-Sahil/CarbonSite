@@ -362,6 +362,13 @@ model Organization {
   msFrameworkAdoptions           MsFrameworkAdoption[]
   msRequirementStatuses          MsRequirementStatus[]
   msEvidenceLinks                MsEvidenceLink[]
+  msRisks                        MsRisk[]
+  msInterestedParties            MsInterestedParty[]
+  msPolicies                     MsPolicy[]
+  msAudits                       MsAudit[]
+  msAuditFindings                MsAuditFinding[]
+  msCorrectiveActions            MsCorrectiveAction[]
+  msManagementReviews            MsManagementReview[]
   tnfdScenarios                  TnfdScenario[]                   @relation("OrgTnfdScenarios")
   materialityAssessments         MaterialityAssessment[]          @relation("OrgMaterialityAssessments")
   enforcementNotices             EnforcementNotice[]              @relation("OrgEnforcementNotices")
@@ -6950,6 +6957,13 @@ enum MsEvidenceKind {
   reduction_target
   url
   note
+  ms_risk
+  ms_interested_party
+  ms_policy
+  ms_audit
+  ms_audit_finding
+  ms_corrective_action
+  ms_management_review
 }
 
 /// An organisation working towards, or certified against, a framework.
@@ -7013,4 +7027,169 @@ model MsEvidenceLink {
 
   @@index([organizationId, frameworkSlug, requirementCode])
   @@map("ms_evidence_links")
+}
+
+// Registers shared by every framework (lib/management-systems/registers).
+// Framework lists hold catalogue slugs, checked against the catalogue on write.
+
+/// Risks and opportunities (ISO 6.1), including information security and AI risks.
+model MsRisk {
+  id                 String    @id @default(cuid())
+  organizationId     String    @map("organization_id")
+  kind               String    @default("risk")
+  title              String
+  description        String?
+  frameworks         String[]  @default([])
+  likelihood         Int       @default(3)
+  impact             Int       @default(3)
+  treatment          String    @default("mitigate")
+  controls           String?
+  residualLikelihood Int?      @map("residual_likelihood")
+  residualImpact     Int?      @map("residual_impact")
+  status             String    @default("open")
+  ownerUserId        String?   @map("owner_user_id")
+  reviewOn           DateTime? @map("review_on") @db.Date
+  createdByUserId    String    @map("created_by_user_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_risks")
+}
+
+/// Interested parties and their requirements (ISO 4.2).
+model MsInterestedParty {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  name              String
+  category          String   @default("other")
+  needs             String?
+  becomesObligation Boolean  @default(false) @map("becomes_obligation")
+  howMonitored      String?  @map("how_monitored")
+  frameworks        String[] @default([])
+  createdByUserId   String   @map("created_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("ms_interested_parties")
+}
+
+/// A policy, its current version and approval (ISO 5.2, ISO 27001 A.5.1).
+model MsPolicy {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  title            String
+  category         String?
+  frameworks       String[]  @default([])
+  body             String?
+  version          Int       @default(1)
+  status           String    @default("draft")
+  ownerUserId      String?   @map("owner_user_id")
+  approvedByUserId String?   @map("approved_by_user_id")
+  approvedOn       DateTime? @map("approved_on") @db.Date
+  reviewOn         DateTime? @map("review_on") @db.Date
+  createdByUserId  String    @map("created_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_policies")
+}
+
+/// An internal audit in the programme (ISO 9.2), across one or more frameworks.
+model MsAudit {
+  id                String    @id @default(cuid())
+  organizationId    String    @map("organization_id")
+  title             String
+  frameworks        String[]  @default([])
+  scope             String?
+  plannedOn         DateTime? @map("planned_on") @db.Date
+  completedOn       DateTime? @map("completed_on") @db.Date
+  leadAuditorUserId String?   @map("lead_auditor_user_id")
+  status            String    @default("planned")
+  summary           String?
+  createdByUserId   String    @map("created_by_user_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  findings     MsAuditFinding[]
+
+  @@index([organizationId, status])
+  @@map("ms_audits")
+}
+
+/// A finding raised in an internal audit.
+model MsAuditFinding {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  auditId         String   @map("audit_id")
+  type            String   @default("observation")
+  reference       String?
+  description     String
+  status          String   @default("open")
+  createdByUserId String   @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  audit        MsAudit      @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, auditId])
+  @@map("ms_audit_findings")
+}
+
+/// Nonconformity and corrective action (ISO 10.2), from any source.
+model MsCorrectiveAction {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  title            String
+  source           String    @default("other")
+  sourceReference  String?   @map("source_reference")
+  description      String?
+  rootCause        String?   @map("root_cause")
+  action           String?
+  ownerUserId      String?   @map("owner_user_id")
+  dueOn            DateTime? @map("due_on") @db.Date
+  status           String    @default("open")
+  verifiedByUserId String?   @map("verified_by_user_id")
+  verifiedOn       DateTime? @map("verified_on") @db.Date
+  effectiveness    String?
+  createdByUserId  String    @map("created_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_corrective_actions")
+}
+
+/// A management review meeting (ISO 9.3).
+model MsManagementReview {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  title           String
+  heldOn          DateTime? @map("held_on") @db.Date
+  frameworks      String[]  @default([])
+  attendees       String?
+  inputs          String?
+  decisions       String?
+  actions         String?
+  status          String    @default("planned")
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, heldOn])
+  @@map("ms_management_reviews")
 }

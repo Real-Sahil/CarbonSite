@@ -7,6 +7,8 @@ import { MS_EDITORS, MS_READERS } from "@/lib/management-systems/access";
 import { catalogueSummary, loadAdoptions } from "@/lib/management-systems/load";
 import type { FrameworkFamily } from "@/lib/management-systems/catalogue";
 import { AdoptButton } from "./adopt-button";
+import { REGISTERS, REGISTER_KEYS } from "@/lib/management-systems/registers/config";
+import { delegate } from "@/lib/management-systems/registers/server";
 
 const FAMILY_LABELS: Record<FrameworkFamily, string> = {
   management_system: "Management systems",
@@ -41,6 +43,10 @@ export default async function ManagementSystemsPage({ params }: { params: Promis
   const adoptedBySlug = new Map(adoptions.map((a) => [a.frameworkSlug, a]));
   const active = adoptions.filter((a) => a.status !== "withdrawn");
   const families = [...new Set(catalogue.map((f) => f.family))];
+  // One count per register; they share the page's single connection, so seven small queries.
+  const registerCounts = await Promise.all(
+    REGISTER_KEYS.map((k) => (delegate(k) as unknown as { count: (a: object) => Promise<number> }).count({ where: { organizationId: orgId } }).catch(() => null)),
+  );
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 p-6">
@@ -100,6 +106,18 @@ export default async function ManagementSystemsPage({ params }: { params: Promis
           </div>
         </section>
       )}
+
+      <section aria-labelledby="ms-registers" className="flex flex-col gap-3">
+        <h2 id="ms-registers" className="text-sm font-semibold text-[#111827]">Registers shared by every framework</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {REGISTER_KEYS.map((k, i) => (
+            <Link key={k} href={`/orgs/${orgId}/management-systems/registers/${k}`} className="rounded-[12px] border border-[#E5E7EB] bg-white p-4 transition-colors hover:border-[#FED7AA]">
+              <p className="text-sm font-medium text-[#111827]">{REGISTERS[k].label}</p>
+              <p className="mt-1 text-xs tabular-nums text-[#6B7280]">{registerCounts[i] == null ? "-" : `${registerCounts[i]} recorded`}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {families.map((family) => (
         <section key={family} aria-labelledby={`ms-${family}`} className="flex flex-col gap-3">

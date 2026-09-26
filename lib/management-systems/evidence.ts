@@ -1,5 +1,7 @@
 import type { MsEvidenceKind } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { REGISTERS, type RegisterKey } from "./registers/config";
+import { delegate, registerRowLabel } from "./registers/server";
 
 // Evidence a requirement can point at. Record kinds are the organisation's
 // own rows: the target is looked up with the organisation in the WHERE clause
@@ -14,7 +16,19 @@ export const RECORD_KINDS = [
   "hs_incident_report",
   "method_statement",
   "reduction_target",
+  "ms_risk",
+  "ms_interested_party",
+  "ms_policy",
+  "ms_audit",
+  "ms_audit_finding",
+  "ms_corrective_action",
+  "ms_management_review",
 ] as const satisfies readonly MsEvidenceKind[];
+
+/** Register rows that can be linked as evidence, by evidence kind. */
+const REGISTER_BY_KIND: Record<string, RegisterKey> = Object.fromEntries(
+  Object.values(REGISTERS).map((r) => [r.evidenceKind, r.key]),
+);
 
 export type RecordKind = (typeof RECORD_KINDS)[number];
 
@@ -29,6 +43,13 @@ export const KIND_LABELS: Record<MsEvidenceKind, string> = {
   reduction_target: "Reduction target",
   url: "Link",
   note: "Note",
+  ms_risk: "Risk or opportunity",
+  ms_interested_party: "Interested party",
+  ms_policy: "Policy",
+  ms_audit: "Internal audit",
+  ms_audit_finding: "Audit finding",
+  ms_corrective_action: "Corrective action",
+  ms_management_review: "Management review",
 };
 
 type Option = { id: string; label: string };
@@ -44,7 +65,27 @@ type KindSpec = {
 const TAKE = 20;
 const contains = (q: string) => (q ? { contains: q, mode: "insensitive" as const } : undefined);
 
+function registerSpec(key: RegisterKey): KindSpec {
+  const { titleField } = REGISTERS[key];
+  return {
+    search: (orgId, q) =>
+      delegate(key)
+        .findMany({
+          where: { organizationId: orgId, ...(q ? { [titleField]: { contains: q, mode: "insensitive" } } : {}) },
+          orderBy: { createdAt: "desc" },
+          take: TAKE,
+        })
+        .then((rows) => rows.map((r) => ({ id: r.id, label: String(r[titleField] ?? "").slice(0, 120) }))),
+    find: (orgId, id) => registerRowLabel(orgId, key, id),
+    href: (orgId, id) => `/orgs/${orgId}/management-systems/registers/${key}#row-${id}`,
+  };
+}
+
 const SPECS: Record<RecordKind, KindSpec> = {
+  ...(Object.fromEntries(Object.entries(REGISTER_BY_KIND).map(([kind, key]) => [kind, registerSpec(key)])) as Record<
+    "ms_risk" | "ms_interested_party" | "ms_policy" | "ms_audit" | "ms_audit_finding" | "ms_corrective_action" | "ms_management_review",
+    KindSpec
+  >),
   evidence_file: {
     search: (orgId, q) =>
       prisma.evidenceFile
