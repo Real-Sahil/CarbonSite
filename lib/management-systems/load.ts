@@ -55,6 +55,9 @@ export type RequirementView = {
   heading: boolean;
   evidenceHints: string[];
   officialText: string | null;
+  examples: string[];
+  tags: string[];
+  url: string | null;
   status: RequirementState;
   ownerUserId: string | null;
   ownerName: string | null;
@@ -122,6 +125,9 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
       heading: headings.has(r.code),
       evidenceHints: r.evidenceHints ?? [],
       officialText: r.officialText ?? null,
+      examples: r.examples ?? [],
+      tags: r.tags ?? [],
+      url: r.url ?? null,
       status: (s?.status as RequirementState | undefined) ?? "not_started",
       ownerUserId: s?.ownerUserId ?? null,
       ownerName: s?.ownerUserId ? (memberName.get(s.ownerUserId) ?? null) : null,

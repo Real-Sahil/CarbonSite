@@ -1,0 +1,241 @@
+import type { CatalogueFramework } from "./types";
+import { controls } from "./hls";
+
+// SOC 2 (AICPA Trust Services Criteria), PCI DSS v4.0.1 and Cyber Essentials.
+// Criterion and requirement references with MetricOra's own titles and
+// guidance; the publishers' text is not reproduced.
+
+const SOC2: Array<[string, string, string, ReadonlyArray<readonly [string, string, string]>]> = [
+  ["CC1", "Control environment", "security", [
+    ["CC1.1", "Integrity and ethical values", "Leadership shows commitment to integrity and ethics, for example through a code of conduct people acknowledge."],
+    ["CC1.2", "Board oversight", "The board is independent of management and oversees internal control."],
+    ["CC1.3", "Structure, reporting lines and authority", "Management sets structures, reporting lines and responsibilities."],
+    ["CC1.4", "Commitment to competence", "Attract, develop and keep competent people."],
+    ["CC1.5", "Accountability", "Hold people accountable for their internal control responsibilities."],
+  ]],
+  ["CC2", "Communication and information", "security", [
+    ["CC2.1", "Quality information", "Obtain and use relevant, quality information to support internal control."],
+    ["CC2.2", "Internal communication", "Communicate control objectives and responsibilities internally."],
+    ["CC2.3", "External communication", "Communicate with external parties about matters affecting internal control."],
+  ]],
+  ["CC3", "Risk assessment", "security", [
+    ["CC3.1", "Suitable objectives", "Set objectives clear enough to identify and assess risks."],
+    ["CC3.2", "Risk identification and analysis", "Identify and analyse risks to objectives, including from vendors."],
+    ["CC3.3", "Fraud risk", "Consider the potential for fraud."],
+    ["CC3.4", "Significant change", "Identify and assess changes that could affect internal control."],
+  ]],
+  ["CC4", "Monitoring activities", "security", [
+    ["CC4.1", "Ongoing and separate evaluations", "Evaluate whether controls are present and functioning."],
+    ["CC4.2", "Communicating deficiencies", "Report control deficiencies to those responsible for correcting them."],
+  ]],
+  ["CC5", "Control activities", "security", [
+    ["CC5.1", "Selecting control activities", "Choose control activities that reduce risks to acceptable levels."],
+    ["CC5.2", "Technology general controls", "Select general controls over technology."],
+    ["CC5.3", "Policies and procedures", "Deploy controls through policies and procedures."],
+  ]],
+  ["CC6", "Logical and physical access controls", "security", [
+    ["CC6.1", "Logical access security", "Protect information assets with access control software, infrastructure and architecture."],
+    ["CC6.2", "User registration and authorisation", "Register and authorise users before issuing credentials, and remove them when no longer needed."],
+    ["CC6.3", "Role-based access", "Grant, change and remove access by role and least privilege."],
+    ["CC6.4", "Physical access", "Restrict physical access to facilities and protected assets."],
+    ["CC6.5", "Asset disposal", "Remove data and software before disposing of assets."],
+    ["CC6.6", "Threats from outside the system boundary", "Protect against threats from outside the system boundary."],
+    ["CC6.7", "Transmission and removal of information", "Restrict and protect the movement of information."],
+    ["CC6.8", "Unauthorised or malicious software", "Prevent or detect unauthorised or malicious software."],
+  ]],
+  ["CC7", "System operations", "security", [
+    ["CC7.1", "Detecting configuration changes and vulnerabilities", "Detect configuration changes that introduce vulnerabilities, and new vulnerabilities."],
+    ["CC7.2", "Monitoring for anomalies", "Monitor system components for anomalies indicating malicious acts or errors."],
+    ["CC7.3", "Evaluating security events", "Evaluate events to decide whether they are incidents."],
+    ["CC7.4", "Incident response", "Respond to incidents with a defined programme."],
+    ["CC7.5", "Incident recovery", "Recover from incidents."],
+  ]],
+  ["CC8", "Change management", "security", [["CC8.1", "Change management", "Authorise, design, test, approve and implement changes to infrastructure, data and software."]]],
+  ["CC9", "Risk mitigation", "security", [
+    ["CC9.1", "Business disruption", "Identify and develop risk mitigation for business disruption."],
+    ["CC9.2", "Vendors and business partners", "Assess and manage risks from vendors and business partners."],
+  ]],
+  ["A1", "Availability", "availability", [
+    ["A1.1", "Capacity", "Manage and plan processing capacity."],
+    ["A1.2", "Environmental protection, backup and recovery infrastructure", "Protect, back up and recover the infrastructure and data."],
+    ["A1.3", "Recovery testing", "Test recovery plan procedures."],
+  ]],
+  ["C1", "Confidentiality", "confidentiality", [
+    ["C1.1", "Identifying and keeping confidential information", "Identify and protect confidential information."],
+    ["C1.2", "Disposing of confidential information", "Dispose of confidential information when retention ends."],
+  ]],
+  ["PI1", "Processing integrity", "processing_integrity", [
+    ["PI1.1", "Processing specifications", "Obtain and communicate definitions of data and processing specifications."],
+    ["PI1.2", "Inputs", "Make sure inputs are complete and accurate."],
+    ["PI1.3", "Processing", "Make sure processing is complete, accurate and timely."],
+    ["PI1.4", "Outputs", "Make sure outputs are complete, accurate and distributed only as intended."],
+    ["PI1.5", "Storage", "Store inputs, items in processing and outputs completely and accurately."],
+  ]],
+  ["P", "Privacy", "privacy", [
+    ["P1.1", "Notice", "Give notice about privacy practices."],
+    ["P2.1", "Choice and consent", "Communicate choices and obtain consent where needed."],
+    ["P3.1", "Collection", "Collect personal information consistent with objectives."],
+    ["P3.2", "Explicit consent", "Obtain explicit consent where required."],
+    ["P4.1", "Use", "Limit use to identified purposes."],
+    ["P4.2", "Retention", "Retain personal information only as needed."],
+    ["P4.3", "Disposal", "Securely dispose of personal information."],
+    ["P5.1", "Access", "Give people access to their personal information."],
+    ["P5.2", "Correction", "Correct, amend or append personal information on request."],
+    ["P6.1", "Disclosure to third parties", "Disclose to third parties only for identified purposes and with consent where needed."],
+    ["P6.2", "Record of authorised disclosures", "Keep records of authorised disclosures."],
+    ["P6.3", "Record of unauthorised disclosures", "Keep records of detected or reported unauthorised disclosures."],
+    ["P6.4", "Third-party commitments", "Obtain privacy commitments from vendors and third parties."],
+    ["P6.5", "Third-party breach notification", "Require third parties to notify you of unauthorised disclosures."],
+    ["P6.6", "Breach notification to individuals", "Notify affected people of breaches and incidents."],
+    ["P6.7", "Accounting of disclosures", "Provide an accounting of disclosures on request."],
+    ["P7.1", "Quality", "Keep personal information accurate, complete and relevant."],
+    ["P8.1", "Complaints and compliance monitoring", "Handle privacy inquiries and complaints and monitor compliance."],
+  ]],
+];
+
+export const soc2: CatalogueFramework = {
+  slug: "soc-2-tsc-2017",
+  name: "SOC 2 Trust Services Criteria",
+  shortName: "SOC 2",
+  edition: "2017 criteria with revised points of focus (2022)",
+  publisher: "American Institute of Certified Public Accountants (AICPA)",
+  family: "information_security",
+  summary: "The criteria a service auditor reports against in a SOC 2 examination: the common (security) criteria, plus availability, confidentiality, processing integrity and privacy where in scope.",
+  sourceUrl: "https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022",
+  contentBasis: "references",
+  contentNote: "Criterion references with MetricOra's own titles and guidance. The AICPA's text is not reproduced. A SOC 2 report is issued by an independent CPA firm, not a certification body.",
+  certifiable: false,
+  tagLabels: { "tsc:security": "Security (common criteria)", "tsc:availability": "Availability", "tsc:confidentiality": "Confidentiality", "tsc:processing_integrity": "Processing integrity", "tsc:privacy": "Privacy" },
+  requirements: SOC2.flatMap(([code, title, category, rows]) => [{ code, title }, ...controls(code, rows, { tags: [`tsc:${category}`] })]),
+};
+
+const PCI: Array<[string, string, ReadonlyArray<readonly [string, string]>]> = [
+  ["1", "Install and maintain network security controls", [
+    ["1.1", "Processes and responsibilities are defined and understood"],
+    ["1.2", "Network security controls are configured and maintained"],
+    ["1.3", "Network access to and from the cardholder data environment is restricted"],
+    ["1.4", "Connections between trusted and untrusted networks are controlled"],
+    ["1.5", "Risks from devices that connect to both untrusted networks and the CDE are mitigated"],
+  ]],
+  ["2", "Apply secure configurations to all system components", [
+    ["2.1", "Processes and responsibilities are defined and understood"],
+    ["2.2", "System components are configured and managed securely"],
+    ["2.3", "Wireless environments are configured and managed securely"],
+  ]],
+  ["3", "Protect stored account data", [
+    ["3.1", "Processes and responsibilities are defined and understood"],
+    ["3.2", "Storage of account data is kept to a minimum"],
+    ["3.3", "Sensitive authentication data is not stored after authorisation"],
+    ["3.4", "Access to displays of full PAN and ability to copy PAN is restricted"],
+    ["3.5", "PAN is secured wherever it is stored"],
+    ["3.6", "Cryptographic keys used to protect stored account data are secured"],
+    ["3.7", "Key management processes and procedures are implemented"],
+  ]],
+  ["4", "Protect cardholder data with strong cryptography during transmission over open, public networks", [
+    ["4.1", "Processes and responsibilities are defined and understood"],
+    ["4.2", "PAN is protected with strong cryptography during transmission"],
+  ]],
+  ["5", "Protect all systems and networks from malicious software", [
+    ["5.1", "Processes and responsibilities are defined and understood"],
+    ["5.2", "Malicious software is prevented, or detected and addressed"],
+    ["5.3", "Anti-malware mechanisms and processes are active, maintained and monitored"],
+    ["5.4", "Anti-phishing mechanisms protect users against phishing attacks"],
+  ]],
+  ["6", "Develop and maintain secure systems and software", [
+    ["6.1", "Processes and responsibilities are defined and understood"],
+    ["6.2", "Bespoke and custom software is developed securely"],
+    ["6.3", "Security vulnerabilities are identified and addressed"],
+    ["6.4", "Public-facing web applications are protected against attacks"],
+    ["6.5", "Changes to all system components are managed securely"],
+  ]],
+  ["7", "Restrict access to system components and cardholder data by business need to know", [
+    ["7.1", "Processes and responsibilities are defined and understood"],
+    ["7.2", "Access to system components and data is appropriately defined and assigned"],
+    ["7.3", "Access is managed via an access control system"],
+  ]],
+  ["8", "Identify users and authenticate access to system components", [
+    ["8.1", "Processes and responsibilities are defined and understood"],
+    ["8.2", "User identification and accounts are strictly managed"],
+    ["8.3", "Strong authentication is established and managed"],
+    ["8.4", "Multi-factor authentication is implemented to secure access into the CDE"],
+    ["8.5", "Multi-factor authentication systems are configured to prevent misuse"],
+    ["8.6", "Use of application and system accounts and authentication factors is strictly managed"],
+  ]],
+  ["9", "Restrict physical access to cardholder data", [
+    ["9.1", "Processes and responsibilities are defined and understood"],
+    ["9.2", "Physical access controls manage entry into facilities and systems containing cardholder data"],
+    ["9.3", "Physical access for personnel and visitors is authorised and managed"],
+    ["9.4", "Media with cardholder data is securely stored, accessed, distributed and destroyed"],
+    ["9.5", "Point-of-interaction devices are protected from tampering and unauthorised substitution"],
+  ]],
+  ["10", "Log and monitor all access to system components and cardholder data", [
+    ["10.1", "Processes and responsibilities are defined and understood"],
+    ["10.2", "Audit logs are implemented to support detection of anomalies and suspicious activity"],
+    ["10.3", "Audit logs are protected from destruction and unauthorised modification"],
+    ["10.4", "Audit logs are reviewed to identify anomalies or suspicious activity"],
+    ["10.5", "Audit log history is retained and available for analysis"],
+    ["10.6", "Time-synchronisation mechanisms support consistent time settings across all systems"],
+    ["10.7", "Failures of critical security control systems are detected, reported and responded to promptly"],
+  ]],
+  ["11", "Test security of systems and networks regularly", [
+    ["11.1", "Processes and responsibilities are defined and understood"],
+    ["11.2", "Wireless access points are identified and monitored, and unauthorised ones addressed"],
+    ["11.3", "External and internal vulnerabilities are regularly identified, prioritised and addressed"],
+    ["11.4", "External and internal penetration testing is regularly performed"],
+    ["11.5", "Network intrusions and unexpected file changes are detected and responded to"],
+    ["11.6", "Unauthorised changes on payment pages are detected and responded to"],
+  ]],
+  ["12", "Support information security with organisational policies and programmes", [
+    ["12.1", "A comprehensive information security policy is known and current"],
+    ["12.2", "Acceptable use policies for end-user technologies are defined and implemented"],
+    ["12.3", "Risks to the cardholder data environment are formally identified, evaluated and managed"],
+    ["12.4", "PCI DSS compliance is managed"],
+    ["12.5", "PCI DSS scope is documented and validated"],
+    ["12.6", "Security awareness education is an ongoing activity"],
+    ["12.7", "Personnel are screened to reduce risks from insider threats"],
+    ["12.8", "Risk to information assets associated with third-party service providers is managed"],
+    ["12.9", "Third-party service providers support their customers' PCI DSS compliance"],
+    ["12.10", "Suspected and confirmed security incidents are responded to immediately"],
+  ]],
+];
+
+export const pciDss: CatalogueFramework = {
+  slug: "pci-dss-4-0-1",
+  name: "PCI Data Security Standard",
+  shortName: "PCI DSS",
+  edition: "v4.0.1",
+  publisher: "PCI Security Standards Council",
+  family: "payments",
+  summary: "Security requirements for any organisation that stores, processes or transmits payment card data, validated by a self-assessment questionnaire or a Qualified Security Assessor.",
+  sourceUrl: "https://www.pcisecuritystandards.org/document_library/",
+  contentBasis: "references",
+  contentNote: "The 12 principal requirements and their sections with MetricOra's own short summaries. The standard's text and its detailed sub-requirements are not reproduced: work from the PCI SSC document library.",
+  certifiable: false,
+  requirements: PCI.flatMap(([code, title, rows]) => [
+    { code: `Req. ${code}`, title },
+    ...rows.map(([c, t]) => ({ code: c, parent: `Req. ${code}`, title: t, guidance: `${t}. Check each defined sub-requirement and its testing procedures in PCI DSS v4.0.1.` })),
+  ]),
+};
+
+export const cyberEssentials: CatalogueFramework = {
+  slug: "cyber-essentials",
+  name: "Cyber Essentials",
+  shortName: "Cyber Essentials",
+  edition: "Requirements for IT Infrastructure (check the current version on the NCSC site)",
+  publisher: "UK National Cyber Security Centre, delivered by IASME",
+  family: "cyber",
+  jurisdiction: "United Kingdom",
+  summary: "The UK government-backed baseline of five technical controls. Required by central government for contracts handling personal information or providing certain ICT services, and asked for in many public sector tenders.",
+  sourceUrl: "https://www.ncsc.gov.uk/cyberessentials/overview",
+  contentBasis: "references",
+  contentNote: "The five control themes with MetricOra's own guidance. Certification is by self-assessment (Cyber Essentials) or technical audit (Cyber Essentials Plus) through an IASME certification body, against the current requirements document.",
+  certifiable: true,
+  requirements: [
+    { code: "Scope", title: "Scope", guidance: "Define the scope: the whole organisation or a separately managed segment, including cloud services, home workers' devices used for work and bring-your-own devices.", evidenceHints: ["Scope statement", "Device and cloud service inventory"] },
+    { code: "1", title: "Firewalls", guidance: "Protect every in-scope device with a correctly configured firewall or router; change default passwords, block unauthenticated inbound connections by default and remove rules no longer needed.", evidenceHints: ["Firewall rule reviews"] },
+    { code: "2", title: "Secure configuration", guidance: "Remove or disable unnecessary accounts and software, change default passwords, disable auto-run, and require authentication before access to data or services.", evidenceHints: ["Build standards"] },
+    { code: "3", title: "Security update management", guidance: "Use only supported, licensed software and apply high and critical security updates within 14 days of release.", evidenceHints: ["Patch reports", "Unsupported software list"] },
+    { code: "4", title: "User access control", guidance: "Give accounts only the access they need, separate administrator accounts, remove leavers promptly, and use multi-factor authentication for cloud services.", evidenceHints: ["Joiner, mover, leaver process", "MFA configuration"] },
+    { code: "5", title: "Malware protection", guidance: "Protect devices with anti-malware software or application allow-listing, kept up to date.", evidenceHints: ["Anti-malware console report"] },
+  ],
+};

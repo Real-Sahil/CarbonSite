@@ -47,6 +47,12 @@ export type CatalogueRequirement = {
   sharedKey?: string;
   /** Official wording, only when copied by a build script (contentBasis "official_text"). */
   officialText?: string;
+  /** Examples published by the source itself (e.g. NIST CSF implementation examples), copied by the build script. */
+  examples?: string[];
+  /** Link to the official text of this requirement, for laws published online. */
+  url?: string;
+  /** Filters the framework defines, e.g. "baseline:moderate" for NIST SP 800-53. Keys of `tagLabels`. */
+  tags?: string[];
 };
 
 export type CatalogueFramework = {
@@ -66,5 +72,7 @@ export type CatalogueFramework = {
   contentNote: string;
   /** Can a certification body certify against it? Shows certificate fields when true. */
   certifiable: boolean;
+  /** Labels for the requirement tags this framework uses, in display order. */
+  tagLabels?: Record<string, string>;
   requirements: CatalogueRequirement[];
 };

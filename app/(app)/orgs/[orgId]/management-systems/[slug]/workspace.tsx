@@ -52,6 +52,8 @@ async function send(url: string, method: string, body?: unknown) {
 export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; view: FrameworkView; canEdit: boolean }) {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
+  const [tag, setTag] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -65,8 +67,11 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
   }, [view.requirements]);
 
   const assessable = view.requirements.filter((q) => !q.heading);
+  const needle = search.trim().toLowerCase();
   const matches = (q: RequirementView) =>
-    filter === "all" || (filter === "no_evidence" ? q.status === "implemented" && q.evidence.length === 0 : q.status === filter);
+    (filter === "all" || (filter === "no_evidence" ? q.status === "implemented" && q.evidence.length === 0 : q.status === filter)) &&
+    (!tag || q.tags.includes(tag)) &&
+    (!needle || q.code.toLowerCase().includes(needle) || q.title.toLowerCase().includes(needle) || (q.officialText ?? "").toLowerCase().includes(needle));
   const visibleCodes = useMemo(() => {
     const keep = new Set<string>();
     const byCode = new Map(view.requirements.map((q) => [q.code, q]));
@@ -76,7 +81,7 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
     }
     return keep;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, view.requirements]);
+  }, [filter, needle, tag, view.requirements]);
 
   function adopt() {
     startTransition(async () => {
@@ -114,6 +119,22 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
       ) : (
         <AdoptionPanel orgId={orgId} base={base} adoption={adoption} readiness={r!} certifiable={framework.certifiable} canEdit={canEdit} />
       )}
+
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="ms-search" className="text-xs">Search</Label>
+          <Input id="ms-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Code or words" className="h-9 w-64" />
+        </div>
+        {framework.tagLabels && (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="ms-tag" className="text-xs">Show</Label>
+            <select id="ms-tag" value={tag} onChange={(e) => setTag(e.target.value)} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
+              <option value="">All requirements</option>
+              {Object.entries(framework.tagLabels).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-wrap gap-2" role="group" aria-label="Filter requirements">
         {FILTERS.map(([key, label]) => (
@@ -354,11 +375,22 @@ function RequirementCard({
       {open && (
         <div className="flex flex-col gap-5 border-t border-[#E5E7EB] p-4">
           {q.guidance && <p className="max-w-[80ch] text-sm leading-relaxed text-[#374151]">{q.guidance}</p>}
+          {q.url && (
+            <a href={q.url} target="_blank" rel="noreferrer" className="self-start text-sm text-[#111827] underline underline-offset-2">
+              Read the official text
+            </a>
+          )}
           {q.officialText && (
-            <details className="text-sm text-[#374151]">
+            <details className="text-sm text-[#374151]" open={!q.guidance}>
               <summary className="cursor-pointer text-xs font-medium text-[#6B7280]">Official text</summary>
-              <p className="mt-2 max-w-[80ch] whitespace-pre-line">{q.officialText}</p>
+              <p className="mt-2 max-w-[80ch] whitespace-pre-wrap">{q.officialText}</p>
             </details>
+          )}
+          {q.examples.length > 0 && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Examples from the source</p>
+              <ul className="mt-1 list-disc pl-5 text-sm text-[#374151]">{q.examples.map((h) => <li key={h}>{h}</li>)}</ul>
+            </div>
           )}
           {q.evidenceHints.length > 0 && (
             <div>

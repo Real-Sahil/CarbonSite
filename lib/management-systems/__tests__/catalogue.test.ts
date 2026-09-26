@@ -25,8 +25,12 @@ describe("catalogue", () => {
         for (const r of f.requirements) for (const s of r.signals ?? []) expect(SIGNAL_KEYS).toContain(s);
       });
 
-      it("gives guidance on every requirement an organisation assesses", () => {
-        for (const r of assessableRequirements(f)) expect(r.guidance, `${r.code} has no guidance`).toBeTruthy();
+      it("explains every requirement an organisation assesses, in our words or the source's", () => {
+        for (const r of assessableRequirements(f)) expect(r.guidance ?? r.officialText, `${r.code} has neither guidance nor official text`).toBeTruthy();
+      });
+
+      it("uses only the tags the framework labels", () => {
+        for (const r of f.requirements) for (const t of r.tags ?? []) expect(Object.keys(f.tagLabels ?? {})).toContain(t);
       });
 
       it("never carries official text unless it was copied from the official source", () => {
@@ -44,7 +48,7 @@ describe("catalogue", () => {
     const keys = new Map<string, string[]>();
     for (const f of FRAMEWORKS) for (const r of f.requirements) if (r.sharedKey) keys.set(r.sharedKey, [...(keys.get(r.sharedKey) ?? []), f.slug]);
     for (const [key, slugs] of keys) expect(slugs.length, `${key} appears only in ${slugs}`).toBeGreaterThan(1);
-    expect(sharedRequirements("iso-14001-2015", "9.3").map((x) => `${x.framework.shortName} ${x.requirement.code}`).sort()).toEqual(["ISO 45001 9.3", "ISO 9001 9.3"]);
+    expect(sharedRequirements("iso-14001-2015", "9.3").map((x) => `${x.framework.shortName} ${x.requirement.code}`).sort()).toEqual(["ISO 27001 9.3", "ISO 42001 9.3", "ISO 45001 9.3", "ISO 9001 9.3"]);
   });
 });
 

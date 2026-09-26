@@ -2,11 +2,36 @@ import type { CatalogueFramework, CatalogueRequirement } from "./types";
 import { iso9001 } from "./iso-9001-2015";
 import { iso14001 } from "./iso-14001-2015";
 import { iso45001 } from "./iso-45001-2018";
+import { nist80053 } from "./nist-sp-800-53-r5";
+import { nistCsf2 } from "./nist-csf-2-0";
+import { iso27001 } from "./iso-27001-2022";
+import { iso42001 } from "./iso-42001-2023";
+import { euGdpr, ukGdpr } from "./gdpr";
+import { hipaa } from "./hipaa";
+import { ccpa, nis2, pipeda } from "./privacy-other";
+import { cyberEssentials, pciDss, soc2 } from "./security-other";
 
 export type { CatalogueFramework, CatalogueRequirement, FrameworkFamily } from "./types";
 
 /** Every framework an organisation can adopt, in display order. */
-export const FRAMEWORKS: CatalogueFramework[] = [iso14001, iso45001, iso9001];
+export const FRAMEWORKS: CatalogueFramework[] = [
+  iso14001,
+  iso45001,
+  iso9001,
+  ukGdpr,
+  euGdpr,
+  ccpa,
+  pipeda,
+  iso27001,
+  soc2,
+  cyberEssentials,
+  nistCsf2,
+  nist80053,
+  nis2,
+  pciDss,
+  hipaa,
+  iso42001,
+];
 
 const BY_SLUG = new Map(FRAMEWORKS.map((f) => [f.slug, f]));
 
