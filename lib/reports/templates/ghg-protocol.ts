@@ -64,6 +64,14 @@ function pct(part: number, total: number): string {
   return ((part / total) * 100).toFixed(1) + "%";
 }
 
+/** Category number of each seeded Scope 3 code. */
+const SCOPE3_CODE_NUMBER: Record<string, number> = {
+  "s3-purchased-goods": 1, "s3-capital-goods": 2, "s3-fuel-energy": 3, "s3-upstream-transport": 4,
+  "s3-waste": 5, "s3-business-travel": 6, "s3-commuting": 7, "s3-upstream-leased": 8,
+  "s3-downstream-transport": 9, "s3-processing-sold": 10, "s3-use-sold": 11, "s3-end-of-life": 12,
+  "s3-downstream-leased": 13, "s3-franchises": 14, "s3-investments": 15,
+};
+
 const SCOPE3_CATEGORIES: Record<number, string> = {
   1:  "Purchased goods and services",
   2:  "Capital goods",
@@ -96,15 +104,19 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
   const s2Cats  = data.categories.filter((c) => c.scope === 2).sort((a, b) => b.totalKg - a.totalKg);
   const s3Cats  = data.categories.filter((c) => c.scope === 3).sort((a, b) => b.totalKg - a.totalKg);
 
+  const reportedS3 = new Set(data.categories.filter((c) => c.scope === 3).map((c) => SCOPE3_CODE_NUMBER[c.code]).filter(Boolean));
+  const missingS3 = Object.keys(SCOPE3_CATEGORIES).map(Number).filter((n) => !reportedS3.has(n));
+  // Only show per-gas columns when some category has a gas split.
+  const hasGasSplit = data.categories.some((c) => c.co2Kg != null || c.ch4Kg != null || c.n2oKg != null);
   function catRows(cats: GhgProtocolCategoryRow[]): string {
-    if (cats.length === 0) return `<tr><td colspan="6" style="padding:12px 14px;color:#9ca3af;font-style:italic;">No data reported for this scope.</td></tr>`;
+    if (cats.length === 0) return `<tr><td colspan="${hasGasSplit ? 6 : 3}" style="padding:12px 14px;color:#9ca3af;font-style:italic;">No data reported for this scope.</td></tr>`;
     return cats.map((c) => `
       <tr>
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">${esc(c.name)}</td>
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;font-family:monospace;">${esc(c.code)}</td>
-        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.co2Kg != null ? fmtT(c.co2Kg) : "—"}</td>
-        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.ch4Kg != null ? fmtT(c.ch4Kg) : "—"}</td>
-        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.n2oKg != null ? fmtT(c.n2oKg) : "—"}</td>
+        ${hasGasSplit ? `<td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.co2Kg != null ? fmtT(c.co2Kg) : "-"}</td>
+        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.ch4Kg != null ? fmtT(c.ch4Kg) : "-"}</td>
+        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${c.n2oKg != null ? fmtT(c.n2oKg) : "-"}</td>` : ""}
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:#228B22;">${fmtT(c.totalKg)}</td>
       </tr>`).join("");
   }
@@ -250,14 +262,14 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
   <table>
     <thead><tr>
       <th>Category</th><th>Code</th>
-      <th style="text-align:right;">CO₂ (tCO₂e)</th>
+      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
       <th style="text-align:right;">CH₄ (tCO₂e)</th>
-      <th style="text-align:right;">N₂O (tCO₂e)</th>
+      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
       <th style="text-align:right;">Total (tCO₂e)</th>
     </tr></thead>
     <tbody>${catRows(s1Cats)}</tbody>
     <tfoot><tr style="background:#f0faf0;font-weight:700;">
-      <td colspan="5" style="padding:9px 14px;font-size:0.82rem;">Scope 1 total</td>
+      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 1 total</td>
       <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#228B22;">${fmtT(data.scope1Kg)}</td>
     </tr></tfoot>
   </table>
@@ -267,14 +279,14 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
   <table>
     <thead><tr>
       <th>Category</th><th>Code</th>
-      <th style="text-align:right;">CO₂ (tCO₂e)</th>
+      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
       <th style="text-align:right;">CH₄ (tCO₂e)</th>
-      <th style="text-align:right;">N₂O (tCO₂e)</th>
+      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
       <th style="text-align:right;">Total (tCO₂e)</th>
     </tr></thead>
     <tbody>${catRows(s2Cats)}</tbody>
     <tfoot><tr style="background:#f0faf0;font-weight:700;">
-      <td colspan="5" style="padding:9px 14px;font-size:0.82rem;">Scope 2 total (location-based)</td>
+      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 2 total (location-based)</td>
       <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#0ea5e9;">${fmtT(data.scope2LocationKg)}</td>
     </tr></tfoot>
   </table>
@@ -285,20 +297,19 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
   <table>
     <thead><tr>
       <th>Category</th><th>Code</th>
-      <th style="text-align:right;">CO₂ (tCO₂e)</th>
+      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
       <th style="text-align:right;">CH₄ (tCO₂e)</th>
-      <th style="text-align:right;">N₂O (tCO₂e)</th>
+      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
       <th style="text-align:right;">Total (tCO₂e)</th>
     </tr></thead>
     <tbody>${catRows(s3Cats)}</tbody>
     <tfoot><tr style="background:#f0faf0;font-weight:700;">
-      <td colspan="5" style="padding:9px 14px;font-size:0.82rem;">Scope 3 total</td>
+      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 3 total</td>
       <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#84cc16;">${fmtT(data.scope3Kg)}</td>
     </tr></tfoot>
   </table>
-  ${s3Cats.length < 15 ? `<p style="font-size:0.78rem;color:#6b7280;margin:8px 0 0;">
-    Scope 3 categories with no activity data are excluded from this report.
-    GHG Protocol requires disclosure of all relevant categories — ensure completeness for categories ${Object.entries(SCOPE3_CATEGORIES).filter(([k]) => !s3Cats.some(c => c.code.includes(k))).map(([,v]) => v).slice(0,3).join(", ")} where applicable.
+  ${missingS3.length ? `<p style="font-size:0.78rem;color:#6b7280;margin:8px 0 0;">
+    Not reported in this inventory: ${missingS3.map((n) => `${n}. ${SCOPE3_CATEGORIES[n]}`).join("; ")}. The GHG Protocol Scope 3 Standard asks for every relevant category, with a reason for any left out.
   </p>` : ""}
 
   <!-- Gas breakdown -->
@@ -308,11 +319,11 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
   ${
     data.evidenceTiers
       ? `<p class="section-title">Evidence Behind These Figures</p>
-  <table>
+  <table style="width:100%;border-collapse:collapse;">
     <tr><th>Evidence tier</th><th class="num">Share of total</th></tr>
-    <tr><td>Verified: metered, invoiced or supplier data with evidence attached, approved in review</td><td class="num">${data.evidenceTiers.verified.toFixed(1)}%</td></tr>
-    <tr><td>Partially verified: one of those is missing</td><td class="num">${data.evidenceTiers.partial.toFixed(1)}%</td></tr>
-    <tr><td>Estimated: estimates and proxies, or records with neither evidence nor approval</td><td class="num">${data.evidenceTiers.estimated.toFixed(1)}%</td></tr>
+    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Verified: metered, invoiced or supplier data with evidence attached, approved in review</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.verified.toFixed(1)}%</td></tr>
+    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Partially verified: one of those is missing</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.partial.toFixed(1)}%</td></tr>
+    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Estimated: estimates and proxies, or records with neither evidence nor approval</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.estimated.toFixed(1)}%</td></tr>
   </table>`
       : ""
   }

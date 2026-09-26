@@ -22,12 +22,18 @@ export type Ppn0621Data = {
   totalTonnes: number;
   baselineYear?: string;
   baselineTonnes?: number;
+  /** Baseline by scope, from the active base year. */
+  baselineScopes?: { s1: number | null; s2: number | null; s3: number | null };
   // Net zero commitment
-  netZeroTargetYear: number;
+  /** Null when the organisation has not recorded one. */
+  netZeroTargetYear: number | null;
   interimTargetYear?: number;
   interimReductionPct?: number;
+  /** e.g. "Scopes 1 and 2"; defaults to Scope 1 and 2. */
+  interimScopes?: string;
   // Initiatives / actions
   initiatives: Array<{ name: string; expectedImpactTonnes?: number; status: string }>;
+  signatory?: { name: string; title: string | null; date: string | null } | null;
   // Scopes reported
   scopesReported: string[];
   recordCount: number;
@@ -39,6 +45,8 @@ export function renderPpn0621Html(d: Ppn0621Data): string {
   const now = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   const pStart = d.periodStart.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   const pEnd = d.periodEnd.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  // "FY2024 base year" stays; "FY2024" becomes "FY2024 base year".
+  const baseName = d.baselineYear ? (/base year/i.test(d.baselineYear) ? d.baselineYear : `${d.baselineYear} base year`) : "baseline";
   const reductionPct = d.baselineTonnes && d.baselineTonnes > 0
     ? ((1 - d.totalTonnes / d.baselineTonnes) * 100).toFixed(1)
     : null;
@@ -89,46 +97,35 @@ export function renderPpn0621Html(d: Ppn0621Data): string {
   <h1>Carbon Reduction Plan</h1>
   <div class="org">${esc(d.orgName)}</div>
   <div class="period">Commitment period: ${pStart} – ${pEnd}</div>
-  <div class="ppn-badge">PPN 06/21 Compliant</div>
+  <div class="ppn-badge">PPN 06/21 format</div>
+  <div class="period" style="margin-top:10px;">PPN 06/21 was replaced by PPN 006 on 24 February 2025. Use the PPN 006 Carbon Reduction Plan for procurements under the Procurement Act 2023.</div>
 </div>
 
 <section>
   <h2>1. Commitment to Achieving Net Zero</h2>
   <div class="commitment-box">
-    <div class="headline">${esc(d.orgName)} is committed to achieving net zero greenhouse gas emissions by ${d.netZeroTargetYear}.</div>
-    ${d.interimTargetYear ? `<p style="margin-top:10px;color:#065f46;">Interim target: <strong>${d.interimReductionPct ?? "—"}% reduction</strong> in absolute Scope 1 &amp; 2 emissions by <strong>${d.interimTargetYear}</strong> against the ${d.baselineYear ?? "baseline"} year.</p>` : ""}
+    <div class="headline">${d.netZeroTargetYear
+      ? `${esc(d.orgName)} is committed to achieving net zero greenhouse gas emissions by ${d.netZeroTargetYear}.`
+      : `No net zero year has been recorded. Set it in the Carbon Reduction Plan or the transition plan: PPN 06/21 requires a commitment to net zero by 2050 at the latest.`}</div>
+    ${d.interimTargetYear ? `<p style="margin-top:10px;color:#065f46;">Interim target: <strong>${d.interimReductionPct ?? "—"}% reduction</strong> in absolute ${esc(d.interimScopes ?? "Scope 1 and 2")} emissions by <strong>${d.interimTargetYear}</strong> against the ${esc(baseName)}.</p>` : ""}
   </div>
   <p>This Carbon Reduction Plan has been completed in accordance with the requirements of PPN 06/21 and associated guidance.</p>
 </section>
 
 <section>
   <h2>2. Baseline Emissions Footprint</h2>
-  ${d.baselineYear ? `<p>Baseline year: <strong>${esc(d.baselineYear)}</strong> | Baseline total: <strong>${d.baselineTonnes ? fmtT(d.baselineTonnes) : "—"}</strong></p>` : ""}
+  ${d.baselineYear
+    ? `<p>Baseline year: <strong>${esc(d.baselineYear)}</strong>. Baseline emissions are the reference point against which reduction is measured.</p>
   <div class="stat-grid">
-    <div class="stat">
-      <div class="label">Scope 1</div>
-      <div class="value">${fmt(d.scope1Tonnes)}</div>
-      <div class="sub">tCO₂e (direct)</div>
-    </div>
-    <div class="stat">
-      <div class="label">Scope 2</div>
-      <div class="value">${fmt(d.scope2Tonnes)}</div>
-      <div class="sub">tCO₂e (electricity)</div>
-    </div>
-    <div class="stat">
-      <div class="label">Scope 3</div>
-      <div class="value">${fmt(d.scope3Tonnes)}</div>
-      <div class="sub">tCO₂e (value chain)</div>
-    </div>
-    <div class="stat">
-      <div class="label">Total</div>
-      <div class="value">${fmt(d.totalTonnes)}</div>
-      <div class="sub">tCO₂e</div>
-    </div>
-  </div>
+    <div class="stat"><div class="label">Scope 1</div><div class="value">${d.baselineScopes?.s1 != null ? fmt(d.baselineScopes.s1) : "—"}</div><div class="sub">tCO₂e (direct)</div></div>
+    <div class="stat"><div class="label">Scope 2</div><div class="value">${d.baselineScopes?.s2 != null ? fmt(d.baselineScopes.s2) : "—"}</div><div class="sub">tCO₂e (electricity)</div></div>
+    <div class="stat"><div class="label">Scope 3</div><div class="value">${d.baselineScopes?.s3 != null ? fmt(d.baselineScopes.s3) : "—"}</div><div class="sub">tCO₂e (value chain)</div></div>
+    <div class="stat"><div class="label">Total</div><div class="value">${d.baselineTonnes ? fmt(d.baselineTonnes) : "—"}</div><div class="sub">tCO₂e</div></div>
+  </div>`
+    : `<p style="color:#6b7280;font-style:italic">No base year has been set. Set one under Targets so the baseline and progress can be shown.</p>`}
   ${reductionPct !== null ? `
   <h3>Progress Against Baseline</h3>
-  <p>Reduction achieved: <strong>${reductionPct}%</strong> (${d.baselineYear ? `from ${esc(d.baselineYear)} baseline` : ""})</p>
+  <p>Reduction achieved: <strong>${reductionPct}%</strong> (against the ${esc(baseName)})</p>
   <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(Math.max(parseFloat(reductionPct), 0), 100)}%"></div></div>
   ` : ""}
   <p style="font-size:9pt;color:#6b7280;margin-top:12px;">Scopes reported: ${d.scopesReported.join(", ")}. ${d.recordCount.toLocaleString("en-GB")} activity records. Methodology: ${esc(d.methodology)} (GWP ${esc(d.gwpVersion)}). Factors: ${esc(d.factorLibrary)}.</p>
@@ -168,8 +165,8 @@ export function renderPpn0621Html(d: Ppn0621Data): string {
   <h2>5. Declaration</h2>
   <div class="declaration">
     <p>This Carbon Reduction Plan has been reviewed and approved by a member of the board of directors (or equivalent management body) with overall responsibility for the organisation's environmental policy.</p>
-    <p style="margin-top:16px;"><strong>Authorised signatory:</strong> ___________________________ &nbsp;&nbsp; <strong>Date:</strong> ___________________</p>
-    <p style="margin-top:8px;"><strong>Position:</strong> ___________________________</p>
+    <p style="margin-top:16px;"><strong>Authorised signatory:</strong> ${d.signatory ? esc(d.signatory.name) : "___________________________"} &nbsp;&nbsp; <strong>Date:</strong> ${d.signatory?.date ? esc(d.signatory.date) : "___________________"}</p>
+    <p style="margin-top:8px;"><strong>Position:</strong> ${d.signatory?.title ? esc(d.signatory.title) : "___________________________"}</p>
     <p style="margin-top:16px;font-size:9pt;color:#6b7280;">
       This plan shall be published on the organisation's website and kept current. A new plan must be published within 12 months of the previous plan's publication date.
     </p>

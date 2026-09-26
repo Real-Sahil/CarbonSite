@@ -61,7 +61,10 @@ export type BidPackData = {
   history: { periodLabel: string; periodEnd: Date; snapshotVersion: number; totals: ScopeTotals }[];
   baseYear: { label: string; s1: number | null; s2: number | null; s3: number | null; total: number | null } | null;
   targets: { type: "absolute" | "intensity"; baselineLabel: string; targetLabel: string; reductionTonnes: number; baselineTonnes: number | null }[];
-  netZeroYear: number;
+  /** Null when the organisation has not recorded one. */
+  netZeroYear: number | null;
+  /** Interim targets from the Carbon Reduction Plan. */
+  interimTargets: { year: number; reductionPct: number; description?: string }[];
   initiatives: { name: string; status: string; expectedTonnes: number | null }[];
   assurance: {
     auditorSignOff: { status: string; signedAt: Date | null } | null;
@@ -101,6 +104,8 @@ export type ContractSocialValue = {
 
 const DIVERTED = new Set(["recycle", "recovery"]);
 const t = (kg: number) => kg / 1000;
+/** "FY2024 base year" stays as it is; "FY2024" becomes "FY2024 base year". */
+const baseYearName = (label: string) => (/base year/i.test(label) ? label : `${label} base year`);
 const num = (d: { toString(): string } | null | undefined) => (d == null ? null : Number(d));
 
 type AggRow = { snapshotId: string | null; scope: number; scope2Method: string | null; totalCo2e: { toString(): string } };
@@ -140,6 +145,9 @@ export async function loadBidPackData(orgId: string, snapshotId: string, rawOpti
   if (!snapshot) throw Object.assign(new Error("Snapshot not found."), { code: "NOT_FOUND", status: 404 });
 
   const periodEnd = snapshot.reportingPeriod.endDate;
+  // Imported here: lib/crp/plan imports this module, so a top-level import is circular.
+  const { loadOrgCommitments } = await import("@/lib/reports/commitments");
+  const commitments = await loadOrgCommitments(orgId, { id: snapshot.reportingPeriod.id, endDate: periodEnd });
   const contractIds = [...new Set(opts.contractIds ?? [])];
 
   const [rollup, categoryRows, recordCount, allSnapshots, baseYear, targets, initiatives, engagement, contracts, svPeriod] =
@@ -269,12 +277,22 @@ export async function loadBidPackData(orgId: string, snapshotId: string, rawOpti
       reductionTonnes: t(Number(tg.reductionAmount)),
       baselineTonnes: baselineTotals.get(tg.baselinePeriod.id) ?? null,
     })),
-    netZeroYear: opts.netZeroYear ?? 2050,
-    initiatives: initiatives.map((i) => ({
-      name: i.name,
-      status: i.status,
-      expectedTonnes: i.expectedImpactCo2e != null ? t(Number(i.expectedImpactCo2e)) : null,
-    })),
+    netZeroYear: opts.netZeroYear ?? commitments.netZeroYear,
+    interimTargets: commitments.interimTargets,
+    // Reduction initiatives and the Carbon Reduction Plan's measures, once each.
+    initiatives: [
+      ...initiatives.map((i) => ({
+        name: i.name,
+        status: i.status,
+        expectedTonnes: i.expectedImpactCo2e != null ? t(Number(i.expectedImpactCo2e)) : null,
+      })),
+      ...[
+        ...commitments.completedMeasures.map((m) => ({ ...m, status: "complete" })),
+        ...commitments.plannedMeasures.map((m) => ({ ...m, status: "planned" })),
+      ]
+        .filter((m) => !initiatives.some((i) => i.name.trim().toLowerCase() === m.name.trim().toLowerCase()))
+        .map((m) => ({ name: m.name, status: m.status, expectedTonnes: m.savingTco2e })),
+    ],
     assurance: {
       auditorSignOff: snapshot.assurance ? { status: snapshot.assurance.status, signedAt: snapshot.assurance.signedAt } : null,
       engagement: engagement
@@ -289,7 +307,10 @@ export async function loadBidPackData(orgId: string, snapshotId: string, rawOpti
     },
     contracts: await loadContractEvidence(orgId, snapshot.calculationRun.id, contracts, contractIds, periodEnd),
     socialValuePounds: Number(svPeriod._sum.valuePounds ?? 0),
-    signatory: { name: opts.signatoryName || null, title: opts.signatoryTitle || null, date: opts.signatoryDate || null },
+    // The form's signatory, else the director who signed the Carbon Reduction Plan.
+    signatory: opts.signatoryName
+      ? { name: opts.signatoryName, title: opts.signatoryTitle || null, date: opts.signatoryDate || null }
+      : { name: commitments.signatory?.name ?? null, title: commitments.signatory?.title ?? null, date: commitments.signatory?.date ?? null },
   };
 }
 
@@ -515,7 +536,7 @@ export function bidPackReadiness(d: BidPackData): ReadinessCheck[] {
       id: "bid-net-zero",
       description: "Net zero commitment by 2050 or earlier",
       required: true,
-      passed: d.netZeroYear <= 2050,
+      passed: d.netZeroYear != null && d.netZeroYear <= 2050,
       message: "PPN 006 requires a commitment to net zero by 2050 at the latest.",
     },
     {
@@ -588,21 +609,27 @@ export function bidAnswers(d: BidPackData): { question: string; answer: string }
     const c12 = change(baseS12, s12);
     const cAll = change(d.baseYear.total, d.current.total);
     if (c12 != null) {
-      progress.push(`Scope 1 and 2 emissions are ${pct(c12)} ${c12 <= 0 ? "lower" : "higher"} than our ${d.baseYear.label} base year.`);
+      progress.push(`Scope 1 and 2 emissions are ${pct(c12)} ${c12 <= 0 ? "lower" : "higher"} than our ${baseYearName(d.baseYear.label)}.`);
     } else if (cAll != null) {
-      progress.push(`Total emissions are ${pct(cAll)} ${cAll <= 0 ? "lower" : "higher"} than our ${d.baseYear.label} base year.`);
+      progress.push(`Total emissions are ${pct(cAll)} ${cAll <= 0 ? "lower" : "higher"} than our ${baseYearName(d.baseYear.label)}.`);
     }
   }
   if (d.history.length >= 2) {
     const prev = d.history[d.history.length - 2];
     const c = change(prev.totals.s1 + prev.totals.s2, s12);
-    if (c != null) progress.push(`Since ${prev.periodLabel}, Scope 1 and 2 emissions have ${c <= 0 ? "fallen" : "risen"} by ${pct(c)}.`);
+    // Skip when the previous period is the base year: the sentence above said it.
+    const prevIsBase =
+      d.baseYear?.s1 != null && d.baseYear.s2 != null && Math.abs(d.baseYear.s1 + d.baseYear.s2 - (prev.totals.s1 + prev.totals.s2)) < 0.5;
+    if (c != null && !prevIsBase) progress.push(`Since ${prev.periodLabel}, Scope 1 and 2 emissions have ${c <= 0 ? "fallen" : "risen"} by ${pct(c)}.`);
   }
   const done = d.initiatives.filter((i) => i.status === "complete");
   if (done.length) progress.push(`Completed reduction measures include ${listNames(done.map((i) => i.name))}.`);
   if (progress.length) out.push({ question: "How have your emissions changed, and what have you done to reduce them?", answer: progress.join(" ") });
 
-  const plan: string[] = [`We are committed to reaching net zero by ${d.netZeroYear}.`];
+  const plan: string[] = d.netZeroYear ? [`We are committed to reaching net zero by ${d.netZeroYear}.`] : [];
+  for (const it of d.interimTargets.slice(0, 2)) {
+    plan.push(`We aim to cut ${it.description ?? "Scope 1 and 2"} emissions by ${it.reductionPct}% by ${it.year}${d.baseYear ? ` against our ${baseYearName(d.baseYear.label)}` : ""}.`);
+  }
   const absolute = d.targets.filter((tg) => tg.type === "absolute");
   for (const tg of absolute.slice(0, 3)) {
     const share = tg.baselineTonnes ? ` (${pct(tg.reductionTonnes / tg.baselineTonnes)} of the baseline)` : "";

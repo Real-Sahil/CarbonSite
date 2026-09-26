@@ -119,6 +119,11 @@ export function splitScope2(calcs: CalculationRow[]): { s2lbKg: number; s2mbKg: 
   return { s2lbKg, s2mbKg: hasMarket ? s2mbKg + heatKg : s2mbKg };
 }
 
+/** True when any record in the run was calculated market-based. Without one there is no market-based Scope 2 figure, not a zero. */
+export function hasMarketBasedScope2(calcs: CalculationRow[]): boolean {
+  return calcs.some((c) => scope2MethodOf(c.activityRecord) === "market_based");
+}
+
 const SCOPE_LABELS: Record<number, string> = {
   1: "Scope 1 — Direct emissions",
   2: "Scope 2 — Purchased energy",

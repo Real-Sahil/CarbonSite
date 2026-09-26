@@ -83,7 +83,7 @@ function planSections(data: Ppn006CrpData): { supplier: string; baseline: string
   const measureRows = (rows: typeof p.completed) =>
     rows
       .map(
-        (m) => `<tr><td>${esc(m.name)}</td><td>${esc(m.year)}</td><td>${esc(m.description)}</td><td class="num">${m.savingTco2e !== "" ? `${Number(m.savingTco2e).toLocaleString("en-GB", { maximumFractionDigits: 1 })} tCO2e` : ""}</td></tr>`,
+        (m) => `<tr><td>${esc(m.name)}</td><td>${esc(m.year)}</td><td>${esc(m.description)}</td><td class="num">${m.savingTco2e !== "" && Number(m.savingTco2e) > 0 ? `${Number(m.savingTco2e).toLocaleString("en-GB", { maximumFractionDigits: 1 })} tCO2e` : "Not estimated"}</td></tr>`,
       )
       .join("");
   const supplier = `
@@ -463,7 +463,7 @@ export function renderPpn006CrpHtml(data: Ppn006CrpData): string {
     <h2>Reduction Targets</h2>
     <table>
       <thead>
-        <tr><th>Target Year</th><th>Target</th><th>Supporting Actions</th></tr>
+        <tr><th>Target Year</th><th>Target</th><th>Covers</th></tr>
       </thead>
       <tbody>${targetsHtml}</tbody>
     </table>

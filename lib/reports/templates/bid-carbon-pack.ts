@@ -58,7 +58,7 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
   <p class="lead">Supplier: <strong>${esc(d.orgName)}</strong>. Publication date: ${fmtDate(d.snapshot.publishedAt)}.</p>
 
   <h3>Commitment to achieving net zero</h3>
-  <p>${esc(d.orgName)} is committed to achieving net zero emissions by ${d.netZeroYear}.</p>
+  <p>${d.netZeroYear ? `${esc(d.orgName)} is committed to achieving net zero emissions by ${d.netZeroYear}.` : "No net zero year has been recorded. PPN 006 requires a commitment to net zero by 2050 at the latest."}</p>
 
   <h3>Baseline emissions</h3>
   ${
@@ -78,6 +78,13 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
 
   <h3>Emissions reduction targets</h3>
   ${
+    d.interimTargets.length
+      ? `<table><tr><th>Target year</th><th>Target</th><th>Scopes</th></tr>${d.interimTargets
+          .map((it) => `<tr><td>${it.year}</td><td>${it.reductionPct}% reduction against the ${esc(d.baseYear?.label ?? "baseline")}</td><td>${esc(it.description ?? "Scopes 1 and 2")}</td></tr>`)
+          .join("")}</table>`
+      : ""
+  }
+  ${
     d.targets.length
       ? `<table><tr><th>Type</th><th>From</th><th>To</th><th class="num">Reduction (tCO₂e)</th><th class="num">Share of baseline</th></tr>${d.targets
           .map(
@@ -85,7 +92,9 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
               `<tr><td>${tg.type === "absolute" ? "Absolute" : "Intensity"}</td><td>${esc(tg.baselineLabel)}</td><td>${esc(tg.targetLabel)}</td><td class="num">${fmtT(tg.reductionTonnes)}</td><td class="num">${tg.baselineTonnes ? `${((tg.reductionTonnes / tg.baselineTonnes) * 100).toFixed(1)}%` : ""}</td></tr>`,
           )
           .join("")}</table>`
-      : `<p class="muted">No interim targets recorded beyond the net zero commitment.</p>`
+      : d.interimTargets.length
+        ? ""
+        : `<p class="muted">No interim targets recorded beyond the net zero commitment.</p>`
   }
 
   <h3>Carbon reduction projects</h3>
@@ -195,7 +204,7 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
 
   const e = d.assurance.engagement;
   const assurance = `
-<section class="page-break">
+<section>
   ${h("Data quality and assurance")}
   <table>
     <tr><td>Published snapshot</td><td>v${d.snapshot.version}, published ${fmtDate(d.snapshot.publishedAt)} by ${esc(d.snapshot.publishedBy)}. Published figures cannot be edited; a correction creates a new version.</td></tr>
@@ -273,7 +282,7 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
   <div class="kpi"><span class="val">${fmtT(d.current.total)}</span><span class="lbl">tCO₂e total, ${esc(d.snapshot.periodLabel)}</span></div>
   <div class="kpi"><span class="val">${fmtT(s12)}</span><span class="lbl">tCO₂e Scope 1 and 2</span></div>
   <div class="kpi"><span class="val">${vsBase != null ? fmtChange(vsBase) : "–"}</span><span class="lbl">Scope 1 and 2 vs ${d.baseYear ? esc(d.baseYear.label) : "base year"}</span></div>
-  <div class="kpi"><span class="val">${d.netZeroYear}</span><span class="lbl">Net zero commitment</span></div>
+  <div class="kpi"><span class="val">${d.netZeroYear ?? "Not set"}</span><span class="lbl">Net zero commitment</span></div>
 </div>
 
 ${crp}

@@ -76,7 +76,7 @@ export function renderTransitionPlanHtml(d: TransitionPlanReportData): string {
 </section>`;
 
   const leverSection = `
-<section class="page-break">
+<section>
   ${h("Decarbonisation levers")}
   ${
     levers.length

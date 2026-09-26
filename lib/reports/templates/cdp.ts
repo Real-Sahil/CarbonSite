@@ -26,7 +26,8 @@ export interface CdpData {
   gwpVersion: string;
   scope1Tonnes: number;
   scope2LocationTonnes: number;
-  scope2MarketTonnes: number;
+  /** Null when no record was calculated market-based. */
+  scope2MarketTonnes: number | null;
   scope3Tonnes: number;
   totalTonnes: number;
   co2Tonnes?: number;
@@ -136,9 +137,9 @@ export function renderCdpHtml(data: CdpData): string {
         <tbody>
           ${row2("Scope 1 (direct)", fmtN(data.scope1Tonnes))}
           ${row2("Scope 2 (location-based)", fmtN(data.scope2LocationTonnes))}
-          ${row2("Scope 2 (market-based)", fmtN(data.scope2MarketTonnes))}
+          ${row2("Scope 2 (market-based)", data.scope2MarketTonnes == null ? "Not calculated" : fmtN(data.scope2MarketTonnes), data.scope2MarketTonnes == null ? "No records were calculated market-based in this run" : "")}
           ${row2("Total Scope 1 + 2 (location-based)", fmtN(data.scope1Tonnes + data.scope2LocationTonnes), "Preferred for CDP intensity")}
-          ${row2("Total Scope 1 + 2 (market-based)", fmtN(data.scope1Tonnes + data.scope2MarketTonnes))}
+          ${data.scope2MarketTonnes == null ? "" : row2("Total Scope 1 + 2 (market-based)", fmtN(data.scope1Tonnes + data.scope2MarketTonnes))}
         </tbody>
       </table>`
     )}
@@ -174,7 +175,7 @@ export function renderCdpHtml(data: CdpData): string {
               `${reductionVsBaseline >= 0 ? "-" : "+"}${Math.abs(reductionVsBaseline).toFixed(1)}% (${fmtN(data.baselineTonnes!)} to ${fmtN(data.totalTonnes)} tCO2e)`,
               "Absolute change"
             )
-          : row2("Baseline comparison", "No baseline configured", "Set baseline year and value in target settings");
+          : row2("Baseline comparison", "No base year set", "Set a base year under Targets");
         return `<table class="data-table">
           ${baselineRow}
           ${intensityRevenue !== null ? row2("Intensity (tCO2e per M revenue)", fmtN(intensityRevenue, 2)) : ""}
@@ -291,7 +292,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; background: #fff
   </div>
   <div class="kpi">
     <div class="kpi-label">Scope 2 (MB)</div>
-    <div class="kpi-value">${fmtN(data.scope2MarketTonnes)}</div>
+    <div class="kpi-value">${data.scope2MarketTonnes == null ? "n/a" : fmtN(data.scope2MarketTonnes)}</div>
     <div class="kpi-unit">tCO₂e</div>
   </div>
   <div class="kpi">
@@ -316,7 +317,7 @@ body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; background: #fff
 <div class="content">
 
   <div class="notice">
-    📋 <strong>CDP submission notice:</strong> This document pre-populates the relevant data for CDP modules C5, C6, and C7.
+    <strong>CDP submission notice:</strong> This document pre-populates the relevant data for CDP modules C5, C6, and C7.
     Review each answer against your CDP questionnaire portal before submission. Additional qualitative responses and governance questions
     (C1–C4, C12–C15) must be completed directly in the CDP portal.
   </div>

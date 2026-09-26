@@ -216,7 +216,7 @@ export default function HomePage() {
             <SectionIntro
               eyebrow="Start here"
               title="The three documents most contractors need."
-              lead="New accounts see these first. ESRS, CDP, CBAM, NHS Evergreen, BREEAM and National TOMs reports are there when a client asks for them."
+              lead="New accounts see these first. ESRS, CDP, NHS Evergreen, BREEAM and National TOMs reports are there when a client asks for them."
             />
             <ProductLoop src="/marketing/loops/plan.mp4" poster="/marketing/loops/plan.jpg" label="Guided Carbon Reduction Plan, section by section from boundary to sign-off" />
             <div>

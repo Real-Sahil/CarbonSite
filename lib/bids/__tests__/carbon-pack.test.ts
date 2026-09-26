@@ -18,6 +18,19 @@ const db = vi.hoisted(() => {
   };
 });
 vi.mock("@/lib/db", () => ({ prisma: db }));
+// No Carbon Reduction Plan, transition plan or carbon price in these fixtures.
+vi.mock("@/lib/reports/commitments", () => ({
+  loadOrgCommitments: vi.fn(async () => ({
+    baseYear: null,
+    netZeroYear: null,
+    interimTargets: [],
+    completedMeasures: [],
+    plannedMeasures: [],
+    signatory: null,
+    efficiencyMeasures: [],
+    carbonPrice: null,
+  })),
+}));
 
 import {
   bidAnswers,
@@ -59,6 +72,7 @@ function pack(over: Partial<BidPackData> = {}): BidPackData {
     baseYear: { label: "FY2019", s1: 600, s2: 400, s3: 1000, total: 2000 },
     targets: [{ type: "absolute", baselineLabel: "FY2019", targetLabel: "FY2030", reductionTonnes: 500, baselineTonnes: 2000 }],
     netZeroYear: 2045,
+    interimTargets: [],
     initiatives: [
       { name: "HVO in plant", status: "complete", expectedTonnes: 120 },
       { name: "EV vans", status: "in_progress", expectedTonnes: null },

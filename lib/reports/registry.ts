@@ -4,7 +4,7 @@ import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-m
 import type { ReportData } from "./template";
 import { renderReportHtml } from "./template";
 import type { Aggregation, CalculationRow } from "./aggregation";
-import { splitScope2 } from "./aggregation";
+import { aggregate, fetchCalculations, hasMarketBasedScope2, splitScope2 } from "./aggregation";
 import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
 import { renderSecrHtml, type SecrData } from "./templates/secr";
 import { secrEnergyFromCalculations } from "./secr-energy";
@@ -20,8 +20,6 @@ import { renderCsrdEsrsE5Html, type CsrdEsrsE5Data } from "./templates/csrd-esrs
 import { renderContractCarbonHtml, type ContractCarbonData } from "./templates/contract-carbon";
 import { renderGhgProtocolHtml, type GhgProtocolData } from "./templates/ghg-protocol";
 import { renderCdpHtml, type CdpData } from "./templates/cdp";
-import { renderCbamHtml, type CbamHtmlData } from "./templates/cbam";
-import { generateCbamXml, type CbamReportData, type CbamGoodsItem, MATERIAL_TO_CN } from "./cbam-xml";
 import { renderPpn006CrpHtml, type Ppn006CrpData, type CrpScopeRow } from "./templates/ppn-006-crp";
 import { renderEcologySurveyHtml, type EcologySurveyData, type EcologySurveyAssessment } from "./templates/ecology-survey";
 import { renderEcologyScanHtml, type EcologyScanReportData, type EcologyScanRecord, type EcologyScanSpecies, type EcologyScanSite, type EcologyScanWoodland } from "./templates/ecology-scan";
@@ -32,6 +30,7 @@ import { renderBidCarbonPackHtml } from "./templates/bid-carbon-pack";
 import { loadBidPackData } from "@/lib/bids/carbon-pack";
 import { renderTransitionPlanHtml } from "./templates/transition-plan";
 import { loadTransitionPlan } from "@/lib/transition-plan/load";
+import { loadOrgCommitments, type OrgCommitments } from "./commitments";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
   return Promise.race([
@@ -66,6 +65,40 @@ export type ReportContext = {
   };
 };
 
+function commitmentsFor(ctx: ReportContext): Promise<OrgCommitments> {
+  return loadOrgCommitments(ctx.orgId, { id: ctx.report.reportingPeriodId, endDate: ctx.report.reportingPeriod.endDate });
+}
+
+/** A number from the report options, or undefined when the form left it out. */
+function optNumber(v: unknown): number | undefined {
+  return v !== undefined && v !== null && v !== "" && Number.isFinite(Number(v)) ? Number(v) : undefined;
+}
+
+/**
+ * The latest published snapshot of the period before this report's one, with
+ * its calculations, for year-on-year figures. Null when there is none.
+ */
+async function previousPeriodCalcs(ctx: ReportContext) {
+  const prev = await prisma.publishedSnapshot.findFirst({
+    where: {
+      organizationId: ctx.orgId,
+      reportingPeriod: { endDate: { lt: ctx.report.reportingPeriod.startDate } },
+    },
+    orderBy: [{ reportingPeriod: { endDate: "desc" } }, { version: "desc" }],
+    select: { calculationRunId: true, reportingPeriod: { select: { label: true } } },
+  });
+  if (!prev) return null;
+  return { label: prev.reportingPeriod.label, calcs: await fetchCalculations(ctx.orgId, prev.calculationRunId) };
+}
+
+/** Completed then planned measures as report initiatives. */
+function measureRows(c: OrgCommitments) {
+  return [
+    ...c.completedMeasures.map((m) => ({ ...m, status: "complete" })),
+    ...c.plannedMeasures.map((m) => ({ ...m, status: "planned" })),
+  ];
+}
+
 export type ReportResult = {
   html: string;
   pdfkitData?: ReportData;
@@ -86,6 +119,12 @@ const handlers: Record<string, ReportHandler> = {
     const gasKwh = kwhOpt(opts.gasKwh, energy.gasKwh);
     const electricityKwh = kwhOpt(opts.electricityKwh, energy.electricityKwh);
     const transportFuelKwh = kwhOpt(opts.transportFuelKwh, energy.transportFuelKwh);
+    // SECR asks for the previous year's figures beside this year's.
+    const [c, prev] = await Promise.all([commitmentsFor(ctx), previousPeriodCalcs(ctx)]);
+    const prevAgg = prev ? aggregate(prev.calcs) : null;
+    const prevEnergy = prev ? secrEnergyFromCalculations(prev.calcs) : null;
+    const optMeasures = Array.isArray(opts.efficiencyMeasures) ? (opts.efficiencyMeasures as string[]).filter(Boolean) : [];
+    const periodYear = report.reportingPeriod.endDate.getUTCFullYear();
     const data: SecrData = {
       orgName: report.organization.name,
       logoDataUri,
@@ -109,21 +148,32 @@ const handlers: Record<string, ReportHandler> = {
       intensityMetric: `tCO₂e per ${String(opts.intensityDenominator ?? "unit")}`,
       intensityValue: intensityValue > 0 ? (agg.s1kg + agg.s2kg) / 1000 / intensityValue : 0,
       intensityDenominator: intensityValue > 0 ? `${intensityValue.toLocaleString("en-GB")} ${String(opts.intensityDenominator ?? "")}`.trim() : "",
-      efficiencyMeasures: Array.isArray(opts.efficiencyMeasures) ? opts.efficiencyMeasures as string[] : [],
+      ...(prev && prevAgg && prevEnergy
+        ? {
+            prevYearLabel: prev.label,
+            prevScope1Tonnes: prevAgg.s1kg / 1000,
+            prevScope2Tonnes: prevAgg.s2kg / 1000,
+            prevTotalTonnes: (prevAgg.s1kg + prevAgg.s2kg) / 1000,
+            prevTotalUkEnergyKwh: prevEnergy.gasKwh + prevEnergy.electricityKwh + prevEnergy.transportFuelKwh,
+          }
+        : {}),
+      // The form's list, else the Carbon Reduction Plan's SECR measures, else
+      // measures the plan or the Targets page records as completed this year.
+      efficiencyMeasures: optMeasures.length
+        ? optMeasures
+        : c.efficiencyMeasures.length
+          ? c.efficiencyMeasures
+          : c.completedMeasures.filter((m) => m.year === periodYear).map((m) => m.name),
       recordCount: calcs.length,
     };
     return { html: renderSecrHtml(data), pdfkitData: basePdfData };
   },
 
   ppn_06_21: async (ctx) => {
-    const { agg, opts, basePdfData, report, calcs, orgId, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
-    const initiatives = await withQueryTimeout(
-      prisma.reductionInitiative.findMany({
-        where: { organizationId: orgId },
-        select: { name: true, expectedImpactCo2e: true, status: true },
-        orderBy: { createdAt: "asc" },
-      })
-    );
+    const { agg, opts, basePdfData, report, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
+    const c = await commitmentsFor(ctx);
+    const interim = c.interimTargets[0];
+    const baselineTonnes = optNumber(opts.baselineTonnes) ?? c.baseYear?.total ?? undefined;
     const data: Ppn0621Data = {
       orgName: report.organization.name,
       logoDataUri,
@@ -138,16 +188,19 @@ const handlers: Record<string, ReportHandler> = {
       scope2Tonnes: agg.s2kg / 1000,
       scope3Tonnes: agg.s3kg / 1000,
       totalTonnes: agg.grandKg / 1000,
-      baselineYear: opts.baselineYear as string | undefined,
-      baselineTonnes: opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined,
-      netZeroTargetYear: Number(opts.netZeroTargetYear ?? 2050),
-      interimTargetYear: opts.interimTargetYear !== undefined ? Number(opts.interimTargetYear) : undefined,
-      interimReductionPct: opts.interimReductionPct !== undefined ? Number(opts.interimReductionPct) : undefined,
-      initiatives: initiatives.map((i) => ({
-        name: i.name,
-        expectedImpactTonnes: i.expectedImpactCo2e !== null ? Number(i.expectedImpactCo2e) / 1000 : undefined,
-        status: i.status,
+      baselineYear: (opts.baselineYear as string | undefined) ?? c.baseYear?.label,
+      baselineTonnes,
+      baselineScopes: c.baseYear && optNumber(opts.baselineTonnes) === undefined ? { s1: c.baseYear.s1, s2: c.baseYear.s2, s3: c.baseYear.s3 } : undefined,
+      netZeroTargetYear: optNumber(opts.netZeroTargetYear) ?? c.netZeroYear,
+      interimTargetYear: optNumber(opts.interimTargetYear) ?? interim?.year,
+      interimReductionPct: optNumber(opts.interimReductionPct) ?? interim?.reductionPct,
+      interimScopes: optNumber(opts.interimTargetYear) === undefined ? interim?.description : undefined,
+      initiatives: measureRows(c).map((m) => ({
+        name: m.name,
+        expectedImpactTonnes: m.savingTco2e ?? undefined,
+        status: m.status,
       })),
+      signatory: c.signatory,
       scopesReported: ["Scope 1", "Scope 2", agg.s3kg > 0 ? "Scope 3" : null].filter(Boolean) as string[],
       recordCount: calcs.length,
     };
@@ -155,14 +208,8 @@ const handlers: Record<string, ReportHandler> = {
   },
 
   nhs_evergreen: async (ctx) => {
-    const { agg, opts, basePdfData, report, calcs, orgId, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
-    const initiatives = await withQueryTimeout(
-      prisma.reductionInitiative.findMany({
-        where: { organizationId: orgId, status: { not: "canceled" } },
-        select: { name: true, status: true },
-        orderBy: { createdAt: "asc" },
-      })
-    );
+    const { agg, opts, basePdfData, report, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
+    const c = await commitmentsFor(ctx);
     const data: NhsEvergreenData = {
       orgName: report.organization.name,
       logoDataUri,
@@ -176,10 +223,11 @@ const handlers: Record<string, ReportHandler> = {
       scope1Tonnes: agg.s1kg / 1000,
       scope2Tonnes: agg.s2kg / 1000,
       totalTonnes: agg.grandKg / 1000,
-      netZeroTargetYear: Number(opts.netZeroTargetYear ?? 2050),
-      accountableOfficerName: opts.accountableOfficerName as string | undefined,
-      accountableOfficerTitle: opts.accountableOfficerTitle as string | undefined,
-      initiatives: initiatives.map((i) => ({ name: i.name, status: i.status })),
+      netZeroTargetYear: optNumber(opts.netZeroTargetYear) ?? c.netZeroYear,
+      // The director who signed the Carbon Reduction Plan, unless the form names someone.
+      accountableOfficerName: (opts.accountableOfficerName as string | undefined) || c.signatory?.name,
+      accountableOfficerTitle: (opts.accountableOfficerName as string | undefined) ? (opts.accountableOfficerTitle as string | undefined) : c.signatory?.title ?? undefined,
+      initiatives: measureRows(c).map((m) => ({ name: m.name, status: m.status })),
       recordCount: calcs.length,
     };
     return { html: renderNhsEvergreenHtml(data), pdfkitData: basePdfData };
@@ -271,6 +319,9 @@ const handlers: Record<string, ReportHandler> = {
   csrd_esrs_e1: async (ctx) => {
     const { agg, opts, basePdfData, report, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
     const { s2lbKg, s2mbKg } = splitScope2(calcs);
+    const c = await commitmentsFor(ctx);
+    const interim = c.interimTargets[0];
+    const energy = secrEnergyFromCalculations(calcs);
     const data: CsrdEsrsE1Data = {
       orgName: report.organization.name,
       logoDataUri,
@@ -283,7 +334,7 @@ const handlers: Record<string, ReportHandler> = {
       factorLibrary, methodology, gwpVersion,
       scope1Tonnes: agg.s1kg / 1000,
       scope2LocationTonnes: s2lbKg / 1000,
-      scope2MarketTonnes: s2mbKg / 1000,
+      scope2MarketTonnes: hasMarketBasedScope2(calcs) ? s2mbKg / 1000 : null,
       scope3Tonnes: agg.s3kg / 1000,
       totalTonnes: agg.grandKg / 1000,
       recordCount: calcs.length,
@@ -291,11 +342,19 @@ const handlers: Record<string, ReportHandler> = {
       ch4Tonnes: agg.hasCh4 ? agg.totalCh4Kg / 1000 : undefined,
       n2oTonnes: agg.hasN2o ? agg.totalN2oKg / 1000 : undefined,
       biogenicCo2Tonnes: agg.hasBiogenic ? agg.totalBiogenicKg / 1000 : undefined,
-      netZeroTargetYear: opts.netZeroTargetYear !== undefined ? Number(opts.netZeroTargetYear) : undefined,
-      baselineYear: opts.baselineYear as string | undefined,
-      baselineTonnes: opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined,
-      interimTargetYear: opts.interimTargetYear !== undefined ? Number(opts.interimTargetYear) : undefined,
-      interimReductionPct: opts.interimReductionPct !== undefined ? Number(opts.interimReductionPct) : undefined,
+      netZeroTargetYear: optNumber(opts.netZeroTargetYear) ?? c.netZeroYear ?? undefined,
+      baselineYear: (opts.baselineYear as string | undefined) ?? c.baseYear?.label,
+      baselineTonnes: optNumber(opts.baselineTonnes) ?? c.baseYear?.total ?? undefined,
+      interimTargetYear: optNumber(opts.interimTargetYear) ?? interim?.year,
+      interimReductionPct: optNumber(opts.interimReductionPct) ?? interim?.reductionPct,
+      energy: {
+        fuelsKwh: energy.gasKwh,
+        transportKwh: energy.transportFuelKwh,
+        electricityKwh: energy.electricityKwh,
+        totalKwh: energy.gasKwh + energy.transportFuelKwh + energy.electricityKwh,
+        unconverted: energy.unconverted,
+      },
+      carbonPrice: c.carbonPrice,
       categories: [...agg.catTotals.values()],
     };
     return { html: renderCsrdEsrsE1Html(data), pdfkitData: basePdfData };
@@ -417,6 +476,17 @@ const handlers: Record<string, ReportHandler> = {
   contract_carbon: async (ctx) => {
     const { agg, opts, basePdfData, report, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
     const contractName = report.contract?.name ?? report.contractId ?? "Unknown contract";
+    // The contract's own value, when it is in pounds, unless the form gives one.
+    const contractRow = report.contractId
+      ? await prisma.contract.findFirst({
+          where: { id: report.contractId, organizationId: ctx.orgId },
+          select: { contractValue: true, currency: true },
+        })
+      : null;
+    const storedValueGbp =
+      contractRow?.contractValue != null && (contractRow.currency ?? "GBP").toUpperCase() === "GBP"
+        ? Number(contractRow.contractValue)
+        : undefined;
     const data: ContractCarbonData = {
       orgName: report.organization.name,
       logoDataUri,
@@ -433,7 +503,7 @@ const handlers: Record<string, ReportHandler> = {
       scope3Tonnes: agg.s3kg / 1000,
       totalTonnes: agg.grandKg / 1000,
       recordCount: calcs.length,
-      contractValueGbp: opts.contractValueGbp !== undefined ? Number(opts.contractValueGbp) : undefined,
+      contractValueGbp: optNumber(opts.contractValueGbp) ?? storedValueGbp,
       categories: [...agg.catTotals.values()],
     };
     return { html: renderContractCarbonHtml(data), pdfkitData: basePdfData };
@@ -487,6 +557,7 @@ const handlers: Record<string, ReportHandler> = {
   cdp: async (ctx) => {
     const { agg, opts, basePdfData, report, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
     const { s2lbKg, s2mbKg } = splitScope2(calcs);
+    const c = await commitmentsFor(ctx);
     const cdpCategoryRows = [...agg.catTotals.values()].map((c) => ({
       code: agg.catCodeMap.get(c.name) ?? "",
       name: c.name,
@@ -506,7 +577,7 @@ const handlers: Record<string, ReportHandler> = {
       factorLibrary, methodology, gwpVersion,
       scope1Tonnes: agg.s1kg / 1000,
       scope2LocationTonnes: s2lbKg / 1000,
-      scope2MarketTonnes: s2mbKg / 1000,
+      scope2MarketTonnes: hasMarketBasedScope2(calcs) ? s2mbKg / 1000 : null,
       scope3Tonnes: agg.s3kg / 1000,
       totalTonnes: agg.grandKg / 1000,
       co2Tonnes: agg.hasCo2 ? agg.totalCo2Kg / 1000 : undefined,
@@ -515,9 +586,9 @@ const handlers: Record<string, ReportHandler> = {
       biogenicCo2Tonnes: agg.hasBiogenic ? agg.totalBiogenicKg / 1000 : undefined,
       recordCount: calcs.length,
       categories: cdpCategoryRows,
-      netZeroTargetYear: opts.netZeroTargetYear !== undefined ? Number(opts.netZeroTargetYear) : undefined,
-      baselineYear: opts.baselineYear as string | undefined,
-      baselineTonnes: opts.baselineTonnes !== undefined ? Number(opts.baselineTonnes) : undefined,
+      netZeroTargetYear: optNumber(opts.netZeroTargetYear) ?? c.netZeroYear ?? undefined,
+      baselineYear: (opts.baselineYear as string | undefined) ?? c.baseYear?.label,
+      baselineTonnes: optNumber(opts.baselineTonnes) ?? c.baseYear?.total ?? undefined,
       revenueGbp: opts.revenueGbp !== undefined ? Number(opts.revenueGbp) : undefined,
       employeeCount: opts.employeeCount !== undefined ? Number(opts.employeeCount) : undefined,
     };
@@ -638,61 +709,13 @@ const handlers: Record<string, ReportHandler> = {
     };
   },
 
-  cbam: async (ctx) => {
-    const { opts, basePdfData, report, calcs, logoDataUri, publishedBy, factorLibrary, methodology, gwpVersion } = ctx;
-    const purchasedGoodsCalcs = calcs.filter(
-      (c) => c.activityRecord.emissionCategory.code === "s3-purchased-goods"
+  // Withdrawn: the route refuses new CBAM reports. The old handler estimated
+  // tonnes, a 70/30 direct/indirect split and a steel CN code for every
+  // purchased goods record, none of which came from the organisation's data.
+  cbam: async () => {
+    throw new Error(
+      "CBAM reports are not available: they need import declarations (CN code, country of origin, tonnes and embedded emissions), which are not recorded.",
     );
-
-    const cbamItemMap = new Map<string, CbamGoodsItem>();
-    for (const calc of purchasedGoodsCalcs) {
-      const desc = calc.activityRecord.sourceDescription ?? "Imported goods";
-      const facilityName = calc.activityRecord.facility?.name ?? "";
-      const key = `${desc}:${facilityName}`;
-      const kg = Number(calc.totalCo2e);
-      if (!cbamItemMap.has(key)) {
-        const cnCode = MATERIAL_TO_CN["steel"];
-        cbamItemMap.set(key, {
-          cnCode,
-          description: desc,
-          quantityTonnes: 0,
-          directEmbeddedCo2eTonnes: 0,
-          indirectEmbeddedCo2eTonnes: 0,
-          carbonPricePaidGbp: 0,
-          installation: facilityName ? { name: facilityName, country: "XX" } : undefined,
-        });
-      }
-      const item = cbamItemMap.get(key)!;
-      item.directEmbeddedCo2eTonnes += (kg / 1000) * 0.7;
-      item.indirectEmbeddedCo2eTonnes += (kg / 1000) * 0.3;
-      item.quantityTonnes += kg / 1000 / 2;
-    }
-
-    const goodsItems: CbamGoodsItem[] = [...cbamItemMap.values()];
-    const cbamReportData: CbamReportData = {
-      declarantName: report.organization.name,
-      declarantEori: opts.declarantEori as string | undefined,
-      reportingPeriodLabel: report.reportingPeriod.label,
-      periodStart: report.reportingPeriod.startDate,
-      periodEnd: report.reportingPeriod.endDate,
-      submissionDate: report.snapshot.publishedAt,
-      goodsItems,
-    };
-    const cbamHtmlData: CbamHtmlData = {
-      orgName: report.organization.name,
-      logoDataUri,
-      periodLabel: report.reportingPeriod.label,
-      periodStart: report.reportingPeriod.startDate,
-      periodEnd: report.reportingPeriod.endDate,
-      publishedAt: report.snapshot.publishedAt,
-      publishedBy,
-      declarantEori: opts.declarantEori as string | undefined,
-      goodsItems,
-      factorLibrary, methodology, gwpVersion,
-    };
-    const xmlString = generateCbamXml(cbamReportData);
-    const xmlBuffer = Buffer.from(xmlString, "utf-8");
-    return { html: renderCbamHtml(cbamHtmlData), xmlBuffer, pdfkitData: basePdfData };
   },
 
   ecology_survey: async (ctx) => {

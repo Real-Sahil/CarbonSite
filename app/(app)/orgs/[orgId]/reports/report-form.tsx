@@ -118,7 +118,6 @@ const REPORT_TYPE_OPTIONS = [
   { value: "monthly_snapshot", label: "Monthly snapshot" },
   { value: "audit_package",    label: "Audit package" },
   { value: "cdp",              label: "CDP Climate Change (C5, C6, C7)" },
-  { value: "cbam",             label: "CBAM Embedded Emissions (EU/UK)" },
   { value: "nhs_evergreen",    label: "NHS Evergreen Level 1" },
   { value: "breeam_evidence",  label: "BREEAM Evidence Pack" },
   { value: "national_toms",    label: "National TOMS Social Value" },

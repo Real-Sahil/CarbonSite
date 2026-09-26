@@ -19,7 +19,8 @@ export interface CsrdEsrsE1Data {
   gwpVersion: string;
   scope1Tonnes: number;
   scope2LocationTonnes: number;
-  scope2MarketTonnes: number;
+  /** Null when no record was calculated market-based: there is no figure, not a zero. */
+  scope2MarketTonnes: number | null;
   scope3Tonnes: number;
   totalTonnes: number;
   recordCount: number;
@@ -32,6 +33,10 @@ export interface CsrdEsrsE1Data {
   baselineTonnes?: number;
   interimTargetYear?: number;
   interimReductionPct?: number;
+  /** Energy from the run's records (secrEnergyFromCalculations()), kWh. */
+  energy?: { fuelsKwh: number; electricityKwh: number; transportKwh: number; totalKwh: number; unconverted: number };
+  /** The internal carbon price in force at the period end, if any. */
+  carbonPrice?: { name: string; priceType: string; pricePerTonne: number; currency: string; basis: string | null } | null;
   categories: Array<{ name: string; scope: number; totalKg: number; count: number }>;
 }
 
@@ -52,8 +57,8 @@ export function renderCsrdEsrsE1Html(d: CsrdEsrsE1Data): string {
     .map((c) => `<tr><td>${c.scope}</td><td>${esc(c.name)}</td><td class="num">${c.count}</td><td class="num">${fmtNum(c.totalKg / 1000)}</td></tr>`)
     .join("");
 
-  const hasTarget = !!(d.netZeroTargetYear || d.baselineYear);
-  const targetRows = hasTarget ? `
+  const hasTarget = !!(d.netZeroTargetYear || d.interimTargetYear);
+  const targetRows = hasTarget || d.baselineYear ? `
     ${d.baselineYear ? `<tr><td>Base year</td><td>${esc(d.baselineYear)} — ${d.baselineTonnes !== undefined ? fmtNum(d.baselineTonnes) + " tCO₂e" : "see disclosure"}</td></tr>` : ""}
     ${d.interimTargetYear ? `<tr><td>Interim target</td><td>${d.interimTargetYear}: ${d.interimReductionPct !== undefined ? `−${d.interimReductionPct}% vs baseline` : "see disclosure"}</td></tr>` : ""}
     ${d.netZeroTargetYear ? `<tr><td>Net-zero target</td><td>${d.netZeroTargetYear}</td></tr>` : ""}
@@ -131,9 +136,17 @@ export function renderCsrdEsrsE1Html(d: CsrdEsrsE1Data): string {
 <section>
   <h2>E1-5 Energy Consumption and Mix</h2>
   <p class="disc-ref">Reference: ESRS E1 paragraphs 37–41</p>
-  <div class="caution">Energy consumption data is derived from activity records in Scope 1 (stationary combustion,
-    mobile combustion) and Scope 2 (electricity purchased) categories. For detailed kWh breakdowns,
-    export the full calculation CSV alongside this report.</div>
+  ${d.energy && d.energy.totalKwh > 0 ? `<table>
+    <thead><tr><th>Energy source</th><th class="num">MWh</th></tr></thead>
+    <tbody>
+      <tr><td>Fuels for heat, power and plant</td><td class="num">${fmtNum(d.energy.fuelsKwh / 1000, 0)}</td></tr>
+      <tr><td>Transport fuels</td><td class="num">${fmtNum(d.energy.transportKwh / 1000, 0)}</td></tr>
+      <tr><td>Purchased electricity</td><td class="num">${fmtNum(d.energy.electricityKwh / 1000, 0)}</td></tr>
+      <tr><td><strong>Total energy consumption</strong></td><td class="num"><strong>${fmtNum(d.energy.totalKwh / 1000, 0)}</strong></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:9pt;color:#6b7280;">From the activity records in this snapshot: kWh as recorded, fuel in litres at DESNZ gross calorific values.${d.energy.unconverted > 0 ? ` ${d.energy.unconverted} fuel or energy record${d.energy.unconverted === 1 ? " is" : "s are"} in units with no kWh equivalent and not included.` : ""} The split between fossil, nuclear and renewable sources is not calculated.</p>`
+  : `<div class="caution">No energy records with a kWh equivalent in this snapshot.</div>`}
 </section>
 
 <section>
@@ -142,7 +155,7 @@ export function renderCsrdEsrsE1Html(d: CsrdEsrsE1Data): string {
   <div class="summary-grid">
     <div class="kpi"><span class="val">${fmtNum(d.scope1Tonnes)} tCO₂e</span><span class="lbl">Gross Scope 1 — Direct emissions</span></div>
     <div class="kpi"><span class="val">${fmtNum(d.scope2LocationTonnes)} tCO₂e</span><span class="lbl">Gross Scope 2 — Location-based</span></div>
-    <div class="kpi"><span class="val">${fmtNum(d.scope2MarketTonnes)} tCO₂e</span><span class="lbl">Gross Scope 2 — Market-based</span></div>
+    <div class="kpi"><span class="val">${d.scope2MarketTonnes == null ? "Not calculated" : `${fmtNum(d.scope2MarketTonnes)} tCO₂e`}</span><span class="lbl">Gross Scope 2 — Market-based</span></div>
     <div class="kpi"><span class="val">${fmtNum(d.scope3Tonnes)} tCO₂e</span><span class="lbl">Gross Scope 3 — Value chain</span></div>
   </div>
   <table>
@@ -175,7 +188,13 @@ export function renderCsrdEsrsE1Html(d: CsrdEsrsE1Data): string {
 <section>
   <h2>E1-8 Internal Carbon Pricing</h2>
   <p class="disc-ref">Reference: ESRS E1 paragraphs 58–60</p>
-  <p>Internal carbon pricing was not applied during this reporting period.</p>
+  ${d.carbonPrice
+    ? `<table><tbody>
+      <tr><td>Scheme</td><td>${esc(d.carbonPrice.name)} (${esc(d.carbonPrice.priceType.replace("_", " "))})</td></tr>
+      <tr><td>Price in force at period end</td><td>${esc(d.carbonPrice.currency)} ${fmtNum(d.carbonPrice.pricePerTonne)} per tCO₂e</td></tr>
+      ${d.carbonPrice.basis ? `<tr><td>Basis</td><td>${esc(d.carbonPrice.basis)}</td></tr>` : ""}
+    </tbody></table>`
+    : "<p>No internal carbon price was in force at the end of this reporting period.</p>"}
 </section>
 
 <section>

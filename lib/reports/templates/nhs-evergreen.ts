@@ -18,7 +18,8 @@ export type NhsEvergreenData = {
   scope1Tonnes: number;
   scope2Tonnes: number;
   totalTonnes: number;
-  netZeroTargetYear: number;
+  /** Null when the organisation has not recorded one. */
+  netZeroTargetYear: number | null;
   accountableOfficerName?: string;
   accountableOfficerTitle?: string;
   initiatives: Array<{ name: string; status: string }>;
@@ -85,8 +86,8 @@ export function renderNhsEvergreenHtml(d: NhsEvergreenData): string {
     <tbody>
       <tr>
         <td>Net zero commitment declared</td>
-        <td><span class="check">✓ Met</span></td>
-        <td>Net zero target year: <strong>${d.netZeroTargetYear}</strong></td>
+        <td><span class="${d.netZeroTargetYear && d.netZeroTargetYear <= 2050 ? 'check' : 'cross'}">${d.netZeroTargetYear && d.netZeroTargetYear <= 2050 ? '✓ Met' : '✗ Pending'}</span></td>
+        <td>${d.netZeroTargetYear ? `Net zero target year: <strong>${d.netZeroTargetYear}</strong>` : "No net zero year recorded. Set it in the Carbon Reduction Plan or transition plan."}</td>
       </tr>
       <tr>
         <td>Named accountable officer</td>
@@ -141,7 +142,9 @@ export function renderNhsEvergreenHtml(d: NhsEvergreenData): string {
 
 <section>
   <h2>Net Zero Commitment</h2>
-  <p>${esc(d.orgName)} commits to achieving net zero greenhouse gas emissions by <strong>${d.netZeroTargetYear}</strong>, aligned with the NHS Net Zero Supplier Roadmap.</p>
+  <p>${d.netZeroTargetYear
+    ? `${esc(d.orgName)} commits to achieving net zero greenhouse gas emissions by <strong>${d.netZeroTargetYear}</strong>, aligned with the NHS Net Zero Supplier Roadmap.`
+    : "No net zero year has been recorded. The NHS Net Zero Supplier Roadmap asks suppliers to commit to net zero by 2050 at the latest."}</p>
   <p style="margin-top:12px;"><strong>Accountable Officer:</strong> ${d.accountableOfficerName ? `${esc(d.accountableOfficerName)}${d.accountableOfficerTitle ? `, ${esc(d.accountableOfficerTitle)}` : ""}` : "_________________________ (signature required)"}</p>
   <p style="margin-top:6px;"><strong>Date:</strong> ${now}</p>
 </section>

@@ -118,6 +118,17 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const body = createReportSchema.parse(await req.json());
 
+    // CBAM needs each import's CN code, origin, tonnes and the installation's
+    // own embedded emissions, none of which the platform records. The report
+    // used to invent them from purchased goods spend, so it is withdrawn.
+    if (body.type === "cbam") {
+      return apiError(
+        "REPORT_TYPE_UNAVAILABLE",
+        "CBAM reports are not available: they need import declarations (CN code, country of origin, tonnes and the installation's embedded emissions), which MetricOra does not record.",
+        422,
+      );
+    }
+
     const snapshot = await prisma.publishedSnapshot.findUnique({
       where: { id: body.snapshotId },
       select: { organizationId: true, reportingPeriodId: true },

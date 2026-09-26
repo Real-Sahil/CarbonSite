@@ -139,7 +139,7 @@ export default function ProductPage() {
         lead="A published snapshot never changes. Recalculating creates a new version, and the dashboard tells you when live data has moved away from the last one. Every report reads from that frozen snapshot."
         points={[
           "A guided PPN 006 Carbon Reduction Plan that checks each item an evaluator looks for before it can be generated",
-          "SECR, GHG Protocol and Carbon Reduction Plan first; ESRS, CDP, CBAM and the rest one click away",
+          "SECR, GHG Protocol and Carbon Reduction Plan first; ESRS, CDP and the rest one click away",
           "PDF reports with a CSV calculation trail, a SHA-256 checksum and a code to verify the report online",
           "Hash-chained audit trail of imports, reviews, calculations, publications and downloads",
           "Assurance readiness score and an evidence export for your verifier",
