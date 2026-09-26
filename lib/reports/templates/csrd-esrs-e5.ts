@@ -21,7 +21,15 @@ export interface CsrdEsrsE5Data {
   totalDivertedTonnes: number;
   totalHazardousTonnes: number;
   recordCount: number;
-  byDisposalRoute: Array<{ route: string; tonnes: number; hierarchy: "recycle" | "recovery" | "landfill" }>;
+  byDisposalRoute: Array<{ route: string; tonnes: number; hierarchy: "recycle" | "recovery" | "landfill" | null }>;
+  /** Where the quantities came from: the waste register, or waste activity records when the register is empty. */
+  source?: "waste_register" | "activity_records";
+  /** Tonnes whose disposal route is not recorded (activity records only). */
+  unknownRouteTonnes?: number;
+  /** Tonnes with no EWC code, so no hazard status (activity records only). */
+  unknownHazardTonnes?: number;
+  /** Activity records in units that are not a mass. */
+  skippedRecords?: number;
   facilities: Array<{ name: string; generatedTonnes: number; hazardousTonnes: number }>;
 }
 
@@ -36,13 +44,17 @@ const HIERARCHY_LABEL: Record<string, string> = {
 };
 
 export function renderCsrdEsrsE5Html(d: CsrdEsrsE5Data): string {
-  const diversionPct = d.totalGeneratedTonnes > 0 ? (d.totalDivertedTonnes / d.totalGeneratedTonnes) * 100 : 0;
+  // Diversion is a share of the tonnes whose route is known; with none known it is not recorded.
+  const knownRouteTonnes = d.totalGeneratedTonnes - (d.unknownRouteTonnes ?? 0);
+  const diversionPct = knownRouteTonnes > 0 ? (d.totalDivertedTonnes / knownRouteTonnes) * 100 : null;
+  const unknownHazard = d.unknownHazardTonnes ?? 0;
+  const fromRecords = d.source === "activity_records";
 
   const routeRows = d.byDisposalRoute
     .sort((a, b) => b.tonnes - a.tonnes)
     .map((r) => `<tr>
       <td>${esc(r.route)}</td>
-      <td>${esc(HIERARCHY_LABEL[r.hierarchy] ?? r.hierarchy)}</td>
+      <td>${r.hierarchy ? esc(HIERARCHY_LABEL[r.hierarchy] ?? r.hierarchy) : "Not recorded"}</td>
       <td class="num">${fmtNum(r.tonnes)}</td>
     </tr>`)
     .join("");
@@ -102,6 +114,7 @@ export function renderCsrdEsrsE5Html(d: CsrdEsrsE5Data): string {
     <tr><th>Disclosure field</th><th>Value</th></tr>
     <tr><td>Standard applied</td><td>ESRS E5 — Resource Use and Circular Economy (EFRAG)</td></tr>
     <tr><td>Reporting period</td><td>${fmtDate(d.periodStart)} - ${fmtDate(d.periodEnd)}</td></tr>
+    <tr><td>Source of quantities</td><td>${fromRecords ? "Waste activity records (Scope 3 Category 5); no waste register entries for this period" : "Waste register"}</td></tr>
     <tr><td>Waste records included</td><td>${d.recordCount.toLocaleString("en-GB")}</td></tr>
   </table>
 </section>
@@ -111,14 +124,17 @@ export function renderCsrdEsrsE5Html(d: CsrdEsrsE5Data): string {
   <p class="disc-ref">Reference: ESRS E5 paragraphs 37-42</p>
   <div class="summary-grid">
     <div class="kpi"><span class="val">${fmtNum(d.totalGeneratedTonnes)} t</span><span class="lbl">Total waste generated</span></div>
-    <div class="kpi"><span class="val">${fmtNum(diversionPct, 0)}%</span><span class="lbl">Diverted from disposal</span></div>
+    <div class="kpi"><span class="val">${diversionPct == null ? "Not recorded" : `${fmtNum(diversionPct, 0)}%`}</span><span class="lbl">Diverted from disposal${diversionPct != null && (d.unknownRouteTonnes ?? 0) > 0 ? " (of tonnes with a known route)" : ""}</span></div>
     <div class="kpi"><span class="val">${fmtNum(d.totalHazardousTonnes)} t</span><span class="lbl">Hazardous waste</span></div>
-    <div class="kpi"><span class="val">${fmtNum(d.totalGeneratedTonnes - d.totalHazardousTonnes)} t</span><span class="lbl">Non-hazardous waste</span></div>
+    <div class="kpi"><span class="val">${fmtNum(d.totalGeneratedTonnes - d.totalHazardousTonnes - unknownHazard)} t</span><span class="lbl">Non-hazardous waste</span></div>
   </div>
   <table>
     <tr><th>Disposal route</th><th>Waste hierarchy tier</th><th class="num">Tonnes</th></tr>
-    ${routeRows || '<tr><td colspan="3">No waste recorded for this period.</td></tr>'}
+    ${routeRows}
+    ${(d.unknownRouteTonnes ?? 0) > 0 ? `<tr><td>Not recorded</td><td>Not recorded</td><td class="num">${fmtNum(d.unknownRouteTonnes!)}</td></tr>` : ""}
+    ${!routeRows && !(d.unknownRouteTonnes ?? 0) ? '<tr><td colspan="3">No waste recorded for this period.</td></tr>' : ""}
   </table>
+  ${fromRecords ? `<div class="caution">Quantities are the tonnes on the organisation's waste activity records. A disposal route is shown only where the record names one, and hazard status only where it gives an EWC code (an asterisked code is hazardous)${unknownHazard > 0 ? `; ${fmtNum(unknownHazard)} t has no EWC code` : ""}.${(d.skippedRecords ?? 0) > 0 ? ` ${d.skippedRecords} record${d.skippedRecords === 1 ? " is" : "s are"} not in tonnes or kilograms and ${d.skippedRecords === 1 ? "is" : "are"} left out.` : ""} Keep waste transfer notes in the waste register for a full E5-5 disclosure.</div>` : ""}
 </section>
 
 <section>

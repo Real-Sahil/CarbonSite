@@ -6,6 +6,7 @@ import { renderReportHtml } from "./template";
 import type { Aggregation, CalculationRow } from "./aggregation";
 import { aggregate, fetchCalculations, hasMarketBasedScope2, splitScope2 } from "./aggregation";
 import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
+import { wasteRowsFromRecords } from "@/lib/waste/from-records";
 import { renderSecrHtml, type SecrData } from "./templates/secr";
 import { secrEnergyFromCalculations } from "./secr-energy";
 import { parseSections as parseCrpSections, planTargets, BOUNDARY_APPROACHES, type CrpSections } from "@/lib/crp/plan";
@@ -453,6 +454,43 @@ const handlers: Record<string, ReportHandler> = {
         }
       }
     }
+    // No register entries: use the tonnes on the waste activity records.
+    let source: "waste_register" | "activity_records" = "waste_register";
+    let unknownRouteTonnes = 0, unknownHazardTonnes = 0, skippedRecords = 0, recordCount = wasteRecords.length;
+    if (wasteRecords.length === 0) {
+      const activity = await withQueryTimeout(
+        prisma.activityRecord.findMany({
+          where: {
+            organizationId: ctx.orgId,
+            reportingPeriodId: report.reportingPeriodId,
+            emissionCategory: { code: "s3-waste" },
+            calculations: { some: { calculationRunId: report.snapshot.calculationRunId } },
+          },
+          select: { amount: true, unit: true, sourceDescription: true, fuelType: true, facilityId: true },
+        })
+      );
+      if (activity.length > 0) {
+        source = "activity_records";
+        const { rows, skipped } = wasteRowsFromRecords(
+          activity.map((a) => ({ amount: Number(a.amount), unit: a.unit, sourceDescription: a.sourceDescription, fuelType: a.fuelType, facilityId: a.facilityId })),
+        );
+        skippedRecords = skipped;
+        recordCount = rows.length;
+        for (const r of rows) {
+          totalGeneratedTonnes += r.tonnes;
+          if (r.hazardous) totalHazardousTonnes += r.tonnes;
+          if (r.hazardous == null) unknownHazardTonnes += r.tonnes;
+          if (r.route) byRoute.set(r.route, (byRoute.get(r.route) ?? 0) + r.tonnes);
+          else unknownRouteTonnes += r.tonnes;
+          const bucket = r.facilityId ? byFacility.get(r.facilityId) : undefined;
+          if (bucket) {
+            bucket.generatedTonnes += r.tonnes;
+            if (r.hazardous) bucket.hazardousTonnes += r.tonnes;
+          }
+        }
+      }
+    }
+
     const totalDivertedTonnes = [...byRoute.entries()]
       .filter(([route]) => hierarchyOf(route) !== "landfill")
       .reduce((sum, [, tonnes]) => sum + tonnes, 0);
@@ -466,7 +504,8 @@ const handlers: Record<string, ReportHandler> = {
       publishedAt: report.snapshot.publishedAt,
       publishedBy,
       totalGeneratedTonnes, totalDivertedTonnes, totalHazardousTonnes,
-      recordCount: wasteRecords.length,
+      recordCount,
+      source, unknownRouteTonnes, unknownHazardTonnes, skippedRecords,
       byDisposalRoute: [...byRoute.entries()].map(([route, tonnes]) => ({ route, tonnes, hierarchy: hierarchyOf(route) })),
       facilities: [...byFacility.values()].filter((f) => f.generatedTonnes > 0),
     };
