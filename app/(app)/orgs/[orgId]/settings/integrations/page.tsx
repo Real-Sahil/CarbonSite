@@ -46,8 +46,6 @@ export default function IntegrationsPage() {
   const [success, setSuccess] = useState("");
 
   // Form states
-  const [llmProvider, setLlmProvider] = useState<"huggingface" | "nvidia">("huggingface");
-  const [llmToken, setLlmToken] = useState("");
   const [xeroClientId, setXeroClientId] = useState("");
   const [xeroClientSecret, setXeroClientSecret] = useState("");
   const [quickbooksClientId, setQuickbooksClientId] = useState("");
@@ -63,7 +61,6 @@ export default function IntegrationsPage() {
 
   // UI states
   const [saving, setSaving] = useState(false);
-  const [testingLlm, setTestingLlm] = useState(false);
   const [connectingXero, setConnectingXero] = useState(false);
   const [disconnectingXero, setDisconnectingXero] = useState(false);
   const [syncingXero, setSyncingXero] = useState(false);
@@ -85,7 +82,6 @@ export default function IntegrationsPage() {
       if (!cfgRes.ok) throw new Error("Failed to fetch config");
       const data = await cfgRes.json();
       setConfig(data);
-      if (data.llmProvider) setLlmProvider(data.llmProvider);
       if (data.xeroClientId) setXeroClientId(data.xeroClientId);
       if (data.quickbooksClientId) setQuickbooksClientId(data.quickbooksClientId);
       if (data.sageClientId) setSageClientId(data.sageClientId);
@@ -154,8 +150,7 @@ export default function IntegrationsPage() {
     setError("");
     setSuccess("");
     try {
-      const payload: Record<string, unknown> = { llmProvider };
-      if (llmToken) payload.llmToken = llmToken;
+      const payload: Record<string, unknown> = {};
       if (xeroClientId) payload.xeroClientId = xeroClientId;
       if (xeroClientSecret) payload.xeroClientSecret = xeroClientSecret;
       if (quickbooksClientId) payload.quickbooksClientId = quickbooksClientId;
@@ -180,7 +175,6 @@ export default function IntegrationsPage() {
         throw new Error(json.message || "Failed to save config");
       }
 
-      setLlmToken("");
       setXeroClientSecret("");
       setQuickbooksClientSecret("");
       setSageClientSecret("");
@@ -318,11 +312,10 @@ export default function IntegrationsPage() {
     }
   }
 
-  async function testIntegration(type: "llm" | "oidc" | "n8n", webhookType?: "reports" | "submissions") {
+  async function testIntegration(type: "oidc" | "n8n", webhookType?: "reports" | "submissions") {
     setError("");
     setSuccess("");
     try {
-      if (type === "llm") setTestingLlm(true);
       if (type === "oidc") setTestingOidc(true);
       if (type === "n8n") setTestingN8n(webhookType || null);
 
@@ -344,7 +337,6 @@ export default function IntegrationsPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Test failed");
     } finally {
-      setTestingLlm(false);
       setTestingOidc(false);
       setTestingN8n(null);
     }
@@ -387,61 +379,14 @@ export default function IntegrationsPage() {
       )}
 
       <div className="space-y-6">
-        {/* LLM Integration */}
+        {/* AI assistance moved to its own settings tab */}
         <div className="rounded-[10px] border border-[#E5E7EB] p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-medium text-zinc-900">AI Model Provider</h3>
-            {config?.llmTokenValid && (
-              <div className="flex items-center gap-1.5 text-emerald-700 text-sm">
-                <CheckCircle className="h-4 w-4" />
-                Connected
-              </div>
-            )}
-            {!config?.llmTokenValid && config?.llmProvider && (
-              <div className="flex items-center gap-1.5 text-amber-700 text-sm">
-                <AlertCircle className="h-4 w-4" />
-                Not tested
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Provider</label>
-                <select
-                  value={llmProvider}
-                  onChange={(e) => setLlmProvider(e.target.value as "huggingface" | "nvidia")}
-                  className="h-8 text-sm border border-[#E5E7EB] rounded px-2"
-                >
-                  <option value="huggingface">HuggingFace Inference API</option>
-                  <option value="nvidia">NVIDIA NIM API</option>
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">API Token</label>
-                <Input
-                  type="password"
-                  value={llmToken}
-                  onChange={(e) => setLlmToken(e.target.value)}
-                  placeholder="Leave blank to keep existing"
-                  className="h-8 text-sm"
-                />
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => testIntegration("llm")}
-              disabled={testingLlm}
-              className="gap-1.5"
-            >
-              {testingLlm && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              {!testingLlm && "Test Connection"}
-            </Button>
-          </div>
+          <h3 className="text-base font-medium text-zinc-900">AI assistance</h3>
+          <p className="mt-2 text-sm text-zinc-600">
+            AI wording and suggestions are switched on or off in{" "}
+            <a href={`/orgs/${orgId}/settings/ai`} className="underline underline-offset-2">Settings, AI assistance</a>.
+            MetricOra provides the AI service; no token is needed.
+          </p>
         </div>
 
         {/* Xero Integration */}

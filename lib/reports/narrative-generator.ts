@@ -1,4 +1,5 @@
 import { llmClient } from "@/lib/llm/client";
+import { ungroundedNumbers } from "@/lib/llm/grounding";
 import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
 
@@ -18,21 +19,11 @@ function pct(part: number, whole: number): string {
 }
 
 export async function generateAuditNarrative(reportData: ReportData): Promise<AuditNarrative> {
-  if (!llmClient.isConfigured()) {
-    reportLogger.warn("LLM not configured - skipping narrative generation", {
-      reason: "Set NVIDIA_API_KEY in environment"
-    });
-    return {
-      executive_summary:
-        "Unable to generate automated narrative — no LLM provider configured. Set NVIDIA_API_KEY in your .env file, then regenerate the report.",
-      key_findings: [],
-      recommendations: "",
-    };
-  }
+  // Callers check the organisation has turned AI assistance on.
+  if (!llmClient.isConfigured()) throw new Error("No LLM provider configured");
 
   try {
     reportLogger.info("Starting audit narrative generation", {
-      orgName: reportData.orgName,
       periodLabel: reportData.periodLabel,
       recordCount: reportData.recordCount,
     });
@@ -49,7 +40,6 @@ export async function generateAuditNarrative(reportData: ReportData): Promise<Au
 
     const prompt = `You are a sustainability reporting analyst. Generate a professional 3-4 paragraph audit narrative for a carbon emissions report.
 
-Organization: ${reportData.orgName}
 Reporting Period: ${reportData.periodLabel}
 Snapshot Version: ${reportData.snapshotVersion}
 Report Type: ${reportData.reportType}
@@ -97,6 +87,15 @@ Use professional language, avoid jargon, and focus on insights a CFO or board me
     });
 
     const narrative = parseNarrativeResponse(result.text);
+    // Figures come from the report, never the model: drop wording that
+    // states a number the report does not contain.
+    const invented = ungroundedNumbers(
+      [narrative.executive_summary, ...narrative.key_findings, narrative.recommendations].join("\n"),
+      prompt,
+    );
+    if (invented.length > 0) {
+      throw new Error(`Narrative stated figures not in the report (${invented.slice(0, 5).join(", ")}); left out`);
+    }
     reportLogger.info("Narrative parsed", {
       hasSummary: !!narrative.executive_summary,
       findingsCount: narrative.key_findings.length,
@@ -111,7 +110,7 @@ Use professional language, avoid jargon, and focus on insights a CFO or board me
     reportLogger.error("LLM error during narrative generation", {
       error: errorMsg,
       stack: errorStack,
-      hint: "Check NVIDIA_API_KEY in environment variables",
+      hint: "The report is generated without the narrative",
     });
 
     // Throw so the caller (renderForType) can skip narrative gracefully

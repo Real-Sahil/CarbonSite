@@ -84,11 +84,14 @@ export default function DpaPage() {
               an opportunity to object. Current Sub-processors include:
             </p>
             <ul>
-              <li><strong>Supabase Inc.</strong> (PostgreSQL database hosting) - USA/EU</li>
-              <li><strong>Cloudflare, Inc.</strong> (object storage via R2) - USA</li>
+              <li><strong>Supabase Inc.</strong> (PostgreSQL database hosting and file storage) - USA/EU</li>
               <li><strong>Resend, Inc.</strong> (transactional email delivery) - USA</li>
               <li><strong>Google LLC</strong> (Firebase Cloud Messaging for push notifications) - USA</li>
               <li><strong>Vercel, Inc.</strong> (application hosting) - USA</li>
+              <li><strong>Functional Software, Inc. (Sentry)</strong> (error monitoring) - EU</li>
+              <li><strong>Stripe Payments Europe, Ltd.</strong> (subscription billing) - EU/USA</li>
+              <li><strong>Groq, Inc.</strong> (AI-assisted wording, only when the Controller turns AI assistance on) - USA</li>
+              <li><strong>Mistral AI SAS</strong> (AI-assisted wording, fallback, only when AI assistance is on) - EU</li>
             </ul>
             <p>
               Where Sub-processors are located outside the UK, MetricOra ensures appropriate safeguards

@@ -42,6 +42,7 @@ export type AuditAction =
   | "record.created"
   | "record.updated"
   | "record.deleted"
+  | "org.ai_assist_changed"
   | "commuting.imported"
   | "commuting.import_deleted"
   | "commuting.survey_created"

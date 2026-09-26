@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireOrgMember, ROLE_GROUPS } from '@/lib/auth/session';
 import { suggestCategory } from '@/lib/calculation/category-suggester';
-import { handleRouteError } from '@/lib/validation/api';
+import { apiError, handleRouteError } from '@/lib/validation/api';
+import { aiAssistEnabled } from '@/lib/llm/org-consent';
 import { z } from 'zod';
 
 const SuggestCategorySchema = z.object({
@@ -10,7 +11,7 @@ const SuggestCategorySchema = z.object({
 
 /**
  * POST /api/orgs/[orgId]/ai/suggest-category
- * Use NVIDIA NIM to suggest an emission category based on OCR-extracted document text.
+ * Use the AI assistance chain (Groq, then Mistral) to suggest an emission category based on OCR-extracted document text.
  *
  * Request body:
  * {
@@ -21,7 +22,7 @@ const SuggestCategorySchema = z.object({
  * {
  *   "category": "s1-mobile",
  *   "confidence": 0.92,
- *   "reasoning": "NVIDIA NIM analysis suggests 's1-mobile' with 92% confidence"
+ *   "reasoning": "groq suggests 's1-mobile' with 92% confidence"
  * }
  */
 export async function POST(
@@ -37,7 +38,9 @@ export async function POST(
     const body = await req.json();
     const { ocrText } = SuggestCategorySchema.parse(body);
 
-    // Call the category suggester
+    if (!(await aiAssistEnabled(orgId))) {
+      return apiError("AI_ASSIST_OFF", "AI assistance is off for this organisation. An admin can turn it on in Settings.", 409);
+    }
     const suggestion = await suggestCategory(ocrText);
 
     return NextResponse.json(suggestion, { status: 200 });

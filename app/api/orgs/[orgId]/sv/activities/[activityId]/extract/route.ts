@@ -9,6 +9,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { llmClient } from "@/lib/llm/client";
+import { aiAssistEnabled } from "@/lib/llm/org-consent";
 import { Decimal } from "@prisma/client/runtime/library";
 import { z } from "zod";
 
@@ -28,7 +29,7 @@ type ExtractedSvData = {
   rawResponse: string;
 };
 
-async function extractSvDataWithNvidia(documentText: string): Promise<ExtractedSvData> {
+async function extractSvData(documentText: string): Promise<ExtractedSvData> {
   const prompt = `You are a social value data extraction expert for UK construction and public sector contracts.
 Extract social value activity data from the following document text.
 
@@ -98,8 +99,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     });
     if (limited) return limited;
 
-    if (!llmClient.isConfigured()) {
-      return apiError("SERVICE_UNAVAILABLE", "NVIDIA_API_KEY not configured.", 503);
+    if (!(await aiAssistEnabled(orgId))) {
+      return apiError("AI_ASSIST_OFF", "AI assistance is off for this organisation. An admin can turn it on in Settings.", 409);
     }
 
     const activity = await prisma.svActivity.findUnique({ where: { id: activityId } });
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     }
 
     const body = extractSchema.parse(await req.json());
-    const extracted = await extractSvDataWithNvidia(body.documentText);
+    const extracted = await extractSvData(body.documentText);
 
     // Patch activity with extracted values (don't overwrite user-supplied non-null fields)
     const patch: Record<string, unknown> = {
@@ -140,7 +141,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
       action: "sv_activity.ai_extract",
       resourceType: "SvActivity",
       resourceId: activityId,
-      metadata: { confidence: extracted.confidence, provider: "nvidia_nim" },
+      metadata: { confidence: extracted.confidence, provider: "ai_assist" },
     });
 
     return NextResponse.json({ activity: updated, extracted });

@@ -26,6 +26,8 @@ import { renderPpn006CrpHtml, type Ppn006CrpData, type CrpScopeRow } from "./tem
 import { renderEcologySurveyHtml, type EcologySurveyData, type EcologySurveyAssessment } from "./templates/ecology-survey";
 import { renderEcologyScanHtml, type EcologyScanReportData, type EcologyScanRecord, type EcologyScanSpecies, type EcologyScanSite, type EcologyScanWoodland } from "./templates/ecology-scan";
 import { llmClient } from "@/lib/llm/client";
+import { aiAssistEnabled } from "@/lib/llm/org-consent";
+import { ungroundedNumbers } from "@/lib/llm/grounding";
 import { renderBidCarbonPackHtml } from "./templates/bid-carbon-pack";
 import { loadBidPackData } from "@/lib/bids/carbon-pack";
 import { renderTransitionPlanHtml } from "./templates/transition-plan";
@@ -734,10 +736,10 @@ const handlers: Record<string, ReportHandler> = {
     }));
 
     let surveyNarrative: string | null = null;
-    if (llmClient.isConfigured() && mapped.length > 0) {
+    if (mapped.length > 0 && (await aiAssistEnabled(ctx.orgId))) {
       try {
         const meetCount = mapped.filter((a) => a.meetsRequirement).length;
-        const prompt = `You are an ecology and biodiversity consultant writing a Biodiversity Net Gain (BNG) assessment summary for ${report.organization.name}.
+        const prompt = `You are an ecology and biodiversity consultant writing a Biodiversity Net Gain (BNG) assessment summary for the organisation.
 
 Reporting period: ${report.reportingPeriod.label}
 Total BNG assessments: ${mapped.length}
@@ -749,12 +751,14 @@ ${mapped.map((a) => `- ${a.name}: ${a.meetsRequirement ? "Meets" : "Does not mee
 
 Write a concise 2-3 paragraph executive summary of the biodiversity net gain performance, highlighting key findings, compliance status, and recommendations. Use professional, plain English suitable for a planning authority or sustainability report.`;
         const LLM_TIMEOUT_MS = 20_000;
-        surveyNarrative = (await Promise.race([
+        const drafted = (await Promise.race([
           llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3, reasoningEffort: 'low' }),
           new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error(`LLM narrative timeout after ${LLM_TIMEOUT_MS}ms`)), LLM_TIMEOUT_MS),
           ),
         ])).text;
+        // Discard wording that states a figure the data does not contain.
+        surveyNarrative = ungroundedNumbers(drafted, prompt).length === 0 ? drafted : null;
       } catch (err) {
         console.error("[ecology_survey] narrative generation failed:", err);
         // narrative is optional — proceed without it
@@ -833,13 +837,13 @@ Write a concise 2-3 paragraph executive summary of the biodiversity net gain per
     });
 
     let scanNarrative: string | null = null;
-    if (llmClient.isConfigured() && mappedScans.length > 0) {
+    if (mappedScans.length > 0 && (await aiAssistEnabled(ctx.orgId))) {
       try {
         const totalSpecies = mappedScans.reduce((sum, s) => sum + s.totalSpeciesCount, 0);
         const totalSssi = mappedScans.reduce((sum, s) => sum + s.sssiCount, 0);
         const totalAncientWoodland = mappedScans.reduce((sum, s) => sum + s.ancientWoodlandCount, 0);
         const totalWoodlandHa = mappedScans.reduce((sum, s) => sum + s.woodlandTotalHa, 0);
-        const prompt = `You are an ecological consultant writing an NBN Atlas biodiversity scan summary for ${report.organization.name}.
+        const prompt = `You are an ecological consultant writing an NBN Atlas biodiversity scan summary for the organisation.
 
 Number of site scans: ${mappedScans.length}
 Total species recorded across all sites: ${totalSpecies}
@@ -852,12 +856,14 @@ ${mappedScans.map((s) => `- ${s.projectName ?? s.postcode} (${s.postcode}, radiu
 
 Write a concise 2-3 paragraph executive summary of the ecological sensitivity findings, highlighting biodiversity richness, designated site constraints, woodland cover, and any material ecological risks that should inform planning or environmental management decisions. Use professional language suitable for an ecology report or Environmental Statement.`;
         const LLM_TIMEOUT_MS = 20_000;
-        scanNarrative = (await Promise.race([
+        const drafted = (await Promise.race([
           llmClient.complete(prompt, { maxTokens: 600, temperature: 0.3, reasoningEffort: 'low' }),
           new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error(`LLM narrative timeout after ${LLM_TIMEOUT_MS}ms`)), LLM_TIMEOUT_MS),
           ),
         ])).text;
+        // Discard wording that states a figure the data does not contain.
+        scanNarrative = ungroundedNumbers(drafted, prompt).length === 0 ? drafted : null;
       } catch (err) {
         console.error("[ecology_scan] narrative generation failed:", err);
         // narrative is optional — proceed without it

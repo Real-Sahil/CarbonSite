@@ -152,11 +152,8 @@ export default function PrivacyPage() {
             </p>
             <ul>
               <li>
-                <strong>Neon (Postgres):</strong> Database hosting (EU/EEA region)
-              </li>
-              <li>
-                <strong>Cloudflare R2:</strong> Object storage for evidence files
-                (zero-egress CDN)
+                <strong>Supabase:</strong> Database hosting and private file storage
+                for evidence and reports
               </li>
               <li>
                 <strong>Resend:</strong> Transactional email delivery
@@ -176,6 +173,18 @@ export default function PrivacyPage() {
                 <strong>OSRM:</strong> Route distance calculations (open-source
                 mapping service)
               </li>
+              <li>
+                <strong>Sentry:</strong> Error monitoring (EU region)
+              </li>
+              <li>
+                <strong>Stripe:</strong> Subscription billing
+              </li>
+              <li>
+                <strong>Groq (USA) and Mistral AI (EU):</strong> AI-assisted wording and
+                suggestions, only for organisations whose admin turns AI assistance on.
+                They receive figures and document text, not names or contact details,
+                and do not train models on it.
+              </li>
             </ul>
             <p>
               All sub-processors are confirmed DPA-compliant. We do not sell or
@@ -192,7 +201,7 @@ export default function PrivacyPage() {
                 <strong>In Transit:</strong> TLS 1.3+ for all data transmission
               </li>
               <li>
-                <strong>At Rest:</strong> Database encryption via Neon; application-level
+                <strong>At Rest:</strong> Database and storage encryption via Supabase; application-level
                 AES-256-GCM encryption for sensitive PII (postcodes, GPS)
               </li>
               <li>
@@ -255,9 +264,9 @@ export default function PrivacyPage() {
               8. International Transfers
             </h2>
             <p>
-              Your data is primarily stored in the UK/EEA (Neon Postgres). Where
-              data is transferred outside the UK/EEA (e.g., to Vercel global CDN
-              or Firebase in the US), we rely on Standard Contractual Clauses
+              Your data is stored with Supabase. Where data is transferred outside
+              the UK/EEA (e.g., to Vercel, Firebase or, when AI assistance is on,
+              Groq in the US), we rely on Standard Contractual Clauses
               (SCCs) and Adequacy Decisions as permitted by UK GDPR Schedule 4.
             </p>
           </section>

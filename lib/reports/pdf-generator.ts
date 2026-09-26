@@ -313,7 +313,12 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       doc.fontSize(11);
       setFont("Helvetica-Bold");
       doc.text("Executive Summary", MARGIN, doc.y);
-      moveDown(10);
+      moveDown(4);
+      fillColor(COLOR_MID);
+      doc.fontSize(7.5);
+      setFont("Helvetica-Oblique");
+      doc.text("Wording drafted with AI assistance from the figures in this report; every figure is taken from the report data.", MARGIN, doc.y, { width: BODY_W });
+      moveDown(8);
 
       fillColor(COLOR_MID);
       doc.fontSize(9);

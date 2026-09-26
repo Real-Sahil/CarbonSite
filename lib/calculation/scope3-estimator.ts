@@ -1,5 +1,5 @@
 // Scope 3 AI-powered emissions estimator.
-// Uses the multi-provider LLM client (Kimi primary, NVIDIA NIM, then HuggingFace fallback).
+// Uses the LLM client (Groq, then Mistral).
 
 import { llmClient } from '@/lib/llm/client';
 
@@ -63,7 +63,7 @@ export async function estimateScope3(req: Scope3EstimateRequest): Promise<Scope3
       methodology: 'Not available — LLM provider not configured',
       recommendedUnit: 'kg',
       recommendedAmount: 0,
-      suggestedRecordDescription: 'Scope 3 estimation requires LLM configuration. Set HUGGINGFACE_TOKEN or NVIDIA_NIM_API_KEY in environment.',
+      suggestedRecordDescription: 'Scope 3 estimation requires LLM configuration. Set GROQ_API_KEY or MISTRAL_API_KEY in environment.',
       warnings: ['No LLM provider configured for AI-powered estimation. Manual estimation required.'],
     };
   }

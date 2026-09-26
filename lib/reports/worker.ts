@@ -15,6 +15,7 @@ import { getReportHandler, hasTypedTemplate, type ReportContext, type ReportResu
 import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHeader, addVerificationLine } from "./pdf-generator";
 import { generateAuditNarrative } from "./narrative-generator";
 import { llmClient } from "@/lib/llm/client";
+import { aiAssistEnabled } from "@/lib/llm/org-consent";
 
 const REPORT_SELECT = {
   id: true,
@@ -464,7 +465,7 @@ async function renderForType(report: ReportWithIncludes): Promise<ReportResult> 
   // all-zero values, so an LLM narrative would reference "0.00 tCO2e" and be
   // meaningless. Skip narrative for those types.
   const noNarrativeTypes = new Set(["bid_carbon_pack", "transition_plan", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
-  if (llmClient.isConfigured() && !noNarrativeTypes.has(report.type)) {
+  if (!noNarrativeTypes.has(report.type) && (await aiAssistEnabled(report.organizationId))) {
     reportLogger.info("LLM configured, generating audit narrative", {
       reportId: report.id,
       reportType: report.type,
@@ -480,7 +481,7 @@ async function renderForType(report: ReportWithIncludes): Promise<ReportResult> 
       reportLogger.error("Failed to generate narrative", {
         reportId: report.id,
         error: err instanceof Error ? err.message : String(err),
-        hint: "Check if NVIDIA_API_KEY is set and valid",
+        hint: "Narrative left out; the report is complete without it",
       });
       // Continue without narrative rather than failing the entire report
     }

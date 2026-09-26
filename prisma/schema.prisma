@@ -212,6 +212,9 @@ model Organization {
   /// Local part of the organisation's bill inbox address
   /// (<token>@BILL_INBOX_DOMAIN). Null until an editor turns the inbox on.
   billInboxToken               String?               @unique @map("bill_inbox_token")
+  /// The organisation's consent to AI-assisted wording (Groq, then Mistral).
+  /// Off by default; figures never come from the model.
+  aiAssistEnabled              Boolean               @default(false) @map("ai_assist_enabled")
   createdAt                    DateTime              @default(now()) @map("created_at")
   updatedAt                    DateTime              @updatedAt @map("updated_at")
 
