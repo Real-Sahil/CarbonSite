@@ -398,7 +398,12 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
   return (
     <TooltipProvider delayDuration={200}>
       {/* ── Mobile top bar ───────────────────────────────────────────────────── */}
-      <header className="flex md:hidden fixed top-0 left-0 right-0 z-40 items-center h-14 px-4 bg-white/95 backdrop-blur-xl border-b border-slate-200 shrink-0">
+      {/* Sticky in the page flow, not fixed: in iOS home-screen web apps the
+          fixed bar scrolled away with the page, taking the menu with it.
+          Sticky needs no spacer and keeps its place however WebKit resolves
+          fixed positioning. Solid white because backdrop-filter on a pinned
+          bar is another source of iOS repaint bugs. */}
+      <header className="flex md:hidden sticky top-0 z-40 items-center h-14 px-4 bg-white border-b border-slate-200 shrink-0">
         <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="flex items-center justify-center h-9 w-9 rounded-lg hover:bg-slate-100 transition-colors">
           <Menu className="h-5 w-5 text-slate-500" aria-hidden="true" />
         </button>
@@ -411,7 +416,6 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           <NotificationBell orgId={orgId} />
         </div>
       </header>
-      <div className="h-14 md:hidden shrink-0" aria-hidden="true" />
 
       {/* ── Mobile drawer ─────────────────────────────────────────────────────── */}
       {mobileOpen && (

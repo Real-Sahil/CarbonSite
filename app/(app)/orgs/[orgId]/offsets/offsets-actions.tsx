@@ -151,7 +151,7 @@ export function AddOffsetButton({ orgId }: { orgId: string }) {
   return (
     <>
       <button onClick={() => setShowAdd(true)}
-        className="inline-flex items-center gap-2 rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors">
+        className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors">
         <Plus className="h-4 w-4" />
         Add offset
       </button>
