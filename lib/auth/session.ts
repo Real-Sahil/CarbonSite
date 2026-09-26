@@ -1,9 +1,16 @@
+import { cache } from "react";
 import { headers } from "next/headers";
 import { auth } from "./index";
 import { prisma } from "@/lib/db";
 import type { OrgRole } from "@prisma/client";
 
-export async function getSession() {
+// A page and its layouts each call requireOrgMember(), and every call used to
+// look the session, user and membership up again. cache() makes those lookups
+// once per server render; outside a render (route handlers, tests) it is a
+// plain call, so nothing is shared between requests.
+export const getSession = cache(loadSession);
+
+async function loadSession() {
   const requestHeaders = await headers();
 
   // Primary: let Better Auth verify the signed session cookie with its secret.
@@ -179,11 +186,7 @@ export async function requireSession() {
 
 export async function requireOrgMember(orgId: string, ...allowedRoles: OrgRole[]) {
   const session = await requireSession();
-  const membership = await prisma.organizationMembership.findUnique({
-    where: {
-      organizationId_userId: { organizationId: orgId, userId: session.user.id },
-    },
-  });
+  const membership = await findMembership(orgId, session.user.id);
   if (!membership) throw new AuthError("NOT_MEMBER", 403);
   if (allowedRoles.length && !allowedRoles.includes(membership.role)) {
     throw new AuthError("INSUFFICIENT_ROLE", 403);
@@ -191,6 +194,12 @@ export async function requireOrgMember(orgId: string, ...allowedRoles: OrgRole[]
 
   return { session, membership };
 }
+
+const findMembership = cache((organizationId: string, userId: string) =>
+  prisma.organizationMembership.findUnique({
+    where: { organizationId_userId: { organizationId, userId } },
+  }),
+);
 
 export async function requirePlatformMember() {
   const session = await requireSession();
