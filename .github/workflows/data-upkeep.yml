@@ -1,0 +1,136 @@
+name: Data upkeep
+
+# Keeps the external data the calculations depend on from going stale.
+#
+# watch: checks each publisher the platform loads from (DESNZ/DEFRA
+#   conversion factors, Defra UK spend multipliers, EPA GHG Emission Factors
+#   Hub, EPA Supply Chain factors, ADEME Base Carbone) and the regulatory
+#   calendar's "last checked" date, and opens one issue (label data-upkeep)
+#   per new release, each with the steps to load it. A watcher that cannot
+#   reach its source opens an issue as well, so a quiet week means nothing
+#   new, not "not checked". Open issues are not duplicated.
+#   Loading factor data needs a person: row names change between releases.
+#
+# cpi: updates the CPI tables in lib/calculation/price-index.ts (ONS, BLS,
+#   Eurostat) and opens or refreshes the pull request "Data upkeep: CPI
+#   update" when a new complete year is published. A published value that
+#   disagrees with the table stops the update and opens an issue instead.
+#
+# Settings needed (Settings -> Actions -> General): "Workflow permissions:
+# Read and write" and "Allow GitHub Actions to create and approve pull
+# requests". Pull requests opened with the default token do not start CI;
+# set a DATA_UPKEEP_TOKEN secret (fine-grained PAT: contents, pull requests,
+# issues read/write on this repo) to have CI run on them. BLS_API_KEY
+# (optional, free from bls.gov) raises the BLS request limit.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: data-upkeep
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    name: Watch data sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check sources and open issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.DATA_UPKEEP_TOKEN || github.token }}
+        run: node scripts/data-watch/check.mjs --issues
+
+  cpi:
+    name: Update CPI tables
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ secrets.DATA_UPKEEP_TOKEN || github.token }}
+      BRANCH: data-upkeep/cpi
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DATA_UPKEEP_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch published CPI
+        id: cpi
+        continue-on-error: true
+        env:
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+        run: node scripts/data-watch/update-cpi.mjs --summary "$RUNNER_TEMP/cpi.md"
+
+      - name: Detect change
+        id: diff
+        run: |
+          if git diff --quiet -- lib/calculation/price-index.ts; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff -- lib/calculation/price-index.ts
+          fi
+
+      - uses: pnpm/action-setup@v4
+        if: steps.diff.outputs.changed == 'true'
+      - name: Install and test the deflation code
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm vitest run lib/calculation scripts/data-watch
+
+      - name: Open or refresh the pull request
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add lib/calculation/price-index.ts
+          git commit -m "Data upkeep: CPI update" -m "$(cat "$RUNNER_TEMP/cpi.md")"
+          git push --force origin "$BRANCH"
+          {
+            cat "$RUNNER_TEMP/cpi.md"
+            echo
+            echo "Opened by the Data upkeep workflow (scripts/data-watch/update-cpi.mjs). Check the new figures against the linked sources in price-index.ts before merging. Spend-based calculations use them from the next calculation run; published snapshots do not change."
+          } > "$RUNNER_TEMP/body.md"
+          if gh pr view "$BRANCH" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" \
+              --title "Data upkeep: CPI update" --body-file "$RUNNER_TEMP/body.md" --label data-upkeep \
+              || gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" \
+                   --title "Data upkeep: CPI update" --body-file "$RUNNER_TEMP/body.md"
+          fi
+
+      - name: Report a failed update
+        if: steps.cpi.outcome == 'failure'
+        run: |
+          title="Data upkeep: CPI update needs a person"
+          if gh issue list --state open --label data-upkeep --search "in:title \"$title\"" --json title -q '.[].title' | grep -qx "$title"; then
+            echo "issue already open"
+          else
+            {
+              echo "scripts/data-watch/update-cpi.mjs could not update every series:"
+              echo
+              cat "$RUNNER_TEMP/cpi.md" 2>/dev/null || echo "(no summary written; see the run log)"
+              echo
+              echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              echo
+              echo "A source that disagrees with the table was not applied. Check the figure at the source; if the table is wrong, correct it by hand with a note in price-index.ts."
+            } > "$RUNNER_TEMP/issue.md"
+            gh issue create --title "$title" --body-file "$RUNNER_TEMP/issue.md" --label data-upkeep \
+              || gh issue create --title "$title" --body-file "$RUNNER_TEMP/issue.md"
+          fi

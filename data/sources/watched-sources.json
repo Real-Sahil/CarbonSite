@@ -1,0 +1,19 @@
+{
+  "_comment": "What the repo has loaded from each external data source. scripts/data-watch/check.mjs compares these with what each publisher has released and opens a GitHub issue when there is something newer. Update the entry in the same PR that loads the new data. DEFRA is read from RELEASES in scripts/build-defra-factors.mjs and CPI from lib/calculation/price-index.ts, so they are not listed here.",
+  "uk-spend-multipliers": {
+    "toYear": 2023,
+    "published": "2026-06-30"
+  },
+  "epa-ghg-hub": {
+    "year": 2025
+  },
+  "epa-useeio": {
+    "version": "1.3.0"
+  },
+  "ademe-base-carbone": {
+    "modified": "2025-04-24"
+  },
+  "regulatory-calendar": {
+    "maxAgeDays": 92
+  }
+}
