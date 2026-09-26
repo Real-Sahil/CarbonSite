@@ -359,6 +359,9 @@ model Organization {
   commuteImports                 CommuteImport[]                  @relation("OrgCommuteImports")
   tenderWatch                    TenderWatch?
   tenderOpportunities            TenderOpportunity[]
+  msFrameworkAdoptions           MsFrameworkAdoption[]
+  msRequirementStatuses          MsRequirementStatus[]
+  msEvidenceLinks                MsEvidenceLink[]
   tnfdScenarios                  TnfdScenario[]                   @relation("OrgTnfdScenarios")
   materialityAssessments         MaterialityAssessment[]          @relation("OrgMaterialityAssessments")
   enforcementNotices             EnforcementNotice[]              @relation("OrgEnforcementNotices")
@@ -6913,4 +6916,101 @@ model TenderOpportunity {
   @@unique([organizationId, noticeId])
   @@index([organizationId, status, deadline])
   @@map("tender_opportunities")
+}
+
+// ─── Management systems (lib/management-systems) ────────────────────────────
+// The standards themselves (ISO 14001, ISO 45001, ...) live in the repo
+// catalogue, lib/management-systems/catalogue, keyed by framework slug and
+// requirement code. These tables hold only what an organisation does with them.
+
+enum MsAdoptionStatus {
+  implementing
+  certified
+  lapsed
+  withdrawn
+}
+
+enum MsRequirementState {
+  not_started
+  in_progress
+  implemented
+  not_applicable
+}
+
+/// What an evidence link points at. The target is checked against the
+/// organisation when the link is made (lib/management-systems/evidence.ts).
+enum MsEvidenceKind {
+  evidence_file
+  legal_register_entry
+  environmental_aspect
+  environmental_permit
+  environmental_incident
+  hs_incident_report
+  method_statement
+  reduction_target
+  url
+  note
+}
+
+/// An organisation working towards, or certified against, a framework.
+model MsFrameworkAdoption {
+  id                String           @id @default(cuid())
+  organizationId    String           @map("organization_id")
+  frameworkSlug     String           @map("framework_slug")
+  status            MsAdoptionStatus @default(implementing)
+  scope             String?
+  targetDate        DateTime?        @map("target_date") @db.Date
+  certificationBody String?          @map("certification_body")
+  certificateNumber String?          @map("certificate_number")
+  certifiedUntil    DateTime?        @map("certified_until") @db.Date
+  adoptedByUserId   String           @map("adopted_by_user_id")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, frameworkSlug])
+  @@map("ms_framework_adoptions")
+}
+
+/// The organisation's position on one requirement. No row means not started.
+model MsRequirementStatus {
+  id              String             @id @default(cuid())
+  organizationId  String             @map("organization_id")
+  frameworkSlug   String             @map("framework_slug")
+  requirementCode String             @map("requirement_code")
+  status          MsRequirementState @default(not_started)
+  ownerUserId     String?            @map("owner_user_id")
+  dueOn           DateTime?          @map("due_on") @db.Date
+  /// How the organisation meets it, or why it does not apply.
+  notes           String?
+  updatedByUserId String             @map("updated_by_user_id")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, frameworkSlug, requirementCode])
+  @@map("ms_requirement_statuses")
+}
+
+/// Evidence for a requirement: one of the organisation's own records, a URL
+/// or a written note.
+model MsEvidenceLink {
+  id              String         @id @default(cuid())
+  organizationId  String         @map("organization_id")
+  frameworkSlug   String         @map("framework_slug")
+  requirementCode String         @map("requirement_code")
+  kind            MsEvidenceKind
+  targetId        String?        @map("target_id")
+  url             String?
+  label           String
+  note            String?
+  createdByUserId String         @map("created_by_user_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, frameworkSlug, requirementCode])
+  @@map("ms_evidence_links")
 }

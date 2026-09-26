@@ -1,0 +1,46 @@
+import type { CatalogueFramework, CatalogueRequirement } from "./types";
+import { iso9001 } from "./iso-9001-2015";
+import { iso14001 } from "./iso-14001-2015";
+import { iso45001 } from "./iso-45001-2018";
+
+export type { CatalogueFramework, CatalogueRequirement, FrameworkFamily } from "./types";
+
+/** Every framework an organisation can adopt, in display order. */
+export const FRAMEWORKS: CatalogueFramework[] = [iso14001, iso45001, iso9001];
+
+const BY_SLUG = new Map(FRAMEWORKS.map((f) => [f.slug, f]));
+
+export function getFramework(slug: string): CatalogueFramework | null {
+  return BY_SLUG.get(slug) ?? null;
+}
+
+export function getRequirement(slug: string, code: string): CatalogueRequirement | null {
+  return getFramework(slug)?.requirements.find((r) => r.code === code) ?? null;
+}
+
+/** Codes that have children: headings, not assessed on their own. */
+export function headingCodes(framework: CatalogueFramework): Set<string> {
+  return new Set(framework.requirements.flatMap((r) => (r.parent ? [r.parent] : [])));
+}
+
+/** The requirements an organisation assesses: every one that is not a heading. */
+export function assessableRequirements(framework: CatalogueFramework): CatalogueRequirement[] {
+  const headings = headingCodes(framework);
+  return framework.requirements.filter((r) => !headings.has(r.code));
+}
+
+/**
+ * Requirements in other frameworks that ask for the same thing, so a
+ * framework page can say "also covers ISO 45001 9.2".
+ */
+export function sharedRequirements(slug: string, code: string): Array<{ framework: CatalogueFramework; requirement: CatalogueRequirement }> {
+  const req = getRequirement(slug, code);
+  if (!req?.sharedKey) return [];
+  return FRAMEWORKS.flatMap((framework) =>
+    framework.slug === slug
+      ? []
+      : framework.requirements
+          .filter((r) => r.sharedKey === req.sharedKey)
+          .map((requirement) => ({ framework, requirement })),
+  );
+}

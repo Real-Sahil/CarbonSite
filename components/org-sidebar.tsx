@@ -11,7 +11,7 @@ import {
   Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck, Tractor,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
-  TrendingUp, Droplets, Leaf, CloudSun, AlertTriangle, ClipboardList, Gavel, BarChart3, FolderKanban, Radio,
+  TrendingUp, Droplets, Leaf, CloudSun, AlertTriangle, ClipboardList, Gavel, BarChart3, FolderKanban, Radio, Award,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -134,6 +134,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       ]},
       { label: "Compliance", items: [
         { label: "Compliance",         href: `/orgs/${orgId}/compliance`,                       icon: ShieldCheck,    roles: CORE_ROLES },
+        { label: "Management systems", href: `/orgs/${orgId}/management-systems`,               icon: Award,          roles: [...CORE_ROLES, "sustainability_director", "sustainability_manager", "operations_manager"] },
         { label: "Regulatory calendar",      href: `/orgs/${orgId}/compliance/deadlines`,              icon: CalendarClock,  roles: CORE_ROLES },
         { label: "Assurance",          href: `/orgs/${orgId}/compliance/assurance-readiness`,    icon: BadgeCheck,     roles: CORE_ROLES },
         { label: "ESRS E1 gap",        href: `/orgs/${orgId}/compliance/esrs-e1`,                icon: BookOpen,       roles: CORE_ROLES },
