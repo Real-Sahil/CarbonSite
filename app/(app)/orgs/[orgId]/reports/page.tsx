@@ -28,6 +28,14 @@ import { StatusPoller } from "@/components/ui/status-poller";
 
 interface ReportsPageProps {
   params: Promise<{ orgId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+/** ?bid=1&bidTitle=&buyerName=&tenderReference= prefills a bid pack (Tenders page). */
+function bidPrefill(sp: Record<string, string | string[] | undefined>) {
+  if (sp.bid !== "1") return undefined;
+  const one = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string).slice(0, 200) : undefined);
+  return { bidTitle: one("bidTitle"), buyerName: one("buyerName"), tenderReference: one("tenderReference")?.slice(0, 100) };
 }
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
@@ -79,8 +87,9 @@ function formatTimestamp(value: Date | null): string {
   });
 }
 
-export default async function ReportsPage({ params }: ReportsPageProps) {
+export default async function ReportsPage({ params, searchParams }: ReportsPageProps) {
   const { orgId } = await params;
+  const initialBid = bidPrefill((await searchParams) ?? {});
 
   let isAdmin = false;
   try {
@@ -304,6 +313,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                 }))}
                 contracts={contracts}
                 bidPackIncluded={bidPackIncluded}
+                initialBid={initialBid}
               />
             </div>
             {reports.length === 0 ? (

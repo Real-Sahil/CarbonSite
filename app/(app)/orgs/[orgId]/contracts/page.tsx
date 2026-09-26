@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CreateContractForm, DeleteContractButton } from "./contract-actions";
+import { FindTenderImport } from "./find-tender-import";
 
 interface Props {
   params: Promise<{ orgId: string }>;
@@ -196,7 +197,8 @@ export default async function ContractsPage({ params }: Props) {
           </CardHeader>
           <CardContent className="flex flex-col gap-0 p-0">
             {canEdit && (
-              <div className="px-6 py-5 border-b border-[#E5E7EB]">
+              <div className="px-6 py-5 border-b border-[#E5E7EB] flex flex-col gap-4">
+                <FindTenderImport orgId={orgId} />
                 <CreateContractForm orgId={orgId} />
               </div>
             )}

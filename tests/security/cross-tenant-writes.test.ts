@@ -51,6 +51,8 @@ const db = vi.hoisted(() => {
     site: model(),
     commuteSurvey: model(),
     commuteImport: model(),
+    tenderOpportunity: model(),
+    tenderWatch: model(),
     activityRecord: model(),
     $transaction: vi.fn(),
   };
@@ -440,5 +442,35 @@ describe("employee commuting", () => {
     expect(db.commuteImport.findFirst.mock.calls[0][0].where).toEqual({ id: "import-of-b", organizationId: ORG_A });
     expect(db.activityRecord.deleteMany).not.toHaveBeenCalled();
     expect(db.commuteImport.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe("tenders", () => {
+  it("will not change the status of another organisation's tender", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/tenders/[opportunityId]/route");
+    db.tenderOpportunity.findFirst.mockResolvedValue(null); // the tender belongs to org B
+
+    const res = await PATCH(post("/x", { status: "dismissed" }, "PATCH"), { params: Promise.resolve({ orgId: ORG_A, opportunityId: "tender-of-b" }) });
+
+    expect(res.status).toBe(404);
+    expect(db.tenderOpportunity.findFirst.mock.calls[0][0].where).toEqual({ id: "tender-of-b", organizationId: ORG_A });
+    expect(db.tenderOpportunity.update).not.toHaveBeenCalled();
+  });
+
+  it("imports a Find a Tender contract into the caller's organisation only", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/contracts/find-tender/route");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ releases: [{ ocid: "o", id: "091200-2026", tag: ["award"], tender: { title: "Minibus routes" }, contracts: [{ value: { amount: 1000, currency: "GBP" } }] }] }), { status: 200 }),
+    );
+    db.organization.findUnique.mockResolvedValue({ name: "Org A" });
+    db.contract.findFirst.mockResolvedValue(null);
+    db.contract.create.mockResolvedValue({ id: "c1", name: "Minibus routes" });
+
+    const res = await POST(post("/x", { notice: "091200-2026", confirm: true, draft: { name: "Minibus routes" } }), { params: Promise.resolve({ orgId: ORG_A }) });
+
+    expect(res.status).toBe(201);
+    expect(db.contract.findFirst.mock.calls[0][0].where).toEqual({ organizationId: ORG_A, ftsNoticeId: "091200-2026" });
+    expect(db.contract.create.mock.calls[0][0].data.organizationId).toBe(ORG_A);
+    fetchMock.mockRestore();
   });
 });

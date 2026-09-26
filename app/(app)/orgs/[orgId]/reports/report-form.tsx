@@ -140,19 +140,22 @@ export function CreateReportForm({
   snapshots,
   contracts = [],
   bidPackIncluded = true,
+  initialBid,
 }: {
   orgId: string;
   snapshots: SnapshotOption[];
   contracts?: ContractOption[];
   /** False on plans without the bid carbon pack; it then moves out of the core list. */
   bidPackIncluded?: boolean;
+  /** Prefill for a bid pack, e.g. from a tender on the Tenders page. */
+  initialBid?: { bidTitle?: string; buyerName?: string; tenderReference?: string };
 }) {
   const core = coreReportTypes(bidPackIncluded);
   const [showAll, setShowAll] = useState(false);
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [reportType, setReportType] = useState(DEFAULT_REPORT_TYPE);
+  const [reportType, setReportType] = useState(initialBid && bidPackIncluded ? "bid_carbon_pack" : DEFAULT_REPORT_TYPE);
   const [snapshotId, setSnapshotId] = useState(snapshots[0]?.id ?? "");
   const [secrOpen, setSecrOpen] = useState(false);
   const [intensityMetricLabel, setIntensityMetricLabel] = useState("");
@@ -160,13 +163,14 @@ export function CreateReportForm({
   const [cbamOpen, setCbamOpen] = useState(false);
   const [cbamEori, setCbamEori] = useState("");
   const [bid, setBid] = useState({
-    bidTitle: "",
-    buyerName: "",
-    tenderReference: "",
+    bidTitle: initialBid?.bidTitle ?? "",
+    buyerName: initialBid?.buyerName ?? "",
+    tenderReference: initialBid?.tenderReference ?? "",
     signatoryName: "",
     signatoryTitle: "",
     signatoryDate: "",
-    netZeroYear: "2050",
+    // Empty: the pack uses the net zero year in the Carbon Reduction Plan or transition plan.
+    netZeroYear: "",
   });
   const [bidContractIds, setBidContractIds] = useState<string[]>([]);
 
@@ -505,7 +509,7 @@ export function CreateReportForm({
               <input id="bid-signatory-date" type="date" value={bid.signatoryDate} onChange={(e) => setBid({ ...bid, signatoryDate: e.target.value })} className={inputClass} />
             </Field>
             <Field label="Net zero year">
-              <input id="bid-net-zero" type="number" min={2025} max={2050} value={bid.netZeroYear} onChange={(e) => setBid({ ...bid, netZeroYear: e.target.value })} className={inputClass} />
+              <input id="bid-net-zero" type="number" min={2025} max={2050} value={bid.netZeroYear} onChange={(e) => setBid({ ...bid, netZeroYear: e.target.value })} placeholder="From your Carbon Reduction Plan" className={inputClass} />
             </Field>
           </div>
           <fieldset>

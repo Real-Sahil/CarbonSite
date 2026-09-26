@@ -357,6 +357,8 @@ model Organization {
   workerSessions                 WorkerSession[]                  @relation("OrgWorkerSessions")
   commuteSurveys                 CommuteSurvey[]                  @relation("OrgCommuteSurveys")
   commuteImports                 CommuteImport[]                  @relation("OrgCommuteImports")
+  tenderWatch                    TenderWatch?
+  tenderOpportunities            TenderOpportunity[]
   tnfdScenarios                  TnfdScenario[]                   @relation("OrgTnfdScenarios")
   materialityAssessments         MaterialityAssessment[]          @relation("OrgMaterialityAssessments")
   enforcementNotices             EnforcementNotice[]              @relation("OrgEnforcementNotices")
@@ -2169,6 +2171,8 @@ model Contract {
   procuringAuthority   String?        @map("procuring_authority")
   socialValueWeighting Decimal?       @map("social_value_weighting") @db.Decimal(5, 2)
   svToolkitTheme       String?        @map("sv_toolkit_theme")
+  /// Find a Tender notice the contract was imported from (e.g. "091200-2026").
+  ftsNoticeId          String?        @map("fts_notice_id")
   createdByUserId      String         @map("created_by_user_id")
   createdAt            DateTime       @default(now()) @map("created_at")
   updatedAt            DateTime       @updatedAt @map("updated_at")
@@ -2184,6 +2188,7 @@ model Contract {
   subcontractorSubmissions SubcontractorCarbonSubmission[]
   svCommitments            SvCommitment[]                  @relation("ContractSvCommitments")
 
+  @@unique([organizationId, ftsNoticeId])
   @@index([organizationId, status])
   @@index([organizationId, businessUnitId])
   @@map("contracts")
@@ -6854,4 +6859,58 @@ model PlantTelematicsReading {
   @@unique([assetId, periodEnd])
   @@index([organizationId, periodEnd])
   @@map("plant_telematics_readings")
+}
+
+/// What an organisation wants to hear about on Find a Tender (lib/tenders).
+/// One per organisation; checked daily by the tenders monitor.
+model TenderWatch {
+  id              String    @id @default(cuid())
+  organizationId  String    @unique @map("organization_id")
+  enabled         Boolean   @default(true)
+  /// CPV code prefixes, e.g. "45" (construction work) or "4523".
+  cpvPrefixes     String[]  @map("cpv_prefixes")
+  /// ITL/NUTS region prefixes, e.g. "UKE" (Yorkshire and the Humber). Empty: anywhere.
+  regions         String[]
+  /// Words in the title that match on their own, whatever the CPV code.
+  keywords        String[]
+  minValue        Decimal?  @map("min_value") @db.Decimal(18, 2)
+  lastCheckedAt   DateTime? @map("last_checked_at")
+  updatedByUserId String    @map("updated_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("tender_watches")
+}
+
+/// A Find a Tender notice that matched an organisation's watch.
+model TenderOpportunity {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  noticeId       String    @map("notice_id")
+  ocid           String
+  title          String
+  buyerName      String?   @map("buyer_name")
+  /// Buyer type from the notice: UK_CA_TYPE (e.g. publicAuthorityCentralGovernment), else TED_CA_TYPE.
+  buyerType      String?   @map("buyer_type")
+  valueAmount    Decimal?  @map("value_amount") @db.Decimal(18, 2)
+  currency       String?
+  cpvCodes       String[]  @map("cpv_codes")
+  regions        String[]
+  deadline       DateTime?
+  publishedAt    DateTime  @map("published_at")
+  matchedOn      String    @map("matched_on")
+  /// Carbon Reduction Plan and social value requirements read from the notice (tenderFlags()).
+  flags          Json      @default("{}")
+  /// new | interested | bidding | dismissed
+  status         String    @default("new")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, noticeId])
+  @@index([organizationId, status, deadline])
+  @@map("tender_opportunities")
 }

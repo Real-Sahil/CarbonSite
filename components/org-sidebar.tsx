@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Upload, FileText, BarChart2, Calculator,
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
-  ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks, Bus,
+  ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks, Bus, Landmark,
   Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck, Tractor,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
@@ -79,6 +79,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Supplier reports", href: `/orgs/${orgId}/supplier-reports`,  icon: PackageSearch, roles: ["admin", "editor", "reviewer", "auditor"] },
         { label: "Tasks",            href: `/orgs/${orgId}/tasks`,             icon: ListChecks },
         { label: "Contracts",        href: `/orgs/${orgId}/contracts`,         icon: Briefcase,     roles: EXTENDED_VIEW_ROLES },
+        { label: "Tenders",          href: `/orgs/${orgId}/tenders`,           icon: Landmark,      roles: EXTENDED_VIEW_ROLES },
         { label: "Programmes",       href: `/orgs/${orgId}/programmes`,        icon: FolderKanban,  roles: EXTENDED_VIEW_ROLES },
       ]},
       { label: "Calculations", items: [
