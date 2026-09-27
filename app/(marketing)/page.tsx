@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PLAY_URL } from "@/components/marketing/brand-marks";
+import { LaunchFilm } from "@/components/marketing/launch-film";
 import { PLAN_PRICES } from "@/lib/billing/limits";
 import { withSocial } from "@/lib/seo/page-meta";
 import Image from "next/image";
@@ -168,14 +169,7 @@ export default function HomePage() {
               </ButtonLink>
             </div>
           </div>
-          <ProductShot
-            src="/marketing/screens/dashboard.jpg"
-            alt="MetricOra dashboard showing a 4,710 tCO2e footprint, a 12.2% fall on the previous year, live Scope 1, 2 and 3 totals and a banner about unpublished changes"
-            width={2400}
-            height={1500}
-            tone="dark"
-            priority
-          />
+          <LaunchFilm />
         </div>
       </Section>
 
