@@ -43,7 +43,7 @@ Bars 25-28, ending. The lockup, "Start your Carbon Reduction Plan", metricora.co
 3. `cues.ts` is the beat sheet as data; `scripts/beat-sheet.ts` writes BEAT-SHEET.md from it.
 4. Magic moves with `kit/move.ts`: phone photo to review photo, Scope 1 tile to records panel, record row to calculation, document stack to pack.
 5. `scripts/compose.py` writes the score and SFX on the same grid; `scripts/beats.py` measured it at 119.985 BPM, 2 ms spread.
-6. Final: `bun scripts/render.ts Launch metricora-launch --duration 56 --poster 52.5`, then `scripts/verify.py`.
+6. Final: `bun scripts/render.ts Launch metricora-launch --duration 56 --poster 53.25`, then `scripts/verify.py`.
 </build>
 
 <start>

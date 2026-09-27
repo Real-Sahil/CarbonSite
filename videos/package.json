@@ -7,7 +7,7 @@
     "studio": "remotion studio src/index.ts",
     "stills": "bun scripts/stills.ts",
     "beat-sheet": "bun scripts/beat-sheet.ts > src/videos/launch/BEAT-SHEET.md",
-    "render": "bun scripts/render.ts Launch metricora-launch --duration 56 --poster 52.5",
+    "render": "bun scripts/render.ts Launch metricora-launch --duration 56 --poster 53.25",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
