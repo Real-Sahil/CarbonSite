@@ -62,6 +62,7 @@ export type AuditAction =
   | "management_system.document_acknowledged"
   | "management_system.auditor_access_granted"
   | "management_system.auditor_access_revoked"
+  | "management_system.auditor_link_opened"
   | "management_system.certification_pack_exported"
   | "management_system.pqq_answer_updated"
   | "management_system.pqq_set_saved"
