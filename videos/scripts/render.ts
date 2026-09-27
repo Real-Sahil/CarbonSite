@@ -51,12 +51,21 @@ run(ffmpeg, [
   blurred,
 ]);
 
-const h264 = ["-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p", "-x264-params", "colorprim=bt709:transfer=bt709:colormatrix=bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", "-color_range", "tv", "-movflags", "+faststart"];
+// tune film + aq-mode 3 + no deadzones: x264 otherwise zeroes the faint residue of
+// blurred words on the flat dark stage, leaving streaks a few levels off the ground.
+const x264 = ["-c:v", "libx264", "-preset", "slow", "-tune", "film", "-pix_fmt", "yuv420p", "-x264-params", "colorprim=bt709:transfer=bt709:colormatrix=bt709:aq-mode=3:deadzone-inter=0:deadzone-intra=0", "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", "-color_range", "tv", "-movflags", "+faststart"];
+const h264 = [...x264, "-crf", "18"];
+// 10-bit to 8-bit without the scaler's dither, which VP9 turns into block noise.
+const to8 = (size: string) => `scale=${size}:flags=lanczos+accurate_rnd:sws_dither=none,format=yuv420p`;
 
 // 4. A muted loop for the page, one with the music, a WebM, the poster.
 run(ffmpeg, ["-v", "error", "-y", "-i", blurred, ...h264, "-an", join(out, `${name}-1080p60.mp4`)]);
 run(ffmpeg, ["-v", "error", "-y", "-i", blurred, "-i", audio, ...h264, "-c:a", "aac", "-b:a", "256k", "-shortest", join(out, `${name}-1080p60-audio.mp4`)]);
-run(ffmpeg, ["-v", "error", "-y", "-i", blurred, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "32", "-row-mt", "1", "-pix_fmt", "yuv420p", "-an", join(out, `${name}-1080p60.webm`)]);
+run(ffmpeg, ["-v", "error", "-y", "-i", blurred, "-vf", to8("1920:1080"), "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "30", "-row-mt", "1", "-an", join(out, `${name}-1080p60.webm`)]);
+run(ffmpeg, ["-v", "error", "-y", "-i", blurred, "-i", audio, "-vf", to8("1920:1080"), "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "32", "-row-mt", "1", "-c:a", "libopus", "-b:a", "160k", "-shortest", join(out, `${name}-1080p60-audio.webm`)]);
+// The site's hero: 720p at 30 fps, muted, WebM with an MP4 fallback.
+run(ffmpeg, ["-v", "error", "-y", "-i", blurred, "-vf", `fps=30,${to8("1280:720")}`, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "34", "-row-mt", "1", "-an", join(out, `${name}-720p30.webm`)]);
+run(ffmpeg, ["-v", "error", "-y", "-i", blurred, "-vf", "fps=30,scale=1280:720:flags=lanczos", ...x264, "-crf", "20", "-an", join(out, `${name}-720p30.mp4`)]);
 run(ffmpeg, ["-v", "error", "-y", "-ss", String(posterSeconds), "-i", blurred, "-frames:v", "1", "-q:v", "2", join(out, "poster.jpg")]);
 
 // 5. Loop seam: the last 8 and first 8 frames, played twice back to back, in one sheet.
@@ -64,6 +73,6 @@ run(ffmpeg, ["-v", "error", "-y", "-stream_loop", "1", "-i", join(out, `${name}-
 
 rmSync(master);
 rmSync(blurred);
-for (const file of [`${name}-1080p60.mp4`, `${name}-1080p60-audio.mp4`, `${name}-1080p60.webm`, "poster.jpg"]) {
+for (const file of [`${name}-1080p60.mp4`, `${name}-1080p60-audio.mp4`, `${name}-1080p60.webm`, `${name}-1080p60-audio.webm`, `${name}-720p30.webm`, `${name}-720p30.mp4`, "poster.jpg"]) {
   console.log(`${file}: ${(statSync(join(out, file)).size / 1e6).toFixed(1)} MB`);
 }
