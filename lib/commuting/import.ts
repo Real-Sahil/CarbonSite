@@ -1,29 +1,30 @@
 /**
  * Turns an uploaded attendance export into commuting records (see
  * attendance.ts for the method). The file is read in memory and never
- * stored; each month's aggregate by postcode district is kept as the
- * records' evidence. Records are created in review, so nothing reaches the
+ * stored; each month's days on site and the survey averages that priced
+ * them are kept as the records' evidence. Records are created in review, so nothing reaches the
  * inventory until a reviewer approves it.
  */
 import * as XLSX from "xlsx";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { storeEvidenceFile } from "@/lib/evidence/store";
-import { getDistrictRoadKm } from "@/lib/geo/route-distance";
 import {
   AttendanceError,
-  LODGING_KM,
+  KM_PER_MILE,
+  MIN_SURVEY_RESPONSES,
   RECORD_MODES,
   count,
-  attendanceEvidenceCsv,
-  commuteTotals,
+  commuteEvidenceCsv,
   groupAttendance,
   kmByMode,
-  modeSplit,
   parseAttendance,
+  personKm,
+  surveyDistances,
   type MonthAttendance,
   type ParsedAttendance,
   type SurveyAnswer,
+  type SurveyDistances,
   type SurveyMode,
   type Workforce,
 } from "./attendance";
@@ -46,9 +47,9 @@ export function readAttendanceFile(buffer: Buffer): ParsedAttendance {
 export async function siteSurveyAnswers(orgId: string, siteId: string): Promise<SurveyAnswer[]> {
   const rows = await prisma.commuteSurveyResponse.findMany({
     where: { organizationId: orgId, survey: { organizationId: orgId, siteId } },
-    select: { mode: true, occupancy: true, workforce: true },
+    select: { mode: true, occupancy: true, workforce: true, roundTripKm: true },
   });
-  return rows.map((r) => ({ mode: r.mode as SurveyMode, occupancy: r.occupancy, workforce: r.workforce as Workforce }));
+  return rows.map((r) => ({ mode: r.mode as SurveyMode, occupancy: r.occupancy, workforce: r.workforce as Workforce, roundTripKm: r.roundTripKm }));
 }
 
 const monthLabel = (month: string) =>
@@ -68,10 +69,19 @@ export async function importAttendance(args: {
   const { orgId, userId, siteId, parsed } = args;
   const site = await prisma.site.findFirst({
     where: { id: siteId, organizationId: orgId },
-    select: { id: true, name: true, postcode: true, project: { select: { contractId: true } } },
+    select: { id: true, name: true, project: { select: { contractId: true } } },
   });
   if (!site) throw new AttendanceError("NOT_FOUND", "Site not found.");
-  if (!site.postcode) throw new AttendanceError("NO_SITE_POSTCODE", `Add a postcode to ${site.name} first: distances are measured to it.`);
+  const answers = await siteSurveyAnswers(orgId, siteId);
+  const ownDistances = surveyDistances(answers, "own");
+  if (!ownDistances) {
+    const have = answers.filter((a) => a.roundTripKm != null).length;
+    throw new AttendanceError(
+      "NOT_ENOUGH_ANSWERS",
+      `${site.name} has ${count(have, "survey answer")} giving a journey distance. Share the site's commute survey and import once it has ${MIN_SURVEY_RESPONSES}.`,
+    );
+  }
+  const subDistances = surveyDistances(answers, "subcontractor");
 
   const months = groupAttendance(parsed.rows, args.ownEmployers);
   const category = await prisma.emissionCategory.findFirst({ where: { code: "s3-commuting" }, select: { id: true } });
@@ -99,36 +109,24 @@ export async function importAttendance(args: {
     throw new AttendanceError("ALREADY_IMPORTED", `${site.name} already has commuting for ${names}. Delete that import first to replace it.`);
   }
 
-  // One road distance per district, shared by every month.
-  const districts = [...new Set(months.flatMap((m) => [...m.own, ...m.subcontractor].map((d) => d.district)).filter((d): d is string => !!d))];
-  const oneWayKm = new Map<string, number | null>();
-  const methods = new Map<string, string>();
-  for (const district of districts) {
-    const d = await getDistrictRoadKm({ organizationId: orgId, district, sitePostcode: site.postcode });
-    oneWayKm.set(district, d.km);
-    methods.set(district, d.method);
-  }
-
-  const answers = await siteSurveyAnswers(orgId, siteId);
-  const ownSplit = modeSplit(answers, "own");
   const result: ImportResult = { imports: [] };
 
   for (const m of months) {
-    const own = commuteTotals(m.own, oneWayKm);
-    const sub = commuteTotals(m.subcontractor, oneWayKm);
+    const own = { ...m.own, personKm: personKm(m.own.days, ownDistances) };
+    const sub = { ...m.subcontractor, personKm: personKm(m.subcontractor.days, subDistances) };
     const evidence = await storeEvidenceFile(orgId, userId, {
       name: `commuting-${m.month}-${site.name.replace(/[^A-Za-z0-9]+/g, "-").slice(0, 40)}.csv`,
       type: "text/csv",
-      buffer: Buffer.from(attendanceEvidenceCsv(m, oneWayKm, methods)),
+      buffer: Buffer.from(commuteEvidenceCsv(m, { own: ownDistances, subcontractor: subDistances })),
     });
-    const notes = assumptionNotes(m, own, ownSplit.source, ownSplit.vans);
+    const notes = assumptionNotes(m, ownDistances);
     const monthStart = new Date(`${m.month}-01T00:00:00Z`);
     const firstDate = new Date(`${m.firstDate}T00:00:00Z`);
     const lastDate = new Date(`${m.lastDate}T00:00:00Z`);
 
     const recordIds = await prisma.$transaction(async (tx) => {
       const ids: string[] = [];
-      for (const { mode, km } of kmByMode(own.personKm, ownSplit)) {
+      for (const { mode, km } of kmByMode(m.own.days, ownDistances)) {
         const record = await tx.activityRecord.create({
           data: {
             organizationId: orgId,
@@ -168,7 +166,8 @@ export async function importAttendance(args: {
           summary: {
             own,
             subcontractor: sub,
-            split: { source: ownSplit.source, weights: ownSplit.weights },
+            method: "survey_round_trip",
+            survey: { source: ownDistances.source, used: ownDistances.used, kmPerDay: ownDistances.kmPerDay, averageRoundTripMiles: Math.round((ownDistances.averageRoundTripKm / KM_PER_MILE) * 10) / 10 },
             ownEmployers: args.ownEmployers,
           },
         },
@@ -206,15 +205,13 @@ export async function importAttendance(args: {
   return result;
 }
 
-function assumptionNotes(m: MonthAttendance, own: ReturnType<typeof commuteTotals>, splitSource: string, vans: boolean): string {
+function assumptionNotes(m: MonthAttendance, d: SurveyDistances): string {
+  const miles = Math.round((d.averageRoundTripKm / KM_PER_MILE) * 10) / 10;
   const parts = [
-    `Distance-based (GHG Protocol Scope 3 Category 7) from site attendance: ${count(own.days, "own-staff day")} on site by ${count(own.people, "person", "people")}, ${m.firstDate} to ${m.lastDate}.`,
-    "Return road distance from each person's home postcode district centre to the site.",
-    `Mode split: ${splitSource}.`,
+    `Distance-based (GHG Protocol Scope 3 Category 7) from site attendance: ${count(m.own.days, "own-staff day")} on site by ${count(m.own.people, "person", "people")}, ${m.firstDate} to ${m.lastDate}.`,
+    `Each day priced at the survey average: ${d.source}; average round trip ${miles} miles (${d.averageRoundTripKm} km). No home postcodes are used.`,
   ];
-  if (vans) parts.push("Vans are priced with the average car factor (the library has no van commuting factor), which understates them.");
-  if (own.averagedDays > 0) parts.push(`${count(own.averagedDays, "day")} with no usable home postcode counted at the average distance.`);
-  if (own.lodgingDays > 0) parts.push(`${count(own.lodgingDays, "day")} over ${LODGING_KM} km one way left out as likely lodging near site; record those stays under business travel.`);
+  if (d.vans) parts.push("Vans are priced with the average car factor (the library has no van commuting factor), which understates them.");
   parts.push("Subcontractor travel is not included (their employer's emissions; Category 1).");
   return parts.join(" ");
 }

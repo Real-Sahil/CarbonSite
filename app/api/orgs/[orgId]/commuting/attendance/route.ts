@@ -9,7 +9,6 @@ import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { requireActiveBilling } from "@/lib/billing/limits";
 import { orgRefsError } from "@/lib/security/org-refs";
-import { RouteDistanceError } from "@/lib/geo/route-distance";
 import { AttendanceError, employerSummary, groupAttendance } from "@/lib/commuting/attendance";
 import { importAttendance, readAttendanceFile } from "@/lib/commuting/import";
 
@@ -53,7 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
     if (!fields.confirm) {
       const months = groupAttendance(parsed.rows, fields.ownEmployers).map((m) => ({
         month: m.month,
-        days: [...m.own, ...m.subcontractor].reduce((n, d) => n + d.days, 0),
+        days: m.own.days + m.subcontractor.days,
       }));
       return NextResponse.json({ employers: employerSummary(parsed.rows), months, columns: parsed.columns, warnings: parsed.warnings });
     }
@@ -73,7 +72,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
       const status = err.code === "NOT_FOUND" ? 404 : err.code === "ALREADY_IMPORTED" ? 409 : 422;
       return apiError(err.code, err.message, status);
     }
-    if (err instanceof RouteDistanceError) return apiError(err.code, err.message, err.status);
     if (err instanceof SyntaxError) return apiError("BAD_REQUEST", "ownEmployers must be a JSON list.", 400);
     return handleRouteError(err);
   }

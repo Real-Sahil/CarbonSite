@@ -1,14 +1,16 @@
 /**
  * Employee commuting (GHG Protocol Scope 3 Category 7), distance-based
- * method, from site attendance: days on site x 2 x road km from the worker's
- * home postcode district to the site, split by travel mode from the site's
- * commute survey.
+ * method, from site attendance and the site's commute survey: days on site
+ * x each surveyed person's own round trip, by the way they travel.
+ *
+ * No home postcode is read or asked for. The survey asks, anonymously, how
+ * someone travels, how many people share the vehicle, who employs them and
+ * how many miles their journey from home to site and back is. The average
+ * of those answers, per mode, prices each day on site.
  *
  * Attendance exports (MSite, Biosite, Sitemetric or a spreadsheet) carry
- * names and full postcodes. Only the date, the employer, a worker key for
- * de-duplicating sign-ins and the postcode district (outward code, e.g. HD9)
- * are read; the file itself is never stored. The evidence kept is the
- * aggregate by district.
+ * names and often home postcodes. Only the date, the employer and a worker
+ * key for de-duplicating sign-ins are read; the file itself is never stored.
  *
  * Only the organisation's own staff are Category 7. Subcontractor operatives
  * travel for their employer, which is the organisation's Category 1
@@ -16,10 +18,11 @@
  * for project (PAS 2080 A5) views, never added to it.
  */
 
-/** One-way road distance above which a worker is assumed to lodge near site. */
-export const LODGING_KM = 150;
-/** Survey answers needed before a site's own split replaces the default. */
+/** Survey answers with a distance needed before a site's commuting can be worked out. */
 export const MIN_SURVEY_RESPONSES = 5;
+/** Largest round trip a survey answer may give, in miles. */
+export const MAX_ROUND_TRIP_MILES = 300;
+export const KM_PER_MILE = 1.609344;
 /** Largest attendance file read, in data rows. */
 export const MAX_ATTENDANCE_ROWS = 50_000;
 
@@ -34,6 +37,7 @@ export const SURVEY_MODES = {
 } as const;
 export type SurveyMode = keyof typeof SURVEY_MODES;
 export const SURVEY_MODE_KEYS = Object.keys(SURVEY_MODES) as SurveyMode[];
+export const VEHICLE_MODES: SurveyMode[] = ["car", "van", "bev", "motorbike"];
 
 /**
  * How each mode becomes a record. transportMode is the detail the factor
@@ -61,68 +65,97 @@ const RECORD_MODE_OF: Record<SurveyMode, RecordMode> = {
 
 export type Workforce = "own" | "subcontractor";
 
-export type SurveyAnswer = { mode: SurveyMode; occupancy: number; workforce: Workforce };
+/** roundTripKm is null on answers given before the survey asked for distance. */
+export type SurveyAnswer = { mode: SurveyMode; occupancy: number; workforce: Workforce; roundTripKm: number | null };
 
-export type ModeSplit = {
-  /** Kilometres of each record mode per person-kilometre travelled. */
-  weights: Partial<Record<RecordMode, number>>;
+export type SurveyDistances = {
+  /** Kilometres of each record mode per day on site (vehicle km for car, van, BEV and motorbike). */
+  kmPerDay: Partial<Record<RecordMode, number>>;
   /** Plain description for the record's assumption notes. */
   source: string;
-  responses: number;
+  /** Answers used. */
+  used: number;
   vans: boolean;
   /** Share of the answers used, per survey mode (what people said, before sharing is divided out). */
   people: Partial<Record<SurveyMode, number>>;
+  /** Average round trip per person, km. */
+  averageRoundTripKm: number;
+  /** Per survey mode: answers and their average round trip, for the evidence. */
+  byMode: Partial<Record<SurveyMode, { answers: number; averageRoundTripKm: number }>>;
 };
 
 /** "1 day", "3 days". */
 export const count = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString("en-GB")} ${n === 1 ? one : many}`;
 
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
 /**
- * The site's mode split: its own staff's answers when there are enough,
- * else everyone's, else the stated default (everyone drives alone, the
- * highest-emitting common case, so the figure is never understated).
+ * What a day on site means in kilometres per mode: the average over the
+ * survey answers that give a distance, each person's round trip at their
+ * own mode, shared vehicles divided by the people in them. Uses the
+ * workforce's own answers when there are enough, else everyone's; with
+ * fewer than MIN_SURVEY_RESPONSES answers there is no figure (null), since
+ * no distance can honestly be assumed.
  */
-export function modeSplit(answers: SurveyAnswer[], workforce: Workforce): ModeSplit {
-  const own = answers.filter((a) => a.workforce === workforce);
-  const used = own.length >= MIN_SURVEY_RESPONSES ? own : answers.length >= MIN_SURVEY_RESPONSES ? answers : null;
-  if (!used) {
-    return {
-      weights: { car: 1 },
-      source: `default: everyone drives alone (fewer than ${MIN_SURVEY_RESPONSES} survey answers for this site)`,
-      responses: answers.length,
-      vans: false,
-      people: {},
-    };
-  }
-  const weights: Partial<Record<RecordMode, number>> = {};
+export function surveyDistances(answers: SurveyAnswer[], workforce: Workforce): SurveyDistances | null {
+  const withKm = answers.filter((a): a is SurveyAnswer & { roundTripKm: number } => a.roundTripKm != null && a.roundTripKm >= 0);
+  const mine = withKm.filter((a) => a.workforce === workforce);
+  const used = mine.length >= MIN_SURVEY_RESPONSES ? mine : withKm.length >= MIN_SURVEY_RESPONSES ? withKm : null;
+  if (!used) return null;
+  const kmPerDay: Partial<Record<RecordMode, number>> = {};
   const people: Partial<Record<SurveyMode, number>> = {};
+  const sums: Partial<Record<SurveyMode, { answers: number; km: number }>> = {};
+  let total = 0;
   for (const a of used) {
     people[a.mode] = (people[a.mode] ?? 0) + 1 / used.length;
+    const s = (sums[a.mode] ??= { answers: 0, km: 0 });
+    s.answers++;
+    s.km += a.roundTripKm;
+    total += a.roundTripKm;
     const mode = RECORD_MODE_OF[a.mode];
     const occupancy = Math.max(1, Math.round(a.occupancy) || 1);
-    const w = RECORD_MODES[mode].perVehicle ? 1 / occupancy : 1;
-    weights[mode] = (weights[mode] ?? 0) + w / used.length;
+    const km = RECORD_MODES[mode].perVehicle ? a.roundTripKm / occupancy : a.roundTripKm;
+    kmPerDay[mode] = (kmPerDay[mode] ?? 0) + km / used.length;
   }
-  const who = used === own ? (workforce === "own" ? "own staff" : "subcontractor staff") : "everyone on site";
+  const byMode: SurveyDistances["byMode"] = {};
+  for (const [m, s] of Object.entries(sums) as [SurveyMode, { answers: number; km: number }][]) {
+    byMode[m] = { answers: s.answers, averageRoundTripKm: round1(s.km / s.answers) };
+  }
+  const who = used === mine ? (workforce === "own" ? "own staff" : "subcontractor staff") : "everyone on site";
   return {
-    weights,
-    source: `site commute survey: ${used.length} answers from ${who}, shared vehicles divided by the people in them`,
-    responses: answers.length,
+    kmPerDay,
+    source: `site commute survey: ${used.length} answers from ${who} giving their mode and round trip, shared vehicles divided by the people in them`,
+    used: used.length,
     vans: used.some((a) => a.mode === "van"),
     people,
+    averageRoundTripKm: round1(total / used.length),
+    byMode,
   };
 }
+
+/** Kilometres per record mode for a number of days on site (cycling and walking dropped), to one decimal place. */
+export function kmByMode(days: number, distances: SurveyDistances): { mode: Exclude<RecordMode, "active">; km: number }[] {
+  return (Object.entries(distances.kmPerDay) as [RecordMode, number][])
+    .filter(([mode]) => mode !== "active")
+    .map(([mode, perDay]) => ({ mode: mode as Exclude<RecordMode, "active">, km: round1(days * perDay) }))
+    .filter((m) => m.km > 0);
+}
+
+/** Total person-kilometres (each person's round trip, before sharing) for a number of days. */
+export const personKm = (days: number, distances: SurveyDistances | null) => (distances ? round1(days * distances.averageRoundTripKm) : 0);
 
 // ---------------------------------------------------------------------------
 // Attendance files
 // ---------------------------------------------------------------------------
 
-export type AttendanceRow = { date: string; worker: string | null; employer: string; district: string | null };
+export type AttendanceRow = { date: string; worker: string | null; employer: string };
 
 export type ParsedAttendance = {
   rows: AttendanceRow[];
   skipped: number;
-  columns: { date: string; worker: string | null; employer: string | null; postcode: string | null };
+  columns: { date: string; worker: string | null; employer: string | null };
+  /** A home postcode column the file had and that was not read. */
+  ignoredPostcode: string | null;
   warnings: string[];
 };
 
@@ -140,17 +173,6 @@ function findColumn(headers: string[], patterns: RegExp[], avoid: RegExp[] = [])
     if (hit) return hit;
   }
   return null;
-}
-
-/** The outward code (district) of a UK postcode: "HD9 7AB" -> "HD9". Anything else -> null. */
-export function postcodeDistrict(value: unknown): string | null {
-  if (value == null) return null;
-  const s = String(value).toUpperCase().replace(/[^A-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
-  if (!s) return null;
-  const full = s.replace(/ /g, "").match(/^([A-Z]{1,2}\d[A-Z\d]?)(\d[A-Z]{2})$/);
-  if (full) return full[1];
-  const outward = s.split(" ")[0];
-  return /^[A-Z]{1,2}\d[A-Z\d]?$/.test(outward) ? outward : null;
 }
 
 /** ISO date (YYYY-MM-DD) from a Date, an Excel serial or a UK/ISO string. */
@@ -193,7 +215,6 @@ export function parseAttendance(records: Record<string, unknown>[]): ParsedAtten
   let skipped = 0;
   const seen = new Set<string>();
   let duplicates = 0;
-  let noPostcode = 0;
   for (const r of records) {
     const day = attendanceDate(r[date]);
     if (!day) {
@@ -210,20 +231,17 @@ export function parseAttendance(records: Record<string, unknown>[]): ParsedAtten
       }
       seen.add(key);
     }
-    const district = postcode ? postcodeDistrict(r[postcode]) : null;
-    if (!district) noPostcode++;
-    rows.push({ date: day, worker: who, employer: employer ? String(r[employer] ?? "").trim() : "", district });
+    rows.push({ date: day, worker: who, employer: employer ? String(r[employer] ?? "").trim() : "" });
   }
   if (rows.length === 0) throw new AttendanceError("NO_DATES", `No row had a date the column "${date}" could be read as.`);
 
   const warnings: string[] = [];
   if (!worker) warnings.push("No worker id or name column: every row is counted as one day on site.");
   if (!employer) warnings.push("No employer column: choose whether everyone is your own staff.");
-  if (!postcode) warnings.push("No home postcode column: distances cannot be worked out.");
-  else if (noPostcode > 0) warnings.push(`${count(noPostcode, "day")} with no readable home postcode, counted at the site's average distance.`);
+  if (postcode) warnings.push(`The "${postcode}" column was not read: distances come from the site's commute survey, not home postcodes.`);
   if (duplicates > 0) warnings.push(`${count(duplicates, "repeat sign-in")} on the same day counted once.`);
   if (skipped > 0) warnings.push(`${count(skipped, "row")} with no readable date left out.`);
-  return { rows, skipped, columns: { date, worker, employer, postcode }, warnings };
+  return { rows, skipped, columns: { date, worker, employer }, ignoredPostcode: postcode, warnings };
 }
 
 export function employerSummary(rows: AttendanceRow[]): { employer: string; days: number }[] {
@@ -232,96 +250,53 @@ export function employerSummary(rows: AttendanceRow[]): { employer: string; days
   return [...days].map(([employer, n]) => ({ employer, days: n })).sort((a, b) => b.days - a.days || a.employer.localeCompare(b.employer));
 }
 
-export type DistrictDays = { district: string | null; days: number; people: number };
-export type MonthAttendance = { month: string; firstDate: string; lastDate: string; own: DistrictDays[]; subcontractor: DistrictDays[] };
+export type WorkforceDays = { days: number; people: number };
+export type MonthAttendance = { month: string; firstDate: string; lastDate: string; own: WorkforceDays; subcontractor: WorkforceDays };
 
-/** Groups rows by month, workforce and district. ownEmployers are compared case-insensitively. */
+/** Groups rows by month and workforce. ownEmployers are compared case-insensitively. */
 export function groupAttendance(rows: AttendanceRow[], ownEmployers: string[]): MonthAttendance[] {
   const own = new Set(ownEmployers.map((e) => e.trim().toLowerCase()));
   type Acc = { days: number; people: Set<string> };
-  const months = new Map<string, { first: string; last: string; own: Map<string, Acc>; subcontractor: Map<string, Acc> }>();
+  const months = new Map<string, { first: string; last: string; own: Acc; subcontractor: Acc }>();
   rows.forEach((r, i) => {
     const key = r.date.slice(0, 7);
     let m = months.get(key);
-    if (!m) months.set(key, (m = { first: r.date, last: r.date, own: new Map(), subcontractor: new Map() }));
+    if (!m) months.set(key, (m = { first: r.date, last: r.date, own: { days: 0, people: new Set() }, subcontractor: { days: 0, people: new Set() } }));
     if (r.date < m.first) m.first = r.date;
     if (r.date > m.last) m.last = r.date;
-    const bucket = own.has(r.employer.toLowerCase()) ? m.own : m.subcontractor;
-    const d = r.district ?? "";
-    let acc = bucket.get(d);
-    if (!acc) bucket.set(d, (acc = { days: 0, people: new Set() }));
+    const acc = own.has(r.employer.toLowerCase()) ? m.own : m.subcontractor;
     acc.days++;
     acc.people.add(r.worker?.toLowerCase() ?? `row-${i}`);
   });
-  const list = (b: Map<string, Acc>) =>
-    [...b].map(([d, a]) => ({ district: d || null, days: a.days, people: a.people.size })).sort((x, y) => (x.district ?? "~").localeCompare(y.district ?? "~"));
+  const out = (a: Acc): WorkforceDays => ({ days: a.days, people: a.people.size });
   return [...months]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([month, m]) => ({ month, firstDate: m.first, lastDate: m.last, own: list(m.own), subcontractor: list(m.subcontractor) }));
+    .map(([month, m]) => ({ month, firstDate: m.first, lastDate: m.last, own: out(m.own), subcontractor: out(m.subcontractor) }));
 }
 
-export type CommuteTotals = {
-  days: number;
-  people: number;
-  personKm: number;
-  /** Days whose district had a distance under LODGING_KM. */
-  measuredDays: number;
-  /** Days with no postcode (or no routable one), counted at the average distance. */
-  averagedDays: number;
-  /** Days over LODGING_KM one way: left out as likely lodging near site. */
-  lodgingDays: number;
-};
+const csvCell = (v: unknown) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
 
-/** Person-kilometres for one month and workforce, from one-way road km per district. */
-export function commuteTotals(districts: DistrictDays[], oneWayKm: Map<string, number | null>): CommuteTotals {
-  let measuredKm = 0;
-  let measuredDays = 0;
-  let averagedDays = 0;
-  let lodgingDays = 0;
-  let days = 0;
-  let people = 0;
-  for (const d of districts) {
-    days += d.days;
-    people += d.people;
-    const km = d.district ? oneWayKm.get(d.district) ?? null : null;
-    if (km == null) averagedDays += d.days;
-    else if (km > LODGING_KM) lodgingDays += d.days;
-    else {
-      measuredDays += d.days;
-      measuredKm += d.days * 2 * km;
-    }
-  }
-  const averageDayKm = measuredDays > 0 ? measuredKm / measuredDays : 0;
-  return { days, people, personKm: measuredKm + averagedDays * averageDayKm, measuredDays, averagedDays, lodgingDays };
-}
-
-/** Kilometres per record mode (cycling and walking dropped), to one decimal place. */
-export function kmByMode(personKm: number, split: ModeSplit): { mode: Exclude<RecordMode, "active">; km: number }[] {
-  return (Object.entries(split.weights) as [RecordMode, number][])
-    .filter(([mode]) => mode !== "active")
-    .map(([mode, w]) => ({ mode: mode as Exclude<RecordMode, "active">, km: Math.round(personKm * w * 10) / 10 }))
-    .filter((m) => m.km > 0);
-}
-
-/** The evidence kept for an import: aggregates only, no names or full postcodes. */
-export function attendanceEvidenceCsv(month: MonthAttendance, oneWayKm: Map<string, number | null>, methods: Map<string, string>): string {
-  const lines = ["month,workforce,postcode_district,days_on_site,people,one_way_road_km,distance_method,treatment"];
+/**
+ * The evidence kept for an import: days per workforce and the survey
+ * averages by mode that priced them. No names, no answers one by one.
+ */
+export function commuteEvidenceCsv(
+  month: MonthAttendance,
+  distances: { own: SurveyDistances; subcontractor: SurveyDistances | null },
+): string {
+  const lines = ["month,workforce,days_on_site,people,travel_mode,survey_answers,average_round_trip_km,vehicle_or_passenger_km_per_day,treatment"];
   for (const workforce of ["own", "subcontractor"] as const) {
-    for (const d of month[workforce]) {
-      const km = d.district ? oneWayKm.get(d.district) ?? null : null;
-      const treatment =
-        workforce === "subcontractor"
-          ? "subcontractor: reported beside the inventory (Category 1)"
-          : km == null
-            ? "no distance: counted at the average"
-            : km > LODGING_KM
-              ? `over ${LODGING_KM} km: likely lodging, left out`
-              : "counted";
-      lines.push(
-        [month.month, workforce, d.district ?? "(none)", d.days, d.people, km == null ? "" : km.toFixed(1), d.district ? methods.get(d.district) ?? "" : "", treatment]
-          .map((v) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v)))
-          .join(","),
-      );
+    const d = distances[workforce];
+    const treatment = workforce === "own" ? "counted (Category 7)" : "reported beside the inventory (Category 1)";
+    const days = month[workforce];
+    if (!d) {
+      lines.push([month.month, workforce, days.days, days.people, "", 0, "", "", "no survey distances: not worked out"].map(csvCell).join(","));
+      continue;
+    }
+    for (const [mode, m] of Object.entries(d.byMode) as [SurveyMode, { answers: number; averageRoundTripKm: number }][]) {
+      const recordMode = RECORD_MODE_OF[mode];
+      const perDay = d.kmPerDay[recordMode] ?? 0;
+      lines.push([month.month, workforce, days.days, days.people, SURVEY_MODES[mode].label, m.answers, m.averageRoundTripKm.toFixed(1), perDay.toFixed(2), recordMode === "active" ? "no emissions" : treatment].map(csvCell).join(","));
     }
   }
   return lines.join("\n") + "\n";

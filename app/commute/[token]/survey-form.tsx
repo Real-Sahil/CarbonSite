@@ -1,21 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { SURVEY_MODES, SURVEY_MODE_KEYS, type SurveyMode } from "@/lib/commuting/attendance";
-
-const VEHICLE: SurveyMode[] = ["car", "van", "bev", "motorbike"];
+import { MAX_ROUND_TRIP_MILES, SURVEY_MODES, SURVEY_MODE_KEYS, VEHICLE_MODES as VEHICLE, type SurveyMode } from "@/lib/commuting/attendance";
 
 export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: string }) {
   const [mode, setMode] = useState<SurveyMode | null>(null);
   const [occupancy, setOccupancy] = useState(1);
+  const [miles, setMiles] = useState("");
   const [workforce, setWorkforce] = useState<"own" | "subcontractor" | null>(null);
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!mode || !workforce) {
+    const roundTripMiles = Number(miles);
+    if (!mode || !workforce || miles.trim() === "") {
       setError("Answer each question.");
+      return;
+    }
+    if (!Number.isFinite(roundTripMiles) || roundTripMiles < 0 || roundTripMiles > MAX_ROUND_TRIP_MILES) {
+      setError(`Enter your round trip in miles, from 0 to ${MAX_ROUND_TRIP_MILES}.`);
       return;
     }
     setState("sending");
@@ -23,7 +27,7 @@ export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: 
     const res = await fetch(`/api/public/commute/${encodeURIComponent(token)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode, occupancy: VEHICLE.includes(mode) ? occupancy : 1, workforce }),
+      body: JSON.stringify({ mode, occupancy: VEHICLE.includes(mode) ? occupancy : 1, workforce, roundTripMiles }),
     });
     if (res.ok) {
       setState("done");
@@ -38,6 +42,8 @@ export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: 
     return <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-800">Thank you. Your answer is saved.</p>;
   }
 
+  // Question numbers: the vehicle question only appears for vehicles.
+  const asked = mode && VEHICLE.includes(mode) ? 2 : 1;
   const option = "flex cursor-pointer items-center gap-3 rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 has-[:checked]:border-slate-900 has-[:checked]:bg-slate-100";
   return (
     <form onSubmit={submit} className="flex flex-col gap-6">
@@ -67,10 +73,32 @@ export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: 
         </fieldset>
       )}
 
+      <div className="flex flex-col gap-2">
+        <label htmlFor="round-trip-miles" className="text-sm font-semibold text-slate-900">
+          {asked + 1}. How many miles is your journey from home to this site and back?
+        </label>
+        <p id="round-trip-help" className="text-xs text-slate-600">
+          The whole round trip on a usual day. A rough figure is fine: 12 miles each way is 24.
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            id="round-trip-miles"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            max={MAX_ROUND_TRIP_MILES}
+            step="0.1"
+            value={miles}
+            onChange={(e) => setMiles(e.target.value)}
+            aria-describedby="round-trip-help"
+            className="w-32 rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm tabular-nums"
+          />
+          <span className="text-sm text-slate-700">miles</span>
+        </div>
+      </div>
+
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-semibold text-slate-900">
-          {mode && VEHICLE.includes(mode) ? "3." : "2."} Who employs you?
-        </legend>
+        <legend className="mb-2 text-sm font-semibold text-slate-900">{asked + 2}. Who employs you?</legend>
         <label className={option}>
           <input type="radio" name="workforce" id="workforce-own" checked={workforce === "own"} onChange={() => setWorkforce("own")} />
           {orgName}

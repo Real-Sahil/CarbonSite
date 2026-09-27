@@ -26,8 +26,8 @@ export default async function CommuteSurveyPage({ params }: PageProps) {
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{survey.organization.name}</p>
           <h1 className="mt-2 text-2xl font-bold text-slate-950">How do you get to {survey.site.name}?</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Three quick questions about your usual journey to this site. We do not ask your name, and nothing you
-            answer identifies you. The answers work out the site&apos;s travel emissions.
+            A few quick questions about your usual journey to this site. We do not ask your name or where you live,
+            and nothing you answer identifies you. The answers work out the site&apos;s travel emissions.
           </p>
         </div>
         {survey.isOpen ? (

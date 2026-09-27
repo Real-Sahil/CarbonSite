@@ -6103,8 +6103,10 @@ model CommuteSurvey {
   @@map("commute_surveys")
 }
 
-/// One answer. Nothing identifies the person: mode, people in the vehicle
-/// and whether they work for the organisation or a subcontractor.
+/// One answer. Nothing identifies the person: mode, people in the vehicle,
+/// whether they work for the organisation or a subcontractor, and their
+/// round trip from home to site (asked in miles, stored in km; null on
+/// answers given before the survey asked). No postcode is asked.
 model CommuteSurveyResponse {
   id             String   @id @default(cuid())
   organizationId String   @map("organization_id")
@@ -6112,6 +6114,7 @@ model CommuteSurveyResponse {
   mode           String
   occupancy      Int      @default(1)
   workforce      String
+  roundTripKm    Float?   @map("round_trip_km")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   survey CommuteSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)

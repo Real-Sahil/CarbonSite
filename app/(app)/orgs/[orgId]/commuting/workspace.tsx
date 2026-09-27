@@ -9,9 +9,8 @@ export type SiteRow = {
   id: string;
   name: string;
   project: string;
-  postcode: string | null;
-  survey: { token: string; isOpen: boolean; responses: number } | null;
-  split: { source: string; parts: { label: string; share: number }[] };
+  survey: { token: string; isOpen: boolean; responses: number; withDistance: number } | null;
+  split: { ready: boolean; source: string; averageRoundTripMiles: number | null; parts: { label: string; share: number }[] };
 };
 
 export type ImportRow = {
@@ -22,8 +21,6 @@ export type ImportRow = {
   approved: number;
   ownDays: number;
   ownKm: number;
-  lodgingDays: number;
-  averagedDays: number;
   subcontractorDays: number;
   subcontractorKm: number;
 };
@@ -31,7 +28,7 @@ export type ImportRow = {
 type Preview = {
   employers: { employer: string; days: number }[];
   months: { month: string; days: number }[];
-  columns: { date: string; worker: string | null; employer: string | null; postcode: string | null };
+  columns: { date: string; worker: string | null; employer: string | null };
   warnings: string[];
 };
 
@@ -45,7 +42,7 @@ export function CommutingWorkspace({
   if (sites.length === 0) {
     return (
       <p className="rounded-lg border border-[#E5E7EB] bg-white p-6 text-sm text-[#374151]">
-        No sites yet. Add a site to a project (with its postcode) to import attendance for it.
+        No sites yet. Add a site to a project to import attendance for it.
       </p>
     );
   }
@@ -105,8 +102,8 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
         <CardTitle className="text-sm font-semibold text-[#111827]">Import site attendance</CardTitle>
         <CardDescription className="mt-0.5 text-xs text-[#6B7280]">
           A CSV or Excel export from MSite, Biosite, Sitemetric or a spreadsheet, one row per sign-in, with the date,
-          the person (id or name), their employer and home postcode. The file is read and discarded: only days per
-          postcode district are kept.
+          the person (id or name) and their employer. The file is read and discarded: only days on site are kept.
+          Home postcodes are never read. Each day is priced from the site&apos;s travel survey.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-6 py-5">
@@ -134,18 +131,22 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
               className="text-sm"
             />
           </label>
-          <Button size="sm" variant="outline" disabled={!file || busy || !site.postcode} onClick={() => send(false)}>
+          <Button size="sm" variant="outline" disabled={!file || busy} onClick={() => send(false)}>
             {busy && !preview ? "Reading" : "Read file"}
           </Button>
         </div>
-        {!site.postcode && <p className="text-xs text-amber-700">{site.name} has no postcode. Add it on the project page first.</p>}
+        {!site.split.ready && (
+          <p className="text-xs text-amber-700">
+            {site.name} needs 5 travel survey answers with a distance before commuting can be worked out ({site.split.source}). Share the survey below.
+          </p>
+        )}
 
         {preview && (
           <div className="flex flex-col gap-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-4">
             <p className="text-xs text-[#374151]">
               Read {preview.months.map((m) => `${monthName(m.month)} (${fmt(m.days)} days)`).join(", ")}. Columns used: date
               &ldquo;{preview.columns.date}&rdquo;, person {preview.columns.worker ? `“${preview.columns.worker}”` : "none"}, employer{" "}
-              {preview.columns.employer ? `“${preview.columns.employer}”` : "none"}, postcode {preview.columns.postcode ? `“${preview.columns.postcode}”` : "none"}.
+              {preview.columns.employer ? `“${preview.columns.employer}”` : "none"}.
             </p>
             {preview.warnings.length > 0 && (
               <ul className="list-disc pl-5 text-xs text-amber-800">
@@ -172,9 +173,12 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
                 </label>
               ))}
             </fieldset>
-            <p className="text-xs text-[#6B7280]">Mode split for {site.name}: {site.split.source}.</p>
+            <p className="text-xs text-[#6B7280]">
+              Distances for {site.name}: {site.split.source}
+              {site.split.averageRoundTripMiles != null && `, average round trip ${site.split.averageRoundTripMiles} miles`}.
+            </p>
             <div>
-              <Button size="sm" disabled={busy || own.size === 0} onClick={() => send(true)}>
+              <Button size="sm" disabled={busy || own.size === 0 || !site.split.ready} onClick={() => send(true)}>
                 {busy ? "Importing" : "Create commuting records"}
               </Button>
               {own.size === 0 && <span className="ml-3 text-xs text-[#6B7280]">Tick at least one employer.</span>}
@@ -210,8 +214,9 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
       <CardHeader className="border-b border-[#E5E7EB] px-6 py-4">
         <CardTitle className="text-sm font-semibold text-[#111827]">How people travel to each site</CardTitle>
         <CardDescription className="mt-0.5 text-xs text-[#6B7280]">
-          Share a site&apos;s survey link (site board, toolbox talk or text). Three questions, no names. With 5 or more
-          answers the site&apos;s own split replaces the default, which assumes everyone drives alone.
+          Share a site&apos;s survey link (site board, toolbox talk or text). No names or postcodes: how people travel,
+          how many share the vehicle, who employs them and their round trip in miles. Commuting is worked out once a
+          site has 5 answers with a distance; each person&apos;s miles count at their own way of travelling.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -221,7 +226,7 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
               <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#6B7280]">
                 <th className="px-6 py-2 font-medium">Site</th>
                 <th className="px-3 py-2 font-medium">Answers</th>
-                <th className="px-3 py-2 font-medium">Split used</th>
+                <th className="px-3 py-2 font-medium">How people travel</th>
                 <th className="px-6 py-2 font-medium">Survey</th>
               </tr>
             </thead>
@@ -232,14 +237,23 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
                   <tr key={s.id} className="border-b border-[#F3F4F6] align-top last:border-0">
                     <td className="px-6 py-3">
                       <div className="font-medium text-[#111827]">{s.name}</div>
-                      <div className="text-xs text-[#6B7280]">{s.project}{s.postcode ? `, ${s.postcode}` : ", no postcode"}</div>
+                      <div className="text-xs text-[#6B7280]">{s.project}</div>
                     </td>
-                    <td className="px-3 py-3 tabular-nums">{s.survey?.responses ?? 0}</td>
+                    <td className="px-3 py-3 tabular-nums">
+                      {s.survey?.withDistance ?? 0}
+                      {s.survey && s.survey.responses > s.survey.withDistance && (
+                        <div className="text-xs text-[#6B7280]">+{s.survey.responses - s.survey.withDistance} without distance</div>
+                      )}
+                    </td>
                     <td className="px-3 py-3 text-xs text-[#374151]">
-                      {s.split.parts.length === 0
-                        ? "Default: everyone drives alone"
+                      {!s.split.ready
+                        ? `Not enough answers yet (${s.survey?.withDistance ?? 0} of 5)`
                         : s.split.parts.map((p) => `${p.label} ${Math.round(p.share * 100)}%`).join(", ")}
-                      {s.split.parts.length > 0 && <div className="text-[#6B7280]">Share of people. Shared vehicles count once.</div>}
+                      {s.split.ready && (
+                        <div className="text-[#6B7280]">
+                          Share of people, average round trip {s.split.averageRoundTripMiles} miles. Shared vehicles count once.
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-3">
                       {s.survey ? (
@@ -327,14 +341,7 @@ function ImportsTable({ orgId, canEdit, imports }: { orgId: string; canEdit: boo
                   <tr key={i.id} className="border-b border-[#F3F4F6] last:border-0">
                     <td className="px-6 py-3 text-[#111827]">{monthName(i.month)}</td>
                     <td className="px-3 py-3 text-[#374151]">{i.site}</td>
-                    <td className="px-3 py-3 text-right tabular-nums">
-                      {fmt(i.ownDays)}
-                      {(i.lodgingDays > 0 || i.averagedDays > 0) && (
-                        <div className="text-xs text-[#6B7280]">
-                          {[i.lodgingDays > 0 && `${fmt(i.lodgingDays)} lodging`, i.averagedDays > 0 && `${fmt(i.averagedDays)} averaged`].filter(Boolean).join(", ")}
-                        </div>
-                      )}
-                    </td>
+                    <td className="px-3 py-3 text-right tabular-nums">{fmt(i.ownDays)}</td>
                     <td className="px-3 py-3 text-right tabular-nums">{fmt(i.ownKm)}</td>
                     <td className="px-3 py-3 text-right tabular-nums text-[#6B7280]">{fmt(i.subcontractorKm)}</td>
                     <td className="px-3 py-3 text-xs text-[#374151]">{i.records === 0 ? "None (no own staff)" : `${i.approved} of ${i.records} approved`}</td>

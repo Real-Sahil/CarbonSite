@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { OrgRole } from "@prisma/client";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { modeSplit, SURVEY_MODES, type SurveyMode, type Workforce } from "@/lib/commuting/attendance";
+import { KM_PER_MILE, MIN_SURVEY_RESPONSES, surveyDistances, SURVEY_MODES, type SurveyMode, type Workforce } from "@/lib/commuting/attendance";
 import { CommutingWorkspace, type SiteRow, type ImportRow } from "./workspace";
 
 interface PageProps {
@@ -26,12 +26,12 @@ export default async function CommutingPage({ params }: PageProps) {
   const [sites, surveys, imports, org] = await Promise.all([
     prisma.site.findMany({
       where: { organizationId: orgId },
-      select: { id: true, name: true, postcode: true, project: { select: { name: true } } },
+      select: { id: true, name: true, project: { select: { name: true } } },
       orderBy: { name: "asc" },
     }),
     prisma.commuteSurvey.findMany({
       where: { organizationId: orgId },
-      select: { siteId: true, token: true, isOpen: true, responses: { select: { mode: true, occupancy: true, workforce: true } } },
+      select: { siteId: true, token: true, isOpen: true, responses: { select: { mode: true, occupancy: true, workforce: true, roundTripKm: true } } },
     }),
     prisma.commuteImport.findMany({
       where: { organizationId: orgId },
@@ -45,20 +45,24 @@ export default async function CommutingPage({ params }: PageProps) {
   const surveyBySite = new Map(surveys.map((s) => [s.siteId, s]));
   const siteRows: SiteRow[] = sites.map((s) => {
     const survey = surveyBySite.get(s.id);
-    const answers = (survey?.responses ?? []).map((r) => ({ mode: r.mode as SurveyMode, occupancy: r.occupancy, workforce: r.workforce as Workforce }));
-    const split = modeSplit(answers, "own");
+    const answers = (survey?.responses ?? []).map((r) => ({ mode: r.mode as SurveyMode, occupancy: r.occupancy, workforce: r.workforce as Workforce, roundTripKm: r.roundTripKm }));
+    const withDistance = answers.filter((a) => a.roundTripKm != null).length;
+    const d = surveyDistances(answers, "own");
     return {
       id: s.id,
       name: s.name,
       project: s.project.name,
-      postcode: s.postcode,
-      survey: survey ? { token: survey.token, isOpen: survey.isOpen, responses: answers.length } : null,
-      split: {
-        source: split.source,
-        parts: (Object.entries(split.people) as [SurveyMode, number][])
-          .sort((a, b) => b[1] - a[1])
-          .map(([mode, share]) => ({ label: SURVEY_MODES[mode].label, share })),
-      },
+      survey: survey ? { token: survey.token, isOpen: survey.isOpen, responses: answers.length, withDistance } : null,
+      split: d
+        ? {
+            ready: true,
+            source: d.source,
+            averageRoundTripMiles: Math.round((d.averageRoundTripKm / KM_PER_MILE) * 10) / 10,
+            parts: (Object.entries(d.people) as [SurveyMode, number][])
+              .sort((a, b) => b[1] - a[1])
+              .map(([mode, share]) => ({ label: SURVEY_MODES[mode].label, share })),
+          }
+        : { ready: false, source: `${withDistance} of ${MIN_SURVEY_RESPONSES} survey answers with a distance needed`, averageRoundTripMiles: null, parts: [] },
     };
   });
 
@@ -72,7 +76,7 @@ export default async function CommutingPage({ params }: PageProps) {
   const statusById = new Map(records.map((r) => [r.id, r.reviewStatus]));
   const siteName = new Map(sites.map((s) => [s.id, s.name]));
   const importRows: ImportRow[] = imports.map((i) => {
-    const summary = i.summary as { own?: { days: number; personKm: number; lodgingDays: number; averagedDays: number }; subcontractor?: { days: number; personKm: number } };
+    const summary = i.summary as { own?: { days: number; personKm: number }; subcontractor?: { days: number; personKm: number } };
     const statuses = i.recordIds.map((id) => statusById.get(id)).filter(Boolean) as string[];
     return {
       id: i.id,
@@ -82,8 +86,6 @@ export default async function CommutingPage({ params }: PageProps) {
       approved: statuses.filter((s) => s === "approved").length,
       ownDays: summary.own?.days ?? 0,
       ownKm: Math.round(summary.own?.personKm ?? 0),
-      lodgingDays: summary.own?.lodgingDays ?? 0,
-      averagedDays: summary.own?.averagedDays ?? 0,
       subcontractorDays: summary.subcontractor?.days ?? 0,
       subcontractorKm: Math.round(summary.subcontractor?.personKm ?? 0),
     };
@@ -95,9 +97,9 @@ export default async function CommutingPage({ params }: PageProps) {
         <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">
           <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Employee commuting</h1>
           <p className="mt-1 max-w-[70ch] text-sm text-[#374151]">
-            Scope 3 Category 7 from your site sign-ins: days on site, the road distance from each person&apos;s home
-            postcode district to the site and back, and how people travel from each site&apos;s survey. Only your own
-            staff count in the inventory; subcontractor travel is shown beside it. Records go to{" "}
+            Scope 3 Category 7 from your site sign-ins and each site&apos;s anonymous travel survey: days on site,
+            priced at the round trip in miles and the way people said they travel. No home postcodes are asked for or
+            read. Only your own staff count in the inventory; subcontractor travel is shown beside it. Records go to{" "}
             <Link href={`/orgs/${orgId}/records`} className="underline underline-offset-2">Records</Link> for review.
           </p>
         </div>
