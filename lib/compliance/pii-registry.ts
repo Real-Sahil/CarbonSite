@@ -197,6 +197,35 @@ export const PII_REGISTRY: PiiRegistryEntry[] = [
     erasureStrategy: "retain",
     where: (s) => ({ actorUserId: s.userId }),
   },
+  {
+    model: "MsAcknowledgement",
+    label: "Policies and documents you confirmed you had read",
+    // A compliance record for the organisation (who read which version);
+    // the identity link is severed by the User tombstone.
+    erasureStrategy: "retain",
+    where: (s) => ({ userId: s.userId }),
+  },
+  {
+    model: "MsTrainingRecord",
+    label: "Training and competence records",
+    erasureStrategy: "redact",
+    where: (s) => ({ personUserId: s.userId }),
+    redact: async (tx, s) => {
+      // The record stays for the organisation's competence evidence; the
+      // name copied onto it goes with the person.
+      await tx.msTrainingRecord.updateMany({ where: { personUserId: s.userId }, data: { personName: "Redacted", reference: null, notes: null } });
+    },
+  },
+  {
+    model: "MsAuditorAccess",
+    label: "Certification body auditor links issued to you",
+    erasureStrategy: "redact",
+    where: (s) => ({ email: s.email ?? EMAIL_FALLBACK }),
+    redact: async (tx, s) => {
+      if (!s.email) return;
+      await tx.msAuditorAccess.updateMany({ where: { email: s.email }, data: { email: null, name: "Redacted", revokedAt: new Date() } });
+    },
+  },
 ];
 
 // Models with a userId/email-shaped field that are deliberately NOT in the

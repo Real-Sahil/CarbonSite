@@ -556,6 +556,10 @@ IconData _docIcon(String documentType) {
       return Icons.local_gas_station_outlined;
     case 'social_value':
       return Icons.groups_outlined;
+    case 'hazard_report':
+      return Icons.report_problem_outlined;
+    case 'site_inspection':
+      return Icons.fact_check_outlined;
     default:
       return Icons.description_outlined;
   }
@@ -571,6 +575,10 @@ String _docLabel(String documentType) {
       return 'Fuel Receipt';
     case 'social_value':
       return 'Social Value';
+    case 'hazard_report':
+      return 'Hazard / Near Miss';
+    case 'site_inspection':
+      return 'Site Inspection';
     default:
       return 'Document';
   }

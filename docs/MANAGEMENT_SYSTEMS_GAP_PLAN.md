@@ -2,7 +2,13 @@
 
 Researched 26 September 2026 from published guidance, certification body notes and competitor listings. Standards themselves were not read (they are paid); where a change is described, the source is the certification body or committee page linked beside it. Check each against your own copy of the standard before building requirement text.
 
-## What we have today
+## Status (27 September 2026)
+
+Built: items 1 to 9 below. ISO 14001:2026 and ISO 9001:2026 with the transition tool; reminders; document control with read and acknowledge; competence requirements, training records and the matrix; inspection checklists on the web and in the field app, and hazard and near-miss reports from the app; objectives, planned changes, complaints, nonconforming outputs, supplier evaluations and equipment; certification pack, Statement of Applicability, auditor links and the integrated view; pre-qualification answers for the Common Assessment Standard v5 and clients' own questionnaires.
+
+Still open: ISO 45001's next edition (due 2027; watched), clause titles of the 2026 editions checked against a licensed copy, and automatic objective values from records.
+
+## What we had before this plan
 
 - 16 frameworks, edition-scoped slugs, shared requirements linked by `sharedKey`.
 - Status per requirement, evidence links to the organisation's own records, readiness score.

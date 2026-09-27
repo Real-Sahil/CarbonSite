@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { HAZARD_LABELS, hazardEntry, inspectionEntry } from "@/lib/field-submissions/safety-capture";
 import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
@@ -50,6 +51,8 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   fuel_receipt: "Fuel receipt",
   water_meter_reading: "Water meter reading",
   social_value: "Social value",
+  hazard_report: "Hazard or near miss",
+  site_inspection: "Site inspection",
   other: "Other",
 };
 
@@ -205,6 +208,11 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
   // Social value entries: the contract KPI they count towards, its delivery
   // so far, and the delivery entry created on approval.
   const isSocialValue = submission.documentType === "social_value";
+  // Hazard reports and inspections: no category, amount or route; approval
+  // raises a corrective action, near-miss incident or inspection record.
+  const isSafety = submission.documentType === "hazard_report" || submission.documentType === "site_inspection";
+  const safetyForm = (submission.formData ?? {}) as Record<string, unknown>;
+  const safetyParsed = !isSafety ? null : submission.documentType === "hazard_report" ? hazardEntry(safetyForm) : inspectionEntry(safetyForm);
   const svParsed = isSocialValue ? socialValueEntry((submission.formData ?? {}) as Record<string, unknown>) : null;
   const svEntry = svParsed && "entry" in svParsed ? svParsed.entry : null;
   const [svKpi, svActivity] = isSocialValue
@@ -229,7 +237,9 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
   // Calculate what (if anything) blocks approval — shown as a banner so
   // admins know exactly what to fix before clicking Approve.
   let preApprovalIssue: { code: string; message: string } | null = null;
-  if (!isResolved && isSocialValue) {
+  if (!isResolved && isSafety) {
+    if (safetyParsed && "error" in safetyParsed) preApprovalIssue = { code: "INVALID_FORM_DATA", message: safetyParsed.error };
+  } else if (!isResolved && isSocialValue) {
     if (svParsed && "error" in svParsed) preApprovalIssue = { code: "INVALID_FORM_DATA", message: svParsed.error };
     else if (!svKpi) preApprovalIssue = { code: "INVALID_FORM_DATA", message: "The KPI this entry names no longer exists on the contract." };
   } else if (!isResolved && submission.documentType !== "water_meter_reading") {
@@ -412,7 +422,27 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               {submission.facility && (
                 <DetailRow label="Facility" value={submission.facility.name} />
               )}
-              {formData && !isSocialValue && Object.entries(formData).map(([key, value]) => (
+              {isSafety && safetyParsed && "entry" in safetyParsed && "kind" in safetyParsed.entry && (
+                <>
+                  <DetailRow label="Seen" value={HAZARD_LABELS[safetyParsed.entry.kind]} />
+                  <DetailRow label="What was seen" value={safetyParsed.entry.description} />
+                  {safetyParsed.entry.location && <DetailRow label="Where" value={safetyParsed.entry.location} />}
+                  {safetyParsed.entry.immediateAction && <DetailRow label="Immediate action" value={safetyParsed.entry.immediateAction} />}
+                  {safetyParsed.entry.observedOn && <DetailRow label="Seen on" value={safetyParsed.entry.observedOn} />}
+                  <DetailRow label="On approval" value={safetyParsed.entry.kind === "near_miss" ? "A near-miss incident report and a corrective action are created." : "A corrective action is created."} />
+                </>
+              )}
+              {isSafety && safetyParsed && "entry" in safetyParsed && "results" in safetyParsed.entry && (
+                <>
+                  <DetailRow label="Where" value={safetyParsed.entry.location} />
+                  {safetyParsed.entry.inspectedOn && <DetailRow label="Inspected on" value={safetyParsed.entry.inspectedOn} />}
+                  {safetyParsed.entry.results.map((r, i) => (
+                    <DetailRow key={i} label={r.item} value={`${r.result === "pass" ? "Pass" : r.result === "fail" ? "Fail" : "N/A"}${r.note ? `: ${r.note}` : ""}`} />
+                  ))}
+                  <DetailRow label="On approval" value={safetyParsed.entry.results.some((r) => r.result === "fail") ? "The inspection is recorded and one corrective action lists the failed items." : "The inspection is recorded."} />
+                </>
+              )}
+              {formData && !isSocialValue && !isSafety && Object.entries(formData).map(([key, value]) => (
                 value != null && value !== "" ? (
                   <DetailRow
                     key={key}
@@ -427,7 +457,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             </CardContent>
           </Card>
 
-          {!isSocialValue && <Card>
+          {!isSocialValue && !isSafety && <Card>
             <CardHeader>
               <CardTitle className="text-base">Route & distance</CardTitle>
               <CardDescription>
@@ -854,7 +884,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           </CardContent>
         </Card>
 
-        {!isResolved && !isSocialValue && (
+        {!isResolved && !isSocialValue && !isSafety && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Edit submission values</CardTitle>
@@ -894,7 +924,9 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               <CardDescription>
                 {isSocialValue
                   ? "Approve to add this delivery, with its evidence, to the contract KPI. Reject with a note if it does not count."
-                  : "Approve to create a committed activity record, or reject with a note."}
+                  : isSafety
+                    ? "Approve to record it in the management system registers (corrective action, near-miss incident or inspection), or reject with a note."
+                    : "Approve to create a committed activity record, or reject with a note."}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -906,7 +938,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 emissionCategories={emissionCategories}
                 facilities={facilities}
                 disabled={isResolved}
-                categoryRequired={!isSocialValue && submission.documentType !== "water_meter_reading"}
+                categoryRequired={!isSocialValue && !isSafety && submission.documentType !== "water_meter_reading"}
                 embodied={
                   embodiedMatch
                     ? {

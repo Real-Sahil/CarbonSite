@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { SAFETY_TYPES, safetySubmissionError } from "@/lib/field-submissions/safety-capture";
 import { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
@@ -329,7 +330,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     } else {
       // Social value entries are booked by the date the delivery happened.
-      const deliveredOn = body.documentType === "social_value" ? (body.formData as Record<string, unknown>).activityDate : undefined;
+      // Hazard reports and inspections by the day they were seen or done.
+      const fd = body.formData as Record<string, unknown>;
+      const deliveredOn =
+        body.documentType === "social_value" ? fd.activityDate : body.documentType === "hazard_report" ? fd.observedOn : body.documentType === "site_inspection" ? fd.inspectedOn : undefined;
       const submissionDate = typeof deliveredOn === "string" && /^\d{4}-\d{2}-\d{2}$/.test(deliveredOn)
         ? new Date(`${deliveredOn}T00:00:00Z`)
         : body.deviceSubmittedAt
@@ -386,6 +390,13 @@ export async function POST(req: NextRequest, { params }: Params) {
       if (planGate) return planGate;
       const svError = await socialValueSubmissionError(orgId, contractId, body.formData as Record<string, unknown>);
       if (svError) return apiError("INVALID_SOCIAL_VALUE", svError, 422);
+    }
+
+    // Hazard reports and site inspections: the form must be complete and an
+    // inspection's checklist the organisation's own.
+    if (SAFETY_TYPES.has(body.documentType)) {
+      const safetyError = await safetySubmissionError(orgId, body.documentType, body.formData as Record<string, unknown>);
+      if (safetyError) return apiError("INVALID_FORM_DATA", safetyError, 422);
     }
 
     // Gated after the idempotency check above, not before it: a retried

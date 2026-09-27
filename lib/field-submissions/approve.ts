@@ -7,6 +7,7 @@ import { isValid as isValidUkPostcode } from "postcode";
 import { convertBetween } from "@/lib/calculation/units";
 import { recordDeliveryEmbodiedCarbon, type EmbodiedOutcome } from "@/lib/embodied-carbon/delivery-notes";
 import { approveSocialValueInTx, socialValueEntry } from "@/lib/social-value/field-capture";
+import { approveHazardInTx, approveInspectionInTx, hazardEntry, inspectionEntry } from "./safety-capture";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -100,6 +101,13 @@ export function approvalBlocker(
     const parsed = socialValueEntry((submission.formData ?? {}) as Record<string, unknown>);
     return "error" in parsed ? { code: "INVALID_FORM_DATA", message: parsed.error } : null;
   }
+  // Hazard reports and inspections become a corrective action, incident or
+  // inspection record: no category, amount or unit.
+  if (submission.documentType === "hazard_report" || submission.documentType === "site_inspection") {
+    const form = (submission.formData ?? {}) as Record<string, unknown>;
+    const parsed = submission.documentType === "hazard_report" ? hazardEntry(form) : inspectionEntry(form);
+    return "error" in parsed ? { code: "INVALID_FORM_DATA", message: parsed.error } : null;
+  }
   // Water meter readings never get an EmissionCategory — water has no GHG
   // Protocol scope, so they promote to a WaterRecord, not an ActivityRecord.
   if (!emissionCategoryId && submission.documentType !== "water_meter_reading") {
@@ -150,6 +158,8 @@ export async function approveSubmissionInTx(
 ): Promise<{
   /** Social value entries only: the approved delivery entry created. */
   svActivityId?: string;
+  /** Hazard reports and inspections: what their approval created. */
+  safety?: { correctiveActionId: string | null; incidentId?: string | null; inspectionId?: string };
   /** Delivery notes only: the embodied carbon record created, or why none was. */
   embodied?: EmbodiedOutcome;
   // Null exactly when this submission promoted to a WaterRecord instead of
@@ -171,8 +181,15 @@ export async function approveSubmissionInTx(
   let activityRecordId: string | null = submission.activityRecordId;
   let embodied: EmbodiedOutcome | undefined;
   let svActivityId: string | undefined;
+  let safety: { correctiveActionId: string | null; incidentId?: string | null; inspectionId?: string } | undefined;
 
-  if (submission.documentType === "social_value") {
+  if (submission.documentType === "hazard_report") {
+    safety = await approveHazardInTx(tx, { orgId, submission, reviewerUserId });
+    activityRecordId = null;
+  } else if (submission.documentType === "site_inspection") {
+    safety = await approveInspectionInTx(tx, { orgId, submission, reviewerUserId });
+    activityRecordId = null;
+  } else if (submission.documentType === "social_value") {
     ({ svActivityId } = await approveSocialValueInTx(tx, {
       orgId,
       submission,
@@ -331,5 +348,5 @@ export async function approveSubmissionInTx(
     },
   });
 
-  return { activityRecordId, submission: updated, ...(embodied ? { embodied } : {}), ...(svActivityId ? { svActivityId } : {}) };
+  return { activityRecordId, submission: updated, ...(embodied ? { embodied } : {}), ...(svActivityId ? { svActivityId } : {}), ...(safety ? { safety } : {}) };
 }

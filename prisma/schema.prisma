@@ -1247,6 +1247,11 @@ enum FieldDocumentType {
   /// PPN 026 delivery (jobs, pay, training) logged against a contract KPI.
   /// Approval creates an SvActivity, never an ActivityRecord.
   social_value
+  /// Hazard, near miss, unsafe act or condition seen on site. Approval
+  /// raises a corrective action (and an H&S incident report for a near miss).
+  hazard_report
+  /// A checklist inspection done on site. Approval records an MsInspection.
+  site_inspection
   other
 
   @@map("field_document_type")

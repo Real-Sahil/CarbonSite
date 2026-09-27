@@ -233,6 +233,17 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     context.pushReplacement(Uri(path: '/social-value', queryParameters: query.isEmpty ? null : query).toString());
   }
 
+  /// Hazard reports and inspections are forms, not document scans.
+  void _openSiteSafety(String mode) {
+    final siteId = _selectedSiteId;
+    final query = <String, String>{
+      'mode': mode,
+      if (siteId != null && siteId.isNotEmpty) 'projectId': siteId,
+      if (_selectedSiteLabel != null) 'projectLabel': _selectedSiteLabel!,
+    };
+    context.pushReplacement(Uri(path: '/site-safety', queryParameters: query).toString());
+  }
+
   Future<void> _onTypeSelected(DocumentType type) async {
     setState(() => _documentType = type);
 
@@ -769,6 +780,18 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                     label: 'Social Value',
                     caption: 'Jobs, pay, training',
                     onTap: _openSocialValue,
+                  ),
+                  _TypeCard(
+                    icon: Icons.report_problem_outlined,
+                    label: 'Hazard / Near Miss',
+                    caption: 'Report what you saw',
+                    onTap: () => _openSiteSafety('hazard'),
+                  ),
+                  _TypeCard(
+                    icon: Icons.fact_check_outlined,
+                    label: 'Site Inspection',
+                    caption: 'Checklist walk-round',
+                    onTap: () => _openSiteSafety('inspection'),
                   ),
                   _TypeCard(
                     icon: Icons.description_outlined,

@@ -286,6 +286,48 @@ Future<SiteSocialValue> getSiteSocialValue(String orgId, String siteId) async {
 }
 
 // ---------------------------------------------------------------------------
+// Site inspections (checklists set up in the web app's management systems)
+// ---------------------------------------------------------------------------
+
+/// A checklist for a site inspection: its title and items, one per line in
+/// the web app.
+class InspectionChecklist {
+  final String id;
+  final String title;
+  final String? frequency;
+  final List<String> items;
+
+  const InspectionChecklist({
+    required this.id,
+    required this.title,
+    this.frequency,
+    this.items = const [],
+  });
+
+  factory InspectionChecklist.fromJson(Map<String, dynamic> json) => InspectionChecklist(
+        id: json['id'] as String? ?? '',
+        title: json['title'] as String? ?? 'Checklist',
+        frequency: json['frequency'] as String?,
+        items: (json['items'] as List? ?? const []).whereType<String>().toList(),
+      );
+
+  Map<String, dynamic> toJson() => {'id': id, 'title': title, 'frequency': frequency, 'items': items};
+}
+
+/// GET /api/orgs/{orgId}/inspection-checklists
+Future<List<InspectionChecklist>> getInspectionChecklists(String orgId) async {
+  final client = await getClient();
+  final response = await client.get('/api/orgs/$orgId/inspection-checklists');
+  final raw = response.data;
+  final list = raw is Map<String, dynamic> ? raw['data'] : null;
+  return (list is List ? list : const [])
+      .whereType<Map<String, dynamic>>()
+      .map(InspectionChecklist.fromJson)
+      .where((c) => c.id.isNotEmpty && c.items.isNotEmpty)
+      .toList();
+}
+
+// ---------------------------------------------------------------------------
 // Evidence upload helpers (used by SyncService)
 // ---------------------------------------------------------------------------
 

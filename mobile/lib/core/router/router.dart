@@ -6,6 +6,7 @@ import '../../features/auth/invite_screen.dart';
 import '../../features/auth/pin_lock_screen.dart';
 import '../../features/auth/pin_setup_screen.dart';
 import '../../features/capture/capture_screen.dart';
+import '../../features/capture/site_safety_screen.dart';
 import '../../features/capture/social_value_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/submissions/home_screen.dart';
@@ -163,6 +164,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           // Corrections to a social value entry reopen the social value form.
+          // Corrections to a hazard report or inspection reopen that form.
+          if (extra?['documentType'] == 'hazard_report' || extra?['documentType'] == 'site_inspection') {
+            return SiteSafetyScreen(
+              mode: extra?['documentType'] == 'site_inspection' ? SiteSafetyMode.inspection : SiteSafetyMode.hazard,
+              projectId: state.uri.queryParameters['projectId'],
+              projectLabel: state.uri.queryParameters['projectLabel'],
+              resubmittedFromId: extra?['resubmittedFromId'] as String?,
+            );
+          }
           if (extra?['documentType'] == 'social_value') {
             return SocialValueScreen(
               projectId: state.uri.queryParameters['projectId'],
@@ -182,6 +192,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/social-value',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => SocialValueScreen(
+          projectId: state.uri.queryParameters['projectId'],
+          projectLabel: state.uri.queryParameters['projectLabel'],
+        ),
+      ),
+      GoRoute(
+        path: '/site-safety',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => SiteSafetyScreen(
+          mode: state.uri.queryParameters['mode'] == 'inspection' ? SiteSafetyMode.inspection : SiteSafetyMode.hazard,
           projectId: state.uri.queryParameters['projectId'],
           projectLabel: state.uri.queryParameters['projectLabel'],
         ),

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { NO_CATEGORY_TYPES } from "@/lib/field-submissions/safety-capture";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -59,7 +60,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       // Water meter readings promote to a WaterRecord and social value
       // entries to an SvActivity, not an ActivityRecord: neither carries an
       // EmissionCategory.
-      if (submission.documentType !== "water_meter_reading" && submission.documentType !== "social_value") {
+      if (!NO_CATEGORY_TYPES.has(submission.documentType)) {
         const category = await prisma.emissionCategory.findUnique({
           where: { id: emissionCategoryId! },
           select: { id: true },
@@ -118,7 +119,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         });
       }
 
-      if (result.svActivityId) {
+      if (result.safety) {
+        await writeAuditLog({
+          organizationId: orgId,
+          actorUserId: session.user.id,
+          action: "management_system.register_created",
+          resourceType: result.safety.inspectionId ? "ms_inspection" : "ms_corrective_action",
+          resourceId: result.safety.inspectionId ?? result.safety.correctiveActionId ?? submissionId,
+          metadata: { fromFieldSubmission: submissionId, ...result.safety },
+        });
+      } else if (result.svActivityId) {
         await writeAuditLog({
           organizationId: orgId,
           actorUserId: session.user.id,
