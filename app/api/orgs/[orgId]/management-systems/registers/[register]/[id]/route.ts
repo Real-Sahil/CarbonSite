@@ -7,7 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { MS_EDITORS } from "@/lib/management-systems/access";
 import { REGISTERS, isRegisterKey } from "@/lib/management-systems/registers/config";
-import { applyRules, delegate, registerRefsMessage, registerSchema, serialize } from "@/lib/management-systems/registers/server";
+import { REFERENCED_BY, afterSave, applyRules, delegate, enrich, registerRefsMessage, registerSchema, serialize } from "@/lib/management-systems/registers/server";
 
 type Params = { params: Promise<{ orgId: string; register: string; id: string }> };
 
@@ -24,8 +24,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (refs) return apiError("NOT_FOUND", refs, 404);
     const { data, error } = applyRules(register, existing, body, session.user.id);
     if (error) return apiError("VALIDATION_ERROR", error, 422);
+    const enrichError = await enrich(orgId, register, data, existing);
+    if (enrichError) return apiError("VALIDATION_ERROR", enrichError, 422);
 
-    const row = await delegate(register).update({ where: { id: existing.id }, data });
+    const row = await afterSave(orgId, register, await delegate(register).update({ where: { id: existing.id }, data }), session.user.id);
     await writeAuditLog({
       organizationId: orgId,
       actorUserId: session.user.id,
@@ -48,6 +50,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const { session } = await requireOrgMember(orgId, ...MS_EDITORS);
     const existing = await delegate(register).findFirst({ where: { id, organizationId: orgId } });
     if (!existing) return apiError("NOT_FOUND", `That ${REGISTERS[register].singular} was not found.`, 404);
+    for (const { key, field } of REFERENCED_BY[register] ?? []) {
+      const used = await delegate(key).findFirst({ where: { organizationId: orgId, [field]: existing.id }, select: { id: true } });
+      if (used) return apiError("IN_USE", `This ${REGISTERS[register].singular} is used by ${REGISTERS[key].label.toLowerCase()}; delete or move those first.`, 409);
+    }
 
     const kind = REGISTERS[register].evidenceKind as "ms_risk";
     await prisma.$transaction([

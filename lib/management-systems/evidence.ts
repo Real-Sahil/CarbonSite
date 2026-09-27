@@ -23,6 +23,17 @@ export const RECORD_KINDS = [
   "ms_audit_finding",
   "ms_corrective_action",
   "ms_management_review",
+  "ms_document",
+  "ms_change",
+  "ms_objective",
+  "ms_competence",
+  "ms_training_record",
+  "ms_inspection_template",
+  "ms_inspection",
+  "ms_complaint",
+  "ms_nonconformity",
+  "ms_supplier_evaluation",
+  "ms_equipment",
 ] as const satisfies readonly MsEvidenceKind[];
 
 /** Register rows that can be linked as evidence, by evidence kind. */
@@ -50,6 +61,17 @@ export const KIND_LABELS: Record<MsEvidenceKind, string> = {
   ms_audit_finding: "Audit finding",
   ms_corrective_action: "Corrective action",
   ms_management_review: "Management review",
+  ms_document: "Controlled document",
+  ms_change: "Planned change",
+  ms_objective: "Objective",
+  ms_competence: "Competence requirement",
+  ms_training_record: "Training record",
+  ms_inspection_template: "Inspection checklist",
+  ms_inspection: "Inspection",
+  ms_complaint: "Complaint",
+  ms_nonconformity: "Nonconforming output",
+  ms_supplier_evaluation: "Supplier evaluation",
+  ms_equipment: "Equipment",
 };
 
 type Option = { id: string; label: string };
@@ -82,10 +104,7 @@ function registerSpec(key: RegisterKey): KindSpec {
 }
 
 const SPECS: Record<RecordKind, KindSpec> = {
-  ...(Object.fromEntries(Object.entries(REGISTER_BY_KIND).map(([kind, key]) => [kind, registerSpec(key)])) as Record<
-    "ms_risk" | "ms_interested_party" | "ms_policy" | "ms_audit" | "ms_audit_finding" | "ms_corrective_action" | "ms_management_review",
-    KindSpec
-  >),
+  ...(Object.fromEntries(Object.entries(REGISTER_BY_KIND).map(([kind, key]) => [kind, registerSpec(key)])) as Record<Extract<RecordKind, `ms_${string}`>, KindSpec>),
   evidence_file: {
     search: (orgId, q) =>
       prisma.evidenceFile

@@ -365,6 +365,15 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       });
     })
 
+    .with({ type: "ms_reminder" }, async (d) => {
+      const overdue = d.metadata?.stage === "overdue";
+      await sendPushToUser(d.recipientUserId, {
+        title: `${(d.metadata?.label as string) ?? "Management system"} ${overdue ? "overdue" : "due soon"}`,
+        body: `${(d.metadata?.title as string) ?? "An item"} is ${overdue ? "overdue since" : "due on"} ${(d.metadata?.dueOn as string) ?? "its due date"}.`,
+        data: { type: "ms_reminder", rowId: d.resourceId, orgId: d.orgId },
+      });
+    })
+
     .with({ type: "payment_failed" }, async (d) => {
       await sendPushToUser(d.recipientUserId, {
         title: "MetricOra payment failed",

@@ -169,6 +169,18 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
         link: `${orgBase}/settings/billing`,
       };
     }
+    case "ms_reminder": {
+      const overdue = data.metadata?.stage === "overdue";
+      const label = str(data.metadata?.label, "Management system");
+      const title = str(data.metadata?.title, "An item");
+      const dueOn = str(data.metadata?.dueOn, "");
+      const path = str(data.metadata?.path, "management-systems");
+      return {
+        title: `${label} ${overdue ? "overdue" : "due soon"}: ${title}`,
+        body: overdue ? `${title} was due on ${dueOn}.` : `${title} is due on ${dueOn}.`,
+        link: `${orgBase}/${path}`,
+      };
+    }
     case "carbon_budget_forecast": {
       const project = str(data.metadata?.projectName, "A project");
       const over = data.metadata?.status === "over";

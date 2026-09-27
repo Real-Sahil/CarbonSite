@@ -369,6 +369,22 @@ model Organization {
   msAuditFindings                MsAuditFinding[]
   msCorrectiveActions            MsCorrectiveAction[]
   msManagementReviews            MsManagementReview[]
+  msDocuments                    MsDocument[]
+  msCompetences                  MsCompetence[]
+  msTrainingRecords              MsTrainingRecord[]
+  msObjectives                   MsObjective[]
+  msComplaints                   MsComplaint[]
+  msNonconformities              MsNonconformity[]
+  msSupplierEvaluations          MsSupplierEvaluation[]
+  msEquipment                    MsEquipment[]
+  msInspectionTemplates          MsInspectionTemplate[]
+  msInspections                  MsInspection[]
+  msChanges                      MsChange[]
+  msAcknowledgements             MsAcknowledgement[]
+  msReminderLogs                 MsReminderLog[]
+  msAuditorAccesses              MsAuditorAccess[]
+  pqqAnswers                     PqqAnswer[]
+  pqqQuestionSets                PqqQuestionSet[]
   tnfdScenarios                  TnfdScenario[]                   @relation("OrgTnfdScenarios")
   materialityAssessments         MaterialityAssessment[]          @relation("OrgMaterialityAssessments")
   enforcementNotices             EnforcementNotice[]              @relation("OrgEnforcementNotices")
@@ -6964,6 +6980,17 @@ enum MsEvidenceKind {
   ms_audit_finding
   ms_corrective_action
   ms_management_review
+  ms_document
+  ms_competence
+  ms_training_record
+  ms_objective
+  ms_complaint
+  ms_nonconformity
+  ms_supplier_evaluation
+  ms_equipment
+  ms_inspection_template
+  ms_inspection
+  ms_change
 }
 
 /// An organisation working towards, or certified against, a framework.
@@ -7200,4 +7227,360 @@ model MsManagementReview {
 
   @@index([organizationId, heldOn])
   @@map("ms_management_reviews")
+}
+
+/// Controlled documents (ISO 7.5): procedures, work instructions, forms,
+/// plans. Editing an approved document's title, text or file starts a new
+/// draft version that needs approving again.
+model MsDocument {
+  id                      String    @id @default(cuid())
+  organizationId          String    @map("organization_id")
+  reference               String?
+  title                   String
+  docType                 String    @default("procedure") @map("doc_type")
+  frameworks              String[]  @default([])
+  body                    String?
+  fileId                  String?   @map("file_id")
+  version                 Int       @default(1)
+  status                  String    @default("draft")
+  changeNote              String?   @map("change_note")
+  ownerUserId             String?   @map("owner_user_id")
+  approvedByUserId        String?   @map("approved_by_user_id")
+  approvedOn              DateTime? @map("approved_on") @db.Date
+  reviewOn                DateTime? @map("review_on") @db.Date
+  requiresAcknowledgement Boolean   @default(false) @map("requires_acknowledgement")
+  createdByUserId         String    @map("created_by_user_id")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_documents")
+}
+
+/// Training and competence requirements (ISO 7.2): what a role must hold.
+model MsCompetence {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  title           String
+  category        String   @default("course")
+  appliesTo       String?  @map("applies_to")
+  validityMonths  Int?     @map("validity_months")
+  frameworks      String[] @default([])
+  description     String?
+  createdByUserId String   @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("ms_competences")
+}
+
+/// A person's training, card or qualification against a competence.
+model MsTrainingRecord {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  competenceId    String    @map("competence_id")
+  personUserId    String?   @map("person_user_id")
+  personName      String    @map("person_name")
+  employer        String?
+  completedOn     DateTime? @map("completed_on") @db.Date
+  expiresOn       DateTime? @map("expires_on") @db.Date
+  provider        String?
+  reference       String?
+  fileId          String?   @map("file_id")
+  notes           String?
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, competenceId])
+  @@index([organizationId, expiresOn])
+  @@map("ms_training_records")
+}
+
+/// Management system objectives with measures and targets (ISO 6.2).
+model MsObjective {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  title           String
+  frameworks      String[]  @default([])
+  measure         String?
+  unit            String?
+  baseline        Float?
+  target          Float?
+  current         Float?
+  targetDate      DateTime? @map("target_date") @db.Date
+  ownerUserId     String?   @map("owner_user_id")
+  status          String    @default("on_track")
+  plan            String?
+  reviewOn        DateTime? @map("review_on") @db.Date
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_objectives")
+}
+
+/// Complaints and feedback from customers, neighbours and others (ISO 9001 9.1.2, 14001 7.4.3).
+model MsComplaint {
+  id                 String    @id @default(cuid())
+  organizationId     String    @map("organization_id")
+  title              String
+  receivedOn         DateTime? @map("received_on") @db.Date
+  complainant        String?
+  channel            String?
+  category           String    @default("quality")
+  severity           String    @default("medium")
+  description        String?
+  response           String?
+  ownerUserId        String?   @map("owner_user_id")
+  status             String    @default("open")
+  closedOn           DateTime? @map("closed_on") @db.Date
+  correctiveActionId String?   @map("corrective_action_id")
+  createdByUserId    String    @map("created_by_user_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_complaints")
+}
+
+/// Nonconforming outputs and what was done with them (ISO 9001 8.7).
+model MsNonconformity {
+  id                 String    @id @default(cuid())
+  organizationId     String    @map("organization_id")
+  title              String
+  detectedOn         DateTime? @map("detected_on") @db.Date
+  location           String?
+  description        String?
+  disposition        String?
+  cost               Float?
+  ownerUserId        String?   @map("owner_user_id")
+  status             String    @default("open")
+  correctiveActionId String?   @map("corrective_action_id")
+  createdByUserId    String    @map("created_by_user_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_nonconformities")
+}
+
+/// Evaluation and approval of suppliers and subcontractors (ISO 9001 8.4, 45001 8.1.4).
+model MsSupplierEvaluation {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  supplierName     String    @map("supplier_name")
+  scope            String?
+  criteria         String?
+  qualityScore     Int?      @map("quality_score")
+  safetyScore      Int?      @map("safety_score")
+  environmentScore Int?      @map("environment_score")
+  approvalStatus   String    @default("approved") @map("approval_status")
+  evaluatedOn      DateTime? @map("evaluated_on") @db.Date
+  nextReviewOn     DateTime? @map("next_review_on") @db.Date
+  ownerUserId      String?   @map("owner_user_id")
+  frameworks       String[]  @default([])
+  createdByUserId  String    @map("created_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, approvalStatus])
+  @@map("ms_supplier_evaluations")
+}
+
+/// Equipment needing calibration, inspection or thorough examination (ISO 9001 7.1.5, LOLER, PUWER).
+model MsEquipment {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  name            String
+  identifier      String?
+  equipmentType   String    @default("measuring") @map("equipment_type")
+  location        String?
+  checkType       String    @default("calibration") @map("check_type")
+  intervalMonths  Int?      @map("interval_months")
+  lastCheckedOn   DateTime? @map("last_checked_on") @db.Date
+  nextDueOn       DateTime? @map("next_due_on") @db.Date
+  status          String    @default("in_service")
+  fileId          String?   @map("file_id")
+  ownerUserId     String?   @map("owner_user_id")
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, nextDueOn])
+  @@map("ms_equipment")
+}
+
+/// Inspection checklists (site, plant, housekeeping, environmental).
+model MsInspectionTemplate {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  title           String
+  items           String
+  frequency       String?
+  frameworks      String[] @default([])
+  createdByUserId String   @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("ms_inspection_templates")
+}
+
+/// A completed inspection; failed items raise a corrective action.
+model MsInspection {
+  id                 String    @id @default(cuid())
+  organizationId     String    @map("organization_id")
+  templateId         String    @map("template_id")
+  location           String
+  inspectedOn        DateTime? @map("inspected_on") @db.Date
+  inspectorUserId    String?   @map("inspector_user_id")
+  results            Json      @default("[]")
+  status             String    @default("completed")
+  notes              String?
+  correctiveActionId String?   @map("corrective_action_id")
+  createdByUserId    String    @map("created_by_user_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, templateId])
+  @@map("ms_inspections")
+}
+
+/// Planned changes to a management system (ISO 6.3).
+model MsChange {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  title            String
+  frameworks       String[]  @default([])
+  reason           String?
+  consequences     String?
+  resources        String?
+  ownerUserId      String?   @map("owner_user_id")
+  plannedOn        DateTime? @map("planned_on") @db.Date
+  status           String    @default("proposed")
+  approvedByUserId String?   @map("approved_by_user_id")
+  createdByUserId  String    @map("created_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_changes")
+}
+
+/// A person confirming they have read a version of a policy or document.
+model MsAcknowledgement {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  registerKey    String   @map("register_key")
+  rowId          String   @map("row_id")
+  version        Int
+  userId         String   @map("user_id")
+  acknowledgedAt DateTime @default(now()) @map("acknowledged_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, registerKey, rowId, version, userId])
+  @@map("ms_acknowledgements")
+}
+
+/// Reminders already sent, so the daily monitor sends each one once.
+model MsReminderLog {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  source         String
+  rowId          String   @map("row_id")
+  field          String
+  dueOn          DateTime @map("due_on") @db.Date
+  stage          String
+  sentAt         DateTime @default(now()) @map("sent_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, source, rowId, field, dueOn, stage])
+  @@map("ms_reminder_logs")
+}
+
+/// Time-limited read-only access for a certification body's auditor. Only a
+/// hash of the link's token is stored.
+model MsAuditorAccess {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  name            String
+  email           String?
+  company         String?
+  frameworks      String[]  @default([])
+  tokenHash       String    @unique @map("token_hash")
+  expiresAt       DateTime  @map("expires_at")
+  revokedAt       DateTime? @map("revoked_at")
+  lastUsedAt      DateTime? @map("last_used_at")
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("ms_auditor_accesses")
+}
+
+/// The organisation's reusable answer to one pre-qualification topic, used
+/// for every questionnaire that asks it (Common Assessment Standard, client
+/// PQQs).
+model PqqAnswer {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  topicKey        String   @map("topic_key")
+  response        String?
+  answer          String?
+  evidenceFileIds String[] @default([]) @map("evidence_file_ids")
+  updatedByUserId String   @map("updated_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, topicKey])
+  @@map("pqq_answers")
+}
+
+/// A client's own questionnaire, each question mapped to an answer topic.
+model PqqQuestionSet {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  name            String
+  issuer          String?
+  dueOn           DateTime? @map("due_on") @db.Date
+  questions       Json      @default("[]")
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("pqq_question_sets")
 }

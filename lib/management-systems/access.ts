@@ -39,25 +39,40 @@ export const requirementUpdateSchema = z
   })
   .refine((b) => Object.keys(b).length > 0, "Nothing to update");
 
+/** Record kinds a requirement can link to: the organisation's records and every register. */
+export const EVIDENCE_RECORD_KINDS = [
+  "evidence_file",
+  "legal_register_entry",
+  "environmental_aspect",
+  "environmental_permit",
+  "environmental_incident",
+  "hs_incident_report",
+  "method_statement",
+  "reduction_target",
+  // One per register (registers/config.ts); registers.test.ts keeps this in step.
+  "ms_risk",
+  "ms_interested_party",
+  "ms_policy",
+  "ms_document",
+  "ms_change",
+  "ms_objective",
+  "ms_competence",
+  "ms_training_record",
+  "ms_audit",
+  "ms_audit_finding",
+  "ms_inspection_template",
+  "ms_inspection",
+  "ms_corrective_action",
+  "ms_complaint",
+  "ms_nonconformity",
+  "ms_supplier_evaluation",
+  "ms_equipment",
+  "ms_management_review",
+] as const;
+
 export const evidenceCreateSchema = z.discriminatedUnion("kind", [
   z.object({
-    kind: z.enum([
-      "evidence_file",
-      "legal_register_entry",
-      "environmental_aspect",
-      "environmental_permit",
-      "environmental_incident",
-      "hs_incident_report",
-      "method_statement",
-      "reduction_target",
-      "ms_risk",
-      "ms_interested_party",
-      "ms_policy",
-      "ms_audit",
-      "ms_audit_finding",
-      "ms_corrective_action",
-      "ms_management_review",
-    ]),
+    kind: z.enum(EVIDENCE_RECORD_KINDS),
     targetId: z.string().min(1).max(64),
     note: z.string().max(1000).optional(),
   }),
