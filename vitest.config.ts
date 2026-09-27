@@ -13,6 +13,7 @@ export default defineConfig({
       "**/dist/**",
       "tests/api/**",
       "tests/e2e/**",
+      "videos/**",
     ],
     setupFiles: ["./vitest.setup.ts"],
     coverage: {

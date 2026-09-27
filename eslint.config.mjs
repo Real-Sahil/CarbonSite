@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "dist/**",
     ".pnpm-store/**",
     "next-env.d.ts",
+    // Remotion films: their own package, tsconfig and lint.
+    "videos/**",
   ]),
   // Disable overly strict rules for server components + chart animations
   {

@@ -1,0 +1,26 @@
+{
+  "name": "metricora-videos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "mkdir -p public/fonts && cp ../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2 ../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2 public/fonts/ && uv run --with numpy --with scipy python3 scripts/compose.py public/audio/launch",
+    "studio": "remotion studio src/index.ts",
+    "stills": "bun scripts/stills.ts",
+    "beat-sheet": "bun scripts/beat-sheet.ts > src/videos/launch/BEAT-SHEET.md",
+    "render": "bun scripts/render.ts Launch metricora-launch --duration 56 --poster 52.5",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.529",
+    "@remotion/cli": "4.0.529",
+    "@remotion/fonts": "^4.0.529",
+    "@remotion/renderer": "4.0.529",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "remotion": "4.0.529"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "typescript": "^5"
+  }
+}
