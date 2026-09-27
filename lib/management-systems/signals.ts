@@ -18,6 +18,27 @@ const DAY = 86_400_000;
 
 type Loader = (orgId: string, now: Date) => Promise<Omit<Signal, "key">>;
 
+/** Rows in a register, with how many are past a date field and still open. */
+async function registerSignal(
+  model: string,
+  orgId: string,
+  now: Date,
+  opts: { label: string; register: string; dateField?: string; openStatuses?: string[]; lateWord?: string; noun: [string, string] },
+): Promise<Omit<Signal, "key">> {
+  const m = (prisma as unknown as Record<string, { count: (a: object) => Promise<number> }>)[model];
+  const [total, late] = await Promise.all([
+    m.count({ where: { organizationId: orgId } }),
+    opts.dateField ? m.count({ where: { organizationId: orgId, [opts.dateField]: { lt: now }, ...(opts.openStatuses ? { status: { in: opts.openStatuses } } : {}) } }) : Promise.resolve(0),
+  ]);
+  return {
+    label: opts.label,
+    summary: total === 0 ? "None recorded yet" : `${plural(total, opts.noun[0], opts.noun[1])}${opts.dateField ? `, ${late} ${opts.lateWord ?? "overdue"}` : ""}`,
+    tone: total === 0 ? "empty" : late > 0 ? "attention" : "ok",
+    href: `management-systems/registers/${opts.register}`,
+  };
+}
+
+
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 const LOADERS: Record<SignalKey, Loader> = {
@@ -164,7 +185,22 @@ const LOADERS: Record<SignalKey, Loader> = {
     const total = await prisma.auditLog.count({ where: { organizationId: orgId, createdAt: { gte: since } } });
     return { label: "Audit log", summary: `${plural(total, "event")} in the last 30 days`, tone: "ok", href: "settings/audit" };
   },
+  ms_policies: (o, n) => registerSignal("msPolicy", o, n, { label: "Policies", register: "policies", dateField: "reviewOn", openStatuses: ["draft", "approved"], lateWord: "past review", noun: ["policy", "policies"] }),
+  ms_documents: (o, n) => registerSignal("msDocument", o, n, { label: "Controlled documents", register: "documents", dateField: "reviewOn", openStatuses: ["draft", "approved"], lateWord: "past review", noun: ["document", "documents"] }),
+  ms_training: (o, n) => registerSignal("msTrainingRecord", o, n, { label: "Training records", register: "training-records", dateField: "expiresOn", lateWord: "expired", noun: ["record", "records"] }),
+  ms_risks: (o, n) => registerSignal("msRisk", o, n, { label: "Risks and opportunities", register: "risks", dateField: "reviewOn", openStatuses: ["open", "treated", "accepted"], lateWord: "past review", noun: ["entry", "entries"] }),
+  ms_objectives: (o, n) => registerSignal("msObjective", o, n, { label: "Objectives", register: "objectives", dateField: "targetDate", openStatuses: ["on_track", "at_risk", "off_track"], lateWord: "past their target date", noun: ["objective", "objectives"] }),
+  ms_changes: (o, n) => registerSignal("msChange", o, n, { label: "Planned changes", register: "changes", dateField: "plannedOn", openStatuses: ["proposed", "approved"], noun: ["change", "changes"] }),
+  ms_audits: (o, n) => registerSignal("msAudit", o, n, { label: "Internal audits", register: "audits", dateField: "plannedOn", openStatuses: ["planned", "in_progress"], noun: ["audit", "audits"] }),
+  ms_management_reviews: (o, n) => registerSignal("msManagementReview", o, n, { label: "Management reviews", register: "management-reviews", dateField: "heldOn", openStatuses: ["planned"], noun: ["review", "reviews"] }),
+  ms_corrective_actions: (o, n) => registerSignal("msCorrectiveAction", o, n, { label: "Corrective actions", register: "corrective-actions", dateField: "dueOn", openStatuses: ["open", "in_progress", "awaiting_verification"], noun: ["action", "actions"] }),
+  ms_complaints: (o, n) => registerSignal("msComplaint", o, n, { label: "Complaints", register: "complaints", noun: ["complaint", "complaints"] }),
+  ms_equipment: (o, n) => registerSignal("msEquipment", o, n, { label: "Equipment checks", register: "equipment", dateField: "nextDueOn", openStatuses: ["in_service"], noun: ["item", "items"] }),
+  ms_supplier_evaluations: (o, n) => registerSignal("msSupplierEvaluation", o, n, { label: "Supplier evaluations", register: "supplier-evaluations", noun: ["evaluation", "evaluations"] }),
+  ms_inspections: (o, n) => registerSignal("msInspection", o, n, { label: "Inspections", register: "inspections", noun: ["inspection", "inspections"] }),
 };
+
+
 
 /** The named signals for an organisation. A loader that fails is left out, never guessed. */
 export async function loadSignals(orgId: string, keys: Iterable<SignalKey>, now = new Date()): Promise<Map<SignalKey, Signal>> {

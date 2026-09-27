@@ -3,7 +3,7 @@ import { FRAMEWORKS, assessableRequirements, catalogueFingerprint, getFramework,
 import { readiness, type Readiness, type RequirementState } from "./readiness";
 import { evidenceHref, KIND_LABELS } from "./evidence";
 import { loadSignals, type Signal } from "./signals";
-import type { SignalKey } from "./signal-keys";
+import { CODE_SIGNALS, SHARED_SIGNALS, type SignalKey } from "./signal-keys";
 
 export type AdoptionSummary = {
   frameworkSlug: string;
@@ -123,7 +123,16 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
   ]);
   const heldEditions = new Set(otherAdoptions.map((a) => a.frameworkSlug));
 
-  const signalKeys = new Set<SignalKey>(requirements.flatMap((r) => r.signals ?? []));
+  // Catalogue signals plus register figures for the shared ISO clauses.
+  const parentKey = new Map(requirements.map((r) => [r.code, r.sharedKey]));
+  const signalsOf = (r: (typeof requirements)[number]): SignalKey[] => [
+    ...new Set([
+      ...(r.signals ?? []),
+      ...(SHARED_SIGNALS[r.sharedKey ?? (r.parent ? (parentKey.get(r.parent) ?? "") : "")] ?? []),
+      ...(framework.family === "management_system" ? (CODE_SIGNALS[r.code] ?? []) : []),
+    ]),
+  ];
+  const signalKeys = new Set<SignalKey>(requirements.flatMap(signalsOf));
   const signals = adoption ? await loadSignals(orgId, signalKeys) : new Map<SignalKey, Signal>();
 
   const memberName = new Map(members.map((m) => [m.user.id, m.user.name || m.user.email]));
@@ -154,7 +163,7 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
       notes: s?.notes ?? null,
       interpretation: s?.interpretation ?? null,
       updatedAt: s ? s.updatedAt.toISOString() : null,
-      signals: (r.signals ?? []).flatMap((k) => (signals.has(k) ? [signals.get(k)!] : [])),
+      signals: signalsOf(r).flatMap((k) => (signals.has(k) ? [signals.get(k)!] : [])),
       evidence: links
         .filter((l) => l.requirementCode === r.code)
         .map((l) => ({
