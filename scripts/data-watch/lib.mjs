@@ -188,3 +188,19 @@ export function calendarLastChecked(pageSource) {
 }
 
 export const daysBetween = (a, b) => Math.floor((b.getTime() - a.getTime()) / 86_400_000);
+
+/**
+ * Edition years ISO's page mentions for a standard, e.g. "ISO 45001:2018" and
+ * "ISO 45001:2027". Amendments ("/Amd 1:2024") are not editions and are skipped.
+ */
+export function isoEditionYears(html, name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+  const re = new RegExp(`${escaped}:(\\d{4})(?!\\s*/\\s*Amd)`, "g");
+  return [...new Set([...String(html).matchAll(re)].map((m) => Number(m[1])))].filter((y) => y > 1980 && y < 2100);
+}
+
+/** Version of the Common Assessment Standard question set linked from Build UK's page. */
+export function casVersion(html) {
+  const versions = [...String(html).matchAll(/Question[-\s]Set[-\s]Version[-\s](\d+)/gi)].map((m) => Number(m[1]));
+  return versions.length ? Math.max(...versions) : null;
+}

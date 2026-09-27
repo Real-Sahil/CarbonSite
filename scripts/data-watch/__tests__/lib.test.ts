@@ -4,9 +4,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   calendarLastChecked,
+  casVersion,
   compareVersions,
   defraFlatFile,
   epaHubYear,
+  isoEditionYears,
   latestDefraPublication,
   mergeSeries,
   parseBlsAnnual,
@@ -128,5 +130,20 @@ describe("other sources", () => {
   it("reads the calendar's LAST_CHECKED", () => {
     const src = readFileSync(path.join(root, "app/(app)/orgs/[orgId]/compliance/deadlines/page.tsx"), "utf8");
     expect(calendarLastChecked(src)?.toISOString().slice(0, 10)).toBe("2026-09-26");
+  });
+});
+
+describe("isoEditionYears", () => {
+  it("finds editions and ignores amendments", () => {
+    const html = "<p>ISO 45001:2018</p><p>ISO 45001:2018/Amd 1:2024</p><a>ISO/DIS 45001</a><p>ISO 45001:2027 is now available</p>";
+    expect(isoEditionYears(html, "ISO 45001").sort()).toEqual([2018, 2027]);
+    expect(isoEditionYears("ISO/IEC 27001:2022", "ISO/IEC 27001")).toEqual([2022]);
+  });
+});
+
+describe("casVersion", () => {
+  it("reads the question set version from the link", () => {
+    expect(casVersion('<a href="/wp-content/uploads/2025/07/Common-Assessment-Standard-Question-Set-Version-5.pdf">Question Set</a>')).toBe(5);
+    expect(casVersion("nothing here")).toBeNull();
   });
 });

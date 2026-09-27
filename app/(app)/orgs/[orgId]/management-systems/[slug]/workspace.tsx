@@ -112,6 +112,8 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
 
       <GuidanceNote orgId={orgId} base={base} adoption={adoption} canEdit={canEdit} />
 
+      <EditionBanner orgId={orgId} view={view} canEdit={canEdit} />
+
       {error && <p role="alert" className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
       {!adoption || adoption.status === "withdrawn" ? (
@@ -372,7 +374,14 @@ function RequirementCard({
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-start gap-3 p-4 text-left">
         <span className="mt-0.5 w-14 shrink-0 font-mono text-xs text-[#6B7280]">{q.code}</span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-[#111827]">{q.title}</span>
+          <span className="block text-sm font-medium text-[#111827]">
+            {q.title}
+            {q.editionChange && (
+              <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[11px] font-normal ${q.editionChange.kind === "new" ? "bg-sky-50 text-sky-800" : q.editionChange.kind === "changed" ? "bg-violet-50 text-violet-800" : "bg-slate-100 text-slate-600"}`}>
+                {q.editionChange.kind === "new" ? "New in this edition" : q.editionChange.kind === "changed" ? "Changed" : "Renumbered"}
+              </span>
+            )}
+          </span>
           <span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#6B7280]">
             {q.ownerName && <span>Owner: {q.ownerName}</span>}
             {q.dueOn && <span>Due {q.dueOn}</span>}
@@ -384,6 +393,12 @@ function RequirementCard({
 
       {open && (
         <div className="flex flex-col gap-5 border-t border-[#E5E7EB] p-4">
+          {q.editionChange && (
+            <p className="max-w-[80ch] rounded-lg border border-violet-200 bg-violet-50/50 px-3 py-2 text-sm text-[#374151]">
+              <span className="font-medium">Edition change{q.editionChange.from?.length ? ` (from ${q.editionChange.from.join(", ")})` : ""}: </span>
+              {q.editionChange.note}
+            </p>
+          )}
           {q.interpretation && (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
               <p className="text-xs font-medium uppercase tracking-wide text-emerald-800">Your organisation&apos;s interpretation</p>
@@ -659,4 +674,74 @@ function GuidanceNote({ base, adoption, canEdit }: { orgId: string; base: string
       {error && <p role="alert" className="text-red-600">{error}</p>}
     </section>
   );
+}
+
+function EditionBanner({ orgId, view, canEdit }: { orgId: string; view: FrameworkView; canEdit: boolean }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [message, setMessage] = useState<string | null>(null);
+  const { successor, predecessor } = view.editions;
+  const held = view.adoption && view.adoption.status !== "withdrawn";
+
+  function transition() {
+    if (!successor) return;
+    startTransition(async () => {
+      const res = await fetch(`/api/orgs/${orgId}/management-systems/${successor.slug}/transition`, { method: "POST" });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) return setMessage(json?.message ?? "Could not start the transition.");
+      router.push(`/orgs/${orgId}/management-systems/${successor.slug}`);
+    });
+  }
+
+  if (successor) {
+    return (
+      <section className="flex flex-col gap-2 rounded-[14px] border border-sky-200 bg-sky-50/60 p-4 text-sm text-[#374151]">
+        <p>
+          <span className="font-medium text-[#111827]">{successor.shortName} replaces this edition.</span>{" "}
+          {successor.transitionDeadline ? `Certificates to this edition must move by ${successor.transitionDeadline}. ` : ""}
+          {successor.adopted
+            ? "You have adopted it; keep this edition until your certificate moves, then withdraw it."
+            : "Starting the transition adopts the new edition alongside this one and carries your statuses, notes and evidence across. Anything the revision changed is left in progress for you to check."}
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          {successor.adopted ? (
+            <Link href={`/orgs/${orgId}/management-systems/${successor.slug}`} className="text-sm font-medium underline underline-offset-2">Open {successor.shortName}</Link>
+          ) : (
+            held && canEdit && (
+              <Button size="sm" onClick={transition} disabled={isPending} className="bg-[#111827] text-white hover:bg-black">
+                {isPending ? "Starting…" : `Start transition to ${successor.shortName}`}
+              </Button>
+            )
+          )}
+          {message && <span role="alert" className="text-xs text-red-700">{message}</span>}
+        </div>
+      </section>
+    );
+  }
+  if (predecessor) {
+    const changed = view.requirements.filter((q) => q.editionChange && q.editionChange.kind !== "renumbered" && !q.heading).length;
+    return (
+      <section className="flex flex-col gap-2 rounded-[14px] border border-violet-200 bg-violet-50/50 p-4 text-sm text-[#374151]">
+        <p>
+          This edition replaces {predecessor.shortName}. {changed} requirements are new or changed and are marked below.{" "}
+          {predecessor.adopted && !held && canEdit ? "Use Start transition on the old edition's page to carry your work across." : ""}
+        </p>
+        {view.framework.editionSources?.length ? (
+          <p className="text-xs text-[#6B7280]">
+            Changes summarised from:{" "}
+            {view.framework.editionSources.map((s, i) => (
+              <span key={s.url}>
+                {i > 0 && "; "}
+                <a href={s.url} target="_blank" rel="noreferrer" className="underline underline-offset-2">{s.label}</a>
+              </span>
+            ))}
+          </p>
+        ) : null}
+        {predecessor.adopted && (
+          <Link href={`/orgs/${orgId}/management-systems/${predecessor.slug}`} className="self-start text-sm underline underline-offset-2">Open {predecessor.shortName}</Link>
+        )}
+      </section>
+    );
+  }
+  return null;
 }

@@ -143,6 +143,11 @@ export default async function ManagementSystemsPage({ params }: { params: Promis
                         {f.requirementCount} requirements · {f.publisher}
                         {f.jurisdiction ? ` · ${f.jurisdiction}` : ""}
                       </p>
+                      {f.supersededBy && (
+                        <p className="mt-1 text-xs text-sky-800">
+                          Replaced by the {catalogue.find((c) => c.slug === f.supersededBy)?.edition} edition. Existing certificates can stay on this one during the transition period.
+                        </p>
+                      )}
                     </div>
                     <div className="flex shrink-0 gap-2">
                       {isActive ? (

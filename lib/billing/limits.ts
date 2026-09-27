@@ -2,6 +2,7 @@ import { paymentState } from "./dunning";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getUsageSummary, type UsageEventType } from "./usage";
+import { countedFrameworks } from "@/lib/management-systems/catalogue/editions";
 
 // Matches the pricing page's own "30-day free trial" language, and is what
 // requireActiveBilling() below actually enforces against — see
@@ -314,6 +315,18 @@ export async function requireWithinUsageLimit(orgId: string, eventType: UsageEve
   return null;
 }
 
+/**
+ * Frameworks adopted and not withdrawn. An old edition held alongside its
+ * successor during a transition (ISO 14001:2015 and 2026) counts once.
+ */
+export async function countAdoptedFrameworks(orgId: string): Promise<number> {
+  const rows = await prisma.msFrameworkAdoption.findMany({
+    where: { organizationId: orgId, status: { not: "withdrawn" } },
+    select: { frameworkSlug: true },
+  });
+  return countedFrameworks(rows.map((r) => r.frameworkSlug)).length;
+}
+
 // Web users and sites, the two things plans are priced on, and management
 // system frameworks adopted. Field workers and supplier accounts are
 // unlimited on every plan, so they are not counted.
@@ -341,7 +354,7 @@ export async function requireCapacity(
         })
       : resource === "facilities"
         ? await prisma.facility.count({ where: { organizationId: orgId } })
-        : await prisma.msFrameworkAdoption.count({ where: { organizationId: orgId, status: { not: "withdrawn" } } });
+        : await countAdoptedFrameworks(orgId);
   if (used < limit) return null;
   const plan = org.plan as Plan;
   const noun = resource === "members" ? "web users" : resource === "facilities" ? "sites" : limit === 1 ? "management system framework" : "management system frameworks";

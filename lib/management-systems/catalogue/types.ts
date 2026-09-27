@@ -53,6 +53,17 @@ export type CatalogueRequirement = {
   url?: string;
   /** Filters the framework defines, e.g. "baseline:moderate" for NIST SP 800-53. Keys of `tagLabels`. */
   tags?: string[];
+  /** How this requirement differs from the edition this framework supersedes. Absent: unchanged. */
+  editionChange?: EditionChange;
+};
+
+export type EditionChange = {
+  /** new: nothing in the old edition; changed: same clause, different expectations; renumbered: same substance, new number. */
+  kind: "new" | "changed" | "renumbered";
+  /** Codes in the superseded edition this carries on from (statuses and evidence move from these). */
+  from?: string[];
+  /** What changed, in MetricOra's words, with the source it was taken from in the framework's `editionSources`. */
+  note: string;
 };
 
 export type CatalogueFramework = {
@@ -74,5 +85,11 @@ export type CatalogueFramework = {
   certifiable: boolean;
   /** Labels for the requirement tags this framework uses, in display order. */
   tagLabels?: Record<string, string>;
+  /** The edition this one replaces, e.g. "iso-14001-2015"; organisations can transition from it. */
+  supersedes?: string;
+  /** Last date certificates to the superseded edition stay valid, when announced (YYYY-MM-DD). */
+  transitionDeadline?: string;
+  /** Where the edition changes were taken from (certification body and committee notes). */
+  editionSources?: Array<{ label: string; url: string }>;
   requirements: CatalogueRequirement[];
 };

@@ -1,6 +1,8 @@
 import type { CatalogueFramework, CatalogueRequirement } from "./types";
 import { iso9001 } from "./iso-9001-2015";
+import { iso9001_2026 } from "./iso-9001-2026";
 import { iso14001 } from "./iso-14001-2015";
+import { iso14001_2026 } from "./iso-14001-2026";
 import { iso45001 } from "./iso-45001-2018";
 import { nist80053 } from "./nist-sp-800-53-r5";
 import { nistCsf2 } from "./nist-csf-2-0";
@@ -11,12 +13,15 @@ import { hipaa } from "./hipaa";
 import { ccpa, nis2, pipeda } from "./privacy-other";
 import { cyberEssentials, pciDss, soc2 } from "./security-other";
 
-export type { CatalogueFramework, CatalogueRequirement, FrameworkFamily } from "./types";
+export type { CatalogueFramework, CatalogueRequirement, EditionChange, FrameworkFamily } from "./types";
+export { transitionMap } from "./revise";
 
 /** Every framework an organisation can adopt, in display order. */
 export const FRAMEWORKS: CatalogueFramework[] = [
+  iso14001_2026,
   iso14001,
   iso45001,
+  iso9001_2026,
   iso9001,
   ukGdpr,
   euGdpr,
@@ -34,6 +39,11 @@ export const FRAMEWORKS: CatalogueFramework[] = [
 ];
 
 const BY_SLUG = new Map(FRAMEWORKS.map((f) => [f.slug, f]));
+
+/** The newer edition that replaces this framework, if there is one in the catalogue. */
+export function successorOf(slug: string): CatalogueFramework | null {
+  return FRAMEWORKS.find((f) => f.supersedes === slug) ?? null;
+}
 
 export function getFramework(slug: string): CatalogueFramework | null {
   return BY_SLUG.get(slug) ?? null;

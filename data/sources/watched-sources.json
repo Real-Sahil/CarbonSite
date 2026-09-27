@@ -15,5 +15,34 @@
   },
   "regulatory-calendar": {
     "maxAgeDays": 92
+  },
+  "iso-editions": {
+    "_comment": "Latest edition year the management systems catalogue holds for each standard, and the ISO page read to spot a newer one.",
+    "standards": [
+      {
+        "name": "ISO 14001",
+        "year": 2026,
+        "url": "https://www.iso.org/iso-14001-environmental-management.html"
+      },
+      {
+        "name": "ISO 9001",
+        "year": 2026,
+        "url": "https://www.iso.org/iso-9001-quality-management.html"
+      },
+      {
+        "name": "ISO 45001",
+        "year": 2018,
+        "url": "https://www.iso.org/iso-45001-occupational-health-and-safety.html"
+      },
+      {
+        "name": "ISO/IEC 27001",
+        "year": 2022,
+        "url": "https://www.iso.org/standard/27001"
+      }
+    ]
+  },
+  "cas-question-set": {
+    "version": 5,
+    "url": "https://builduk.org/information/common-assessment-standard/"
   }
 }

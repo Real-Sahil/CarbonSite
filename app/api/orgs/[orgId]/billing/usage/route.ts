@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { getUsageSummary } from "@/lib/billing/usage";
-import { getLimits } from "@/lib/billing/limits";
+import { countAdoptedFrameworks, getLimits } from "@/lib/billing/limits";
 
 // GET /api/orgs/[orgId]/billing/usage
 export async function GET(
@@ -30,7 +30,7 @@ export async function GET(
       getUsageSummary(orgId, periodStart, periodEnd),
       prisma.organizationMembership.count({ where: { organizationId: orgId } }),
       prisma.facility.count({ where: { organizationId: orgId } }),
-      prisma.msFrameworkAdoption.count({ where: { organizationId: orgId, status: { not: "withdrawn" } } }),
+      countAdoptedFrameworks(orgId),
     ]);
 
     const limits = getLimits(org.plan);

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { FRAMEWORKS, assessableRequirements, catalogueFingerprint, getFramework, headingCodes, sharedRequirements, type CatalogueFramework } from "./catalogue";
+import { FRAMEWORKS, assessableRequirements, catalogueFingerprint, getFramework, headingCodes, sharedRequirements, successorOf, type CatalogueFramework, type EditionChange } from "./catalogue";
 import { readiness, type Readiness, type RequirementState } from "./readiness";
 import { evidenceHref, KIND_LABELS } from "./evidence";
 import { loadSignals, type Signal } from "./signals";
@@ -69,6 +69,8 @@ export type RequirementView = {
   signals: Signal[];
   evidence: Array<{ id: string; kind: string; kindLabel: string; label: string; note: string | null; href: string | null; createdAt: string }>;
   alsoCovers: Array<{ slug: string; shortName: string; code: string; status: RequirementState }>;
+  /** How this requirement differs from the edition this framework replaces. */
+  editionChange: EditionChange | null;
 };
 
 export type FrameworkView = {
@@ -85,6 +87,11 @@ export type FrameworkView = {
   readiness: Readiness | null;
   requirements: RequirementView[];
   members: Array<{ id: string; name: string }>;
+  /** Other editions of the same standard and whether the organisation holds them. */
+  editions: {
+    successor: { slug: string; shortName: string; edition: string; adopted: boolean; transitionDeadline: string | null } | null;
+    predecessor: { slug: string; shortName: string; adopted: boolean } | null;
+  };
 };
 
 /** Everything the framework page shows, or null for an unknown framework. */
@@ -93,7 +100,9 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
   if (!framework) return null;
   const { requirements, ...meta } = framework;
 
-  const [adoption, statuses, links, members, otherStatuses] = await Promise.all([
+  const successor = successorOf(slug);
+  const predecessor = framework.supersedes ? getFramework(framework.supersedes) : null;
+  const [adoption, statuses, links, members, otherStatuses, otherAdoptions] = await Promise.all([
     prisma.msFrameworkAdoption.findUnique({ where: { organizationId_frameworkSlug: { organizationId: orgId, frameworkSlug: slug } } }),
     prisma.msRequirementStatus.findMany({ where: { organizationId: orgId, frameworkSlug: slug } }),
     prisma.msEvidenceLink.findMany({ where: { organizationId: orgId, frameworkSlug: slug }, orderBy: { createdAt: "asc" } }),
@@ -105,7 +114,14 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
       where: { organizationId: orgId, frameworkSlug: { not: slug } },
       select: { frameworkSlug: true, requirementCode: true, status: true },
     }),
+    successor || predecessor
+      ? prisma.msFrameworkAdoption.findMany({
+          where: { organizationId: orgId, frameworkSlug: { in: [successor?.slug, predecessor?.slug].filter((x): x is string => !!x) }, status: { not: "withdrawn" } },
+          select: { frameworkSlug: true },
+        })
+      : Promise.resolve([] as { frameworkSlug: string }[]),
   ]);
+  const heldEditions = new Set(otherAdoptions.map((a) => a.frameworkSlug));
 
   const signalKeys = new Set<SignalKey>(requirements.flatMap((r) => r.signals ?? []));
   const signals = adoption ? await loadSignals(orgId, signalKeys) : new Map<SignalKey, Signal>();
@@ -156,6 +172,7 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
         code: requirement.code,
         status: otherStatusBy.get(`${f.slug}|${requirement.code}`) ?? "not_started",
       })),
+      editionChange: r.editionChange ?? null,
     };
   });
 
@@ -187,6 +204,12 @@ export async function loadFrameworkView(orgId: string, slug: string): Promise<Fr
     readiness: adoption ? readiness(framework, stateMap, evidenceCounts) : null,
     requirements: views,
     members: members.map((m) => ({ id: m.user.id, name: m.user.name || m.user.email })).sort((a, b) => a.name.localeCompare(b.name)),
+    editions: {
+      successor: successor
+        ? { slug: successor.slug, shortName: successor.shortName, edition: successor.edition, adopted: heldEditions.has(successor.slug), transitionDeadline: successor.transitionDeadline ?? null }
+        : null,
+      predecessor: predecessor ? { slug: predecessor.slug, shortName: predecessor.shortName, adopted: heldEditions.has(predecessor.slug) } : null,
+    },
   };
 }
 
@@ -203,5 +226,7 @@ export function catalogueSummary() {
     summary: f.summary,
     certifiable: f.certifiable,
     requirementCount: assessableRequirements(f).length,
+    supersedes: f.supersedes ?? null,
+    supersededBy: successorOf(f.slug)?.slug ?? null,
   }));
 }

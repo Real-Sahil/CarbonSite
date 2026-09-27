@@ -150,11 +150,11 @@ describe("plan limit on adopted frameworks", () => {
     const { POST } = await import("@/app/api/orgs/[orgId]/management-systems/route");
     db.organization.findUnique.mockResolvedValue({ plan: "starter", isPilot: false });
     db.msFrameworkAdoption.findUnique.mockResolvedValue(null);
-    db.msFrameworkAdoption.count.mockResolvedValue(1);
+    db.msFrameworkAdoption.findMany.mockResolvedValue([{ frameworkSlug: "iso-14001-2015" }]);
     const res = await POST(req({ frameworkSlug: "iso-45001-2018" }), p);
     expect(res.status).toBe(402);
     expect((await res.json()).code).toBe("PLAN_LIMIT_REACHED");
-    expect(db.msFrameworkAdoption.count.mock.calls[0][0].where).toEqual({ organizationId: "org-a", status: { not: "withdrawn" } });
+    expect(db.msFrameworkAdoption.findMany.mock.calls[0][0].where).toEqual({ organizationId: "org-a", status: { not: "withdrawn" } });
     expect(db.msFrameworkAdoption.create).not.toHaveBeenCalled();
   });
 
@@ -164,7 +164,7 @@ describe("plan limit on adopted frameworks", () => {
     db.msFrameworkAdoption.findUnique.mockResolvedValue({ id: "adopt-1", status: "implementing" });
     db.msFrameworkAdoption.update.mockResolvedValue({ id: "adopt-1", status: "implementing" });
     expect((await POST(req({ frameworkSlug: "iso-14001-2015" }), p)).status).toBe(200);
-    expect(db.msFrameworkAdoption.count).not.toHaveBeenCalled();
+    expect(db.msFrameworkAdoption.findMany).not.toHaveBeenCalled();
 
     db.organization.findUnique.mockResolvedValue({ plan: "starter", isPilot: true });
     db.msFrameworkAdoption.findUnique.mockResolvedValue(null);

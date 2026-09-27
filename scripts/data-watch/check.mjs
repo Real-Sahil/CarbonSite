@@ -13,10 +13,12 @@
 import { readFileSync } from "node:fs";
 import {
   calendarLastChecked,
+  casVersion,
   compareVersions,
   daysBetween,
   defraFlatFile,
   epaHubYear,
+  isoEditionYears,
   latestDefraPublication,
   parseDefraReleases,
   ukFootprintYear,
@@ -146,6 +148,43 @@ const watchers = [
       return {
         title: `Data upkeep: ADEME Base Carbone updated on ${updated}`,
         body: `The Base Carbone dataset (https://data.ademe.fr/datasets/base-carboner) changed on ${updated}; the repo loads the export last modified ${have.modified}. Download the full CSV to \`data/sources/ademe-base-carbone.csv\` and run \`pnpm tsx scripts/build-ademe-factors.ts <csv> <migration> --after <latest ADEME migration dir>\` (it loads only factors not already loaded), then set \`modified\` in \`data/sources/watched-sources.json\`.`,
+      };
+    },
+  },
+  {
+    id: "iso-editions",
+    name: "ISO management system standard editions",
+    async check() {
+      const newer = [];
+      for (const std of loaded["iso-editions"].standards) {
+        const years = isoEditionYears(await getText(std.url), std.name);
+        const latest = Math.max(0, ...years);
+        if (latest > std.year) newer.push(`- ${std.name}:${latest} (the catalogue holds ${std.year}): ${std.url}`);
+      }
+      if (!newer.length) return null;
+      return {
+        title: "Data upkeep: new ISO management system edition published",
+        body: [
+          "ISO's pages mention a newer edition than the management systems catalogue holds:",
+          "",
+          ...newer,
+          "",
+          "Add it as a new catalogue framework built with `revise()` from the previous edition (see `lib/management-systems/catalogue/iso-14001-2026.ts`), with `editionChange` on each changed clause and `editionSources` citing the notes used, add it to `SUPERSEDED_BY` in `catalogue/editions.ts`, then set `year` in `data/sources/watched-sources.json`.",
+        ].join("\n"),
+      };
+    },
+  },
+  {
+    id: "cas",
+    name: "Build UK Common Assessment Standard question set",
+    async check() {
+      const have = loaded["cas-question-set"];
+      const version = casVersion(await getText(have.url));
+      if (!version) throw new Error("no 'Question Set Version <n>' link found on the Build UK page");
+      if (version <= have.version) return null;
+      return {
+        title: `Data upkeep: Common Assessment Standard question set version ${version} published`,
+        body: `Build UK has published version ${version} of the Common Assessment Standard question set (${have.url}); the PQQ catalogue maps version ${have.version}. Update \`lib/pqq/catalogue/cas.ts\` (question numbers, sections and topics; our own short titles only), then set \`version\` in \`data/sources/watched-sources.json\`.`,
       };
     },
   },
