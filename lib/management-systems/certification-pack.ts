@@ -3,6 +3,7 @@ import type { Archiver } from "archiver";
 import { prisma } from "@/lib/db";
 import { getObject } from "@/lib/storage";
 import { csvLine, zipSafeName } from "@/lib/assurance/pack";
+import { zipResponse } from "@/lib/zip-response";
 import { getFramework, headingCodes, type CatalogueFramework } from "./catalogue";
 import { REGISTERS, REGISTER_KEYS, type RegisterKey } from "./registers/config";
 import { delegate } from "./registers/server";
@@ -226,28 +227,6 @@ export async function writeCertificationPack(
 }
 
 /** The pack as a streamed ZIP response. */
-export async function certificationPackResponse(opts: { orgId: string; frameworks: string[]; generatedFor: string }): Promise<Response> {
-  const [{ PassThrough, Readable }, { ZipArchive }, Sentry] = await Promise.all([import("node:stream"), import("archiver"), import("@sentry/nextjs")]);
-  const archive = new ZipArchive({ zlib: { level: 6 } });
-  const out = new PassThrough();
-  archive.on("error", (err: Error) => {
-    Sentry.captureException(err);
-    out.destroy(err);
-  });
-  archive.pipe(out);
-  void writeCertificationPack(archive, opts)
-    .then(() => archive.finalize())
-    .catch((err) => {
-      Sentry.captureException(err);
-      archive.abort();
-      out.destroy(err instanceof Error ? err : new Error(String(err)));
-    });
-  const stamp = new Date().toISOString().slice(0, 10);
-  return new Response(Readable.toWeb(out) as ReadableStream, {
-    headers: {
-      "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="certification-pack-${stamp}.zip"`,
-      "Cache-Control": "no-store",
-    },
-  });
+export function certificationPackResponse(opts: { orgId: string; frameworks: string[]; generatedFor: string }): Promise<Response> {
+  return zipResponse(`certification-pack-${new Date().toISOString().slice(0, 10)}.zip`, (archive) => writeCertificationPack(archive, opts));
 }

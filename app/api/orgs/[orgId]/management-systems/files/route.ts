@@ -11,7 +11,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { storeEvidenceFile } from "@/lib/evidence/store";
-import { MS_EDITORS } from "@/lib/management-systems/access";
+import { PQQ_EDITORS } from "@/lib/pqq/access";
 
 const ALLOWED = new Set([
   "application/pdf",
@@ -29,7 +29,7 @@ const MAX_BYTES = 25 * 1024 * 1024;
 export async function POST(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, ...MS_EDITORS);
+    const { session } = await requireOrgMember(orgId, ...PQQ_EDITORS);
     const limited = await rateLimitRequest(req, { key: rateLimitKey(orgId, "ms-files", session.user.id), limit: 30, windowMs: 60_000 });
     if (limited) return limited;
 
