@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Replies in caveman style, always** (the `caveman` skill, level full): terse, fragments fine, all technical detail kept. Code, commits, PRs and docs stay in normal prose.
 - **Always merge finished work to `main`.** After lint, typecheck, tests and build pass on the working branch, merge it into `main` (fast-forward when possible, otherwise a merge commit) and push `main`. No need to ask first. `migrate.yml` applies migrations when `main` moves, so the migration rules below still apply before merging.
+- **Agent tooling:** ponytail (Claude Code plugin `ponytail@ponytail`, marketplace `DietrichGebert/ponytail`) and graphify are enabled for this repo in `.claude/settings.json`. `scripts/dev-tools/install-agent-tools.sh` enables both for every project on a machine (user-scope `~/.claude`): run it once locally, or paste it into a cloud environment's setup script. Headroom is not auto-configured: it reroutes all model traffic through a local proxy (`ANTHROPIC_BASE_URL`), so it is an opt-in per machine (`headroom init claude --global`).
 
 ## Project Overview
 

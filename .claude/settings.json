@@ -64,9 +64,16 @@
         "source": "github",
         "repo": "emotixco/claude-skills-founder"
       }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
     }
   },
   "enabledPlugins": {
-    "founder@emotix": true
+    "founder@emotix": true,
+    "ponytail@ponytail": true
   }
 }
