@@ -193,7 +193,7 @@ jobs:
 
   # Which optional suites this change needs. Mobile builds are not part of CI:
   # Android and iOS release builds run only from mobile-build.yml, on a
-  # mobile-v* / v* tag or a manual dispatch. CI analyses and tests the Flutter
+  # manual dispatch. CI analyses and tests the Flutter
   # app only when mobile/ changed, and runs the Python forecast tests only when
   # api/ or the Python requirements changed.
   changes:
