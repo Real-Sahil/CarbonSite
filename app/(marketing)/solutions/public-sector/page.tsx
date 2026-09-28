@@ -19,10 +19,12 @@ export default function PublicSectorPage() {
         heroVideo: "/marketing/loops/plan.mp4",
         problems: [
           {
+            id: "crp",
             problem: "Rewriting the Carbon Reduction Plan for every bid",
             answer: "A guided PPN 006 plan takes you through the Cabinet Office template section by section and checks each required item before it is generated. Next year's plan starts from this year's text, and the figures come from your published snapshots, so they match every other document you submit.",
           },
           {
+            id: "bid-pack",
             problem: "Tender carbon sections take days",
             answer: "The bid carbon pack pulls the plan, the emissions trend across published years, featured contracts and assurance status into one document. Sections without data are left out, not estimated.",
           },
@@ -35,6 +37,7 @@ export default function PublicSectorPage() {
             answer: "National TOMs commitments are held against contracts and periods, and delivery is logged as it happens, next to the carbon figures for the same contract.",
           },
           {
+            id: "ppn-026",
             problem: "PPN 026 commitments you have to prove during the contract",
             answer: "Add the PPN 026 Social Value Model to a contract, set a KPI against each award criterion you committed to (Good Jobs and Skills), and log delivery with the payroll extract, training record or timesheet attached. A check flags contracts of £5 million or more with fewer than three KPIs.",
           },

@@ -258,11 +258,12 @@ export function ClosingCta({ title, lead }: { title: ReactNode; lead: ReactNode 
       <div className="flex max-w-2xl flex-col gap-6">
         <H2>{title}</H2>
         <Lead tone="dark">{lead}</Lead>
-        <div className="flex flex-wrap gap-3">
+        {/* One primary action; the pilot is a quieter link so the trial reads as the next step. */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <ButtonLink href="/sign-up">Start a 30-day trial</ButtonLink>
-          <ButtonLink href="/contact" variant="secondary" tone="dark">
-            Book a pilot
-          </ButtonLink>
+          <TextLink href="/contact" tone="dark">
+            Or book a pilot
+          </TextLink>
         </div>
       </div>
     </Section>
