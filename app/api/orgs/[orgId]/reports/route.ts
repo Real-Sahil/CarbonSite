@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { requireFeature } from "@/lib/billing/limits";
+import { requireFeature, requireReportType } from "@/lib/billing/limits";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -146,6 +146,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
       if (!contract) return apiError("NOT_FOUND", "Contract not found.", 404);
     }
+    const typeGate = await requireReportType(orgId, body.type);
+    if (typeGate) return typeGate;
     if (body.type === "bid_carbon_pack") {
       const planGate = await requireFeature(orgId, "bidCarbonPack");
       if (planGate) return planGate;

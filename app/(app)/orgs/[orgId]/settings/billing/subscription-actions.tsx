@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PLAN_LABELS } from "@/lib/billing/limits";
+import { PLAN_ANNUAL_TOTAL, PLAN_LABELS } from "@/lib/billing/limits";
 import { Loader2 } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 
-type SubscribablePlan = "starter" | "growth";
+type SubscribablePlan = "essentials" | "starter" | "growth";
 
 export function SubscriptionActions({
   orgId,
@@ -37,7 +37,8 @@ export function SubscriptionActions({
       const res = await fetch(`/api/orgs/${orgId}/billing/subscription`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, interval: "monthly" }),
+        // Essentials is yearly only; the server picks its interval.
+        body: JSON.stringify(plan === "essentials" ? { plan } : { plan, interval: "monthly" }),
       });
       const body = await res.json().catch(() => null);
       if (!res.ok) {
@@ -102,7 +103,7 @@ export function SubscriptionActions({
     }
   }
 
-  const subscribablePlans: SubscribablePlan[] = ["starter", "growth"].filter(
+  const subscribablePlans: SubscribablePlan[] = ["essentials", "starter", "growth"].filter(
     (p) => p !== currentPlan,
   ) as SubscribablePlan[];
 
@@ -122,6 +123,7 @@ export function SubscriptionActions({
           >
             {pending === plan && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
             Subscribe to {PLAN_LABELS[plan]}
+            {plan === "essentials" && ` (£${PLAN_ANNUAL_TOTAL.essentials}/yr)`}
           </Button>
         ))}
         {hasPaymentMethod && (

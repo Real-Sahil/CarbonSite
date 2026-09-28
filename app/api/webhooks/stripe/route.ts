@@ -157,7 +157,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
   // Paid features end with the subscription. Enterprise contracts are
   // invoiced outside self-serve billing and are left alone.
   await prisma.organization.updateMany({
-    where: { id: billing.organizationId, plan: { in: ["starter", "growth"] } },
+    where: { id: billing.organizationId, plan: { in: ["essentials", "starter", "growth"] } },
     data: { plan: "trial" },
   });
 

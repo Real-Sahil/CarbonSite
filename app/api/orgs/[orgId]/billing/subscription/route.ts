@@ -11,12 +11,13 @@ import {
   updateSubscriptionPrice,
   cancelSubscriptionAtPeriodEnd,
   resolvePriceId,
+  planIntervals,
   type SubscribablePlan,
 } from "@/lib/billing/stripe";
 
 const subscribeSchema = z.object({
-  plan: z.enum(["starter", "growth"]),
-  interval: z.enum(["monthly", "annual"]).default("monthly"),
+  plan: z.enum(["essentials", "starter", "growth"]),
+  interval: z.enum(["monthly", "annual"]).optional(),
 });
 
 // POST /api/orgs/[orgId]/billing/subscription
@@ -37,7 +38,13 @@ export async function POST(
     if (!parsed.success) {
       return apiError("VALIDATION_ERROR", "Invalid plan or interval.", 400, parsed.error.flatten().fieldErrors);
     }
-    const { plan, interval } = parsed.data;
+    const { plan } = parsed.data;
+    // Essentials is sold yearly only; the others default to monthly.
+    const offered = planIntervals(plan);
+    const interval = parsed.data.interval ?? (offered.includes("monthly") ? "monthly" : "annual");
+    if (!offered.includes(interval)) {
+      return apiError("INTERVAL_NOT_OFFERED", `The ${plan} plan is billed ${offered.join(" or ")} only.`, 400);
+    }
 
     const billing = await prisma.billingSubscription.findUnique({ where: { organizationId: orgId } });
     if (!billing?.stripeCustomerId) {

@@ -8,7 +8,7 @@ import { StripeNote } from "@/components/marketing/brand-marks";
 
 export const metadata: Metadata = withSocial({
   title: "Pricing",
-  description: "Priced per organisation by sites and web users. Starter £99 a month, Growth £299 a month, Enterprise from £750 a month. 30-day trial.",
+  description: "Priced per organisation by sites and web users. Essentials £199 a year for a PPN 006 Carbon Reduction Plan, Starter £99 a month, Growth £299 a month, Enterprise from £750 a month. 30-day trial.",
   alternates: { canonical: "/pricing" },
 });
 
@@ -26,6 +26,24 @@ type Tier = {
 // Features follow PLAN_FEATURES and limits follow PLAN_LIMITS in lib/billing/limits.ts.
 const TIERS: Tier[] = [
   {
+    name: "Essentials",
+    price: `£${PLAN_ANNUAL_TOTAL.essentials}`,
+    period: "per year",
+    note: "Billed yearly",
+    forWho: "For an SME that needs a PPN 006 Carbon Reduction Plan for a tender.",
+    cta: { href: "/sign-up?start=crp", label: "Start your plan" },
+    features: [
+      { name: "1 site and 2 web users", included: true },
+      { name: "Unlimited field workers on the mobile app", included: true },
+      { name: "Scope 1, 2 and 3 with DEFRA, EPA, ADEME and spend factors", included: true },
+      { name: "Guided PPN 006 Carbon Reduction Plan, checked before it is generated", included: true },
+      { name: "GHG Protocol report with the auditor's CSV calculation trail", included: true },
+      { name: "Email support", included: true },
+      { name: "SECR and the other report types", included: false },
+      { name: "Management systems (ISO 14001, 45001, 9001)", included: false },
+    ],
+  },
+  {
     name: "Starter",
     price: `£${PLAN_PRICES.starter.monthly}`,
     period: "per month",
@@ -42,7 +60,7 @@ const TIERS: Tier[] = [
       { name: "Email support", included: true },
       { name: "Social value (TOMs) tracking", included: false },
       { name: "Bid carbon pack and PAS 2080", included: false },
-      { name: "Accounting sync (Xero, QuickBooks, Sage)", included: false },
+      { name: "Xero sync", included: false },
     ],
   },
   {
@@ -59,16 +77,16 @@ const TIERS: Tier[] = [
       { name: "Everything in Starter", included: true },
       { name: "Social value (TOMs) tracking", included: true },
       { name: "Bid carbon pack, PAS 2080 and project carbon budgets", included: true },
-      { name: "Accounting sync (Xero, QuickBooks, Sage)", included: true },
+      { name: "Xero sync", included: true },
       { name: "Up to 5 management system frameworks, for example ISO 9001, 14001 and 45001 as one system", included: true },
       { name: "Priority support and an onboarding call", included: true },
     ],
   },
   {
     name: "Enterprise",
-    price: `From £${PLAN_PRICES.enterprise.monthly}`,
+    price: `£${PLAN_PRICES.enterprise.monthly}`,
     period: "per month",
-    note: "Billed annually by invoice",
+    note: "From this, billed annually by invoice",
     forWho: "For groups with many sites, entities and IT requirements.",
     cta: { href: "/contact", label: "Talk to us" },
     features: [
@@ -89,16 +107,24 @@ const FAQ = [
     a: "30 days with the Growth features, so you can try social value, the bid carbon pack and PAS 2080. During the trial an organisation can have 2 sites, 3 web users and 2 generated reports a month. No card is needed to start.",
   },
   {
+    q: "What is Essentials for?",
+    a: "Organisations that need a PPN 006 Carbon Reduction Plan for a tender and little else. It covers one site and two web users, calculates Scope 1, 2 and 3 from your records and generates the Carbon Reduction Plan and a GHG Protocol report. It is billed yearly because the plan is renewed once a year. Move up to Starter for SECR, the other report types and management systems.",
+  },
+  {
+    q: "Which accounting systems connect?",
+    a: "Xero connects directly on Growth and Enterprise. For SAP, Sage, QuickBooks, Causeway, COINS and other ledgers, save an export profile once and import the ledger export each month: your account and cost code rules decide what counts as emissions, and nothing is recorded until you commit it.",
+  },
+  {
     q: "Who counts as a web user?",
     a: "Anyone who signs in to the web app: admins, editors, reviewers, viewers and auditors. Field workers using the mobile app and supplier portal logins are never counted.",
   },
   {
     q: "What counts as a management system framework?",
-    a: "Each standard or law you adopt in Management systems, such as ISO 14001, ISO 45001, ISO 27001 or UK GDPR. Starter includes one, Growth five and Enterprise all of them; the trial includes three. The registers for risks, policies, audits, corrective actions and management reviews are shared by every framework and are not counted. A framework you withdraw stops counting and keeps its history.",
+    a: "Each standard or law you adopt in Management systems, such as ISO 14001, ISO 45001, ISO 27001 or UK GDPR. Essentials includes none, Starter one, Growth five and Enterprise all of them; the trial includes three. The registers for risks, policies, audits, corrective actions and management reviews are shared by every framework and are not counted. A framework you withdraw stops counting and keeps its history.",
   },
   {
     q: "Can I change plan or cancel?",
-    a: "Yes. Move between Starter and Growth or cancel from Settings, then Billing. A cancelled plan runs to the end of the period you have paid for. There is no minimum term on monthly plans.",
+    a: "Yes. Move between Essentials, Starter and Growth or cancel from Settings, then Billing. A cancelled plan runs to the end of the period you have paid for. There is no minimum term on monthly plans.",
   },
   {
     q: "Is VAT added?",
@@ -119,6 +145,7 @@ const pricingJsonLd = {
       description: "Carbon evidence, accounting and reporting for UK contractors, priced per organisation.",
       brand: { "@type": "Brand", name: "MetricOra" },
       offers: [
+        { "@type": "Offer", name: "Essentials, annual", price: String(PLAN_ANNUAL_TOTAL.essentials), priceCurrency: "GBP", url: "https://www.metricora.co.uk/pricing" },
         { "@type": "Offer", name: "Starter, monthly", price: String(PLAN_PRICES.starter.monthly), priceCurrency: "GBP", url: "https://www.metricora.co.uk/pricing" },
         { "@type": "Offer", name: "Starter, annual", price: String(PLAN_ANNUAL_TOTAL.starter), priceCurrency: "GBP", url: "https://www.metricora.co.uk/pricing" },
         { "@type": "Offer", name: "Growth, monthly", price: String(PLAN_PRICES.growth.monthly), priceCurrency: "GBP", url: "https://www.metricora.co.uk/pricing" },
@@ -146,7 +173,7 @@ export default function PricingPage() {
 
       <Section tone="paper" className="-mt-px">
         <h2 className="sr-only">Plans</h2>
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {TIERS.map((t) => (
             <div
               key={t.name}
