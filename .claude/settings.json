@@ -16,6 +16,11 @@
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/headroom-init.sh",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/graphify-init.sh",
+            "timeout": 90
           }
         ]
       }
@@ -30,6 +35,26 @@
             "timeout": 15
           }
         ]
+      },
+      {
+        "matcher": "Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\"; command -v graphify >/dev/null 2>&1 && graphify hook-guard search || true",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\"; command -v graphify >/dev/null 2>&1 && graphify hook-guard read || true",
+            "timeout": 10
+          }
+        ]
       }
     ]
   },
@@ -39,9 +64,16 @@
         "source": "github",
         "repo": "emotixco/claude-skills-founder"
       }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
     }
   },
   "enabledPlugins": {
-    "founder@emotix": true
+    "founder@emotix": true,
+    "ponytail@ponytail": true
   }
 }
