@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PLAY_URL } from "@/components/marketing/brand-marks";
 import { LaunchFilm } from "@/components/marketing/launch-film";
+import { DemoAnalytics } from "@/components/marketing/demo-analytics";
 import { PLAN_ANNUAL_TOTAL, PLAN_PRICES } from "@/lib/billing/limits";
 import { withSocial } from "@/lib/seo/page-meta";
 import Image from "next/image";
@@ -302,6 +303,20 @@ export default function HomePage() {
               ]}
             />
           </div>
+        </div>
+      </Section>
+
+      <Section tone="light">
+        <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.1fr]">
+          <div className="flex flex-col gap-6">
+            <SectionIntro
+              eyebrow="Analytics"
+              title="Your footprint, broken down the way the board asks."
+              lead="The largest sources first, split by scope, with every bar traceable to the records and factors behind it."
+            />
+            <TextLink href="/product#analytics">More on analytics</TextLink>
+          </div>
+          <DemoAnalytics />
         </div>
       </Section>
 
