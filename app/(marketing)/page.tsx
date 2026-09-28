@@ -157,7 +157,7 @@ export default function HomePage() {
         <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.15fr]">
           <div className="flex flex-col gap-6">
             <Eyebrow tone="dark">Carbon evidence and reporting</Eyebrow>
-            <H1>Carbon figures that hold up when someone checks them.</H1>
+            <H1>Carbon figures you can prove.</H1>
             <Lead tone="dark">
               Your Carbon Reduction Plan, SECR disclosure and tender answers come from one set of reviewed records. When an evaluator, verifier or main
               contractor asks where a number came from, you can show the ticket, the factor and the formula.

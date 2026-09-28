@@ -45,6 +45,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   }
 
   let allPeriods: { id: string; label: string }[] = [];
+  let profiles: { id: string; name: string }[] = [];
   let allPeriodLabels: Record<string, string> = {};
   const importStats: { total: number; committed: number; attention: number } = {
     total: 0,
@@ -53,7 +54,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   };
 
   try {
-    const [periodsResult, batchCounts] = await Promise.all([
+    const [periodsResult, batchCounts, profileRows] = await Promise.all([
       prisma.reportingPeriod.findMany({
         where: { organizationId: orgId },
         select: { id: true, label: true },
@@ -64,8 +65,14 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         where: { organizationId: orgId },
         _count: { _all: true },
       }),
+      prisma.importProfile.findMany({
+        where: { organizationId: orgId },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
     ]);
     allPeriods = periodsResult;
+    profiles = profileRows;
     allPeriodLabels = Object.fromEntries(periodsResult.map((p) => [p.id, p.label]));
     for (const row of batchCounts) {
       importStats.total += row._count._all;
@@ -126,11 +133,11 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">Upload a file</CardTitle>
             <CardDescription className="text-xs text-[#6B7280] mt-0.5">
-              Select a reporting period and template, then drop or browse for your data file.
+              Select a reporting period and how to read the file. A saved ERP export profile reads your finance system&apos;s ledger export as it is.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 py-5">
-            <CreateImportForm orgId={orgId} periods={allPeriods} />
+            <CreateImportForm orgId={orgId} periods={allPeriods} profiles={profiles} />
 
           </CardContent>
         </Card>

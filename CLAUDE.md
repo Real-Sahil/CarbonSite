@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working agreement (set by the owner, standing instruction)
+
+- **Replies in caveman style, always** (the `caveman` skill, level full): terse, fragments fine, all technical detail kept. Code, commits, PRs and docs stay in normal prose.
+- **Always merge finished work to `main`.** After lint, typecheck, tests and build pass on the working branch, merge it into `main` (fast-forward when possible, otherwise a merge commit) and push `main`. No need to ask first. `migrate.yml` applies migrations when `main` moves, so the migration rules below still apply before merging.
+
 ## Project Overview
 
 MetricOra is a multi-tenant GHG emissions tracking platform for small-to-mid-market companies. It consists of two client surfaces that share a single Next.js backend API:
@@ -177,6 +182,8 @@ Uses `pg-boss` — a PostgreSQL-backed job queue. No Redis, no Docker, no extra 
 **Live dashboard:** `GET /api/orgs/{orgId}/dashboard/stream` is an SSE stream that polls `loadLiveTotals()` (`lib/realtime/live-totals.ts`, live `DashboardAggregate` rows of the latest period) every 15 s for up to 280 s and pushes only when the run or total changes; the client reconnects. There is no in-process pub/sub, since serverless instances do not share memory.
 
 **Machine-to-machine ingest:** `POST /api/orgs/{orgId}/integrations/{utilities|fleet|corporate-cards|webhooks}/ingest` with an org API key. `lib/connectors/ingest.ts` turns connector output into a canonical CSV and runs the normal import pipeline, so the data waits in Imports for a person to commit it. A retried identical payload returns the first batch.
+
+**ERP export profiles** (`lib/imports/profiles.ts`, Imports → ERP profiles): an `ImportProfile` per org (migration `20260928000053`) saves how a finance system's ledger export is laid out (date, account, cost code, net amount or quantity, supplier, site, reference; day/month order; 1,234.56 or 1.234,56) plus an `ImportProfileRule` table from ledger account and/or cost code (`5100`, `51*`, `5000-5099`; most specific wins, then list order) to an emission category, or ignore. Spend rules record the net amount in the currency (industry code from the rule, for spend factors); quantity rules record the quantity column with the rule's unit. `applyProfile()` runs in the import worker when the batch carries `profileSnapshot` (copied from the profile at upload, so editing a profile never changes a past import): lines no rule covers, credit lines and zero lines are staged `excluded` with the reason (the first two as warnings in the error CSV), ignored lines are recorded silently, and nothing is committed until a person commits. `POST /api/orgs/{orgId}/import-profiles/preview` reads a sample in memory and lists codes still needing a rule. Templates in `profile-templates.ts` (SAP, Causeway, COINS, Sage, other) are only candidate header names, unchecked against live exports, and ship no rules. Marketing may say "any ERP by export", not name a system as integrated.
 
 Core queues: `imports`, `calculations`, `reports`, `notifications`, `forecasting`.
 

@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { putObject, keys } from "@/lib/storage";
 import { dispatchImport } from "@/lib/jobs/dispatch";
+import { loadProfile } from "@/lib/imports/profile-store";
 import { createHash } from "crypto";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
@@ -88,6 +89,15 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
+    // Optional ERP export profile. Its current rules are copied onto the batch,
+    // so a later edit to the profile never changes how this file was read.
+    const importProfileId = formData.get("importProfileId");
+    let profile: Awaited<ReturnType<typeof loadProfile>> = null;
+    if (typeof importProfileId === "string" && importProfileId) {
+      profile = await loadProfile(orgId, importProfileId);
+      if (!profile) return apiError("NOT_FOUND", "Import profile not found.", 404);
+    }
+
     if (!(file instanceof File)) {
       return apiError("BAD_REQUEST", "A file is required.", 400);
     }
@@ -133,7 +143,11 @@ export async function POST(req: NextRequest, { params }: Params) {
         sourceChecksum: checksum,
         state: "uploaded",
         createdByUserId: session.user.id,
-        ...(confirmedMapping ? { mapping: confirmedMapping } : {}),
+        ...(profile
+          ? { importProfileId: profile.id, profileSnapshot: profile.spec }
+          : confirmedMapping
+            ? { mapping: confirmedMapping }
+            : {}),
       },
     });
 
@@ -165,7 +179,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       action: "import.created",
       resourceType: "import_batch",
       resourceId: batch.id,
-      metadata: { filename: file.name, templateKey },
+      metadata: { filename: file.name, templateKey, ...(profile ? { importProfileId: profile.id, importProfileName: profile.name } : {}) },
     });
 
     // Re-fetch after dispatch so inline-mode callers get the final state

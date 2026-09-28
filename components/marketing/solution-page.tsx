@@ -21,7 +21,8 @@ export type SolutionContent = {
   title: string;
   lead: string;
   heroVideo: string;
-  problems: { problem: string; answer: string }[];
+  /** `id` makes a problem a link target (the nav's "By document" column). */
+  problems: { problem: string; answer: string; id?: string }[];
   feature: { eyebrow: string; title: string; lead: string; points: ReactNode[]; media: Media };
   detail?: { eyebrow: string; title: string; lead: string; points: ReactNode[]; media: Media };
   closing: { title: string; lead: string };
@@ -57,7 +58,7 @@ export function SolutionPage({ c }: { c: SolutionContent }) {
         <SectionIntro eyebrow="Where it helps" title="The jobs that usually end up in a spreadsheet." />
         <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line md:grid-cols-2">
           {c.problems.map((p) => (
-            <div key={p.problem} className="flex flex-col gap-3 bg-mk-surface p-7">
+            <div key={p.problem} id={p.id} className="flex scroll-mt-24 flex-col gap-3 bg-mk-surface p-7">
               <H3>{p.problem}</H3>
               <Body>{p.answer}</Body>
             </div>

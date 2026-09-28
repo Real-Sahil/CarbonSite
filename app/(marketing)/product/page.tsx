@@ -76,6 +76,15 @@ const OPERATIONS = [
   { title: "Environmental registers", text: "Permits, incidents, legal register, aspects and impacts, a waste duty-of-care register, water and biodiversity net gain." },
 ];
 
+const MANAGEMENT_SYSTEMS = [
+  { title: "Standards and laws", text: "ISO 14001, 9001 and 45001 (with the 2026 editions of 14001 and 9001), ISO/IEC 27001 and 42001, SOC 2, Cyber Essentials, UK GDPR, NIST CSF 2.0 and more. Clause references and our own guidance, which your competent person reviews." },
+  { title: "One integrated system", text: "Requirements that ask the same thing across standards, such as internal audit, are linked, so ISO 9001, 14001 and 45001 can run as one system." },
+  { title: "Registers", text: "Risks, policies and controlled documents with versioned approval, training records, equipment calibration, inspections, audits, corrective actions and management reviews, with reminders before dates fall due." },
+  { title: "Moving to a new edition", text: "Start the transition to ISO 14001:2026 or 9001:2026 and your statuses, notes and evidence carry across by clause. New or changed clauses are left for you to review." },
+  { title: "Certification", text: "A pack with requirement status, Statement of Applicability, registers, training matrix and the files behind them, plus read-only auditor links that expire and can be revoked." },
+  { title: "Pre-qualification answers", text: "Answer each topic once and reuse it across the Build UK Common Assessment Standard and clients' own questionnaires. Suggested answers come only from your records." },
+];
+
 export default function ProductPage() {
   return (
     <>
@@ -179,7 +188,26 @@ export default function ProductPage() {
         media={<ProductShot src="/marketing/screens/base-year.jpg" alt="Base year and recalculation policy page" width={2400} height={1500} />}
       />
 
-      <Section id="operations" tone="paper">
+      <Section id="management-systems" tone="paper">
+        <SectionIntro
+          eyebrow="Management systems"
+          title="Your management system on the same records."
+          lead="Adopt a standard, record where you are on each requirement and link the evidence you already hold in MetricOra. Starter includes one framework, Growth five."
+        />
+        <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-3">
+          {MANAGEMENT_SYSTEMS.map((m) => (
+            <div key={m.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+              <H3>{m.title}</H3>
+              <p className="text-[15px] leading-relaxed text-mk-text-2">{m.text}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8">
+          <TextLink href="/pricing">Framework limits by plan</TextLink>
+        </div>
+      </Section>
+
+      <Section id="operations" tone="light">
         <SectionIntro
           eyebrow="Supply chain and site operations"
           title="The rest of what a contractor reports on."

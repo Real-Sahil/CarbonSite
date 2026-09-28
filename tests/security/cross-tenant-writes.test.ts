@@ -16,6 +16,7 @@ const db = vi.hoisted(() => {
     create: vi.fn(),
     createMany: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
     upsert: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
@@ -54,6 +55,8 @@ const db = vi.hoisted(() => {
     tenderOpportunity: model(),
     tenderWatch: model(),
     activityRecord: model(),
+    importProfile: model(),
+    importProfileRule: model(),
     $transaction: vi.fn(),
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
@@ -442,6 +445,36 @@ describe("employee commuting", () => {
     expect(db.commuteImport.findFirst.mock.calls[0][0].where).toEqual({ id: "import-of-b", organizationId: ORG_A });
     expect(db.activityRecord.deleteMany).not.toHaveBeenCalled();
     expect(db.commuteImport.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe("ERP export profiles", () => {
+  const body = {
+    name: "Ledger",
+    spec: { sourceSystem: "sage", columns: { date: "Date", account: "N/C", netAmount: "Net" }, rules: [{ account: "7200", action: "include", categoryCode: "s2-electricity-lb" }] },
+  };
+
+  it("will not rewrite another organisation's profile or its rules", async () => {
+    const { PUT } = await import("@/app/api/orgs/[orgId]/import-profiles/[profileId]/route");
+    db.emissionCategory.findMany.mockResolvedValue([{ code: "s2-electricity-lb" }]);
+    db.importProfile.updateMany.mockResolvedValue({ count: 0 }); // the profile belongs to org B
+
+    const res = await PUT(post("/x", body, "PUT"), { params: Promise.resolve({ orgId: ORG_A, profileId: "profile-of-b" }) });
+
+    expect(res.status).toBe(404);
+    expect(db.importProfile.updateMany.mock.calls[0][0].where).toEqual({ id: "profile-of-b", organizationId: ORG_A });
+    expect(db.importProfileRule.deleteMany).not.toHaveBeenCalled();
+    expect(db.importProfileRule.createMany).not.toHaveBeenCalled();
+  });
+
+  it("will not delete another organisation's profile", async () => {
+    const { DELETE } = await import("@/app/api/orgs/[orgId]/import-profiles/[profileId]/route");
+    db.importProfile.deleteMany.mockResolvedValue({ count: 0 });
+
+    const res = await DELETE(post("/x", {}, "DELETE"), { params: Promise.resolve({ orgId: ORG_A, profileId: "profile-of-b" }) });
+
+    expect(res.status).toBe(404);
+    expect(db.importProfile.deleteMany.mock.calls[0][0].where).toEqual({ id: "profile-of-b", organizationId: ORG_A });
   });
 });
 

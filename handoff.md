@@ -1,481 +1,119 @@
-# MetricOra Handoff Document
+# MetricOra Handoff
 
-**Date:** 2026-08-24  
-**Session:** Claude Code Remote (claude-haiku-4-5-20251001)  
-**Current Branch:** claude/review-handoff-docs-woi4zm (documentation review & updates)  
-**Status:** ✅ Core features stable | 🔄 Documentation & automation in progress
-
----
-
-## Project Status Overview
-
-**MetricOra** is a multi-tenant GHG emissions tracking platform for construction, waste haulage, and general corporate carbon accounting. This handoff documents the completion of recent work and the readiness for the next development cycle.
-
-### Current Metrics
-- **Repository:** real-sahil/metricora (GitHub)
-- **Main Branch:** Up-to-date with origin/main
-- **Working Tree:** Active development on `claude/review-handoff-docs-woi4zm`
-- **Latest Commit (main):** `1485982` - "Add hand-off documentation and configure routine permissions"
-- **Active Branches:** main + claude/review-handoff-docs-woi4zm (documentation review)
+**Updated:** 2026-09-28
+**Repo:** `Real-Sahil/CarbonSite` (GitHub). Product name MetricOra, site metricora.co.uk.
+**Working branch:** `claude/review-handoff-docs-gpjlvd` (fast-forwarded from `claude/review-handoff-docs-woi4zm`, which it contains)
+**Supersedes:** the 2026-08-24 version of this file (it described Neon, Cloudflare R2, a cyan palette and open billing/report decisions; all of that is out of date).
 
 ---
 
-## Recent Work Completed
+## 1. How to resume
 
-### 1. Knowledge Graph Infrastructure (Graphify)
-**Objective:** Establish automated knowledge graph maintenance for codebase analysis.
+1. Read this file, then `CLAUDE.md`. `CLAUDE.md` is the source of truth for architecture, conventions, data sources, security guards and every shipped feature. This file only holds session state and open items.
+2. Check out the working branch and sync:
+   ```bash
+   git fetch origin main claude/review-handoff-docs-gpjlvd
+   git checkout claude/review-handoff-docs-gpjlvd
+   git status && git rev-list --left-right --count origin/main...HEAD
+   ```
+   Expected at handoff: clean tree, branch **4 commits ahead** of `origin/main` (see section 2).
+3. Pick up at section 4 ("Waiting on the user"). Nothing is half-built; every item there is a proposal awaiting a yes/no.
 
-**Completed:**
-- ✅ Installed graphify CLI (`graphifyy` package via uv)
-- ✅ Initial codebase scan: 4,228 nodes, 8,557 edges, 305 communities
-- ✅ Created backup: `graphify-out/2026-08-21/` (pre-update state)
-- ✅ Integrated with Claude Code workflow
-- ✅ Committed knowledge graph artifacts to version control
-
-**Knowledge Graph Contents:**
-- Code structure and module relationships
-- Cross-file dependencies and imports
-- Community detection for architectural patterns
-- Full audit trail of extraction (EXTRACTED/INFERRED/AMBIGUOUS classification)
-
-### 2. UI/Styling Updates (Marketing Pages)
-**Objective:** Implement light palette redesign across marketing site.
-
-**Completed:**
-- ✅ Fixed image URL string termination issues in marketing components
-- ✅ Replaced all broken Unsplash images with working Pexels alternatives
-- ✅ Implemented light palette with vibrant accents (cyan #06B6D4 primary)
-- ✅ Added glassmorphism effects and button utilities
-- ✅ Scope coverage comparison component integrated
-- ✅ 10+ animation sequences for page transitions and hover states
-
-**Files Modified:**
-- `app/(marketing)/solutions/waste-haulage/page.tsx` — Waste tracking solution page
-- `app/(marketing)/solutions/construction/page.tsx` — Construction carbon tracking page
-- `app/(marketing)/security/page.tsx` — Security & compliance features page
-- `app/(marketing)/resources/page.tsx` — Guidance and reference resources page
-- Various utility and theme files for design consistency
-
-### 3. Configuration & Automation Setup
-**Objective:** Enable automated daily knowledge graph updates.
-
-**Completed:**
-- ✅ Added permissions to `.claude/settings.json` for Claude Code Remote trigger tools
-- ✅ Configured scheduled routine (2 AM UTC daily)
-- ✅ Routine scope: project-scoped (MetricOra only, not global)
-- ✅ Documentation of routine behavior and requirements
-
-**Routine Configuration:**
-```
-Name: MetricOra Graphify Daily Update
-Schedule: 0 2 * * * (2 AM UTC daily)
-Action: graphify update . → commit → push to origin/main
-Notifications: Push alert on completion
-Session Type: Fresh session per firing (isolated from interactive work)
-```
-
-**Pending:** User approval required via Claude Code UI for final activation.
+**User's working preferences**
+- Replies in caveman style, always (standing instruction, also in `CLAUDE.md` > Working agreement). Code, commits and docs are written normally.
+- No em dashes anywhere in copy (taste-skill ban).
+- Marketing claims: only real product, demo tenant data labelled as demo, no invented customers, metrics, testimonials or logos (see `CLAUDE.md` > Marketing site).
+- Commit and push to the working branch, then always merge to `main` once lint, typecheck, tests and build pass (standing instruction from 2026-09-28; no need to ask). No PR unless asked.
 
 ---
 
-## Technical Stack Summary
+## 2. Repository state
 
-### Frontend & Styling
-- Next.js 16 (App Router) with React 19
-- TypeScript for type safety
-- shadcn/ui components + Tailwind CSS 4
-- `motion` library for animations
-- Next.js Image optimization
+| Item | State |
+|---|---|
+| `origin/main` head | `9d8128ce` Home page hero: the launch film |
+| Working branch head | ERP export profiles commit (on top of the marketing nav commit) |
+| Not yet on `main` | `fff01c56` hero H1 "Carbon figures you can prove.", the handoff rewrite, the marketing nav commit (4A), and ERP export profiles with this handoff update (4B item 1, migration `20260928000053`) |
+| Open PRs | Dependabot only (#27-#33 Flutter, #89 dev deps, #90 production deps, 49 updates) and #60 "ECC bundle" (third-party, stale since 2026-09-04). None from this work. |
+| Deploy | Vercel production READY for `9d8128ce`; CI, migrations and CodeQL passed. |
 
-### Backend & Data
-- PostgreSQL (via Neon for production, local for dev)
-- Prisma ORM for data access
-- pg-boss for async job queue (PostgreSQL-backed, no Redis)
-
-### Storage & External Services
-- Cloudflare R2 (S3-compatible, free tier: 10 GB/month, zero egress)
-- Resend for transactional email (3k/month free)
-- Firebase Cloud Messaging (FCM) for push notifications
-- No Docker, no external Python services
-
-### Development & Testing
-- Vitest for unit testing
-- ESLint for code quality
-- TypeScript type checking
-- Pre-commit hooks for automated formatting
-
-### Knowledge Management
-- Graphify for codebase knowledge graph
-- Community detection for architectural insights
-- Persistent graph stored in `graphify-out/`
+**Settled 2026-09-28:** the owner said to always merge to `main`. The push to `main` was blocked by the session's auto-mode permission check, so these commits are NOT on `main` yet: the owner runs `git push origin HEAD:main` from this branch or adds a permission rule allowing it. (Was: how these commits reach `main` (PR from this branch, or direct). Earlier work landed on `main` already; ask before doing either.
 
 ---
 
-## Git Branch Status
+## 3. What happened in the last session (2026-09-26 to 09-28)
 
-### Current State
-```
-main (up-to-date with origin/main)
-└── Latest: 1485982 Add hand-off documentation and configure routine permissions
-```
+### 3.1 Launch film (done, live)
+- 56 s Remotion film in `videos/` (own npm package; rules in `videos/BRAND.md`, story in `videos/launch-prompt.md`, beat sheet `videos/src/videos/launch/BEAT-SHEET.md`). Original score from `videos/scripts/compose.py`.
+- Story: open lockup, "Carbon figures that hold up / when someone checks them.", field app fuel receipt (Certas Energy, 520 L HVO, OCR of 4 fields), review and approve, trace from FY2025 total 4,710.05 tCO2e to 520 L x 0.03558 = 18.50 kg CO2e (DEFRA 2025.2, Verified), three documents (CRP, SECR, GHG Protocol), assurance pack, end lockup with "Start your Carbon Reduction Plan". All figures are the demo tenant (Northgate Civils Ltd).
+- Screens are redrawn in code from demo screenshots with the product's tokens, not captured.
+- Web encodes in `public/marketing/film/`: `launch-720.webm` (1.6 MB loop), `launch-720.mp4`, `launch-1080-sound.webm` (6.1 MB), `launch-1080-sound.mp4`, `poster.jpg`. Encoder settings (x264 `tune film`, `aq-mode 3`, no deadzones; VP9 without scaler dither) fixed banding streaks; they live in `videos/scripts/render.ts`.
+- Re-render: `cd videos && npm run setup && npm run render`, copy outputs into `public/marketing/film/`.
 
-### Cleanup Performed
-- ✅ Deleted stale feature branch: `claude/carbon-accounting-security-audit-uxsm68`
-- ✅ No branches ahead of main
-- ✅ All work integrated into main
+### 3.2 Home hero (done)
+- `components/marketing/launch-film.tsx`: muted 720p loop while on screen (IntersectionObserver, poster only under reduced motion); "Play with sound" swaps to the 1080p cut inside the click (`flushSync`) so the browser allows audio.
+- `app/(marketing)/page.tsx`: film replaces the dashboard screenshot; H1 changed so it no longer repeats the film's opening words (commit `fff01c56`, branch only).
 
-### Commit History (Last 5)
-1. `1485982` Add hand-off documentation and configure routine permissions
-2. `5281542` Allow Claude Code Remote trigger tools for scheduled graphify updates
-3. `d59eb77` Update knowledge graph with light palette redesign changes
-4. `df4f9ff` Fix URL string termination in image elements
-5. `a71861e` Replace all broken Unsplash images with working Pexels images
+### 3.3 Tools set up this session (container only, lost when the container is reclaimed)
+- **Agent-Reach** installed in `~/.agent-reach-venv` (check-only mode). Only RSS and Jina Reader channels are usable, and Jina (`r.jina.ai`) is blocked by the environment network policy. Reinstall: `python3 -m venv ~/.agent-reach-venv && ~/.agent-reach-venv/bin/pip install https://github.com/Panniantong/agent-reach/archive/main.zip`.
+- **TinyFish MCP** (claude.ai connector) works for outside websites the container cannot reach. Use `fetch_content` for page text and `run_web_automation` for computed styles (slow, several minutes, can drop).
 
----
-
-## Files Modified in This Session
-
-### Configuration
-- `.claude/settings.json` — Added permissions for routine management
-
-### Documentation
-- `Hand-Off.md` (superseded by this file)
-- `handoff.md` (this document)
-
-### Knowledge Graph
-- `graphify-out/graph.json` — Updated graph structure
-- `graphify-out/GRAPH_REPORT.md` — Extraction audit trail
-- `graphify-out/2026-08-21/` — Backup of pre-update state
+### 3.4 Glean.com design scan (research, no code)
+Captured via TinyFish: full nav tree and page hierarchy. Not captured: computed colours, fonts, button styles (the automation run was lost when TinyFish disconnected). Only confirmed colour: Glean blue `#343CED`.
+Key patterns: 5 top items (Product, Customers, Solutions, Resources, Company); mega menus with name + one-line benefit per link; Solutions split into Departments and Industries; one content card per menu (quiz, report); single primary CTA "Get a demo" repeated in nav, hero, final CTA and footer.
 
 ---
 
-## Pending Items & Next Steps
+## 4. Waiting on the user (next actions, in order)
 
-### Priority 1: Documentation & Knowledge Base (✅ Completed)
-**Status:** Comprehensive documentation suite created and pushed  
-**Branch:** `claude/review-handoff-docs-woi4zm`
+### A. Marketing nav and hero changes from the Glean scan (proposed, not started)
+Keep MetricOra's palette (graphite, off-white, ember accent, Geist). Changes, all in `components/marketing/site-nav.tsx` (`NAV`) and `app/(marketing)/page.tsx`:
+1. Solutions gets a "By document" column: Carbon Reduction Plan (PPN 006), SECR, PPN 026 social value, bid carbon pack.
+2. One real content card per dropdown: Platform → "Start your Carbon Reduction Plan" (`/sign-up?start=crp`); Solutions → "PPN 026 applies from 1 January 2027"; Resources → regulatory calendar. Hidden in the mobile menu.
+3. Add Management systems (ISO 14001/9001/45001, registers, PQQ/CAS, certification pack) to the Platform menu. Currently missing from the nav.
+4. One primary CTA everywhere: "Start a 30-day trial"; "Book a pilot" secondary, hero only.
+Skip: logo wall, customer metrics, testimonials, live counters (claims rules).
+**Status:** DONE 2026-09-28 (commit "Marketing nav: documents column, one card per menu, management systems"). Changes from the proposal: there is no public regulatory calendar page, so the Resources card links the "Planning a first reporting period" guide instead; closing CTAs keep the pilot as a text link ("Or book a pilot") because their copy mentions pilots; /product gained a `#management-systems` section as the menu's target (no screenshot; none captured yet). Checked at 1024 and 1440 px: no menu overflows.
 
-**Completed Tasks:**
-- [x] Update handoff.md with current date and status (2026-08-24)
-- [x] Created `docs/developers.md` — feature development workflow, patterns, testing (450+ lines)
-- [x] Created `docs/operators.md` — deployment, monitoring, scaling, incident response (400+ lines)
-- [x] Created `docs/api-examples.md` — complete cURL/JS API examples (350+ lines)
-- [x] Created `docs/emissions-walkthrough.md` — 6 real-world calculation walkthroughs (400+ lines)
-- [x] Created `.github/CONTRIBUTING.md` — code review standards, commit guidelines (300+ lines)
-- [x] Created `README.md` — comprehensive project overview with navigation (200+ lines)
-- [x] Documented RBAC matrix with role definitions and use cases
-- [x] Added performance tuning guide in operators.md (scaling considerations)
-- [x] Added troubleshooting sections in all guides
-- [x] Added quick-start guide in developers.md and README
+### B. ERP and CRM data integration (proposed, not started)
+Current code: Xero is a real connector (`lib/integrations/xero.ts`); QuickBooks and Sage are 35-line stubs (`lib/integrations/{quickbooks,sage}.ts`, connectors in `lib/connectors/`); `lib/connectors/ingest.ts` turns connector output into the normal import (review then commit). No SAP, Causeway, COINS, Dynamics, NetSuite, Salesforce or HubSpot code (SAP/NetSuite exist only as options in the pilot kit form).
+Recommended order:
+1. **ERP export profiles** (first build): saved column mapping per source system plus a ledger account / cost code → emission category rule table (the missing piece), templates for SAP, Causeway Financials, COINS, Sage. Data arrives by upload, the ingest API/webhook, or n8n/Zapier. Covers every ERP with no partnerships.
+2. Finish QuickBooks and Sage; consider a unified accounting API (Codat/Merge) for NetSuite and Dynamics 365 Business Central (paid, conflicts with the no-paid-subscriptions rule).
+3. Native SAP (S/4HANA OData) and Causeway only when a customer funds it. Causeway public API availability is **unverified**; likely needs their partner programme.
+4. CRM last: only useful to pull won deals into Contracts.
+Marketing may name only systems that work end to end (today: Xero, plus "any ERP by export").
+**Status:** item 1 DONE 2026-09-28 (see `CLAUDE.md` > ERP export profiles). Verified: unit tests, cross-tenant tests, all migrations replayed on Postgres 16 with zero drift, and the worker run end to end on a Sage-style ledger CSV. Not verified: the profile editor page in a signed-in browser (needs a seeded tenant), and the templates' header names against real SAP/Causeway/COINS/Sage exports (ask a pilot customer for a sample). Known limit: credit notes are left out with a warning, not netted, so a period with credits overstates spend until someone nets them. Next: items 2 to 4 need a go.
 
-**Documentation Stats:**
-- **Total Lines:** 2,100+ lines of comprehensive documentation
-- **Code Examples:** 50+ real-world examples (cURL, TypeScript, SQL)
-- **Coverage:** Development, operations, API, calculations, compliance
-
-**Files Created:**
-```
-README.md                          # Project overview, quick start, links to all docs
-docs/developers.md                 # Feature development, testing, patterns
-docs/operators.md                  # Deployment, monitoring, scaling, incidents
-docs/api-examples.md               # Complete API reference with examples
-docs/emissions-walkthrough.md      # Calculation examples with DEFRA/EPA factors
-.github/CONTRIBUTING.md            # Code review standards, commit guidelines
-```
-
-**Timeline:** ✅ Completed 2026-08-24 (same day initiated)
-
-### Priority 2: Activate Graphify Daily Routine (User Action Required)
-**Status:** Configuration complete, awaiting UI approval  
-**Effort:** 5 minutes user interaction
-
-**Action Required:**
-1. Visit claude.ai/code
-2. Approve permission prompt for `mcp__Claude_Code_Remote__create_trigger`
-3. Routine will fire daily at 2 AM UTC, updating knowledge graph automatically
-
-**What it does:** Keeps codebase knowledge graph (4,228 nodes, 8,557 edges) synchronized with code changes, commits to origin/main daily.
-
-**Dependency:** None — can activate independently
-
-### Priority 3: Feature Development (Next Phase)
-**Recommended Focus Areas:**
-1. **Field submission UI/UX improvements**
-   - Enhanced form validation feedback
-   - Better offline state indication
-   - Improved OCR confidence display
-   
-2. **Dashboard analytics enhancements**
-   - Trend analysis over time
-   - Category-level drilldowns
-   - Scope comparison views
-
-3. **Report generation optimization**
-   - Async PDF generation improvements
-   - Batch report export capability
-   - Report template customization
-
-4. **Mobile app improvements (Flutter)**
-   - Better offline sync status UI
-   - Enhanced error handling for failed submissions
-   - Improved camera preview UX
-
-**Timeline:** 2-4 weeks (prioritize based on business needs)
-
-### Priority 4: Testing & Quality Assurance
-**Tasks:**
-- [ ] Add integration tests for graphify workflow
-- [ ] Verify scheduled routine execution in staging
-- [ ] Test knowledge graph query performance with large datasets
-- [ ] Add cross-tenant security regression tests
-- [ ] Performance testing: import 25k rows, measure dashboard load time
-- [ ] Mobile app offline sync testing
-
-**Timeline:** Parallel with feature development
-
-### Priority 5: Infrastructure & DevOps (Post-MVP)
-**Tasks:**
-- [ ] Document production deployment checklist
-- [ ] Set up monitoring for graphify routine execution
-- [ ] Configure alerts for job queue failures
-- [ ] Document backup/restore procedures for knowledge graph
-- [ ] Load testing for concurrent dashboard access
-
-**Timeline:** Before production launch
+### C. Merge to `main`: PENDING. Branch fast-forwards cleanly onto `main` (includes additive migration `20260928000053`); the push was blocked by the permission check, see section 2. Future work merges to `main` by default once allowed.
 
 ---
 
-## Documentation Improvements Recommended
+## 5. Environment and access limits (this cloud environment)
 
-### For New Developers
-**Missing from current docs:**
-1. **Feature development workflow** — how to propose and implement new features
-2. **RBAC examples** — real scenarios for each of the 6 roles
-3. **Database migration guide** — step-by-step for adding new tables
-4. **API testing guide** — how to test auth flows, org scoping, field submissions
-5. **Performance tuning playbook** — indexes, query optimization, caching strategies
-6. **Emission calculation examples** — walk-through a complete calculation with real data
-
-### For DevOps/Operations
-**Missing from current docs:**
-1. **Production deployment checklist** — pre-flight, deployment, post-flight
-2. **Monitoring & alerts** — what to watch, alert thresholds
-3. **Disaster recovery** — backup strategy, restore procedures
-4. **Scaling guide** — what breaks at 10k orgs, 100k records, 1M calculations
-5. **External service configuration** — Neon, R2, Resend, FCM setup steps
-6. **Routine/automation troubleshooting** — graphify, job queue, email failures
-
-### For Product/Design
-**Missing from current docs:**
-1. **User journey maps** — for each role (admin, editor, viewer, field_worker)
-2. **Key metrics to track** — adoption, calculation accuracy, report utilization
-3. **Feature prioritization framework** — how to decide what's next
-4. **Competitive analysis** — MetricOra vs. existing tools
-5. **Compliance requirements matrix** — what regulations apply by geography
-
-### Recommended Actions
-- Create `docs/developers.md` with feature development workflow
-- Create `docs/operators.md` with deployment, monitoring, scaling
-- Create `docs/api-examples.md` with cURL/JavaScript examples for each endpoint
-- Create `docs/emissions-walkthrough.md` with real calculation examples
-- Update `README.md` to link to all new docs
-- Add `.github/CONTRIBUTING.md` with code review guidelines
+- Outbound network is restricted by policy. Blocked when tested: `www.glean.com`, `r.jina.ai`. To allow a host, the user edits the environment (session title bar → environment → Edit → Network access).
+- MCP servers failing to connect this session: `supabase` and `stripe` (proxy tunnel 403), `graphify` (timeout). Vercel and GitHub MCP work. No `gh` CLI; use GitHub MCP tools.
+- Deployment is Vercel only; jobs run inline through `lib/jobs/dispatch.ts`; scheduled work is Supabase pg_cron. Details in `CLAUDE.md`.
 
 ---
 
-## Key Decision Points
+## 6. Settled decisions (were "pending" in the old handoff)
 
-### ✅ Decisions Made
-1. **Graphify Scope:** Project-scoped automation (not global/multi-project)
-2. **Schedule:** 2 AM UTC daily (off-peak, minimal impact)
-3. **Session Type:** Fresh session per execution (isolated)
-4. **Storage:** Knowledge graph persisted in version control
-5. **Tech Stack:** No Docker, no Redis, no Python services — all npm/PostgreSQL/R2
-6. **Multi-tenancy:** Every query must include org_id; cross-tenant access is P0 security bug
+| Topic | Decision | Where |
+|---|---|---|
+| Database / storage | Supabase Postgres + Supabase Storage (bucket `carbonsite`); no Neon, no R2 account | `CLAUDE.md` Stack |
+| Billing | Per organisation: Starter £99/mo, Growth £299/mo, Enterprise from £750/mo; 30-day trial; Stripe live and sandbox wired | `CLAUDE.md` Decisions 3 |
+| Report format | Customer-facing GHG Protocol report by default; CSV calculation trail on every emissions report | Decisions 4 |
+| Methodology versioning | Bump only for rule changes that alter a figure; policy in `lib/calculation/methodology.ts` | Decisions 2 |
+| Factor updates | Weekly data-upkeep watchers open issues; loading stays manual; CPI by PR | `CLAUDE.md` Data upkeep |
+| Field app | Android live on Google Play; iOS in App Store review (do not link or claim it) | `CLAUDE.md` Marketing site |
+| Marketing design | Graphite / off-white / ember accent, Geist, `components/marketing/kit.tsx` | `CLAUDE.md` Marketing site |
 
-### ⏳ Decisions Pending (Blocking Production)
-1. **Report Format:** Auditor package vs. customer disclosure vs. executive summary
-   - **Impact:** Affects report schema, data retention, compliance reporting
-   - **Timeline:** Decide before first customer report is generated
-   
-2. **Billing Model:** Freemium, per-org, per-record, usage-based?
-   - **Impact:** Affects pricing, feature gating, org model
-   - **Timeline:** Required before production launch
-   
-3. **Methodology Versioning:** When/how does ghg-protocol-v2026-01 increment?
-   - **Impact:** Affects calculation immutability, audit trail, recalculation policies
-   - **Timeline:** Clarify before publishing first snapshot
-   
-4. **Emission Factor Updates:** Frequency and process for DEFRA/EPA/SustainMetrics updates?
-   - **Impact:** Affects factor import automation, versioning, customer recalculations
-   - **Timeline:** Document before production
-   
-5. **Field Worker Licensing:** Licensing model for Flutter mobile app?
-   - **Impact:** Affects deployment strategy, app store presence, cost
-   - **Timeline:** Decide before first mobile deployment
-   
-6. **Data Retention Policy:** How long to keep audit logs, calculations, reports?
-   - **Impact:** Affects compliance, storage costs, GDPR handling
-   - **Timeline:** Document before first customer data is stored
+Still open: data retention policy (audit logs, calculations, reports) has no written policy.
 
 ---
 
-## Rollback Information
+## 7. Shipped recently on `main` (newest first, for orientation)
 
-**If reverting recent changes needed:**
-```bash
-# Revert to pre-session state
-git reset --hard 498eec4  # Before graphify integration
-
-# Or selectively revert specific commits
-git revert 1485982
-git revert 5281542
-```
-
-**Knowledge Graph Backup:** `graphify-out/2026-08-21/` contains pre-update state.
-
----
-
-## Contact & Notes
-
-**Session Author:** Claude (Haiku 4.5)  
-**User Email:** sahilxleo916@gmail.com  
-**Session ID:** Remote Cloud Execution  
-
-**For Support:**
-- Documentation: `/CLAUDE.md` (project instructions)
-- API Reference: See `lib/` folder structure
-- Database: `prisma/schema.prisma` (canonical schema)
-- Design System: Use `/taste-skill` and `/emil-design-eng` commands
-
----
-
----
-
-## Strengths & What's Working Well
-
-✅ **Core Architecture:**
-- Multi-tenancy properly enforced at API layer via `requireOrgMember()`
-- RBAC system with 6 role levels working correctly
-- PostgreSQL-only stack (no external dependencies for core features)
-- Immutable calculations prevent audit trail tampering
-
-✅ **Data Quality:**
-- Prisma schema is comprehensive and well-organized
-- Audit logging is append-only and complete
-- Factor library seeded with DEFRA + EPA + SustainMetrics (zero cost)
-- GWP values (AR6) correctly configured
-
-✅ **Development Experience:**
-- TypeScript throughout eliminates entire classes of bugs
-- Zod validation at API boundaries
-- Knowledge graph provides codebase navigation
-- Skills available for design decisions (taste-skill, emil-design-eng)
-
-✅ **Infrastructure:**
-- No Docker required — runs on plain Postgres + npm
-- Storage via Cloudflare R2 (free tier, no egress costs)
-- Email via Resend (3k/month free)
-- Job queue via pg-boss (PostgreSQL native)
-
----
-
-## Areas Needing Attention
-
-⚠️ **Before Production Launch:**
-1. **Billing model undefined** — affects feature gating, org creation flow
-2. **Report format undecided** — impacts what data fields reports contain
-3. **Data retention policy missing** — compliance risk
-4. **Methodology versioning unclear** — affects recalculation workflow
-5. **Mobile deployment strategy undefined** — Flutter app testing/distribution
-
-⚠️ **Testing Gaps:**
-1. Cross-tenant security tests need expansion (P0)
-2. Large dataset performance testing (25k+ records)
-3. Concurrent user stress testing
-4. Offline sync reliability for mobile
-5. Factor selection edge cases (geography fallback logic)
-
-⚠️ **Documentation Gaps:**
-1. Feature development workflow undocumented
-2. Production deployment checklist missing
-3. API examples sparse (need real curl/JS examples)
-4. RBAC scenario walkthroughs missing
-5. Calculation engine logic not fully explained
-
-⚠️ **Mobile App (Flutter):**
-1. OCR extractor not fully tested on real waste tickets
-2. Offline sync edge cases (network drops mid-sync)
-3. Camera permission handling needs testing
-4. Deep link auth flow (invite links) needs validation
-
----
-
-## Verification Checklist (2026-08-24)
-
-- [x] Main branch is up-to-date with origin/main
-- [x] Knowledge graph initialized and backed up
-- [x] Configuration updated for automation
-- [x] Core features working correctly
-- [ ] Documentation refresh complete (in progress)
-- [ ] All pending items triaged and prioritized
-- [ ] Production readiness gaps identified
-- [ ] Next development phase clear
-
----
-
-## How to Use This Document & The New Documentation Suite
-
-### For Next Developer
-**Start here:** `README.md` → `docs/developers.md`
-
-1. Read `README.md` — project overview, tech stack, quick start
-2. Read `docs/developers.md` — feature development workflow, patterns, testing
-3. Reference `docs/api-examples.md` when building endpoints
-4. Reference `docs/emissions-walkthrough.md` for calculation logic
-5. Review `.github/CONTRIBUTING.md` before submitting PR
-6. Check `CLAUDE.md` for detailed architecture decisions
-7. Use `/graphify` skill to explore codebase structure
-
-### For DevOps/Operations
-**Start here:** `README.md` → `docs/operators.md`
-
-1. Read `README.md` — quick overview of tech stack and deployment
-2. Read `docs/operators.md` — deployment, monitoring, scaling, incidents
-3. Use pre-deployment checklist before first launch
-4. Reference scaling considerations for capacity planning
-5. Bookmark incident response section for on-call use
-6. Check `docs/operations-runbook.md` for common tasks
-
-### For Product Manager
-**Start here:** `handoff.md` → `README.md` → `docs/production-roadmap.md`
-
-1. Review "Key Decision Points" in handoff.md — blocking decisions needed
-2. Read `README.md` "Open Decisions" section
-3. Check `docs/production-roadmap.md` for roadmap and feature planning
-4. Reference `docs/developers.md` "Testing" section for quality standards
-5. Review "Pending Items" Priority 3-5 for feature roadmap input
-
-### For API Consumers / Integrations
-**Start here:** `docs/api-examples.md`
-
-1. Read authentication section
-2. Find your resource type (activity records, calculations, reports, etc.)
-3. Copy cURL example and adapt to your use case
-4. Reference JavaScript client example for SDK implementation
-5. Check error handling section for exception cases
-
-### For Compliance / Audit
-**Start here:** `docs/emissions-walkthrough.md`
-
-1. Understand calculation pipeline step-by-step
-2. Review audit trail preservation in each example
-3. Reference immutability guarantees
-4. Check `.github/CONTRIBUTING.md` > "Security Review Checklist"
-5. Review `CLAUDE.md` for data retention and GDPR considerations
-
----
-
-**Last Updated:** 2026-08-24  
-**Branch:** claude/review-handoff-docs-woi4zm  
-**Status:** Documentation in review and update phase
+Launch film and hero · commuting survey in miles · field app hazard reports and site inspections · management systems (16 frameworks, registers, document control, training matrix, certification pack and auditor links, integrated view, ISO 14001/9001:2026 transition) · PQQ answer library (Build UK CAS v5 and client PQQs) · dashboard queries 85 → 51 · Find a Tender import and watch · data upkeep automation · ESRS E5 from waste records · reports use org commitments, CBAM withdrawn · AI assistance (Groq then Mistral, admin opt-in) · invite link fixes for iPad/App Store review · commuting from attendance · Tesseract OCR on Vercel · assurance pack ZIP · bill inbox and bill matching · PPN 026 field capture · failed-payment handling.
+Full detail for each is in `CLAUDE.md`.
