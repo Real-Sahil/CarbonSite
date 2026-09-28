@@ -452,3 +452,13 @@ Skills live in `.claude/skills/` and can be invoked as slash commands.
 4. **Primary report format** — settled: the customer-facing GHG Protocol report is the default (`DEFAULT_REPORT_TYPE` in the report form); every emissions report ships the CSV calculation trail as the auditor's appendix.
 5. **Spend factors and price years** — settled. EPA's published v1.3 NAICS-6 factors are loaded as the "EPA USEEIO 1.3" library (price year 2022, so spend is deflated). The seeded DEFRA `eeio-2025-*` and EPA 3-digit `useeio-v1.3-naics-*` factors have no traceable source and are flagged "Unverified" (migration `20260923000022`). ADEME's 2023 EUR ratios per NAF division are loaded (price year 2023; EUR spend is deflated with the euro area HICP). UK spend uses the Defra/University of Leeds multipliers by UK SIC group (2015-2023, each year at its own prices); Defra plans a different channel for them from 2027, so check the source each year.
 6. **CPI table** (`lib/calculation/price-index.ts`) — GBP checked against ONS Table 15a (D7BT annual averages) to 2025; 2012-2014 were wrong and are corrected. USD 2012-2025 checked against the BLS API (CUUR0000SA0); 2025 is BLS's published annual average 321.943 (eleven months, no October 2025). EUR is Eurostat's euro area HICP annual average (prc_hicp_aind, 2015 = 100), 2012-2025 from the export of 6 February 2026; a factor whose country has its own index (France HICP, `COUNTRY_INDEX`) is deflated with that instead. The Data upkeep workflow adds each year's figures when published (January) and opens a PR.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships. It is not committed: `.claude/hooks/graphify-init.sh` (SessionStart) installs or upgrades the CLI in cloud sessions, installs graphify's git hooks (rebuild after every commit and checkout) and rebuilds the graph in the background, so it can lag a fresh session by about a minute.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- The git hooks rebuild the graph after each commit; run `graphify update .` yourself only to query uncommitted changes (AST-only, no API cost).
