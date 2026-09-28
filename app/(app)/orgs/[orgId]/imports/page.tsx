@@ -24,7 +24,8 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   let isAdminOrEditor = false;
   try {
     const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
-    isAdminOrEditor = membership.role === "admin" || membership.role === "editor";
+    // Same roles the import API accepts, so sustainability leads see the actions too.
+    isAdminOrEditor = ROLE_GROUPS.editor.includes(membership.role);
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");

@@ -84,4 +84,19 @@ describe("connector ingest", () => {
     const known = new Set(CANONICAL_FIELDS.map((f) => f.canonical));
     expect(header.filter((h) => !known.has(h))).toEqual([]);
   });
+
+  it("produces a CSV the import worker reads without a stored mapping", async () => {
+    const csv = recordsToCsv([
+      { externalRecordId: "x1", emissionCategoryCode: "s2-electricity-lb", amount: 1200, unit: "kWh", activityDate: new Date("2026-03-01"), facilityCode: "Depot", supplierName: "PowerCo", spendAmount: 300, spendCurrency: "GBP" },
+    ]);
+    const { parseSpreadsheet } = await import("@/lib/imports/parser");
+    const { mapColumns, validateRow } = await import("@/lib/imports/validator");
+    const { headers, rows } = await parseSpreadsheet(Buffer.from(csv), "connector.csv");
+    const map = mapColumns(headers);
+    expect(headers.filter((h) => !map.has(h))).toEqual([]);
+
+    const { data, errors } = validateRow(rows[0], map, new Map([["s2-electricity-lb", "cat"]]), new Map([["depot", "fac"]]), new Map());
+    expect(errors).toEqual([]);
+    expect(data).toMatchObject({ emissionCategoryId: "cat", amount: 1200, unit: "kWh", activityDate: "2026-03-01", facilityId: "fac", supplierName: "PowerCo", spendAmount: 300, spendCurrency: "GBP" });
+  });
 });

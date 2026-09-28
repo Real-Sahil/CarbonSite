@@ -110,7 +110,7 @@ const ACTIVITY_SYNONYMS: Record<string, string[]> = {
   ],
   scope2Method: [
     "scope2_method", "scope_2_method", "electricity_method", "market_location_based",
-    "mb_lb", "accounting_method",
+    "mb_lb", "accounting_method", "market/location_based",
   ],
   assumptionNotes: [
     "assumptions", "assumption_notes", "comments", "data_quality", "quality_notes",
@@ -129,6 +129,9 @@ const ACTIVITY_SYNONYMS: Record<string, string[]> = {
 function buildAliasIndex(synonyms: Record<string, string[]>): Map<string, string> {
   const index = new Map<string, string>();
   for (const [canonical, aliases] of Object.entries(synonyms)) {
+    // The canonical name itself ("emissionCategoryCode", "spendAmount"): the
+    // connector ingest CSV and the downloadable template use these headers.
+    index.set(canonical.toLowerCase(), canonical);
     for (const alias of aliases) {
       if (!index.has(alias)) index.set(alias.toLowerCase(), canonical);
     }
@@ -164,7 +167,7 @@ export function detectActivityColumnMapping(sourceHeaders: string[]): MappingRes
     const normalized = header.trim().toLowerCase().replaceAll(/[\s-]+/g, "_");
     const canonical = ACTIVITY_ALIAS_INDEX.get(normalized);
     if (canonical && !usedCanonicals.has(canonical)) {
-      const confidence = normalized === canonical ? "exact" : "synonym";
+      const confidence = normalized === canonical.toLowerCase() ? "exact" : "synonym";
       mapped.push({ sourceHeader: header, canonicalField: canonical, confidence });
       usedCanonicals.add(canonical);
     } else {

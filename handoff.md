@@ -37,7 +37,7 @@
 | Open PRs | Dependabot only (#27-#33 Flutter, #89 dev deps, #90 production deps, 49 updates) and #60 "ECC bundle" (third-party, stale since 2026-09-04). None from this work. |
 | Deploy | Vercel production READY for `9d8128ce`; CI, migrations and CodeQL passed. |
 
-**Settled 2026-09-28:** the owner said to always merge to `main`. The push to `main` was blocked by the session's auto-mode permission check, so these commits are NOT on `main` yet: the owner runs `git push origin HEAD:main` from this branch or adds a permission rule allowing it. (Was: how these commits reach `main` (PR from this branch, or direct). Earlier work landed on `main` already; ask before doing either.
+**Settled 2026-09-28:** the owner said to always merge to `main`. PR #92 (nav, ERP export profiles, CI mobile change) was merged on 2026-09-28 after green CI; merge through a PR with the GitHub tools, not a direct push to `main`.
 
 ---
 
@@ -85,7 +85,7 @@ Recommended order:
 Marketing may name only systems that work end to end (today: Xero, plus "any ERP by export").
 **Status:** item 1 DONE 2026-09-28 (see `CLAUDE.md` > ERP export profiles). Verified: unit tests, cross-tenant tests, all migrations replayed on Postgres 16 with zero drift, and the worker run end to end on a Sage-style ledger CSV. Not verified: the profile editor page in a signed-in browser (needs a seeded tenant), and the templates' header names against real SAP/Causeway/COINS/Sage exports (ask a pilot customer for a sample). Known limit: credit notes are left out with a warning, not netted, so a period with credits overstates spend until someone nets them. Next: items 2 to 4 need a go.
 
-### C. Merge to `main`: PENDING. Branch fast-forwards cleanly onto `main` (includes additive migration `20260928000053`); the push was blocked by the permission check, see section 2. Future work merges to `main` by default once allowed.
+### C. Merge to `main`: DONE 2026-09-28 (PR #92).
 
 ---
 
