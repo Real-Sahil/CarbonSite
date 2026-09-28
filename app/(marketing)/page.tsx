@@ -312,7 +312,7 @@ export default function HomePage() {
             <SectionIntro
               eyebrow="Analytics"
               title="Your footprint, broken down the way the board asks."
-              lead="The largest sources first, split by scope, with every bar traceable to the records and factors behind it. Here is the demo tenant's year."
+              lead="The largest sources first, split by scope, with every bar traceable to the records and factors behind it."
             />
             <TextLink href="/product#analytics">More on analytics</TextLink>
           </div>

@@ -85,7 +85,7 @@ export function DemoAnalytics({ caption }: { caption?: string }) {
   const { ref, seen } = useSeen<HTMLDivElement>();
 
   return (
-    <ProductFrame caption={caption ?? "Northgate Civils Ltd, FY2025. Demo data from the demo tenant's calculation run, in the app's scope colours."}>
+    <ProductFrame caption={caption ?? "Northgate Civils Ltd, a sample company. FY2025."}>
       <div ref={ref} className="grid gap-6 p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -164,7 +164,6 @@ export function DemoAnalytics({ caption }: { caption?: string }) {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-[12px] text-mk-text-3">Bars take their scope&apos;s colour. The seven largest categories make up 4,706.44 of the 4,710.05 tonnes.</p>
         </div>
       </div>
     </ProductFrame>
