@@ -5,8 +5,8 @@ import { PrismaClient } from "@prisma/client";
 // data entry, calculation, publication, a PDF report, a field submission from
 // capture to approval, role boundaries and a cross-tenant attempt. It creates
 // accounts, so it only runs with E2E_LOCAL=1 (CI's e2e-local job, which
-// migrates and seeds a throwaway Postgres); the smoke job that points at
-// production skips it.
+// migrates and seeds a throwaway Postgres); a run pointed at a deployed site
+// skips it.
 //
 // Totals are the hand-worked DESNZ 2025 values also checked per record in
 // tests/golden/pilot-inventory.test.ts.

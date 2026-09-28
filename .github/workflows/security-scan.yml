@@ -27,6 +27,9 @@ permissions:
 jobs:
   gitleaks:
     name: Secrets — Gitleaks
+    # The weekly run is for OSV (new advisories on unchanged lockfiles); the
+    # tree has not changed since the last push, so Gitleaks skips it.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:

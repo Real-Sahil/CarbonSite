@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 
-// Smoke tests verify the deployed app is reachable and responds without
-// server errors. They run against the production or staging URL in CI
-// (set PLAYWRIGHT_BASE_URL) or against the local dev server.
+// Smoke tests: the app serves pages and the public API without server
+// errors. CI runs them against the pull request's own production build (the
+// e2e-local job); set PLAYWRIGHT_BASE_URL to point them at a deployed site.
+// Production reachability is watched by .github/workflows/uptime.yml.
 
 test.describe("Marketing pages", () => {
   test("home page loads", async ({ page }) => {

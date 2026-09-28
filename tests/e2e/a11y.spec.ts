@@ -3,8 +3,8 @@ import AxeBuilder from "@axe-core/playwright";
 
 // WCAG 2.1 A and AA checks (axe-core) on the public pages buyers and
 // evaluators see first. Runs in CI's e2e-local job against the build of the
-// pull request itself, so a fix is checked before it ships; the smoke job,
-// which points at production, skips it.
+// pull request itself, so a fix is checked before it ships; a run pointed at
+// a deployed site skips it.
 
 test.skip(!process.env.E2E_LOCAL, "runs against the local build in CI's e2e-local job (E2E_LOCAL=1)");
 

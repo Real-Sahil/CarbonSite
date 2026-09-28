@@ -1,6 +1,6 @@
 name: Uptime
 
-# Checks production from outside every 10 minutes (GitHub may start a
+# Checks production from outside every 15 minutes (GitHub may start a
 # scheduled run a few minutes late). A check that fails three times in a row,
 # 20 seconds apart, opens one issue labelled "uptime" (never a duplicate) and
 # comments on it while the outage lasts; the first passing run closes it.
@@ -10,7 +10,7 @@ name: Uptime
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
