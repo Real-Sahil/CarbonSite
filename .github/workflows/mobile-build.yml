@@ -4,12 +4,10 @@ concurrency:
   group: mobile-release-${{ github.ref }}
   cancel-in-progress: true
 
+# Release builds only: push a tag (mobile-v1.4.0 or v1.4.0) or run it from the
+# Actions tab. Ordinary commits, including to main, never build the apps.
 on:
   push:
-    branches: [main]
-    paths:
-      - "mobile/**"
-      - ".github/workflows/mobile-build.yml"
     tags:
       - "v*"
       - "mobile-v*"
