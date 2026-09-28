@@ -38,5 +38,15 @@ describe("prices by lookup key", () => {
     expect(planForSubscription(sub("price_any", "starter_annual"))).toBe("starter");
     expect(planForSubscription(sub("price_env_growth_annual", null))).toBe("growth");
     expect(planForSubscription(sub("price_unknown", "enterprise_custom"))).toBeNull();
+    expect(planForSubscription(sub("price_any", "essentials_annual"))).toBe("essentials");
+  });
+
+  it("sells Essentials yearly only", async () => {
+    list.mockResolvedValue({ data: [{ id: "price_live_essentials_annual" }] });
+    const { resolvePriceId, planIntervals } = await import("../stripe");
+    expect(planIntervals("essentials")).toEqual(["annual"]);
+    expect(planIntervals("starter")).toEqual(["monthly", "annual"]);
+    expect(await resolvePriceId("essentials", "annual")).toBe("price_live_essentials_annual");
+    await expect(resolvePriceId("essentials", "monthly")).rejects.toThrow("not sold monthly");
   });
 });

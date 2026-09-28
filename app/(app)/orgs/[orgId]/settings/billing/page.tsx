@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowUpRight, Award, Zap, FileText, Upload, Calculator, Key, Users, Building2, Check, X as XIcon } from "lucide-react";
-import { getLimits, hasFeature, PLAN_LABELS, PLAN_PRICES, usagePercent, type PlanFeature } from "@/lib/billing/limits";
+import { getLimits, hasFeature, PLAN_ANNUAL_TOTAL, PLAN_LABELS, PLAN_PRICES, usagePercent, type PlanFeature } from "@/lib/billing/limits";
 import { PaymentMethodsSection } from "./payment-methods-section";
 import { SubscriptionActions } from "./subscription-actions";
 import { PilotToggle } from "./pilot-toggle";
@@ -13,7 +13,7 @@ import { PilotToggle } from "./pilot-toggle";
 // Captured once at module load — pure constant, safe for React Compiler.
 const PAGE_LOAD_TIME = Date.now();
 
-type Plan = "trial" | "starter" | "growth" | "enterprise";
+type Plan = "trial" | "essentials" | "starter" | "growth" | "enterprise";
 
 interface UsageData {
   plan: Plan;
@@ -38,13 +38,14 @@ const METER_CONFIG = [
   { key: "frameworks",                limitKey: "frameworks",               label: "Management system frameworks", icon: Award },
 ];
 
-const PLANS: Plan[] = ["trial", "starter", "growth", "enterprise"];
+const PLANS: Plan[] = ["trial", "essentials", "starter", "growth", "enterprise"];
 
 const FEATURE_CONFIG: { key: PlanFeature; label: string }[] = [
   { key: "accountingIntegrations", label: "Accounting software sync" },
   { key: "invoiceAnomalyDetection", label: "Invoice anomaly detection" },
   { key: "liveDashboard",          label: "Live real-time dashboard" },
   { key: "sso",                    label: "SSO / SAML" },
+  { key: "allReportTypes",         label: "Every report type (Essentials: CRP and GHG Protocol)" },
 ];
 
 function formatLimit(n: number): string {
@@ -143,6 +144,9 @@ export default function BillingPage() {
                 £{PLAN_PRICES[plan].monthly}/mo per organisation
               </p>
             )}
+            {plan === "essentials" && (
+              <p className="text-sm text-gray-500 mt-0.5">£{PLAN_ANNUAL_TOTAL.essentials}/yr per organisation</p>
+            )}
             {plan === "trial" && (
               <p className="text-sm text-gray-500 mt-0.5">Free during trial</p>
             )}
@@ -237,7 +241,7 @@ export default function BillingPage() {
                 <td className="py-3 px-6 text-gray-500">Price</td>
                 {PLANS.map((p) => (
                   <td key={p} className="py-3 px-4 text-center text-gray-700 tabular-nums">
-                    {p === "enterprise" ? `From £${PLAN_PRICES[p].monthly}/mo, billed annually` : PLAN_PRICES[p].monthly === 0 ? "Free" : `£${PLAN_PRICES[p].monthly}/mo`}
+                    {p === "enterprise" ? `From £${PLAN_PRICES[p].monthly}/mo, billed annually` : p === "essentials" ? `£${PLAN_ANNUAL_TOTAL.essentials}/yr` : PLAN_PRICES[p].monthly === 0 ? "Free" : `£${PLAN_PRICES[p].monthly}/mo`}
                   </td>
                 ))}
               </tr>
@@ -275,7 +279,7 @@ export default function BillingPage() {
       </div>
 
       <p className="text-xs text-gray-500">
-        Switch between Starter and Growth any time above. For Enterprise —
+        Switch between Essentials, Starter and Growth any time above. For Enterprise —
         custom contracts, SSO, and dedicated support — contact{" "}
         <a href="mailto:hello@metricora.co.uk" className="text-[#c2410c] hover:underline">
           hello@metricora.co.uk

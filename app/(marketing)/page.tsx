@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PLAY_URL } from "@/components/marketing/brand-marks";
 import { LaunchFilm } from "@/components/marketing/launch-film";
-import { PLAN_PRICES } from "@/lib/billing/limits";
+import { PLAN_ANNUAL_TOTAL, PLAN_PRICES } from "@/lib/billing/limits";
 import { withSocial } from "@/lib/seo/page-meta";
 import Image from "next/image";
 import Link from "next/link";
@@ -95,6 +95,7 @@ const jsonLd = {
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       offers: [
+        { "@type": "Offer", name: "Essentials, annual", price: String(PLAN_ANNUAL_TOTAL.essentials), priceCurrency: "GBP" },
         { "@type": "Offer", name: "Starter", price: String(PLAN_PRICES.starter.monthly), priceCurrency: "GBP" },
         { "@type": "Offer", name: "Growth", price: String(PLAN_PRICES.growth.monthly), priceCurrency: "GBP" },
       ],

@@ -10,7 +10,7 @@ import { countedFrameworks } from "@/lib/management-systems/catalogue/editions";
 // created with trialEndsAt = now + this many days.
 export const TRIAL_LENGTH_DAYS = 30;
 
-export type Plan = "trial" | "starter" | "growth" | "enterprise";
+export type Plan = "trial" | "essentials" | "starter" | "growth" | "enterprise";
 
 export interface PlanLimits {
   fieldSubmissionsPerMonth: number;
@@ -34,6 +34,19 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     members: 3,
     facilities: 2,
     frameworks: 3,
+  },
+  // Entry tier for an SME that needs a PPN 006 Carbon Reduction Plan for a
+  // tender and nothing more: one site, the CRP and GHG Protocol reports only
+  // (ESSENTIALS_REPORT_TYPES), no management system frameworks. Billed yearly.
+  essentials: {
+    fieldSubmissionsPerMonth: 100,
+    reportsPerMonth: 4,
+    importsPerMonth: 10,
+    calculationRunsPerMonth: 20,
+    apiRequestsPerMonth: 1_000,
+    members: 2,
+    facilities: 1,
+    frameworks: 0,
   },
   // Priced per organisation by sites and web users (founder/pricing-strategy.md).
   // Field workers and supplier logins are not counted as members.
@@ -70,20 +83,23 @@ const PLAN_LIMITS: Record<Plan, PlanLimits> = {
 };
 
 // GBP; no VAT is charged while MetricOra is not VAT-registered. `annual` is the per-month equivalent of the yearly price
-// (two months free): Starter £990/yr, Growth £2,990/yr. Enterprise is
+// (two months free): Starter £990/yr, Growth £2,990/yr. Essentials is yearly
+// only (£199/yr; `monthly` 0 means no monthly price). Enterprise is
 // sales-led from £9,000/yr (£750/month), billed annually by invoice.
 export const PLAN_PRICES: Record<Plan, { monthly: number; annual: number }> = {
   trial:      { monthly: 0,   annual: 0 },
+  essentials: { monthly: 0,   annual: 16.58 },
   starter:    { monthly: 99,  annual: 82.5 },
   growth:     { monthly: 299, annual: 249.17 },
   enterprise: { monthly: 750, annual: 750 },
 };
 
 /** Yearly price for the self-serve plans (what Stripe's annual price charges). */
-export const PLAN_ANNUAL_TOTAL: Record<"starter" | "growth", number> = { starter: 990, growth: 2990 };
+export const PLAN_ANNUAL_TOTAL: Record<"essentials" | "starter" | "growth", number> = { essentials: 199, starter: 990, growth: 2990 };
 
 export const PLAN_LABELS: Record<Plan, string> = {
   trial:      "Trial",
+  essentials: "Essentials",
   starter:    "Starter",
   growth:     "Growth",
   enterprise: "Enterprise",
@@ -102,15 +118,24 @@ export type PlanFeature =
   | "sso" // OIDC/SAML
   | "socialValue" // TOMs / social value measurement and commitments
   | "bidCarbonPack" // bid_carbon_pack report
-  | "pas2080"; // PAS 2080 carbon management plans
+  | "pas2080" // PAS 2080 carbon management plans
+  | "allReportTypes"; // every report type, not only ESSENTIALS_REPORT_TYPES
 
 const PLAN_FEATURES: Record<Plan, Record<PlanFeature, boolean>> = {
   // Trial shows the Growth tier so a prospect can try what they would buy.
-  trial:      { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: true,  bidCarbonPack: true,  pas2080: true  },
-  starter:    { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: false, bidCarbonPack: false, pas2080: false },
-  growth:     { accountingIntegrations: true,  invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: true,  bidCarbonPack: true,  pas2080: true  },
-  enterprise: { accountingIntegrations: true,  invoiceAnomalyDetection: true,  liveDashboard: true,  sso: true,  socialValue: true,  bidCarbonPack: true,  pas2080: true  },
+  trial:      { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: true,  bidCarbonPack: true,  pas2080: true,  allReportTypes: true  },
+  essentials: { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: false, bidCarbonPack: false, pas2080: false, allReportTypes: false },
+  starter:    { accountingIntegrations: false, invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: false, bidCarbonPack: false, pas2080: false, allReportTypes: true  },
+  growth:     { accountingIntegrations: true,  invoiceAnomalyDetection: false, liveDashboard: false, sso: false, socialValue: true,  bidCarbonPack: true,  pas2080: true,  allReportTypes: true  },
+  enterprise: { accountingIntegrations: true,  invoiceAnomalyDetection: true,  liveDashboard: true,  sso: true,  socialValue: true,  bidCarbonPack: true,  pas2080: true,  allReportTypes: true  },
 };
+
+/** The only report types the Essentials plan generates. */
+export const ESSENTIALS_REPORT_TYPES = ["ppn_006_crp", "ghg_protocol"] as const;
+
+export function reportTypeAllowed(plan: string, type: string): boolean {
+  return hasFeature(plan, "allReportTypes") || (ESSENTIALS_REPORT_TYPES as readonly string[]).includes(type);
+}
 
 export function getLimits(plan: string): PlanLimits {
   return PLAN_LIMITS[(plan as Plan) ?? "trial"] ?? PLAN_LIMITS.trial;
@@ -126,10 +151,11 @@ export function hasFeature(plan: string, feature: PlanFeature): boolean {
  * (rather than throwing) keeps this usable from routes that don't funnel
  * errors through handleRouteError().
  */
-export const PLAN_ORDER = ["trial", "starter", "growth", "enterprise"] as const satisfies readonly Plan[];
+export const PLAN_ORDER = ["trial", "essentials", "starter", "growth", "enterprise"] as const satisfies readonly Plan[];
 
-function minimumPlanFor(feature: PlanFeature): Plan {
-  return PLAN_ORDER.find((p) => PLAN_FEATURES[p][feature]) ?? "enterprise";
+/** Cheapest paid plan with the feature (trial is left out: it previews Growth). */
+export function minimumPlanFor(feature: PlanFeature): Plan {
+  return PLAN_ORDER.find((p) => p !== "trial" && PLAN_FEATURES[p][feature]) ?? "enterprise";
 }
 
 export async function requireFeature(orgId: string, feature: PlanFeature): Promise<NextResponse | null> {
@@ -151,6 +177,21 @@ export async function requireFeature(orgId: string, feature: PlanFeature): Promi
       code: "PLAN_UPGRADE_REQUIRED",
       message: `This feature requires the ${PLAN_LABELS[requiredPlan]} plan. This organisation is on ${PLAN_LABELS[plan]}.`,
       details: { feature, plan, requiredPlan },
+    },
+    { status: 402 },
+  );
+}
+
+/** 402 when the org's plan does not generate this report type (Essentials: CRP and GHG Protocol only), else null. */
+export async function requireReportType(orgId: string, type: string): Promise<NextResponse | null> {
+  const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } });
+  if (!org || org.isPilot || reportTypeAllowed(org.plan, type)) return null;
+  const plan = org.plan as Plan;
+  return NextResponse.json(
+    {
+      code: "PLAN_UPGRADE_REQUIRED",
+      message: `The ${PLAN_LABELS[plan] ?? plan} plan includes the Carbon Reduction Plan and GHG Protocol reports. Upgrade to Starter for every other report type.`,
+      details: { feature: "allReportTypes", plan, requiredPlan: minimumPlanFor("allReportTypes"), type },
     },
     { status: 402 },
   );
@@ -357,6 +398,16 @@ export async function requireCapacity(
         : await countAdoptedFrameworks(orgId);
   if (used < limit) return null;
   const plan = org.plan as Plan;
+  if (limit === 0) {
+    return NextResponse.json(
+      {
+        code: "PLAN_LIMIT_REACHED",
+        message: `Management systems are not included in the ${PLAN_LABELS[plan] ?? plan} plan. Upgrade to Starter to adopt a framework.`,
+        details: { resource, limit, used, plan },
+      },
+      { status: 402 },
+    );
+  }
   const noun = resource === "members" ? "web users" : resource === "facilities" ? "sites" : limit === 1 ? "management system framework" : "management system frameworks";
   const tail =
     resource === "frameworks"

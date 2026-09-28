@@ -106,19 +106,26 @@ export function extractPaymentMethodData(paymentMethod: Stripe.PaymentMethod): P
 
 // Self-serve subscription plans and their billing intervals. Enterprise has
 // no self-serve price (PLAN_PRICES.enterprise is 0/0, "contact sales") and
-// trial has nothing to subscribe to, so only these two are ever passed here.
-export type SubscribablePlan = 'starter' | 'growth';
+// trial has nothing to subscribe to. Essentials is sold yearly only.
+export type SubscribablePlan = 'essentials' | 'starter' | 'growth';
 export type BillingInterval = 'monthly' | 'annual';
 
 // Stripe Price IDs are created in the Stripe Dashboard, not something this
 // codebase can generate — one env var per (plan, interval) combination.
-const PRICE_ENV_VARS: Record<SubscribablePlan, Record<BillingInterval, string>> = {
+const PRICE_ENV_VARS: Record<SubscribablePlan, Partial<Record<BillingInterval, string>>> = {
+  essentials: { annual: 'STRIPE_PRICE_ESSENTIALS_ANNUAL' },
   starter: { monthly: 'STRIPE_PRICE_STARTER_MONTHLY', annual: 'STRIPE_PRICE_STARTER_ANNUAL' },
   growth: { monthly: 'STRIPE_PRICE_GROWTH_MONTHLY', annual: 'STRIPE_PRICE_GROWTH_ANNUAL' },
 };
 
+/** Intervals a plan is sold on (Essentials: annual only). */
+export function planIntervals(plan: SubscribablePlan): BillingInterval[] {
+  return Object.keys(PRICE_LOOKUP_KEYS[plan]) as BillingInterval[];
+}
+
 export function getPriceId(plan: SubscribablePlan, interval: BillingInterval): string {
   const envVar = PRICE_ENV_VARS[plan][interval];
+  if (!envVar) throw new Error(`${plan} is not sold ${interval}.`);
   const priceId = process.env[envVar];
   if (!priceId) {
     throw new Error(`${envVar} is not set — cannot subscribe an organization to ${plan}/${interval} without it.`);
@@ -218,11 +225,13 @@ export function getSubscriptionPriceId(subscription: Stripe.Subscription): strin
 }
 
 // Every price carries a lookup key, identical in the sandbox and the live
-// account (starter_monthly, starter_annual, growth_monthly, growth_annual).
+// account (essentials_annual, starter_monthly, starter_annual, growth_monthly,
+// growth_annual).
 // Looking prices up by key means the prices always come from the account
 // STRIPE_SECRET_KEY belongs to, so switching test and live keys needs no
 // price ID changes. The STRIPE_PRICE_* env vars remain a fallback.
-export const PRICE_LOOKUP_KEYS: Record<SubscribablePlan, Record<BillingInterval, string>> = {
+export const PRICE_LOOKUP_KEYS: Record<SubscribablePlan, Partial<Record<BillingInterval, string>>> = {
+  essentials: { annual: 'essentials_annual' },
   starter: { monthly: 'starter_monthly', annual: 'starter_annual' },
   growth: { monthly: 'growth_monthly', annual: 'growth_annual' },
 };
@@ -231,6 +240,7 @@ const resolvedPriceIds = new Map<string, string>();
 
 export async function resolvePriceId(plan: SubscribablePlan, interval: BillingInterval): Promise<string> {
   const lookupKey = PRICE_LOOKUP_KEYS[plan][interval];
+  if (!lookupKey) throw new Error(`${plan} is not sold ${interval}.`);
   const cached = resolvedPriceIds.get(lookupKey);
   if (cached) return cached;
   const { data } = await getStripe().prices.list({ lookup_keys: [lookupKey], active: true, limit: 1 });
@@ -255,7 +265,8 @@ export function planForSubscription(subscription: Stripe.Subscription): Subscrib
 export function planForPriceId(priceId: string): SubscribablePlan | null {
   for (const plan of Object.keys(PRICE_ENV_VARS) as SubscribablePlan[]) {
     for (const interval of Object.keys(PRICE_ENV_VARS[plan]) as BillingInterval[]) {
-      if (process.env[PRICE_ENV_VARS[plan][interval]] === priceId) return plan;
+      const envVar = PRICE_ENV_VARS[plan][interval];
+      if (envVar && process.env[envVar] === priceId) return plan;
     }
   }
   return null;
