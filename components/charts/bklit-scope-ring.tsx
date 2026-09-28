@@ -4,8 +4,7 @@ import { RingChart } from "./ring-chart";
 import { RingCenter } from "./ring-center";
 import { Ring } from "./ring";
 import type { RingData } from "./ring-context";
-
-const SCOPE_COLORS = ["#e76f51", "#f4a261", "#e9c46a"];
+import { scopeColor } from "./palette";
 
 export interface ScopeRingDatum {
   scope: number;
@@ -34,11 +33,11 @@ export function BklitScopeRing({ data, height = 280 }: BklitScopeRingProps) {
     );
   }
 
-  const ringData: RingData[] = rows.map((d, i) => ({
+  const ringData: RingData[] = rows.map((d) => ({
     label: d.label,
     value: d.value / 1000,
     maxValue: total / 1000,
-    color: SCOPE_COLORS[i % SCOPE_COLORS.length],
+    color: scopeColor(d.scope),
   }));
 
   return (
@@ -58,11 +57,11 @@ export function BklitScopeRing({ data, height = 280 }: BklitScopeRingProps) {
         ))}
       </RingChart>
       <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1">
-        {rows.map((d, i) => (
+        {rows.map((d) => (
           <div key={d.scope} className="flex items-center gap-1.5">
             <span
               className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
-              style={{ background: SCOPE_COLORS[i % SCOPE_COLORS.length] }}
+              style={{ background: scopeColor(d.scope) }}
             />
             <span className="text-xs text-slate-600">
               {d.label}

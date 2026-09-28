@@ -2,6 +2,7 @@
 
 import { BarChart } from "./bar-chart";
 import { Bar } from "./bar";
+import { SCOPE_COLORS } from "./palette";
 
 export interface TrendLineDatum {
   label: string;
@@ -16,17 +17,10 @@ interface BklitTrendAreaProps {
 }
 
 const SCOPE_SERIES = [
-  { key: "scope1" as const, label: "Scope 1", color: "#e76f51" },
-  { key: "scope2" as const, label: "Scope 2", color: "#f4a261" },
-  { key: "scope3" as const, label: "Scope 3", color: "#e9c46a" },
+  { key: "scope1" as const, label: "Scope 1", color: SCOPE_COLORS[1] },
+  { key: "scope2" as const, label: "Scope 2", color: SCOPE_COLORS[2] },
+  { key: "scope3" as const, label: "Scope 3", color: SCOPE_COLORS[3] },
 ];
-
-function tonnes(kg: number): string {
-  if (kg === 0) return "0";
-  return (kg / 1000).toLocaleString("en-GB", {
-    maximumFractionDigits: 1,
-  });
-}
 
 export function BklitTrendArea({ data, height = 260 }: BklitTrendAreaProps) {
   if (data.length === 0) {
@@ -65,9 +59,14 @@ export function BklitTrendArea({ data, height = 260 }: BklitTrendAreaProps) {
         barGap={0.25}
         animationDuration={1000}
       >
-        <Bar dataKey="scope1" fill="#e76f51" lineCap="butt" />
-        <Bar dataKey="scope2" fill="#f97316" lineCap="butt" />
-        <Bar dataKey="scope3" fill="#e9c46a" lineCap="round" />
+        {SCOPE_SERIES.map((s, i) => (
+          <Bar
+            key={s.key}
+            dataKey={s.key}
+            fill={s.color}
+            lineCap={i === SCOPE_SERIES.length - 1 ? "round" : "butt"}
+          />
+        ))}
       </BarChart>
       <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
         {SCOPE_SERIES.map((s) => (

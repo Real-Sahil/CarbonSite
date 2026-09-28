@@ -2,12 +2,7 @@
 
 import { BarChart } from "./bar-chart";
 import { Bar } from "./bar";
-
-const SCOPE_COLORS: Record<number, string> = {
-  1: "#e76f51",
-  2: "#f4a261",
-  3: "#e9c46a",
-};
+import { scopeColor } from "./palette";
 
 export interface CategoryBarDatum {
   name: string;
@@ -50,7 +45,7 @@ export function BklitCategoryBar({
     name: d.name.length > 22 ? `${d.name.slice(0, 20)}…` : d.name,
     value: d.value,
     scope: d.scope,
-    fill: SCOPE_COLORS[d.scope] ?? "#94a3b8",
+    fill: scopeColor(d.scope),
   }));
 
   return (
@@ -71,7 +66,7 @@ export function BklitCategoryBar({
       >
         <Bar
           dataKey="value"
-          fill="#f4a261"
+          colorKey="fill"
           lineCap="round"
           animationType="grow"
         />
@@ -82,7 +77,7 @@ export function BklitCategoryBar({
             <div className="flex items-center gap-1.5 min-w-0">
               <span
                 className="inline-block h-2 w-2 rounded-full shrink-0"
-                style={{ background: SCOPE_COLORS[d.scope] ?? "#94a3b8" }}
+                style={{ background: scopeColor(d.scope) }}
               />
               <span className="truncate text-slate-600">{d.name}</span>
             </div>

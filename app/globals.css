@@ -82,9 +82,9 @@
   --color-sidebar-label:        #66756F;
 
   /* Scope colours — GHG Protocol scopes mapped to Direction 3 palette */
-  --color-scope-1: #0F766E;
-  --color-scope-2: #15803D;
-  --color-scope-3: #1D4ED8;
+  --color-scope-1: #0B8F80;
+  --color-scope-2: #E0692A;
+  --color-scope-3: #3B6FD4;
 
   /* Legacy aliases (keeps old var() references working) */
   --color-forest-ink:    #0F766E;

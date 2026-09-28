@@ -9,17 +9,15 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatTonnesValue, scopeColor } from "@/components/charts/palette";
 
-const COLORS = [
-  "#f97316",
-  "#3b82f6",
-  "#10b981",
-  "#8b5cf6",
-  "#ef4444",
-  "#fbbf24",
-  "#06b6d4",
-  "#ec4899",
-];
+interface CategoryRow {
+  name: string;
+  code: string;
+  scope: number;
+  /** kg CO2e from the API. */
+  value: number;
+}
 
 export function CategoryBreakdownChart({ orgId }: { orgId: string }) {
   const { data, isLoading, error } = useQuery({
@@ -35,7 +33,9 @@ export function CategoryBreakdownChart({ orgId }: { orgId: string }) {
   if (isLoading) return <Skeleton className="h-80 w-full" />;
   if (error) return <div className="text-red-600">Failed to load chart</div>;
 
-  const chartData = data?.data || [];
+  // The API returns kg CO2e; the chart shows tonnes. Slices take their scope's
+  // colour (categories are too many to give each its own distinguishable hue).
+  const chartData = ((data?.data ?? []) as CategoryRow[]).map((r) => ({ ...r, value: r.value / 1000 }));
 
   return (
     <div className="w-full h-96">
@@ -48,27 +48,28 @@ export function CategoryBreakdownChart({ orgId }: { orgId: string }) {
             innerRadius="55%"
             outerRadius="85%"
             paddingAngle={1}
-            fill="#8884d8"
+            stroke="#ffffff"
+            strokeWidth={2}
             dataKey="value"
           >
-            {chartData.map((entry: typeof chartData[0], index: number) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {chartData.map((entry) => (
+              <Cell key={entry.code} fill={scopeColor(entry.scope)} />
             ))}
           </Pie>
           <Tooltip
-            formatter={(value) => `${(value as number).toFixed(2)} tCO₂e`}
+            formatter={(value) => `${formatTonnesValue(value as number)} tCO₂e`}
           />
         </PieChart>
       </ResponsiveContainer>
       <div className="mt-2 flex max-h-24 flex-wrap justify-center gap-x-4 gap-y-1 overflow-y-auto px-2">
-        {chartData.map((entry: typeof chartData[0], index: number) => (
-          <div key={entry.name} className="flex items-center gap-1.5 text-xs text-[#4B5563]">
+        {chartData.map((entry) => (
+          <div key={entry.code} className="flex items-center gap-1.5 text-xs text-[#4B5563]">
             <span
               className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+              style={{ backgroundColor: scopeColor(entry.scope) }}
             />
             <span className="whitespace-nowrap">
-              {entry.name}: {entry.value.toFixed(1)} tCO₂e
+              {entry.name}: {formatTonnesValue(entry.value, 1)} tCO₂e
             </span>
           </div>
         ))}

@@ -10,8 +10,14 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatTonnesValue, scopeColor } from "@/components/charts/palette";
 
-const COLORS = ["#f97316", "#3b82f6", "#10b981"];
+interface ScopeRow {
+  scope: number;
+  name: string;
+  /** kg CO2e from the API. */
+  value: number;
+}
 
 export function EmissionsByScopeChart({ orgId }: { orgId: string }) {
   const { data, isLoading, error } = useQuery({
@@ -27,7 +33,8 @@ export function EmissionsByScopeChart({ orgId }: { orgId: string }) {
   if (isLoading) return <Skeleton className="h-80 w-full" />;
   if (error) return <div className="text-red-600">Failed to load chart</div>;
 
-  const chartData = data?.data || [];
+  // The API returns kg CO2e; the chart shows tonnes.
+  const chartData = ((data?.data ?? []) as ScopeRow[]).map((r) => ({ ...r, value: r.value / 1000 }));
 
   return (
     <div className="w-full h-80">
@@ -38,17 +45,18 @@ export function EmissionsByScopeChart({ orgId }: { orgId: string }) {
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, value }) => `${name}: ${value.toFixed(2)} tCO₂e`}
+            label={({ name, value }) => `${name}: ${formatTonnesValue(value as number)} tCO₂e`}
             outerRadius={120}
-            fill="#8884d8"
+            stroke="#ffffff"
+            strokeWidth={2}
             dataKey="value"
           >
-            {chartData.map((entry: typeof chartData[0], index: number) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {chartData.map((entry) => (
+              <Cell key={entry.scope} fill={scopeColor(entry.scope)} />
             ))}
           </Pie>
           <Tooltip
-            formatter={(value) => `${(value as number).toFixed(2)} tCO₂e`}
+            formatter={(value) => `${formatTonnesValue(value as number)} tCO₂e`}
           />
           <Legend />
         </PieChart>

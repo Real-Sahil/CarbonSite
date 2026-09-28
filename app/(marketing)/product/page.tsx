@@ -16,6 +16,7 @@ import {
   TextLink,
   type Tone,
 } from "@/components/marketing/kit";
+import { DemoAnalytics } from "@/components/marketing/demo-analytics";
 
 export const metadata: Metadata = withSocial({
   title: "Platform",
@@ -138,6 +139,23 @@ export default function ProductPage() {
         media={<ProductLoop src="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" label="Calculation run detail" tone="dark" />}
         link={{ href: "/methodology", label: "Read the methodology" }}
         flip
+      />
+
+      <Feature
+        id="analytics"
+        tone="paper"
+        eyebrow="Analytics"
+        title="See where the tonnes are before anyone asks."
+        lead="Every published run is broken down by scope, category, site and contract, and each figure opens to the records, factors and formulas behind it."
+        points={[
+          "Scope, category, facility and contract breakdowns read from pre-computed totals, so large datasets stay quick",
+          "Location-based headline with market-based Scope 2 shown beside it, never added",
+          "Trace a figure: from a category total to each calculation, its factor, selection reason and evidence",
+          "Evidence tiers show how much of the total rests on verified records",
+          "Forecasts, carbon budgets and reduction pathways drawn from the same records",
+        ]}
+        media={<DemoAnalytics />}
+        link={{ href: "/methodology", label: "How the figures are calculated" }}
       />
 
       <Feature

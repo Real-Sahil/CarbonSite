@@ -8,10 +8,10 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AXIS_TICK, GRID_STROKE, NEUTRAL_SERIES_COLOR, formatTonnesValue } from "@/components/charts/palette";
 
 export function EmissionsTrendChart({
   orgId,
@@ -35,7 +35,11 @@ export function EmissionsTrendChart({
   if (isLoading) return <Skeleton className="h-80 w-full" />;
   if (error) return <div className="text-red-600">Failed to load chart</div>;
 
-  const chartData = data?.data || [];
+  // The API returns kg CO2e; the chart shows tonnes.
+  const chartData = ((data?.data ?? []) as Array<Record<string, unknown> & { totalCo2e: number }>).map((r) => ({
+    ...r,
+    totalCo2e: r.totalCo2e / 1000,
+  }));
 
   return (
     <div className="w-full h-80">
@@ -44,24 +48,23 @@ export function EmissionsTrendChart({
           data={chartData}
           margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="date" stroke="#6b7280" />
-          <YAxis stroke="#6b7280" label={{ value: "tCO₂e", angle: -90, position: "insideLeft" }} />
+          <CartesianGrid vertical={false} stroke={GRID_STROKE} />
+          <XAxis dataKey="date" stroke={GRID_STROKE} tick={AXIS_TICK} />
+          <YAxis stroke={GRID_STROKE} tick={AXIS_TICK} label={{ value: "tCO₂e", angle: -90, position: "insideLeft" }} />
           <Tooltip
             contentStyle={{
               backgroundColor: "#fff",
               border: "1px solid #e5e7eb",
               borderRadius: "0.5rem",
             }}
-            formatter={(value) => `${(value as number).toFixed(2)} tCO₂e`}
+            formatter={(value) => `${formatTonnesValue(value as number)} tCO₂e`}
           />
-          <Legend />
           <Line
             type="monotone"
             dataKey="totalCo2e"
-            stroke="#f97316"
+            stroke={NEUTRAL_SERIES_COLOR}
             strokeWidth={2}
-            dot={{ fill: "#f97316", r: 4 }}
+            dot={{ fill: NEUTRAL_SERIES_COLOR, r: 4 }}
             activeDot={{ r: 6 }}
             name="Total Emissions"
           />
