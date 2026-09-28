@@ -57,7 +57,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
                 built for the field.
               </span>
             </h2>
-            <p className="text-sm text-white/40 leading-relaxed max-w-[34ch] mb-8">
+            <p className="text-sm text-white/60 leading-relaxed max-w-[34ch] mb-8">
               Capture evidence, run calculations to GHG Protocol standards, publish audit-ready reports.
             </p>
 
@@ -68,7 +68,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
                   <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/5 border border-white/8">
                     <Icon className="h-3 w-3 text-amber-400" />
                   </div>
-                  <span className="text-xs text-white/50">{text}</span>
+                  <span className="text-xs text-white/60">{text}</span>
                 </div>
               ))}
             </div>
@@ -79,14 +79,14 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
                 <div key={s.value} className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/8 bg-white/4 backdrop-blur-sm">
                   <div className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
                   <span className="text-xs font-medium text-white/70">{s.value}</span>
-                  <span className="text-xs text-white/30 ml-auto">{s.sub}</span>
+                  <span className="text-xs text-white/60 ml-auto">{s.sub}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Footer label */}
-          <p className="text-[10px] text-white/15 font-mono tracking-wider shrink-0">
+          <p className="text-[10px] text-white/60 font-mono tracking-wider shrink-0">
             GHG PROTOCOL · ISO 14064 · IPCC AR6
           </p>
         </div>
@@ -106,7 +106,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
             </span>
             <span className="text-white font-semibold text-lg tracking-tight">MetricOra</span>
           </Link>
-          <p className="text-xs text-white/35 mt-2">GHG Emissions Tracking</p>
+          <p className="text-xs text-white/60 mt-2">GHG Emissions Tracking</p>
         </div>
 
         {/* Form card */}

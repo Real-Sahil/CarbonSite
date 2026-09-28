@@ -70,6 +70,8 @@ jobs:
       # (e.g. xlsx prototype-pollution / ReDoS — tracked in dependency audit backlog for replacement).
       - run: pnpm audit --prod --audit-level=high --ignore-unfixable
       - run: pnpm lint
+      - name: No unused files or dependencies (Knip)
+        run: pnpm knip
         continue-on-error: true
       - run: pnpm typecheck
       - name: Apply all migrations to a fresh database
@@ -191,6 +193,8 @@ jobs:
         run: pnpm playwright install chromium --with-deps
       - name: Run the pilot cycle
         run: pnpm playwright test tests/e2e/pilot-cycle.spec.ts
+      - name: Accessibility (WCAG 2.1 A/AA, axe-core) on public pages
+        run: pnpm playwright test tests/e2e/a11y.spec.ts
       - name: App log on failure
         if: failure()
         run: tail -200 next.log

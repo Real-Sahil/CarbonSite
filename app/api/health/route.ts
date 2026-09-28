@@ -24,14 +24,14 @@ export async function GET() {
       { status: 200 }
     );
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    // Public endpoint: log the cause, never return it (it can name hosts).
+    console.error("[health] database check failed", error);
     return NextResponse.json(
       {
         status: "error",
         timestamp: new Date().toISOString(),
         checks: {
           database: "error",
-          error: errorMessage,
         },
       },
       { status: 503 }

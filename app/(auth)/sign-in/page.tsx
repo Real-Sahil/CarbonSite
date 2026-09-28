@@ -63,7 +63,7 @@ function SsoSignInButton() {
         {loading ? "Redirecting…" : "Continue with single sign-on"}
       </button>
       {error && <p className="text-xs text-red-300">{error}</p>}
-      <div className="flex items-center gap-3 text-xs text-white/25">
+      <div className="flex items-center gap-3 text-xs text-white/60">
         <div className="h-px flex-1 bg-white/10" />
         <span>or</span>
         <div className="h-px flex-1 bg-white/10" />
@@ -93,7 +93,7 @@ function mapSignInError(err: { code?: string; message?: string } | null | undefi
 }
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
+  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -126,7 +126,7 @@ export default function SignInPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-semibold tracking-tight text-white">Welcome back</h1>
-        <p className="text-sm text-white/40 mt-1">Sign in to your MetricOra account.</p>
+        <p className="text-sm text-white/60 mt-1">Sign in to your MetricOra account.</p>
       </div>
 
       <Suspense fallback={null}>
@@ -135,7 +135,7 @@ export default function SignInPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">
+          <label htmlFor="email" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">
             Email
           </label>
           <input
@@ -153,7 +153,7 @@ export default function SignInPage() {
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="password" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">
+            <label htmlFor="password" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">
               Password
             </label>
             <Link href="/forgot-password" className="text-xs text-amber-400 hover:text-amber-300 transition-colors" tabIndex={-1}>
@@ -190,9 +190,9 @@ export default function SignInPage() {
         </button>
       </form>
 
-      <p className="mt-5 text-center text-sm text-white/30">
+      <p className="mt-5 text-center text-sm text-white/60">
         Don&apos;t have an account?{" "}
-        <Link href="/sign-up" className="text-amber-400 hover:text-amber-300 transition-colors">
+        <Link href="/sign-up" className="text-amber-400 underline underline-offset-4 hover:text-amber-300 transition-colors">
           Create account
         </Link>
       </p>

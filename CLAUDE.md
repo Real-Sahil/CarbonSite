@@ -24,7 +24,7 @@ MetricOra is a multi-tenant GHG emissions tracking platform for small-to-mid-mar
 - **Object Storage:** Supabase Storage (private bucket `carbonsite`), through the Storage API (`STORAGE_DRIVER=supabase`) or its S3-compatible endpoint (`r2` driver with `STORAGE_ENDPOINT`). A Postgres driver is the zero-infra fallback. Dev: local filesystem adapter.
 - **Email:** Resend (3k/month free, 100/day). Dev: log to console.
 - **Push Notifications:** Firebase Cloud Messaging (FCM) — free, Google account only.
-- **Document Parsing:** `xlsx` (CSV + Excel), `pdf-parse` (PDFs), `mammoth` (DOCX) — all npm, no Python, no Docker.
+- **Document Parsing:** `xlsx` (CSV + Excel), `pdf-parse` (PDFs) — all npm, no Python, no Docker. DOCX is not parsed.
 - **Emission Factors:** DEFRA 2025/2026 + EPA GHG Hub 2025 + EPA USEEIO 1.3 + ADEME Base Carbone + Defra UK spend multipliers — seeded into PostgreSQL, zero paid API
 - **PDF generation:** Puppeteer (headless Chromium) in the reports worker
 - **Validation:** Zod at all API boundaries
@@ -42,6 +42,7 @@ Optional: Redis for production rate limiting (recommended but automatic Postgres
 pnpm dev               # Start Next.js dev server
 pnpm build             # Production build
 pnpm lint              # ESLint
+pnpm knip              # Unused files and dependencies (CI gate; exports not gated yet)
 pnpm typecheck         # tsc --noEmit
 pnpm test              # Vitest run
 pnpm test:watch        # Vitest watch mode
@@ -61,7 +62,7 @@ cd mobile && flutter build apk    # Android release build
 cd mobile && flutter build ipa    # iOS release build
 
 # CI checks (run before pushing)
-pnpm lint && pnpm typecheck && pnpm test && pnpm build
+pnpm lint && pnpm knip && pnpm typecheck && pnpm test && pnpm build
 ```
 
 ## Folder Structure
@@ -200,7 +201,6 @@ uploaded → parsing → validating → needs_attention | ready_to_commit → co
 **Document parsing (npm, no Python):**
 - `xlsx` — CSV and Excel (.xlsx/.xls) import templates
 - `pdf-parse` — PDF utility bills and delivery notes
-- `mammoth` — DOCX documents to plain text
 
 Called from the `imports` worker, not a separate service.
 
@@ -325,6 +325,12 @@ Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Rep
 
 ### Data upkeep
 `.github/workflows/data-upkeep.yml` runs every Monday. **watch** (`scripts/data-watch/check.mjs --issues`) compares what the repo has loaded with each publisher: DESNZ/DEFRA conversion factors (GOV.UK content API against `RELEASES` in `scripts/build-defra-factors.mjs`), the UK carbon footprint spend multipliers, the EPA GHG Emission Factors Hub, EPA Supply Chain factors (USEPA/supply-chain-factors releases), ADEME Base Carbone (data.ademe.fr metadata), and the regulatory calendar's `LAST_CHECKED`. Each new release, and each watcher that fails, opens one issue labelled `data-upkeep` with the steps to load it; open issues are not duplicated. Loading factor data stays manual (row names change between releases). **cpi** (`scripts/data-watch/update-cpi.mjs`) refreshes the GBP/USD/EUR/FR tables in `price-index.ts` from ONS, BLS and Eurostat, adding complete years only; a value that disagrees with the table stops it (a clean rebase replaces the series) and opens an issue; changes go to the PR "Data upkeep: CPI update" on branch `data-upkeep/cpi`. When you load new data, update `data/sources/watched-sources.json` (or `RELEASES`) in the same PR. Pure logic and parsers: `scripts/data-watch/lib.mjs`, tested in `scripts/data-watch/__tests__`. Repo settings: Actions need read/write permission and "Allow GitHub Actions to create and approve pull requests"; a `DATA_UPKEEP_TOKEN` secret makes CI run on the CPI PR; `BLS_API_KEY` is optional.
+
+### Code health and monitoring
+- **Knip** (`knip.json`, `pnpm knip`, CI web job): fails on unused files, unused or unlisted dependencies and unresolved imports. Unused exports are not gated yet. A dependency used only by config or CSS (`tailwindcss`, `sharp`, `kysely` as Better Auth's peer) is listed in `ignoreDependencies`; anything else flagged is deleted, not ignored.
+- **Security scan** (`.github/workflows/security-scan.yml`): Gitleaks (pinned, checksum-verified, config `.gitleaks.toml`) blocks on secrets in the tree and in a pull request's own commits; allowlist entries must be narrow and say why, and a real credential is rotated, never allowlisted. OSV-Scanner reports every lockfile to the Security tab without failing the build until its first results are triaged; `pnpm audit` in ci.yml still blocks high-severity production advisories.
+- **Accessibility** (`tests/e2e/a11y.spec.ts`, CI e2e-local job): axe-core WCAG 2.1 A/AA on the home, product, pricing, methodology, security, sign-in and sign-up pages of the PR's own build. Inline links need an underline, not colour alone; dim text on the dark auth screens is `text-white/60` or brighter.
+- **Uptime** (`.github/workflows/uptime.yml`): every 10 minutes checks `/`, `/sign-in` and `/api/health` (`"status":"ok"`, a database round trip) with three tries; a failure opens one `uptime` issue and a pass closes it. `/api/health` never returns the error text.
 
 ### Backups
 `.github/workflows/backup.yml`: nightly `scripts/backup/dump.sh` (public schema, pg_dump custom format, AES-256 with `BACKUP_PASSPHRASE`, plus a row-count manifest) to the private Supabase Storage bucket `backups` (migration `20260924000033`, service role key only, `scripts/backup/storage.sh`) under `db/daily/` (pruned after 35 days by the workflow) and `db/monthly/` on the 1st; weekly `scripts/backup/restore-drill.sh` restores the latest into a throwaway PostgreSQL 17 (stub `auth` schema and Supabase roles) and fails if a table is missing or short of the manifest. Secrets are listed in the workflow header.
