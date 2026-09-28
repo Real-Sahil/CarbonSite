@@ -209,4 +209,68 @@ jobs:
       - run: pytest api/ -v
 
   # Mobile builds are not part of CI: Android and iOS release builds run only
-  # from mobile-build.yml, on a mobile-v* / v* tag or a manual dispatch.
+  # from mobile-build.yml, on a mobile-v* / v* tag or a manual dispatch. CI
+  # only analyses and tests the Flutter app, and only when mobile/ changed.
+  mobile-changes:
+    name: Mobile — changed?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      mobile: ${{ steps.diff.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          # No usable base (manual run, new branch): check the app anyway.
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "mobile=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only "$BASE" HEAD | grep -qE '^(mobile/|\.github/workflows/ci\.yml$)'; then
+            echo "mobile=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "mobile=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  mobile:
+    name: Mobile — analyze / test
+    needs: mobile-changes
+    if: needs.mobile-changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          # Matches mobile-build.yml.
+          flutter-version: "3.44.0"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      # Same generator upgrade as mobile-build.yml, so drift's analyzer
+      # understands the installed Dart SDK.
+      - name: Upgrade generators for installed Dart SDK
+        working-directory: mobile
+        run: flutter pub upgrade --major-versions build_runner freezed json_serializable freezed_annotation json_annotation drift_dev drift sqlite3_flutter_libs
+
+      - name: Generate code (drift)
+        working-directory: mobile
+        timeout-minutes: 10
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        working-directory: mobile
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        working-directory: mobile
+        run: flutter test

@@ -21,6 +21,7 @@ const db = vi.hoisted(() => {
     msReminderLog: model(),
     msRequirementStatus: model(),
     msFrameworkAdoption: model(),
+    hsIncidentReport: model(),
     msRisk: model(),
     msInterestedParty: model(),
     msChange: model(),

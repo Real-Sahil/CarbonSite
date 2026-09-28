@@ -1,81 +1,16 @@
 import type { ParsedRow } from "./parser";
 import { parseDataOrigin, requiresJustification } from "@/lib/inventory/provenance";
+import { detectActivityColumnMapping, toColumnMap } from "./column-mapper";
 
 // ── Column → canonical field mapping ─────────────────────────────────────────
 
-type FieldMapping = { canonical: string; aliases: string[] };
-
-const FIELD_MAPPINGS: FieldMapping[] = [
-  { canonical: "amount", aliases: ["amount", "quantity", "qty", "value", "volume"] },
-  { canonical: "unit", aliases: ["unit", "uom", "units", "unit of measure"] },
-  {
-    canonical: "emissionCategoryCode",
-    aliases: ["category", "category code", "emission category", "scope category", "category_code"],
-  },
-  {
-    canonical: "activityDate",
-    aliases: ["activity date", "date", "activity_date", "transaction date", "event date"],
-  },
-  { canonical: "startDate", aliases: ["start date", "start_date", "period start", "from date"] },
-  { canonical: "endDate", aliases: ["end date", "end_date", "period end", "to date"] },
-  {
-    canonical: "sourceDescription",
-    aliases: ["source", "description", "source description", "source_description", "notes", "detail"],
-  },
-  { canonical: "facilityName", aliases: ["facility", "facility name", "facility_name", "site", "location"] },
-  { canonical: "businessUnitName", aliases: ["business unit", "business_unit", "department", "division"] },
-  { canonical: "supplierName", aliases: ["supplier", "supplier name", "vendor", "contractor"] },
-  { canonical: "country", aliases: ["country", "country code", "geography"] },
-  { canonical: "region", aliases: ["region", "state", "province"] },
-  { canonical: "fuelType", aliases: ["fuel type", "fuel_type", "fuel", "fuel source"] },
-  { canonical: "transportMode", aliases: ["transport mode", "mode", "transport_mode", "vehicle type"] },
-  { canonical: "refrigerantType", aliases: ["refrigerant", "refrigerant type", "gas type", "f-gas"] },
-  { canonical: "industryCode", aliases: ["industry code", "naics", "naics code", "sic", "sic code"] },
-  { canonical: "distanceAmount", aliases: ["distance", "distance amount", "distance_amount", "km", "miles"] },
-  { canonical: "distanceUnit", aliases: ["distance unit", "distance_unit"] },
-  { canonical: "spendAmount", aliases: ["spend", "cost", "spend amount", "expenditure", "invoice amount"] },
-  { canonical: "spendCurrency", aliases: ["currency", "spend currency", "ccy"] },
-  {
-    canonical: "scope2Method",
-    aliases: ["scope 2 method", "scope2_method", "market/location based", "electricity method"],
-  },
-  { canonical: "assumptionNotes", aliases: ["assumptions", "assumption notes", "assumption_notes", "comments"] },
-  {
-    canonical: "dataOrigin",
-    aliases: [
-      "data origin", "data_origin", "origin", "provenance", "data provenance",
-      "source type", "source_type", "data type", "data_type", "data tier",
-      "measurement type", "evidence type",
-    ],
-  },
-  {
-    canonical: "dataOriginNote",
-    aliases: [
-      "data origin note", "data_origin_note", "origin note", "origin_note",
-      "origin justification", "estimation basis", "proxy basis", "provenance note",
-    ],
-  },
-];
-
-function buildAliasIndex(mappings: FieldMapping[]): Map<string, string> {
-  const index = new Map<string, string>();
-  for (const { canonical, aliases } of mappings) {
-    for (const alias of aliases) {
-      index.set(alias.toLowerCase(), canonical);
-    }
-  }
-  return index;
-}
-
-const ALIAS_INDEX = buildAliasIndex(FIELD_MAPPINGS);
-
+/**
+ * Auto-detected mapping for a file with no confirmed mapping (connector
+ * ingest, API uploads). One alias list for the whole import pipeline lives in
+ * column-mapper.ts, so the worker reads a file the way the preview showed it.
+ */
 export function mapColumns(headers: string[]): Map<string, string> {
-  const result = new Map<string, string>();
-  for (const header of headers) {
-    const canonical = ALIAS_INDEX.get(header.toLowerCase());
-    if (canonical) result.set(header, canonical);
-  }
-  return result;
+  return toColumnMap(detectActivityColumnMapping(headers));
 }
 
 // ── Row validation ────────────────────────────────────────────────────────────

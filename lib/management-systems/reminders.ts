@@ -9,9 +9,9 @@ import { delegate } from "./registers/server";
 // Daily reminders on every date the management systems keep: policy and
 // document reviews, risk reviews, audits, corrective action due dates,
 // training expiries, equipment checks, supplier re-evaluations, objective
-// dates, requirement due dates and certificate expiry. Each date sends one
-// "due soon" and one "overdue" reminder, to the row's owner or, when it has
-// none, to the management system editors. MsReminderLog makes a repeated or
+// dates, requirement due dates, certificate expiry and RIDDOR reports not yet
+// made to HSE. Each date sends one "due soon" and one "overdue" reminder, to
+// the row's owner or, when it has none, to the management system editors. MsReminderLog makes a repeated or
 // late run send nothing twice.
 
 const logger = getLogger("management-systems.reminders");
@@ -30,6 +30,19 @@ export function reminderStage(dueOn: Date, today: Date, noticeDays = DUE_SOON_DA
   const days = Math.round((dueOn.getTime() - today.getTime()) / DAY);
   if (days < 0) return "overdue";
   return days <= noticeDays ? "due_soon" : null;
+}
+
+/**
+ * RIDDOR 2013 report deadline for an incident marked reportable. An over-7-day
+ * injury has 15 days from the incident; deaths, specified injuries, dangerous
+ * occurrences and anything not clearly over-7-day get the shorter 10 days, so
+ * an unclear case is never chased late. (Diseases are due without delay once
+ * diagnosed; 10 days from the record is the reminder, not the legal limit.)
+ */
+export function riddorDeadline(incident: { occurredAt: Date; incidentType: string; lostTimeDays: number }): Date {
+  const days = incident.incidentType === "lost_time_injury" && incident.lostTimeDays > 7 ? 15 : 10;
+  const d = new Date(iso(incident.occurredAt) + "T00:00:00Z");
+  return new Date(d.getTime() + days * DAY);
 }
 
 export type Due = {
@@ -102,6 +115,31 @@ export async function collectDue(today: Date): Promise<Due[]> {
       title: `${s.requirementCode} ${req?.title ?? ""}`.trim(),
       ownerUserId: s.ownerUserId,
       path: `management-systems/${s.frameworkSlug}#req-${s.requirementCode.replace(/[^A-Za-z0-9]+/g, "-")}`,
+    });
+  }
+
+  // RIDDOR reports not yet made. The longest deadline is 15 days, so only
+  // incidents from the last 15 days plus the overdue lookback can be due.
+  const riddor = await prisma.hsIncidentReport.findMany({
+    where: { riddorReportable: true, riddorNotifiedAt: null, occurredAt: { gte: from, lte: today } },
+    select: { id: true, organizationId: true, reference: true, title: true, incidentType: true, occurredAt: true, lostTimeDays: true, ownerUserId: true },
+    take: 5000,
+  });
+  for (const i of riddor) {
+    const dueOn = riddorDeadline(i);
+    const stage = reminderStage(dueOn, today);
+    if (!stage) continue;
+    out.push({
+      orgId: i.organizationId,
+      source: "riddor",
+      rowId: i.id,
+      field: "riddorNotifiedAt",
+      dueOn,
+      stage,
+      label: "RIDDOR report to HSE",
+      title: `${i.reference}${i.title ? ` ${i.title}` : ""}`.slice(0, 120),
+      ownerUserId: i.ownerUserId,
+      path: `hs-incident-reports/${i.id}`,
     });
   }
 
