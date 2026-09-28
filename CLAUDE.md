@@ -421,7 +421,7 @@ All services are free tier, no credit card required.
 - Sign up at upstash.com, aws.amazon.com (ElastiCache), heroku.com, or redis.com — free or low-cost managed options
 - Used by: Rate limiting for API endpoints (`lib/security/rate-limit-async.ts`) with automatic Postgres fallback
 - Rate limit buckets persist across serverless cold starts (essential for Vercel/Cloudflare Workers deployments)
-- Connection: Set `REDIS_URL` in `.env` — format: `redis://[:password@]host:port` or `rediss://...` for TLS
+- Connection: Set `REDIS_URL` in `.env` — format: `redis://` (or `rediss://` for TLS), host and port, with the password your provider gives inside the URL
 - For local dev, leave `REDIS_URL` unset — rate limiting falls back to Postgres automatically
 - Admin monitoring: Check rate limiter health at `GET /api/admin/health/rate-limiter` (returns status, Redis latency, fallback reason)
 
