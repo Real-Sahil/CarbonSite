@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working agreement (set by the owner, standing instruction)
+
+- **Replies in caveman style, always** (the `caveman` skill, level full): terse, fragments fine, all technical detail kept. Code, commits, PRs and docs stay in normal prose.
+- **Always merge finished work to `main`.** After lint, typecheck, tests and build pass on the working branch, merge it into `main` (fast-forward when possible, otherwise a merge commit) and push `main`. No need to ask first. `migrate.yml` applies migrations when `main` moves, so the migration rules below still apply before merging.
+
 ## Project Overview
 
 MetricOra is a multi-tenant GHG emissions tracking platform for small-to-mid-market companies. It consists of two client surfaces that share a single Next.js backend API:
