@@ -2,7 +2,7 @@
 
 **Updated:** 2026-09-28
 **Repo:** `Real-Sahil/CarbonSite` (GitHub). Product name MetricOra, site metricora.co.uk.
-**Working branch:** `claude/review-handoff-docs-woi4zm`
+**Working branch:** `claude/review-handoff-docs-gpjlvd` (fast-forwarded from `claude/review-handoff-docs-woi4zm`, which it contains)
 **Supersedes:** the 2026-08-24 version of this file (it described Neon, Cloudflare R2, a cyan palette and open billing/report decisions; all of that is out of date).
 
 ---
@@ -12,11 +12,11 @@
 1. Read this file, then `CLAUDE.md`. `CLAUDE.md` is the source of truth for architecture, conventions, data sources, security guards and every shipped feature. This file only holds session state and open items.
 2. Check out the working branch and sync:
    ```bash
-   git fetch origin main claude/review-handoff-docs-woi4zm
-   git checkout claude/review-handoff-docs-woi4zm
+   git fetch origin main claude/review-handoff-docs-gpjlvd
+   git checkout claude/review-handoff-docs-gpjlvd
    git status && git rev-list --left-right --count origin/main...HEAD
    ```
-   Expected at handoff: clean tree, branch **2 commits ahead** of `origin/main`: the hero headline and the commit that wrote this file (see section 2).
+   Expected at handoff: clean tree, branch **4 commits ahead** of `origin/main` (see section 2).
 3. Pick up at section 4 ("Waiting on the user"). Nothing is half-built; every item there is a proposal awaiting a yes/no.
 
 **User's working preferences**
@@ -32,12 +32,12 @@
 | Item | State |
 |---|---|
 | `origin/main` head | `9d8128ce` Home page hero: the launch film |
-| Working branch head | `fff01c56` Change hero headline to avoid repeating film opening |
-| Not yet on `main` | `fff01c56` (hero H1 now "Carbon figures you can prove.") and the handoff commit on top of it |
+| Working branch head | ERP export profiles commit (on top of the marketing nav commit) |
+| Not yet on `main` | `fff01c56` hero H1 "Carbon figures you can prove.", the handoff rewrite, the marketing nav commit (4A), and ERP export profiles with this handoff update (4B item 1, migration `20260928000053`) |
 | Open PRs | Dependabot only (#27-#33 Flutter, #89 dev deps, #90 production deps, 49 updates) and #60 "ECC bundle" (third-party, stale since 2026-09-04). None from this work. |
 | Deploy | Vercel production READY for `9d8128ce`; CI, migrations and CodeQL passed. |
 
-**Decision needed:** how these two commits reach `main` (PR from this branch, or direct). Earlier work landed on `main` already; ask before doing either.
+**Decision needed:** how these commits reach `main` (PR from this branch, or direct). Earlier work landed on `main` already; ask before doing either.
 
 ---
 
@@ -73,7 +73,7 @@ Keep MetricOra's palette (graphite, off-white, ember accent, Geist). Changes, al
 3. Add Management systems (ISO 14001/9001/45001, registers, PQQ/CAS, certification pack) to the Platform menu. Currently missing from the nav.
 4. One primary CTA everywhere: "Start a 30-day trial"; "Book a pilot" secondary, hero only.
 Skip: logo wall, customer metrics, testimonials, live counters (claims rules).
-**Status:** user asked "what do you recommend?", got this list, has not said go.
+**Status:** DONE 2026-09-28 (commit "Marketing nav: documents column, one card per menu, management systems"). Changes from the proposal: there is no public regulatory calendar page, so the Resources card links the "Planning a first reporting period" guide instead; closing CTAs keep the pilot as a text link ("Or book a pilot") because their copy mentions pilots; /product gained a `#management-systems` section as the menu's target (no screenshot; none captured yet). Checked at 1024 and 1440 px: no menu overflows.
 
 ### B. ERP and CRM data integration (proposed, not started)
 Current code: Xero is a real connector (`lib/integrations/xero.ts`); QuickBooks and Sage are 35-line stubs (`lib/integrations/{quickbooks,sage}.ts`, connectors in `lib/connectors/`); `lib/connectors/ingest.ts` turns connector output into the normal import (review then commit). No SAP, Causeway, COINS, Dynamics, NetSuite, Salesforce or HubSpot code (SAP/NetSuite exist only as options in the pilot kit form).
@@ -83,9 +83,9 @@ Recommended order:
 3. Native SAP (S/4HANA OData) and Causeway only when a customer funds it. Causeway public API availability is **unverified**; likely needs their partner programme.
 4. CRM last: only useful to pull won deals into Contracts.
 Marketing may name only systems that work end to end (today: Xero, plus "any ERP by export").
-**Status:** user has not said go. If yes, start with item 1: migration for the mapping table (additive, RLS deny-all, org-scoped), import profile UI, templates, tests.
+**Status:** item 1 DONE 2026-09-28 (see `CLAUDE.md` > ERP export profiles). Verified: unit tests, cross-tenant tests, all migrations replayed on Postgres 16 with zero drift, and the worker run end to end on a Sage-style ledger CSV. Not verified: the profile editor page in a signed-in browser (needs a seeded tenant), and the templates' header names against real SAP/Causeway/COINS/Sage exports (ask a pilot customer for a sample). Known limit: credit notes are left out with a warning, not netted, so a period with credits overstates spend until someone nets them. Next: items 2 to 4 need a go.
 
-### C. Merge the branch's two commits to `main` (see section 2).
+### C. Merge the branch's commits to `main` (see section 2). Includes migration `20260928000053` (additive).
 
 ---
 

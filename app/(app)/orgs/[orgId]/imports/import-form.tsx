@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +16,8 @@ import { Upload, Loader2, CheckCircle2, AlertCircle, Download } from "lucide-rea
 import { ColumnMapper } from "@/components/import/column-mapper";
 import type { CanonicalField, MappedColumn } from "@/lib/imports/column-mapper";
 
+const COLUMNS_VALUE = "__columns__";
+
 const TEMPLATE_KEYS = [
   { value: "ghg_protocol_v1", label: "GHG Protocol v1 (default)" },
   { value: "defra_2025", label: "DEFRA 2025 template" },
@@ -24,6 +27,8 @@ const TEMPLATE_KEYS = [
 interface CreateImportFormProps {
   orgId: string;
   periods: { id: string; label: string }[];
+  /** Saved ERP export profiles; choosing one skips the column step. */
+  profiles?: { id: string; name: string }[];
 }
 
 type PreviewData = {
@@ -39,10 +44,11 @@ type PreviewData = {
 
 type Phase = "idle" | "previewing" | "mapping" | "uploading" | "processing" | "done" | "error";
 
-export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
+export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImportFormProps) {
   const router = useRouter();
   const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
   const [templateKey, setTemplateKey] = useState(TEMPLATE_KEYS[0].value);
+  const [profileId, setProfileId] = useState(COLUMNS_VALUE);
   const [file, setFile] = useState<File | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +72,10 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
       return;
     }
     setError(null);
+    if (profileId !== COLUMNS_VALUE) {
+      await handleMappingConfirmed(null);
+      return;
+    }
     setPhase("previewing");
 
     try {
@@ -93,7 +103,7 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
     }
   }
 
-  async function handleMappingConfirmed(confirmedMapping: Record<string, string>) {
+  async function handleMappingConfirmed(confirmedMapping: Record<string, string> | null) {
     if (!file || !periodId) return;
     setPhase("uploading");
     setError(null);
@@ -103,8 +113,10 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
       form.append("file", file);
       form.append("reportingPeriodId", periodId);
       form.append("templateKey", templateKey);
-      // Send confirmed mapping as JSON so the worker can use it directly.
-      form.append("columnMapping", JSON.stringify(confirmedMapping));
+      // Send confirmed mapping as JSON so the worker can use it directly, or
+      // the profile, whose rules the server copies onto the batch.
+      if (confirmedMapping) form.append("columnMapping", JSON.stringify(confirmedMapping));
+      else form.append("importProfileId", profileId);
 
       setPhase("processing");
       const res = await fetch(`/api/orgs/${orgId}/imports`, {
@@ -201,6 +213,8 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
       ? "Reading…"
       : phase === "uploading" || phase === "processing"
       ? "Processing…"
+      : profileId !== COLUMNS_VALUE
+      ? "Import with profile"
       : "Next: review columns";
 
   return (
@@ -214,6 +228,25 @@ export function CreateImportForm({ orgId, periods }: CreateImportFormProps) {
           <SelectContent>
             {periods.map((p) => (
               <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-3">
+          <label className="text-xs text-[#374151] tracking-[-0.36px]">Read with</label>
+          <Link href={`/orgs/${orgId}/imports/profiles`} className="text-xs text-[#c2410c] hover:text-[#9a3412] transition-colors">
+            ERP profiles
+          </Link>
+        </div>
+        <Select value={profileId} onValueChange={setProfileId} disabled={busy}>
+          <SelectTrigger className="w-56">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={COLUMNS_VALUE}>MetricOra columns</SelectItem>
+            {profiles.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>

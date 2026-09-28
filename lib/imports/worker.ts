@@ -2,7 +2,8 @@ import { StagedRecordStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getObject, putObject, keys } from "@/lib/storage";
 import { parseSpreadsheet } from "./parser";
-import { mapColumns, validateRow, buildErrorCsv } from "./validator";
+import { mapColumns, validateRow, buildErrorCsv, type ValidatedRow } from "./validator";
+import { applyProfile, profileSpecSchema, PROFILED_COLUMN_MAP } from "./profiles";
 import { duplicateKey, findExistingDuplicates, type DuplicateKeyInput } from "@/lib/data-quality/duplicates";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 
@@ -22,6 +23,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
         reportingPeriodId: true,
         organizationId: true,
         mapping: true,
+        profileSnapshot: true,
       },
     });
 
@@ -74,37 +76,47 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
       return;
     }
 
-    // Use a confirmed mapping from the preview UI when available; otherwise
-    // fall back to auto-detection so legacy imports still work.
-    let columnMap: Map<string, string>;
-    const storedMapping = batch.mapping;
-    if (
-      storedMapping &&
-      typeof storedMapping === "object" &&
-      !Array.isArray(storedMapping)
-    ) {
-      columnMap = new Map(
-        Object.entries(storedMapping as Record<string, string>),
+    // An ERP export profile turns ledger lines into canonical rows and leaves
+    // out lines no rule includes. Otherwise use a confirmed mapping from the
+    // preview UI when available, else auto-detection so legacy imports work.
+    type Outcome = ValidatedRow & { excluded?: { actionable: boolean } };
+    let validatedRows: Outcome[];
+    if (batch.profileSnapshot) {
+      const spec = profileSpecSchema.parse(batch.profileSnapshot);
+      validatedRows = applyProfile(rows, spec).map((p): Outcome =>
+        p.kind === "row"
+          ? validateRow(p.row, PROFILED_COLUMN_MAP, categoryCodeIndex, facilityNameIndex, businessUnitNameIndex)
+          : { data: {}, errors: [], warnings: [{ field: "row", message: p.reason }], excluded: { actionable: p.actionable } },
       );
     } else {
-      columnMap = mapColumns(headers);
+      let columnMap: Map<string, string>;
+      const storedMapping = batch.mapping;
+      if (
+        storedMapping &&
+        typeof storedMapping === "object" &&
+        !Array.isArray(storedMapping)
+      ) {
+        columnMap = new Map(
+          Object.entries(storedMapping as Record<string, string>),
+        );
+      } else {
+        columnMap = mapColumns(headers);
+      }
+      validatedRows = rows.map((row) =>
+        validateRow(row, columnMap, categoryCodeIndex, facilityNameIndex, businessUnitNameIndex),
+      );
     }
-
-    // Validate all rows
-    const validatedRows = rows.map((row) =>
-      validateRow(row, columnMap, categoryCodeIndex, facilityNameIndex, businessUnitNameIndex),
-    );
 
     // Likely duplicates: a row repeated within the file, or a row matching a
     // record the organisation already has. Warnings, not errors: a genuine
     // repeat (two identical deliveries on one day) can still be committed.
     const existingDuplicates = await findExistingDuplicates(
       orgId,
-      validatedRows.filter((v) => v.errors.length === 0).map((v) => v.data as DuplicateKeyInput),
+      validatedRows.filter((v) => v.errors.length === 0 && !v.excluded).map((v) => v.data as DuplicateKeyInput),
     );
     const firstRowByKey = new Map<string, number>();
     validatedRows.forEach((v, i) => {
-      if (v.errors.length > 0) return;
+      if (v.errors.length > 0 || v.excluded) return;
       const key = duplicateKey(v.data as DuplicateKeyInput);
       if (!key) return;
       const earlier = firstRowByKey.get(key);
@@ -125,6 +137,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
     let totalErrors = 0;
     let totalWarnings = 0;
     let readyCount = 0;
+    let excludedCount = 0;
 
     type StagedRow = {
       organizationId: string;
@@ -139,9 +152,29 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
     const rowsToInsert: StagedRow[] = [];
 
     for (let i = 0; i < validatedRows.length; i++) {
-      const { data, errors, warnings } = validatedRows[i];
+      const { data, errors, warnings, excluded } = validatedRows[i];
       const rowNumber = i + 2; // 1-based, row 1 is headers
       const hasErrors = errors.length > 0;
+
+      // Left out by the profile. Only lines that need a rule count as
+      // warnings; lines a rule ignores (payroll, rent) are just recorded.
+      if (excluded) {
+        excludedCount++;
+        if (excluded.actionable) {
+          totalWarnings += warnings.length;
+          errorRows.push({ rowNumber, errors: [], warnings });
+        }
+        rowsToInsert.push({
+          organizationId: orgId,
+          importBatchId,
+          rowNumber,
+          data: {},
+          validationErrors: [],
+          validationWarnings: warnings,
+          status: "excluded" as StagedRecordStatus,
+        });
+        continue;
+      }
 
       if (hasErrors) {
         totalErrors += errors.length;
@@ -163,6 +196,14 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
       });
 
       if (!hasErrors) readyCount++;
+    }
+
+    // A profile that included nothing leaves nothing to commit: say so.
+    if (excludedCount > 0 && readyCount === 0 && totalErrors === 0) {
+      const message = "No line matched an include rule in the import profile. Add rules for the accounts listed as left out, then import again.";
+      totalErrors = 1;
+      errorRows.push({ rowNumber: 0, errors: [{ field: "file", message }], warnings: [] });
+      rowsToInsert.push({ organizationId: orgId, importBatchId, rowNumber: 0, data: {}, validationErrors: [{ field: "file", message }], validationWarnings: [], status: "staged" as StagedRecordStatus });
     }
 
     const BATCH = 500;

@@ -226,6 +226,7 @@ model Organization {
   reportingPeriods               ReportingPeriod[]
   activityRecords                ActivityRecord[]
   importBatches                  ImportBatch[]
+  importProfiles                 ImportProfile[]
   calculationRuns                CalculationRun[]
   uncertaintyResults             CalculationUncertaintyResult[]
   snapshots                      PublishedSnapshot[]
@@ -811,11 +812,15 @@ model ImportBatch {
   idempotencyKey        String?     @unique @map("idempotency_key")
   lastProcessedRowIndex Int?        @map("last_processed_row_index")
   createdByUserId       String?     @map("created_by_user_id")
+  /// ERP export profile the file was read with; the snapshot is what was applied.
+  importProfileId       String?     @map("import_profile_id")
+  profileSnapshot       Json?       @map("profile_snapshot")
   createdAt             DateTime    @default(now()) @map("created_at")
   updatedAt             DateTime    @updatedAt @map("updated_at")
 
   organization    Organization             @relation(fields: [organizationId], references: [id])
   createdBy       User?                    @relation(fields: [createdByUserId], references: [id])
+  importProfile   ImportProfile?           @relation(fields: [importProfileId], references: [id], onDelete: SetNull)
   stagedRecords   StagedActivityRecord[]
   activityRecords ActivityRecord[]
   evidence        ImportBatchEvidence[]
@@ -825,6 +830,51 @@ model ImportBatch {
   @@index([organizationId, reportingPeriodId, state])
   @@index([organizationId, sourceChecksum])
   @@map("import_batches")
+}
+
+/// Saved column mapping and ledger code rules for one ERP export (lib/imports/profiles.ts).
+model ImportProfile {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  name            String
+  sourceSystem    String   @map("source_system")
+  /// { date, account, costCode, netAmount, ... } -> header in the export
+  columns         Json
+  dateFormat      String   @default("dmy") @map("date_format")
+  numberFormat    String   @default("uk") @map("number_format")
+  defaultCurrency String   @default("GBP") @map("default_currency")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization  Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  rules         ImportProfileRule[]
+  importBatches ImportBatch[]
+
+  @@unique([organizationId, name])
+  @@map("import_profiles")
+}
+
+/// Ledger account / cost code pattern -> emission category (or ignore). Most specific match wins.
+model ImportProfileRule {
+  id              String  @id @default(cuid())
+  organizationId  String  @map("organization_id")
+  importProfileId String  @map("import_profile_id")
+  position        Int
+  account         String?
+  costCode        String? @map("cost_code")
+  action          String
+  categoryCode    String? @map("category_code")
+  basis           String  @default("spend")
+  unit            String?
+  industryCode    String? @map("industry_code")
+  fuelType        String? @map("fuel_type")
+  facilityName    String? @map("facility_name")
+  note            String?
+
+  importProfile ImportProfile @relation(fields: [importProfileId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, importProfileId, position])
+  @@map("import_profile_rules")
 }
 
 enum StagedRecordStatus {
