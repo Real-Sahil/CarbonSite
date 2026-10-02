@@ -396,6 +396,7 @@ model Organization {
   svFrameworks                   SvFramework[]                    @relation("OrgSvFrameworks")
   svCommitments                  SvCommitment[]                   @relation("OrgSvCommitments")
   svActivities                   SvActivity[]                     @relation("OrgSvActivities")
+  svSupplierLocations            SvSupplierLocation[]             @relation("OrgSvSupplierLocations")
   carbonSignals                  CarbonSignal[]                   @relation("OrgCarbonSignals")
   impactAlerts                   ImpactAlert[]                    @relation("OrgImpactAlerts")
   geographicImpacts              GeographicImpact[]               @relation("OrgGeographicImpacts")
@@ -6653,6 +6654,27 @@ model SvCommitment {
   @@index([organizationId, contractId])
   @@index([outcomeId])
   @@map("sv_commitments")
+}
+
+/// Where a supplier is based, so spend can be split into local and not local.
+/// Records name suppliers freehand; `nameKey` is the normalised match key.
+model SvSupplierLocation {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  nameKey        String   @map("name_key")
+  postcode       String
+  latitude       Decimal? @db.Decimal(10, 7)
+  longitude      Decimal? @db.Decimal(10, 7)
+  /// Null when not known; only a person sets it.
+  sme            Boolean?
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization @relation("OrgSvSupplierLocations", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, nameKey])
+  @@map("sv_supplier_locations")
 }
 
 /// A delivered social value activity (evidence record).
