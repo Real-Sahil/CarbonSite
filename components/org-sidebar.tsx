@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Upload, FileText, BarChart2, Calculator,
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
-  ChevronLeft, ChevronRight, Briefcase, Heart, Clock, ListChecks, Bus, Landmark,
+  ChevronLeft, ChevronRight, Briefcase, Heart, MapPin, Clock, ListChecks, Bus, Landmark,
   Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck, Tractor,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
@@ -116,6 +116,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Overview",     href: `/orgs/${orgId}/social-value`,                icon: Heart,         roles: EXTENDED_VIEW_ROLES },
         { label: "Commitments",  href: `/orgs/${orgId}/social-value/commitments`,    icon: ClipboardList, roles: EXTENDED_VIEW_ROLES },
         { label: "Activities",   href: `/orgs/${orgId}/social-value/activities`,     icon: ListChecks,    roles: EXTENDED_VIEW_ROLES },
+        { label: "Local spend",  href: `/orgs/${orgId}/social-value/local-spend`,    icon: MapPin,        roles: EXTENDED_VIEW_ROLES },
         { label: "Frameworks",   href: `/orgs/${orgId}/social-value/frameworks`,     icon: Network,       roles: ["admin", "sustainability_director"] },
       ]},
     ]},

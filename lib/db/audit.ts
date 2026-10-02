@@ -391,6 +391,8 @@ export type AuditAction =
   | "sv_framework.create"
   | "sv_framework.update"
   | "sv_framework.delete"
+  | "sv_supplier_location.save"
+  | "sv_supplier_location.delete"
   | "sv_commitment.create"
   | "sv_commitment.update"
   | "sv_commitment.delete"

@@ -2,7 +2,7 @@
 # Installs and enables the owner's agent tooling for every Claude Code project
 # on this machine (user scope, ~/.claude), not just this repo:
 #   - ponytail  (Claude Code plugin, marketplace DietrichGebert/ponytail)
-#   - superpowers (Claude Code plugin from Anthropic's official marketplace: brainstorm,
+#   - superpowers (Claude Code plugin from obra/superpowers-marketplace: brainstorm,
 #                plan, TDD and review skills that trigger on their own; MIT)
 #   - context7  (MCP server, current library docs on demand; MIT client, hosted index.
 #                Queries name a library and a question, never repo code.
@@ -75,7 +75,11 @@ except FileNotFoundError:
 
 s.setdefault("extraKnownMarketplaces", {})["ponytail"] = {"source": {"source": "github", "repo": "DietrichGebert/ponytail"}}
 s.setdefault("enabledPlugins", {})["ponytail@ponytail"] = True
-s["enabledPlugins"]["superpowers@claude-plugins-official"] = True
+# Anthropic's official marketplace is not present in every environment (cloud
+# sessions list only anthropic-plugin-directory), so use the author's own.
+s["extraKnownMarketplaces"]["superpowers-marketplace"] = {"source": {"source": "github", "repo": "obra/superpowers-marketplace"}}
+s["enabledPlugins"]["superpowers@superpowers-marketplace"] = True
+s["enabledPlugins"].pop("superpowers@claude-plugins-official", None)
 
 hooks = s.setdefault("hooks", {})
 def add(event, matcher, command, timeout):
