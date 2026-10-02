@@ -168,7 +168,11 @@ jobs:
       - run: pnpm prisma generate
       - run: pnpm prisma migrate deploy
       - run: pnpm prisma db seed
-      - run: pnpm build
+      - name: Build
+        run: pnpm build
+        env:
+          # next build's own type check peaks near 2 GB, the default Node heap.
+          NODE_OPTIONS: --max-old-space-size=4096
       - name: Start the app
         run: |
           nohup pnpm start > next.log 2>&1 &
