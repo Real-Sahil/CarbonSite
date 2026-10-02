@@ -77,7 +77,13 @@ jobs:
       - name: No unused files or dependencies (Knip)
         run: pnpm knip
         continue-on-error: true
-      - run: pnpm typecheck
+      - name: Typecheck
+        # tsc peaks near 2 GB, which is Node's default heap limit on the
+        # runner, so it passed or ran out of memory by chance. 4 GB fits the
+        # 7 GB runner.
+        run: pnpm typecheck
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
       - name: Apply all migrations to a fresh database
         # This is the gate that actually matters: it proves every migration file
         # applies cleanly, in order, to a database that's never seen any of them —
@@ -162,7 +168,11 @@ jobs:
       - run: pnpm prisma generate
       - run: pnpm prisma migrate deploy
       - run: pnpm prisma db seed
-      - run: pnpm build
+      - name: Build
+        run: pnpm build
+        env:
+          # next build's own type check peaks near 2 GB, the default Node heap.
+          NODE_OPTIONS: --max-old-space-size=4096
       - name: Start the app
         run: |
           nohup pnpm start > next.log 2>&1 &

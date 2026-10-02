@@ -1,18 +1,20 @@
 name: CodeQL Security Scanning
 
+# Manual only. On a private repository CodeQL results can only be uploaded
+# with GitHub Advanced Security (paid): the scan runs for about 6 minutes and
+# then fails with "Code scanning is not enabled for this repository". Until the
+# repository is public again or has Advanced Security, running it on every push
+# and pull request only burns Actions minutes. Secrets (Gitleaks), dependencies
+# (OSV-Scanner, pnpm audit, Dependabot) are still scanned on every change.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: "0 6 * * 1"
+  workflow_dispatch:
 
 jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       security-events: write
       contents: read
     strategy:
