@@ -70,10 +70,17 @@
         "source": "github",
         "repo": "DietrichGebert/ponytail"
       }
+    },
+    "superpowers-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers-marketplace"
+      }
     }
   },
   "enabledPlugins": {
     "founder@emotix": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "superpowers@superpowers-marketplace": true
   }
 }
