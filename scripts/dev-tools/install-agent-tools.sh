@@ -2,6 +2,11 @@
 # Installs and enables the owner's agent tooling for every Claude Code project
 # on this machine (user scope, ~/.claude), not just this repo:
 #   - ponytail  (Claude Code plugin, marketplace DietrichGebert/ponytail)
+#   - superpowers (Claude Code plugin from Anthropic's official marketplace: brainstorm,
+#                plan, TDD and review skills that trigger on their own; MIT)
+#   - context7  (MCP server, current library docs on demand; MIT client, hosted index.
+#                Queries name a library and a question, never repo code.
+#                Set CONTEXT7_API_KEY (free, context7.com/dashboard) for higher limits)
 #   - graphify  (knowledge graph CLI + MCP server; rebuilds the graph of any git
 #                repo at session start and after each commit)
 # Self-contained and idempotent: safe to run again, and safe to paste into a
@@ -70,6 +75,7 @@ except FileNotFoundError:
 
 s.setdefault("extraKnownMarketplaces", {})["ponytail"] = {"source": {"source": "github", "repo": "DietrichGebert/ponytail"}}
 s.setdefault("enabledPlugins", {})["ponytail@ponytail"] = True
+s["enabledPlugins"]["superpowers@claude-plugins-official"] = True
 
 hooks = s.setdefault("hooks", {})
 def add(event, matcher, command, timeout):
@@ -100,6 +106,16 @@ if command -v claude >/dev/null 2>&1 && command -v graphify-mcp >/dev/null 2>&1;
     claude mcp add --scope user graphify -- graphify-mcp graphify-out/graph.json >/dev/null 2>&1 \
       && log "graphify MCP server added (user scope)" || log "could not add graphify MCP server"
   fi
+fi
+
+# ── context7 MCP server at user scope (every project) ─────────────────────────
+if command -v claude >/dev/null 2>&1 && ! claude mcp get context7 >/dev/null 2>&1; then
+  if [ -n "${CONTEXT7_API_KEY:-}" ]; then
+    claude mcp add --scope user --transport http context7 https://mcp.context7.com/mcp \
+      --header "CONTEXT7_API_KEY: ${CONTEXT7_API_KEY}" >/dev/null 2>&1
+  else
+    claude mcp add --scope user --transport http context7 https://mcp.context7.com/mcp >/dev/null 2>&1
+  fi && log "context7 MCP server added (user scope)" || log "could not add context7 MCP server"
 fi
 
 log "done. Start a new Claude Code session; ponytail installs from its marketplace on first start."
