@@ -1,7 +1,8 @@
 name: Security scan
 
 # Secret scanning (Gitleaks) and dependency vulnerability scanning (OSV-Scanner)
-# alongside CodeQL (codeql.yml) and Dependabot.
+# alongside Dependabot (CodeQL, codeql.yml, is manual while the repository is
+# private without Advanced Security).
 #
 # - Gitleaks blocks: it scans the checked-out tree and, on a pull request, every
 #   commit the PR adds. Known non-secrets are allowlisted in .gitleaks.toml.

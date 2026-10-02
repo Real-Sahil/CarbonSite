@@ -1,16 +1,20 @@
 name: Uptime
 
-# Checks production from outside every 15 minutes (GitHub may start a
-# scheduled run a few minutes late). A check that fails three times in a row,
-# 20 seconds apart, opens one issue labelled "uptime" (never a duplicate) and
-# comments on it while the outage lasts; the first passing run closes it.
-# GitHub emails the issue to watchers, so an outage reaches a person without
-# any paid monitoring service. The repository is public, so these runs use no
-# paid Actions minutes.
+# Checks production from outside every 6 hours (GitHub may start a scheduled
+# run a few minutes late). A check that fails three times in a row, 20 seconds
+# apart, opens one issue labelled "uptime" (never a duplicate) and comments on
+# it while the outage lasts; the first passing run closes it. GitHub emails the
+# issue to watchers.
+#
+# The repository is private, so Actions minutes are metered (2,000 a month on
+# the Free plan, and every job bills at least one minute): 4 runs a day is
+# about 120 minutes a month. Do not shorten this schedule to catch outages
+# faster; point a free external monitor (UptimeRobot, Better Stack) at /api/health
+# instead, which does not touch the allowance.
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "23 */6 * * *"
   workflow_dispatch:
 
 permissions:
