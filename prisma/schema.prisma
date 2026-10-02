@@ -397,6 +397,7 @@ model Organization {
   svCommitments                  SvCommitment[]                   @relation("OrgSvCommitments")
   svActivities                   SvActivity[]                     @relation("OrgSvActivities")
   svSupplierLocations            SvSupplierLocation[]             @relation("OrgSvSupplierLocations")
+  svPlanningObligations          SvPlanningObligation[]           @relation("OrgSvPlanningObligations")
   carbonSignals                  CarbonSignal[]                   @relation("OrgCarbonSignals")
   impactAlerts                   ImpactAlert[]                    @relation("OrgImpactAlerts")
   geographicImpacts              GeographicImpact[]               @relation("OrgGeographicImpacts")
@@ -6675,6 +6676,42 @@ model SvSupplierLocation {
 
   @@unique([organizationId, nameKey])
   @@map("sv_supplier_locations")
+}
+
+/// A planning obligation (Section 106 or a planning condition) that binds a
+/// site to deliver social value: local jobs, training, local spend, community
+/// work. Site, contract, owner and commitment ids are checked against the
+/// organisation on every write and joined in code, so there are no foreign keys
+/// beyond the organisation. `kind` and `status` are validated by the API.
+model SvPlanningObligation {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  siteId         String?   @map("site_id")
+  contractId     String?   @map("contract_id")
+  /// A social value commitment whose approved activities count as delivery.
+  commitmentId   String?   @map("commitment_id")
+  ownerUserId    String?   @map("owner_user_id")
+  title          String
+  /// Planning application reference.
+  reference      String?
+  authority      String?
+  /// Where the duty sits, e.g. "Schedule 4, paragraph 2".
+  clause         String?
+  kind           String    @default("other")
+  description    String?
+  targetValue    Decimal?  @map("target_value") @db.Decimal(18, 2)
+  targetUnit     String?   @map("target_unit")
+  dueDate        DateTime? @map("due_date") @db.Date
+  status         String    @default("open")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization @relation("OrgSvPlanningObligations", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status, dueDate])
+  @@index([organizationId, siteId])
+  @@map("sv_planning_obligations")
 }
 
 /// A delivered social value activity (evidence record).
