@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["scripts/**/*.{ts,mts,mjs,js}", "prisma/*.ts", "sentry.*.config.ts"],
+  "project": ["**/*.{ts,tsx,mts,mjs,js}"],
+  "ignore": ["videos/**", ".claude/**"],
+  "ignoreBinaries": ["dbt", "du"],
+  "ignoreDependencies": [
+    "@tesseract.js-data/eng",
+    "kysely",
+    "tailwindcss",
+    "sharp",
+    "playwright",
+    "@vitest/coverage-v8"
+  ]
+}

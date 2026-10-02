@@ -49,9 +49,9 @@ NEXT_PUBLIC_APP_URL   (Same as BETTER_AUTH_URL)
 
 #### Payment Processing (Stripe) — Currently Using Test Keys
 ```
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_51234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmn"
-STRIPE_SECRET_KEY="sk_test_4eC39HqLyjWDarhtT7sF6Z8j2xyS6ZZH8byE9kJWh9mEPt3p8V8u"
-STRIPE_WEBHOOK_SECRET="whsec_test_1234567890abcdefghijklmnopqrstuvwxyz"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_your_publishable_key"
+STRIPE_SECRET_KEY="sk_test_your_secret_key"
+STRIPE_WEBHOOK_SECRET="whsec_your_webhook_secret"
 STRIPE_PRICE_STARTER_MONTHLY="price_..."
 STRIPE_PRICE_STARTER_ANNUAL="price_..."
 STRIPE_PRICE_GROWTH_MONTHLY="price_..."

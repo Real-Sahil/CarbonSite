@@ -44,7 +44,7 @@ const HQ_COUNTRIES: Array<[string, string]> = [
 ];
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
+  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -134,28 +134,28 @@ export default function SignUpPage() {
             <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
           </div>
           <h1 className="text-xl font-semibold tracking-tight text-white">Set up your organisation</h1>
-          <p className="text-sm text-white/40 mt-1">Welcome, {name.split(" ")[0]}. Name your workspace.</p>
+          <p className="text-sm text-white/60 mt-1">Welcome, {name.split(" ")[0]}. Name your workspace.</p>
         </div>
 
         <form onSubmit={handleOrgSubmit} className="flex flex-col gap-3.5">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="orgName" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">Organisation name</label>
+            <label htmlFor="orgName" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Organisation name</label>
             <input id="orgName" type="text" value={orgName} onChange={(e) => setOrgName(e.target.value)} required autoFocus disabled={loading} placeholder="Acme Construction Ltd" className={INPUT_CLS} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="industry" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">
-              Industry <span className="text-white/20 normal-case font-normal">(optional)</span>
+            <label htmlFor="industry" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">
+              Industry <span className="text-white/60 normal-case font-normal">(optional)</span>
             </label>
             <input id="industry" type="text" value={industry} onChange={(e) => setIndustry(e.target.value)} disabled={loading} placeholder="Construction, Logistics, Manufacturing..." className={INPUT_CLS} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="hqCountry" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">Country</label>
+            <label htmlFor="hqCountry" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Country</label>
             <select id="hqCountry" value={hqCountry} onChange={(e) => setHqCountry(e.target.value)} disabled={loading} className={INPUT_CLS}>
               {HQ_COUNTRIES.map(([code, label]) => (
                 <option key={code} value={code} className="bg-zinc-900">{label}</option>
               ))}
             </select>
-            <p className="text-[11px] text-white/30">Sets the grid electricity and fuel factors used when a site has no country of its own.</p>
+            <p className="text-[11px] text-white/60">Sets the grid electricity and fuel factors used when a site has no country of its own.</p>
           </div>
           {error && (
             <div className="flex items-start gap-2 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-3.5 py-2.5" role="alert">
@@ -166,7 +166,7 @@ export default function SignUpPage() {
           <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#c2410c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:bg-[#9a3412] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
             {loading ? "Creating your workspace…" : "Create organisation"}
           </button>
-          <button type="button" onClick={() => { setStep("account"); setError(""); }} className="text-sm text-white/30 hover:text-white/60 transition-colors text-center" disabled={loading}>
+          <button type="button" onClick={() => { setStep("account"); setError(""); }} className="text-sm text-white/60 hover:text-white/60 transition-colors text-center" disabled={loading}>
             Back to account details
           </button>
         </form>
@@ -178,27 +178,27 @@ export default function SignUpPage() {
     <div>
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/35">Step 1 of 2</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/60">Step 1 of 2</p>
           <div className="flex gap-1.5">
             <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
             <div className="h-0.5 w-8 rounded-full bg-white/12" />
           </div>
         </div>
         <h1 className="text-xl font-semibold tracking-tight text-white">Create your account</h1>
-        <p className="text-sm text-white/40 mt-1">Start tracking your organisation&apos;s emissions.</p>
+        <p className="text-sm text-white/60 mt-1">Start tracking your organisation&apos;s emissions.</p>
       </div>
 
       <form onSubmit={handleAccountSubmit} className="flex flex-col gap-3.5">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="name" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">Full name</label>
+          <label htmlFor="name" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Full name</label>
           <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" disabled={loading} placeholder="Jane Smith" className={INPUT_CLS} />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">Work email</label>
+          <label htmlFor="email" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Work email</label>
           <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" disabled={loading} placeholder="you@company.com" className={INPUT_CLS} />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-[11px] font-medium text-white/40 uppercase tracking-[0.08em]">Password</label>
+          <label htmlFor="password" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Password</label>
           <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} maxLength={128} autoComplete="new-password" disabled={loading} placeholder="8+ characters" className={INPUT_CLS} />
         </div>
         {error && (
@@ -213,9 +213,9 @@ export default function SignUpPage() {
         </button>
       </form>
 
-      <p className="mt-5 text-center text-sm text-white/30">
+      <p className="mt-5 text-center text-sm text-white/60">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-amber-400 hover:text-amber-300 transition-colors">Sign in</Link>
+        <Link href="/sign-in" className="text-amber-400 underline underline-offset-4 hover:text-amber-300 transition-colors">Sign in</Link>
       </p>
     </div>
   );

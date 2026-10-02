@@ -1,0 +1,30 @@
+# Gitleaks config (CI: .github/workflows/security-scan.yml).
+# Default rules plus allowlists for known non-secrets. Keep each entry narrow
+# and say why; never allowlist a real credential, rotate it instead.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Build output, generated graph and dependencies"
+paths = ['''^\.next/''', '''^node_modules/''', '''^graphify-out/''', '''^test-results/''', '''^test-reports/''', '''^public/marketing/''']
+
+[[allowlists]]
+description = "Throwaway self-signed keypair used only to sign SAML test fixtures"
+paths = ['''^lib/auth/__tests__/sso-saml\.test\.ts$''']
+
+[[allowlists]]
+description = "Firebase Android client config: the API key ships in every app build and is restricted to the app in Google Cloud"
+paths = ['''^mobile/android/app/google-services\.json$''']
+
+[[allowlists]]
+description = "Identifiers and documentation placeholders that look like keys"
+regexTarget = "match"
+regexes = [
+  '''key: "b\d+[A-Za-z]+KgCo2e"''',
+  '''resolverKey: "[a-z0-9_]+"''',
+  '''BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef"''',
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.\.\.''',
+  '''test-key-12345''',
+  '''iot_sk_4a5b6c''',
+  '''csk_your_key_here''',
+]
