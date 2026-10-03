@@ -1,0 +1,32 @@
+name: Clear old build files
+
+# Manual only. GitHub's free plan stores 500 MB of workflow artifacts; once it
+# is full, every upload fails ("Artifact storage quota has been hit"). This
+# deletes every stored build artifact except the newest one of each name. After
+# a clean-up GitHub takes 6 to 12 hours to recalculate the usage.
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  clear:
+    name: Delete old artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Delete all but the newest artifact of each name
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | [.id, .name, .created_at] | @tsv' > all.tsv
+          sort -t$'\t' -k2,2 -k3,3r all.tsv | awk -F'\t' '!seen[$2]++ {print $1}' > keep.txt
+          cut -f1 all.tsv | grep -vxFf keep.txt > delete.txt || true
+          echo "Keeping $(wc -l < keep.txt) artifacts, deleting $(wc -l < delete.txt)."
+          while read -r id; do
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/actions/artifacts/$id" --silent || echo "Could not delete $id"
+          done < delete.txt
