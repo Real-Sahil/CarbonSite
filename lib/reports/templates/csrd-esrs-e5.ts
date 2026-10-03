@@ -8,6 +8,7 @@
 // economy disclosures, not emissions.
 
 import { esc, brandStyles, brandLogoHtml } from "./shared";
+import { loc } from "./locale";
 
 export interface CsrdEsrsE5Data {
   orgName: string;
@@ -34,8 +35,8 @@ export interface CsrdEsrsE5Data {
 }
 
 const fmtDate = (d: Date) =>
-  d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-const fmtNum = (n: number, dp = 2) => n.toLocaleString("en-GB", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  d.toLocaleDateString(loc(), { day: "numeric", month: "long", year: "numeric" });
+const fmtNum = (n: number, dp = 2) => n.toLocaleString(loc(), { minimumFractionDigits: dp, maximumFractionDigits: dp });
 
 const HIERARCHY_LABEL: Record<string, string> = {
   recycle: "Recycled / composted",
@@ -115,7 +116,7 @@ export function renderCsrdEsrsE5Html(d: CsrdEsrsE5Data): string {
     <tr><td>Standard applied</td><td>ESRS E5 — Resource Use and Circular Economy (EFRAG)</td></tr>
     <tr><td>Reporting period</td><td>${fmtDate(d.periodStart)} - ${fmtDate(d.periodEnd)}</td></tr>
     <tr><td>Source of quantities</td><td>${fromRecords ? "Waste activity records (Scope 3 Category 5); no waste register entries for this period" : "Waste register"}</td></tr>
-    <tr><td>Waste records included</td><td>${d.recordCount.toLocaleString("en-GB")}</td></tr>
+    <tr><td>Waste records included</td><td>${d.recordCount.toLocaleString(loc())}</td></tr>
   </table>
 </section>
 

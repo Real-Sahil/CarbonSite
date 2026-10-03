@@ -4,6 +4,7 @@
 // Aligns with EFRAG ESRS E1 standard (January 2023, effective FY2024+).
 
 import { esc, brandStyles, brandLogoHtml } from "./shared";
+import { loc } from "./locale";
 
 export interface CsrdEsrsE1Data {
   orgName: string;
@@ -41,8 +42,8 @@ export interface CsrdEsrsE1Data {
 }
 
 const fmtDate = (d: Date) =>
-  d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-const fmtNum = (n: number, dp = 2) => n.toLocaleString("en-GB", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  d.toLocaleDateString(loc(), { day: "numeric", month: "long", year: "numeric" });
+const fmtNum = (n: number, dp = 2) => n.toLocaleString(loc(), { minimumFractionDigits: dp, maximumFractionDigits: dp });
 const fmtYN = (v: boolean) => v ? "Yes" : "No";
 
 export function renderCsrdEsrsE1Html(d: CsrdEsrsE1Data): string {
@@ -116,7 +117,7 @@ export function renderCsrdEsrsE1Html(d: CsrdEsrsE1Data): string {
     <tr><td>GWP values</td><td>${esc(d.gwpVersion)} (aligned with IPCC AR6)</td></tr>
     <tr><td>Emission factor library</td><td>${esc(d.factorLibrary)}</td></tr>
     <tr><td>Reporting period</td><td>${fmtDate(d.periodStart)} – ${fmtDate(d.periodEnd)}</td></tr>
-    <tr><td>Activity records included</td><td>${d.recordCount.toLocaleString("en-GB")}</td></tr>
+    <tr><td>Activity records included</td><td>${d.recordCount.toLocaleString(loc())}</td></tr>
     <tr><td>Snapshot version</td><td>v${d.snapshotVersion} (immutable, auditable)</td></tr>
   </table>
 </section>

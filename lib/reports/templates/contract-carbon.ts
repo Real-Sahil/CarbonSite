@@ -3,6 +3,7 @@
 // Used for supply chain disclosure, procurement due-diligence, and client reporting.
 
 import { esc, brandStyles, brandLogoHtml } from "./shared";
+import { loc } from "./locale";
 
 export interface ContractCarbonCategory {
   name: string;
@@ -34,11 +35,11 @@ export interface ContractCarbonData {
 }
 
 const fmtDate = (d: Date) =>
-  d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  d.toLocaleDateString(loc(), { day: "numeric", month: "long", year: "numeric" });
 const fmtNum = (n: number, dp = 2) =>
-  n.toLocaleString("en-GB", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  n.toLocaleString(loc(), { minimumFractionDigits: dp, maximumFractionDigits: dp });
 const fmtGbp = (n: number) =>
-  n.toLocaleString("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  n.toLocaleString(loc(), { style: "currency", currency: "GBP", minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
 export function renderContractCarbonHtml(d: ContractCarbonData): string {
   const intensityStr =
@@ -50,7 +51,7 @@ export function renderContractCarbonHtml(d: ContractCarbonData): string {
     .sort((a, b) => a.scope - b.scope || b.totalKg - a.totalKg)
     .map(
       (c) =>
-        `<tr><td>Scope ${c.scope}</td><td>${esc(c.name)}</td><td class="num">${c.count.toLocaleString("en-GB")}</td><td class="num">${fmtNum(c.totalKg / 1000)} tCO₂e</td><td class="num">${d.totalTonnes > 0 ? fmtNum((c.totalKg / 1000 / d.totalTonnes) * 100, 1) : "0.0"}%</td></tr>`,
+        `<tr><td>Scope ${c.scope}</td><td>${esc(c.name)}</td><td class="num">${c.count.toLocaleString(loc())}</td><td class="num">${fmtNum(c.totalKg / 1000)} tCO₂e</td><td class="num">${d.totalTonnes > 0 ? fmtNum((c.totalKg / 1000 / d.totalTonnes) * 100, 1) : "0.0"}%</td></tr>`,
     )
     .join("");
 
@@ -121,7 +122,7 @@ export function renderContractCarbonHtml(d: ContractCarbonData): string {
     <tr><td>Emission factor library</td><td>${esc(d.factorLibrary)}</td></tr>
     <tr><td>Snapshot version</td><td>v${d.snapshotVersion} (immutable)</td></tr>
     <tr><td>Published by</td><td>${esc(d.publishedBy)}</td></tr>
-    <tr><td>Activity records included</td><td>${d.recordCount.toLocaleString("en-GB")}</td></tr>
+    <tr><td>Activity records included</td><td>${d.recordCount.toLocaleString(loc())}</td></tr>
     ${d.contractValueGbp ? `<tr><td>Contract value</td><td>${fmtGbp(d.contractValueGbp)}</td></tr>` : ""}
   </table>
 </section>
@@ -147,7 +148,7 @@ export function renderContractCarbonHtml(d: ContractCarbonData): string {
     <div class="kpi">
       <span class="val">${fmtNum(d.totalTonnes)}</span>
       <span class="lbl">tCO₂e Total</span>
-      <span class="pct">${d.recordCount.toLocaleString("en-GB")} activity records</span>
+      <span class="pct">${d.recordCount.toLocaleString(loc())} activity records</span>
     </div>
   </div>
 

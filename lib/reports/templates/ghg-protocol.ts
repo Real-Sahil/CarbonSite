@@ -5,6 +5,7 @@
 // Reference: GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition)
 
 import { brandStyles, esc } from "./shared";
+import { loc } from "./locale";
 
 export interface GhgProtocolCategoryRow {
   code: string;
@@ -51,12 +52,12 @@ export interface GhgProtocolData {
 }
 
 function fmt(d: Date) {
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString(loc(), { day: "numeric", month: "long", year: "numeric" });
 }
 
 function fmtT(kg: number): string {
   const t = kg / 1000;
-  return t.toLocaleString("en-GB", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  return t.toLocaleString(loc(), { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 }
 
 function pct(part: number, total: number): string {
@@ -159,8 +160,8 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
   <div style="background:#f0faf0;border:1px solid #d1fae5;border-radius:8px;padding:16px;margin:16px 0;">
     <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#228B22;margin:0 0 8px;">Progress vs. Baseline</p>
     <div style="display:flex;gap:24px;flex-wrap:wrap;">
-      <div><span style="font-size:1.3rem;font-weight:700;color:#333;">${data.baselineTonnes.toLocaleString("en-GB", {maximumFractionDigits:0})}</span><br><span style="font-size:0.75rem;color:#6b7280;">Baseline (${data.baselineYear}) tCO₂e</span></div>
-      <div><span style="font-size:1.3rem;font-weight:700;color:#333;">${(data.totalKg / 1000).toLocaleString("en-GB", {maximumFractionDigits:0})}</span><br><span style="font-size:0.75rem;color:#6b7280;">Current period tCO₂e</span></div>
+      <div><span style="font-size:1.3rem;font-weight:700;color:#333;">${data.baselineTonnes.toLocaleString(loc(), {maximumFractionDigits:0})}</span><br><span style="font-size:0.75rem;color:#6b7280;">Baseline (${data.baselineYear}) tCO₂e</span></div>
+      <div><span style="font-size:1.3rem;font-weight:700;color:#333;">${(data.totalKg / 1000).toLocaleString(loc(), {maximumFractionDigits:0})}</span><br><span style="font-size:0.75rem;color:#6b7280;">Current period tCO₂e</span></div>
       ${data.reductionPct != null ? `<div><span style="font-size:1.3rem;font-weight:700;color:${data.reductionPct > 0 ? "#228B22" : "#dc2626"};">${data.reductionPct > 0 ? "−" : "+"}${Math.abs(data.reductionPct).toFixed(1)}%</span><br><span style="font-size:0.75rem;color:#6b7280;">Change vs. baseline</span></div>` : ""}
     </div>
   </div>` : "";
@@ -201,7 +202,7 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
       <div>${logoHtml}</div>
       <h1>GHG Protocol Corporate Inventory</h1>
       <p>Scope 1, 2 &amp; 3 — ${esc(data.periodLabel)} &nbsp;|&nbsp; ${fmt(data.periodStart)} – ${fmt(data.periodEnd)}</p>
-      <div class="header-meta">Snapshot v${data.snapshotVersion} · ${esc(data.factorLibrary)} · ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}) · ${data.recordCount.toLocaleString("en-GB")} records</div>
+      <div class="header-meta">Snapshot v${data.snapshotVersion} · ${esc(data.factorLibrary)} · ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}) · ${data.recordCount.toLocaleString(loc())} records</div>
     </div>
     <div style="text-align:right;font-size:0.8rem;opacity:0.85;">
       <p>Published: ${fmt(data.publishedAt)}</p>
@@ -335,7 +336,7 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
       This inventory is prepared in accordance with the GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition) and uses ${esc(data.factorLibrary)} emission factors with ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}).
     </p>
     <p style="font-size:0.8rem;color:#374151;margin:0;">
-      Data is sourced from ${data.recordCount.toLocaleString("en-GB")} approved activity records. Immutable calculation snapshot v${data.snapshotVersion} published ${fmt(data.publishedAt)}.
+      Data is sourced from ${data.recordCount.toLocaleString(loc())} approved activity records. Immutable calculation snapshot v${data.snapshotVersion} published ${fmt(data.publishedAt)}.
       This report has not been externally assured — independent third-party verification is recommended for public disclosure.
     </p>
   </div>

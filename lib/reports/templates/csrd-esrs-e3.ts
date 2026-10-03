@@ -9,6 +9,7 @@
 // point-in-time snapshot. That's a deliberate Phase 1 simplification.
 
 import { esc, brandStyles, brandLogoHtml } from "./shared";
+import { loc } from "./locale";
 
 export interface CsrdEsrsE3Data {
   orgName: string;
@@ -33,8 +34,8 @@ export interface CsrdEsrsE3Data {
 }
 
 const fmtDate = (d: Date) =>
-  d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-const fmtNum = (n: number, dp = 1) => n.toLocaleString("en-GB", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  d.toLocaleDateString(loc(), { day: "numeric", month: "long", year: "numeric" });
+const fmtNum = (n: number, dp = 1) => n.toLocaleString(loc(), { minimumFractionDigits: dp, maximumFractionDigits: dp });
 
 const STRESS_LABEL: Record<string, string> = {
   low: "Low",
@@ -104,7 +105,7 @@ export function renderCsrdEsrsE3Html(d: CsrdEsrsE3Data): string {
     <tr><th>Disclosure field</th><th>Value</th></tr>
     <tr><td>Standard applied</td><td>ESRS E3 — Water and Marine Resources (EFRAG)</td></tr>
     <tr><td>Reporting period</td><td>${fmtDate(d.periodStart)} - ${fmtDate(d.periodEnd)}</td></tr>
-    <tr><td>Water records included</td><td>${d.recordCount.toLocaleString("en-GB")}</td></tr>
+    <tr><td>Water records included</td><td>${d.recordCount.toLocaleString(loc())}</td></tr>
   </table>
 </section>
 

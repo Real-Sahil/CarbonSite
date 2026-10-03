@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { withLocale, loc } from "@/lib/reports/templates/locale";
 import { renderGhgProtocolHtml, type GhgProtocolData } from "@/lib/reports/templates/ghg-protocol";
 
 const baseData: GhgProtocolData = {
@@ -104,5 +105,22 @@ describe("renderGhgProtocolHtml", () => {
   it("produces HTML with record count", () => {
     const html = renderGhgProtocolHtml(baseData);
     expect(html).toContain("42");
+  });
+});
+
+describe("report locale", () => {
+  it("prints dates and numbers the way the organisation's country does", () => {
+    const de = withLocale("DE", () => renderGhgProtocolHtml(baseData));
+    expect(de).toContain("15. Dezember 2025");
+    expect(de).toContain("50,000");
+    const gb = withLocale("GB", () => renderGhgProtocolHtml(baseData));
+    expect(gb).toContain("15 December 2025");
+    expect(gb).toContain("50.000");
+  });
+  it("defaults to en-GB and restores the previous locale, even when rendering throws", () => {
+    expect(loc()).toBe("en-GB");
+    expect(() => withLocale("DE", () => { throw new Error("x"); })).toThrow();
+    expect(loc()).toBe("en-GB");
+    withLocale(undefined, () => expect(loc()).toBe("en-GB"));
   });
 });

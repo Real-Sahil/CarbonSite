@@ -30,6 +30,7 @@ import { ungroundedNumbers } from "@/lib/llm/grounding";
 import { renderBidCarbonPackHtml } from "./templates/bid-carbon-pack";
 import { loadBidPackData } from "@/lib/bids/carbon-pack";
 import { renderTransitionPlanHtml } from "./templates/transition-plan";
+import { withLocale } from "./templates/locale";
 import { loadTransitionPlan } from "@/lib/transition-plan/load";
 import { loadOrgCommitments, type OrgCommitments } from "./commitments";
 import { renderSustainabilityReportHtml } from "./templates/sustainability-report";
@@ -65,7 +66,7 @@ export type ReportContext = {
     organizationId: string;
     contractId: string | null;
     reportingPeriodId: string;
-    organization: { name: string };
+    organization: { name: string; hqCountry?: string | null };
     reportingPeriod: { label: string; startDate: Date; endDate: Date };
     snapshot: { id: string; version: number; publishedAt: Date; calculationRunId: string };
     contract: { name: string } | null;
@@ -364,7 +365,7 @@ const handlers: Record<string, ReportHandler> = {
       carbonPrice: c.carbonPrice,
       categories: [...agg.catTotals.values()],
     };
-    return { html: renderCsrdEsrsE1Html(data), pdfkitData: basePdfData };
+    return { html: withLocale(ctx.report.organization.hqCountry, () => renderCsrdEsrsE1Html(data)), pdfkitData: basePdfData };
   },
 
   // Water (ESRS E3) and waste (ESRS E5) read WaterRecord/WasteRecord
@@ -424,7 +425,7 @@ const handlers: Record<string, ReportHandler> = {
       recordCount: waterRecords.length,
       facilities: [...byFacility.values()].filter((f) => f.withdrawalM3 || f.dischargeM3 || f.consumptionM3),
     };
-    return { html: renderCsrdEsrsE3Html(data) };
+    return { html: withLocale(ctx.report.organization.hqCountry, () => renderCsrdEsrsE3Html(data)) };
   },
 
   csrd_esrs_e5: async (ctx) => {
@@ -515,7 +516,7 @@ const handlers: Record<string, ReportHandler> = {
       byDisposalRoute: [...byRoute.entries()].map(([route, tonnes]) => ({ route, tonnes, hierarchy: hierarchyOf(route) })),
       facilities: [...byFacility.values()].filter((f) => f.generatedTonnes > 0),
     };
-    return { html: renderCsrdEsrsE5Html(data) };
+    return { html: withLocale(ctx.report.organization.hqCountry, () => renderCsrdEsrsE5Html(data)) };
   },
 
   contract_carbon: async (ctx) => {
@@ -551,7 +552,7 @@ const handlers: Record<string, ReportHandler> = {
       contractValueGbp: optNumber(opts.contractValueGbp) ?? storedValueGbp,
       categories: [...agg.catTotals.values()],
     };
-    return { html: renderContractCarbonHtml(data), pdfkitData: basePdfData };
+    return { html: withLocale(ctx.report.organization.hqCountry, () => renderContractCarbonHtml(data)), pdfkitData: basePdfData };
   },
 
   ghg_protocol: async (ctx) => {
@@ -596,7 +597,7 @@ const handlers: Record<string, ReportHandler> = {
       baselineTonnes,
       reductionPct,
     };
-    return { html: renderGhgProtocolHtml(data), pdfkitData: basePdfData };
+    return { html: withLocale(ctx.report.organization.hqCountry, () => renderGhgProtocolHtml(data)), pdfkitData: basePdfData };
   },
 
   cdp: async (ctx) => {
@@ -637,7 +638,7 @@ const handlers: Record<string, ReportHandler> = {
       revenueGbp: opts.revenueGbp !== undefined ? Number(opts.revenueGbp) : undefined,
       employeeCount: opts.employeeCount !== undefined ? Number(opts.employeeCount) : undefined,
     };
-    return { html: renderCdpHtml(data), pdfkitData: basePdfData };
+    return { html: withLocale(ctx.report.organization.hqCountry, () => renderCdpHtml(data)), pdfkitData: basePdfData };
   },
 
   ppn_006_crp: async (ctx) => {
@@ -756,16 +757,18 @@ const handlers: Record<string, ReportHandler> = {
   transition_plan: async (ctx) => {
     const view = await withQueryTimeout(loadTransitionPlan(ctx.orgId), 60_000);
     return {
-      html: renderTransitionPlanHtml({
-        ...view,
-        orgName: ctx.report.organization.name,
-        snapshot: {
-          version: ctx.report.snapshot.version,
-          periodLabel: ctx.report.reportingPeriod.label,
-          publishedAt: ctx.report.snapshot.publishedAt,
-        },
-        logoDataUri: ctx.logoDataUri,
-      }),
+      html: withLocale(ctx.report.organization.hqCountry, () =>
+        renderTransitionPlanHtml({
+          ...view,
+          orgName: ctx.report.organization.name,
+          snapshot: {
+            version: ctx.report.snapshot.version,
+            periodLabel: ctx.report.reportingPeriod.label,
+            publishedAt: ctx.report.snapshot.publishedAt,
+          },
+          logoDataUri: ctx.logoDataUri,
+        }),
+      ),
     };
   },
 
