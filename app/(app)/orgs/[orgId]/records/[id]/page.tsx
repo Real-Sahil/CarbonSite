@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RecordEvidenceActions } from "../record-evidence-actions";
+import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface RecordDetailPageProps {
   params: Promise<{ orgId: string; id: string }>;
@@ -29,6 +30,7 @@ const REVIEW_LABELS: Record<string, string> = {
 
 export default async function RecordDetailPage({ params }: RecordDetailPageProps) {
   const { orgId, id } = await params;
+  const L = await getOrgLocale(orgId);
 
   let role: OrgRole;
   try {
@@ -149,7 +151,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
               )}
               <DetailRow
                 label="Amount"
-                value={`${Number(record.amount).toLocaleString("en-GB")} ${record.unit}`}
+                value={`${Number(record.amount).toLocaleString(L)} ${record.unit}`}
               />
               <DetailRow label="Period" value={record.reportingPeriod.label} />
               {record.facility && <DetailRow label="Facility" value={record.facility.name} />}
@@ -165,7 +167,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
               {record.activityDate && (
                 <DetailRow
                   label="Activity date"
-                  value={new Date(record.activityDate).toLocaleDateString("en-GB", {
+                  value={new Date(record.activityDate).toLocaleDateString(L, {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
@@ -241,7 +243,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
                   <div key={calc.id} className="flex items-start justify-between gap-4 p-4">
                     <div className="min-w-0">
                       <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
-                        {Number(calc.totalCo2e).toLocaleString("en-GB", { maximumFractionDigits: 4 })} kgCO2e
+                        {Number(calc.totalCo2e).toLocaleString(L, { maximumFractionDigits: 4 })} kgCO2e
                       </p>
                       <p className="mt-0.5 text-xs text-[#374151] tracking-[-0.36px]">
                         {calc.methodologyVersionName} · {calc.factorLibraryVersion}
@@ -254,7 +256,7 @@ export default async function RecordDetailPage({ params }: RecordDetailPageProps
                       )}
                     </div>
                     <time className="shrink-0 text-xs text-[#374151] tracking-[-0.36px]">
-                      {calc.createdAt.toLocaleDateString("en-GB", {
+                      {calc.createdAt.toLocaleDateString(L, {
                         day: "numeric",
                         month: "short",
                         year: "numeric",

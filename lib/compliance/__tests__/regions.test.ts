@@ -15,6 +15,12 @@ describe("regions", () => {
     expect(r.regions.sort()).toEqual(["eu", "uae", "uk"]);
     expect(r.unloaded).toEqual(["US"]);
   });
+  it("reads names and aliases a user typed on a facility", () => {
+    expect(regionOf("United Kingdom")).toBe("uk");
+    expect(regionOf("UK")).toBe("uk");
+    expect(regionOf("Germany")).toBe("eu");
+    expect(relevantRegions(null, ["Ireland", "United Arab Emirates"]).regions.sort()).toEqual(["eu", "uae"]);
+  });
   it("is empty for an organisation with no country", () => {
     expect(relevantRegions(null, [])).toEqual({ regions: [], unloaded: [] });
   });

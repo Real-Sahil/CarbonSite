@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { acquisitionSchema } from "@/lib/marketing/acquisition";
-import { countryOf } from "@/lib/i18n/countries";
+import { countryIso2 } from "@/lib/calculation/geography";
 import {
   EVIDENCE_MAX_BYTES,
   isAllowedEvidenceMimeType,
@@ -32,11 +32,11 @@ export const orgRoleSchema = z.enum([
 const orgFieldsSchema = z.object({
   name: z.string().min(2).max(100),
   industry: z.string().optional(),
-  // ISO 3166-1 alpha-2. A value we do not list is dropped, never a reason to refuse the sign-up.
+  // Stored as ISO 3166-1 alpha-2 whatever was sent ("UK", "United Kingdom"); a value that is no country is dropped, never a reason to refuse the sign-up.
   hqCountry: z
     .string()
     .optional()
-    .transform((v) => countryOf(v)?.code),
+    .transform((v) => countryIso2(v) ?? undefined),
   fiscalYearStartMonth: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
   reportingCurrency: z
     .string()

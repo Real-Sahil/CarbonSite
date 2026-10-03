@@ -25,6 +25,7 @@ import {
 import { Target } from "lucide-react";
 import { DeleteInitiativeButton, DeleteTargetButton, InitiativeStartDate } from "./target-actions";
 import { TargetProgressSection, type TargetWithProgress } from "./target-progress";
+import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface TargetsPageProps {
   params: Promise<{ orgId: string }>;
@@ -32,6 +33,7 @@ interface TargetsPageProps {
 
 export default async function TargetsPage({ params }: TargetsPageProps) {
   const { orgId } = await params;
+  const L = await getOrgLocale(orgId);
 
   let role: OrgRole;
   try {
@@ -226,7 +228,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                         <TableCell className="text-sm text-[#374151] py-3.5">{target.baselinePeriod.label}</TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5">{target.targetPeriod.label}</TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
-                          {Number(target.reductionAmount).toLocaleString("en-GB")} kgCO2e
+                          {Number(target.reductionAmount).toLocaleString(L)} kgCO2e
                         </TableCell>
                         <TableCell className="text-sm text-[#6B7280] py-3.5">
                           {target.createdBy.name ?? target.createdBy.email}
@@ -333,12 +335,12 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
                           {initiative.expectedImpactCo2e
-                            ? `${Number(initiative.expectedImpactCo2e).toLocaleString("en-GB")} kgCO2e`
+                            ? `${Number(initiative.expectedImpactCo2e).toLocaleString(L)} kgCO2e`
                             : "Not estimated"}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
                           {initiative.costAmount
-                            ? `${initiative.costCurrency ?? "GBP"} ${Number(initiative.costAmount).toLocaleString("en-GB")}`
+                            ? `${initiative.costCurrency ?? "GBP"} ${Number(initiative.costAmount).toLocaleString(L)}`
                             : "Not set"}
                         </TableCell>
                         {canEdit && (

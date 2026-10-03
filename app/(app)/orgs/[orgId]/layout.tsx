@@ -5,6 +5,9 @@ import { OrgSidebar } from "@/components/org-sidebar";
 import { paymentState } from "@/lib/billing/dunning";
 import { PageTransition } from "@/components/page-transition";
 import React from "react";
+import { getOrgBasics } from "@/lib/i18n/org-basics";
+import { localeForCountry } from "@/lib/i18n/org-format";
+import { OrgLocaleProvider } from "@/components/org/org-locale";
 
 function buildBrandingCssVars(branding: {
   primaryHex: string | null;
@@ -108,16 +111,13 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     );
   }
 
-  let org: { id: string; name: string } | null = null;
+  let org: { id: string; name: string; hqCountry: string | null } | null = null;
   let branding: { primaryHex: string | null; accentHex: string | null; fontFamily: string | null } | null = null;
   let dataFetchError: string | null = null;
 
   try {
     [org, branding] = await Promise.all([
-      prisma.organization.findUnique({
-        where: { id: orgId },
-        select: { id: true, name: true },
-      }).catch((err) => {
+      getOrgBasics(orgId).catch((err) => {
         console.error("[OrgLayout] Organization query failed for orgId:", orgId, err);
         throw err;
       }),
@@ -197,7 +197,9 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
             </a>
           </div>
         ) : null}
-        <PageTransition>{children}</PageTransition>
+        <OrgLocaleProvider locale={localeForCountry(org?.hqCountry)}>
+          <PageTransition>{children}</PageTransition>
+        </OrgLocaleProvider>
       </main>
     </div>
   );

@@ -27,7 +27,7 @@ const TYPES: { value: InstrumentType; label: string; help: string; volume: "requ
   { value: "ppa", label: "Power purchase agreement", help: "Electricity bought directly from a generator. Use the generator's rate, 0 for wind or solar.", volume: "required", defaultFactor: "0" },
   { value: "green_tariff", label: "Green tariff", help: "A supplier tariff backed by certificates. Leave kWh blank if it covers the whole supply.", volume: "optional", defaultFactor: "0" },
   { value: "supplier_specific", label: "Supplier emission rate", help: "The rate on your supplier's fuel mix disclosure. Covers everything not backed by certificates.", volume: "none" },
-  { value: "residual_mix", label: "Residual mix", help: "The published residual mix rate for your country (AIB). Used for anything nothing else covers.", volume: "none" },
+  { value: "residual_mix", label: "Residual mix", help: "The published residual mix rate for your market, for example AIB for Europe or Green-e for the US. Enter the figure and keep the source in the notes; MetricOra does not bundle these tables. Used for anything nothing else covers.", volume: "none" },
 ];
 const typeInfo = (t: InstrumentType) => TYPES.find((x) => x.value === t)!;
 
