@@ -64,11 +64,13 @@ import { OnboardingChecklist } from "./onboarding-checklist";
 import { appraisalPrice, coveredCost, formatMoney, PRICE_TYPES, type PriceType } from "@/lib/carbon-price";
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { orgFormat } from "@/lib/i18n/org-format";
+import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
+import { countryOf } from "@/lib/i18n/countries";
 import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from "@/lib/dashboard/page-data";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ facilityId?: string; contractId?: string }>;
+  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string }>;
 }
 
 function formatKgCo2e(locale: string, value: unknown): string {
@@ -96,7 +98,7 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
-  const { facilityId: selectedFacilityId, contractId: selectedContractId } = await searchParams;
+  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry } = await searchParams;
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
   let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
   let dashAuthErr: AuthError | null = null;
@@ -198,6 +200,37 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const L = orgFormat(org).locale;
   const liveDashboardEnabled = org.isPilot || hasFeature(org.plan ?? "trial", "liveDashboard");
 
+  // One organisation is one reporting group: entity and country are filters
+  // inside it, applied as the set of facilities they cover (like a contract).
+  const [groupEntities, groupFacilities] = await Promise.all([
+    prisma.legalEntity.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true, parentId: true },
+      orderBy: { name: "asc" },
+    }).catch(onLoadFailure(() => [] as { id: string; name: string; parentId: string | null }[])),
+    prisma.facility.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, country: true, legalEntityId: true },
+    }).catch(onLoadFailure(() => [] as { id: string; country: string | null; legalEntityId: string | null }[])),
+  ]);
+  const groupCountries = facilityCountries(groupFacilities);
+  const groupFacilityIds = facilityScope(groupFacilities, groupEntities, { entityId: selectedEntityId, country: selectedCountry });
+  const scopeFacilityIds =
+    contractFacilityIds === null
+      ? groupFacilityIds
+      : groupFacilityIds === null
+        ? contractFacilityIds
+        : contractFacilityIds.filter((id) => groupFacilityIds.includes(id));
+  const scoped = scopeFacilityIds !== null;
+  const dashboardHref = (p: { contractId?: string; entityId?: string; country?: string }) => {
+    const q = new URLSearchParams();
+    if (p.contractId) q.set("contractId", p.contractId);
+    if (p.entityId) q.set("entityId", p.entityId);
+    if (p.country) q.set("country", p.country);
+    const qs = q.toString();
+    return `/orgs/${orgId}/dashboard${qs ? `?${qs}` : ""}`;
+  };
+
   const currentPeriod = reportingPeriods[0] ?? null;
   const priorPeriod = reportingPeriods[1] ?? null;
 
@@ -281,7 +314,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               // Contract scope is expressed through facility rows; org-wide
               // totals come from the facility-agnostic rollup rows.
               facilityId:
-                contractFacilityIds !== null ? { in: contractFacilityIds } : null,
+                scopeFacilityIds !== null ? { in: scopeFacilityIds } : null,
             },
             _sum: { totalCo2e: true, recordCount: true },
             orderBy: { scope: "asc" },
@@ -400,7 +433,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               // is scoped the same way the totals above are. Org-wide, read the
               // facility-agnostic category rows.
               facilityId:
-                contractFacilityIds !== null ? { in: contractFacilityIds } : null,
+                scopeFacilityIds !== null ? { in: scopeFacilityIds } : null,
             },
             include: {
               emissionCategory: { select: { name: true, scope: true } },
@@ -487,7 +520,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             // period-on-period change compares differently-scoped totals.
             ...SCOPE_ROLLUP_DIMENSIONS,
             facilityId:
-              contractFacilityIds !== null ? { in: contractFacilityIds } : null,
+              scopeFacilityIds !== null ? { in: scopeFacilityIds } : null,
           },
           _sum: { totalCo2e: true, recordCount: true },
           orderBy: { scope: "asc" },
@@ -849,7 +882,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const latestTrendTotal = trendTotals.length > 0 ? trendTotals[trendTotals.length - 1] : 0;
   const previousTrendTotal = trendTotals.length > 1 ? trendTotals[trendTotals.length - 2] : null;
   const periodDeltaPct =
-    !selectedContractId && previousTrendTotal && previousTrendTotal > 0
+    !scoped && previousTrendTotal && previousTrendTotal > 0
       ? ((latestTrendTotal - previousTrendTotal) / previousTrendTotal) * 100
       : null;
   const scopesWithActivity = scopeRows.filter((row) => Number(row.records) > 0).length;
@@ -1072,6 +1105,48 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
 
+      {/* Group filter: legal entity (with its subsidiaries) and country */}
+      {(groupEntities.length > 0 || groupCountries.length > 1) && (
+        <div className="flex flex-col gap-2">
+          {groupEntities.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs font-normal text-[#374151] tracking-[-0.36px]">Filter by entity:</span>
+              {[{ id: "", name: "All" }, ...groupEntities].map((e) => (
+                <Link
+                  key={e.id || "all"}
+                  href={dashboardHref({ contractId: selectedContractId, entityId: e.id || undefined, country: selectedCountry })}
+                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                    (selectedEntityId ?? "") === e.id
+                      ? "bg-[#c2410c] text-white"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                  }`}
+                >
+                  {e.name}
+                </Link>
+              ))}
+            </div>
+          )}
+          {groupCountries.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs font-normal text-[#374151] tracking-[-0.36px]">Filter by country:</span>
+              {["", ...groupCountries].map((c) => (
+                <Link
+                  key={c || "all"}
+                  href={dashboardHref({ contractId: selectedContractId, entityId: selectedEntityId, country: c || undefined })}
+                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                    (selectedCountry ?? "") === c
+                      ? "bg-[#c2410c] text-white"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                  }`}
+                >
+                  {c ? countryOf(c)?.name ?? c : "All"}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Contract filter */}
       {activeContracts.length > 0 && (
         <div className="flex flex-col gap-3">
@@ -1103,7 +1178,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {activeContracts.map((contract) => (
               <Link
                 key={contract.id}
-                href={`/orgs/${orgId}/dashboard?contractId=${contract.id}`}
+                href={dashboardHref({ contractId: contract.id, entityId: selectedEntityId, country: selectedCountry })}
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
                     ? "bg-[#c2410c] text-white"
@@ -1178,8 +1253,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               : "—"
           }
           detail={
-            selectedContractId
-              ? "Clear the contract filter to compare"
+            scoped
+              ? "Clear the filters to compare"
               : periodDeltaPct !== null
                 ? "vs previous reporting period"
                 : "Calculate a second period to compare"
