@@ -74,7 +74,7 @@ export const FRAMEWORK_DATAPOINTS: FrameworkDatapointSeed[] = [
     title: "Anticipated financial effects from climate risks and opportunities",
     description: "Potential financial effects of material physical and transition risks.",
     category: "Financial effects",
-    resolverKey: null,
+    resolverKey: "climate_financial_effects",
   },
 
   // ─── ESRS E3 — Water and Marine Resources (CSRD) ─────────────────────────
