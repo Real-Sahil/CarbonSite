@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -95,7 +96,7 @@ export default async function MaterialityPage({ params }: { params: Promise<{ or
             <tbody>
               {assessments.map((a) => (
                 <tr key={a.id} className="border-b last:border-0 hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium">{a.name}</td>
+                  <td className="px-4 py-3 font-medium"><Link href={`/orgs/${orgId}/materiality/${a.id}`} className="underline underline-offset-2">{a.name}</Link></td>
                   <td className="px-4 py-3 text-muted-foreground">{a.reportingPeriod?.label ?? "-"}</td>
                   <td className="px-4 py-3">{a._count.topics}</td>
                   <td className="px-4 py-3 text-muted-foreground">{a.esrsScope ?? "-"}</td>

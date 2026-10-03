@@ -189,6 +189,7 @@ describe("renderSustainabilityReportHtml", () => {
     wasteIntensity: null,
     fuel: null,
     water: null,
+    materiality: null,
     socialValue: null,
     boundary: null,
     format: GB,
@@ -217,6 +218,31 @@ describe("renderSustainabilityReportHtml", () => {
     const html = renderSustainabilityReportHtml(data({ waste: { totalTonnes: 100, divertedTonnes: 90, diversionRate: 0.9 } }));
     expect(html).toContain("ESRS E5-5");
     expect(html).toMatch(/ESRS E1-6[^<]*<\/td><td>Section 2</);
+  });
+
+  it("prints the approved assessment's material topics with their basis, and numbers the sections in order", () => {
+    const topic = (over: object) => ({ esrsCode: "E1", topicName: "Climate change mitigation", iroType: "impact", impactScore: 5, financialScore: 2, isMaterial: true, rationale: "Our fleet and plant burn fuel <a lot>.", ...over });
+    const html = renderSustainabilityReportHtml(
+      data({
+        materiality: {
+          name: "2026 assessment", status: "approved", approvedAt: new Date("2026-02-01"), method: "Workshops and a scoring matrix.", stakeholders: null,
+          groups: [{ code: "E1", topics: [topic({}), topic({ topicName: "Energy", impactScore: 2, financialScore: 4, rationale: null })] }],
+        },
+      }),
+    );
+    expect(html).toContain("2. Material topics");
+    expect(html).toContain("3. Greenhouse gas emissions");
+    expect(html).toContain("Impact</td>");
+    expect(html).toContain("Financial</td>");
+    expect(html).toContain("Our fleet and plant burn fuel &lt;a lot&gt;.");
+    expect(html).toContain("ESRS 2 IRO-1");
+  });
+
+  it("leaves the section out when no topic is material", () => {
+    const html = renderSustainabilityReportHtml(
+      data({ materiality: { name: "x", status: "approved", approvedAt: null, method: null, stakeholders: null, groups: [] } }),
+    );
+    expect(html).not.toContain("Material topics");
   });
 
   it("adds water and fuel sections, numbered, and points the ESRS index at them", () => {

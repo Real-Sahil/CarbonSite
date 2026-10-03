@@ -386,6 +386,7 @@ export type AuditAction =
   | "materiality.assessment_published"
   | "materiality.topic_created"
   | "materiality.topic_updated"
+  | "materiality.topic_deleted"
   | "tnfd.scenario_created"
   | "tnfd.scenario_updated"
   | "tnfd.scenario_deleted"

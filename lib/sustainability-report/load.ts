@@ -10,6 +10,7 @@ import { parseSections } from "@/lib/crp/plan";
 import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
 import { formatters, orgFormat, type OrgFormat } from "@/lib/i18n/org-format";
 import { normalizeUnit } from "@/lib/calculation/units";
+import { materialByStandard } from "@/lib/materiality";
 import {
   fuelSummary,
   highlights,
@@ -42,6 +43,15 @@ export type SustainabilityReportData = {
   water: (Water & { withdrawalPerMillion: number | null }) | null;
   socialValue: { totalPounds: number; byTheme: { name: string; pounds: number }[] } | null;
   boundary: { approach: string; sites: string; exclusions: { item: string; reason: string }[] } | null;
+  /** The latest approved or published materiality assessment, with its material topics. */
+  materiality: {
+    name: string;
+    status: string;
+    approvedAt: Date | null;
+    method: string | null;
+    stakeholders: string | null;
+    groups: ReturnType<typeof materialByStandard>;
+  } | null;
   /** The organisation's locale and reporting currency. */
   format: OrgFormat;
 };
@@ -65,7 +75,7 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
   if (!snap) throw Object.assign(new Error("Snapshot not found."), { code: "NOT_FOUND", status: 404 });
   const periodId = snap.reportingPeriodId;
 
-  const [wasteRows, svRows, periodPlan, fuelRows, waterRows] = await Promise.all([
+  const [wasteRows, svRows, periodPlan, fuelRows, waterRows, assessment] = await Promise.all([
     prisma.wasteRecord.findMany({
       where: { organizationId: orgId, reportingPeriodId: periodId },
       select: { weightTonnes: true, disposalRoute: true },
@@ -88,6 +98,21 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
     prisma.waterRecord.findMany({
       where: { organizationId: orgId, reportingPeriodId: periodId },
       select: { metricType: true, volumeM3: true },
+    }),
+    // Only an assessment the organisation has approved is reported.
+    prisma.materialityAssessment.findFirst({
+      where: { organizationId: orgId, status: { in: ["approved", "published"] } },
+      orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }],
+      select: {
+        name: true,
+        status: true,
+        approvedAt: true,
+        methodologyNotes: true,
+        stakeholderInput: true,
+        topics: {
+          select: { esrsCode: true, topicName: true, iroType: true, impactScore: true, financialScore: true, isMaterial: true, rationale: true },
+        },
+      },
     }),
   ]);
   const plan = periodPlan
@@ -150,6 +175,16 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
     wasteIntensity,
     fuel,
     water,
+    materiality: assessment
+      ? {
+          name: assessment.name,
+          status: assessment.status,
+          approvedAt: assessment.approvedAt,
+          method: assessment.methodologyNotes,
+          stakeholders: assessment.stakeholderInput,
+          groups: materialByStandard(assessment.topics),
+        }
+      : null,
     socialValue,
     boundary: sections
       ? {

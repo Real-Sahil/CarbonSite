@@ -133,6 +133,7 @@ export const ESRS_SECTION_REFS: Record<string, string> = {
   emissions: "ESRS E1-6: Gross Scopes 1, 2, 3 and total GHG emissions (including intensity)",
   targets: "ESRS E1-4: Targets related to climate change mitigation",
   measures: "ESRS E1-3: Actions and resources in relation to climate change",
+  materiality: "ESRS 2 IRO-1 (process) and SBM-3 (material impacts, risks and opportunities)",
   waste: "ESRS E5-5: Resource outflows (waste)",
   water: "ESRS E3-4: Water consumption (withdrawal, discharge, consumption)",
   fuel: "ESRS E1-5: Energy consumption and mix (fuel only; electricity is not covered here)",

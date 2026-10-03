@@ -10,6 +10,7 @@ import { esc, brandStyles, brandLogoHtml, svgHBars, svgDonut } from "./shared";
 import { change, STANDARD_LABELS } from "@/lib/bids/carbon-pack";
 import { ESRS_SECTION_REFS, ESRS_STATEMENT } from "@/lib/sustainability-report/model";
 import { formatters } from "@/lib/i18n/org-format";
+import { IRO_LABELS, basisOf } from "@/lib/materiality";
 import type { SustainabilityReportData } from "@/lib/sustainability-report/load";
 
 function fmtFor(format: SustainabilityReportData["format"]) {
@@ -75,6 +76,28 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
   </table>
   <p class="note">${esc(ESRS_STATEMENT)}</p>
 </section>`;
+
+  const mat = d.materiality && d.materiality.groups.length > 0 ? d.materiality : null;
+  if (mat) present.push("materiality");
+  const materiality = mat
+    ? `
+<section>
+  ${h("materiality", "Material topics")}
+  <p>Topics the organisation found material in its double materiality assessment, <strong>${esc(mat.name)}</strong> (${esc(mat.status)}${mat.approvedAt ? `, approved ${fmtDate(mat.approvedAt)}` : ""}). A topic is material if its impact or its financial effect scores 3 or more on a 1 to 5 scale, or the organisation judged it so.</p>
+  ${mat.method ? `<h3>How it was assessed</h3><p>${esc(mat.method).replace(/\r?\n/g, "<br>")}</p>` : ""}
+  ${mat.stakeholders ? `<h3>Stakeholders consulted</h3><p>${esc(mat.stakeholders).replace(/\r?\n/g, "<br>")}</p>` : ""}
+  <table>
+    <tr><th>Standard</th><th>Topic</th><th>Type</th><th class="num">Impact</th><th class="num">Financial</th><th>Basis</th><th>Reason</th></tr>
+    ${mat.groups
+      .flatMap((g) => g.topics.map((t) => ({ code: g.code, t })))
+      .map(({ code, t }) => {
+        const basis = basisOf(t);
+        return `<tr><td>${esc(code)}</td><td>${esc(t.topicName)}</td><td>${esc(IRO_LABELS[t.iroType] ?? t.iroType)}</td><td class="num">${t.impactScore ?? "–"}</td><td class="num">${t.financialScore ?? "–"}</td><td>${basis ? (basis === "both" ? "Impact and financial" : basis === "impact" ? "Impact" : "Financial") : "Organisation's judgement"}</td><td>${t.rationale ? esc(t.rationale) : ""}</td></tr>`;
+      })
+      .join("")}
+  </table>
+</section>`
+    : "";
 
   const scopeSlices = [
     { label: "Scope 1", value: p.current.s1 * 1000, scope: 1 },
@@ -319,6 +342,7 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
 </div>
 
 ${about}
+${materiality}
 ${emissions}
 ${scope3}
 ${targets}
